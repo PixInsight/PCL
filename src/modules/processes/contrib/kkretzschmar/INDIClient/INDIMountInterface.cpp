@@ -1834,7 +1834,7 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
 	   GUI->getAlignmentConfigParamter(alignmentConfig);
 	   switch (GUI->m_aignmentModelIndex){
 	   case IMCAlignmentMethod::AnalyticalModel:
-		   aModel = TpointPointingModel::create(m_geoLatitude, alignmentConfig);
+		   aModel = GeneralAnalyticalPointingModel::create(m_geoLatitude, alignmentConfig);
 	   }
 	   Array<SyncDataPoint> syncDataList;
 	   INDIMountInstance::loadSyncData(syncDataList, GUI->SyncDataFile_Edit.Text());
@@ -1843,6 +1843,7 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
 	   aModel->fitModel(syncDataList,IMCPierSide::West);
 	   aModel->fitModel(syncDataList,IMCPierSide::East);
 	   aModel->writeObject(GUI->AlignmentFile_Edit.Text());
+	   aModel->printParameters();
 
 	   if (GUI->MountAlignmentPlotResiduals_CheckBox.IsChecked()){
 		   plotAlignemtResiduals(aModel.Ptr(), syncDataList);

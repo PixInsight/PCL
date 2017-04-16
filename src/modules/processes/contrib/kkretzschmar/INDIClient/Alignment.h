@@ -57,6 +57,7 @@
 #include <pcl/Vector.h>
 #include <pcl/Array.h>
 #include <pcl/MetaParameter.h>
+#include <pcl/Console.h>
 
 namespace pcl
 {
@@ -87,6 +88,8 @@ struct SyncDataPoint {
  *
  */
 class AlignmentModel {
+protected:
+	Console m_console;
 
 public:
 
@@ -101,6 +104,8 @@ public:
 	virtual void writeObject(const String& fileName) = 0;
 
 	virtual void readObject(const String& fileName) = 0;
+
+	virtual void printParameters() = 0;
 
 	static void getPseudoInverse(Matrix& pseudoInverse, const Matrix& matrix);
 
@@ -143,17 +148,17 @@ public:
   *
   *
   */
-  class TpointPointingModel : public AlignmentModel {
-	static const size_t modelParameters = 14;
+  class GeneralAnalyticalPointingModel : public AlignmentModel {
+	static const size_t modelParameters = 11;
   public:
 
-	TpointPointingModel(double siteLatitude,uint32_t modelConfig) : AlignmentModel (), m_numOfModelParameters(modelParameters), m_siteLatitude(siteLatitude * Const<double>::rad()), m_pointingModelWest(nullptr), m_pointingModelEast(nullptr),m_modelConfig(modelConfig)
+	GeneralAnalyticalPointingModel(double siteLatitude,uint32_t modelConfig) : AlignmentModel (), m_numOfModelParameters(modelParameters), m_siteLatitude(siteLatitude * Const<double>::rad()), m_pointingModelWest(nullptr), m_pointingModelEast(nullptr),m_modelConfig(modelConfig)
   	{
 		m_pointingModelWest = new Vector(m_numOfModelParameters);
 		m_pointingModelEast = new Vector(m_numOfModelParameters);
   	}
 
- 	virtual ~TpointPointingModel()
+ 	virtual ~GeneralAnalyticalPointingModel()
  	{
  		delete m_pointingModelWest;
  		delete m_pointingModelEast;
@@ -167,16 +172,19 @@ public:
 
  	// siteLatidude given in degrees
  	static AlignmentModel* create( double siteLatitude, uint32_t modelConfig){
- 		return new TpointPointingModel(siteLatitude,modelConfig);
+ 		return new GeneralAnalyticalPointingModel(siteLatitude,modelConfig);
  	}
 
  	virtual void writeObject(const String& fileName);
 
  	virtual void readObject(const String& fileName);
 
+ 	virtual void printParameters();
+
  private:
 
  	void evaluateBasis(Matrix& basisMatrix, double hourAngle, double dec);
+ 	void printParameterVector(Vector* parameters);
 
  	size_t m_numOfModelParameters;
  	double m_siteLatitude; // in radians

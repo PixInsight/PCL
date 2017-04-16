@@ -365,7 +365,7 @@ bool INDIMountInstance::ExecuteOn( View& view )
     		  Variant geoLat = view.PropertyValue( "Instrument:Telescope:Geograhic:Latitude" );
     		  if (!geoLat.IsValid() )
     			  throw Error( "The view does not define valid geographic latitude coordinates." );
-    		  aModel = TpointPointingModel::create(geoLat.ToDouble(), p_alignmentConfig);
+    		  aModel = GeneralAnalyticalPointingModel::create(geoLat.ToDouble(), p_alignmentConfig);
     	  }
 
 
@@ -717,7 +717,7 @@ void AbstractINDIMountExecution::Perform()
 
           	  switch (m_instance.p_alignmentMethod){
           	  case IMCAlignmentMethod::AnalyticalModel:
-          		  aModel = TpointPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig);
+          		  aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig);
           	  }
           	  if (aModel==nullptr){
           		throw Error( "Alignment model could not be loaded" );
@@ -857,7 +857,7 @@ void AbstractINDIMountExecution::Perform()
             	switch (m_instance.p_alignmentMethod){
             	case IMCAlignmentMethod::AnalyticalModel:
 
-            		aModel = TpointPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig);
+            		aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig);
             	}
 
             	double localSiderialTime = m_instance.o_currentLST;

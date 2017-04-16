@@ -107,20 +107,24 @@ void AlignmentModel::getPseudoInverse(Matrix& pseudoInverse, const Matrix& matri
 	pseudoInverse = svd.V * WInverse * svd.U.Transpose();
 }
 
+static const double scaleArcmin = 60.0;
+static const double factorHaToDeg = 15.0;
 
 
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 
-void TpointPointingModel::evaluateBasis(Matrix& basisVectors, double hourAngle, double dec)
+void GeneralAnalyticalPointingModel::evaluateBasis(Matrix& basisVectors, double hourAngle, double dec)
 {
+	// rescale hour angle to degrees
+	hourAngle*=factorHaToDeg;
 	if (basisVectors.Rows() != 2 || basisVectors.Columns() != static_cast<int>(m_numOfModelParameters))
 	{
 		throw Error( "Internal error: TpointPointingModel::evaluateBasis: Matrix dimensions do not match" );
 	}
-	double ctc  = Cos(hourAngle * Const<double>::rad() * 15);
+	double ctc  = Cos(hourAngle * Const<double>::rad());
 	double cdc  = Cos(dec * Const<double>::rad());
 
-	double stc  = Sin(hourAngle * Const<double>::rad() * 15);
+	double stc  = Sin(hourAngle * Const<double>::rad());
 
 
 	double sdc  = Sin(dec * Const<double>::rad());
@@ -169,7 +173,7 @@ void TpointPointingModel::evaluateBasis(Matrix& basisVectors, double hourAngle, 
 	if (CHECK_BIT(m_modelConfig,4)){
 		// polar-axis horizontal displacement
 		basisVectors[0][4] = -ctc * tandc;
-		basisVectors[1][4] = stc;
+		basisVectors[1][4] = ctc;
 	} else {
 		// polar-axis horizontal displacement
 		basisVectors[0][4] = 0;
@@ -178,7 +182,7 @@ void TpointPointingModel::evaluateBasis(Matrix& basisVectors, double hourAngle, 
 	if (CHECK_BIT(m_modelConfig,5)){
 		// polar-axis vertical displacement
 		basisVectors[0][5] = stc * tandc;
-		basisVectors[1][5] = ctc;
+		basisVectors[1][5] = stc;
 	} else {
 		// polar-axis vertical displacement
 		basisVectors[0][5] = 0;
@@ -204,7 +208,7 @@ void TpointPointingModel::evaluateBasis(Matrix& basisVectors, double hourAngle, 
 	if (CHECK_BIT(m_modelConfig,8)){
 		// delta-axis flexure
 		basisVectors[0][8] = cdc * ctc + slat * tandc;
-		basisVectors[1][8] = dec ;
+		basisVectors[1][8] = 0 ;
 	} else {
 		basisVectors[0][8] = 0;
 		basisVectors[1][8] = 0;
@@ -214,36 +218,24 @@ void TpointPointingModel::evaluateBasis(Matrix& basisVectors, double hourAngle, 
 	if (CHECK_BIT(m_modelConfig, 9)) {
 		// linear term
 		basisVectors[0][9] = hourAngle;
-		basisVectors[1][9] = 1;
-		basisVectors[0][10] = 1;
-		basisVectors[1][10] = dec ;
+		basisVectors[1][9] = 0;
 	} else {
 		basisVectors[0][9] = 0;
 		basisVectors[1][9] = 0;
-		basisVectors[0][10] = 0;
-		basisVectors[1][10] = 0;
 	}
 
 	if (CHECK_BIT(m_modelConfig, 10)) {
 		// quadratic term
-		basisVectors[0][11] = hourAngle * hourAngle ;
-		basisVectors[1][11] = 1;
-		basisVectors[0][12] = 1;
-		basisVectors[1][12] = dec * dec;
-		basisVectors[0][13] = dec * hourAngle;
-		basisVectors[1][13] = dec * hourAngle;
+		basisVectors[0][10] = hourAngle * hourAngle ;
+		basisVectors[1][10] = 0;
 	} else {
-		basisVectors[0][11] = 0;
-		basisVectors[1][11] = 0;
-		basisVectors[0][12] = 0;
-		basisVectors[1][12] = 0;
-		basisVectors[0][13] = 0;
-		basisVectors[1][13] = 0;
+		basisVectors[0][10] = 0;
+		basisVectors[1][10] = 0;
 	}
 
 }
 
-void TpointPointingModel::Apply(double& hourAngleCor, double& decCor, double hourAngle, double dec) {
+void GeneralAnalyticalPointingModel::Apply(double& hourAngleCor, double& decCor, double hourAngle, double dec) {
 	Matrix basisVectors(2,m_numOfModelParameters);
 
 	evaluateBasis(basisVectors,hourAngle,dec);
@@ -258,11 +250,11 @@ void TpointPointingModel::Apply(double& hourAngleCor, double& decCor, double hou
 		alignCorrection +=  (*modelParameters)[modelIndex] * basisVectors.ColumnVector(modelIndex);
 	}
 
-	hourAngleCor  = hourAngle - alignCorrection[0];
+	hourAngleCor  = hourAngle - alignCorrection[0] / factorHaToDeg;
 	decCor        = dec - alignCorrection[1];
 }
 
-void TpointPointingModel::ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) {
+void GeneralAnalyticalPointingModel::ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) {
 	Matrix basisVectors(2,m_numOfModelParameters);
 
 	evaluateBasis(basisVectors,hourAngle,dec);
@@ -277,11 +269,11 @@ void TpointPointingModel::ApplyInverse(double& hourAngleCor, double& decCor, con
 		alignCorrection +=  (*modelParameters)[modelIndex] * basisVectors.ColumnVector(modelIndex);
 	}
 
-	hourAngleCor  = hourAngle + alignCorrection[0];
+	hourAngleCor  = hourAngle + alignCorrection[0] / factorHaToDeg;
 	decCor        = dec + alignCorrection[1];
 }
 
-void TpointPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide)
+void GeneralAnalyticalPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide)
 {
 
 	// Count data points for each pier side
@@ -323,7 +315,7 @@ void TpointPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArray, p
 		}
 
 		// compute measured alignment error
-		(*meauredDisplacements) [2*counts]     = celestialHourAngle - telescopeHourAngle;;
+		(*meauredDisplacements) [2*counts]     = (celestialHourAngle - telescopeHourAngle)*factorHaToDeg;
 		(*meauredDisplacements) [2*counts + 1] = syncPoint.celestialDEC - syncPoint.telecopeDEC;
 
 		counts++;
@@ -347,7 +339,7 @@ void TpointPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArray, p
 }
 
 
-void TpointPointingModel::writeObject(const String& fileName)
+void GeneralAnalyticalPointingModel::writeObject(const String& fileName)
 {
 	// save model parameters to disk
 	IsoString fileContent;
@@ -386,7 +378,7 @@ void TpointPointingModel::writeObject(const String& fileName)
 
 }
 
-void TpointPointingModel::readObject(const String& fileName)
+void GeneralAnalyticalPointingModel::readObject(const String& fileName)
 {
 	IsoStringList modelParameterList = File::ReadLines(fileName);
 
@@ -422,6 +414,32 @@ void TpointPointingModel::readObject(const String& fileName)
 }
 
 
+void GeneralAnalyticalPointingModel::printParameterVector(Vector* parameters){
+	m_console.WriteLn( String().Format("<end>** hour angle offset:..................................................%+.2f (arcmin)",(*parameters)[0]*scaleArcmin));
+	m_console.WriteLn( String().Format("<end>** declination offset:.................................................%+.2f (arcmin)",(*parameters)[1]*scaleArcmin));
+	double poleSep = Sqrt((*parameters)[4] * (*parameters)[4] + (*parameters)[5]* (*parameters)[5]);
+	double poleAngle = ArcCos(- (*parameters)[4] / poleSep);
+	m_console.WriteLn( String().Format("<end>** angular separation between true and instrumental pole:..............%+.2f (arcmin)",poleSep*scaleArcmin));
+	m_console.WriteLn( String().Format("<end>** angle between meridian and line of true and instrumental pole:......%+.2f (deg)",Deg(poleAngle)));
+	m_console.WriteLn( String().Format("<end>** mis-alignment of optical and mechanical axes:.......................%+.2f (arcmin)",(*parameters)[2]*scaleArcmin));
+	m_console.WriteLn( String().Format("<end>** polar/declination axis non-orthogonality:...........................%+.2f (arcmin)",-(*parameters)[3]*scaleArcmin));
+	m_console.WriteLn( String().Format("<end>** tube flexure - droop away from zenith:..............................%+.2f (arcmin)",(*parameters)[6]*scaleArcmin));
+	m_console.WriteLn( String().Format("<end>** bending of declination axis:........................................%+.2f (arcmin)",(*parameters)[8]*scaleArcmin));
+	m_console.WriteLn( String().Format("<end>** linear hour angle scale error:......................................%+.2f (arcmin)",(*parameters)[9]*scaleArcmin));
+	m_console.WriteLn( String().Format("<end>** quadratic hour angle scale error....................................%+.2f (arcmin)",(*parameters)[10]*scaleArcmin));
+
+}
+
+void GeneralAnalyticalPointingModel::printParameters() {
+
+	m_console.NoteLn( "<end><cbr><br> Analytical Pointing Model Parameters" );
+	m_console.WriteLn("The parameters refer to the general analytical telescope pointing model as described by Marc W. Buie (2013)");
+	m_console.WriteLn("in his paper http://www.boulder.swri.edu/~buie/idl/downloads/pointing/pointing.pdf.");
+	m_console.WriteLn("<end><cbr><br>* Pierside: West");
+	printParameterVector(m_pointingModelWest);
+	m_console.WriteLn("<end><cbr><br>* Pierside: East");
+	printParameterVector(m_pointingModelEast);
+}
 
 
 

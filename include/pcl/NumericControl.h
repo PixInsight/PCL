@@ -304,6 +304,7 @@ protected:
    virtual void UpdateControls();
 
    virtual void EditCompleted( Edit& );
+   virtual void KeyPressed( Control&, int, unsigned, bool& );
    virtual void ReturnPressed( Edit& );
    virtual void GetFocus( Control& );
    virtual void LoseFocus( Control& );
@@ -343,6 +344,7 @@ protected:
    virtual void UpdateControls();
 
    virtual void ValueUpdated( Slider&, int );
+   virtual void KeyPressed( Control&, int, unsigned, bool& );
    virtual void GetFocus( Control& );
 };
 

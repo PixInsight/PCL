@@ -64,11 +64,8 @@ static void ShowLogo()
 {
    std::cout
    << "\n-------------------------------------------------------------------------------"
-      "\nPixInsight XISF Utility - "
-   << Version::AsString()
-   << "\nCopyright (c) 2014-"
-   << []{ int year, month, day; double dayf; TimePoint::Now().GetComplexTime( year, month, day, dayf ); return year; }()
-   << " Pleiades Astrophoto. All Rights Reserved"
+      "\nPixInsight XISF Utility - " << Version::AsString()
+   << "\nCopyright (c) 2014-" << TimePoint::Now().Year() << " Pleiades Astrophoto. All Rights Reserved."
       "\n-------------------------------------------------------------------------------"
       "\n";
 }
@@ -88,32 +85,66 @@ static void ShowUsage()
       "\n"
       "\n-h | --header"
       "\n"
-      "\n         Extract XISF headers and write them to XML files. Output files"
-      "\n         will have the same names as the corresponding input files with"
-      "\n         the '-header.xml' suffix."
+      "\n         Extract XISF headers and write them to XML files."
+      "\n         Output suffix = '-header.xml'"
       "\n"
-      "\n-r | --read"
+      "\n-ei | --enumerate-images"
+      "\n"
+      "\n         Enumerate all images stored in the XISF unit."
+      "\n         Output suffix = '-images.txt'"
+      "\n"
+      "\n-ep | --enumerate-properties"
+      "\n"
+      "\n         Enumerate all XISF properties, including global properties and"
+      "\n         image properties for all of the images stored in the XISF unit."
+      "\n         Output suffix = '-properties.txt'"
+      "\n"
+      "\n-rP=<property_id> | --read-property=<property_id>"
+      "\n"
+      "\n         Read a property with identifier <property_id> from the XISF unit"
+      "\n         and generate a Unicode text representation."
+      "\n         Output suffix = '-property-<property_id>.txt'"
+      "\n"
+      "\n-rp=<property_id> | --read-image-property=<property_id>"
+      "\n"
+      "\n         Read a property with identifier <property_id> from the selected"
+      "\n         image and generate a Unicode text representation. See -i for"
+      "\n         image selection."
+      "\n         Output suffix = '-image-property-<property_id>.txt'"
+      "\n"
+      "\n-rk | --read-fits-keywords"
+      "\n"
+      "\n         Read all FITS header keywords for the selected image and output"
+      "\n         an ASCII tabular representation. See -i for image selection."
+      "\n         Output suffix = '-fits-keywords.txt'"
+      "\n"
+      "\n-rs | --read-samples"
       "\n"
       "\n         Read a set of pixel sample rows and output them in CSV format."
-      "\n         See the -y, -n and -c arguments for read coordinates."
-      "\n         Output files will have the same names as the corresponding"
-      "\n         input files with the '-samples.csv' suffix."
+      "\n         See the -i, -y, -n and -c arguments for image selection and"
+      "\n         pixel coordinates."
+      "\n         Output suffix = '-samples.csv'"
+      "\n"
+      "\n-i=<image>"
+      "\n"
+      "\n         <image> is the index of the image to read (-rp -rk -rs) (>= 0)."
       "\n"
       "\n-y=<row>"
       "\n"
-      "\n         <row> is the first pixel row to read (>= 0, 0 by default)."
+      "\n         <row> is the first pixel row to read (-rs) (>= 0)."
       "\n"
       "\n-n=<count>"
       "\n"
-      "\n         <count> is the number of rows to read (>= 1, 1 by default)."
+      "\n         <count> is the number of rows to read (-rs) (>= 1)."
       "\n"
       "\n-c=<channel>"
       "\n"
-      "\n         <channel> is the desired image channel (>= 0, 0 by default)."
+      "\n         <channel> is the desired image channel (-rs) (>= 0)."
       "\n"
       "\n-os | --to-stdout"
       "\n"
-      "\n         Send output to stdout instead of disk files."
+      "\n         Send output to stdout instead of disk files, and suppress"
+      "\n         superfluous informative messages."
       "\n"
       "\n--no-logo"
       "\n"
@@ -126,16 +157,21 @@ static void ShowUsage()
       "\n--help"
       "\n"
       "\n         Shows this help text and exits."
+      "\n"
+      "\n"
+      "\nOutput files will have the same names as their corresponding input files "
+      "\nwith the specified output suffix for each operation."
+      "\n"
       "\n";
 }
 
 // ----------------------------------------------------------------------------
 
-class LogHandler : public XISFLogHandler
+class VerboseLogHandler : public XISFLogHandler
 {
 public:
 
-   LogHandler() = default;
+   VerboseLogHandler() = default;
 
    virtual void Init( const String& filePath, bool writing )
    {
@@ -166,17 +202,48 @@ public:
    }
 };
 
+class SilentLogHandler : public XISFLogHandler
+{
+public:
+
+   SilentLogHandler() = default;
+
+   virtual void Init( const String& filePath, bool writing )
+   {
+   }
+
+   virtual void Log( const String& text, message_type type )
+   {
+      switch ( type )
+      {
+      default:
+      case XISFMessageType::Informative:
+      case XISFMessageType::Note:
+         break;
+      case XISFMessageType::Warning:
+         std::cerr << "** " << text;
+         break;
+      case XISFMessageType::RecoverableError:
+         std::cerr << "*** " << text;
+         break;
+      }
+   }
+
+   virtual void Close()
+   {
+   }
+};
+
 // ----------------------------------------------------------------------------
 
 static void ExtractXISFHeaders( const StringList& files, bool toStdout )
 {
    if ( !toStdout )
-      std::cout << String().Format( "\nExtracting %u XISF header(s):\n\n", files.Length() );
+      std::cout << "\nExtracting " << files.Length() << " XISF header(s):\n\n";
 
    for ( const String& path : files )
    {
-      if ( !toStdout )
-         std::cout << path << '\n';
+      std::cout << path << '\n';
 
       AutoPointer<XMLDocument> xml = XISFReader::ExtractHeader( path );
       xml->EnableAutoFormatting();
@@ -185,6 +252,263 @@ static void ExtractXISFHeaders( const StringList& files, bool toStdout )
          std::cout << xml->Serialize();
       else
          xml->SerializeToFile( File::ChangeExtension( File::AppendToName( path, "-header" ), ".xml" ) );
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+static void EnumerateImages( const StringList& files, bool toStdout )
+{
+   if ( !toStdout )
+      std::cout << "\nEnumerating images for " << files.Length() << " XISF unit(s):\n\n";
+
+   for ( const String& path : files )
+   {
+      std::cout << path << '\n';
+
+      XISFReader xisf;
+      xisf.SetLogHandler( new SilentLogHandler );
+      xisf.Open( path );
+
+      IsoString text;
+
+      for ( int i = 0; i < xisf.NumberOfImages(); ++i )
+      {
+         xisf.SelectImage( i );
+         IsoString s;
+         s << "* Image " << IsoString( i+1 ) << " of " << IsoString( xisf.NumberOfImages() ) << ':';
+         if ( !xisf.ImageId().IsEmpty() )
+            s << " id=" << xisf.ImageId();
+         ImageInfo info = xisf.ImageInfo();
+         ImageOptions options = xisf.ImageOptions();
+         s << ' ' << XISF::SampleFormatId( options.bitsPerSample, options.ieeefpSampleFormat, options.complexSample );
+         s << ' ' << XISF::ColorSpaceId( info.colorSpace );
+         s.AppendFormat( " w=%d h=%d n=%d p=%u\n", info.width, info.height, info.numberOfChannels, xisf.ImageProperties().Length() );
+         std::cout << s;
+         if ( !toStdout )
+            text << s;
+      }
+
+      xisf.Close();
+
+      if ( !toStdout )
+         File::WriteTextFile( File::ChangeExtension( File::AppendToName( path, "-images" ), ".txt" ), text );
+
+      std::cout << '\n';
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+static void EnumerateProperties( const StringList& files, bool toStdout )
+{
+   if ( !toStdout )
+      std::cout << "\nEnumerating properties for " << files.Length() << " XISF unit(s):\n\n";
+
+   for ( const String& path : files )
+   {
+      std::cout << path << '\n';
+
+      XISFReader xisf;
+      xisf.SetLogHandler( new SilentLogHandler );
+      xisf.Open( path );
+
+      IsoString text;
+
+      for ( const PropertyDescription& p : xisf.Properties() )
+      {
+         IsoString s;
+         s << p.id << " (" << XISF::PropertyTypeId( p.type ) << ")\n";
+         std::cout << s;
+         if ( !toStdout )
+            text << s;
+      }
+
+      for ( int i = 0; i < xisf.NumberOfImages(); ++i )
+      {
+         xisf.SelectImage( i );
+         PropertyDescriptionArray properties = xisf.ImageProperties();
+         if ( !properties.IsEmpty() )
+         {
+            IsoString s;
+            s << "* Image " << IsoString( i+1 ) << " of " << IsoString( xisf.NumberOfImages() );
+            if ( !xisf.ImageId().IsEmpty() )
+               s << " id=" << xisf.ImageId();
+            s << '\n';
+            std::cout << s;
+            if ( !toStdout )
+               text << s;
+
+            for ( const PropertyDescription& p : xisf.ImageProperties() )
+            {
+               IsoString s;
+               s << p.id << " (" << XISF::PropertyTypeId( p.type ) << ")\n";
+               std::cout << s;
+               if ( !toStdout )
+                  text << s;
+            }
+         }
+      }
+
+      xisf.Close();
+
+      if ( !toStdout )
+         File::WriteTextFile( File::ChangeExtension( File::AppendToName( path, "-properties" ), ".txt" ), text );
+
+      std::cout << '\n';
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+static void ReadProperty( const StringList& files, const IsoString& propertyId, bool toStdout )
+{
+   if ( !toStdout )
+      std::cout << "\nReading " << propertyId << " property from " << files.Length() << " XISF units(s):\n\n";
+
+   for ( const String& path : files )
+   {
+      std::cout << path << '\n';
+
+      XISFReader xisf;
+      xisf.SetLogHandler( new SilentLogHandler );
+      xisf.Open( path );
+
+      Variant value = xisf.ReadProperty( propertyId );
+      if ( !value.IsValid() )
+      {
+         std::cerr << "* Not found.\n";
+         continue;
+      }
+
+      IsoString text;
+
+      String valueAsString = value.ToString();
+      std::wcout << valueAsString;
+      if ( !toStdout )
+         text << valueAsString.ToUTF8();
+
+      xisf.Close();
+
+      if ( !toStdout )
+         File::WriteTextFile( File::ChangeExtension( File::AppendToName( path, "-property-" + propertyId ), ".txt" ), text );
+
+      std::cout << '\n';
+      if ( !toStdout )
+         std::cout << '\n';
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+static void ReadImageProperty( const StringList& files, int imageIndex, const IsoString& propertyId, bool toStdout )
+{
+   if ( !toStdout )
+      std::cout << "\nReading " << propertyId << " image property from " << files.Length() << " XISF units(s):\n\n";
+
+   for ( const String& path : files )
+   {
+      std::cout << path << '\n';
+
+      XISFReader xisf;
+      xisf.SetLogHandler( new SilentLogHandler );
+      xisf.Open( path );
+
+      if ( xisf.NumberOfImages() < 1 )
+      {
+         std::cerr << "The XSIF unit contains no readable image.\n";
+         continue;
+      }
+
+      if ( xisf.NumberOfImages() <= imageIndex )
+      {
+         std::cerr << "The XSIF unit contains only " << xisf.NumberOfImages() << " images.\n";
+         continue;
+      }
+
+      xisf.SelectImage( imageIndex );
+
+      Variant value = xisf.ReadImageProperty( propertyId );
+      if ( !value.IsValid() )
+      {
+         std::cerr << "*** Not found.\n";
+         continue;
+      }
+
+      IsoString text;
+
+      String valueAsString = value.ToString();
+      std::wcout << valueAsString;
+      if ( !toStdout )
+         text << valueAsString.ToUTF8();
+
+      xisf.Close();
+
+      if ( !toStdout )
+         File::WriteTextFile( File::ChangeExtension( File::AppendToName( path, "-image-property-" + propertyId ), ".txt" ), text );
+
+      std::cout << '\n';
+      if ( !toStdout )
+         std::cout << '\n';
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+static void ReadFITSHeaderKeywords( const StringList& files, int imageIndex, bool toStdout )
+{
+   if ( !toStdout )
+      std::cout << "\nReading FITS header keywords from " << files.Length() << " XISF units(s):\n\n";
+
+   for ( const String& path : files )
+   {
+      std::cout << path << '\n';
+
+      XISFReader xisf;
+      xisf.SetLogHandler( new SilentLogHandler );
+      xisf.Open( path );
+
+      if ( xisf.NumberOfImages() < 1 )
+      {
+         std::cerr << "The XSIF unit contains no readable image.\n";
+         continue;
+      }
+
+      if ( xisf.NumberOfImages() <= imageIndex )
+      {
+         std::cerr << "The XSIF unit contains only " << xisf.NumberOfImages() << " images.\n";
+         continue;
+      }
+
+      xisf.SelectImage( imageIndex );
+
+      FITSKeywordArray keywords = xisf.ReadFITSKeywords();
+
+      xisf.Close();
+
+      size_type maxNameLength = 8;
+      size_type maxValueLength = 0;
+      for ( const FITSHeaderKeyword& keyword : keywords )
+      {
+         if ( keyword.name.Length() > maxNameLength )
+            maxNameLength = keyword.name.Length();
+         if ( keyword.value.Length() > maxValueLength )
+            maxValueLength = keyword.value.Length();
+      }
+
+      IsoString text;
+      for ( const FITSHeaderKeyword& keyword : keywords )
+         text << keyword.name.LeftJustified( maxNameLength+1 )
+              << keyword.value.LeftJustified( maxValueLength+1 )
+              << keyword.comment.Trimmed()
+              << '\n';
+
+      std::cout << text;
+      if ( !toStdout )
+         File::WriteTextFile( File::ChangeExtension( File::AppendToName( path, "-fits-keywords" ), ".txt" ), text );
+
+      if ( !toStdout )
+         std::cout << '\n';
    }
 }
 
@@ -210,10 +534,10 @@ static IsoString ReadSamplesAsCSVText( XISFReader& reader, int firstRow, int row
    return text;
 }
 
-static void ReadPixelSamples( const StringList& files, int firstRow, int rowCount, int channel, bool toStdout )
+static void ReadPixelSamples( const StringList& files, int imageIndex, int firstRow, int rowCount, int channel, bool toStdout )
 {
    if ( !toStdout )
-      std::cout << String().Format( "\nReading %u XISF file(s):\n\n", files.Length() );
+      std::cout << "\nReading pixel samples from " << files.Length() << " XISF units(s):\n\n";
 
    for ( const String& path : files )
    {
@@ -221,16 +545,22 @@ static void ReadPixelSamples( const StringList& files, int firstRow, int rowCoun
          std::cout << path << '\n';
 
       XISFReader xisf;
-      xisf.SetLogHandler( new LogHandler );
+      xisf.SetLogHandler( new VerboseLogHandler );
       xisf.Open( path );
 
       if ( xisf.NumberOfImages() < 1 )
       {
-         std::cerr << "The XSIF file contains no readable images.\n";
+         std::cerr << "The XSIF unit contains no readable image.\n";
          continue;
       }
 
-      //xisf.SelectImage( 0 );
+      if ( xisf.NumberOfImages() <= imageIndex )
+      {
+         std::cerr << "The XSIF unit contains only " << xisf.NumberOfImages() << " images.\n";
+         continue;
+      }
+
+      xisf.SelectImage( imageIndex );
 
       ImageInfo info = xisf.ImageInfo();
 
@@ -247,7 +577,9 @@ static void ReadPixelSamples( const StringList& files, int firstRow, int rowCoun
       }
 
       IsoString csv = ReadSamplesAsCSVText( xisf, firstRow, Range( rowCount, 1, info.height-firstRow ), info.width, channel );
+
       xisf.Close();
+
       if ( toStdout )
          std::cout << csv;
       else
@@ -256,6 +588,18 @@ static void ReadPixelSamples( const StringList& files, int firstRow, int rowCoun
       if ( !toStdout )
          std::cout << '\n';
    }
+}
+
+// ----------------------------------------------------------------------------
+
+static bool IsValidPropertyId( const IsoString& id )
+{
+   IsoStringList tokens;
+   id.Break( tokens, ':' );
+   for ( const IsoString& token : tokens )
+      if ( !token.IsValidIdentifier() )
+         return false;
+   return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -278,8 +622,15 @@ int main( int argc, const char** argv )
                                                  ArgumentOption::RecursiveSearchArgs );
       StringList files;
       bool extractHeaders = false;
+      bool enumerateImages = false;
+      bool enumerateProperties = false;
+      bool readProperty = false;
+      IsoString propertyId;
+      bool readImageProperty = false;
+      IsoString imagePropertyId;
+      bool readFITSKeywords = false;
       bool readSamples = false;
-      int firstRow = 0, rowCount = 1, channel = 0;
+      int imageIndex = 0, firstRow = 0, rowCount = 1, channel = 0;
       bool toStdout = false;
       bool noLogo = false;
 
@@ -287,7 +638,13 @@ int main( int argc, const char** argv )
       {
          if ( arg.IsNumeric() )
          {
-            if ( arg.Id() == "y" )
+            if ( arg.Id() == "i" )
+            {
+               imageIndex = RoundInt( arg.NumericValue() );
+               if ( imageIndex < 0 )
+                  throw Error( "Invalid image index parameter: " + arg.Token() );
+            }
+            else if ( arg.Id() == "y" )
             {
                firstRow = RoundInt( arg.NumericValue() );
                if ( firstRow < 0 )
@@ -310,7 +667,22 @@ int main( int argc, const char** argv )
          }
          else if ( arg.IsString() )
          {
-            throw Error( "Unknown string argument: " + arg.Token() );
+            if ( arg.Id() == "rP" || arg.Id() == "-read-property" )
+            {
+               readProperty = true;
+               propertyId = arg.StringValue();
+               if ( !IsValidPropertyId( propertyId ) )
+                  throw Error( "Invalid XISF property identifier: " + arg.Token() );
+            }
+            else if ( arg.Id() == "rp" || arg.Id() == "-read-image-property" )
+            {
+               readImageProperty = true;
+               imagePropertyId = arg.StringValue();
+               if ( !IsValidPropertyId( imagePropertyId ) )
+                  throw Error( "Invalid XISF property identifier: " + arg.Token() );
+            }
+            else
+               throw Error( "Unknown string argument: " + arg.Token() );
          }
          else if ( arg.IsSwitch() )
          {
@@ -320,7 +692,13 @@ int main( int argc, const char** argv )
          {
             if ( arg.Id() == "h" || arg.Id() == "-header" )
                extractHeaders = true;
-            else if ( arg.Id() == "r" || arg.Id() == "--read" )
+            else if ( arg.Id() == "ei" || arg.Id() == "-enumerate-images" )
+               enumerateImages = true;
+            else if ( arg.Id() == "ep" || arg.Id() == "-enumerate-properties" )
+               enumerateProperties = true;
+            else if ( arg.Id() == "rk" || arg.Id() == "-read-fits-keywords" )
+               readFITSKeywords = true;
+            else if ( arg.Id() == "rs" || arg.Id() == "-read-samples" )
                readSamples = true;
             else if ( arg.Id() == "os" || arg.Id() == "-to-stdout" )
                toStdout = true;
@@ -352,8 +730,23 @@ int main( int argc, const char** argv )
       if ( extractHeaders )
          ExtractXISFHeaders( files, toStdout );
 
+      if ( enumerateImages )
+         EnumerateImages( files, toStdout );
+
+      if ( enumerateProperties )
+         EnumerateProperties( files, toStdout );
+
+      if ( readProperty )
+         ReadProperty( files, propertyId, toStdout );
+
+      if ( readFITSKeywords )
+         ReadFITSHeaderKeywords( files, imageIndex, toStdout );
+
+      if ( readImageProperty )
+         ReadImageProperty( files, imageIndex, imagePropertyId, toStdout );
+
       if ( readSamples )
-         ReadPixelSamples( files, firstRow, rowCount, channel, toStdout );
+         ReadPixelSamples( files, imageIndex, firstRow, rowCount, channel, toStdout );
 
       std::cout << '\n' << std::flush;
 
@@ -365,4 +758,4 @@ int main( int argc, const char** argv )
 }
 
 // ----------------------------------------------------------------------------
-// EOF pcl/xisf.cpp - Released 2017-04-15T23:26:38Z
+// EOF pcl/xisf.cpp - Released 2017-04-16T10:37:44Z

@@ -497,6 +497,11 @@ public:
     * Returns a property identifier 'internalized' with the XISF: prefix.
     */
    static String InternalPropertyId( const String& id );
+
+   /*!
+    * \internal
+    */
+   static void EnsurePTLUTInitialized();
 };
 
 // ----------------------------------------------------------------------------

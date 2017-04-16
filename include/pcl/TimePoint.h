@@ -280,6 +280,46 @@ public:
    }
 
    /*!
+    * Returns the year component of this time point.
+    */
+   int Year() const
+   {
+      int year, foo; double bar;
+      JDToComplexTime( year, foo, foo, bar, m_jdi, m_jdf );
+      return year;
+   }
+
+   /*!
+    * Returns the month component of this time point in the range [1,12].
+    */
+   int Month() const
+   {
+      int foo, month; double bar;
+      JDToComplexTime( foo, month, foo, bar, m_jdi, m_jdf );
+      return month;
+   }
+
+   /*!
+    * Returns the day component of this time point in the range [1,31].
+    */
+   int Day() const
+   {
+      int foo, day; double bar;
+      JDToComplexTime( foo, foo, day, bar, m_jdi, m_jdf );
+      return day;
+   }
+
+   /*!
+    * Returns the day fraction component of this time point in the range [0,1).
+    */
+   double DayFraction() const
+   {
+      int foobar; double dayf;
+      JDToComplexTime( foobar, foobar, foobar, dayf, m_jdi, m_jdf );
+      return dayf;
+   }
+
+   /*!
     * Returns an ISO 8601 extended date/time representation of this time point
     * as a UTF-16 string.
     *

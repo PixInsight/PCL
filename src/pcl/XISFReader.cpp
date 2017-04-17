@@ -755,7 +755,7 @@ public:
                         {
                            try
                            {
-                              GetProperty( data.properties, childElement );
+                              GetProperty( data.properties, childElement, false/*isInternal*/ );
                            }
                            RECOVERABLE_ERROR_HANDLER()
                         }
@@ -910,7 +910,8 @@ public:
                {
                   /*
                    * The Metadata element contains a sequence of property child
-                   * elements.
+                   * elements. All of these properties are internal, i.e. they
+                   * are in the XISF namespace.
                    */
                   for ( const XMLNode& childNode : element )
                   {
@@ -1679,15 +1680,20 @@ private:
    /*
     * Deserialize an XISF property.
     */
-   void GetProperty( XISFInputPropertyBlockArray& properties, const XMLElement& element, bool isInternal = false )
+   void GetProperty( XISFInputPropertyBlockArray& properties, const XMLElement& element, bool isInternal )
    {
       XISFInputPropertyBlock property;
 
       property.id = element.AttributeValue( "id" );
       if ( property.id.IsEmpty() )
          HeaderError( element, "Missing property id attribute." );
-      if ( isInternal )
-         property.id = XISF::InternalPropertyId( property.id );
+      if ( !XISF::IsValidPropertyId( property.id ) )
+         HeaderError( element, "Invalid XISF property identifier '" + property.id + "'" );
+      if ( XISF::IsInternalPropertyId( property.id ) != isInternal )
+         if ( isInternal )
+            HeaderError( element, "Expected a reserved property in the 'XISF:' namespace: '" + property.id + "'" );
+         else
+            HeaderError( element, "Use of the 'XISF:' reserved namespace is forbidden here: '" + property.id + "'" );
 
       String type = element.AttributeValue( "type" );
       if ( type.IsEmpty() )

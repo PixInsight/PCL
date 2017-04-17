@@ -56,11 +56,6 @@
 #include <pcl/PixelTraits.h> // PTLUT
 #include <pcl/XISF.h>
 
-/*
- * Prefix for identifiers of reserved XISF properties.
- */
-#define XISF_INTERNAL_PREFIX "XISF:"
-
 namespace pcl
 {
 
@@ -584,22 +579,6 @@ CryptographicHash* XISF::NewCryptographicHash( XISF::block_checksum algorithm )
       throw Error( "XISF::NewCryptographicHash(): "
          + String().Format( "Internal error: Invalid cryptographic hashing algorithm 0x%02x", algorithm ) );
    }
-}
-
-// ----------------------------------------------------------------------------
-
-bool XISF::IsInternalPropertyId( const String& id )
-{
-   return id.StartsWith( XISF_INTERNAL_PREFIX );
-}
-
-// ----------------------------------------------------------------------------
-
-String XISF::InternalPropertyId( const String& id )
-{
-   if ( !IsInternalPropertyId( id ) )
-      return XISF_INTERNAL_PREFIX + id;
-   return id;
 }
 
 // ----------------------------------------------------------------------------

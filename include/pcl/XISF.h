@@ -76,14 +76,27 @@ namespace pcl
 /*!
  * \defgroup xisf_support XISF Support Classes
  *
- * This group of classes and utility functions can be used to implement %XISF
- * support in external applications. They don't require a running PixInsight
- * core application and don't have dependencies outside the standard PCL
- * distribution.
+ * This group of classes can be used to implement %XISF support in PixInsight
+ * modules as well as in external applications. They don't require a running
+ * PixInsight core application and don't have dependencies outside the standard
+ * PCL distribution on all supported platforms.
+ *
+ * All publicly declared classes in this group are thread-safe: they can be
+ * instantiated and their member functions can be called from different threads
+ * running concurrently.
  *
  * For introductory usage examples, see the utility command-line applications
  * included in the PCL distribution. For an advanced example, see the source
  * code of the %XISF format support PixInsight module.
+ *
+ * The latest %XISF specification document is available at:
+ *
+ * http://pixinsight.com/doc/docs/XISF-1.0-spec/XISF-1.0-spec.html
+ *
+ * For general information on %XISF, including the latest news on the format
+ * and its development:
+ *
+ * http://pixinsight.com/xisf/
  */
 
 // ----------------------------------------------------------------------------
@@ -98,7 +111,7 @@ class PCL_CLASS CryptographicHash;
 
 /*!
  * \namespace pcl::XISFChecksum
- * \brief XISF block checksum algorithms
+ * \brief %XISF block checksum algorithms
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>XISFChecksum::Unknown</td> <td>Unknown or unsupported checksum algorithm.</td></tr>
@@ -127,7 +140,7 @@ namespace XISFChecksum
 
 /*!
  * \namespace pcl::XISFCompression
- * \brief XISF block compression codecs
+ * \brief %XISF block compression codecs
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>XISFCompression::Unknown</td>  <td>Unknown or unsupported block compression algorithm.</td></tr>
@@ -162,7 +175,7 @@ namespace XISFCompression
 
 /*!
  * \namespace pcl::XISFByteOrder
- * \brief XISF block byte order
+ * \brief %XISF block byte order
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>XISFByteOrder::LittleEndian</td> <td>Little-endian byte order.</td></tr>
@@ -340,6 +353,11 @@ public:
    constexpr static bool DefaultWarningsAreErrors = false;
 
    /*!
+    * The namespace prefix of all %XISF reserved properties.
+    */
+   constexpr static const char* InternalNamespacePrefix = "XISF:";
+
+   /*!
     * Returns the identifier of a pixel sample data type. Used as %XML element
     * attribute values in %XISF headers.
     *
@@ -484,6 +502,40 @@ public:
    static CryptographicHash* NewCryptographicHash( block_checksum algorithm );
 
    /*!
+    * Returns true iff the specified string \a id is a valid XISF property
+    * identifier.
+    *
+    * A valid XISF property specifier is a sequence:
+    *
+    * <tt>t1[:t2[:...:tn]]</tt>
+    *
+    * where each \a ti satisfies the following conditions:
+    *
+    * \li It is not an empty string.
+    *
+    * \li Its first character is either an alphabetic character or an
+    * underscore character.
+    *
+    * \li Its second and successive characters, if they exist, are all of them
+    * either alphabetic characters, decimal digits, or underscores.
+    */
+   template <class S>
+   static bool IsValidPropertyId( const S& id )
+   {
+      Array<S> tokens;
+      id.Break( tokens, ':' );
+      for ( const S& token : tokens )
+         if ( !token.IsValidIdentifier() )
+            return false;
+      return true;
+   }
+
+   static bool IsValidPropertyId( const char* id )
+   {
+      return IsValidPropertyId( IsoString( id ) );
+   }
+
+   /*!
     * Returns true iff the specified string \a id is the identifier of a
     * reserved %XISF property.
     *
@@ -491,15 +543,43 @@ public:
     * reserved by the %XISF format and cannot be defined by external client
     * applications.
     */
-   static bool IsInternalPropertyId( const String& id );
+   template <class S>
+   static bool IsInternalPropertyId( const S& id )
+   {
+      return id.StartsWith( InternalNamespacePrefix );
+   }
+
+   static bool IsInternalPropertyId( const char* id )
+   {
+      return IsInternalPropertyId( IsoString( id ) );
+   }
 
    /*!
     * Returns a property identifier 'internalized' with the XISF: prefix.
     */
-   static String InternalPropertyId( const String& id );
+   template <class S>
+   static S InternalPropertyId( const S& id )
+   {
+      if ( !IsInternalPropertyId( id ) )
+         return InternalNamespacePrefix + id;
+      return id;
+   }
+
+   static IsoString InternalPropertyId( const char* id )
+   {
+      return InternalPropertyId( IsoString( id ) );
+   }
 
    /*!
-    * \internal
+    * Ensures that the internal pixel traits lookup tables have been properly
+    * allocated and initialized. This is a thread-safe function used internally
+    * by the XISFReader and XISFWriter classes to accelerate conversions among
+    * all supported pixel sample data types. This allows external applications
+    * to perform image I/O operations without a running PixInsight core
+    * application.
+    *
+    * \note This is an internal routine. You normally should not need to call
+    * it, unless you are hacking the current %XISF implementation.
     */
    static void EnsurePTLUTInitialized();
 };
@@ -509,6 +589,13 @@ public:
 /*!
  * \class XISFOptions
  * \brief %XISF-specific file options
+ *
+ * This structure stores a collection of settings and options that control the
+ * way %XISF units are loaded and generated by this implementation.
+ *
+ * %XISFOptions, along with ImageOptions, allow client modules and applications
+ * to manipulate properties and images serialized in %XISF units with a high
+ * degree of flexibility, tailoring them to the needs of each application.
  *
  * \ingroup xisf_support
  */
@@ -578,19 +665,18 @@ public:
 // ----------------------------------------------------------------------------
 
 /*!
- * \internal
  * \struct XISFFileSignature
- * \brief XISF monolithic file signature
+ * \brief %XISF monolithic file signature
  *
- * All XISF version 1.0 monolithic files begin with the following sequence:
+ * All %XISF version 1.0 monolithic files begin with the following sequence:
  *
  * XISF0100&lt;header-length&gt;&lt;reserved&gt;
  *
  * where 'XISF0100' is the 'magic marker' identifying the format, and
  * &lt;header-length&gt; is the size in bytes of the XML file header encoded as
  * a 32-bit unsigned integer with little-endian byte order. &lt;reserved&gt; is
- * a 32-bit unsigned integer reserved for future use; it must be zero. After
- * the file signature sequence comes the XML header and all attached blocks.
+ * a 32-bit integer reserved for future use; it must be zero. After the file
+ * signature sequence comes the %XML header and all attached blocks.
  *
  * \ingroup xisf_support
  */
@@ -635,7 +721,7 @@ struct PCL_CLASS XISFFileSignature
 
 /*!
  * \namespace pcl::XISFMessageType
- * \brief XISF log message types
+ * \brief %XISF log message types
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>XISFMessageType::Informative</td>      <td>A regular informative message.</td></tr>
@@ -666,7 +752,7 @@ namespace XISFMessageType
  *
  * %XISFLogHandler is a simple handler object which logs messages generated
  * by the XISFReader and XISFWriter classes during %XISF file transactions.
- * These messages can be informative, warning and recoverable error messages.
+ * These messages can be informative, warnings, and recoverable error messages.
  *
  * Note that unrecoverable errors are not logged and hence not sent to this
  * class (or derived); they are always thrown as Exception instances, which the
@@ -756,6 +842,11 @@ public:
 /*!
  * \class XISFReader
  * \brief %XISF input file stream
+ *
+ * %XISFReader allows you to read properties, images and metadata serialized in
+ * monolithic %XISF units stored as local files. This class can be used without
+ * a running PixInsight core application to implement %XISF support in external
+ * applications.
  *
  * \ingroup xisf_support
  * \sa XISFWriter
@@ -1110,6 +1201,11 @@ private:
 /*!
  * \class XISFWriter
  * \brief %XISF output file stream
+ *
+ * %XISFWriter allows you to write properties, images and metadata serialized
+ * in monolithic %XISF units stored as local files. This class can be used
+ * without a running PixInsight core application to implement %XISF support in
+ * external applications.
  *
  * \ingroup xisf_support
  * \sa XISFReader

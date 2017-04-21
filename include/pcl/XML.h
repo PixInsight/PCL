@@ -2455,10 +2455,33 @@ public:
     * Returns a pointer to the (immutable) root element of this %XML document.
     * If there is no root element, for example when this is an uninitialized
     * %XMLDocument instance, this function returns \c nullptr.
+    *
+    * \sa ReleaseRootElement(), SetRootElement()
     */
    const XMLElement* RootElement() const
    {
       return m_root;
+   }
+
+   /*!
+    * Releases the root element of this %XML document.
+    *
+    * This function returns the root element and causes this object to forget
+    * it. The caller will be responsible for destroying and deallocating the
+    * returned XMLElement instance as appropriate. This function performs an
+    * implicit call to Clear(), so the document will be empty after calling it.
+    *
+    * If there is no root element, for example when this is an uninitialized
+    * %XMLDocument instance, this function returns \c nullptr.
+    *
+    * \sa RootElement(), SetRootElement()
+    */
+   XMLElement* ReleaseRootElement()
+   {
+      XMLElement* root = m_root;
+      m_root = nullptr;
+      Clear();
+      return root;
    }
 
    /*!
@@ -2562,6 +2585,8 @@ public:
     * The specified \a element will be appended to the current list of document
     * nodes. The \a element will be owned by this document object, which will
     * destroy and deallocate it automatically when appropriate.
+    *
+    * \sa RootElement(), ReleaseRootElement()
     */
    void SetRootElement( XMLElement* element );
 

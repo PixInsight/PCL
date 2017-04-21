@@ -2479,7 +2479,7 @@ public:
    XMLElement* ReleaseRootElement()
    {
       XMLElement* root = m_root;
-      m_root = nullptr;
+      m_nodes.RemovePointer( m_root );
       Clear();
       return root;
    }

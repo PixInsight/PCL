@@ -2574,33 +2574,6 @@ private:
       m_commentKeywordCount = 0;
    }
 
-   static String XMLNodePositionInfo( const XMLNode& node )
-   {
-      int line = node.Location().line;
-      int column = node.Location().column;
-      String rowInfo;
-      if ( line > 0 )
-         rowInfo.Format( "row=%d", line+1 );
-      String offsetInfo;
-      if ( column > 0 || column == 0 && line > 0 )
-         offsetInfo.Format( "offset=%d", column );
-      String info;
-      if ( !rowInfo.IsEmpty() || !offsetInfo.IsEmpty() )
-      {
-         info += '(';
-         if ( !rowInfo.IsEmpty() )
-            info += rowInfo;
-         if ( !offsetInfo.IsEmpty() )
-         {
-            if ( !rowInfo.IsEmpty() )
-               info += ' ';
-            info += offsetInfo;
-         }
-         info += ')';
-      }
-      return info;
-   }
-
    /*
     * Log a new warning message during the XML header deserialization phase.
     */
@@ -2608,10 +2581,7 @@ private:
    {
       if ( m_xisfOptions.noWarnings )
          return;
-      String posInfo = XMLNodePositionInfo( node );
-      String warning = text;
-      if ( !posInfo.IsEmpty() )
-         warning += ' ' + posInfo;
+      String warning = text + node.Location().ToString();
       if ( m_xisfOptions.warningsAreErrors )
          throw Error( warning );
       LogLn( warning, XISFMessageType::Warning );
@@ -2622,11 +2592,7 @@ private:
     */
    void HeaderError( const XMLNode& node, const String& text )
    {
-      String posInfo = XMLNodePositionInfo( node );
-      String error = text;
-      if ( !posInfo.IsEmpty() )
-         error += ' ' + posInfo;
-      throw pcl::Error( error );
+      throw pcl::Error( text + node.Location().ToString() );
    }
 
    /*

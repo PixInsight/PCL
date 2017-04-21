@@ -49,7 +49,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include <pcl/Exception.h>
 #include <pcl/File.h>
 #include <pcl/XML.h>
 
@@ -422,6 +421,35 @@ void XMLAttributeList::Serialize( IsoString& text ) const
 bool XMLNode::NLAfter( const XMLNode& node ) const
 {
    return node.NodeType() != XMLNodeType::Text || !dynamic_cast<const XMLText&>( node ).IsPreserveSpaces();
+}
+
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+String XMLNodeLocation::ToString() const
+{
+   String lineToken;
+   if ( line >= 0 )
+      lineToken.Format( "line=%d", line+1 );
+   String offsetToken;
+   if ( column >= 0 )
+      offsetToken.Format( "offset=%d", column );
+   String text;
+   if ( !lineToken.IsEmpty() || !offsetToken.IsEmpty() )
+   {
+      text << " (";
+      if ( !lineToken.IsEmpty() )
+         text << lineToken;
+      if ( !offsetToken.IsEmpty() )
+      {
+         if ( !lineToken.IsEmpty() )
+            text << ' ';
+         text << offsetToken;
+      }
+      text << ')';
+   }
+   return text;
 }
 
 // ----------------------------------------------------------------------------
@@ -1007,7 +1035,7 @@ void XMLDocument::Parse( const String& text )
    }
    catch ( const Exception& x )
    {
-      throw Error( String().Format( "Parsing XML document (line=%d col=%d): ", m_location.line+1, m_location.column+1 ) + x.Message() );
+      throw XMLParseError( m_location, "Parsing XML document", x.Message() );
    }
 }
 

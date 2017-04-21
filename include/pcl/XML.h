@@ -551,11 +551,21 @@ public:
    }
 
    /*!
-    * Returns true iff this node is an %XML element.
+    * Returns true iff this node is an %XML element. If this member function
+    * returns true, this node can be statically casted to XMLElement.
     */
    bool IsElement() const
    {
       return NodeType() == XMLNodeType::Element;
+   }
+
+   /*!
+    * Returns true iff this node represents an %XML text block. If this member
+    * function returns true, this node can be statically casted to XMLText.
+    */
+   bool IsText() const
+   {
+      return NodeType() == XMLNodeType::Text;
    }
 
    /*!
@@ -1502,14 +1512,43 @@ public:
    /*!
     * \internal
     */
-   void GetChildElementsByName_Recursive( XMLNodeList& list, const String& name ) const
+   void GetChildElements( XMLNodeList& list, bool recursive ) const
+   {
+      for ( const XMLNode& node : m_childNodes )
+         if ( node.IsElement() )
+         {
+            list << &node;
+            if ( recursive )
+               static_cast<const XMLElement&>( node ).GetChildElements( list, recursive );
+         }
+   }
+
+   /*!
+    * Returns a list with all child elements of this element.
+    *
+    * if \a recursive is \c true, this member function performs a recursive
+    * search across the entire tree structure rooted at this element. Otherwise
+    * only the direct descendant elements will be returned.
+    */
+   XMLNodeList ChildElements( bool recursive = false ) const
+   {
+      XMLNodeList list;
+      GetChildElements( list, recursive );
+      return list;
+   }
+
+   /*!
+    * \internal
+    */
+   void GetChildElementsByName( XMLNodeList& list, const String& name, bool recursive ) const
    {
       for ( const XMLNode& node : m_childNodes )
          if ( node.IsElement() )
             if ( static_cast<const XMLElement&>( node ).Name() == name )
             {
                list << &node;
-               static_cast<const XMLElement&>( node ).GetChildElementsByName_Recursive( list, name );
+               if ( recursive )
+                  static_cast<const XMLElement&>( node ).GetChildElementsByName( list, name, recursive );
             }
    }
 
@@ -1517,27 +1556,29 @@ public:
     * Returns a list with all child elements of this element with the specified
     * \a name.
     *
-    * This member function performs a recursive search across the entire tree
-    * structure rooted at this element.
+    * if \a recursive is \c true, this member function performs a recursive
+    * search across the entire tree structure rooted at this element. Otherwise
+    * only the direct descendant elements will be returned.
     */
-   XMLNodeList ChildElementsByName( const String& name ) const
+   XMLNodeList ChildElementsByName( const String& name, bool recursive = false ) const
    {
       XMLNodeList list;
-      GetChildElementsByName_Recursive( list, name );
+      GetChildElementsByName( list, name, recursive );
       return list;
    }
 
    /*!
     * \internal
     */
-   void GetChildNodesByType_Recursive( XMLNodeList& list, XMLNodeTypes types ) const
+   void GetChildNodesByType( XMLNodeList& list, XMLNodeTypes types, bool recursive ) const
    {
       for ( const XMLNode& node : m_childNodes )
          if ( types.IsFlagSet( node.NodeType() ) )
          {
             list << &node;
-            if ( node.IsElement() )
-               static_cast<const XMLElement&>( node ).GetChildNodesByType_Recursive( list, types );
+            if ( recursive )
+               if ( node.IsElement() )
+                  static_cast<const XMLElement&>( node ).GetChildNodesByType( list, types, recursive );
          }
    }
 
@@ -1546,13 +1587,14 @@ public:
     * \a types. The \a types argument can be an ORed combination of XMLNodeType
     * enumerated mask values.
     *
-    * This member function performs a recursive search across the entire tree
-    * structure rooted at this element.
+    * if \a recursive is \c true, this member function performs a recursive
+    * search across the entire tree structure rooted at this element. Otherwise
+    * only the direct descendant nodes will be returned.
     */
-   XMLNodeList ChildNodesByType( XMLNodeTypes types ) const
+   XMLNodeList ChildNodesByType( XMLNodeTypes types, bool recursive = false ) const
    {
       XMLNodeList list;
-      GetChildNodesByType_Recursive( list, types );
+      GetChildNodesByType( list, types, recursive );
       return list;
    }
 
@@ -1560,14 +1602,15 @@ public:
     * \internal
     */
    template <class UP>
-   void ChildNodesThat_Recursive( XMLNodeList& list, UP u ) const
+   void GetChildNodesThat( XMLNodeList& list, UP u, bool recursive ) const
    {
       for ( const XMLNode& node : m_childNodes )
          if ( u( node ) )
          {
             list << &node;
-            if ( node.IsElement() )
-               static_cast<const XMLElement&>( node ).ChildNodesThat_Recursive( list, u );
+            if ( recursive )
+               if ( node.IsElement() )
+                  static_cast<const XMLElement&>( node ).GetChildNodesThat( list, u, recursive );
          }
    }
 
@@ -1578,14 +1621,15 @@ public:
     * For each child node n in this element, n will be included in the returned
     * list iff u( n ) returns true.
     *
-    * This member function performs a recursive search across the entire tree
-    * structure rooted at this element.
+    * if \a recursive is \c true, this member function performs a recursive
+    * search across the entire tree structure rooted at this element. Otherwise
+    * only the direct descendant nodes will be returned.
     */
    template <class UP>
-   XMLNodeList ChildNodesThat( UP u ) const
+   XMLNodeList ChildNodesThat( UP u, bool recursive = false ) const
    {
       XMLNodeList list;
-      ChildNodesThat_Recursive( list, u );
+      GetChildNodesThat( list, u, recursive );
       return list;
    }
 

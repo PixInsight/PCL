@@ -1127,11 +1127,16 @@ public:
    typedef XMLNodeList::const_iterator    const_iterator;
 
    /*!
+    * A list of child %XML elements. Implemented as a template instantiation of
+    * ReferenceArray<> for the XMLElement class.
+    */
+   typedef ReferenceArray<XMLElement>     child_element_list;
+
+   /*!
     * Default constructor. Constructs an uninitialized %XMLElement structure.
     */
    XMLElement() :
-      XMLNode( XMLNodeType::Element ),
-      m_childTypes( XMLNodeType::Undefined )
+      XMLNode( XMLNodeType::Element )
    {
    }
 
@@ -1142,9 +1147,21 @@ public:
    XMLElement( const String& name, const XMLAttributeList& attributes = XMLAttributeList() ) :
       XMLNode( XMLNodeType::Element ),
       m_name( name ),
-      m_attributes( attributes ),
-      m_childTypes( XMLNodeType::Undefined )
+      m_attributes( attributes )
    {
+   }
+
+   /*!
+    * Constructs an empty %XMLElement object with the specified qualified
+    * \a name and \a attributes, as a child node of the specified \a parent
+    * element.
+    */
+   XMLElement( XMLElement& parent, const String& name, const XMLAttributeList& attributes = XMLAttributeList() ) :
+      XMLNode( XMLNodeType::Element ),
+      m_name( name ),
+      m_attributes( attributes )
+   {
+      parent.AddChildNode( this );
    }
 
    /*!
@@ -1512,14 +1529,15 @@ public:
    /*!
     * \internal
     */
-   void GetChildElements( XMLNodeList& list, bool recursive ) const
+   void GetChildElements( child_element_list& list, bool recursive ) const
    {
       for ( const XMLNode& node : m_childNodes )
          if ( node.IsElement() )
          {
-            list << &node;
+            const XMLElement& element = static_cast<const XMLElement&>( node );
+            list << &element;
             if ( recursive )
-               static_cast<const XMLElement&>( node ).GetChildElements( list, recursive );
+               element.GetChildElements( list, recursive );
          }
    }
 
@@ -1530,9 +1548,9 @@ public:
     * search across the entire tree structure rooted at this element. Otherwise
     * only the direct descendant elements will be returned.
     */
-   XMLNodeList ChildElements( bool recursive = false ) const
+   child_element_list ChildElements( bool recursive = false ) const
    {
-      XMLNodeList list;
+      child_element_list list;
       GetChildElements( list, recursive );
       return list;
    }
@@ -1540,16 +1558,19 @@ public:
    /*!
     * \internal
     */
-   void GetChildElementsByName( XMLNodeList& list, const String& name, bool recursive ) const
+   void GetChildElementsByName( child_element_list& list, const String& name, bool recursive ) const
    {
       for ( const XMLNode& node : m_childNodes )
          if ( node.IsElement() )
-            if ( static_cast<const XMLElement&>( node ).Name() == name )
+         {
+            const XMLElement& element = static_cast<const XMLElement&>( node );
+            if ( element.Name() == name )
             {
-               list << &node;
+               list << &element;
                if ( recursive )
-                  static_cast<const XMLElement&>( node ).GetChildElementsByName( list, name, recursive );
+                  element.GetChildElementsByName( list, name, recursive );
             }
+         }
    }
 
    /*!
@@ -1560,9 +1581,9 @@ public:
     * search across the entire tree structure rooted at this element. Otherwise
     * only the direct descendant elements will be returned.
     */
-   XMLNodeList ChildElementsByName( const String& name, bool recursive = false ) const
+   child_element_list ChildElementsByName( const String& name, bool recursive = false ) const
    {
-      XMLNodeList list;
+      child_element_list list;
       GetChildElementsByName( list, name, recursive );
       return list;
    }
@@ -1695,8 +1716,22 @@ private:
    String           m_name;
    XMLAttributeList m_attributes;
    XMLNodeList      m_childNodes;
-   XMLNodeTypes     m_childTypes;
+   XMLNodeTypes     m_childTypes = XMLNodeType::Undefined;
 };
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \class pcl::XMLElementList
+ * \brief Dynamic list of %XML elements
+ *
+ * %XMLElementList is a template instantiation of ReferenceArray<> for the
+ * XMLElement class. It is used to transport ordered sequences of child element
+ * nodes. See for example XMLElement::ChildElements().
+ *
+ * \ingroup xml_parsing_and_generation
+ */
+typedef XMLElement::child_element_list XMLElementList;
 
 // ----------------------------------------------------------------------------
 

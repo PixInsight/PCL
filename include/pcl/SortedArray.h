@@ -1007,8 +1007,8 @@ SortedArray<T,A>& operator <<( SortedArray<T,A>& x, const V& v )
 }
 
 /*!
- * Adds an object \a v to a sorted array \a x. Returns a reference to the
- * sorted array.
+ * Adds an object \a v to a temporary sorted array \a x. Returns a reference to
+ * the sorted array.
  *
  * The template argument type T must have conversion semantics from the type V,
  * such as T::T( const V& ) or equivalent.
@@ -1034,8 +1034,8 @@ SortedArray<T,A>& operator <<( SortedArray<T,A>& x1, const SortedArray<T,A>& x2 
 }
 
 /*!
- * Adds a sorted array \a x2 to a sorted array \a x1. Returns a reference to
- * the left-hand sorted array \a x1.
+ * Adds a sorted array \a x2 to a temporary sorted array \a x1. Returns a
+ * reference to the left-hand sorted array \a x1.
  * \ingroup array_insertion_operators
  */
 template <class T, class A> inline
@@ -1058,8 +1058,8 @@ SortedArray<T,A>& operator <<( SortedArray<T,A>& x1, const Array<T,A>& x2 )
 }
 
 /*!
- * Adds an array \a x2 to a sorted array \a x1. Returns a reference to the
- * left-hand sorted array \a x1.
+ * Adds an array \a x2 to a temporary sorted array \a x1. Returns a reference
+ * to the left-hand sorted array \a x1.
  * \ingroup array_insertion_operators
  */
 template <class T, class A> inline

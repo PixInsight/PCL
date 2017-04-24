@@ -2106,8 +2106,8 @@ Array<T,A>& operator <<( Array<T,A>& x1, const Array<T,A>& x2 )
 }
 
 /*!
- * Appends an array \a x2 to an array \a x1. Returns a reference to the
- * left-hand array \a x1.
+ * Appends an array \a x2 to a temporary array \a x1. Returns a reference to
+ * the left-hand array \a x1.
  * \ingroup array_insertion_operators
  */
 template <class T, class A> inline

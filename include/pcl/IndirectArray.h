@@ -1956,27 +1956,55 @@ bool operator <( const IndirectArray<T,A>& x1, const IndirectArray<T,A>& x2 )
 }
 
 /*!
- * Appends a pointer or indirect array \a y to an indirect array \a x. Returns
- * a reference to the left-hand indirect array.
+ * Appends a pointer \a p to an indirect array \a x. Returns a reference to the
+ * left-hand indirect array.
+ *
+ * A pointer to the template argument type V must be statically castable to T*.
  * \ingroup array_insertion_operators
  */
-template <class T, class A, class Y> inline
-IndirectArray<T,A>& operator <<( IndirectArray<T,A>& x, Y y )
+template <class T, class A, class V> inline
+IndirectArray<T,A>& operator <<( IndirectArray<T,A>& x, const V* p )
 {
-   x.Append( y );
+   x.Append( static_cast<const T*>( p ) );
    return x;
 }
 
 /*!
- * Appends a pointer or indirect array \a y to an indirect array \a x. Returns
- * a reference to the left-hand indirect array.
+ * Appends a pointer \a p to a temporary indirect array \a x. Returns a
+ * reference to the left-hand indirect array.
+ *
+ * A pointer to the template argument type V must be statically castable to T*.
  * \ingroup array_insertion_operators
  */
-template <class T, class A, class Y> inline
-IndirectArray<T,A>& operator <<( IndirectArray<T,A>&& x, Y y )
+template <class T, class A, class V> inline
+IndirectArray<T,A>& operator <<( IndirectArray<T,A>&& x, const V* p )
 {
-   x.Append( y );
+   x.Append( static_cast<const T*>( p ) );
    return x;
+}
+
+/*!
+ * Appends an indirect array \a x2 to an indirect array \a x1. Returns a
+ * reference to the left-hand indirect array.
+ * \ingroup array_insertion_operators
+ */
+template <class T, class A> inline
+IndirectArray<T,A>& operator <<( IndirectArray<T,A>& x1, const IndirectArray<T,A>& x2 )
+{
+   x1.Append( x2 );
+   return x1;
+}
+
+/*!
+ * Appends an indirect array \a y to a temporary indirect array \a x. Returns a
+ * reference to the left-hand indirect array.
+ * \ingroup array_insertion_operators
+ */
+template <class T, class A> inline
+IndirectArray<T,A>& operator <<( IndirectArray<T,A>&& x1, const IndirectArray<T,A>& x2 )
+{
+   x1.Append( x2 );
+   return x1;
 }
 
 // ----------------------------------------------------------------------------

@@ -1458,27 +1458,79 @@ private:
 // ----------------------------------------------------------------------------
 
 /*!
- * Adds a pointer, reference array or indirect array \a y to a reference sorted
- * array \a x. Returns a reference to the left-hand reference sorted array.
+ * Adds a non-null pointer \a p to a reference sorted array \a x. Returns a
+ * reference to the left-hand reference sorted array.
+ *
+ * A pointer to the template argument type V must be statically castable to T*.
  * \ingroup array_insertion_operators
  */
-template <class T, class A, class Y> inline
-ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>& x, Y y )
+template <class T, class A, class V> inline
+ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>& x, const V* p )
 {
-   x.Add( y );
+   x.Add( static_cast<const T*>( p ) );
    return x;
 }
 
 /*!
- * Adds a pointer, reference array or indirect array \a y to a reference sorted
- * array \a x. Returns a reference to the left-hand reference sorted array.
+ * Adds a non-null pointer \a p to a temporary reference sorted array \a x.
+ * Returns a reference to the left-hand reference sorted array.
+ *
+ * A pointer to the template argument type V must be statically castable to T*.
  * \ingroup array_insertion_operators
  */
-template <class T, class A, class Y> inline
-ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>&& x, Y y )
+template <class T, class A, class V> inline
+ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>&& x, const V* p )
 {
-   x.Add( y );
+   x.Add( static_cast<const T*>( p ) );
    return x;
+}
+
+/*!
+ * Adds a reference sorted array \a x2 to a reference sorted array \a x1.
+ * Returns a reference to the left-hand reference sorted array.
+ * \ingroup array_insertion_operators
+ */
+template <class T, class A> inline
+ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>& x1, const ReferenceSortedArray<T,A>& x2 )
+{
+   x1.Add( x2 );
+   return x1;
+}
+
+/*!
+ * Adds a reference sorted array \a x2 to a temporary reference sorted array
+ * \a x1. Returns a reference to the left-hand reference sorted array.
+ * \ingroup array_insertion_operators
+ */
+template <class T, class A> inline
+ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>&& x1, const ReferenceSortedArray<T,A>& x2 )
+{
+   x1.Add( x2 );
+   return x1;
+}
+
+/*!
+ * Adds a reference array \a x2 to a reference sorted array \a x1. Returns a
+ * reference to the left-hand reference sorted array.
+ * \ingroup array_insertion_operators
+ */
+template <class T, class A> inline
+ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>& x1, const ReferenceArray<T,A>& x2 )
+{
+   x1.Add( x2 );
+   return x1;
+}
+
+/*!
+ * Adds a reference array \a x2 to a temporary reference sorted array \a x1.
+ * Returns a reference to the left-hand reference sorted array.
+ * \ingroup array_insertion_operators
+ */
+template <class T, class A> inline
+ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>&& x1, const ReferenceArray<T,A>& x2 )
+{
+   x1.Add( x2 );
+   return x1;
 }
 
 // ----------------------------------------------------------------------------

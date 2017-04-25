@@ -60,23 +60,20 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-DynamicPSFInstance::DynamicPSFInstance( const MetaProcess* P ) : ProcessImplementation( P ),
-views(),
-stars(),
-psfs(),
-signedAngles( TheDPSignedAnglesParameter->DefaultValue() ),
-regenerate( TheDPRegenerateParameter->DefaultValue() ),
-searchRadius( TheDPSearchRadiusParameter->DefaultValue() ),
-threshold( TheDPThresholdParameter->DefaultValue() ),
-autoAperture( TheDPAutoApertureParameter->DefaultValue() ),
-scaleMode( DPScaleMode::Default ),
-scaleValue( TheDPScaleValueParameter->DefaultValue() ),
-scaleKeyword(),
-starColor( TheDPStarColorParameter->DefaultValue() ),
-selectedStarColor( TheDPSelectedStarColorParameter->DefaultValue() ),
-selectedStarFillColor( TheDPSelectedStarFillColorParameter->DefaultValue() ),
-badStarColor( TheDPBadStarColorParameter->DefaultValue() ),
-badStarFillColor( TheDPBadStarFillColorParameter->DefaultValue() )
+DynamicPSFInstance::DynamicPSFInstance( const MetaProcess* P ) :
+   ProcessImplementation( P ),
+   signedAngles( TheDPSignedAnglesParameter->DefaultValue() ),
+   regenerate( TheDPRegenerateParameter->DefaultValue() ),
+   searchRadius( TheDPSearchRadiusParameter->DefaultValue() ),
+   threshold( TheDPThresholdParameter->DefaultValue() ),
+   autoAperture( TheDPAutoApertureParameter->DefaultValue() ),
+   scaleMode( DPScaleMode::Default ),
+   scaleValue( TheDPScaleValueParameter->DefaultValue() ),
+   starColor( TheDPStarColorParameter->DefaultValue() ),
+   selectedStarColor( TheDPSelectedStarColorParameter->DefaultValue() ),
+   selectedStarFillColor( TheDPSelectedStarFillColorParameter->DefaultValue() ),
+   badStarColor( TheDPBadStarColorParameter->DefaultValue() ),
+   badStarFillColor( TheDPBadStarFillColorParameter->DefaultValue() )
 {
    psfOptions.autoPSF = TheDPAutoPSFParameter->DefaultValue();
    psfOptions.circular = TheDPCircularPSFParameter->DefaultValue();
@@ -91,49 +88,59 @@ badStarFillColor( TheDPBadStarFillColorParameter->DefaultValue() )
    psfOptions.lorentzian = TheDPLorentzianPSFParameter->DefaultValue();
 }
 
-DynamicPSFInstance::DynamicPSFInstance( const DynamicPSFInstance& x ) : ProcessImplementation( x )
+// ----------------------------------------------------------------------------
+
+DynamicPSFInstance::DynamicPSFInstance( const DynamicPSFInstance& x ) :
+   ProcessImplementation( x )
 {
    Assign( x );
 }
+
+// ----------------------------------------------------------------------------
 
 DynamicPSFInstance::~DynamicPSFInstance()
 {
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInstance::Assign( const ProcessImplementation& p )
 {
    const DynamicPSFInstance* x = dynamic_cast<const DynamicPSFInstance*>( &p );
-   if ( x != 0 && x != this )
-   {
-      views = x->views;
-      stars = x->stars;
-      psfs = x->psfs;
-      psfOptions.autoPSF = x->psfOptions.autoPSF;
-      psfOptions.circular = x->psfOptions.circular;
-      psfOptions.gaussian = x->psfOptions.gaussian;
-      psfOptions.moffat = x->psfOptions.moffat;
-      psfOptions.moffatA = x->psfOptions.moffatA;
-      psfOptions.moffat8 = x->psfOptions.moffat8;
-      psfOptions.moffat6 = x->psfOptions.moffat6;
-      psfOptions.moffat4 = x->psfOptions.moffat4;
-      psfOptions.moffat25 = x->psfOptions.moffat25;
-      psfOptions.moffat15 = x->psfOptions.moffat15;
-      psfOptions.lorentzian = x->psfOptions.lorentzian;
-      signedAngles = x->signedAngles;
-      regenerate = x->regenerate;
-      searchRadius = x->searchRadius;
-      threshold = x->threshold;
-      autoAperture = x->autoAperture;
-      scaleMode = x->scaleMode;
-      scaleValue = x->scaleValue;
-      scaleKeyword = x->scaleKeyword;
-      starColor = x->starColor;
-      selectedStarColor = x->selectedStarColor;
-      selectedStarFillColor = x->selectedStarFillColor;
-      badStarColor = x->badStarColor;
-      badStarFillColor = x->badStarFillColor;
-   }
+   if ( x != nullptr )
+      if ( x != this )
+      {
+         views = x->views;
+         stars = x->stars;
+         psfs = x->psfs;
+         psfOptions.autoPSF = x->psfOptions.autoPSF;
+         psfOptions.circular = x->psfOptions.circular;
+         psfOptions.gaussian = x->psfOptions.gaussian;
+         psfOptions.moffat = x->psfOptions.moffat;
+         psfOptions.moffatA = x->psfOptions.moffatA;
+         psfOptions.moffat8 = x->psfOptions.moffat8;
+         psfOptions.moffat6 = x->psfOptions.moffat6;
+         psfOptions.moffat4 = x->psfOptions.moffat4;
+         psfOptions.moffat25 = x->psfOptions.moffat25;
+         psfOptions.moffat15 = x->psfOptions.moffat15;
+         psfOptions.lorentzian = x->psfOptions.lorentzian;
+         signedAngles = x->signedAngles;
+         regenerate = x->regenerate;
+         searchRadius = x->searchRadius;
+         threshold = x->threshold;
+         autoAperture = x->autoAperture;
+         scaleMode = x->scaleMode;
+         scaleValue = x->scaleValue;
+         scaleKeyword = x->scaleKeyword;
+         starColor = x->starColor;
+         selectedStarColor = x->selectedStarColor;
+         selectedStarFillColor = x->selectedStarFillColor;
+         badStarColor = x->badStarColor;
+         badStarFillColor = x->badStarFillColor;
+      }
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInstance::AssignOptions( const DynamicPSFInstance& x )
 {
@@ -166,16 +173,22 @@ void DynamicPSFInstance::AssignOptions( const DynamicPSFInstance& x )
    badStarFillColor = x.badStarFillColor;
 }
 
+// ----------------------------------------------------------------------------
+
 bool DynamicPSFInstance::CanExecuteOn( const View& view, String& whyNot ) const
 {
    whyNot = "DynamicPSF can only be executed in the global context.";
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool DynamicPSFInstance::CanExecuteGlobal( String& whyNot ) const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool DynamicPSFInstance::ExecuteGlobal()
 {
@@ -186,6 +199,8 @@ bool DynamicPSFInstance::ExecuteGlobal()
    console.WriteLn( String( psfs.Length() ) + " PSF fittings" );
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void* DynamicPSFInstance::LockParameter( const MetaParameter* p, size_type tableRow )
 {
@@ -290,8 +305,10 @@ void* DynamicPSFInstance::LockParameter( const MetaParameter* p, size_type table
    if ( p == TheDPBadStarFillColorParameter )
       return &badStarFillColor;
 
-   return 0;
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool DynamicPSFInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {
@@ -331,6 +348,8 @@ bool DynamicPSFInstance::AllocateParameter( size_type sizeOrLength, const MetaPa
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 size_type DynamicPSFInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
    if ( p == TheDPViewTableParameter )
@@ -343,6 +362,7 @@ size_type DynamicPSFInstance::ParameterLength( const MetaParameter* p, size_type
       return psfs.Length();
    if ( p == TheDPScaleKeywordParameter )
       return scaleKeyword.Length();
+
    return 0;
 }
 

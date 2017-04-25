@@ -582,6 +582,8 @@ TreeBox::Node::Node( TreeBox& parentTree, int index ) :
       parentTree.Insert( index, this );
 }
 
+// ----------------------------------------------------------------------------
+
 TreeBox::Node::~Node()
 {
    if ( !m_removed )

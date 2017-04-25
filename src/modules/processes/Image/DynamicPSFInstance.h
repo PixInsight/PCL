@@ -63,8 +63,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// DynamicPSFInstance
-// ----------------------------------------------------------------------------
 
 typedef GenericPoint<int32>   Point32;
 
@@ -91,31 +89,24 @@ public:
 
    void AssignOptions( const DynamicPSFInstance& );
 
-   // -------------------------------------------------------------------------
-
 private:
 
    /*
     * View identifiers
     */
-   StringList  views;
+   StringList     views;
 
    /*
     * Stars
     */
    struct Star : public StarData
    {
-      uint32      view;          // index of the view to which this star pertains
+      uint32 view = 0; // index of the view to which this star pertains
 
-      Star() : StarData(), view( 0 )
-      {
-      }
+      Star() = default;
+      Star( const Star& ) = default;
 
       Star( const StarData& data, uint32 v ) : StarData( data ), view( v )
-      {
-      }
-
-      Star( const Star& x ) : StarData( x ), view( x.view )
       {
       }
    };
@@ -126,17 +117,12 @@ private:
     */
    struct PSF : public PSFData
    {
-      uint32      star;          // index of the fitted star
+      uint32 star = 0; // index of the fitted star
 
-      PSF() : PSFData(), star( 0 )
-      {
-      }
+      PSF() = default;
+      PSF( const PSF& ) = default;
 
       PSF( const PSFData& data, uint32 s ) : PSFData( data ), star( s )
-      {
-      }
-
-      PSF( const PSF& x ) : PSFData( x ), star( x.star )
       {
       }
    };

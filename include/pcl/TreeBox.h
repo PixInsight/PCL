@@ -73,7 +73,7 @@ namespace pcl
 
 /*!
  * \class TreeBox
- * \brief Client-side interface to a PixInsight %TreeBox control.
+ * \brief Client-side interface to a PixInsight %TreeBox control
  *
  * ### TODO: Write a detailed description for %TreeBox.
  */
@@ -95,6 +95,17 @@ public:
        */
       Node();
 
+      /*
+       * ### N.B.: If we define a default parameter value index=-1 for the
+       * following constructor (as expected), the static member function Null()
+       * cannot be compiled with g++ 4.9.x. The compiler issues the error:
+       *
+       *    no matching function for call to
+       *    'pcl::TreeBox::Node::Node(pcl::TreeBox::Node)'
+       *
+       * which is obviously incorrect and looks like an obscure compiler bug.
+       * Note that the same problem exists with g++ 4.8.x (at least).
+       */
       /*! #
        */
       Node( Node& parent, int index );
@@ -112,6 +123,7 @@ public:
        */
       static Node Null()
       {
+         // ### See note above for Node::Node( Node&, int ).
          return Node( nullptr );
       }
 
@@ -167,9 +179,9 @@ public:
 
       /*! #
        */
-      void Add( Node* n )
+      void Add( Node* node )
       {
-         Insert( NumberOfChildren(), n );
+         Insert( NumberOfChildren(), node );
       }
 
       /*! #
@@ -321,6 +333,13 @@ public:
        * \internal
        */
       Node( void* h ) : UIObject( h )
+      {
+      }
+
+      /*!
+       * \internal
+       */
+      Node( std::nullptr_t ) : UIObject( nullptr )
       {
       }
 

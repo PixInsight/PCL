@@ -59,7 +59,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-DynamicPSFProcess* TheDynamicPSFProcess = 0;
+DynamicPSFProcess* TheDynamicPSFProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -70,8 +70,6 @@ DynamicPSFProcess* TheDynamicPSFProcess = 0;
 DynamicPSFProcess::DynamicPSFProcess() : MetaProcess()
 {
    TheDynamicPSFProcess = this;
-
-   // Instantiate process parameters
 
    new DPViewTable( this );
    new DPViewId( TheDPViewTableParameter );
@@ -184,8 +182,8 @@ ProcessImplementation* DynamicPSFProcess::Create() const
 
 ProcessImplementation* DynamicPSFProcess::Clone( const ProcessImplementation& p ) const
 {
-   const DynamicPSFInstance* i = dynamic_cast<const DynamicPSFInstance*>( &p );
-   return (i != 0) ? new DynamicPSFInstance( *i ) : 0;
+   const DynamicPSFInstance* instance = dynamic_cast<const DynamicPSFInstance*>( &p );
+   return (instance != nullptr) ? new DynamicPSFInstance( *instance ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------

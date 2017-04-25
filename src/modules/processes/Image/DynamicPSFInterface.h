@@ -53,10 +53,10 @@
 #ifndef __DynamicPSFInterface_h
 #define __DynamicPSFInterface_h
 
+#include <pcl/Atomic.h>
 #include <pcl/CheckBox.h>
 #include <pcl/ComboBox.h>
 #include <pcl/Graphics.h>
-#include <pcl/Mutex.h>
 #include <pcl/NumericControl.h>
 #include <pcl/ProcessInterface.h>
 #include <pcl/ReferenceArray.h>
@@ -77,7 +77,9 @@ namespace pcl
 class Graphics;
 class ImageWindow;
 
-class PSFTreeNode;
+class PSFCollectionNode;
+class StarNode;
+class PSFNode;
 
 // ----------------------------------------------------------------------------
 
@@ -232,16 +234,16 @@ private:
 
    struct PSF : public PSFData
    {
-      Star*          star;    // star being fitted
-      PSFTreeNode*   node;
+      Star*    star; // star being fitted
+      PSFNode* node = nullptr;
 
-      PSF( const PSFData& data, Star* s ) : PSFData( data ), star( s ), node( nullptr )
+      PSF( const PSFData& data, Star* s ) :
+         PSFData( data ),
+         star( s )
       {
       }
 
-      virtual ~PSF()
-      {
-      }
+      virtual ~PSF();
 
       void AssignData( const PSFData& data )
       {
@@ -255,26 +257,27 @@ private:
    {
       typedef DynamicPSFInterface::psf_list psf_list;
 
-      PSFCollection* collection;    // view to which this star pertains
-      psf_list       psfs;          // fitted PSFs
-      PSFTreeNode*   node;
-      unsigned       uniqueId;
-      bool           selected : 1;  // selection status
+      PSFCollection* collection;     // the view to which this star pertains
+      psf_list       psfs;           // fitted PSFs
+      StarNode*      node = nullptr;
+      unsigned       uniqueId = 0;
+      bool           selected = false;
 
       Star( PSFCollection* c ) :
-         StarData(), collection( c ), psfs(), node( nullptr ), uniqueId( c->UniqueStarId() ), selected( false )
+         StarData(),
+         collection( c ),
+         uniqueId( c->UniqueStarId() )
       {
       }
 
       Star( const StarData& data, PSFCollection* c ) :
-         StarData( data ), collection( c ), psfs(), node( nullptr ), uniqueId( c->UniqueStarId() ), selected( false )
+         StarData( data ),
+         collection( c ),
+         uniqueId( c->UniqueStarId() )
       {
       }
 
-      virtual ~Star()
-      {
-         psfs.Destroy();
-      }
+      virtual ~Star();
 
       void AssignData( const StarData& data )
       {
@@ -284,7 +287,7 @@ private:
       PSF* AddPSF( const PSFData& data )
       {
          PSF* psf = new PSF( data, this );
-         psfs.Add( psf );
+         psfs << psf;
          rect |= psf->Bounds();
          return psf;
       }
@@ -313,17 +316,16 @@ private:
    {
       typedef DynamicPSFInterface::star_list star_list;
 
-      View           view;
-      IsoString      viewId; // required in case view.IsNull()
-      float          xScale; // image scale in arcsec/px
-      float          yScale;
-      Image          image;  // detection image, low-pass filtered
-      star_list      stars;
-      PSFTreeNode*   node;
+      View               view;
+      IsoString          viewId; // required in case view.IsNull()
+      float              xScale = 0; // image scale in arcsec/px
+      float              yScale = 0;
+      Image              image;  // detection image, low-pass filtered
+      star_list          stars;
+      PSFCollectionNode* node = nullptr;
 
       PSFCollection( const IsoString& id ) :
-         view( View::ViewById( id ) ), viewId( id ),
-         xScale( 0 ), yScale( 0 ), stars(), node( nullptr ), nextStarId( 0 )
+         view( View::ViewById( id ) ), viewId( id )
       {
          if ( !view.IsNull() )
          {
@@ -332,13 +334,13 @@ private:
          }
       }
 
-      template <class S>
-      PSFCollection( const S& id ) : PSFCollection( IsoString( id ) )
+      template <class S> PSFCollection( const S& id ) :
+         PSFCollection( IsoString( id ) )
       {
       }
 
       PSFCollection( const View& v ) :
-         view( v ), viewId( v.FullId() ), stars(), node( nullptr ), nextStarId( 0 )
+         view( v ), viewId( v.FullId() )
       {
          if ( !view.IsNull() )
          {
@@ -347,12 +349,7 @@ private:
          }
       }
 
-      virtual ~PSFCollection()
-      {
-         stars.Destroy();
-         if ( !view.IsNull() )
-            view.RemoveFromDynamicTargets();
-      }
+      virtual ~PSFCollection();
 
       IsoString ViewId() const
       {
@@ -387,85 +384,90 @@ private:
 
       unsigned UniqueStarId()
       {
-         mutex.Lock();
-         unsigned id = ++nextStarId;
-         mutex.Unlock();
-         return id;
+         return unsigned( nextStarId.FetchAndAdd( 1 ) );
       }
 
       void Sort( SortingCriterion );
 
    private:
 
-      Mutex    mutex;
-      unsigned nextStarId;
+      AtomicInt nextStarId = 1;
 
       void UpdateDetectionImage();
 
       class StarThread : public Thread
       {
       public:
-         StarThread( const ImageVariant& _img, float _threshold, bool _autoAperture,
-                     star_list::iterator _begin, star_list::iterator _end ) :
-            img( _img ), threshold( _threshold ), autoAperture( _autoAperture ), begin( _begin ), end( _end )
+
+         StarThread( const ImageVariant& image, float threshold, bool autoAperture,
+                     star_list::iterator begin,
+                     star_list::iterator end ) :
+            m_image( image ), m_threshold( threshold ), m_autoAperture( autoAperture ), m_begin( begin ), m_end( end )
          {
          }
 
       protected:
-         const ImageVariant& img;
-         float threshold;
-         bool autoAperture;
-         star_list::iterator begin, end;
+
+         const ImageVariant& m_image;
+         float               m_threshold;
+         bool                m_autoAperture;
+         star_list::iterator m_begin;
+         star_list::iterator m_end;
       };
 
       class RegenerateThread : public StarThread
       {
       public:
-         RegenerateThread( const ImageVariant& _img, float _threshold, bool _autoAperture, const PSFOptions& _options,
-                           star_list::iterator _begin, star_list::iterator _end ) :
-            StarThread( _img, _threshold, _autoAperture, _begin, _end ), options( _options )
+
+         RegenerateThread( const ImageVariant& image, float threshold, bool autoAperture, const PSFOptions& options,
+                           star_list::iterator begin,
+                           star_list::iterator end ) :
+            StarThread( image, threshold, autoAperture, begin, end ), m_options( options )
          {
          }
 
          virtual void Run()
          {
-            for ( star_list::iterator s = begin; s != end; ++s )
-               s->Regenerate( img, threshold, autoAperture, options );
+            for ( star_list::iterator s = m_begin; s != m_end; ++s )
+               s->Regenerate( m_image, m_threshold, m_autoAperture, m_options );
          }
 
       private:
-         PSFOptions options;
+
+         PSFOptions m_options;
       };
 
       class RecalculateThread : public StarThread
       {
       public:
-         RecalculateThread( const ImageVariant& _img, float _threshold, bool _autoAperture,
-                            star_list::iterator _begin, star_list::iterator _end ) :
-            StarThread( _img, _threshold, _autoAperture, _begin, _end )
+
+         RecalculateThread( const ImageVariant& image, float threshold, bool autoAperture,
+                            star_list::iterator begin,
+                            star_list::iterator end ) :
+            StarThread( image, threshold, autoAperture, begin, end )
          {
          }
 
          virtual void Run()
          {
-            for ( star_list::iterator s = begin; s != end; ++s )
-               s->Recalculate( img, threshold, autoAperture );
+            for ( star_list::iterator s = m_begin; s != m_end; ++s )
+               s->Recalculate( m_image, m_threshold, m_autoAperture );
          }
       };
    };
 
-   typedef ReferenceArray<PSFCollection> psf_data_set;
+   typedef ReferenceArray<PSFCollection> psf_collection_list;
 
-   psf_data_set data;
-   star_list    selectedStars;
+   psf_collection_list m_collections;
+   star_list           m_selectedStars;
 
    //
 
    PSFCollection* FindPSFCollection( const View& view )
    {
-      for ( psf_data_set::iterator i = data.Begin(); i != data.End(); ++i )
-         if ( i->view == view )
-            return i;
+      for ( PSFCollection& collection : m_collections )
+         if ( collection.view == view )
+            return &collection;
       return nullptr;
    }
 
@@ -490,7 +492,11 @@ private:
    void SelectStar( const Star* star )
    {
       if ( star != nullptr )
-         SelectStars( star_list() << star );
+      {
+         star_list list;
+         list << star;
+         SelectStars( list );
+      }
    }
 
    void UnselectStars()
@@ -509,15 +515,13 @@ private:
 
    void Update()
    {
-      for ( psf_data_set::iterator c = data.Begin(); c != data.End(); ++c )
-         c->Update();
+      for ( PSFCollection& collection : m_collections )
+         collection.Update();
    }
 
-   void DrawStar( VectorGraphics&, double penWidth, const Star*, ImageWindow&, const Rect& r0 ) const;
+   void DrawStar( VectorGraphics&, double penWidth, const Star&, ImageWindow&, const Rect& r0 ) const;
 
    Star* StarFromTreeBoxNode( TreeBox::Node& );
-
-   void DeleteTreeBoxNode( TreeBox::Node* );
 
    void ExpandTreeBoxNodes( TreeBox::Node* );
    void CollapseTreeBoxNodes( TreeBox::Node* );

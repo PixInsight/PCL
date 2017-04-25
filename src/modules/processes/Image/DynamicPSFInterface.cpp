@@ -200,7 +200,7 @@ private:
    }
 };
 
-static SortStarsDialog* sortStarsDialog = nullptr;
+static SortStarsDialog* s_sortStarsDialog = nullptr;
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -246,21 +246,21 @@ public:
       N = 0;
       gaussian = -1;
       B = A = sx = sy = theta = beta = mad = 0;
-      for ( star_list::const_iterator s = stars.Begin(); s != stars.End(); ++s )
-         for ( psf_list::const_iterator p = s->psfs.Begin(); p != s->psfs.End(); ++p )
-            if ( *p )
+      for ( const DynamicPSFInterface::Star& star : stars )
+         for ( const DynamicPSFInterface::PSF& psf : star.psfs )
+            if ( psf )
             {
                if ( gaussian < 0 )
-                  gaussian = p->function == PSFFit::Gaussian;
-               else if ( gaussian != (p->function == PSFFit::Gaussian) )
+                  gaussian = psf.function == PSFFit::Gaussian;
+               else if ( gaussian != (psf.function == PSFFit::Gaussian) )
                   throw Error( "Internal Error: Incongruent PSF functions in selected stars set." );
-               B += p->B;
-               A += p->A;
-               sx += p->sx;
-               sy += p->sy;
-               theta += (*signedAngles && p->theta > 90) ? p->theta - 180 : p->theta;
-               beta += p->beta;
-               mad += p->mad;
+               B += psf.B;
+               A += psf.A;
+               sx += psf.sx;
+               sy += psf.sy;
+               theta += (*signedAngles && psf.theta > 90) ? psf.theta - 180 : psf.theta;
+               beta += psf.beta;
+               mad += psf.mad;
                ++N;
             }
 
@@ -367,14 +367,14 @@ class PSFTreeNode : public TreeBox::Node
 {
 public:
 
-   PSFTreeNode( TreeBox& parent ) : TreeBox::Node()
+   PSFTreeNode( TreeBox& parent ) :
+      TreeBox::Node( parent, -1/*append*/ )
    {
-      parent.Add( this );
    }
 
-   PSFTreeNode( TreeBox::Node& parent ) : TreeBox::Node()
+   PSFTreeNode( TreeBox::Node& parent ) :
+      TreeBox::Node( parent, -1/*append*/ )
    {
-      parent.Add( this );
    }
 
    virtual ~PSFTreeNode()
@@ -383,6 +383,8 @@ public:
 
    virtual void Update() = 0;
 };
+
+// ----------------------------------------------------------------------------
 
 class PSFCollectionNode : public PSFTreeNode
 {
@@ -401,7 +403,8 @@ public:
 
    virtual ~PSFCollectionNode()
    {
-      collection->node = nullptr;
+      if ( collection != nullptr )
+         collection->node = nullptr;
    }
 
    virtual void Update()
@@ -416,6 +419,8 @@ public:
          SetToolTip( 0, "No such view: " + collection->ViewId() );
    }
 };
+
+// ----------------------------------------------------------------------------
 
 class StarNode : public PSFTreeNode
 {
@@ -434,7 +439,8 @@ public:
 
    virtual ~StarNode()
    {
-      star->node = nullptr;
+      if ( star != nullptr )
+         star->node = nullptr;
    }
 
    virtual void Update()
@@ -450,6 +456,8 @@ public:
       // TODO: show also barycenter and selection coordinates?
    }
 };
+
+// ----------------------------------------------------------------------------
 
 class PSFNode : public PSFTreeNode
 {
@@ -467,7 +475,8 @@ public:
 
    virtual ~PSFNode()
    {
-      psf->node = nullptr;
+      if ( psf != nullptr )
+         psf->node = nullptr;
    }
 
    virtual void Update()
@@ -521,6 +530,31 @@ public:
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
+DynamicPSFInterface::PSFCollection::~PSFCollection()
+{
+   stars.Destroy();
+   if ( node != nullptr )
+      node->collection = nullptr;
+   if ( !view.IsNull() )
+      view.RemoveFromDynamicTargets();
+}
+
+DynamicPSFInterface::Star::~Star()
+{
+   psfs.Destroy();
+   if ( node != nullptr )
+      node->star = nullptr;
+}
+
+DynamicPSFInterface::PSF::~PSF()
+{
+   if ( node != nullptr )
+      node->psf = nullptr;
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
 DynamicPSFInterface::DynamicPSFInterface() :
    instance( TheDynamicPSFProcess )
 {
@@ -528,28 +562,38 @@ DynamicPSFInterface::DynamicPSFInterface() :
    signedAngles = &instance.signedAngles;
 }
 
+// ----------------------------------------------------------------------------
+
 DynamicPSFInterface::~DynamicPSFInterface()
 {
-   selectedStars.Clear();
-   data.Destroy();
+   m_selectedStars.Clear();
+   m_collections.Destroy();
    if ( GUI != nullptr )
       delete GUI, GUI = nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString DynamicPSFInterface::Id() const
 {
    return "DynamicPSF";
 }
 
+// ----------------------------------------------------------------------------
+
 MetaProcess* DynamicPSFInterface::Process() const
 {
    return TheDynamicPSFProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 const char** DynamicPSFInterface::IconImageXPM() const
 {
    return DynamicPSFIcon_XPM;
 }
+
+// ----------------------------------------------------------------------------
 
 InterfaceFeatures DynamicPSFInterface::Features() const
 {
@@ -559,11 +603,15 @@ InterfaceFeatures DynamicPSFInterface::Features() const
           InterfaceFeature::ResetButton;
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::ResetInstance()
 {
    DynamicPSFInstance defaultInstance( TheDynamicPSFProcess );
    ImportProcess( defaultInstance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool DynamicPSFInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& flags )
 {
@@ -579,23 +627,27 @@ bool DynamicPSFInterface::Launch( const MetaProcess& P, const ProcessImplementat
    return &P == TheDynamicPSFProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* DynamicPSFInterface::NewProcess() const
 {
    DynamicPSFInstance* exportInstance = new DynamicPSFInstance( TheDynamicPSFProcess );
    exportInstance->AssignOptions( instance );
-   for ( psf_data_set::const_iterator c = data.Begin(); c != data.End(); ++c )
+   for ( const PSFCollection& collection : m_collections )
    {
-      exportInstance->views.Add( c->ViewId() );
-      for ( star_list::const_iterator s = c->stars.Begin(); s != c->stars.End(); ++s )
+      exportInstance->views << collection.ViewId();
+      for ( const Star& star : collection.stars )
       {
-         exportInstance->stars.Add( DynamicPSFInstance::Star( *s, exportInstance->views.Length()-1 ) );
-         for ( psf_list::const_iterator p = s->psfs.Begin(); p != s->psfs.End(); ++p )
-            exportInstance->psfs.Add( DynamicPSFInstance::PSF( *p, exportInstance->stars.Length()-1 ) );
+         exportInstance->stars << DynamicPSFInstance::Star( star, exportInstance->views.Length()-1 );
+         for ( const PSF& psf : star.psfs )
+            exportInstance->psfs << DynamicPSFInstance::PSF( psf, exportInstance->stars.Length()-1 );
       }
    }
 
    return exportInstance;
 }
+
+// ----------------------------------------------------------------------------
 
 bool DynamicPSFInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
@@ -605,10 +657,14 @@ bool DynamicPSFInterface::ValidateProcess( const ProcessImplementation& p, Strin
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool DynamicPSFInterface::RequiresInstanceValidation() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool DynamicPSFInterface::ImportProcess( const ProcessImplementation& P )
 {
@@ -618,38 +674,37 @@ bool DynamicPSFInterface::ImportProcess( const ProcessImplementation& P )
 
    Update();
 
-   GUI->Data_TreeBox.Clear();
+   m_selectedStars.Clear();
+   m_collections.Destroy();
 
-   selectedStars.Clear();
-   data.Destroy();
+   GUI->Data_TreeBox.Clear();
 
    instance.AssignOptions( *importInstance );
 
    for ( size_type i = 0; i < importInstance->views.Length(); ++i )
    {
-      PSFCollection* c = new PSFCollection( importInstance->views[i] );
-      data.Add( c );
-      c->UpdateImageScale( instance.scaleMode, instance.scaleValue, instance.scaleKeyword );
+      PSFCollection* collection = new PSFCollection( importInstance->views[i] );
+      m_collections << collection;
+      collection->UpdateImageScale( instance.scaleMode, instance.scaleValue, instance.scaleKeyword );
 
       for ( size_type j = 0; j < importInstance->stars.Length(); ++j )
       {
          const DynamicPSFInstance::Star& star = importInstance->stars[j];
          if ( star.view == i )
          {
-            Star* s = c->AddStar( star );
-
+            Star* newStar = collection->AddStar( star );
             for ( size_type k = 0; k < importInstance->psfs.Length(); ++k )
             {
                const DynamicPSFInstance::PSF& psf = importInstance->psfs[k];
                if ( psf.star == j )
-                  s->AddPSF( psf );
+                  newStar->AddPSF( psf );
             }
          }
       }
    }
 
-   for ( psf_data_set::iterator c = data.Begin(); c != data.End(); ++c )
-      c->Recalculate( instance.threshold, instance.autoAperture );
+   for ( PSFCollection& collection : m_collections )
+      collection.Recalculate( instance.threshold, instance.autoAperture );
 
    RegenerateDataTree();
    Update();
@@ -657,30 +712,40 @@ bool DynamicPSFInterface::ImportProcess( const ProcessImplementation& P )
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool DynamicPSFInterface::IsDynamicInterface() const
 {
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::ExitDynamicMode()
 {
    Update();
 
-   GUI->Data_TreeBox.Clear();
+   m_selectedStars.Clear();
+   m_collections.Destroy();
 
-   selectedStars.Clear();
-   data.Destroy();
+   GUI->Data_TreeBox.Clear();
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::DynamicMouseEnter( View& view )
 {
    // Placeholder
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::DynamicMouseLeave( View& view )
 {
    // Placeholder
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::DynamicMousePress( View& view, const DPoint& pos, int button, unsigned buttons, unsigned modifiers )
 {
@@ -690,6 +755,8 @@ void DynamicPSFInterface::DynamicMousePress( View& view, const DPoint& pos, int 
    ImageWindow window = view.Window();
    window.BeginSelection( pos.RoundedToInt() );
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::DynamicMouseMove( View& view, const DPoint& pos, unsigned buttons, unsigned modifiers )
 {
@@ -701,6 +768,8 @@ void DynamicPSFInterface::DynamicMouseMove( View& view, const DPoint& pos, unsig
       SelectStars( stars, modifiers & KeyModifier::Shift/*addToSelection*/ );
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::DynamicMouseRelease( View& view, const DPoint& pos, int button, unsigned buttons, unsigned modifiers )
 {
@@ -715,7 +784,7 @@ void DynamicPSFInterface::DynamicMouseRelease( View& view, const DPoint& pos, in
 
    ImageWindow::display_channel channel = window.CurrentChannel();
 
-   PSFCollection* c = AcquirePSFCollection( view );
+   PSFCollection* collection = AcquirePSFCollection( view );
 
    star_list stars = FindStars( view, rect, channel );
 
@@ -724,7 +793,7 @@ void DynamicPSFInterface::DynamicMouseRelease( View& view, const DPoint& pos, in
    if ( stars.IsEmpty() )
       if ( !rect.IsRect() )
       {
-         for ( int ch = 0; ch < c->image.NumberOfNominalChannels(); ++ch )
+         for ( int ch = 0; ch < collection->image.NumberOfNominalChannels(); ++ch )
          {
             switch ( channel )
             {
@@ -744,14 +813,14 @@ void DynamicPSFInterface::DynamicMouseRelease( View& view, const DPoint& pos, in
                break;
             }
 
-            StarDetector D( c->image, ch, pos, instance.searchRadius, instance.threshold, instance.autoAperture );
+            StarDetector D( collection->image, ch, pos, instance.searchRadius, instance.threshold, instance.autoAperture );
             if ( D )
             {
-               Star* star = c->AddStar( D.star );
+               Star* star = collection->AddStar( D.star );
                star->Regenerate( instance.psfOptions );
-               new StarNode( *c->node, star );
+               new StarNode( *collection->node, star );
                star->CreatePSFNodes();
-               stars.Add( star );
+               stars << star;
                if ( star->psfs.IsEmpty() )
                   message = "NO CONVERGENCE";
             }
@@ -764,13 +833,15 @@ void DynamicPSFInterface::DynamicMouseRelease( View& view, const DPoint& pos, in
          AdjustDataTreeColumns();
       }
 
-   for ( star_list::iterator s = stars.Begin(); s != stars.End(); ++s )
+   if ( !stars.IsEmpty() )
    {
-      s->node->Expand();
-      if ( s == stars.Begin() )
-         GUI->Data_TreeBox.SetCurrentNode( s->node );
-      for ( psf_list::iterator p = s->psfs.Begin(); p != s->psfs.End(); ++p )
-         GUI->Data_TreeBox.SetNodeIntoView( p->node );
+      for ( Star& star : stars )
+      {
+         star.node->Expand();
+         for ( const PSF& psf : star.psfs )
+            GUI->Data_TreeBox.SetNodeIntoView( psf.node );
+      }
+      GUI->Data_TreeBox.SetCurrentNode( stars.Begin()->node );
    }
 
    SelectStars( stars, modifiers & KeyModifier::Shift/*addToSelection*/ );
@@ -778,13 +849,17 @@ void DynamicPSFInterface::DynamicMouseRelease( View& view, const DPoint& pos, in
    UpdateControls();
 
    if ( !message.IsEmpty() )
-      GUI->StarInfo_Label.SetText( "*** " + message );
+      GUI->StarInfo_Label.SetText( "<* " + message + " *>" );
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::DynamicMouseDoubleClick( View& view, const DPoint& pos, unsigned buttons, unsigned modifiers )
 {
    // Placeholder
 }
+
+// ----------------------------------------------------------------------------
 
 bool DynamicPSFInterface::DynamicKeyPress( View& view, int key, unsigned modifiers )
 {
@@ -810,47 +885,51 @@ bool DynamicPSFInterface::DynamicKeyPress( View& view, int key, unsigned modifie
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool DynamicPSFInterface::RequiresDynamicUpdate( const View& view, const DRect& rect ) const
 {
-   const PSFCollection* c = FindPSFCollection( view );
-   if ( c != nullptr )
+   const PSFCollection* collection = FindPSFCollection( view );
+   if ( collection != nullptr )
    {
       ImageWindow window = view.Window();
       ImageWindow::display_channel channel = window.CurrentChannel();
 
-      Rect r = window.ImageToViewport( rect ).TruncatedToInt().InflatedBy( 1 );
-      for ( star_list::const_iterator s = c->stars.Begin(); s != c->stars.End(); ++s )
+      Rect vrect = window.ImageToViewport( rect ).TruncatedToInt().InflatedBy( 1 );
+      for ( const Star& star : collection->stars )
       {
          switch ( channel )
          {
          case DisplayChannel::Red:
-            if ( s->channel != 0 )
+            if ( star.channel != 0 )
                continue;
             break;
          case DisplayChannel::Green:
-            if ( s->channel != 1 )
+            if ( star.channel != 1 )
                continue;
             break;
          case DisplayChannel::Blue:
-            if ( s->channel != 2 )
+            if ( star.channel != 2 )
                continue;
             break;
          default:
             break;
          }
 
-         Rect rs = window.ImageToViewport( s->rect ).TruncatedToInt().InflatedBy( 1 );
-         if ( r.Intersects( rs ) )
+         Rect srect = window.ImageToViewport( star.rect ).TruncatedToInt().InflatedBy( 1 );
+         if ( vrect.Intersects( srect ) )
             return true;
       }
    }
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::DynamicPaint( const View& view, VectorGraphics& g, const DRect& rect ) const
 {
-   const PSFCollection* c = FindPSFCollection( view );
-   if ( c == nullptr ) // should not happen!
+   const PSFCollection* collection = FindPSFCollection( view );
+   if ( collection == nullptr ) // should not happen!
       return;
 
    ImageWindow window = view.Window();
@@ -860,25 +939,24 @@ void DynamicPSFInterface::DynamicPaint( const View& view, VectorGraphics& g, con
    // Inflated rectangle coordinates compensate for rounding errors.
    Rect r0 = window.ImageToViewport( rect ).TruncatedToInt().InflatedBy( 1 );
 
-   g.EnableAntialiasing();
    g.SetCompositionOperator( CompositionOp::Difference );
 
    // Draw stars and their PSFs
    double penWidth = DisplayPixelRatio();
-   for ( star_list::const_iterator star = c->stars.Begin(); star != c->stars.End(); ++star )
+   for ( const Star& star : collection->stars )
    {
       switch ( channel )
       {
       case DisplayChannel::Red:
-         if ( star->channel != 0 )
+         if ( star.channel != 0 )
             continue;
          break;
       case DisplayChannel::Green:
-         if ( star->channel != 1 )
+         if ( star.channel != 1 )
             continue;
          break;
       case DisplayChannel::Blue:
-         if ( star->channel != 2 )
+         if ( star.channel != 2 )
             continue;
          break;
       default:
@@ -888,37 +966,43 @@ void DynamicPSFInterface::DynamicPaint( const View& view, VectorGraphics& g, con
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::SaveSettings() const
 {
    // Placeholder
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::LoadSettings()
 {
    // Placeholder
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::ExecuteInstance( DynamicPSFInstance& instance )
 {
-   psf_data_set data;
+   psf_collection_list collections;
 
    for ( size_type i = 0; i < instance.views.Length(); ++i )
    {
-      PSFCollection* c = new PSFCollection( instance.views[i] );
-      data.Add( c );
+      PSFCollection* collection = new PSFCollection( instance.views[i] );
+      collections << collection;
 
       for ( size_type j = 0; j < instance.stars.Length(); ++j )
       {
          const DynamicPSFInstance::Star& star = instance.stars[j];
          if ( star.view == i )
          {
-            Star* s = c->AddStar( star );
+            Star* newStar = collection->AddStar( star );
 
             for ( size_type k = 0; k < instance.psfs.Length(); ++k )
             {
                const DynamicPSFInstance::PSF& psf = instance.psfs[k];
                if ( psf.star == j )
-                  s->AddPSF( psf );
+                  newStar->AddPSF( psf );
             }
          }
       }
@@ -928,26 +1012,26 @@ void DynamicPSFInterface::ExecuteInstance( DynamicPSFInstance& instance )
    instance.stars.Clear();
    instance.psfs.Clear();
 
-   for ( psf_data_set::iterator c = data.Begin(); c != data.End(); ++c )
+   for ( PSFCollection& collection : collections )
       if ( instance.regenerate )
-         c->Regenerate( instance.threshold, instance.autoAperture, instance.psfOptions );
+         collection.Regenerate( instance.threshold, instance.autoAperture, instance.psfOptions );
       else
-         c->Recalculate( instance.threshold, instance.autoAperture );
+         collection.Recalculate( instance.threshold, instance.autoAperture );
 
-   for ( psf_data_set::const_iterator c = data.Begin(); c != data.End(); ++c )
+   for ( const PSFCollection& collection : collections )
    {
-      instance.views.Add( c->ViewId() );
+      instance.views << collection.ViewId();
 
-      for ( star_list::const_iterator s = c->stars.Begin(); s != c->stars.End(); ++s )
+      for ( const Star& star : collection.stars )
       {
-         instance.stars.Add( DynamicPSFInstance::Star( *s, instance.views.Length()-1 ) );
+         instance.stars << DynamicPSFInstance::Star( star, instance.views.Length()-1 );
 
-         for ( psf_list::const_iterator p = s->psfs.Begin(); p != s->psfs.End(); ++p )
-            instance.psfs.Add( DynamicPSFInstance::PSF( *p, instance.stars.Length()-1 ) );
+         for ( const PSF& psf : star.psfs )
+            instance.psfs << DynamicPSFInstance::PSF( psf, instance.stars.Length()-1 );
       }
    }
 
-   data.Destroy();
+   collections.Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -955,7 +1039,7 @@ void DynamicPSFInterface::ExecuteInstance( DynamicPSFInstance& instance )
 
 void DynamicPSFInterface::UpdateControls()
 {
-   bool haveStars = !data.IsEmpty();
+   bool haveStars = !m_collections.IsEmpty();
    GUI->ExpandAll_ToolButton.Enable( haveStars );
    GUI->CollapseAll_ToolButton.Enable( haveStars );
    GUI->DeleteStar_ToolButton.Enable( haveStars );
@@ -997,15 +1081,17 @@ void DynamicPSFInterface::UpdateControls()
    UpdateStarInfo();
 }
 
+// ----------------------------------------------------------------------------
+
 static double KeywordValue( const FITSKeywordArray& keywords, const IsoString& keyName )
 {
-   for ( FITSKeywordArray::const_iterator i = keywords.Begin(); i != keywords.End(); ++i )
-      if ( !i->name.CompareIC( keyName ) )
+   for ( const FITSHeaderKeyword& keyword : keywords )
+      if ( !keyword.name.CompareIC( keyName ) )
       {
-         if ( i->IsNumeric() )
+         if ( keyword.IsNumeric() )
          {
             double v;
-            if ( i->GetNumericValue( v ) )
+            if ( keyword.GetNumericValue( v ) )
                return v;
          }
 
@@ -1015,12 +1101,16 @@ static double KeywordValue( const FITSKeywordArray& keywords, const IsoString& k
    return 0;
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::UpdateScaleItems()
 {
-   for ( psf_data_set::iterator c = data.Begin(); c != data.End(); ++c )
-      c->UpdateImageScale( instance.scaleMode, instance.scaleValue, instance.scaleKeyword );
+   for ( PSFCollection& collection : m_collections )
+      collection.UpdateImageScale( instance.scaleMode, instance.scaleValue, instance.scaleKeyword );
    AdjustDataTreeColumns();
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::UpdateStarInfo()
 {
@@ -1043,8 +1133,8 @@ void DynamicPSFInterface::UpdateStarInfo()
          info.Format( "Star %5d of %5d",
                       GUI->Data_TreeBox.ChildIndex( s ) + 1,
                       s->Parent()->NumberOfChildren() );
-         if ( !selectedStars.IsEmpty() )
-            info.AppendFormat( " / %u selected", selectedStars.Length() );
+         if ( !m_selectedStars.IsEmpty() )
+            info.AppendFormat( " / %u selected", m_selectedStars.Length() );
          GUI->StarInfo_Label.SetText( info );
       }
       else
@@ -1064,21 +1154,25 @@ void DynamicPSFInterface::UpdateStarInfo()
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::RegenerateDataTree()
 {
    GUI->Data_TreeBox.Clear();
    GUI->Data_TreeBox.DisableUpdates();
 
-   for ( psf_data_set::iterator c = data.Begin(); c != data.End(); ++c )
+   for ( PSFCollection& collection : m_collections )
    {
-      new PSFCollectionNode( GUI->Data_TreeBox, c );
-      c->CreateStarNodes();
+      new PSFCollectionNode( GUI->Data_TreeBox, &collection );
+      collection.CreateStarNodes();
    }
 
    GUI->Data_TreeBox.EnableUpdates();
 
    AdjustDataTreeColumns();
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::AdjustDataTreeColumns()
 {
@@ -1097,6 +1191,8 @@ void DynamicPSFInterface::__CurrentNodeUpdated( TreeBox& sender, TreeBox::Node& 
       TrackStar( StarFromTreeBoxNode( current ) );
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::__NodeActivated( TreeBox& sender, TreeBox::Node& node, int col )
 {
    Star* star = StarFromTreeBoxNode( node );
@@ -1113,32 +1209,43 @@ void DynamicPSFInterface::__NodeActivated( TreeBox& sender, TreeBox::Node& node,
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::__NodeDoubleClicked( TreeBox& sender, TreeBox::Node& node, int col )
 {
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::__NodeExpanded( TreeBox& sender, TreeBox::Node& node )
 {
    AdjustDataTreeColumns();
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::__NodeCollapsed( TreeBox& sender, TreeBox::Node& node )
 {
+   // Placeholder
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::__NodeSelectionUpdated( TreeBox& sender )
 {
    star_list stars;
-   IndirectArray<TreeBox::Node> nodes = sender.SelectedNodes();
-   for ( size_type i = 0; i < nodes.Length(); ++i )
+   IndirectArray<TreeBox::Node> selectedNodes = sender.SelectedNodes();
+   for ( TreeBox::Node* node : selectedNodes )
    {
-      Star* star = StarFromTreeBoxNode( *nodes[i] );
+      Star* star = StarFromTreeBoxNode( *node );
       if ( star != nullptr )
          if ( !stars.Contains( star ) )
             stars.Add( star );
    }
    SelectStars( stars );
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::__Click( Button& sender, bool checked )
 {
@@ -1156,100 +1263,94 @@ void DynamicPSFInterface::__Click( Button& sender, bool checked )
    }
    else if ( sender == GUI->DeleteStar_ToolButton )
    {
-      IndirectArray<TreeBox::Node> nodes = GUI->Data_TreeBox.SelectedNodes();
-      if ( nodes.IsEmpty() )
+      IndirectArray<TreeBox::Node> selectedNodes = GUI->Data_TreeBox.SelectedNodes();
+      if ( selectedNodes.IsEmpty() )
       {
-         pcl::MessageBox( "<p>There are no selected items.</p>",
+         pcl::MessageBox( "<p>There are no selected items to delete.</p>",
                            "DynamicPSF",
                            StdIcon::Error ).Execute();
       }
       else
       {
-         ReferenceArray<PSF> psfs;
-         ReferenceArray<Star> stars;
-         ReferenceArray<PSFCollection> psfCollections;
+         ReferenceArray<PSF>           psfs;
+         ReferenceArray<Star>          stars;
+         ReferenceArray<PSFCollection> collections;
 
-         for ( IndirectArray<TreeBox::Node>::iterator i = nodes.Begin(); i != nodes.End(); ++i )
          {
-            PSFNode* psfNode = dynamic_cast<PSFNode*>( *i );
-            if ( psfNode != nullptr )
-               psfs.Add( psfNode->psf );
-            else
+            IndirectArray<TreeBox::Node> psfNodes;
+            IndirectArray<TreeBox::Node> starNodes;
+            IndirectArray<TreeBox::Node> collectionNodes;
+
+            for ( TreeBox::Node* node : selectedNodes )
             {
-               StarNode* starNode = dynamic_cast<StarNode*>( *i );
-               if ( starNode != nullptr )
-                  stars.Add( starNode->star );
+               PSFNode* psfNode = dynamic_cast<PSFNode*>( node );
+               if ( psfNode != nullptr )
+               {
+                  psfs << psfNode->psf;
+                  psfNodes << node;
+               }
                else
                {
-                  PSFCollectionNode* psfCollectionNode = dynamic_cast<PSFCollectionNode*>( *i );
-                  if ( psfCollectionNode != nullptr )
-                     psfCollections.Add( psfCollectionNode->collection );
+                  StarNode* starNode = dynamic_cast<StarNode*>( node );
+                  if ( starNode != nullptr )
+                  {
+                     stars << starNode->star;
+                     starNodes << node;
+                  }
+                  else
+                  {
+                     PSFCollectionNode* psfCollectionNode = dynamic_cast<PSFCollectionNode*>( node );
+                     if ( psfCollectionNode != nullptr )
+                     {
+                        collections << psfCollectionNode->collection;
+                        collectionNodes << node;
+                     }
+                  }
                }
             }
+
+            GUI->Data_TreeBox.DisableUpdates();
+
+            psfNodes.Destroy();
+            starNodes.Destroy();
+            collectionNodes.Destroy();
+
+            GUI->Data_TreeBox.EnableUpdates();
          }
 
-         GUI->Data_TreeBox.DisableUpdates();
-
-         for ( int step = 0; !nodes.IsEmpty() && step < 3; nodes = GUI->Data_TreeBox.SelectedNodes(), ++step )
+         for ( PSFCollection& collection : collections )
          {
-            IndirectArray<TreeBox::Node> stepNodes;
-
-            for ( IndirectArray<TreeBox::Node>::iterator i = nodes.Begin(); i != nodes.End(); ++i )
-               switch ( step )
-               {
-               case 0:
-                  if ( dynamic_cast<PSFCollectionNode*>( *i ) )
-                     stepNodes.Add( *i );
-                  break;
-               case 1:
-                  if ( dynamic_cast<StarNode*>( *i ) )
-                     stepNodes.Add( *i );
-                  break;
-               case 2:
-                  if ( dynamic_cast<PSFNode*>( *i ) )
-                     stepNodes.Add( *i );
-                  break;
-               }
-
-            for ( IndirectArray<TreeBox::Node>::iterator i = stepNodes.Begin(); i != stepNodes.End(); ++i )
-               DeleteTreeBoxNode( *i );
-         }
-
-         GUI->Data_TreeBox.EnableUpdates();
-
-         for ( ReferenceArray<PSFCollection>::iterator c = psfCollections.Begin(); c != psfCollections.End(); ++c )
-         {
-            for ( star_list::iterator s = c->stars.Begin(); s != c->stars.End(); ++s )
+            for ( Star& star : collection.stars )
             {
-               if ( s->selected )
-                  selectedStars.Remove( selectedStars.Search( (Star*)s ) );
+               if ( star.selected )
+                  m_selectedStars.Remove( m_selectedStars.Search( &star ) );
 
-               for ( psf_list::iterator p = s->psfs.Begin(); p != s->psfs.End(); ++p )
-                  psfs.Remove( psfs.Search( (PSF*)p ) );
+               for ( PSF& psf : star.psfs )
+                  psfs.Remove( psfs.Search( &psf ) );
 
-               stars.Remove( stars.Search( (Star*)s ) );
+               stars.Remove( stars.Search( &star ) );
             }
 
-            c->Update();
-            data.Destroy( data.Search( (PSFCollection*)c ) );
+            collection.Update();
+            m_collections.Destroy( m_collections.Search( &collection ) );
          }
 
-         for ( ReferenceArray<Star>::iterator s = stars.Begin(); s != stars.End(); ++s )
+         for ( Star& star : stars )
          {
-            if ( s->selected )
-               selectedStars.Remove( selectedStars.Search( (Star*)s ) );
+            if ( star.selected )
+               m_selectedStars.Remove( m_selectedStars.Search( &star ) );
 
-            for ( psf_list::iterator p = s->psfs.Begin(); p != s->psfs.End(); ++p )
-               psfs.Remove( psfs.Search( (PSF*)p ) );
+            for ( PSF& psf : star.psfs )
+               psfs.Remove( psfs.Search( &psf ) );
 
-            s->Update();
-            s->collection->stars.Destroy( s->collection->stars.Search( (Star*)s ) );
+            star.Update();
+            star.collection->stars.Destroy( star.collection->stars.Search( &star ) );
          }
 
-         for ( ReferenceArray<PSF>::iterator p = psfs.Begin(); p != psfs.End(); ++p )
+         for ( PSF& psf : psfs )
          {
-            p->star->Update();
-            p->star->psfs.Destroy( p->star->psfs.Search( (PSF*)p ) );
+            psf.star->Update();
+            psf.star->psfs.Destroy( psf.star->psfs.Search( &psf ) );
          }
 
          TreeBox::Node* current = GUI->Data_TreeBox.CurrentNode();
@@ -1273,7 +1374,7 @@ void DynamicPSFInterface::__Click( Button& sender, bool checked )
    }
    else if ( sender == GUI->Regenerate_ToolButton )
    {
-      if ( selectedStars.IsEmpty() )
+      if ( m_selectedStars.IsEmpty() )
       {
          pcl::MessageBox( "<p>There are no selected stars to regenerate.</p>",
                            "DynamicPSF",
@@ -1286,12 +1387,12 @@ void DynamicPSFInterface::__Click( Button& sender, bool checked )
 
          GUI->Data_TreeBox.DisableUpdates();
 
-         for ( star_list::iterator s = selectedStars.Begin(); s != selectedStars.End(); ++s )
+         for ( Star& star : m_selectedStars )
          {
-            s->DestroyPSFNodes();
-            s->Regenerate( instance.threshold, instance.autoAperture, instance.psfOptions );
-            s->CreatePSFNodes();
-            s->Update();
+            star.DestroyPSFNodes();
+            star.Regenerate( instance.threshold, instance.autoAperture, instance.psfOptions );
+            star.CreatePSFNodes();
+            star.Update();
          }
 
          GUI->Data_TreeBox.EnableUpdates();
@@ -1301,14 +1402,14 @@ void DynamicPSFInterface::__Click( Button& sender, bool checked )
    }
    else if ( sender == GUI->RegenerateAll_ToolButton )
    {
-      star_list wereSelected = selectedStars;
+      star_list wereSelected = m_selectedStars;
       UnselectStars();
 
       GUI->StarInfo_Label.SetText( "Regenerating..." );
       ProcessEvents();
 
-      for ( psf_data_set::iterator c = data.Begin(); c != data.End(); ++c )
-         c->Regenerate( instance.threshold, instance.autoAperture, instance.psfOptions );
+      for ( PSFCollection& collection : m_collections )
+         collection.Regenerate( instance.threshold, instance.autoAperture, instance.psfOptions );
 
       RegenerateDataTree();
 
@@ -1320,28 +1421,28 @@ void DynamicPSFInterface::__Click( Button& sender, bool checked )
    }
    else if ( sender == GUI->Sort_ToolButton )
    {
-      if ( sortStarsDialog == nullptr )
-         sortStarsDialog = new SortStarsDialog;
-      if ( sortStarsDialog->Execute() )
+      if ( s_sortStarsDialog == nullptr )
+         s_sortStarsDialog = new SortStarsDialog;
+      if ( s_sortStarsDialog->Execute() )
       {
          GUI->StarInfo_Label.SetText( "Sorting..." );
          ProcessEvents();
 
-         for ( psf_data_set::iterator c = data.Begin(); c != data.End(); ++c )
-            c->Sort( sortStarsDialog->sortBy );
+         for ( PSFCollection& collection : m_collections )
+            collection.Sort( s_sortStarsDialog->sortBy );
 
          RegenerateDataTree();
 
          GUI->StarInfo_Label.Clear();
 
-         for ( star_list::iterator s = selectedStars.Begin(); s != selectedStars.End(); ++s )
-            if ( s->node != nullptr )
-               s->node->Select();
+         for ( Star& star : m_selectedStars )
+            if ( star.node != nullptr )
+               star.node->Select();
       }
    }
    else if ( sender == GUI->ExportPSF_ToolButton )
    {
-      if ( selectedStars.IsEmpty() )
+      if ( m_selectedStars.IsEmpty() )
       {
          pcl::MessageBox( "<p>There are no selected stars to generate a synthetic PSF.</p>",
                            "DynamicPSF",
@@ -1350,15 +1451,15 @@ void DynamicPSFInterface::__Click( Button& sender, bool checked )
       }
 
       FMatrix R;
-      for ( star_list::iterator s = selectedStars.Begin(); s != selectedStars.End(); ++s )
+      for ( Star& star : m_selectedStars )
       {
-         for ( psf_list::iterator p = s->psfs.Begin(); p != s->psfs.End(); ++p )
+         for ( PSF& psf : star.psfs )
          {
             FMatrix r;
-            if ( p->function == PSFFit::Gaussian )
-               r = GaussianFilter( float( p->sx ), 0.01F, p->sy/p->sx, Rad( p->theta ) ).Coefficients();
+            if ( psf.function == PSFFit::Gaussian )
+               r = GaussianFilter( float( psf.sx ), 0.01F, psf.sy/psf.sx, Rad( psf.theta ) ).Coefficients();
             else // Moffat
-               r = MoffatFilter( float( p->sx ), p->beta, 0.01F, p->sy/p->sx, Rad( p->theta ) ).Coefficients();
+               r = MoffatFilter( float( psf.sx ), psf.beta, 0.01F, psf.sy/psf.sx, Rad( psf.theta ) ).Coefficients();
 
             if ( R.Rows() < r.Rows() )
                Swap( R, r );
@@ -1378,7 +1479,7 @@ void DynamicPSFInterface::__Click( Button& sender, bool checked )
    }
    else if ( sender == GUI->AverageStars_ToolButton )
    {
-      if ( selectedStars.IsEmpty() )
+      if ( m_selectedStars.IsEmpty() )
       {
          pcl::MessageBox( "<p>There are no selected stars to average.</p>",
                            "DynamicPSF",
@@ -1389,11 +1490,11 @@ void DynamicPSFInterface::__Click( Button& sender, bool checked )
       PSFCollection* collection = nullptr;
       int gaussian = -1;
       int count = 0;
-      for ( star_list::iterator s = selectedStars.Begin(); s != selectedStars.End(); ++s )
+      for ( Star& star : m_selectedStars )
       {
          if ( collection == nullptr )
-            collection = s->collection;
-         else if ( s->collection != collection )
+            collection = star.collection;
+         else if ( star.collection != collection )
          {
             pcl::MessageBox( "<p>Cannot average stars from different images.</p>",
                               "DynamicPSF",
@@ -1401,16 +1502,16 @@ void DynamicPSFInterface::__Click( Button& sender, bool checked )
             return;
          }
 
-         for ( psf_list::iterator p = s->psfs.Begin(); p != s->psfs.End(); ++p )
-            if ( *p )
+         for ( PSF& psf : star.psfs )
+            if ( psf )
             {
                if ( gaussian < 0 )
-                  gaussian = p->function == PSFFit::Gaussian;
-               else if ( gaussian != (p->function == PSFFit::Gaussian) )
+                  gaussian = psf.function == PSFFit::Gaussian;
+               else if ( gaussian != (psf.function == PSFFit::Gaussian) )
                {
                   pcl::MessageBox( "<p>Incongruent PSF functions. Cannot average Gaussian and Moffat functions.</p>",
-                                    "DynamicPSF",
-                                    StdIcon::Error ).Execute();
+                                   "DynamicPSF",
+                                   StdIcon::Error ).Execute();
                   return;
                }
 
@@ -1421,12 +1522,12 @@ void DynamicPSFInterface::__Click( Button& sender, bool checked )
       if ( count == 0 )
       {
          pcl::MessageBox( "<p>There are no valid PSF functions among the selected stars.</p>",
-                           "DynamicPSF",
-                           StdIcon::Error ).Execute();
+                          "DynamicPSF",
+                          StdIcon::Error ).Execute();
          return;
       }
 
-      AverageStarDialog( selectedStars, collection->xScale, collection->yScale ).Execute();
+      AverageStarDialog( m_selectedStars, collection->xScale, collection->yScale ).Execute();
    }
    else if ( sender == GUI->ExportCSV_ToolButton )
    {
@@ -1477,13 +1578,15 @@ void DynamicPSFInterface::__Click( Button& sender, bool checked )
    else if ( sender == GUI->SignedAngles_CheckBox )
    {
       instance.signedAngles = checked;
-      for ( psf_data_set::iterator c = data.Begin(); c != data.End(); ++c )
-         c->UpdateNodes();
+      for ( PSFCollection& collection : m_collections )
+         collection.UpdateNodes();
       AdjustDataTreeColumns();
    }
    else if ( sender == GUI->AutoAperture_CheckBox )
       instance.autoAperture = checked;
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::__NumericEdit_ValueUpdated( NumericEdit& sender, double value )
 {
@@ -1497,11 +1600,15 @@ void DynamicPSFInterface::__NumericEdit_ValueUpdated( NumericEdit& sender, doubl
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::__SpinBox_ValueUpdated( SpinBox& sender, int value )
 {
    if ( sender == GUI->SearchRadius_SpinBox )
       instance.searchRadius = value;
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::__ItemSelected( ComboBox& sender, int itemIndex )
 {
@@ -1513,6 +1620,8 @@ void DynamicPSFInterface::__ItemSelected( ComboBox& sender, int itemIndex )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::__EditCompleted( Edit& sender )
 {
    if ( sender == GUI->ScaleKeyword_Edit )
@@ -1522,6 +1631,8 @@ void DynamicPSFInterface::__EditCompleted( Edit& sender )
       UpdateScaleItems();
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::__ToggleSection( SectionBar& sender, Control& section, bool start )
 {
@@ -1539,79 +1650,85 @@ void DynamicPSFInterface::__ToggleSection( SectionBar& sender, Control& section,
 
 DynamicPSFInterface::PSFCollection* DynamicPSFInterface::AcquirePSFCollection( View& view )
 {
-   PSFCollection* c = FindPSFCollection( view );
-   if ( c == nullptr )
+   PSFCollection* collection = FindPSFCollection( view );
+   if ( collection == nullptr )
    {
-      data.Add( c = new PSFCollection( view ) );
-      c->UpdateImageScale( instance.scaleMode, instance.scaleValue, instance.scaleKeyword );
-      new PSFCollectionNode( GUI->Data_TreeBox, c );
+      m_collections.Add( collection = new PSFCollection( view ) );
+      collection->UpdateImageScale( instance.scaleMode, instance.scaleValue, instance.scaleKeyword );
+      new PSFCollectionNode( GUI->Data_TreeBox, collection );
    }
-   return c;
+   return collection;
 }
+
+// ----------------------------------------------------------------------------
 
 DynamicPSFInterface::star_list DynamicPSFInterface::FindStars( const View& view,
                                              const DRect& rect, ImageWindow::display_channel channel )
 {
    star_list stars;
-   PSFCollection* c = FindPSFCollection( view );
-   if ( c != nullptr )
-      for ( star_list::iterator s = c->stars.Begin(); s != c->stars.End(); ++s )
+   PSFCollection* collection = FindPSFCollection( view );
+   if ( collection != nullptr )
+      for ( Star& star : collection->stars )
       {
          switch ( channel )
          {
          case DisplayChannel::Red:
-            if ( s->channel != 0 )
+            if ( star.channel != 0 )
                continue;
             break;
          case DisplayChannel::Green:
-            if ( s->channel != 1 )
+            if ( star.channel != 1 )
                continue;
             break;
          case DisplayChannel::Blue:
-            if ( s->channel != 2 )
+            if ( star.channel != 2 )
                continue;
             break;
          default:
             break;
          }
 
-         if ( s->rect.Intersects( rect ) )
-            stars.Add( s );
+         if ( star.rect.Intersects( rect ) )
+            stars << &star;
       }
    return stars;
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::SelectStars( const star_list& stars, bool addToSelection )
 {
    if ( addToSelection )
    {
-      for ( star_list::const_iterator s = stars.Begin(); s != stars.End(); ++s )
-         if ( !s->selected )
-            selectedStars.Add( s );
+      for ( const Star& star : stars )
+         if ( !star.selected )
+            m_selectedStars << &star;
    }
    else
    {
-      for ( star_list::iterator s = selectedStars.Begin(); s != selectedStars.End(); ++s )
+      for ( Star& star : m_selectedStars )
       {
-         s->selected = false;
-         s->Update();
-         if ( s->node != nullptr )
-            s->node->Unselect();
+         star.selected = false;
+         star.Update();
+         if ( star.node != nullptr )
+            star.node->Unselect();
       }
 
-      selectedStars = stars;
+      m_selectedStars = stars;
    }
 
-   for ( star_list::iterator s = selectedStars.Begin(); s != selectedStars.End(); ++s )
+   for ( Star& star : m_selectedStars )
    {
-      s->selected = true;
-      s->Update();
-      if ( s->node != nullptr )
-         s->node->Select();
+      star.selected = true;
+      star.Update();
+      if ( star.node != nullptr )
+         star.node->Select();
    }
 
    UpdateStarInfo();
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::TrackStar( const Star* star )
 {
@@ -1627,6 +1744,8 @@ void DynamicPSFInterface::TrackStar( const Star* star )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::ExportCSV( const String& filePath )
 {
    File f;
@@ -1634,40 +1753,40 @@ void DynamicPSFInterface::ExportCSV( const String& filePath )
 
    f.OutTextLn( "ViewId,StarId,Channel,Function,B,A,cx,cy,sx,sy,FWHMx,FWHMy,unit,r,theta,beta,MAD" );
 
-   for ( psf_data_set::iterator c = data.Begin(); c != data.End(); ++c )
+   for ( PSFCollection& collection : m_collections )
    {
-      IsoString viewId = c->ViewId();
+      IsoString viewId = collection.ViewId();
 
       const char* scaleUnit = "px";
       double xScale = 1, yScale = 1;
-      if ( c->xScale > 0 && c->yScale > 0 )
-      {
-         scaleUnit = "\"";
-         xScale = c->xScale;
-         yScale = c->yScale;
-      }
+      if ( collection.xScale > 0 )
+         if ( collection.yScale > 0 )
+         {
+            scaleUnit = "\"";
+            xScale = collection.xScale;
+            yScale = collection.yScale;
+         }
 
-      for ( star_list::iterator s = c->stars.Begin(); s != c->stars.End(); ++s )
+      for ( Star& star : collection.stars )
       {
-         IsoString viewIdAndStarIdAndCh = viewId + ',' + IsoString( s->uniqueId ) + ',' + IsoString( s->channel ) + ',';
-
-         for ( psf_list::iterator p = s->psfs.Begin(); p != s->psfs.End(); ++p )
+         IsoString viewIdAndStarIdAndCh = viewId + ',' + IsoString( star.uniqueId ) + ',' + IsoString( star.channel ) + ',';
+         for ( PSF& psf : star.psfs )
             f.OutTextLn( viewIdAndStarIdAndCh +
-                         IsoString( p->FunctionToString() ) + ',' +
+                         IsoString( psf.FunctionToString() ) + ',' +
                          IsoString().Format( "%.6f,%.6f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%s,%.3f,%.2f,%.2f,%.3e",
-                                             p->B,
-                                             p->A,
-                                             p->c0.x,
-                                             p->c0.y,
-                                             p->sx,
-                                             p->sy,
-                                             p->FWHMx()*xScale,
-                                             p->FWHMy()*yScale,
+                                             psf.B,
+                                             psf.A,
+                                             psf.c0.x,
+                                             psf.c0.y,
+                                             psf.sx,
+                                             psf.sy,
+                                             psf.FWHMx()*xScale,
+                                             psf.FWHMy()*yScale,
                                              scaleUnit,
-                                             p->sy/p->sx,
-                                             (*signedAngles && p->theta > 90) ? p->theta - 180 : p->theta,
-                                             p->beta,
-                                             p->mad ) );
+                                             psf.sy/psf.sx,
+                                             (*signedAngles && psf.theta > 90) ? psf.theta - 180 : psf.theta,
+                                             psf.beta,
+                                             psf.mad ) );
       }
    }
 
@@ -1675,46 +1794,49 @@ void DynamicPSFInterface::ExportCSV( const String& filePath )
    f.Close();
 }
 
-void DynamicPSFInterface::DrawStar( VectorGraphics& g, double penWidth, const Star* star,
+// ----------------------------------------------------------------------------
+
+void DynamicPSFInterface::DrawStar( VectorGraphics& g, double penWidth, const Star& star,
                                     ImageWindow& window, const Rect& r0 ) const
 {
-   DRect r = window.ImageToViewport( star->rect );
-   if ( r0.Intersects( r ) )
+   DRect rect = window.ImageToViewport( star.rect );
+   if ( r0.Intersects( rect ) )
    {
-      g.SetPen( star->selected ? instance.selectedStarColor : instance.starColor, penWidth );
+      g.SetPen( star.selected ? instance.selectedStarColor : instance.starColor, penWidth );
 
-      if ( *star )
+      if ( star )
       {
-         g.StrokeRect( r );
+         g.DisableAntialiasing();
+
+         g.StrokeRect( rect );
 
          g.EnableAntialiasing();
 
-         for ( psf_list::const_iterator psf = star->psfs.Begin(); psf != star->psfs.End(); ++psf )
+         for ( const PSF& psf : star.psfs )
          {
-            DPoint d = window.ImageToViewport( psf->c0 );
+            DPoint d = window.ImageToViewport( psf.c0 );
             g.TranslateTransformation( d.x, d.y );
-            g.RotateTransformation( Rad( psf->theta ) );
+            g.RotateTransformation( Rad( psf.theta ) );
             double dr = penWidth * CENTER_RADIUS;
             g.DrawLine( -dr, 0, +dr, 0 );
             g.DrawLine( 0, -dr, 0, +dr );
 
-            double rx = window.ImageScalarToViewport( psf->FWHMx() );
-            double ry = window.ImageScalarToViewport( psf->FWHMy() );
+            double rx = window.ImageScalarToViewport( psf.FWHMx() );
+            double ry = window.ImageScalarToViewport( psf.FWHMy() );
             if ( rx > 0.5 && ry > 0.5 )
                g.StrokeEllipse( -rx, -ry, +rx, +ry );
 
             g.ResetTransformation();
          }
-
-         g.DisableAntialiasing();
       }
       else
       {
-         g.SetBrush( instance.badStarFillColor );
-         g.DrawRect( r );
+         g.FillRect( rect, instance.badStarFillColor );
       }
    }
 }
+
+// ----------------------------------------------------------------------------
 
 DynamicPSFInterface::Star* DynamicPSFInterface::StarFromTreeBoxNode( TreeBox::Node& node )
 {
@@ -1727,21 +1849,7 @@ DynamicPSFInterface::Star* DynamicPSFInterface::StarFromTreeBoxNode( TreeBox::No
    return nullptr;
 }
 
-void DynamicPSFInterface::DeleteTreeBoxNode( TreeBox::Node* node )
-{
-   if ( node != nullptr )
-   {
-      for ( int n = node->NumberOfChildren(), i = n; --i >= 0; )
-         DeleteTreeBoxNode( node->Child( i ) );
-
-      int index = GUI->Data_TreeBox.ChildIndex( node );
-      if ( node->Parent() == nullptr )
-         GUI->Data_TreeBox.Remove( index );
-      else
-         node->Parent()->Remove( index );
-      delete node;
-   }
-}
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::ExpandTreeBoxNodes( TreeBox::Node* node )
 {
@@ -1752,6 +1860,8 @@ void DynamicPSFInterface::ExpandTreeBoxNodes( TreeBox::Node* node )
       node->Expand();
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::CollapseTreeBoxNodes( TreeBox::Node* node )
 {
@@ -1768,11 +1878,13 @@ void DynamicPSFInterface::CollapseTreeBoxNodes( TreeBox::Node* node )
 
 void DynamicPSFInterface::Star::Regenerate( const DynamicPSFInterface::PSFOptions& options )
 {
-   ImageVariant img = collection->view.Image();
-   Regenerate( img, options );
+   ImageVariant image = collection->view.Image();
+   Regenerate( image, options );
 }
 
-void DynamicPSFInterface::Star::Regenerate( const ImageVariant& img, const DynamicPSFInterface::PSFOptions& options )
+// ----------------------------------------------------------------------------
+
+void DynamicPSFInterface::Star::Regenerate( const ImageVariant& image, const DynamicPSFInterface::PSFOptions& options )
 {
    psfs.Destroy();
 
@@ -1783,11 +1895,11 @@ void DynamicPSFInterface::Star::Regenerate( const ImageVariant& img, const Dynam
    {
       Array<PSFFit> fits;
 
-      PSFFit Fg( img, pos, rect, PSFFit::Gaussian, options.circular );
+      PSFFit Fg( image, pos, rect, PSFFit::Gaussian, options.circular );
       if ( Fg )
          fits.Add( Fg );
 
-      PSFFit Fm( img, pos, rect, PSFFit::Moffat, options.circular );
+      PSFFit Fm( image, pos, rect, PSFFit::Moffat, options.circular );
       if ( Fm )
          fits.Add( Fm );
       else
@@ -1795,25 +1907,25 @@ void DynamicPSFInterface::Star::Regenerate( const ImageVariant& img, const Dynam
          /*
           * Moffat fit didn't converge - try all fixed beta functions
           */
-         PSFFit FA( img, pos, rect, PSFFit::MoffatA, options.circular );
+         PSFFit FA( image, pos, rect, PSFFit::MoffatA, options.circular );
          if ( FA )
             fits.Add( FA );
-         PSFFit F8( img, pos, rect, PSFFit::Moffat8, options.circular );
+         PSFFit F8( image, pos, rect, PSFFit::Moffat8, options.circular );
          if ( F8 )
             fits.Add( F8 );
-         PSFFit F6( img, pos, rect, PSFFit::Moffat6, options.circular );
+         PSFFit F6( image, pos, rect, PSFFit::Moffat6, options.circular );
          if ( F6 )
             fits.Add( F6 );
-         PSFFit F4( img, pos, rect, PSFFit::Moffat4, options.circular );
+         PSFFit F4( image, pos, rect, PSFFit::Moffat4, options.circular );
          if ( F4 )
             fits.Add( F4 );
-         PSFFit F25( img, pos, rect, PSFFit::Moffat25, options.circular );
+         PSFFit F25( image, pos, rect, PSFFit::Moffat25, options.circular );
          if ( F25 )
             fits.Add( F25 );
-         PSFFit F15( img, pos, rect, PSFFit::Moffat15, options.circular );
+         PSFFit F15( image, pos, rect, PSFFit::Moffat15, options.circular );
          if ( F15 )
             fits.Add( F15 );
-         PSFFit F1( img, pos, rect, PSFFit::Lorentzian, options.circular );
+         PSFFit F1( image, pos, rect, PSFFit::Lorentzian, options.circular );
          if ( F1 )
             fits.Add( F1 );
       }
@@ -1831,112 +1943,122 @@ void DynamicPSFInterface::Star::Regenerate( const ImageVariant& img, const Dynam
    {
       if ( options.gaussian )
       {
-         PSFFit F( img, pos, rect, PSFFit::Gaussian, options.circular );
+         PSFFit F( image, pos, rect, PSFFit::Gaussian, options.circular );
          if ( F )
             AddPSF( F.psf );
       }
 
       if ( options.moffat )
       {
-         PSFFit F( img, pos, rect, PSFFit::Moffat, options.circular );
+         PSFFit F( image, pos, rect, PSFFit::Moffat, options.circular );
          if ( F )
             AddPSF( F.psf );
       }
 
       if ( options.moffatA )
       {
-         PSFFit F( img, pos, rect, PSFFit::MoffatA, options.circular );
+         PSFFit F( image, pos, rect, PSFFit::MoffatA, options.circular );
          if ( F )
             AddPSF( F.psf );
       }
 
       if ( options.moffat8 )
       {
-         PSFFit F( img, pos, rect, PSFFit::Moffat8, options.circular );
+         PSFFit F( image, pos, rect, PSFFit::Moffat8, options.circular );
          if ( F )
             AddPSF( F.psf );
       }
 
       if ( options.moffat6 )
       {
-         PSFFit F( img, pos, rect, PSFFit::Moffat6, options.circular );
+         PSFFit F( image, pos, rect, PSFFit::Moffat6, options.circular );
          if ( F )
             AddPSF( F.psf );
       }
 
       if ( options.moffat4 )
       {
-         PSFFit F( img, pos, rect, PSFFit::Moffat4, options.circular );
+         PSFFit F( image, pos, rect, PSFFit::Moffat4, options.circular );
          if ( F )
             AddPSF( F.psf );
       }
 
       if ( options.moffat25 )
       {
-         PSFFit F( img, pos, rect, PSFFit::Moffat25, options.circular );
+         PSFFit F( image, pos, rect, PSFFit::Moffat25, options.circular );
          if ( F )
             AddPSF( F.psf );
       }
 
       if ( options.moffat15 )
       {
-         PSFFit F( img, pos, rect, PSFFit::Moffat15, options.circular );
+         PSFFit F( image, pos, rect, PSFFit::Moffat15, options.circular );
          if ( F )
             AddPSF( F.psf );
       }
 
       if ( options.lorentzian )
       {
-         PSFFit F( img, pos, rect, PSFFit::Lorentzian, options.circular );
+         PSFFit F( image, pos, rect, PSFFit::Lorentzian, options.circular );
          if ( F )
             AddPSF( F.psf );
       }
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::Star::Regenerate( float threshold, bool autoAperture,
                                             const DynamicPSFInterface::PSFOptions& options )
 {
-   ImageVariant img = collection->view.Image();
-   Regenerate( img, threshold, autoAperture, options );
+   ImageVariant image = collection->view.Image();
+   Regenerate( image, threshold, autoAperture, options );
 }
 
-void DynamicPSFInterface::Star::Regenerate( const ImageVariant& img, float threshold, bool autoAperture,
+// ----------------------------------------------------------------------------
+
+void DynamicPSFInterface::Star::Regenerate( const ImageVariant& image, float threshold, bool autoAperture,
                                             const DynamicPSFInterface::PSFOptions& options )
 {
-   StarDetector D( collection->image, channel, pos, RoundI( rect.Width()/2 ), threshold, autoAperture );
+   StarDetector D( collection->image, channel, pos, RoundInt( rect.Width()/2 ), threshold, autoAperture );
    AssignData( D.star );
-   Regenerate( img, options );
+   Regenerate( image, options );
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::Star::Recalculate( float threshold, bool autoAperture )
 {
-   ImageVariant img = collection->view.Image();
-   Recalculate( img, threshold, autoAperture );
+   ImageVariant image = collection->view.Image();
+   Recalculate( image, threshold, autoAperture );
 }
 
-void DynamicPSFInterface::Star::Recalculate( const ImageVariant& img, float threshold, bool autoAperture )
+// ----------------------------------------------------------------------------
+
+void DynamicPSFInterface::Star::Recalculate( const ImageVariant& image, float threshold, bool autoAperture )
 {
-   StarDetector D( collection->image, channel, pos, RoundI( rect.Width()/2 ), threshold, autoAperture );
+   StarDetector D( collection->image, channel, pos, RoundInt( rect.Width()/2 ), threshold, autoAperture );
    if ( D )
    {
       AssignData( D.star );
-      for ( psf_list::iterator p = psfs.Begin(); p != psfs.End(); ++p )
+      for ( PSF& psf : psfs )
       {
-         PSFFit F( img, pos, rect, PSFFit::Function( p->function ), p->circular );
+         PSFFit F( image, pos, rect, PSFFit::Function( psf.function ), psf.circular );
          if ( F )
-            p->AssignData( F.psf );
+            psf.AssignData( F.psf );
          else
-            p->status = F.psf.status;
+            psf.status = F.psf.status;
       }
    }
    else
    {
       status = D.star.status;
-      for ( psf_list::iterator p = psfs.Begin(); p != psfs.End(); ++p )
-         p->status = PSFFit::NotFitted;
+      for ( PSF& psf : psfs )
+         psf.status = PSFFit::NotFitted;
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::Star::Update()
 {
@@ -1947,35 +2069,37 @@ void DynamicPSFInterface::Star::Update()
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::Star::UpdateNodes()
 {
    if ( node != nullptr )
    {
-      for ( psf_list::iterator p = psfs.Begin(); p != psfs.End(); ++p )
-         if ( p->node != nullptr )
-            p->node->Update();
+      for ( PSF& psf : psfs )
+         if ( psf.node != nullptr )
+            psf.node->Update();
       node->Update();
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::Star::DestroyPSFNodes()
 {
-   if ( node != nullptr )
-      for ( psf_list::iterator p = psfs.Begin(); p != psfs.End(); ++p )
-         if ( p->node != nullptr )
-         {
-            // PSF nodes are terminal
-            node->Remove( node->ParentTree().ChildIndex( p->node ) );
-            delete p->node;
-         }
+   for ( PSF& psf : psfs )
+      delete psf.node;
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::Star::CreatePSFNodes()
 {
    if ( node != nullptr )
-      for ( psf_list::iterator p = psfs.Begin(); p != psfs.End(); ++p )
-         new PSFNode( *node, p );
+      for ( PSF& psf : psfs )
+         new PSFNode( *node, &psf );
 }
+
+// ----------------------------------------------------------------------------
 
 double DynamicPSFInterface::Star::SortingValue( DynamicPSFInterface::SortingCriterion sortBy ) const
 {
@@ -1990,27 +2114,27 @@ double DynamicPSFInterface::Star::SortingValue( DynamicPSFInterface::SortingCrit
    case DynamicPSFInterface::SortByBackground:
       {
          double B = psfs[0].B;
-         for ( psf_list::const_iterator i = psfs.Begin(); ++i != psfs.End(); )
-            if ( i->B < B )
-               B = i->B;
+         for ( const PSF& psf : psfs )
+            if ( psf.B < B )
+               B = psf.B;
          return B;
       }
 
    case DynamicPSFInterface::SortByAmplitude:
       {
          double A = psfs[0].A;
-         for ( psf_list::const_iterator i = psfs.Begin(); ++i != psfs.End(); )
-            if ( i->A < A )
-               A = i->A;
+         for ( const PSF& psf : psfs )
+            if ( psf.A < A )
+               A = psf.A;
          return A;
       }
 
    case DynamicPSFInterface::SortBySigma:
       {
          double s = Max( psfs[0].sx, psfs[0].sy );
-         for ( psf_list::const_iterator i = psfs.Begin(); ++i != psfs.End(); )
+         for ( const PSF& psf : psfs )
          {
-            double si = Max( i->sx, i->sy );
+            double si = Max( psf.sx, psf.sy );
             if ( si < s )
                s = si;
          }
@@ -2020,9 +2144,9 @@ double DynamicPSFInterface::Star::SortingValue( DynamicPSFInterface::SortingCrit
    case DynamicPSFInterface::SortByAspectRatio:
       {
          double r = psfs[0].sy/psfs[0].sx;
-         for ( psf_list::const_iterator i = psfs.Begin(); ++i != psfs.End(); )
+         for ( const PSF& psf : psfs )
          {
-            double ri = i->sy/i->sx;
+            double ri = psf.sy/psf.sx;
             if ( ri < r )
                r = ri;
          }
@@ -2035,9 +2159,9 @@ double DynamicPSFInterface::Star::SortingValue( DynamicPSFInterface::SortingCrit
          if ( *signedAngles )
             if ( theta > 90 )
                theta -= 180;
-         for ( psf_list::const_iterator i = psfs.Begin(); ++i != psfs.End(); )
+         for ( const PSF& psf : psfs )
          {
-            double itheta = i->theta;
+            double itheta = psf.theta;
             if ( *signedAngles )
                if ( itheta > 90 )
                   itheta -= 180;
@@ -2050,9 +2174,9 @@ double DynamicPSFInterface::Star::SortingValue( DynamicPSFInterface::SortingCrit
    case DynamicPSFInterface::SortByAbsRotationAngle:
       {
          double theta = psfs[0].theta;
-         for ( psf_list::const_iterator i = psfs.Begin(); ++i != psfs.End(); )
-            if ( i->theta < theta )
-               theta = i->theta;
+         for ( const PSF& psf : psfs )
+            if ( psf.theta < theta )
+               theta = psf.theta;
          return theta;
       }
 
@@ -2075,9 +2199,9 @@ double DynamicPSFInterface::Star::SortingValue( DynamicPSFInterface::SortingCrit
    case DynamicPSFInterface::SortByMAD:
       {
          double mad = psfs[0].mad;
-         for ( psf_list::const_iterator i = psfs.Begin(); ++i != psfs.End(); )
-            if ( i->mad < mad )
-               mad = i->mad;
+         for ( const PSF& psf : psfs )
+            if ( psf.mad < mad )
+               mad = psf.mad;
          return mad;
       }
    }
@@ -2107,32 +2231,34 @@ void DynamicPSFInterface::PSFCollection::UpdateDetectionImage()
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::PSFCollection::Regenerate( float threshold, bool autoAperture,
                                                      const DynamicPSFInterface::PSFOptions& options )
 {
    if ( view.IsNull() )
    {
-      for ( star_list::iterator s = stars.Begin(); s != stars.End(); ++s )
+      for ( Star& star : stars )
       {
-         s->status = StarDetector::NotDetected;
-         s->psfs.Destroy();
+         star.status = StarDetector::NotDetected;
+         star.psfs.Destroy();
       }
    }
    else
    {
-      ImageVariant img = view.Image();
+      ImageVariant image = view.Image();
       int numberOfThreads = Thread::NumberOfThreads( stars.Length(), 4 );
       if ( numberOfThreads == 1 )
       {
-         for ( star_list::iterator s = stars.Begin(); s != stars.End(); ++s )
-            s->Regenerate( img, threshold, autoAperture, options );
+         for ( Star& star : stars )
+            star.Regenerate( image, threshold, autoAperture, options );
       }
       else
       {
          int starsPerThread = stars.Length()/numberOfThreads;
          ReferenceArray<RegenerateThread> threads;
          for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
-            threads.Add( new RegenerateThread( img, threshold, autoAperture, options,
+            threads.Add( new RegenerateThread( image, threshold, autoAperture, options,
                                                stars.At( i*starsPerThread ),
                                                (j < numberOfThreads) ? stars.At( j*starsPerThread ) : stars.End() ) );
          for ( int i = 0; i < numberOfThreads; ++i )
@@ -2144,32 +2270,34 @@ void DynamicPSFInterface::PSFCollection::Regenerate( float threshold, bool autoA
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::PSFCollection::Recalculate( float threshold, bool autoAperture )
 {
    if ( view.IsNull() )
    {
-      for ( star_list::iterator s = stars.Begin(); s != stars.End(); ++s )
+      for ( Star& star : stars )
       {
-         s->status = StarDetector::NotDetected;
-         for ( psf_list::iterator p = s->psfs.Begin(); p != s->psfs.End(); ++p )
-            p->status = PSFFit::NotFitted;
+         star.status = StarDetector::NotDetected;
+         for ( PSF& psf : star.psfs )
+            psf.status = PSFFit::NotFitted;
       }
    }
    else
    {
-      ImageVariant img = view.Image();
+      ImageVariant image = view.Image();
       int numberOfThreads = Thread::NumberOfThreads( stars.Length(), 4 );
       if ( numberOfThreads == 1 )
       {
-         for ( star_list::iterator s = stars.Begin(); s != stars.End(); ++s )
-            s->Recalculate( img, threshold, autoAperture );
+         for ( Star& star : stars )
+            star.Recalculate( image, threshold, autoAperture );
       }
       else
       {
          int starsPerThread = stars.Length()/numberOfThreads;
          ReferenceArray<RecalculateThread> threads;
          for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
-            threads.Add( new RecalculateThread( img, threshold, autoAperture,
+            threads.Add( new RecalculateThread( image, threshold, autoAperture,
                                                 stars.At( i*starsPerThread ),
                                                 (j < numberOfThreads) ? stars.At( j*starsPerThread ) : stars.End() ) );
          for ( int i = 0; i < numberOfThreads; ++i )
@@ -2181,6 +2309,8 @@ void DynamicPSFInterface::PSFCollection::Recalculate( float threshold, bool auto
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::PSFCollection::Update()
 {
    if ( !view.IsNull() )
@@ -2189,15 +2319,17 @@ void DynamicPSFInterface::PSFCollection::Update()
       if ( view == window.CurrentView() )
       {
          Rect visibleRect = window.VisibleViewportRect();
-         for ( star_list::const_iterator s = stars.Begin(); s != stars.End(); ++s )
+         for ( const Star& star : stars )
          {
-            Rect r = window.ImageToViewport( s->rect ).RoundedToInt().InflatedBy( 1 );
-            if ( visibleRect.Intersects( r ) )
-               window.UpdateViewportRect( r );
+            Rect rect = window.ImageToViewport( star.rect ).RoundedToInt().InflatedBy( 1 );
+            if ( visibleRect.Intersects( rect ) )
+               window.UpdateViewportRect( rect );
          }
       }
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::PSFCollection::Update( const Rect& rect )
 {
@@ -2207,16 +2339,18 @@ void DynamicPSFInterface::PSFCollection::Update( const Rect& rect )
       if ( view == window.CurrentView() )
       {
          Rect visibleRect = window.VisibleViewportRect();
-         for ( star_list::const_iterator s = stars.Begin(); s != stars.End(); ++s )
-            if ( rect.Intersects( s->rect ) )
+         for ( const Star& star : stars )
+            if ( rect.Intersects( star.rect ) )
             {
-               Rect r = window.ImageToViewport( s->rect ).RoundedToInt().InflatedBy( 1 );
-               if ( visibleRect.Intersects( r ) )
-                  window.UpdateViewportRect( r );
+               Rect rect = window.ImageToViewport( star.rect ).RoundedToInt().InflatedBy( 1 );
+               if ( visibleRect.Intersects( rect ) )
+                  window.UpdateViewportRect( rect );
             }
       }
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::PSFCollection::UpdateImageScale( pcl_enum scaleMode, float scaleValue, const IsoString& scaleKeyword )
 {
@@ -2264,54 +2398,55 @@ void DynamicPSFInterface::PSFCollection::UpdateImageScale( pcl_enum scaleMode, f
       }
 
       if ( node != nullptr )
-         for ( star_list::iterator s = stars.Begin(); s != stars.End(); ++s )
-            if ( s->node != nullptr )
-               for ( psf_list::iterator p = s->psfs.Begin(); p != s->psfs.End(); ++p )
-                  if ( p->node != nullptr )
-                     p->node->Update();
+         for ( Star& star : stars )
+            if ( star.node != nullptr )
+               for ( PSF& psf : star.psfs )
+                  if ( psf.node != nullptr )
+                     psf.node->Update();
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::PSFCollection::UpdateNodes()
 {
    if ( node != nullptr )
    {
-      for ( star_list::iterator s = stars.Begin(); s != stars.End(); ++s )
-         s->UpdateNodes();
+      for ( Star& star : stars )
+         star.UpdateNodes();
       node->Update();
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DynamicPSFInterface::PSFCollection::DestroyStarNodes()
 {
-   if ( node != nullptr )
-      for ( star_list::iterator s = stars.Begin(); s != stars.End(); ++s )
-      {
-         if ( s->node != nullptr )
-         {
-            s->DestroyPSFNodes();
-            node->Remove( node->ParentTree().ChildIndex( s->node ) );
-            delete s->node;
-         }
-      }
+   for ( Star& star : stars )
+   {
+      star.DestroyPSFNodes();
+      delete star.node;
+   }
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicPSFInterface::PSFCollection::CreateStarNodes()
 {
    if ( node != nullptr )
-      for ( star_list::iterator s = stars.Begin(); s != stars.End(); ++s )
+      for ( Star& star : stars )
       {
-         new StarNode( *node, s );
-         s->CreatePSFNodes();
+         new StarNode( *node, &star );
+         star.CreatePSFNodes();
       }
 }
+
+// ----------------------------------------------------------------------------
 
 class StarSortingBinaryPredicate
 {
 public:
 
-   typedef DynamicPSFInterface::psf_list psf_list;
-
-   StarSortingBinaryPredicate( DynamicPSFInterface::SortingCriterion s ) : sortBy( s )
+   StarSortingBinaryPredicate( DynamicPSFInterface::SortingCriterion criterion ) : sortBy( criterion )
    {
    }
 

@@ -569,6 +569,15 @@ public:
    }
 
    /*!
+    * Returns true iff this node represents an %XML comment. If this member
+    * function returns true, this node can be statically casted to XMLComment.
+    */
+   bool IsComment() const
+   {
+      return NodeType() == XMLNodeType::Comment;
+   }
+
+   /*!
     * Returns a reference to the (immutable) source code location of this node.
     */
    const XMLNodeLocation& Location() const
@@ -712,6 +721,12 @@ public:
 class PCL_CLASS XMLAttribute : public XMLComponent
 {
 public:
+
+   /*!
+    * Constructs an empty %XML attribute. An empty attribute is ignored for
+    * inclusion in element attribute lists.
+    */
+   XMLAttribute() = default;
 
    /*!
     * Constructs a new %XMLAttribute object with the specified qualified
@@ -963,11 +978,14 @@ public:
     */
    void SetAttribute( const String& name, const String& value )
    {
-      iterator a = m_list.Search( name );
-      if ( a == m_list.End() )
-         m_list.Add( XMLAttribute( name, value ) );
-      else
-         a->SetValue( value );
+      if ( !name.IsEmpty() )
+      {
+         iterator a = m_list.Search( name );
+         if ( a == m_list.End() )
+            m_list.Add( XMLAttribute( name, value ) );
+         else
+            a->SetValue( value );
+      }
    }
 
    /*!
@@ -977,11 +995,14 @@ public:
     */
    void SetAttribute( const XMLAttribute& attribute )
    {
-      iterator a = m_list.Search( attribute );
-      if ( a == m_list.End() )
-         m_list.Add( attribute );
-      else
-         *a = attribute;
+      if ( !attribute.Name().IsEmpty() )
+      {
+         iterator a = m_list.Search( attribute );
+         if ( a == m_list.End() )
+            m_list.Add( attribute );
+         else
+            *a = attribute;
+      }
    }
 
    /*!

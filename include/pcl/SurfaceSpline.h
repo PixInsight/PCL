@@ -114,13 +114,10 @@ public:
    typedef GenericVector<T>   vector_type;
 
    /*!
-    * Default constructor. Constructs a two-dimensional interpolating surface
-    * spline of second order.
+    * Default constructor. Constructs an empty, two-dimensional interpolating
+    * surface spline of second order.
     */
-   SurfaceSpline() :
-      SurfaceSplineBase(), m_order( 2 ), m_smoothing( 0 )
-   {
-   }
+   SurfaceSpline() = default;
 
    /*!
     * Copy constructor.
@@ -135,7 +132,7 @@ public:
 #endif
 
    /*!
-    * Destroys a %SurfaceSpline instance.
+    * Virtual destructor.
     */
    virtual ~SurfaceSpline()
    {
@@ -351,15 +348,18 @@ public:
 
 protected:
 
-   vector_type m_x;         // vector of normalized X node coordinates
-   vector_type m_y;         // vector of normalized Y node coordinates
-   double      m_r0;        // scaling factor for normalization of node coordinates
-   double      m_x0;        // zero offset for normalization of X node coordinates
-   double      m_y0;        // zero offset for normalization of Y node coordinates
-   int         m_order;     // derivative order > 0
-   float       m_smoothing; // smoothing factor, or interpolating 2-D spline if m_smoothing == 0
-   FVector     m_weights;   // vector of node weights if m_smoothing != 0, otherwise ignored (empty)
-   vector_type m_spline;    // coefficients of the 2-D surface spline
+   vector_type m_x;             // vector of normalized X node coordinates
+   vector_type m_y;             // vector of normalized Y node coordinates
+   double      m_r0        = 1; // scaling factor for normalization of node coordinates
+   double      m_x0        = 0; // zero offset for normalization of X node coordinates
+   double      m_y0        = 0; // zero offset for normalization of Y node coordinates
+   int         m_order     = 2; // derivative order > 0
+   float       m_smoothing = 0; // smoothing factor, or interpolating 2-D spline if m_smoothing == 0
+   FVector     m_weights;       // vector of node weights if m_smoothing != 0, otherwise ignored (empty)
+   vector_type m_spline;        // coefficients of the 2-D surface spline
+
+   friend class DrizzleData;
+   friend class DrizzleDataDecoder;
 };
 
 // ----------------------------------------------------------------------------

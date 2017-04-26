@@ -71,119 +71,6 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \class SerializableSurfaceSpline
- * \brief An interpolating/approximating two-dimensional surface spline
- *        serializable as drizzle data (.drz format)
- */
-template <typename T>
-class SerializableSurfaceSpline : public SurfaceSpline<T>
-{
-public:
-
-   /*!
-    * Represents a vector of coordinates or spline coefficients.
-    */
-   typedef typename SurfaceSpline<T>::vector_type  vector_type;
-
-   /*!
-    * Default constructor.
-    */
-   SerializableSurfaceSpline() = default;
-
-   /*!
-    * Constructor from base class.
-    */
-   SerializableSurfaceSpline( const SurfaceSpline<T>& S ) :
-      SurfaceSpline<T>( S )
-   {
-   }
-
-   /*!
-    * Virtual destructor.
-    */
-   virtual ~SerializableSurfaceSpline()
-   {
-   }
-
-   /*!
-    * Copy assignment from base class. Returns a reference to this object.
-    */
-   SerializableSurfaceSpline& operator =( const SurfaceSpline<T>& S )
-   {
-      return SurfaceSpline<T>::operator =( S );
-   }
-
-   /*!
-    * Serializes this spline as drizzle integration data in .drz plain text
-    * format.
-    *
-    * The generated data will be appended to the specified file, which must
-    * allow write access, and will contain all node coordinates, node weights
-    * (for an approximating spline only), reference coordinates, and spline
-    * coefficients.
-    */
-   void ToDrizzleData( File& f ) const
-   {
-      if ( this->IsValid() )
-      {
-         f.OutText( "x{" );
-         for ( int i = 0, n = this->m_x.Length()-1; ; )
-         {
-            f.OutText( IsoString().Format( "%.16g,", this->m_x[i] ) );
-            if ( ++i == n )
-            {
-               f.OutText( IsoString().Format( "%.16g}", this->m_x[n] ) );
-               break;
-            }
-         }
-         f.OutText( "y{" );
-         for ( int i = 0, n = this->m_y.Length()-1; ; )
-         {
-            f.OutText( IsoString().Format( "%.16g,", this->m_y[i] ) );
-            if ( ++i == n )
-            {
-               f.OutText( IsoString().Format( "%.16g}", this->m_y[n] ) );
-               break;
-            }
-         }
-         f.OutText( IsoString().Format( "r0{%.16g}", this->m_r0 ) );
-         f.OutText( IsoString().Format( "x0{%.16g}", this->m_x0 ) );
-         f.OutText( IsoString().Format( "y0{%.16g}", this->m_y0 ) );
-         f.OutText( IsoString().Format( "m{%d}", this->m_order ) );
-         f.OutText( IsoString().Format( "r{%.8g}", this->m_smoothing ) );
-         if ( this->m_smoothing > 0 )
-            if ( !this->m_weights.IsEmpty() )
-            {
-               f.OutText( "w{" );
-               for ( int i = 0, n = this->m_weights.Length()-1; ; )
-               {
-                  f.OutText( IsoString().Format( "%.8g,", this->m_weights[i] ) );
-                  if ( ++i == n )
-                  {
-                     f.OutText( IsoString().Format( "%.8g}", this->m_weights[n] ) );
-                     break;
-                  }
-               }
-            }
-         f.OutText( "s{" );
-         for ( int i = 0, n = this->m_spline.Length()-1; ; )
-         {
-            f.OutText( IsoString().Format( "%.16g,", this->m_spline[i] ) );
-            if ( ++i == n )
-            {
-               f.OutText( IsoString().Format( "%.16g}", this->m_spline[n] ) );
-               break;
-            }
-         }
-      }
-   }
-
-   friend class DrizzleSplineDecoder;
-};
-
-// ----------------------------------------------------------------------------
-
-/*!
  * \class PointSurfaceSpline
  * \brief Vector surface spline interpolation/approximation in two dimensions
  *
@@ -194,7 +81,7 @@ public:
  * respectively, of an interpolation point. In addition, the scalar types of
  * the x and y point members must support conversion to double semantics.
  */
-template <class P = FPoint>
+template <class P = DPoint>
 class PointSurfaceSpline
 {
 public:
@@ -202,17 +89,17 @@ public:
    /*!
     * Represents an interpolation point in two dimensions.
     */
-   typedef P                                 point;
+   typedef P                     point;
 
    /*!
     * Represents a sequence of interpolation points.
     */
-   typedef Array<point>                      point_list;
+   typedef Array<point>          point_list;
 
    /*!
     * Represents a coordinate interpolating/approximating surface spline.
     */
-   typedef SerializableSurfaceSpline<double> spline;
+   typedef SurfaceSpline<double> spline;
 
    /*!
     * Default constructor. Yields an empty instance that cannot be used without
@@ -398,27 +285,6 @@ public:
    }
 
    /*!
-    * Serializes this point spline as drizzle integration data in .drz plain
-    * text format.
-    *
-    * The generated data will be appended to the specified file, which must
-    * allow write access, and will contain all node coordinates, node weights
-    * (for an approximating spline only), reference coordinates, and spline
-    * coefficients in the X and Y directions.
-    */
-   void ToDrizzleData( File& f ) const
-   {
-      if ( IsValid() )
-      {
-         f.OutText( "Sx{" );
-         m_Sx.ToDrizzleData( f );
-         f.OutText( "}Sy{" );
-         m_Sy.ToDrizzleData( f );
-         f.OutText( "}" );
-      }
-   }
-
-   /*!
     * Returns an interpolated point at the specified coordinates.
     */
    template <typename T>
@@ -438,8 +304,9 @@ public:
 
 private:
 
-   spline m_Sx, m_Sy;   // the surface splines in the X and Y directions.
+   spline m_Sx, m_Sy; // the surface splines in the X and Y plane directions.
 
+   friend class DrizzleData;
    friend class DrizzleDataDecoder;
 };
 

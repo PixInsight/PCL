@@ -3734,212 +3734,6 @@ public:
    }
 
    /*!
-    * Replaces the contents of this string with a sequence of tokens extracted
-    * from a container \a c, separated with the specified \a separator
-    * character. Returns a reference to this string.
-    *
-    * The container type C must have separated list generation semantics. All
-    * iterable PCL containers such as Array, Vector, etc. provide the necessary
-    * ToSeparated member functions.
-    */
-   template <class C>
-   GenericString& ToSeparated( const C& c, char_type separator )
-   {
-      Clear();
-      return c.ToSeparated( *this, separator );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of tokens extracted
-    * from a container \a c, separated with the specified \a separator
-    * character, and built using an \a append binary function. Returns a
-    * reference to this string.
-    *
-    * The binary function must be of the form:
-    *
-    * \code void append( GenericString& s1, const GenericString& s2 ); \endcode
-    *
-    * where \a s2 is being appended to \a s1.
-    *
-    * The container type C must have separated list generation semantics. All
-    * iterable PCL containers such as Array, Vector, etc. provide the necessary
-    * ToSeparated member functions.
-    */
-   template <class C, class AF>
-   GenericString& ToSeparated( const C& c, char_type separator, AF append )
-   {
-      Clear();
-      return c.ToSeparated( *this, separator, append );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of tokens extracted
-    * from a container \a c, separated with the specified \a separator string.
-    * Returns a reference to this string.
-    *
-    * The container type C must have separated list generation semantics. All
-    * iterable PCL containers such as Array, Vector, etc. provide the necessary
-    * ToSeparated member functions.
-    */
-   template <class C>
-   GenericString& ToSeparated( const C& c, const GenericString& separator )
-   {
-      Clear();
-      return c.ToSeparated( *this, separator );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of tokens extracted
-    * from a container \a c, separated with the specified \a separator string,
-    * and built using an \a append binary function. Returns a reference to this
-    * string.
-    *
-    * The binary function must be of the form:
-    *
-    * \code void append( GenericString& s1, const GenericString& s2 ); \endcode
-    *
-    * where \a s2 is being appended to \a s1.
-    *
-    * The container type C must have separated list generation semantics. All
-    * iterable PCL containers such as Array, Vector, etc. provide the necessary
-    * ToSeparated member functions.
-    */
-   template <class C, class AF>
-   GenericString& ToSeparated( const C& c, const GenericString& separator, AF append )
-   {
-      Clear();
-      return c.ToSeparated( *this, separator, append );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of tokens extracted
-    * from a container \a c, separated with the specified \a separator
-    * null-terminated string. Returns a reference to this string.
-    *
-    * The container type C must have separated list generation semantics. All
-    * iterable PCL containers such as Array, Vector, etc. provide the necessary
-    * ToSeparated member functions.
-    */
-   template <class C>
-   GenericString& ToSeparated( const C& c, const_c_string separator )
-   {
-      Clear();
-      return c.ToSeparated( *this, separator );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of tokens extracted
-    * from a container \a c, separated with the specified \a separator
-    * null-terminated string, and built using an \a append binary function.
-    * Returns a reference to this string.
-    *
-    * The binary function must be of the form:
-    *
-    * \code void append( GenericString& s1, const GenericString& s2 ); \endcode
-    *
-    * where \a s2 is being appended to \a s1.
-    *
-    * The container type C must have separated list generation semantics. All
-    * iterable PCL containers such as Array, Vector, etc. provide the necessary
-    * ToSeparated member functions.
-    */
-   template <class C, class AF>
-   GenericString& ToSeparated( const C& c, const_c_string separator, AF append )
-   {
-      Clear();
-      return c.ToSeparated( *this, separator, append );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of comma-separated
-    * tokens extracted from a container \a c. Returns a reference to this
-    * string.
-    *
-    * This member function is equivalent to:
-    *
-    * \code ToSeparated( c, char_type( ',' ) ); \endcode
-    */
-   template <class C>
-   GenericString& ToCommaSeparated( const C& c )
-   {
-      return ToSeparated( c, R::Comma() );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of space-separated
-    * tokens extracted from a container \a c. Returns a reference to this
-    * string.
-    *
-    * This member function is equivalent to:
-    *
-    * \code ToSeparated( c, char_type( ' ' ) ); \endcode
-    */
-   template <class C>
-   GenericString& ToSpaceSeparated( const C& c )
-   {
-      return ToSeparated( c, R::Blank() );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of
-    * tabulator-separated tokens extracted from a container \a c. Returns a
-    * reference to this string.
-    *
-    * This member function is equivalent to:
-    *
-    * \code ToSeparated( c, char_type( '\t' ) ); \endcode
-    */
-   template <class C>
-   GenericString& ToTabSeparated( const C& c )
-   {
-      return ToSeparated( c, R::Tab() );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of
-    * new line-separated tokens extracted from a container \a c. Returns a
-    * reference to this string.
-    *
-    * This member function is equivalent to:
-    *
-    * \code ToSeparated( c, char_type( '\n' ) ); \endcode
-    */
-   template <class C>
-   GenericString& ToNewLineSeparated( const C& c )
-   {
-      return ToSeparated( c, R::LF() );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of
-    * null-separated tokens extracted from a container \a c. Returns a
-    * reference to this string.
-    *
-    * This member function is equivalent to:
-    *
-    * \code ToSeparated( c, char_type( '\0' ) ); \endcode
-    */
-   template <class C>
-   GenericString& ToNullSeparated( const C& c )
-   {
-      return ToSeparated( c, R::Null() );
-   }
-
-   /*!
-    * Replaces the contents of this string with a hyphenated sequence of tokens
-    * extracted from a container \a c. Returns a reference to this string.
-    *
-    * This member function is equivalent to:
-    *
-    * \code ToSeparated( c, char_type( '-' ) ); \endcode
-    */
-   template <class C>
-   GenericString& ToHyphenated( const C& c )
-   {
-      return ToSeparated( c, R::Hyphen() );
-   }
-
-   /*!
     * Returns true iff this string can be interpreted as a numeric literal:
     *
     * \li The string is not empty.
@@ -5869,88 +5663,223 @@ public:
 
    // -------------------------------------------------------------------------
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * character. Returns a reference to this string.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C>
    IsoString& ToSeparated( const C& c, char_type separator )
    {
-      (void)string_base::ToSeparated( c, separator );
-      return *this;
+      Clear();
+      return c.ToSeparated( *this, separator );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * character, and built using an \a append binary function. Returns a
+    * reference to this string.
+    *
+    * The binary function must be of the form:
+    *
+    * \code void append( IsoString& s, char c ); \endcode
+    *
+    * where \a c is being appended to \a s.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C, class AF>
    IsoString& ToSeparated( const C& c, char_type separator, AF append )
    {
-      (void)string_base::ToSeparated( c, separator, append );
-      return *this;
+      Clear();
+      return c.ToSeparated( *this, separator, append );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator string.
+    * Returns a reference to this string.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C>
    IsoString& ToSeparated( const C& c, const IsoString& separator )
    {
-      (void)string_base::ToSeparated( c, separator );
-      return *this;
+      Clear();
+      return c.ToSeparated( *this, separator );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator string,
+    * and built using an \a append binary function. Returns a reference to this
+    * string.
+    *
+    * The binary function must be of the form:
+    *
+    * \code void append( IsoString& s1, const IsoString& s2 ); \endcode
+    *
+    * where \a s2 is being appended to \a s1.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C, class AF>
    IsoString& ToSeparated( const C& c, const IsoString& separator, AF append )
    {
-      (void)string_base::ToSeparated( c, separator, append );
-      return *this;
+      Clear();
+      return c.ToSeparated( *this, separator, append );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * null-terminated string. Returns a reference to this string.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C>
    IsoString& ToSeparated( const C& c, const_c_string separator )
    {
-      (void)string_base::ToSeparated( c, separator );
-      return *this;
+      return ToSeparated( c, IsoString( separator ) );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * null-terminated string, and built using an \a append binary function.
+    * Returns a reference to this string.
+    *
+    * The binary function must be of the form:
+    *
+    * \code void append( IsoString& s1, const char* s2 ); \endcode
+    *
+    * where \a s2 is being appended to \a s1.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C, class AF>
    IsoString& ToSeparated( const C& c, const_c_string separator, AF append )
    {
-      (void)string_base::ToSeparated( c, separator, append );
-      return *this;
+      return ToSeparated( c, IsoString( separator ), append );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of comma-separated
+    * tokens extracted from a container \a c. Returns a reference to this
+    * string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, ',' ); \endcode
+    */
    template <class C>
    IsoString& ToCommaSeparated( const C& c )
    {
-      (void)string_base::ToCommaSeparated( c );
-      return *this;
+      return ToSeparated( c, IsoCharTraits::Comma() );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of colon-separated
+    * tokens extracted from a container \a c. Returns a reference to this
+    * string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, ':' ); \endcode
+    */
+   template <class C>
+   IsoString& ToColonSeparated( const C& c )
+   {
+      return ToSeparated( c, IsoCharTraits::Colon() );
+   }
+
+   /*!
+    * Replaces the contents of this string with a sequence of space-separated
+    * tokens extracted from a container \a c. Returns a reference to this
+    * string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, ' ' ); \endcode
+    */
    template <class C>
    IsoString& ToSpaceSeparated( const C& c )
    {
-      (void)string_base::ToSpaceSeparated( c );
-      return *this;
+      return ToSeparated( c, IsoCharTraits::Blank() );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of
+    * tabulator-separated tokens extracted from a container \a c. Returns a
+    * reference to this string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, '\t' ); \endcode
+    */
    template <class C>
    IsoString& ToTabSeparated( const C& c )
    {
-      (void)string_base::ToTabSeparated( c );
-      return *this;
+      return ToSeparated( c, IsoCharTraits::Tab() );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of new line
+    * separated tokens extracted from a container \a c. Returns a reference to
+    * this string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, '\n' ); \endcode
+    */
    template <class C>
    IsoString& ToNewLineSeparated( const C& c )
    {
-      (void)string_base::ToNewLineSeparated( c );
-      return *this;
+      return ToSeparated( c, IsoCharTraits::LF() );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of null-separated
+    * tokens extracted from a container \a c. Returns a reference to this
+    * string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, '\0' ); \endcode
+    */
    template <class C>
    IsoString& ToNullSeparated( const C& c )
    {
-      (void)string_base::ToNullSeparated( c );
-      return *this;
+      return ToSeparated( c, IsoCharTraits::Null() );
    }
 
+   /*!
+    * Replaces the contents of this string with a hyphenated sequence of tokens
+    * extracted from a container \a c. Returns a reference to this string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, '-' ); \endcode
+    */
    template <class C>
    IsoString& ToHyphenated( const C& c )
    {
-      (void)string_base::ToHyphenated( c );
-      return *this;
+      return ToSeparated( c, IsoCharTraits::Hyphen() );
    }
 
    // -------------------------------------------------------------------------
@@ -9470,116 +9399,261 @@ public:
 
    // -------------------------------------------------------------------------
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * character. Returns a reference to this string.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C>
    String& ToSeparated( const C& c, char_type separator )
    {
-      (void)string_base::ToSeparated( c, separator );
-      return *this;
+      Clear();
+      return c.ToSeparated( *this, separator );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * character, and built using an \a append binary function. Returns a
+    * reference to this string.
+    *
+    * The binary function must be of the form:
+    *
+    * \code void append( String& s, char16_type c ); \endcode
+    *
+    * where \a c is being appended to \a s.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C, class AF>
    String& ToSeparated( const C& c, char_type separator, AF append )
    {
-      (void)string_base::ToSeparated( c, separator, append );
-      return *this;
+      Clear();
+      return c.ToSeparated( *this, separator, append );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator string.
+    * Returns a reference to this string.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C>
    String& ToSeparated( const C& c, const String& separator )
    {
-      (void)string_base::ToSeparated( c, separator );
-      return *this;
+      Clear();
+      return c.ToSeparated( *this, separator );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator string,
+    * and built using an \a append binary function. Returns a reference to this
+    * string.
+    *
+    * The binary function must be of the form:
+    *
+    * \code void append( String& s1, const String& s2 ); \endcode
+    *
+    * where \a s2 is being appended to \a s1.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C, class AF>
    String& ToSeparated( const C& c, const String& separator, AF append )
    {
-      (void)string_base::ToSeparated( c, separator, append );
-      return *this;
+      Clear();
+      return c.ToSeparated( *this, separator, append );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * null-terminated string. Returns a reference to this string.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C>
-   String& ToSeparated( const C& c, char8_type separator )
+   String& ToSeparated( const C& c, const_c_string separator )
    {
-      (void)string_base::ToSeparated( c, separator );
-      return *this;
+      return ToSeparated( c, String( separator ) );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * null-terminated string, and built using an \a append binary function.
+    * Returns a reference to this string.
+    *
+    * The binary function must be of the form:
+    *
+    * \code void append( String& s1, const char16_type* s2 ); \endcode
+    *
+    * where \a s2 is being appended to \a s1.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C, class AF>
-   String& ToSeparated( const C& c, char8_type separator, AF append )
+   String& ToSeparated( const C& c, const_c_string separator, AF append )
    {
-      (void)string_base::ToSeparated( c, separator, append );
-      return *this;
+      return ToSeparated( c, String( separator ), append );
    }
 
-   template <class C>
-   String& ToSeparated( const C& c, const string8_base& separator )
-   {
-      (void)string_base::ToSeparated( c, separator );
-      return *this;
-   }
-
-   template <class C, class AF>
-   String& ToSeparated( const C& c, const string8_base& separator, AF append )
-   {
-      (void)string_base::ToSeparated( c, separator, append );
-      return *this;
-   }
-
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * null-terminated 8-bit string (const char*). Returns a reference to this
+    * string.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C>
    String& ToSeparated( const C& c, const_c_string8 separator )
    {
-      (void)string_base::ToSeparated( c, separator );
-      return *this;
+      return ToSeparated( c, String( separator ) );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * null-terminated 8-bit string (const char*), and built using an \a append
+    * binary function. Returns a reference to this string.
+    *
+    * The binary function must be of the form:
+    *
+    * \code void append( String& s1, const char* s2 ); \endcode
+    *
+    * where \a s2 is being appended to \a s1.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C, class AF>
    String& ToSeparated( const C& c, const_c_string8 separator, AF append )
    {
-      (void)string_base::ToSeparated( c, separator, append );
-      return *this;
+      return ToSeparated( c, String( separator ), append );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of comma-separated
+    * tokens extracted from a container \a c. Returns a reference to this
+    * string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, char16_type( ',' ) ); \endcode
+    */
    template <class C>
    String& ToCommaSeparated( const C& c )
    {
-      (void)string_base::ToCommaSeparated( c );
-      return *this;
+      return ToSeparated( c, CharTraits::Comma() );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of colon-separated
+    * tokens extracted from a container \a c. Returns a reference to this
+    * string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, char16_type( ':' ) ); \endcode
+    */
+   template <class C>
+   String& ToColonSeparated( const C& c )
+   {
+      return ToSeparated( c, CharTraits::Colon() );
+   }
+
+   /*!
+    * Replaces the contents of this string with a sequence of space-separated
+    * tokens extracted from a container \a c. Returns a reference to this
+    * string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, char16_type( ' ' ) ); \endcode
+    */
    template <class C>
    String& ToSpaceSeparated( const C& c )
    {
-      (void)string_base::ToSpaceSeparated( c );
-      return *this;
+      return ToSeparated( c, CharTraits::Blank() );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of
+    * tabulator-separated tokens extracted from a container \a c. Returns a
+    * reference to this string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, char16_type( '\t' ) ); \endcode
+    */
    template <class C>
    String& ToTabSeparated( const C& c )
    {
-      (void)string_base::ToTabSeparated( c );
-      return *this;
+      return ToSeparated( c, CharTraits::Tab() );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of new line
+    * separated tokens extracted from a container \a c. Returns a reference to
+    * this string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, char16_type( '\n' ) ); \endcode
+    */
    template <class C>
    String& ToNewLineSeparated( const C& c )
    {
-      (void)string_base::ToNewLineSeparated( c );
-      return *this;
+      return ToSeparated( c, CharTraits::LF() );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of null-separated
+    * tokens extracted from a container \a c. Returns a reference to this
+    * string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, char16_type( '\0' ) ); \endcode
+    */
    template <class C>
    String& ToNullSeparated( const C& c )
    {
-      (void)string_base::ToNullSeparated( c );
-      return *this;
+      return ToSeparated( c, CharTraits::Null() );
    }
 
+   /*!
+    * Replaces the contents of this string with a hyphenated sequence of tokens
+    * extracted from a container \a c. Returns a reference to this string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, char16_type( '-' ) ); \endcode
+    */
    template <class C>
    String& ToHyphenated( const C& c )
    {
-      (void)string_base::ToHyphenated( c );
-      return *this;
+      return ToSeparated( c, CharTraits::Hyphen() );
    }
 
    // -------------------------------------------------------------------------

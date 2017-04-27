@@ -1670,15 +1670,12 @@ public:
       {
          s.Append( S( *i ) );
          if ( ++i < m_data->end )
-         {
-            S p( separator );
             do
             {
-               s.Append( p );
+               s.Append( separator );
                s.Append( S( *i ) );
             }
             while ( ++i < m_data->end );
-         }
       }
       return s;
    }

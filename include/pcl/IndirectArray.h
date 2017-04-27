@@ -1742,16 +1742,13 @@ public:
                return s;
          s.Append( S( **i ) );
          if ( ++i < End() )
-         {
-            S p( separator );
             do
                if ( *i != nullptr )
                {
-                  s.Append( p );
+                  s.Append( separator );
                   s.Append( S( **i ) );
                }
             while ( ++i < End() );
-         }
       }
       return s;
    }

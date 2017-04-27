@@ -459,7 +459,7 @@ public:
    GenericVector& operator /=( const GenericVector& x )
    {
       if ( x.Length() < Length() )
-         throw Error( "Invalid vector multiplication." );
+         throw Error( "Invalid vector division." );
       EnsureUnique();
       const_iterator s = x.Begin();
       for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i, ++s )
@@ -1814,15 +1814,12 @@ public:
       {
          s.Append( S( *i ) );
          if ( ++i < j )
-         {
-            S p( separator );
             do
             {
-               s.Append( p );
+               s.Append( separator );
                s.Append( S( *i ) );
             }
             while ( ++i < j );
-         }
       }
       return s;
    }
@@ -2419,8 +2416,7 @@ GenericVector<T> operator /( const GenericVector<T>& A, const T& x )
 template <typename T> inline
 GenericVector<T> operator /( GenericVector<T>&& A, const T& x )
 {
-   A /= x;
-   return A;
+   return A /= x;
 }
 
 /*!
@@ -2456,6 +2452,34 @@ GenericVector<T> operator /( const T& x, GenericVector<T>&& A )
    return A;
 }
 
+/*!
+ * Returns the result of the element-wise division of a vector \a A by another
+ * vector \a B.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator /( const GenericVector<T>& A, const GenericVector<T>& B )
+{
+   if ( A.Length() > B.Length() )
+      throw Error( "Invalid vector division." );
+   GenericVector<T> R( A.Length() );
+   typename GenericVector<T>::iterator r = R.Begin();
+   for ( typename GenericVector<T>::const_iterator a = A.Begin(), a1 = A.End(), b = B.Begin(); a < a1; ++a, ++b )
+      *r++ = *a / *b;
+   return R;
+}
+
+/*!
+ * Returns the result of the element-wise division of an r-value reference to a
+ * vector \a A by a vector \a B.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator /( GenericVector<T>&& A, const GenericVector<T>& B )
+{
+   return A /= B;
+}
+
 // ----------------------------------------------------------------------------
 
 /*!
@@ -2480,8 +2504,7 @@ GenericVector<T> operator ^( const GenericVector<T>& A, const T& x )
 template <typename T> inline
 GenericVector<T> operator ^( GenericVector<T>&& A, const T& x )
 {
-   A ^= x;
-   return A;
+   return A ^= x;
 }
 
 /*!

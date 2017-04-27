@@ -1999,15 +1999,12 @@ public:
       {
          s.Append( S( *i ) );
          if ( ++i < End() )
-         {
-            S p( separator );
             do
             {
-               s.Append( p );
+               s.Append( separator );
                s.Append( S( *i ) );
             }
             while ( ++i < End() );
-         }
       }
       return s;
    }

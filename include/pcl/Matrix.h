@@ -2382,15 +2382,12 @@ public:
       {
          s.Append( S( *i ) );
          if ( ++i < j )
-         {
-            S p( separator );
             do
             {
-               s.Append( p );
+               s.Append( separator );
                s.Append( S( *i ) );
             }
             while ( ++i < j );
-         }
       }
       return s;
    }

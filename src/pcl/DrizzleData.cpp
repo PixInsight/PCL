@@ -12,38 +12,9 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-DrizzleData::DrizzleData( const String& filePath, bool ignoreIntegrationData )
-{
-   IsoString text = File::ReadTextFile( filePath );
-   for ( auto ch : text )
-   {
-      if ( ch == '<' )
-      {
-         XMLDocument xml;
-         xml.SetParserOption( XMLParserOption::IgnoreComments );
-         xml.SetParserOption( XMLParserOption::IgnoreUnknownElements );
-         xml.Parse( text.UTF8ToUTF16() );
-         if ( xml.RootElement()->Name() != "xdrz" || xml.RootElement()->AttributeValue( "version" ) != "1.0" )
-            throw Error( "Not an XDRZ version 1.0 file." );
-         Parse( xml.RootElement(), ignoreIntegrationData );
-         return;
-      }
-
-      if ( !IsoCharTraits::IsSpace( ch ) )
-      {
-         PlainTextDecoder( this ).Decode( text );
-         return;
-      }
-   }
-
-   throw Error( "Empty drizzle data file." );
-}
-
-// ----------------------------------------------------------------------------
-
 void DrizzleData::Clear()
 {
-   m_filePath = m_mosaicedFilePath = m_targetFilePath = String();
+   m_sourceFilePath = m_cfaSourceFilePath = m_cfaSourcePattern = m_alignTargetFilePath = String();
    m_referenceWidth = m_referenceHeight = -1;
    m_H = Matrix();
    m_S.Clear();
@@ -63,14 +34,14 @@ void DrizzleData::ClearIntegrationData()
 
 XMLDocument* DrizzleData::Serialize() const
 {
-   // Verify image registration data
-   if ( m_filePath.IsEmpty() ||
+   // Validate image registration data
+   if ( m_sourceFilePath.IsEmpty() ||
         m_referenceWidth < 1 || m_referenceHeight < 1 ||
        !m_H.IsEmpty() && (m_H.Rows() != 3 || m_H.Columns() != 3) ||
         m_H.IsEmpty() && !m_S.IsValid() )
       throw Error( "Invalid/insufficient image registration data." );
 
-   // Verify image integration data
+   // Validate image integration data
    if ( m_location.Length() != m_referenceLocation.Length() ||
        !m_scale.IsEmpty()  && m_location.Length() != m_scale.Length() ||
        !m_weight.IsEmpty() && m_location.Length() != m_weight.Length() ||
@@ -94,13 +65,15 @@ XMLDocument* DrizzleData::Serialize() const
 
    *(new XMLElement( *root, "CreationTime" )) << new XMLText( TimePoint::Now().ToString() );
 
-   *(new XMLElement( *root, "SourceImage" )) << new XMLText( m_filePath );
+   *(new XMLElement( *root, "SourceImage" )) << new XMLText( m_sourceFilePath );
 
-   if ( !m_mosaicedFilePath.IsEmpty() )
-      *(new XMLElement( *root, "MosaicedSourceImage" )) << new XMLText( m_mosaicedFilePath );
+   if ( !m_cfaSourceFilePath.IsEmpty() )
+      *(new XMLElement( *root, "CFASourceImage", XMLAttributeList()
+            << (m_cfaSourcePattern.IsEmpty() ? XMLAttribute() : XMLAttribute( "pattern", m_cfaSourcePattern )) )
+       ) << new XMLText( m_cfaSourceFilePath );
 
-   if ( !m_targetFilePath.IsEmpty() )
-      *(new XMLElement( *root, "AlignmentTargetImage" )) << new XMLText( m_targetFilePath );
+   if ( !m_alignTargetFilePath.IsEmpty() )
+      *(new XMLElement( *root, "AlignmentTargetImage" )) << new XMLText( m_alignTargetFilePath );
 
    new XMLElement( *root, "ReferenceGeometry", XMLAttributeList()
       << XMLAttribute( "width", String( m_referenceWidth ) )
@@ -171,7 +144,7 @@ static bool TryToDouble( double& value, IsoString::const_iterator p )
    return false;
 }
 
-static Vector ParseListOfRealValues( IsoString& text, size_type start, size_type end, int minCount = -1, int maxCount = -1 )
+static Vector ParseListOfRealValues( IsoString& text, size_type start, size_type end, size_type minCount = 0, size_type maxCount = ~size_type( 0 ) )
 {
    Array<double> v;
    for ( size_type i = start, j; i < end; ++i )
@@ -183,24 +156,23 @@ static Vector ParseListOfRealValues( IsoString& text, size_type start, size_type
       double x;
       if ( !TryToDouble( x, text.At( i ) ) )
          throw Error( "Parsing real numeric list: Invalid floating point numeric literal \'" + IsoString( text.At( i ) ) + "\'" );
-      if ( maxCount > 0 )
-         if ( v.Length() == size_type( maxCount ) )
-            throw Error( "Parsing real numeric list: Too many items." );
+      if ( v.Length() == maxCount )
+         throw Error( "Parsing real numeric list: Too many items." );
       v << x;
       i = j;
    }
-   if ( v.Length() < size_type( minCount ) )
+   if ( v.Length() < minCount )
       throw Error( "Parsing real numeric list: Too few items." );
    return Vector( v.Begin(), int( v.Length() ) );
 }
 
-static Vector ParseListOfRealValues( const XMLElement& element, int minCount = -1, int maxCount = -1 )
+static Vector ParseListOfRealValues( const XMLElement& element, size_type minCount = 0, size_type maxCount = ~size_type( 0 ) )
 {
    IsoString text = IsoString( element.Text().Trimmed() );
    return ParseListOfRealValues( text, 0, text.Length(), minCount, maxCount );
 }
 
-static IVector ParseListOfIntegerValues( IsoString& text, size_type start, size_type end, int minCount = -1, int maxCount = -1 )
+static IVector ParseListOfIntegerValues( IsoString& text, size_type start, size_type end, size_type minCount = 0, size_type maxCount = ~size_type( 0 ) )
 {
    Array<int> v;
    for ( size_type i = start, j; i < end; ++i )
@@ -212,18 +184,17 @@ static IVector ParseListOfIntegerValues( IsoString& text, size_type start, size_
       int x;
       if ( !TryToInt( x, text.At( i ) ) )
          throw Error( "Parsing integer numeric list: Invalid integer numeric literal \'" + IsoString( text.At( i ) ) + "\' at offset " + IsoString( start ) );
-      if ( maxCount > 0 )
-         if ( v.Length() == size_type( maxCount ) )
-            throw Error( "Parsing integer numeric list: Too many items." );
+      if ( v.Length() == maxCount )
+         throw Error( "Parsing integer numeric list: Too many items." );
       v << x;
       i = j;
    }
-   if ( v.Length() < size_type( minCount ) )
+   if ( v.Length() < minCount )
       throw Error( "Parsing integer numeric list: Too few items." );
    return IVector( v.Begin(), int( v.Length() ) );
 }
 
-// static IVector ParseListOfIntegerValues( const XMLElement& element, int minCount = -1, int maxCount = -1 )
+// static IVector ParseListOfIntegerValues( const XMLElement& element, size_type minCount = 0, size_type maxCount = ~size_type( 0 ) )
 // {
 //    IsoString text = IsoString( element.Text().Trimmed() );
 //    return ParseListOfIntegerValues( text, 0, text.Length(), minCount, maxCount );
@@ -273,11 +244,49 @@ static DrizzleData::rejection_data ParseRejectionData( const XMLElement& element
 
 // ----------------------------------------------------------------------------
 
-void DrizzleData::Parse( const XMLElement* root, bool ignoreIntegrationData )
+void DrizzleData::Parse( const String& filePath, bool ignoreIntegrationData )
+{
+   IsoString text = File::ReadTextFile( filePath );
+   for ( auto ch : text )
+   {
+      if ( ch == '<' )
+      {
+         XMLDocument xml;
+         xml.SetParserOption( XMLParserOption::IgnoreComments );
+         xml.SetParserOption( XMLParserOption::IgnoreUnknownElements );
+         xml.Parse( text.UTF8ToUTF16() );
+         Parse( xml, ignoreIntegrationData );
+         return;
+      }
+
+      if ( !IsoCharTraits::IsSpace( ch ) )
+      {
+         PlainTextDecoder( this ).Decode( text );
+         return;
+      }
+   }
+
+   throw Error( "Empty drizzle data file." );
+}
+
+// ----------------------------------------------------------------------------
+
+void DrizzleData::Parse( const XMLDocument& xml, bool ignoreIntegrationData )
+{
+   if ( xml.RootElement() == nullptr )
+      throw Error( "The XML document has no root element." );
+   if ( xml.RootElement()->Name() != "xdrz" || xml.RootElement()->AttributeValue( "version" ) != "1.0" )
+      throw Error( "Not an XDRZ version 1.0 document." );
+   Parse( *xml.RootElement(), ignoreIntegrationData );
+}
+
+// ----------------------------------------------------------------------------
+
+void DrizzleData::Parse( const XMLElement& root, bool ignoreIntegrationData )
 {
    Clear();
 
-   for ( const XMLNode& node : *root )
+   for ( const XMLNode& node : root )
    {
       if ( !node.IsElement() )
       {
@@ -297,19 +306,20 @@ void DrizzleData::Parse( const XMLElement* root, bool ignoreIntegrationData )
       {
          if ( element.Name() == "SourceImage" )
          {
-            m_filePath = element.Text().Trimmed();
-            if ( m_filePath.IsEmpty() )
+            m_sourceFilePath = element.Text().Trimmed();
+            if ( m_sourceFilePath.IsEmpty() )
                throw Error( "Empty source file path definition." );
          }
-         else if ( element.Name() == "MosaicedSourceImage" )
+         else if ( element.Name() == "CFASourceImage" )
          {
             // optional
-            m_mosaicedFilePath = element.Text().Trimmed();
+            m_cfaSourceFilePath = element.Text().Trimmed();
+            m_cfaSourcePattern = element.AttributeValue( "pattern" );
          }
          else if ( element.Name() == "AlignmentTargetImage" )
          {
             // optional
-            m_targetFilePath = element.Text().Trimmed();
+            m_alignTargetFilePath = element.Text().Trimmed();
          }
          else if ( element.Name() == "ReferenceGeometry" )
          {
@@ -394,7 +404,7 @@ void DrizzleData::Parse( const XMLElement* root, bool ignoreIntegrationData )
       }
    }
 
-   if ( m_filePath.IsEmpty() )
+   if ( m_sourceFilePath.IsEmpty() )
       throw Error( "Missing required SourceImage element." );
 
    if ( m_referenceWidth < 1 || m_referenceHeight < 1 )
@@ -557,6 +567,29 @@ void DrizzleData::ParseSpline( DrizzleData::spline& S, const XMLElement& root )
 
 // ----------------------------------------------------------------------------
 
+void DrizzleData::MakeRejectionMap() const
+{
+   m_rejectionMap.FreeData();
+
+   if ( !m_rejectHighData.IsEmpty() || !m_rejectLowData.IsEmpty() )
+   {
+      m_rejectionMap.AllocateData( m_referenceWidth, m_referenceHeight, NumberOfChannels() );
+      m_rejectionMap.Zero();
+
+      if ( !m_rejectHighData.IsEmpty() )
+         for ( int c = 0; c < NumberOfChannels(); ++c )
+            for ( const Point& p : m_rejectHighData[c] )
+               m_rejectionMap( p, c ) = uint8( 1 );
+
+      if ( !m_rejectLowData.IsEmpty() )
+         for ( int c = 0; c < NumberOfChannels(); ++c )
+            for ( const Point& p : m_rejectLowData[c] )
+               m_rejectionMap( p, c ) |= uint8( 2 );
+   }
+}
+
+// ----------------------------------------------------------------------------
+
 void DrizzleData::SerializeSpline( XMLElement* root, const DrizzleData::spline& S )
 {
    root->SetAttribute( "scalingFactor", String( S.m_r0 ) );
@@ -594,29 +627,6 @@ void DrizzleData::SerializeRejectionData( XMLElement* root, const DrizzleData::r
       text << ':';
    }
    *root << new XMLText( text );
-}
-
-// ----------------------------------------------------------------------------
-
-void DrizzleData::MakeRejectionMap() const
-{
-   m_rejectionMap.FreeData();
-
-   if ( !m_rejectHighData.IsEmpty() || !m_rejectLowData.IsEmpty() )
-   {
-      m_rejectionMap.AllocateData( m_referenceWidth, m_referenceHeight, NumberOfChannels() );
-      m_rejectionMap.Zero();
-
-      if ( !m_rejectHighData.IsEmpty() )
-         for ( int c = 0; c < NumberOfChannels(); ++c )
-            for ( const Point& p : m_rejectHighData[c] )
-               m_rejectionMap( p, c ) = uint8( 1 );
-
-      if ( !m_rejectLowData.IsEmpty() )
-         for ( int c = 0; c < NumberOfChannels(); ++c )
-            for ( const Point& p : m_rejectLowData[c] )
-               m_rejectionMap( p, c ) |= uint8( 2 );
-   }
 }
 
 // ----------------------------------------------------------------------------
@@ -668,14 +678,14 @@ void DrizzleData::PlainTextDecoder::ProcessBlock( IsoString& s, const IsoString&
 {
    if ( itemId == "P" ) // drizzle source image
    {
-      m_data->m_filePath = s.Substring( start, end-start ).Trimmed().UTF8ToUTF16();
-      if ( m_data->m_filePath.IsEmpty() )
+      m_data->m_sourceFilePath = s.Substring( start, end-start ).Trimmed().UTF8ToUTF16();
+      if ( m_data->m_sourceFilePath.IsEmpty() )
          throw Error( "At offset=" + String( start ) + ": Empty file path defined." );
    }
    else if ( itemId == "T" ) // alignment target image (optional)
    {
-      m_data->m_targetFilePath = s.Substring( start, end-start ).Trimmed().UTF8ToUTF16();
-      if ( m_data->m_targetFilePath.IsEmpty() )
+      m_data->m_alignTargetFilePath = s.Substring( start, end-start ).Trimmed().UTF8ToUTF16();
+      if ( m_data->m_alignTargetFilePath.IsEmpty() )
          throw Error( "At offset=" + String( start ) + ": Empty file path defined." );
    }
    else if ( itemId == "D" ) // alignment reference image dimensions

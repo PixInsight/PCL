@@ -56,6 +56,7 @@
 
 #include <pcl/Defs.h>
 
+#include <pcl/File.h>
 #include <pcl/SurfaceSplines.h>
 #include <pcl/TimePoint.h>
 
@@ -113,7 +114,7 @@ public:
     * dimensions. This class is used to implement image alignment with
     * arbitrary distortion correction.
     */
-   typedef PointSurfaceSpline<FPoint>     vector_spline;
+   typedef PointSurfaceSpline<DPoint>     vector_spline;
 
    /*!
     * Represents a coordinate interpolating/approximating surface spline used
@@ -149,9 +150,10 @@ public:
    DrizzleData( DrizzleData&& ) = default;
 #else
    DrizzleData( DrizzleData&& x ) :
-      m_filePath( std::move( x.m_filePath ) ),
-      m_mosaicedFilePath( std::move( x.m_mosaicedFilePath ) ),
-      m_targetFilePath( std::move( x.m_targetFilePath ) ),
+      m_sourceFilePath( std::move( x.m_sourceFilePath ) ),
+      m_cfaSourceFilePath( std::move( x.m_cfaSourceFilePath ) ),
+      m_cfaSourcePattern( std::move( x.m_cfaSourcePattern ) ),
+      m_alignTargetFilePath( std::move( x.m_alignTargetFilePath ) ),
       m_referenceWidth( x.m_referenceWidth ),
       m_referenceHeight( x.m_referenceHeight ),
       m_H( std::move( x.m_H ) ),
@@ -168,7 +170,7 @@ public:
 #endif
 
    /*!
-    * Constructs a %DrizzleData instance by loading and parsing a file.
+    * Constructs a new %DrizzleData instance by loading and parsing a file.
     *
     * \param filePath   Path to an existing file that will be parsed. The file
     *                   contents can be in %XML drizzle data format (normally,
@@ -183,14 +185,39 @@ public:
     *                   statistical location and scale estimates for image
     *                   normalization, image weights, and pixel rejection data.
     *
-    * This function parses and validates the data retrieved from the specified
-    * file. It throws the appropriate Error exceptions in the event of parsing
-    * errors or invalid data.
+    * This constructor validates the data retrieved from the specified file. It
+    * throws the appropriate Error exceptions in the event of parsing errors or
+    * invalid data.
     */
-   DrizzleData( const String& filePath, bool ignoreIntegrationData = false );
+   DrizzleData( const String& filePath, bool ignoreIntegrationData = false )
+   {
+      Parse( filePath, ignoreIntegrationData );
+   }
 
    /*!
-    * Constructs a %DrizzleData instance by parsing an %XML element.
+    * Constructs a new %DrizzleData instance by parsing a well-formed %XML
+    * document.
+    *
+    * \param xml        Reference to the source %XML document. This constructor
+    *                   expects an %XML document in valid %XML drizzle data
+    *                   format (.xdrz).
+    *
+    * \param ignoreIntegrationData  If true, all drizzle data relative to the
+    *                   image integration task will be ignored. This includes
+    *                   statistical location and scale estimates for image
+    *                   normalization, image weights, and pixel rejection data.
+    *
+    * This constructor validates the data retrieved from the specified %XML
+    * document. It throws an Error exception in the event of an invalid
+    * document or invalid data.
+    */
+   DrizzleData( const XMLDocument& xml, bool ignoreIntegrationData = false )
+   {
+      Parse( xml, ignoreIntegrationData );
+   }
+
+   /*!
+    * Constructs a new %DrizzleData instance by parsing an %XML element.
     *
     * \param element    Reference to the source %XML element. This constructor
     *                   expects an %XML document tree in valid %XML drizzle
@@ -200,10 +227,13 @@ public:
     *                   image integration task will be ignored. This includes
     *                   statistical location and scale estimates for image
     *                   normalization, image weights, and pixel rejection data.
+    *
+    * This constructor validates the data retrieved from the specified %XML
+    * element. It throws an Error exception in the event of invalid data.
     */
    DrizzleData( const XMLElement& element, bool ignoreIntegrationData = false )
    {
-      Parse( &element, ignoreIntegrationData );
+      Parse( element, ignoreIntegrationData );
    }
 
    /*!
@@ -221,22 +251,22 @@ public:
     * registration task. This file can be used as input for a drizzle
     * integration task.
     *
-    * \sa SetFilePath()
+    * \sa SetSourceFilePath()
     */
-   const String& FilePath() const
+   const String& SourceFilePath() const
    {
-      return m_filePath;
+      return m_sourceFilePath;
    }
 
    /*!
-    * Sets the full path to the unregistered image file corresponding to the
-    * drizzle image represented by this instance.
+    * Sets the path to the unregistered image file corresponding to the drizzle
+    * image represented by this instance.
     *
-    * \sa FilePath()
+    * \sa SourceFilePath()
     */
-   void SetFilePath( const String& filePath )
+   void SetSourceFilePath( const String& filePath )
    {
-      m_filePath = filePath;
+      m_sourceFilePath = File::FullPath( filePath );
    }
 
    /*!
@@ -247,27 +277,58 @@ public:
     * demosaicing (e.g., de-Bayering) task. This file can be used as input for
     * a Bayer drizzle integration task.
     *
-    * \sa SetMosaicedFilePath()
+    * \sa SetCFASourceFilePath(), CFASourcePattern()
     */
-   const String& MosaicedFilePath() const
+   const String& CFASourceFilePath() const
    {
-      return m_mosaicedFilePath;
+      return m_cfaSourceFilePath;
    }
 
    /*!
-    * Sets the full path to the mosaiced/unregistered image file corresponding
-    * to the drizzle image represented by this instance.
+    * Sets the path to the mosaiced/unregistered image file corresponding t
+    * the drizzle image represented by this instance.
     *
-    * \sa MosaicedFilePath()
+    * \sa CFASourceFilePath(), SetCFASourcePattern()
     */
-   void SetMosaicedFilePath( const String& filePath )
+   void SetCFASourceFilePath( const String& filePath )
    {
-      m_mosaicedFilePath = filePath;
+      m_cfaSourceFilePath = File::FullPath( filePath );
+   }
+
+   /*!
+    * Returns a string representation of the color filter array (CFA) used by
+    * the mosaiced/unregistered image file corresponding to the drizzle image
+    * represented by this instance.
+    *
+    * The CFA corresponds to the file represented by CFASourceFilePath(). For
+    * the standard Bayer filters, this function returns "RGGB", "BGGR", "GBRG",
+    * and "GRBG".
+    *
+    * \sa SetCFASourcePattern(), CFASourceFilePath()
+    */
+   const String& CFASourcePattern() const
+   {
+      return m_cfaSourcePattern;
+   }
+
+   /*!
+    * Defines the color filter array (CFA) used by the mosaiced/unregistered
+    * image file corresponding to the drizzle image represented by this
+    * instance.
+    *
+    * See CFASourcePattern() for more information on CFA representations.
+    *
+    * \sa CFASourcePattern(), SetCFASourceFilePath()
+    */
+   void SetCFASourcePattern( const String& cfaPattern )
+   {
+      m_cfaSourcePattern = cfaPattern;
    }
 
    /*!
     * Returns the full path to the registered image file corresponding to the
-    * drizzle image represented by this instance.
+    * drizzle image represented by this instance, or an empty string if that
+    * file path is not available.
     *
     * The file identified by this function stores the output image of the image
     * registration task. This file can be used as input for a regular
@@ -275,25 +336,25 @@ public:
     *
     * \note This file <em>should not</em> be used as input for drizzle
     * integration, since it has already been registered and interpolated. Use
-    * FilePath() or MosaicedFilePath() as input for drizzle or Bayer drizzle,
-    * respectively.
+    * SourceFilePath() or CFASourceFilePath() as input for drizzle or Bayer
+    * drizzle, respectively.
     *
-    * \sa SetTargetPath()
+    * \sa SetAlignmentTargetFilePath()
     */
-   const String& TargetPath() const
+   const String& AlignmentTargetFilePath() const
    {
-      return m_targetFilePath;
+      return m_alignTargetFilePath;
    }
 
    /*!
-    * Sets the full path to the registered image file corresponding to the
-    * drizzle image represented by this instance.
+    * Sets the path to the registered image file corresponding to the drizzle
+    * image represented by this instance.
     *
-    * \sa TargetPath()
+    * \sa AlignmentTargetFilePath()
     */
-   void SetTargetPath( const String& filePath )
+   void SetAlignmentTargetFilePath( const String& filePath )
    {
-      m_targetFilePath = filePath;
+      m_alignTargetFilePath = File::FullPath( filePath );
    }
 
    /*!
@@ -389,9 +450,9 @@ public:
     * Returns true iff this instance defines a 3x3 alignment matrix for the
     * projective image registration transformation.
     *
-    * \sa AlignmentMatrix(), HasSplines()
+    * \sa AlignmentMatrix(), HasAlignmentSplines()
     */
-   bool HasMatrix() const
+   bool HasAlignmentMatrix() const
    {
       return !m_H.IsEmpty();
    }
@@ -400,9 +461,9 @@ public:
     * Returns true iff this instance defines a vector surface spline
     * interpolation/approximation device.
     *
-    * \sa AlignmentSplines(), HasMatrix()
+    * \sa AlignmentSplines(), HasAlignmentMatrix()
     */
-   bool HasSplines() const
+   bool HasAlignmentSplines() const
    {
       return m_S.IsValid();
    }
@@ -415,7 +476,7 @@ public:
     *
     * Typically, the components of the vector returned by this function are
     * median values, or similar robust estimates of location, computed for each
-    * channel of the image identified by TargetPath(). These estimates are
+    * channel of the image identified by AlignmentTargetFilePath(). These estimates are
     * normally generated by a regular integration task.
     *
     * \sa SetLocation(), ReferenceLocation(), Scale()
@@ -482,7 +543,7 @@ public:
     * Typically, the components of the vector returned by this function are
     * computed from robust estimates of dispersion, such as MAD or the square
     * root of the biweight midvariance among many others, computed for each
-    * channel of the image identified by TargetPath() and multiplied by the
+    * channel of the image identified by AlignmentTargetFilePath() and multiplied by the
     * inverse of the corresponding estimates computed for an integration
     * reference image. Scaling factors are normally generated by a regular
     * integration task.
@@ -515,7 +576,7 @@ public:
     *
     * Typically, the components of the returned vector are efficient
     * statistical weights computed for each channel of the image identified by
-    * TargetPath(). These weights are normally generated by a regular
+    * AlignmentTargetFilePath(). These weights are normally generated by a regular
     * integration task.
     *
     * \sa SetWeight(), Location(), ReferenceLocation(), Scale()
@@ -545,7 +606,7 @@ public:
     * drizzle image represented by this instance.
     *
     * The components of the returned vector are the total amounts of rejected
-    * low pixels for each channel of the image identified by TargetPath().
+    * low pixels for each channel of the image identified by AlignmentTargetFilePath().
     * Pixel rejection counts are normally generated by a regular image
     * integration task.
     *
@@ -561,7 +622,7 @@ public:
     * drizzle image represented by this instance.
     *
     * The components of the returned vector are the total amounts of rejected
-    * high pixels for each channel of the image identified by TargetPath().
+    * high pixels for each channel of the image identified by AlignmentTargetFilePath().
     * Pixel rejection counts are normally generated by a regular image
     * integration task.
     *
@@ -669,6 +730,70 @@ public:
    void ClearIntegrationData();
 
    /*!
+    * Loads and parses a drizzle data file.
+    *
+    * \param filePath   Path to an existing file that will be parsed. The file
+    *                   contents can be in %XML drizzle data format (normally,
+    *                   a file with the .xdrz suffix), or in old plain text
+    *                   format (typically with the .drz suffix). This function
+    *                   will detect the format in use from the first bytes read
+    *                   from the file, and will decode it correspondingly.
+    *
+    * \param ignoreIntegrationData  If true, all drizzle data relative to the
+    *                   image integration task will be ignored. This includes
+    *                   statistical location and scale estimates for image
+    *                   normalization, image weights, and pixel rejection data.
+    *
+    * All of the previous data transported by this instance will be replaced
+    * with new data acquired from the specified file.
+    *
+    * This function validates the data retrieved from the specified file. It
+    * throws an Error exception in the event of parsing errors or invalid data.
+    */
+   void Parse( const String& filePath, bool ignoreIntegrationData = false );
+
+   /*!
+    * Parses a well-formed %XML document.
+    *
+    * \param xml        Reference to the source %XML document. This member
+    *                   function expects an %XML document in valid %XML
+    *                   drizzle data format (.xdrz).
+    *
+    * \param ignoreIntegrationData  If true, all drizzle data relative to the
+    *                   image integration task will be ignored. This includes
+    *                   statistical location and scale estimates for image
+    *                   normalization, image weights, and pixel rejection data.
+    *
+    * All of the previous data transported by this instance will be replaced
+    * with new data acquired from the specified %XML contents.
+    *
+    * This function validates the data retrieved from the specified %XML
+    * document. It throws an Error exception in the event of an invalid
+    * document or invalid data.
+    */
+   void Parse( const XMLDocument& xml, bool ignoreIntegrationData = false );
+
+   /*!
+    * Parses an %XML element.
+    *
+    * \param element    Reference to the source %XML element. This member
+    *                   function expects an %XML document tree in valid %XML
+    *                   drizzle data format (.xdrz) rooted at this element.
+    *
+    * \param ignoreIntegrationData  If true, all drizzle data relative to the
+    *                   image integration task will be ignored. This includes
+    *                   statistical location and scale estimates for image
+    *                   normalization, image weights, and pixel rejection data.
+    *
+    * All of the previous data transported by this instance will be replaced
+    * with new data acquired from the specified %XML contents.
+    *
+    * This function validates the data retrieved from the specified %XML
+    * element. It throws an Error exception in the event of invalid data.
+    */
+   void Parse( const XMLElement&, bool ignoreIntegrationData = false );
+
+   /*!
     * Serializes the drizzle integration data transported by this object as a
     * new %XML document in .xdrz format.
     *
@@ -689,9 +814,10 @@ public:
 
 private:
 
-           String         m_filePath;
-           String         m_mosaicedFilePath;
-           String         m_targetFilePath;
+           String         m_sourceFilePath;
+           String         m_cfaSourceFilePath;
+           String         m_cfaSourcePattern;
+           String         m_alignTargetFilePath;
            int            m_referenceWidth  = -1;
            int            m_referenceHeight = -1;
            Matrix         m_H;
@@ -711,11 +837,10 @@ private:
    mutable UInt8Image     m_rejectionMap;
            TimePoint      m_creationTime;
 
-   void Parse( const XMLElement*, bool );
+   void MakeRejectionMap() const;
    static void ParseSpline( spline&, const XMLElement& );
    static void SerializeSpline( XMLElement*, const spline& );
    static void SerializeRejectionData( XMLElement*, const rejection_data& );
-   void MakeRejectionMap() const;
 
    /*!
     * \internal

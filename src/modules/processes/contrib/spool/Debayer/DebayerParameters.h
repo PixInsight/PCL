@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.04.03.0222
+// Standard Debayer Process Module Version 01.05.00.0236
 // ----------------------------------------------------------------------------
-// DebayerParameters.h - Released 2017-04-14T23:07:12Z
+// DebayerParameters.h - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
@@ -66,12 +66,17 @@ class DebayerBayerPatternParameter : public MetaEnumeration
 {
 public:
 
-   enum { RGGB,
+   enum { Auto,
+          RGGB,
           BGGR,
           GBRG,
           GRBG,
+          GRGB,
+          GBGR,
+          RGBG,
+          BGRG,
           NumberOfItems,
-          Default = RGGB };
+          Default = Auto };
 
    DebayerBayerPatternParameter( MetaProcess* );
 
@@ -134,7 +139,7 @@ public:
 
    enum { KSigma,
           MRS,
-          NumberOfNoiseEvaluationAlgorithms,
+          NumberOfItems,
           Default = MRS };
 
    DebayerNoiseEvaluationAlgorithm( MetaProcess* );
@@ -161,6 +166,19 @@ public:
 };
 
 extern DebayerShowImages* TheDebayerShowImagesParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerCFASourceFilePath : public MetaString
+{
+public:
+
+   DebayerCFASourceFilePath( MetaProcess* );
+
+   virtual IsoString Id() const;
+};
+
+extern DebayerCFASourceFilePath* TheDebayerCFASourceFilePathParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -320,4 +338,4 @@ PCL_END_LOCAL
 #endif   // __DebayerParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF DebayerParameters.h - Released 2017-04-14T23:07:12Z
+// EOF DebayerParameters.h - Released 2017-05-02T09:43:01Z

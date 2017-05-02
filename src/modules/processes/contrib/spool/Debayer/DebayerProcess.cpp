@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.04.03.0222
+// Standard Debayer Process Module Version 01.05.00.0236
 // ----------------------------------------------------------------------------
-// DebayerProcess.cpp - Released 2017-04-14T23:07:12Z
+// DebayerProcess.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
@@ -69,7 +69,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-DebayerProcess* TheDebayerProcess = 0;
+DebayerProcess* TheDebayerProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -83,6 +83,7 @@ DebayerProcess::DebayerProcess() : MetaProcess()
    new DebayerEvaluateNoise( this );
    new DebayerNoiseEvaluationAlgorithm( this );
    new DebayerShowImages( this );
+   new DebayerCFASourceFilePath( this );
    new DebayerOutputImage( this );
    new DebayerNoiseEstimateR( this );
    new DebayerNoiseEstimateG( this );
@@ -113,7 +114,7 @@ IsoString DebayerProcess::Category() const
 
 uint32 DebayerProcess::Version() const
 {
-   return 0x100; // required
+   return 0x100;
 }
 
 // ----------------------------------------------------------------------------
@@ -122,7 +123,7 @@ String DebayerProcess::Description() const
 {
    return
    "<html>"
-   "<p>Debayers a raw One Shot Color (OSC) or Digital Single-Lens Reflex (DSLR) camera image.</p>"
+   "<p>Demosaics a raw One Shot Color (OSC) or Digital Single-Lens Reflex (DSLR) camera image.</p>"
    "</html>";
 }
 
@@ -150,7 +151,7 @@ ProcessImplementation* DebayerProcess::Create() const
 ProcessImplementation* DebayerProcess::Clone( const ProcessImplementation& p ) const
 {
    const DebayerInstance* instPtr = dynamic_cast<const DebayerInstance*>( &p );
-   return (instPtr != 0) ? new DebayerInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new DebayerInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -255,4 +256,4 @@ int DebayerProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DebayerProcess.cpp - Released 2017-04-14T23:07:12Z
+// EOF DebayerProcess.cpp - Released 2017-05-02T09:43:01Z

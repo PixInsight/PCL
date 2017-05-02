@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.04.03.0222
+// Standard Debayer Process Module Version 01.05.00.0236
 // ----------------------------------------------------------------------------
-// DebayerInstance.h - Released 2017-04-14T23:07:12Z
+// DebayerInstance.h - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
@@ -53,7 +53,7 @@
 #ifndef __DebayerInstance_h
 #define __DebayerInstance_h
 
-#include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
+#include <pcl/MetaParameter.h> // pcl_bool, pcl_enum
 #include <pcl/ProcessImplementation.h>
 
 namespace pcl
@@ -87,6 +87,10 @@ private:
    pcl_bool p_evaluateNoise;
    pcl_enum p_noiseEvaluationAlgorithm;
    pcl_bool p_showImages;
+   String   p_cfaSourceFilePath;
+
+   // working CFA pattern
+   pcl_enum m_bayerPattern;
 
    /*
     * Read-only output properties
@@ -113,4 +117,4 @@ private:
 #endif   // __DebayerInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF DebayerInstance.h - Released 2017-04-14T23:07:12Z
+// EOF DebayerInstance.h - Released 2017-05-02T09:43:01Z

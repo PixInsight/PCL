@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard BMP File Format Module Version 01.00.03.0285
+// Standard BMP File Format Module Version 01.00.03.0295
 // ----------------------------------------------------------------------------
-// BMPInstance.h - Released 2017-04-14T23:07:02Z
+// BMPInstance.h - Released 2017-05-02T09:42:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard BMP PixInsight module.
 //
@@ -261,4 +261,4 @@ public:
 #endif   // __BMPInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF BMPInstance.h - Released 2017-04-14T23:07:02Z
+// EOF BMPInstance.h - Released 2017-05-02T09:42:51Z

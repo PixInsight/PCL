@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// pcl/Action.cpp - Released 2017-04-14T23:04:51Z
+// pcl/Action.cpp - Released 2017-05-02T10:39:13Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -63,7 +63,7 @@ namespace pcl
 
 static void MandatoryError( const char* funcName )
 {
-   throw Error( String( "Action::" ) + funcName + "() must be reimplemented in descendant class" );
+   throw Error( String( "Action::" ) + funcName + "() must be reimplemented in descendant class." );
 }
 
 // ----------------------------------------------------------------------------
@@ -115,10 +115,10 @@ Action::Action( void* h ) : UIObject( h )
 
 Action& Action::Null()
 {
-   static Action* nullAction = 0;
+   static Action* nullAction = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullAction == 0 )
+   if ( nullAction == nullptr )
       nullAction = new Action( reinterpret_cast<void*>( 0 ) );
    return *nullAction;
 }
@@ -256,4 +256,4 @@ void* Action::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Action.cpp - Released 2017-04-14T23:04:51Z
+// EOF pcl/Action.cpp - Released 2017-05-02T10:39:13Z

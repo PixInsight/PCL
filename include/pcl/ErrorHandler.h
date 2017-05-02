@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// pcl/ErrorHandler.h - Released 2017-04-14T23:04:40Z
+// pcl/ErrorHandler.h - Released 2017-05-02T10:38:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -181,4 +181,4 @@
 #endif   // __PCL_ErrorHandler_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ErrorHandler.h - Released 2017-04-14T23:04:40Z
+// EOF pcl/ErrorHandler.h - Released 2017-05-02T10:38:59Z

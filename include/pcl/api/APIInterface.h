@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// pcl/APIInterface.h - Released 2017-04-14T23:04:40Z
+// pcl/APIInterface.h - Released 2017-05-02T10:38:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -56,14 +56,13 @@
 
 // Global namespace
 
-#define PCL_API_Version 0x0157
+#define PCL_API_Version 0x0158
 
 extern "C"
 {
 
-/*
- * GlobalContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context GlobalContext
 {
    /*
@@ -227,9 +226,8 @@ struct api_context GlobalContext
    const ::api_pixtraits_lut* (api_func* GetPixelTraitsLUT)( uint32 version ); // version must be zero
 };
 
-/*
- * ModuleDefinitionContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ModuleDefinitionContext
 {
    void        (api_func* EnterModuleDefinitionContext)();
@@ -243,9 +241,8 @@ struct api_context ModuleDefinitionContext
    void        (api_func* ExitModuleDefinitionContext)();
 };
 
-/*
- * ProcessDefinitionContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ProcessDefinitionContext
 {
    void        (api_func* EnterProcessDefinitionContext)();
@@ -336,9 +333,8 @@ struct api_context ProcessDefinitionContext
    void        (api_func* ExitProcessDefinitionContext)();
 };
 
-/*
- * InterfaceDefinitionContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context InterfaceDefinitionContext
 {
    void           (api_func* EnterInterfaceDefinitionContext)();
@@ -444,9 +440,8 @@ struct api_context InterfaceDefinitionContext
    void           (api_func* ExitInterfaceDefinitionContext)();
 };
 
-/*
- * FileFormatDefinitionContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context FileFormatDefinitionContext
 {
    void           (api_func* EnterFileFormatDefinitionContext)();
@@ -553,18 +548,16 @@ struct api_context FileFormatDefinitionContext
    void           (api_func* ExitFileFormatDefinitionContext)();
 };
 
-/*
- * ModuleContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ModuleContext
 {
    api_bool    (api_func* LoadResource)( api_handle, const char16_type*, const char16_type* );
    api_bool    (api_func* UnloadResource)( api_handle, const char16_type*, const char16_type* );
 };
 
-/*
- * ProcessContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ProcessContext
 {
    api_bool             (api_func* EnumerateProcessCategories)( pcl::category_enumeration_callback, char*, size_type*, void* );
@@ -675,17 +668,15 @@ struct api_context ProcessContext
    api_bool             (api_func* AllocateTableRows)( process_handle, meta_parameter_handle, size_type rowCount );
 };
 
-/*
- * InterfaceContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context InterfaceContext
 {
    // ### TODO
 };
 
-/*
- * FileFormatContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context FileFormatContext
 {
    api_bool             (api_func* EnumerateFileFormats)( pcl::format_enumeration_callback, void* );
@@ -824,9 +815,8 @@ struct api_context FileFormatContext
    api_bool             (api_func* WasLossyWrite)( const_file_format_handle );
 };
 
-/*
- * UIContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context UIContext
 {
    api_bool       (api_func* AttachToUIObject)( api_handle, api_handle );
@@ -844,9 +834,8 @@ struct api_context UIContext
    api_bool       (api_func* SetHandleDestroyedEventRoutine)( api_handle, pcl::destroy_event_routine );
 };
 
-/*
- * ActionContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ActionContext
 {
    action_handle  (api_func* CreateAction)( api_handle, api_handle client,
@@ -874,9 +863,8 @@ struct api_context ActionContext
    api_bool       (api_func* SetActionStateQueryRoutine)( action_handle, pcl::action_state_query_routine );
 };
 
-/*
- * ControlContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ControlContext
 {
    control_handle (api_func* CreateControl)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1060,9 +1048,8 @@ struct api_context ControlContext
    api_bool       (api_func* SetChildDestroyEventRoutine)( control_handle, api_handle, pcl::child_event_routine );
 };
 
-/*
- * DialogContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context DialogContext
 {
    control_handle (api_func* CreateDialog)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1096,9 +1083,8 @@ struct api_context DialogContext
                                  const char16_type* caption, const char16_type* initialPath );
 };
 
-/*
- * FrameContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context FrameContext
 {
    control_handle (api_func* CreateFrame)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1112,9 +1098,8 @@ struct api_context FrameContext
    int32          (api_func* GetFrameBorderWidth)( const_control_handle );
 };
 
-/*
- * GroupBoxContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context GroupBoxContext
 {
    control_handle (api_func* CreateGroupBox)( api_handle, api_handle client, const char16_type*, control_handle parent, uint32 flags );
@@ -1131,9 +1116,8 @@ struct api_context GroupBoxContext
    api_bool       (api_func* SetGroupBoxCheckEventRoutine)( control_handle, api_handle, pcl::button_check_event_routine );
 };
 
-/*
- * TabBoxContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context TabBoxContext
 {
    control_handle (api_func* CreateTabBox)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1171,9 +1155,8 @@ struct api_context TabBoxContext
    api_bool       (api_func* SetTabBoxPageSelectedEventRoutine)( control_handle, api_handle, pcl::value_event_routine );
 };
 
-/*
- * ButtonContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ButtonContext
 {
    control_handle (api_func* CreatePushButton)( api_handle, api_handle client, const char16_type*, const_bitmap_handle, control_handle parent, uint32 flags );
@@ -1211,9 +1194,8 @@ struct api_context ButtonContext
    api_bool       (api_func* SetButtonCheckEventRoutine)( control_handle, api_handle, pcl::button_check_event_routine );
 };
 
-/*
- * EditContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context EditContext
 {
    control_handle (api_func* CreateEdit)( api_handle, api_handle client, const char16_type*, control_handle parent, uint32 flags );
@@ -1256,9 +1238,8 @@ struct api_context EditContext
    api_bool       (api_func* SetSelectionUpdatedEventRoutine)( control_handle, api_handle, pcl::range_event_routine );
 };
 
-/*
- * TextBoxContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context TextBoxContext
 {
    control_handle (api_func* CreateTextBox)( api_handle, api_handle client, const char16_type*, control_handle parent, uint32 flags );
@@ -1287,9 +1268,8 @@ struct api_context TextBoxContext
    api_bool       (api_func* SetTextBoxSelectionUpdatedEventRoutine)( control_handle, api_handle, pcl::range_event_routine );
 };
 
-/*
- * ComboBoxContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ComboBoxContext
 {
    control_handle (api_func* CreateComboBox)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1338,9 +1318,8 @@ struct api_context ComboBoxContext
    api_bool       (api_func* SetComboBoxEditTextUpdatedEventRoutine)( control_handle, api_handle, pcl::event_routine );
 };
 
-/*
- * SliderContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context SliderContext
 {
    control_handle (api_func* CreateSlider)( api_handle, api_handle client, api_bool vertical, control_handle parent, uint32 flags );
@@ -1370,9 +1349,8 @@ struct api_context SliderContext
    api_bool       (api_func* SetSliderRangeUpdatedEventRoutine)( control_handle, api_handle, pcl::range_event_routine );
 };
 
-/*
- * SpinBoxContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context SpinBoxContext
 {
    control_handle (api_func* CreateSpinBox)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1408,9 +1386,8 @@ struct api_context SpinBoxContext
    api_bool       (api_func* SetSpinBoxRangeUpdatedEventRoutine)( control_handle, api_handle, pcl::range_event_routine );
 };
 
-/*
- * LabelContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context LabelContext
 {
    control_handle (api_func* CreateLabel)( api_handle, api_handle client, const char16_type*, control_handle parent, uint32 flags );
@@ -1431,9 +1408,8 @@ struct api_context LabelContext
    void           (api_func* SetLabelRichTextEnabled)( control_handle, api_bool );
 };
 
-/*
- * BitmapBoxContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context BitmapBoxContext
 {
    control_handle (api_func* CreateBitmapBox)( api_handle, api_handle client, const_bitmap_handle, control_handle parent, uint32 flags );
@@ -1448,9 +1424,8 @@ struct api_context BitmapBoxContext
    void           (api_func* SetBitmapBoxAutoFitEnabled)( control_handle, api_bool );
 };
 
-/*
- * ScrollBoxContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ScrollBoxContext
 {
    control_handle (api_func* CreateScrollBox)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1488,9 +1463,8 @@ struct api_context ScrollBoxContext
    api_bool       (api_func* SetScrollBoxVerticalRangeUpdatedEventRoutine)( control_handle, api_handle, pcl::range_event_routine );
 };
 
-/*
- * TreeBoxContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context TreeBoxContext
 {
    control_handle (api_func* CreateTreeBox)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1648,9 +1622,8 @@ struct api_context TreeBoxContext
    api_bool       (api_func* SetTreeBoxNodeSelectionUpdatedEventRoutine)( control_handle, api_handle, pcl::event_routine );
 };
 
-/*
- * TimerContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context TimerContext
 {
    timer_handle   (api_func* CreateTimer)( api_handle, api_handle client, uint32 flags );
@@ -1669,9 +1642,8 @@ struct api_context TimerContext
    api_bool       (api_func* SetTimerNotifyEventRoutine)( timer_handle, api_handle, pcl::timer_event_routine );
 };
 
-/*
- * ThreadContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ThreadContext
 {
    thread_handle  (api_func* CreateThread)( api_handle, api_handle client, uint32 flags );
@@ -1705,9 +1677,8 @@ struct api_context ThreadContext
    api_bool       (api_func* SetThreadExecRoutine)( thread_handle, pcl::thread_exec_routine );
 };
 
-/*
- * MutexContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context MutexContext
 {
    mutex_handle   (api_func* CreateMutex)( api_handle, api_handle client, uint32 flags ); // ### deprecated
@@ -1722,9 +1693,8 @@ struct api_context MutexContext
    void           (api_func* Unlock)( mutex_handle );
 };
 
-/*
- * ViewListContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ViewListContext
 {
    control_handle (api_func* CreateViewList)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1746,9 +1716,8 @@ struct api_context ViewListContext
    api_bool       (api_func* SetViewListCurrentViewUpdatedEventRoutine)( control_handle, api_handle, pcl::view_event_routine );
 };
 
-/*
- * BitmapContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context BitmapContext
 {
    bitmap_handle  (api_func* CreateBitmap)( api_handle, int32, int32, void* );
@@ -1803,9 +1772,8 @@ struct api_context BitmapContext
    void           (api_func* SetBitmapDevicePixelRatio)( bitmap_handle, double );
 };
 
-/*
- * SVGContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context SVGContext
 {
    svg_handle     (api_func* CreateSVGFile)( api_handle, const char16_type*, int32, int32, uint32 );
@@ -1833,9 +1801,8 @@ struct api_context SVGContext
    api_bool       (api_func* IsSVGPainting)( const_svg_handle );
 };
 
-/*
- * BrushContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context BrushContext
 {
    brush_handle   (api_func* CreateBrush)( api_handle, uint32, int32 );
@@ -1865,9 +1832,8 @@ struct api_context BrushContext
    api_bool       (api_func* GetBrushGradientStops)( const_brush_handle, api_gradient_stop*, size_type *count );
 };
 
-/*
- * PenContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context PenContext
 {
    pen_handle     (api_func* CreatePen)( api_handle, uint32, float, int32, int32, int32 );
@@ -1892,9 +1858,8 @@ struct api_context PenContext
    void           (api_func* SetPenBrush)( pen_handle, const_brush_handle );
 };
 
-/*
- * FontContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context FontContext
 {
    font_handle    (api_func* CreateFontByFamily)( api_handle, int32, double );
@@ -1973,9 +1938,8 @@ struct api_context FontContext
    int32          (api_func* GetNominalFontWeight)( const char16_type* font, const char16_type* style );
 };
 
-/*
- * CursorContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context CursorContext
 {
    cursor_handle  (api_func* CreateCursor)( api_handle, int32 );
@@ -1985,9 +1949,8 @@ struct api_context CursorContext
    void           (api_func* GetCursorHotSpot)( const_cursor_handle, int32*, int32* );
 };
 
-/*
- * SizerContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context SizerContext
 {
    sizer_handle   (api_func* CreateSizer)( api_handle, api_bool vertical );
@@ -2026,9 +1989,8 @@ struct api_context SizerContext
    api_bool       (api_func* GetSizerDevicePixelRatio)( const_sizer_handle, double* );
 };
 
-/*
- * GraphicsContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context GraphicsContext
 {
    graphics_handle (api_func* CreateGraphics)( api_handle );
@@ -2175,9 +2137,8 @@ struct api_context GraphicsContext
    void           (api_func* GetTextRectD)( graphics_handle, double, double, double, double, const char16_type*, int32, double*, double*, double*, double* );
 };
 
-/*
- * RealTimePreviewContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context RealTimePreviewContext
 {
    api_bool       (api_func* SetRealTimePreviewOwner)( interface_handle, uint32 flags );
@@ -2190,9 +2151,8 @@ struct api_context RealTimePreviewContext
    void           (api_func* SetRealTimePreviewProgressText)( const char16_type* text, uint32 flags );
 };
 
-/*
- * NumericalContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context NumericalContext
 {
    /*
@@ -2210,14 +2170,12 @@ struct api_context NumericalContext
    api_bool       (api_func* SVDInPlaceD)( double** A, double* W, double** V, int32 rows, int32 cols );
 
    /*
-    * Linear Fit: y = a + b*x with inimized average absolute deviation.
+    * Linear Fit: y = a + b*x with minimized average absolute deviation.
     * Returns: 1=OK, -1=error, 0=aborted
     */
-   api_enum       (api_func* LinearFitF)( double* a, double* b, double* adev,
-                                          const float* fx, const float* fy, size_type n,
+   api_enum       (api_func* LinearFitF)( double* a, double* b, double* adev, const float* fx, const float* fy, size_type n,
                                           api_bool (*callback)( void* ), void* );
-   api_enum       (api_func* LinearFitD)( double* a, double* b, double* adev,
-                                          const double* fx, const double* fy, size_type n,
+   api_enum       (api_func* LinearFitD)( double* a, double* b, double* adev, const double* fx, const double* fy, size_type n,
                                           api_bool (*callback)( void* ), void* );
 
    /*
@@ -2229,10 +2187,8 @@ struct api_context NumericalContext
    api_bool       (api_func* NaturalCubicSplineGenerateF)( float* dy2, const float* fx, const float* fy, int32 n );
    api_bool       (api_func* NaturalCubicSplineGenerateD)( double* dy2, const double* fx, const double* fy, int32 n );
 
-   api_bool       (api_func* CubicSplineInterpolateF)( float* y, const float* fx, const float* fy, const float* dy2, int32 n,
-                                                       double x, int32* k );
-   api_bool       (api_func* CubicSplineInterpolateD)( double* y, const double* fx, const double* fy, const double* dy2, int32 n,
-                                                       double x, int32* k );
+   api_bool       (api_func* CubicSplineInterpolateF)( float* y, const float* fx, const float* fy, const float* dy2, int32 n, double x, int32* k );
+   api_bool       (api_func* CubicSplineInterpolateD)( double* y, const double* fx, const double* fy, const double* dy2, int32 n, double x, int32* k );
 
    api_bool       (api_func* NaturalGridCubicSplineGenerateF)( float* dy2, const float* fy, int32 n );
    api_bool       (api_func* NaturalGridCubicSplineGenerateD)( double* dy2, const double* fy, int32 n );
@@ -2294,9 +2250,8 @@ struct api_context NumericalContext
    api_bool       (api_func* FFTRealInverseTransformD)( fft_handle hFFT, double* x, const void* y ); // void* = dcomplex*
 };
 
-/*
- * SharedImageContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context SharedImageContext
 {
    image_handle   (api_func* CreateImage)( uint32 w, uint32 h, uint32 n, uint32 nbits, api_bool flt, uint32 cs, void* );
@@ -2325,9 +2280,9 @@ struct api_context SharedImageContext
    api_bool       (api_func* SetImagePixelData)( image_handle, void** );
 };
 
+// ----------------------------------------------------------------------------
+
 /*
- * ViewContext
- *
  * ### TODO - ASAP: Implement history management (ala PJSR).
  */
 struct api_context ViewContext
@@ -2364,6 +2319,8 @@ struct api_context ViewContext
    api_bool       (api_func* GetViewScreenTransferFunctionsEnabled)( view_handle );
    void           (api_func* SetViewScreenTransferFunctionsEnabled)( view_handle, api_bool, api_bool );
 
+   api_bool       (api_func* IsReservedViewPropertyId)( const char* id );
+   api_bool       (api_func* EnumerateViewProperties)( const_view_handle, pcl::property_enumeration_callback, char*, size_type*, void* );
    api_bool       (api_func* GetViewPropertyValue)( api_handle hModule, const_view_handle, const char* id, api_property_value* );
    api_bool       (api_func* GetViewPropertyAttributes)( api_handle hModule, const_view_handle, const char* id, uint32* flags, uint64* type );
    api_bool       (api_func* SetViewPropertyValue)( api_handle hModule, view_handle, const char* id, const api_property_value*, uint32 flags, api_bool notify );
@@ -2371,11 +2328,11 @@ struct api_context ViewContext
    api_bool       (api_func* GetViewPropertyExists)( api_handle hModule, const_view_handle, const char* id, uint64* type );
    api_bool       (api_func* DeleteViewProperty)( api_handle hModule, view_handle, const char* id, api_bool notify );
    api_bool       (api_func* ComputeViewProperty)( api_handle hModule, view_handle, const char* id, api_bool notify, api_property_value* );
+
 };
 
-/*
- * ImageWindowContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ImageWindowContext
 {
    window_handle  (api_func* CreateImageWindow)( int32 width, int32 height, int32 numberOfChannels,
@@ -2593,9 +2550,8 @@ struct api_context ImageWindowContext
    api_bool       (api_func* GetImageWindowDevicePixelRatio)( const_window_handle, double* );
 };
 
-/*
- * ImageViewContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ImageViewContext
 {
    control_handle (api_func* CreateImageView)( api_handle hModule, api_handle hClient, control_handle hParent, uint32 flags,
@@ -2704,9 +2660,8 @@ struct api_context ImageViewContext
    bitmap_handle  (api_func* GetViewportBitmap)( api_handle, const_control_handle, int32 x0, int32 y0, int32 x1, int32 y1, uint32 flags );
 };
 
-/*
- * CodeEditorContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context CodeEditorContext
 {
    control_handle (api_func* CreateCodeEditor)( api_handle hModule, api_handle hClient, control_handle hParent, uint32 flags );
@@ -2783,9 +2738,8 @@ struct api_context CodeEditorContext
    api_bool       (api_func* SetEditorDynamicWordWrapModeUpdatedEventRoutine)( control_handle, api_handle, pcl::state_event_routine );
 };
 
-/*
- * ExternalProcessContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ExternalProcessContext
 {
    enum IOStream
@@ -2866,9 +2820,9 @@ struct api_context ExternalProcessContext
    api_bool       (api_func* SetExternalProcessErrorEventRoutine)( external_process_handle, api_handle, pcl::external_process_status_event_routine );
 };
 
+// ----------------------------------------------------------------------------
+
 /*
- * NetworkTransferContext
- *
  * ### TODO: Somewhere during the 1.8 cycle:
  *           Improve NetworkTransfer with asynchronous network access support.
  */
@@ -2916,7 +2870,7 @@ namespace pcl
 {
 
 /*
- * APIInterface - Low-level C API interface
+ * Low-level C API interface
  */
 struct APIInterface
 {
@@ -2980,9 +2934,6 @@ private:
 /*
  * Global PCL API Data
  */
-
-// implemented in API.cpp
-
 extern PCL_DATA const pcl::APIInterface* API;
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
@@ -3013,4 +2964,4 @@ extern "C" void* api_func APIFunctionResolver( const char* );
 #endif   // __PCL_API_APIInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/APIInterface.h - Released 2017-04-14T23:04:40Z
+// EOF pcl/APIInterface.h - Released 2017-05-02T10:38:59Z

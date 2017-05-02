@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0364
+// Standard IntensityTransformations Process Module Version 01.07.01.0374
 // ----------------------------------------------------------------------------
-// MaskedStretchInstance.cpp - Released 2017-04-14T23:07:12Z
+// MaskedStretchInstance.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -496,4 +496,4 @@ size_type MaskedStretchInstance::ParameterLength( const MetaParameter* p, size_t
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF MaskedStretchInstance.cpp - Released 2017-04-14T23:07:12Z
+// EOF MaskedStretchInstance.cpp - Released 2017-05-02T09:43:00Z

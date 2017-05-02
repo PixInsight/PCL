@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.01.0368
+// Standard ImageIntegration Process Module Version 01.14.00.0390
 // ----------------------------------------------------------------------------
-// FileDataCache.cpp - Released 2017-04-14T23:07:12Z
+// FileDataCache.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -71,6 +71,8 @@ bool FileDataCache::IsEmpty() const
    return m_cache.IsEmpty();
 }
 
+// ----------------------------------------------------------------------------
+
 const FileDataCacheItem* FileDataCache::Find( const String& path ) const
 {
    volatile AutoLock lock( m_mutex );
@@ -78,11 +80,15 @@ const FileDataCacheItem* FileDataCache::Find( const String& path ) const
    return (i == m_cache.End()) ? nullptr : i;
 }
 
+// ----------------------------------------------------------------------------
+
 void FileDataCache::Clear()
 {
    volatile AutoLock lock( m_mutex );
    m_cache.Destroy();
 }
+
+// ----------------------------------------------------------------------------
 
 void FileDataCache::Add( const FileDataCacheItem& item )
 {
@@ -110,6 +116,8 @@ void FileDataCache::Add( const FileDataCacheItem& item )
       newItem.AssignData( item );
    }
 }
+
+// ----------------------------------------------------------------------------
 
 bool FileDataCache::Get( FileDataCacheItem& item, const String& path )
 {
@@ -179,6 +187,8 @@ void FileDataCache::Load()
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void FileDataCache::Save() const
 {
    if ( IsEnabled() )
@@ -193,6 +203,8 @@ void FileDataCache::Save() const
    Settings::Write( m_keyPrefix + "Duration", Duration() );
    Settings::Write( m_keyPrefix + "Enabled", IsEnabled() );
 }
+
+// ----------------------------------------------------------------------------
 
 void FileDataCache::Purge() const
 {
@@ -211,6 +223,8 @@ unsigned FileDataCacheItem::DaysSinceLastUsed() const
    return unsigned( ComplexTimeToJD( t->tm_year+1900, t->tm_mon+1, t->tm_mday ) ) - lastUsed;
 }
 
+// ----------------------------------------------------------------------------
+
 String FileDataCacheItem::VectorAsString( const DVector& v )
 {
    String s = String().Format( "\n%d", v.Length() );
@@ -218,6 +232,8 @@ String FileDataCacheItem::VectorAsString( const DVector& v )
       s.AppendFormat( "\n%.8e", v[i] );
    return s;
 }
+
+// ----------------------------------------------------------------------------
 
 bool FileDataCacheItem::GetVector( DVector& v, StringList::const_iterator& i, const StringList& s )
 {
@@ -232,6 +248,8 @@ bool FileDataCacheItem::GetVector( DVector& v, StringList::const_iterator& i, co
       v[j] = i->ToDouble();
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 String FileDataCacheItem::AsString() const
 {
@@ -248,6 +266,8 @@ String FileDataCacheItem::AsString() const
    }
    return s;
 }
+
+// ----------------------------------------------------------------------------
 
 bool FileDataCacheItem::FromString( const String& s )
 {
@@ -305,6 +325,8 @@ bool FileDataCacheItem::FromString( const String& s )
    return !path.IsEmpty() && lastUsed > 0 && time.year > 0 && ValidateData();
 }
 
+// ----------------------------------------------------------------------------
+
 bool FileDataCacheItem::Load( const IsoString& keyPrefix, int index )
 {
    String s;
@@ -314,6 +336,8 @@ bool FileDataCacheItem::Load( const IsoString& keyPrefix, int index )
       throw CatchedException();
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void FileDataCacheItem::Save( const IsoString& keyPrefix, int index ) const
 {
@@ -325,4 +349,4 @@ void FileDataCacheItem::Save( const IsoString& keyPrefix, int index ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FileDataCache.cpp - Released 2017-04-14T23:07:12Z
+// EOF FileDataCache.cpp - Released 2017-05-02T09:43:00Z

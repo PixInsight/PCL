@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.01.0368
+// Standard ImageIntegration Process Module Version 01.14.00.0390
 // ----------------------------------------------------------------------------
-// IntegrationCache.cpp - Released 2017-04-14T23:07:12Z
+// IntegrationCache.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -82,6 +82,8 @@ void IntegrationCacheItem::AssignData( const FileDataCacheItem& item )
 #undef src
 }
 
+// ----------------------------------------------------------------------------
+
 String IntegrationCacheItem::DataAsString() const
 {
    StringList tokens;
@@ -111,9 +113,11 @@ String IntegrationCacheItem::DataAsString() const
       tokens.Append( "noise" + VectorAsString( noise ) );
    if ( pedestal >= 0 )
       tokens.Append( String().Format( "pedestal\n%.4f", pedestal ) );
-   String nsTokens;
-   return tokens.ToSeparated( nsTokens, '\n' );
+
+   return String().ToNewLineSeparated( tokens );
 }
+
+// ----------------------------------------------------------------------------
 
 bool IntegrationCacheItem::GetDataFromTokens( const StringList& tokens )
 {
@@ -204,6 +208,8 @@ IntegrationCache::IntegrationCache() : FileDataCache( "/ImageIntegration/Cache" 
    Load();
 }
 
+// ----------------------------------------------------------------------------
+
 IntegrationCache::~IntegrationCache()
 {
    if ( TheIntegrationCache == this )
@@ -215,4 +221,4 @@ IntegrationCache::~IntegrationCache()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IntegrationCache.cpp - Released 2017-04-14T23:07:12Z
+// EOF IntegrationCache.cpp - Released 2017-05-02T09:43:00Z

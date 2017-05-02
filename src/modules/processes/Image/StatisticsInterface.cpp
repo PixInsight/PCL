@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0361
+// Standard Image Process Module Version 01.02.09.0371
 // ----------------------------------------------------------------------------
-// StatisticsInterface.cpp - Released 2017-04-14T23:07:12Z
+// StatisticsInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -483,8 +483,7 @@ void StatisticsOptionsDialog::__Button_Click( Button& sender, bool checked )
          if ( MinimumPos_CheckBox.IsChecked() )     items.Append( "MinimumPos" );
          if ( MaximumPos_CheckBox.IsChecked() )     items.Append( "MaximumPos" );
 
-         String contents;
-         items.ToCommaSeparated( contents );
+         String contents = String().ToCommaSeparated( items );
          Settings::Write( TheStatisticsInterface->SettingsKey() + "Contents", contents );
 
          MessageBox( "<p>Default statistics set saved:</p>"
@@ -1371,4 +1370,4 @@ StatisticsInterface::GUIData::GUIData( StatisticsInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF StatisticsInterface.cpp - Released 2017-04-14T23:07:12Z
+// EOF StatisticsInterface.cpp - Released 2017-05-02T09:43:00Z

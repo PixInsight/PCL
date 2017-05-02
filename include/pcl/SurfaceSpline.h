@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// pcl/SurfaceSpline.h - Released 2017-04-14T23:04:40Z
+// pcl/SurfaceSpline.h - Released 2017-05-02T10:38:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -109,9 +109,16 @@ class PCL_CLASS SurfaceSpline : private SurfaceSplineBase
 public:
 
    /*!
-    * Represents a vector of coordinates or spline coefficients.
+    * Represents a vector of coordinates, function values or spline
+    * coefficients.
     */
-   typedef GenericVector<T>   vector_type;
+   typedef GenericVector<T>               vector_type;
+
+   /*!
+    * The numeric type used to represent coordinates, function values and
+    * spline coefficients.
+    */
+   typedef typename vector_type::scalar   scalar;
 
    /*!
     * Default constructor. Constructs an empty, two-dimensional interpolating
@@ -369,4 +376,4 @@ protected:
 #endif   // __PCL_SurfaceSpline_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SurfaceSpline.h - Released 2017-04-14T23:04:40Z
+// EOF pcl/SurfaceSpline.h - Released 2017-05-02T10:38:59Z

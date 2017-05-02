@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard AssistedColorCalibration Process Module Version 01.00.00.0174
+// Standard AssistedColorCalibration Process Module Version 01.00.00.0184
 // ----------------------------------------------------------------------------
-// AssistedColorCalibrationProcess.cpp - Released 2017-04-14T23:07:12Z
+// AssistedColorCalibrationProcess.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard AssistedColorCalibration PixInsight module.
 //
@@ -169,4 +169,4 @@ bool AssistedColorCalibrationProcess::CanProcessCommandLines() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AssistedColorCalibrationProcess.cpp - Released 2017-04-14T23:07:12Z
+// EOF AssistedColorCalibrationProcess.cpp - Released 2017-05-02T09:43:01Z

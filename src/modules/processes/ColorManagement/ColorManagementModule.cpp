@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ColorManagement Process Module Version 01.00.00.0293
+// Standard ColorManagement Process Module Version 01.00.00.0303
 // ----------------------------------------------------------------------------
-// ColorManagementModule.cpp - Released 2017-04-14T23:07:12Z
+// ColorManagementModule.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorManagement PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0293
+#define MODULE_VERSION_BUILD     0303
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     4
-#define MODULE_RELEASE_DAY       14
+#define MODULE_RELEASE_MONTH     5
+#define MODULE_RELEASE_DAY       2
 
 #include "AssignICCProfileInterface.h"
 #include "AssignICCProfileProcess.h"
@@ -157,4 +157,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF ColorManagementModule.cpp - Released 2017-04-14T23:07:12Z
+// EOF ColorManagementModule.cpp - Released 2017-05-02T09:43:00Z

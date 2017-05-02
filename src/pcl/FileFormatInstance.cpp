@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// pcl/FileFormatInstance.cpp - Released 2017-04-14T23:04:51Z
+// pcl/FileFormatInstance.cpp - Released 2017-05-02T10:39:13Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -520,12 +520,40 @@ Variant FileFormatInstance::ReadProperty( const IsoString& property )
 
 // ----------------------------------------------------------------------------
 
+PropertyArray FileFormatInstance::ReadProperties()
+{
+   PropertyDescriptionArray descriptions = Properties();
+   try
+   {
+      PropertyArray properties;
+      if ( (*API->FileFormat->BeginPropertyExtraction)( handle ) != api_false )
+      {
+         for ( const pcl::PropertyDescription& description : descriptions )
+         {
+            api_property_value apiValue;
+            if ( (*API->FileFormat->GetProperty)( handle, description.id.c_str(), &apiValue ) != api_false )
+               properties << Property( description.id, VariantFromAPIPropertyValue( apiValue ) );
+         }
+
+         (*API->FileFormat->EndPropertyExtraction)( handle );
+      }
+      return properties;
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndPropertyExtraction)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
 PropertyDescriptionArray FileFormatInstance::ImageProperties()
 {
    PropertyDescriptionArray properties;
    IsoString id;
    size_type len = 0;
-   (*API->FileFormat->EnumerateProperties)( handle, 0, 0, &len, 0 ); // 1st call to get max identifier length
+   (*API->FileFormat->EnumerateImageProperties)( handle, 0, 0, &len, 0 ); // 1st call to get max identifier length
    if ( len > 0 )
    {
       id.Reserve( len );
@@ -555,6 +583,34 @@ Variant FileFormatInstance::ReadImageProperty( const IsoString& property )
       (*API->FileFormat->EndImagePropertyExtraction)( handle );
 
       return VariantFromAPIPropertyValue( apiValue );
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndImagePropertyExtraction)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+PropertyArray FileFormatInstance::ReadImageProperties()
+{
+   PropertyDescriptionArray descriptions = ImageProperties();
+   try
+   {
+      PropertyArray properties;
+      if ( (*API->FileFormat->BeginImagePropertyExtraction)( handle ) != api_false )
+      {
+         for ( const pcl::PropertyDescription& description : descriptions )
+         {
+            api_property_value apiValue;
+            if ( (*API->FileFormat->GetImageProperty)( handle, description.id.c_str(), &apiValue ) != api_false )
+               properties << Property( description.id, VariantFromAPIPropertyValue( apiValue ) );
+         }
+
+         (*API->FileFormat->EndImagePropertyExtraction)( handle );
+      }
+      return properties;
    }
    catch ( ... )
    {
@@ -923,6 +979,47 @@ bool FileFormatInstance::WriteProperty( const IsoString& property, const Variant
 
 // ----------------------------------------------------------------------------
 
+bool FileFormatInstance::WriteProperties( const PropertyArray& properties )
+{
+   try
+   {
+      if ( (*API->FileFormat->BeginPropertyEmbedding)( handle ) == api_false )
+         return false;
+
+      for ( const Property& property : properties )
+         if ( property.IsValid() )
+         {
+            api_property_value apiValue;
+            APIPropertyValueFromVariant( apiValue, property.Value() );
+            api_property_value safeCopy = apiValue;
+            bool ok = (*API->FileFormat->SetProperty)( handle, property.Id().c_str(), &safeCopy ) != api_false;
+
+            if ( safeCopy.data.blockValue != apiValue.data.blockValue ||
+                 safeCopy.dimX != apiValue.dimX || safeCopy.dimY != apiValue.dimY ||
+                 safeCopy.dimZ != apiValue.dimZ || safeCopy.dimT != apiValue.dimT || safeCopy.type != apiValue.type )
+            {
+               APIHackingAttempt( "SetProperty" );
+            }
+
+            if ( !ok )
+            {
+               (*API->FileFormat->EndPropertyEmbedding)( handle );
+               return false;
+            }
+         }
+
+      (*API->FileFormat->EndPropertyEmbedding)( handle );
+      return true;
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndPropertyEmbedding)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
 bool FileFormatInstance::WriteImageProperty( const IsoString& property, const Variant& value )
 {
    try
@@ -950,6 +1047,47 @@ bool FileFormatInstance::WriteImageProperty( const IsoString& property, const Va
       (*API->FileFormat->EndImagePropertyEmbedding)( handle );
 
       return ok;
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndImagePropertyEmbedding)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+bool FileFormatInstance::WriteImageProperties( const PropertyArray& properties )
+{
+   try
+   {
+      if ( (*API->FileFormat->BeginImagePropertyEmbedding)( handle ) == api_false )
+         return false;
+
+      for ( const Property& property : properties )
+         if ( property.IsValid() )
+         {
+            api_property_value apiValue;
+            APIPropertyValueFromVariant( apiValue, property.Value() );
+            api_property_value safeCopy = apiValue;
+            bool ok = (*API->FileFormat->SetImageProperty)( handle, property.Id().c_str(), &safeCopy ) != api_false;
+
+            if ( safeCopy.data.blockValue != apiValue.data.blockValue ||
+                 safeCopy.dimX != apiValue.dimX || safeCopy.dimY != apiValue.dimY ||
+                 safeCopy.dimZ != apiValue.dimZ || safeCopy.dimT != apiValue.dimT || safeCopy.type != apiValue.type )
+            {
+               APIHackingAttempt( "SetImageProperty" );
+            }
+
+            if ( !ok )
+            {
+               (*API->FileFormat->EndImagePropertyEmbedding)( handle );
+               return false;
+            }
+         }
+
+      (*API->FileFormat->EndImagePropertyEmbedding)( handle );
+      return true;
    }
    catch ( ... )
    {
@@ -1054,4 +1192,4 @@ void* FileFormatInstance::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormatInstance.cpp - Released 2017-04-14T23:04:51Z
+// EOF pcl/FileFormatInstance.cpp - Released 2017-05-02T10:39:13Z

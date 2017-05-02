@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// pcl/API.cpp - Released 2017-04-14T23:04:51Z
+// pcl/API.cpp - Released 2017-05-02T10:39:13Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -97,7 +97,10 @@ String APIError::FormatInfo() const
 
    if ( apiErrorCode != 0 )
    {
-      info += String().Format( "\nAPI error code = %u", apiErrorCode );
+      if ( info.IsEmpty() )
+         info << String().Format( "API error code 0x%04x", apiErrorCode );
+      else
+         info << String().Format( " (0x%04x)", apiErrorCode );
 
       String apiMessage;
       if ( apiErrorCode != 0 )
@@ -112,10 +115,8 @@ String APIError::FormatInfo() const
          }
       }
 
-      if ( apiMessage.IsEmpty() )
-         info += "\n<* No additional information *>";
-      else
-         info += ":\n", info += apiMessage;
+      if ( !apiMessage.IsEmpty() )
+         info << ": " << apiMessage;
    }
 
    return info;
@@ -399,4 +400,4 @@ InitializePixInsightModule( api_handle        hModule,
 }
 
 // ----------------------------------------------------------------------------
-// EOF pcl/API.cpp - Released 2017-04-14T23:04:51Z
+// EOF pcl/API.cpp - Released 2017-05-02T10:39:13Z

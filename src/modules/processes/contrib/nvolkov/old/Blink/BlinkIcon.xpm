@@ -1,0 +1,266 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Blink Process Module Version 01.02.01.0147
+// ****************************************************************************
+// BlinkIcon.xpm - Released 2014/11/14 17:19:24 UTC
+// ****************************************************************************
+// This file is part of the standard Blink PixInsight module.
+//
+// Copyright (c) 2011-2014 Nikolay Volkov
+// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* BlinkIcon_XPM[] = {
+"24 24 187 2",
+"Qt c None",
+".# c None",
+".L c #0000ff",
+".l c #ffffff",
+"#z c #8080ff",
+".2 c #0000ff",
+"#i c #aaaad5",
+".a c #9999d9",
+"#Z c #0000ff",
+"a. c #1717f3",
+".m c #6760ea",
+".e c #8679e4",
+"#Y c #514bec",
+"#6 c #352ff3",
+".x c #4c47ef",
+"#N c #6964e6",
+".w c #b3aad5",
+".M c #312df6",
+"#y c #8480de",
+".3 c #1612fb",
+"#h c #a19ad9",
+"#O c #0909ff",
+".f c #8c85df",
+"#5 c #302df6",
+".n c #7672e6",
+"#X c #4e4aef",
+".b c #a89ed7",
+"#9 c #1210f9",
+".y c #5f5ced",
+"#M c #6a66e9",
+".K c #b6add7",
+".1 c #b7aed7",
+"a# c #0303fd",
+".d c #b5add6",
+"au c #0303fd",
+"#x c #857ee4",
+"#j c #1817ff",
+".N c #4543f3",
+".4 c #2a2afa",
+"#A c #1b1bff",
+"#g c #9d95dd",
+".c c #b4acd9",
+"#7 c #1111ff",
+".g c #9c96e0",
+"#8 c #1818fd",
+"#4 c #3533f8",
+".o c #837de5",
+"#W c #4c4af2",
+".v c #c4bde0",
+".k c #b7aed7",
+"#e c #aaa4e8",
+"#L c #615deb",
+"#3 c #3837fa",
+".z c #6360ea",
+".h c #a6a0e0",
+".5 c #3431f7",
+".0 c #b1a9d9",
+".Z c #bcb6e3",
+".6 c #6866f8",
+"#f c #968fdf",
+"#k c #1c1bfd",
+".P c #6c69f1",
+"#v c #8682eb",
+"#0 c #2121ff",
+".O c #4743f0",
+"#V c #4543f3",
+"#l c #4b4afc",
+"#w c #7772e4",
+".p c #8780e2",
+"aa c #0d0cfc",
+"ab c #1514fa",
+"ac c #1e1cf8",
+"ad c #2625f6",
+"ae c #2f2df4",
+"af c #3635f2",
+"ag c #403df0",
+"ah c #4845ee",
+"ai c #514dec",
+"aj c #5a55ea",
+"ak c #625de8",
+"al c #6b65e6",
+"am c #736de4",
+"an c #7c75e2",
+"#P c #7d7dfe",
+"ao c #847de0",
+"ap c #8d86de",
+"aq c #958edc",
+"ar c #9e96da",
+"as c #a69ed8",
+"at c #afa6d6",
+".A c #6c68e8",
+".J c #e0ddf0",
+"#K c #5653ed",
+"#J c #9593f6",
+".B c #b1aef2",
+"#u c #c4c2f6",
+"#2 c #3534fc",
+".i c #aba4dc",
+".Q c #bbb9f8",
+".q c #908ae1",
+"#d c #b7b4ee",
+"#1 c #0908fd",
+"av c #0d0cfc",
+"aw c #1514fa",
+"#D c #1816f9",
+"#m c #1a19f9",
+"ax c #1e1cf8",
+"#R c #1f1efa",
+"ay c #2625f6",
+"az c #2f2df4",
+"#U c #312ff4",
+"#G c #3734f4",
+"aA c #3735f2",
+"#Q c #3938fd",
+".8 c #3f3cf0",
+"#p c #3f3cf1",
+"aB c #403df0",
+"aC c #4845ee",
+"aD c #514dec",
+"#s c #5551eb",
+"aE c #5a55ea",
+"a4 c #5e5cf0",
+"aF c #625de8",
+"aQ c #625ff0",
+"## c #635feb",
+".S c #645fe8",
+"#H c #6664f5",
+"#o c #6967f6",
+"aG c #6b65e6",
+"a2 c #716ced",
+"aH c #736de4",
+"aX c #7670e5",
+"#c c #7973e3",
+"#a c #7976ec",
+"aI c #7c75e2",
+".7 c #7c7af7",
+".V c #7d76e2",
+"#C c #7f7efd",
+"a0 c #827dea",
+"aP c #8280f5",
+"aU c #8380ef",
+"aJ c #847de0",
+"a3 c #8482f5",
+"#n c #8887fb",
+"aK c #8d86de",
+".R c #8d8af0",
+".D c #8e88e4",
+"aL c #958edc",
+".E c #958ee2",
+".Y c #9d95da",
+"aM c #9e96da",
+"#t c #9f9df2",
+".H c #a199d9",
+"aW c #a29eef",
+".t c #a49cd8",
+"aN c #a69ed8",
+"aO c #afa6d6",
+".j c #b3aad8",
+".W c #b3afec",
+".X c #bab5e8",
+"#T c #bab9fc",
+"a1 c #bcbbf8",
+"#b c #c0bef3",
+"aY c #c1bef3",
+"aR c #c4c3fa",
+"aZ c #c5c3f7",
+".9 c #c6c4fa",
+".u c #c7c1e4",
+"#E c #c7c7fd",
+"aT c #cac9f9",
+"#B c #ccccff",
+"#r c #d8d7fb",
+".G c #dad7f2",
+".I c #dcd8ef",
+"aV c #e1e1fb",
+".r c #e6e5f7",
+".U c #e8e7fb",
+"#I c #ececfe",
+".T c #eeedfc",
+".C c #f0effc",
+".s c #f5f5fb",
+"#q c #f5f5fe",
+"#F c #f7f7ff",
+"#S c #fbfbff",
+"#. c #fdfdff",
+"aS c #fefeff",
+".F c #ffffff",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt",
+"Qt.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.a.b.c.d.#Qt",
+"Qt.#.#.#.#.#.#.#.#.#.#.#.#.#.#.e.f.g.h.i.j.k.lQt",
+"Qt.#.#.#.#.#.#.#.#.#.#.#.m.n.o.p.q.r.s.t.u.v.wQt",
+"Qt.#.#.#.#.#.#.#.#.x.y.z.A.B.C.D.E.F.G.H.I.J.KQt",
+"Qt.#.#.#.#.L.M.N.O.P.Q.R.S.T.U.V.W.F.X.Y.Z.0.1Qt",
+"Qt.#.2.3.4.5.6.7.8.9#.###a.F#b#c#d#e#f#g#h#i.#Qt",
+"Qt#j#k#l#m#n.F#o#p#q#r#s#t#u#v#w#x#y#z.#.#.#.#Qt",
+"Qt#A#B#C#D#E#F#G#H#I#J#K#L#M#N.#.#.#.#.#.#.#.#Qt",
+"Qt#O#P#Q#R#S#T#U#V#W#X#Y.#.#.#.#.#.#.#.#.#.#.#Qt",
+"Qt#Z#0#1#2#3#4#5#6.#.#.#.#.#.#.#.#.#.#.#.#.#.#Qt",
+"Qt.##7#8#9a..#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#Qt",
+"Qt.#a#aaabacadaeafagahaiajakalamanaoapaqarasatQt",
+"Qt.#auavawaxayazaAaBaCaDaEaFaGaHaIaJaKaLaMaNaOQt",
+"Qt.#auavawaxayazaAaPaQaDaEaFaGaHaIaJaKaLaMaNaOQt",
+"Qt.#auavawaxayazaAaRaSaTaUaFaGaHaIaJaKaLaMaNaOQt",
+"Qt.#auavawaxayazaAaR.F.F.FaVaWaXaIaJaKaLaMaNaOQt",
+"Qt.#auavawaxayazaAaR.F.F.F.FaSaY.VaJaKaLaMaNaOQt",
+"Qt.#auavawaxayazaAaR.F.F#.aZa0aHaIaJaKaLaMaNaOQt",
+"Qt.#auavawaxayazaAaR#Sa1a2aFaGaHaIaJaKaLaMaNaOQt",
+"Qt.#auavawaxayazaAa3a4aDaEaFaGaHaIaJaKaLaMaNaOQt",
+"Qt.#auavawaxayazaAaBaCaDaEaFaGaHaIaJaKaLaMaNaOQt",
+"Qt.#auavawaxayazaAaBaCaDaEaFaGaHaIaJaKaLaMaNaOQt",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt"};
+
+// ****************************************************************************
+// EOF BlinkIcon.xpm - Released 2014/11/14 17:19:24 UTC

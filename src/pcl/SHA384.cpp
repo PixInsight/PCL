@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// pcl/SHA384.cpp - Released 2017-04-14T23:04:51Z
+// pcl/SHA384.cpp - Released 2017-05-02T10:39:13Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -111,4 +111,4 @@ void SHA384::Finalize( void* hash )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SHA384.cpp - Released 2017-04-14T23:04:51Z
+// EOF pcl/SHA384.cpp - Released 2017-05-02T10:39:13Z

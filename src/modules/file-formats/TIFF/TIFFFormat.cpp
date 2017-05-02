@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard TIFF File Format Module Version 01.00.07.0307
+// Standard TIFF File Format Module Version 01.00.07.0317
 // ----------------------------------------------------------------------------
-// TIFFFormat.cpp - Released 2017-04-14T23:07:03Z
+// TIFFFormat.cpp - Released 2017-05-02T09:42:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
@@ -353,4 +353,4 @@ TIFFFormat::FormatOptions* TIFFFormat::FormatOptions::FromGenericDataBlock( cons
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF TIFFFormat.cpp - Released 2017-04-14T23:07:03Z
+// EOF TIFFFormat.cpp - Released 2017-05-02T09:42:51Z

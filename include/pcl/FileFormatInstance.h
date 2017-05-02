@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// pcl/FileFormatInstance.h - Released 2017-04-14T23:04:40Z
+// pcl/FileFormatInstance.h - Released 2017-05-02T10:38:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -61,7 +61,7 @@
 #include <pcl/FITSHeaderKeyword.h>
 #include <pcl/ImageDescription.h>
 #include <pcl/ImageVariant.h>
-#include <pcl/PropertyDescription.h>
+#include <pcl/Property.h>
 #include <pcl/UIObject.h>
 
 namespace pcl
@@ -451,6 +451,23 @@ public:
    }
 
    /*!
+    * Returns an array with all data properties associated with this file.
+    *
+    * Returns an empty array if there are no properties associated with this
+    * file.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting data properties. See
+    * FileFormat::CanStoreProperties().
+    *
+    * \note Don't confuse this member function with ReadImageProperties(). This
+    * function returns the properties of the \e whole file, while
+    * %ReadImageProperties() returns the properties of the currently selected
+    * image.
+    */
+   PropertyArray ReadProperties();
+
+   /*!
     * Returns a description of all data properties associated with the current
     * image in this file. For each data property, the returned array provides
     * information on the unique identifier of a property and its data type.
@@ -465,8 +482,8 @@ public:
    PropertyDescriptionArray ImageProperties();
 
    /*!
-    * Returns true iff the specified property exists associated with the current
-    * image in  this file. Returns false if no such property exists.
+    * Returns true iff the specified property exists associated with the
+    * current image in this file. Returns false if no such property exists.
     *
     * This is a convenience member function, equivalent to the following code:
     *
@@ -530,6 +547,18 @@ public:
    {
       return ReadImageProperty( IsoString( property ) );
    }
+
+   /*!
+    * Returns an array with all data properties of the current image.
+    *
+    * If no property exists associated with the current image in this file, an
+    * empty array will be returned.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting data properties for individual
+    * images. See FileFormat::CanStoreImageProperties().
+    */
+   PropertyArray ReadImageProperties();
 
    /*!
     * Reads the current image in 32-bit floating point format. Returns true iff
@@ -869,6 +898,34 @@ public:
    }
 
    /*!
+    * Specifies a data property to be embedded in this file.
+    *
+    * Calling this member function is equivalent to:
+    *
+    * \code WriteProperty( property.Id(), property.Value() ) \endcode
+    */
+   bool WriteProperty( const Property& property )
+   {
+      return WriteProperty( property.Id(), property.Value() );
+   }
+
+   /*!
+    * Specifies a set of data \a properties to be embedded in this file.
+    *
+    * Returns true only if the embedding operation was successful.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting data properties. See
+    * FileFormat::CanStoreProperties().
+    *
+    * \note Don't confuse this member function with WriteImageProperties().
+    * This function defines a set of properties for the \e whole file, while
+    * %WriteImageProperties() defines properties for the currently selected
+    * image.
+    */
+   bool WriteProperties( const PropertyArray& properties );
+
+   /*!
     * Specifies a data property to be embedded in the next image written or
     * created in this file.
     *
@@ -889,6 +946,31 @@ public:
    {
       return WriteImageProperty( IsoString( property ), value );
    }
+
+   /*!
+    * Specifies a data property to be embedded in the next image written or
+    * created in this file.
+    *
+    * Calling this member function is equivalent to:
+    *
+    * \code WriteImageProperty( property.Id(), property.Value() ) \endcode
+    */
+   bool WriteImageProperty( const Property& property )
+   {
+      return WriteImageProperty( property.Id(), property.Value() );
+   }
+
+   /*!
+    * Specifies a set of data \a properties to be embedded in the next image
+    * written or created in this file.
+    *
+    * Returns true only if the embedding operation was successful.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting data properties for individual
+    * images. See FileFormat::CanStoreImageProperties().
+    */
+   bool WriteImageProperties( const PropertyArray& properties );
 
    /*!
     * Specifies a set of %FITS \a keywords to be embedded in the next image
@@ -1074,4 +1156,4 @@ private:
 #endif   // __PCL_FileFormatInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormatInstance.h - Released 2017-04-14T23:04:40Z
+// EOF pcl/FileFormatInstance.h - Released 2017-05-02T10:38:59Z

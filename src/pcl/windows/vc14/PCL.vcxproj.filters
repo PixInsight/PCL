@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-04-14T21:29:03.133Z
+# Generated on .... 2017-05-02T09:40:42.112Z
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ Windows/vc14
@@ -114,6 +114,9 @@
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\DisplayFunction.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DrizzleData.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Edit.cpp">

@@ -1,0 +1,132 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.101
+# Copyright (C) 2009-2015 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Thu, 28 Apr 2016 14:46:22 GMT
+# Project id ...... INDIClient
+# Project type .... Module
+# Platform ........ MacOSX/g++
+# Configuration ... Release/x64
+# --------------------------------------------------------------------
+# Additional libraries:
+# zlib-pxi
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/contrib/kkretzschmar/INDIClient/macosx/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/INDIClient-pxm.dylib
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../IINDIProperty.cpp \
+../../INDICCDFrameInstance.cpp \
+../../INDICCDFrameInterface.cpp \
+../../INDICCDFrameParameters.cpp \
+../../INDICCDFrameProcess.cpp \
+../../INDIClient.cpp \
+../../INDIClientModule.cpp \
+../../INDIDeviceControllerInstance.cpp \
+../../INDIDeviceControllerInterface.cpp \
+../../INDIDeviceControllerParameters.cpp \
+../../INDIDeviceControllerProcess.cpp \
+../../INDIMountInstance.cpp \
+../../INDIMountInterface.cpp \
+../../INDIMountProcess.cpp \
+../../PropertyNode.cpp \
+../../SkyMap.cpp \
+../../INDI/BaseClientImpl.cpp \
+../../INDI/base64.c \
+../../INDI/basedevice.cpp \
+../../INDI/indicom.c \
+../../INDI/indiproperty.cpp \
+../../INDI/lilxml.c
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/IINDIProperty.o \
+./x64/Release/INDICCDFrameInstance.o \
+./x64/Release/INDICCDFrameInterface.o \
+./x64/Release/INDICCDFrameParameters.o \
+./x64/Release/INDICCDFrameProcess.o \
+./x64/Release/INDIClient.o \
+./x64/Release/INDIClientModule.o \
+./x64/Release/INDIDeviceControllerInstance.o \
+./x64/Release/INDIDeviceControllerInterface.o \
+./x64/Release/INDIDeviceControllerParameters.o \
+./x64/Release/INDIDeviceControllerProcess.o \
+./x64/Release/INDIMountInstance.o \
+./x64/Release/INDIMountInterface.o \
+./x64/Release/INDIMountProcess.o \
+./x64/Release/PropertyNode.o \
+./x64/Release/SkyMap.o \
+./x64/Release/INDI/BaseClientImpl.o \
+./x64/Release/INDI/base64.o \
+./x64/Release/INDI/basedevice.o \
+./x64/Release/INDI/indicom.o \
+./x64/Release/INDI/indiproperty.o \
+./x64/Release/INDI/lilxml.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/IINDIProperty.d \
+./x64/Release/INDICCDFrameInstance.d \
+./x64/Release/INDICCDFrameInterface.d \
+./x64/Release/INDICCDFrameParameters.d \
+./x64/Release/INDICCDFrameProcess.d \
+./x64/Release/INDIClient.d \
+./x64/Release/INDIClientModule.d \
+./x64/Release/INDIDeviceControllerInstance.d \
+./x64/Release/INDIDeviceControllerInterface.d \
+./x64/Release/INDIDeviceControllerParameters.d \
+./x64/Release/INDIDeviceControllerProcess.d \
+./x64/Release/INDIMountInstance.d \
+./x64/Release/INDIMountInterface.d \
+./x64/Release/INDIMountProcess.d \
+./x64/Release/PropertyNode.d \
+./x64/Release/SkyMap.d \
+./x64/Release/INDI/BaseClientImpl.d \
+./x64/Release/INDI/base64.d \
+./x64/Release/INDI/basedevice.d \
+./x64/Release/INDI/indicom.d \
+./x64/Release/INDI/indiproperty.d \
+./x64/Release/INDI/lilxml.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/INDIClient-pxm.dylib: $(OBJ_FILES)
+	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -stdlib=libc++ -Wl,-dead_strip -dynamiclib -install_name @executable_path/INDIClient-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/INDIClient-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lzlib-pxi -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/INDIClient-pxm.dylib
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/INDIClient-pxm.dylib $(PCLBINDIR64)
+	install_name_tool -change @executable_path/libzlib-pxi.dylib @loader_path/libzlib-pxi.dylib $(PCLBINDIR64)/INDIClient-pxm.dylib
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Release/INDI/%.o: ../../INDI/%.cpp
+	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Release/INDI/%.o: ../../INDI/%.c
+	clang -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

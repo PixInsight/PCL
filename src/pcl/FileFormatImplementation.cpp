@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// pcl/FileFormatImplementation.cpp - Released 2017-04-14T23:04:51Z
+// pcl/FileFormatImplementation.cpp - Released 2017-05-02T10:39:13Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -130,12 +130,12 @@ FileFormatImplementation::~FileFormatImplementation()
 // ----------------------------------------------------------------------------
 
 #define MANDATORY( funcName )             \
-   __Mandatory( meta->Name(), funcName )
+   MandatoryError( meta->Name(), funcName )
 
-static void __Mandatory( const IsoString& formatName, const char* funcName )
+static void MandatoryError( const IsoString& formatName, const char* funcName )
 {
    throw Error( "FileFormatImplementation (" + String( formatName ) + "): " +
-                funcName + "() must be reimplemented in descendant class" );
+                funcName + "() must be reimplemented in descendant class." );
 }
 
 // ----------------------------------------------------------------------------
@@ -845,7 +845,7 @@ void FileFormatImplementation::SetImageProperty( const IsoString& id, const Vari
 void FileFormatImplementation::EndImagePropertyEmbedding()
 {
    for ( const FileFormatProperty& property : m_data->imageProperties )
-      WriteProperty( property.id, property.value );
+      WriteImageProperty( property.id, property.value );
    m_data->imageProperties.Clear();
 }
 
@@ -854,4 +854,4 @@ void FileFormatImplementation::EndImagePropertyEmbedding()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormatImplementation.cpp - Released 2017-04-14T23:04:51Z
+// EOF pcl/FileFormatImplementation.cpp - Released 2017-05-02T10:39:13Z

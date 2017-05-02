@@ -1,0 +1,116 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.101
+# Copyright (C) 2009-2015 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 17 May 2016 17:00:53 GMT
+# Project id ...... INDIClient
+# Project type .... Module
+# Platform ........ Linux/g++
+# Configuration ... Release/x64
+# --------------------------------------------------------------------
+# Additional libraries:
+# zlib-pxi
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/contrib/kkretzschmar/INDIClient/linux/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/INDIClient-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../IINDIProperty.cpp \
+../../INDICCDFrameInstance.cpp \
+../../INDICCDFrameInterface.cpp \
+../../INDICCDFrameParameters.cpp \
+../../INDICCDFrameProcess.cpp \
+../../INDIClient.cpp \
+../../INDIClientModule.cpp \
+../../INDIDeviceControllerInstance.cpp \
+../../INDIDeviceControllerInterface.cpp \
+../../INDIDeviceControllerParameters.cpp \
+../../INDIDeviceControllerProcess.cpp \
+../../INDI/BaseClientImpl.cpp \
+../../INDI/base64.c \
+../../INDI/basedevice.cpp \
+../../INDI/indicom.c \
+../../INDI/indiproperty.cpp \
+../../INDI/lilxml.c
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/IINDIProperty.o \
+./x64/Release/INDICCDFrameInstance.o \
+./x64/Release/INDICCDFrameInterface.o \
+./x64/Release/INDICCDFrameParameters.o \
+./x64/Release/INDICCDFrameProcess.o \
+./x64/Release/INDIClient.o \
+./x64/Release/INDIClientModule.o \
+./x64/Release/INDIDeviceControllerInstance.o \
+./x64/Release/INDIDeviceControllerInterface.o \
+./x64/Release/INDIDeviceControllerParameters.o \
+./x64/Release/INDIDeviceControllerProcess.o \
+./x64/Release/INDI/BaseClientImpl.o \
+./x64/Release/INDI/base64.o \
+./x64/Release/INDI/basedevice.o \
+./x64/Release/INDI/indicom.o \
+./x64/Release/INDI/indiproperty.o \
+./x64/Release/INDI/lilxml.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/IINDIProperty.d \
+./x64/Release/INDICCDFrameInstance.d \
+./x64/Release/INDICCDFrameInterface.d \
+./x64/Release/INDICCDFrameParameters.d \
+./x64/Release/INDICCDFrameProcess.d \
+./x64/Release/INDIClient.d \
+./x64/Release/INDIClientModule.d \
+./x64/Release/INDIDeviceControllerInstance.d \
+./x64/Release/INDIDeviceControllerInterface.d \
+./x64/Release/INDIDeviceControllerParameters.d \
+./x64/Release/INDIDeviceControllerProcess.d \
+./x64/Release/INDI/BaseClientImpl.d \
+./x64/Release/INDI/base64.d \
+./x64/Release/INDI/basedevice.d \
+./x64/Release/INDI/indicom.d \
+./x64/Release/INDI/indiproperty.d \
+./x64/Release/INDI/lilxml.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/INDIClient-pxm.so: $(OBJ_FILES)
+	g++ -m64 -fPIC -pthread -Wl,-fuse-ld=gold -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -rdynamic -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/INDIClient-pxm.so $(OBJ_FILES) -lzlib-pxi -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/INDIClient-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/INDIClient-pxm.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -rdynamic -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Release/INDI/%.o: ../../INDI/%.cpp
+	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -rdynamic -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Release/INDI/%.o: ../../INDI/%.c
+	gcc -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fnon-call-exceptions -rdynamic -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.01.0368
+// Standard ImageIntegration Process Module Version 01.14.00.0390
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInterface.cpp - Released 2017-04-14T23:07:12Z
+// DrizzleIntegrationInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -86,37 +86,51 @@ DrizzleIntegrationInterface::DrizzleIntegrationInterface() :
    DisableAutoSaveGeometry();
 }
 
+// ----------------------------------------------------------------------------
+
 DrizzleIntegrationInterface::~DrizzleIntegrationInterface()
 {
    if ( GUI != nullptr )
       delete GUI, GUI = nullptr;
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString DrizzleIntegrationInterface::Id() const
 {
    return "DrizzleIntegration";
 }
+
+// ----------------------------------------------------------------------------
 
 MetaProcess* DrizzleIntegrationInterface::Process() const
 {
    return TheDrizzleIntegrationProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 const char** DrizzleIntegrationInterface::IconImageXPM() const
 {
    return DrizzleIntegrationIcon_XPM;
 }
+
+// ----------------------------------------------------------------------------
 
 InterfaceFeatures DrizzleIntegrationInterface::Features() const
 {
    return InterfaceFeature::DefaultGlobal;
 }
 
+// ----------------------------------------------------------------------------
+
 void DrizzleIntegrationInterface::ResetInstance()
 {
    DrizzleIntegrationInstance defaultInstance( TheDrizzleIntegrationProcess );
    ImportProcess( defaultInstance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool DrizzleIntegrationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
@@ -136,10 +150,14 @@ bool DrizzleIntegrationInterface::Launch( const MetaProcess& P, const ProcessImp
    return &P == TheDrizzleIntegrationProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* DrizzleIntegrationInterface::NewProcess() const
 {
    return new DrizzleIntegrationInstance( m_instance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool DrizzleIntegrationInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
@@ -149,10 +167,14 @@ bool DrizzleIntegrationInterface::ValidateProcess( const ProcessImplementation& 
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool DrizzleIntegrationInterface::RequiresInstanceValidation() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool DrizzleIntegrationInterface::ImportProcess( const ProcessImplementation& p )
 {
@@ -161,12 +183,34 @@ bool DrizzleIntegrationInterface::ImportProcess( const ProcessImplementation& p 
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 void DrizzleIntegrationInterface::SaveSettings() const
 {
    SaveGeometry();
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+static const char* s_cfaPatterns[] = { "", "RGGB", "BGGR", "GBRG", "GRBG", "GRGB", "GBGR", "RGBG", "BGRG" };
+
+static int ComboBoxItemIndexFromCFAPattern( const String& pattern )
+{
+   for ( size_type i = 0; i < ItemsInArray( s_cfaPatterns ); ++i )
+      if ( pattern == s_cfaPatterns[i] )
+         return int( i );
+   return 0;
+}
+
+static String CFAPatternFromComboBoxItemIndex( int index )
+{
+   if ( index >= 0 )
+      if ( size_type( index ) < ItemsInArray( s_cfaPatterns ) )
+         return String( s_cfaPatterns[index] );
+   return String();
+}
+
 // ----------------------------------------------------------------------------
 
 void DrizzleIntegrationInterface::UpdateControls()
@@ -177,6 +221,8 @@ void DrizzleIntegrationInterface::UpdateControls()
    UpdateIntegrationControls();
    UpdateROIControls();
 }
+
+// ----------------------------------------------------------------------------
 
 void DrizzleIntegrationInterface::UpdateInputDataItem( size_type i )
 {
@@ -204,6 +250,8 @@ void DrizzleIntegrationInterface::UpdateInputDataItem( size_type i )
       node->SetToolTip( 2, item.path );
 }
 
+// ----------------------------------------------------------------------------
+
 void DrizzleIntegrationInterface::UpdateInputDataList()
 {
    int currentIdx = GUI->InputData_TreeBox.ChildIndex( GUI->InputData_TreeBox.CurrentNode() );
@@ -228,6 +276,8 @@ void DrizzleIntegrationInterface::UpdateInputDataList()
    GUI->InputData_TreeBox.EnableUpdates();
 }
 
+// ----------------------------------------------------------------------------
+
 void DrizzleIntegrationInterface::UpdateDataSelectionButtons()
 {
    bool hasItems = GUI->InputData_TreeBox.NumberOfChildren() > 0;
@@ -240,11 +290,15 @@ void DrizzleIntegrationInterface::UpdateDataSelectionButtons()
    GUI->Clear_PushButton.Enable( hasItems );
 }
 
+// ----------------------------------------------------------------------------
+
 void DrizzleIntegrationInterface::UpdateFormatHintsControls()
 {
    GUI->InputHints_Edit.SetText( m_instance.p_inputHints );
    GUI->InputDirectory_Edit.SetText( m_instance.p_inputDirectory );
 }
+
+// ----------------------------------------------------------------------------
 
 void DrizzleIntegrationInterface::UpdateIntegrationControls()
 {
@@ -252,6 +306,8 @@ void DrizzleIntegrationInterface::UpdateIntegrationControls()
    GUI->DropShrink_NumericControl.SetValue( m_instance.p_dropShrink );
    GUI->KernelFunction_ComboBox.SetCurrentItem( m_instance.p_kernelFunction );
    GUI->GridSize_SpinBox.SetValue( m_instance.p_kernelGridSize );
+   GUI->EnableCFA_CheckBox.SetChecked( m_instance.p_enableCFA );
+   GUI->CFAPattern_ComboBox.SetCurrentItem( ComboBoxItemIndexFromCFAPattern( m_instance.p_cfaPattern ) );
    GUI->EnableRejection_CheckBox.SetChecked( m_instance.p_enableRejection );
    GUI->EnableImageWeighting_CheckBox.SetChecked( m_instance.p_enableImageWeighting );
    GUI->EnableSurfaceSplines_CheckBox.SetChecked( m_instance.p_enableSurfaceSplines );
@@ -260,7 +316,12 @@ void DrizzleIntegrationInterface::UpdateIntegrationControls()
    bool integrated = DZKernelFunction::IsIntegratedKernel( m_instance.p_kernelFunction );
    GUI->GridSize_Label.Enable( integrated );
    GUI->GridSize_SpinBox.Enable( integrated );
+
+   GUI->CFAPattern_Label.Enable( m_instance.p_enableCFA );
+   GUI->CFAPattern_ComboBox.Enable( m_instance.p_enableCFA );
 }
+
+// ----------------------------------------------------------------------------
 
 void DrizzleIntegrationInterface::UpdateROIControls()
 {
@@ -272,6 +333,7 @@ void DrizzleIntegrationInterface::UpdateROIControls()
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 void DrizzleIntegrationInterface::__ValueUpdated( NumericEdit& sender, double value )
 {
@@ -279,15 +341,16 @@ void DrizzleIntegrationInterface::__ValueUpdated( NumericEdit& sender, double va
       m_instance.p_dropShrink = value;
 }
 
+// ----------------------------------------------------------------------------
 
 void DrizzleIntegrationInterface::__CurrentNodeUpdated( TreeBox& sender, TreeBox::Node& current, TreeBox::Node& oldCurrent )
 {
    int index = sender.ChildIndex( &current );
    if ( index < 0 || size_type( index ) >= m_instance.p_inputData.Length() )
       throw Error( "DrizzleIntegrationInterface: *Warning* Corrupted interface structures" );
-
-   // ### If there's something that depends on which item is selected in the list, do it here.
 }
+
+// ----------------------------------------------------------------------------
 
 void DrizzleIntegrationInterface::__NodeActivated( TreeBox& sender, TreeBox::Node& node, int col )
 {
@@ -315,10 +378,14 @@ void DrizzleIntegrationInterface::__NodeActivated( TreeBox& sender, TreeBox::Nod
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DrizzleIntegrationInterface::__NodeSelectionUpdated( TreeBox& sender )
 {
    UpdateDataSelectionButtons();
 }
+
+// ----------------------------------------------------------------------------
 
 static size_type TreeInsertionIndex( const TreeBox& tree )
 {
@@ -396,6 +463,11 @@ void DrizzleIntegrationInterface::__Click( Button& sender, bool checked )
       if ( d.Execute() )
          GUI->InputDirectory_Edit.SetText( m_instance.p_inputDirectory = d.Directory() );
    }
+   else if ( sender == GUI->EnableCFA_CheckBox )
+   {
+      m_instance.p_enableCFA = checked;
+      UpdateIntegrationControls();
+   }
    else if ( sender == GUI->EnableRejection_CheckBox )
    {
       m_instance.p_enableRejection = checked;
@@ -429,12 +501,18 @@ void DrizzleIntegrationInterface::__Click( Button& sender, bool checked )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DrizzleIntegrationInterface::__ItemSelected( ComboBox& sender, int itemIndex )
 {
    if ( sender == GUI->KernelFunction_ComboBox )
       m_instance.p_kernelFunction = itemIndex;
+   else if ( sender == GUI->CFAPattern_ComboBox )
+      m_instance.p_cfaPattern = CFAPatternFromComboBoxItemIndex( itemIndex );
    UpdateIntegrationControls();
 }
+
+// ----------------------------------------------------------------------------
 
 void DrizzleIntegrationInterface::__EditCompleted( Edit& sender )
 {
@@ -445,6 +523,8 @@ void DrizzleIntegrationInterface::__EditCompleted( Edit& sender )
       m_instance.p_inputDirectory = text;
    sender.SetText( text );
 }
+
+// ----------------------------------------------------------------------------
 
 void DrizzleIntegrationInterface::__SpinValueUpdated( SpinBox& sender, int value )
 {
@@ -462,6 +542,8 @@ void DrizzleIntegrationInterface::__SpinValueUpdated( SpinBox& sender, int value
       m_instance.p_roi.y1 = m_instance.p_roi.y0 + value;
 }
 
+// ----------------------------------------------------------------------------
+
 void DrizzleIntegrationInterface::__ToggleSection( SectionBar& sender, Control& section, bool start )
 {
    if ( start )
@@ -478,11 +560,15 @@ void DrizzleIntegrationInterface::__ToggleSection( SectionBar& sender, Control& 
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DrizzleIntegrationInterface::__CheckSection( SectionBar& sender, bool checked )
 {
    if ( sender == GUI->ROI_SectionBar )
       m_instance.p_useROI = checked;
 }
+
+// ----------------------------------------------------------------------------
 
 void DrizzleIntegrationInterface::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
 {
@@ -491,6 +577,8 @@ void DrizzleIntegrationInterface::__FileDrag( Control& sender, const Point& pos,
    else if ( sender == GUI->InputDirectory_Edit )
       wantsFiles = files.Length() == 1 && File::DirectoryExists( files[0] );
 }
+
+// ----------------------------------------------------------------------------
 
 void DrizzleIntegrationInterface::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
 {
@@ -523,11 +611,15 @@ void DrizzleIntegrationInterface::__FileDrop( Control& sender, const Point& pos,
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void DrizzleIntegrationInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
 {
    if ( sender == GUI->ROI_SectionBar || sender == GUI->ROI_Control || sender == GUI->SelectPreview_Button )
       wantsView = view.IsPreview();
 }
+
+// ----------------------------------------------------------------------------
 
 void DrizzleIntegrationInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
 {
@@ -541,6 +633,7 @@ void DrizzleIntegrationInterface::__ViewDrop( Control& sender, const Point& pos,
       }
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
@@ -571,7 +664,7 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
 
    AddFiles_PushButton.SetText( "Add Files" );
    AddFiles_PushButton.SetToolTip( "<p>Add existing drizzle data files to the list of input data files.</p>"
-      "<p>Drizzle data files carry the .drz suffix. Normally you should select .drz files generated by the "
+      "<p>Drizzle data files carry the .xdrz suffix. Normally you should select .xdrz files generated by the "
       "StarAlignment and ImageIntegration tools for the images that you want to integrate with DrizzleIntegration.</p>" );
    AddFiles_PushButton.OnClick( (Button::click_event_handler)&DrizzleIntegrationInterface::__Click, w );
 
@@ -774,6 +867,37 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
    GridSize_Sizer.Add( GridSize_SpinBox );
    GridSize_Sizer.AddStretch();
 
+   EnableCFA_CheckBox.SetText( "Enable CFA drizzle" );
+   EnableCFA_CheckBox.SetToolTip( "<p>Perform a drizzle integration process to generate an RGB color image from monochrome "
+      "raw frames mosaiced with color filter arrays (CFA). This process is also known as <i>Bayer drizzle</i>.</p>"
+      "<p>If the default Auto option is selected for the <i>CFA pattern</i> parameter (see below), DrizzleIntegration will "
+      "retrieve CFA patterns from input .xdrz files. These patterns are gathered by the Debayer process and generated in "
+      ".xdrz files by image registration processes such as StarAlignment or CometAlignment.</p>"
+      "<p>If one of the supported CFA patterns is selected, such as RGGB, BGGR, etc, the process will assume the selected "
+      "pattern even if it overrides data provided by .xdrz files (warning messages will be shown in such cases).</p>" );
+   EnableCFA_CheckBox.OnClick( (Button::click_event_handler)&DrizzleIntegrationInterface::__Click, w );
+
+   EnableCFA_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
+   EnableCFA_Sizer.Add( EnableCFA_CheckBox );
+   EnableCFA_Sizer.AddStretch();
+
+   CFAPattern_Label.SetText( "CFA pattern:" );
+   CFAPattern_Label.SetFixedWidth( labelWidth1 );
+   CFAPattern_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   CFAPattern_Label.SetToolTip( "<p>CFA (Color Filter Array) pattern used for CFA drizzle, when the <i>enable CFA drizzle</i> "
+   "option (see above) is checked.</p>"
+   "<p>Select the default Auto option to retrieve CFA patterns automatically from input .xdrz files, or select one of the supported "
+   "CFA patterns to force it, overriding the information that may be provided by .xdrz files.</p>" );
+
+   CFAPattern_ComboBox.AddItem( "Auto" );
+   for ( size_type i = 1; i < ItemsInArray( s_cfaPatterns ); ++i )
+      CFAPattern_ComboBox.AddItem( String( s_cfaPatterns[i] ) );
+
+   CFAPattern_Sizer.SetSpacing( 4 );
+   CFAPattern_Sizer.Add( CFAPattern_Label );
+   CFAPattern_Sizer.Add( CFAPattern_ComboBox );
+   CFAPattern_Sizer.AddStretch();
+
    EnableRejection_CheckBox.SetText( "Enable pixel rejection" );
    EnableRejection_CheckBox.SetToolTip( "<p>When the input drizzle files include pixel rejection data, use them. Pixel "
       "rejection data are generated by the ImageIntegration tool, which you should have used with the <i>generate drizzle "
@@ -825,6 +949,8 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
    Integration_Sizer.Add( DropShrink_NumericControl );
    Integration_Sizer.Add( KernelFunction_Sizer );
    Integration_Sizer.Add( GridSize_Sizer );
+   Integration_Sizer.Add( EnableCFA_Sizer );
+   Integration_Sizer.Add( CFAPattern_Sizer );
    Integration_Sizer.Add( EnableRejection_Sizer );
    Integration_Sizer.Add( EnableImageWeighting_Sizer );
    Integration_Sizer.Add( EnableSurfaceSplines_Sizer );
@@ -964,4 +1090,4 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInterface.cpp - Released 2017-04-14T23:07:12Z
+// EOF DrizzleIntegrationInterface.cpp - Released 2017-05-02T09:43:00Z

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// pcl/XISFWriter.cpp - Released 2017-04-14T23:04:51Z
+// pcl/XISFWriter.cpp - Released 2017-05-02T10:39:13Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -1557,12 +1557,28 @@ void XISFWriter::WriteImageProperty( const IsoString& identifier, const Variant&
    m_engine->WriteImageProperty( identifier, value );
 }
 
+void XISFWriter::WriteImageProperties( const PropertyArray& properties )
+{
+   CheckOpenStream( "WriteImageProperties" );
+   for ( const Property& property : properties )
+      if ( property.IsValid() )
+         m_engine->WriteImageProperty( property.Id(), property.Value() );
+}
+
 // ----------------------------------------------------------------------------
 
 void XISFWriter::WriteProperty( const IsoString& identifier, const Variant& value )
 {
    CheckOpenStream( "WriteProperty" );
    m_engine->WriteProperty( identifier, value );
+}
+
+void XISFWriter::WriteProperties( const PropertyArray& properties )
+{
+   CheckOpenStream( "WriteProperties" );
+   for ( const Property& property : properties )
+      if ( property.IsValid() )
+         m_engine->WriteProperty( property.Id(), property.Value() );
 }
 
 // ----------------------------------------------------------------------------
@@ -1688,4 +1704,4 @@ void XISFWriter::CheckClosedStream( const char* memberFunction ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/XISFWriter.cpp - Released 2017-04-14T23:04:51Z
+// EOF pcl/XISFWriter.cpp - Released 2017-05-02T10:39:13Z

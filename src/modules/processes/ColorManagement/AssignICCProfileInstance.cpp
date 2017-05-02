@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ColorManagement Process Module Version 01.00.00.0293
+// Standard ColorManagement Process Module Version 01.00.00.0303
 // ----------------------------------------------------------------------------
-// AssignICCProfileInstance.cpp - Released 2017-04-14T23:07:12Z
+// AssignICCProfileInstance.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorManagement PixInsight module.
 //
@@ -255,4 +255,4 @@ size_type AssignICCProfileInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AssignICCProfileInstance.cpp - Released 2017-04-14T23:07:12Z
+// EOF AssignICCProfileInstance.cpp - Released 2017-05-02T09:43:00Z

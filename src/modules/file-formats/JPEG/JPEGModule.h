@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard JPEG File Format Module Version 01.00.04.0306
+// Standard JPEG File Format Module Version 01.00.04.0316
 // ----------------------------------------------------------------------------
-// JPEGModule.h - Released 2017-04-14T23:07:03Z
+// JPEGModule.h - Released 2017-05-02T09:42:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
@@ -84,4 +84,4 @@ public:
 #endif   // __JPEGModule_h
 
 // ----------------------------------------------------------------------------
-// EOF JPEGModule.h - Released 2017-04-14T23:07:03Z
+// EOF JPEGModule.h - Released 2017-05-02T09:42:51Z

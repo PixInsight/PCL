@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// pcl/XISFReader.cpp - Released 2017-04-14T23:04:51Z
+// pcl/XISFReader.cpp - Released 2017-05-02T10:39:13Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -2823,6 +2823,15 @@ Variant XISFReader::ReadImageProperty( const IsoString& identifier )
    return m_engine->ReadImageProperty( identifier );
 }
 
+PropertyArray XISFReader::ReadImageProperties()
+{
+   PropertyDescriptionArray descriptions = ImageProperties();
+   PropertyArray properties;
+   for ( const PropertyDescription& description : descriptions )
+      properties << Property( description.id, m_engine->ReadImageProperty( description.id ) );
+   return properties;
+}
+
 // ----------------------------------------------------------------------------
 
 PropertyDescriptionArray XISFReader::Properties() const
@@ -2835,6 +2844,15 @@ Variant XISFReader::ReadProperty( const IsoString& identifier )
 {
    CheckOpenStream( "ReadProperty" );
    return m_engine->ReadProperty( identifier );
+}
+
+PropertyArray XISFReader::ReadProperties()
+{
+   PropertyDescriptionArray descriptions = Properties();
+   PropertyArray properties;
+   for ( const PropertyDescription& description : descriptions )
+      properties << Property( description.id, m_engine->ReadProperty( description.id ) );
+   return properties;
 }
 
 // ----------------------------------------------------------------------------
@@ -2965,4 +2983,4 @@ XMLDocument* XISFReader::ExtractHeader( const String& path, XMLParserOptions opt
 } //pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/XISFReader.cpp - Released 2017-04-14T23:04:51Z
+// EOF pcl/XISFReader.cpp - Released 2017-05-02T10:39:13Z

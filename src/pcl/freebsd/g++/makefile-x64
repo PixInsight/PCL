@@ -2,7 +2,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-04-14T21:29:02.962Z
+# Generated on .... 2017-05-02T09:40:41.943Z
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ FreeBSD/g++
@@ -52,6 +52,7 @@ SRC_FILES= \
 ../../Diagnostics.cpp \
 ../../Dialog.cpp \
 ../../DisplayFunction.cpp \
+../../DrizzleData.cpp \
 ../../Edit.cpp \
 ../../Exception.cpp \
 ../../ExternalProcess.cpp \
@@ -212,6 +213,7 @@ OBJ_FILES= \
 ./x64/Release/Diagnostics.o \
 ./x64/Release/Dialog.o \
 ./x64/Release/DisplayFunction.o \
+./x64/Release/DrizzleData.o \
 ./x64/Release/Edit.o \
 ./x64/Release/Exception.o \
 ./x64/Release/ExternalProcess.o \
@@ -372,6 +374,7 @@ DEP_FILES= \
 ./x64/Release/Diagnostics.d \
 ./x64/Release/Dialog.d \
 ./x64/Release/DisplayFunction.d \
+./x64/Release/DrizzleData.d \
 ./x64/Release/Edit.d \
 ./x64/Release/Exception.d \
 ./x64/Release/ExternalProcess.d \

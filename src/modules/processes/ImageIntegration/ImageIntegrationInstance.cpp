@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.01.0368
+// Standard ImageIntegration Process Module Version 01.14.00.0390
 // ----------------------------------------------------------------------------
-// ImageIntegrationInstance.cpp - Released 2017-04-14T23:07:12Z
+// ImageIntegrationInstance.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -55,7 +55,7 @@
 
 #include <pcl/ATrousWaveletTransform.h>
 #include <pcl/AutoPointer.h>
-#include <pcl/DrizzleDataDecoder.h>
+#include <pcl/DrizzleData.h>
 #include <pcl/ErrorHandler.h>
 #include <pcl/FITSHeaderKeyword.h>
 #include <pcl/FileFormat.h>
@@ -77,22 +77,6 @@
 
 namespace pcl
 {
-
-// ----------------------------------------------------------------------------
-
-class DrizzleIntegrationFilter : public DrizzleDecoderBase
-{
-public:
-
-   DrizzleIntegrationFilter() = default;
-
-private:
-
-   virtual bool FilterBlock( const IsoString& itemId )
-   {
-      return itemId == "m" || itemId == "m0" || itemId == "s" || itemId == "w" || itemId == "Rl" || itemId == "Rh";
-   }
-};
 
 // ----------------------------------------------------------------------------
 
@@ -146,11 +130,15 @@ ImageIntegrationInstance::ImageIntegrationInstance( const MetaProcess* m ) :
 {
 }
 
+// ----------------------------------------------------------------------------
+
 ImageIntegrationInstance::ImageIntegrationInstance( const ImageIntegrationInstance& x ) :
    ProcessImplementation( x )
 {
    Assign( x );
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageIntegrationInstance::Assign( const ProcessImplementation& p )
 {
@@ -205,16 +193,22 @@ void ImageIntegrationInstance::Assign( const ProcessImplementation& p )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool ImageIntegrationInstance::CanExecuteOn( const View& view, String& whyNot ) const
 {
    whyNot = "ImageIntegration can only be executed in the global context.";
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool ImageIntegrationInstance::IsHistoryUpdater( const View& view ) const
 {
    return false;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ImageIntegrationInstance::CanExecuteGlobal( String& whyNot ) const
 {
@@ -223,7 +217,6 @@ bool ImageIntegrationInstance::CanExecuteGlobal( String& whyNot ) const
       whyNot = "This instance of ImageIntegration defines less than three source images.";
       return false;
    }
-
    return true;
 }
 
@@ -318,6 +311,8 @@ static DVector EvaluateNoise( const ImageVariant& image, float minDataFraction )
    return noise;
 }
 
+// ----------------------------------------------------------------------------
+
 /*
  * Estimation of the signal-to-noise ratio function:
  *
@@ -356,6 +351,8 @@ static DVector EvaluateSNR( const ImageVariant& image, const DVector& noise, dou
          }
    return DVector(); // ?!
 }
+
+// ----------------------------------------------------------------------------
 
 /*
  * Iterative k-sigma / biweight midvariance robust estimator of scale.
@@ -453,11 +450,11 @@ static DVector EvaluateIKSS( const GenericImage<P>& image, double low = 0, doubl
    return EvaluateIKSS( dum, image, low, high );
 }
 
-static DVector EvaluateIKSS( const ImageVariant& image, double low = 0, double high = 1 )
-{
-   DVector dum;
-   return EvaluateIKSS( dum, image, low, high );
-}
+// static DVector EvaluateIKSS( const ImageVariant& image, double low = 0, double high = 1 )
+// {
+//    DVector dum;
+//    return EvaluateIKSS( dum, image, low, high );
+// }
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -564,11 +561,6 @@ public:
       return m_mean[c];
    }
 
-   double StdDev( int c ) const
-   {
-      return m_stdDev[c];
-   }
-
    double AvgDev( int c ) const
    {
       return m_avgDev[c];
@@ -619,17 +611,21 @@ public:
       return m_pedestal;
    }
 
-   void AppendDrizzleLowRejectionData( int x, int y, int channel )
-   {
-      m_drzLowRejectionData[channel].Append( Point( x, y ) );
-   }
-
    void AppendDrizzleHighRejectionData( int x, int y, int channel )
    {
-      m_drzHighRejectionData[channel].Append( Point( x, y ) );
+      if ( m_drzRejectionMap.IsEmpty() )
+         InitializeDrizzleRejectionMap();
+      m_drzRejectionMap( x, y, channel ) |= 1;
    }
 
-   void ToDrizzleData( File& ) const;
+   void AppendDrizzleLowRejectionData( int x, int y, int channel )
+   {
+      if ( m_drzRejectionMap.IsEmpty() )
+         InitializeDrizzleRejectionMap();
+      m_drzRejectionMap( x, y, channel ) |= 2;
+   }
+
+   void ToDrizzleData( DrizzleData& ) const;
 
    static bool Incremental()
    {
@@ -689,20 +685,17 @@ public:
 
 private:
 
-   typedef Array<Point>                         drizzle_rejection_coordinates;
-   typedef Array<drizzle_rejection_coordinates> drizzle_rejection_data;
-
-   typedef IndirectArray<IntegrationFile>       file_list;
+   typedef IndirectArray<IntegrationFile> file_list;
 
    AutoPointer<FileFormatInstance> m_file;
    String                          m_drzPath;
+   UInt8Image                      m_drzRejectionMap;
    AutoPointer<Image>              m_image;  // used for non-incremental file reading
    int                             m_currentChannel;
    FMatrix                         m_buffer; // used for incremental file reading
    DVector                         m_scale;
    DVector                         m_mean;
    DVector                         m_median;
-   DVector                         m_stdDev;
    DVector                         m_avgDev;
    DVector                         m_mad;
    DVector                         m_bwmv;
@@ -716,8 +709,6 @@ private:
    DVector                         m_noise;
    DVector                         m_weight;
    float                           m_pedestal;
-   drizzle_rejection_data          m_drzLowRejectionData;
-   drizzle_rejection_data          m_drzHighRejectionData;
 
    static file_list                s_files;
    static Rect                     s_roi;
@@ -831,6 +822,12 @@ private:
       return KeywordValue( IsoString( keyName ) );
    }
 
+   void InitializeDrizzleRejectionMap()
+   {
+      m_drzRejectionMap.AllocateData( s_width, s_height, s_numberOfChannels );
+      m_drzRejectionMap.Zero();
+   }
+
    void ResetCacheableData();
    void AddToCache( const String& path ) const;
    bool GetFromCache( const String& path );
@@ -844,6 +841,8 @@ int IntegrationFile::s_numberOfChannels = 0;
 bool IntegrationFile::s_isColor = false;
 bool IntegrationFile::s_incremental = false;
 int IntegrationFile::s_bufferRows = 0;
+
+// ----------------------------------------------------------------------------
 
 void IntegrationFile::OpenFiles( const ImageIntegrationInstance& instance )
 {
@@ -975,6 +974,8 @@ void IntegrationFile::OpenFiles( const ImageIntegrationInstance& instance )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void IntegrationFile::Open( const String& path, const String& drzPath, const ImageIntegrationInstance& instance, bool isReference )
 {
    Console console;
@@ -1051,25 +1052,23 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
          throw CatchedException();
    }
 
-   m_drzPath     = String();
-   m_scale       = DVector();
-   m_mean        = DVector();
-   m_median      = DVector();
-   m_stdDev      = DVector();
-   m_avgDev      = DVector();
-   m_mad         = DVector();
-   m_bwmv        = DVector();
-   m_pbmv        = DVector();
-   m_sn          = DVector();
-   m_qn          = DVector();
-   m_ikss        = DVector();
-   m_iksl        = DVector();
-   m_location    = DVector();
-   m_dispersion  = DVector();
-   m_noise       = DVector();
-   m_pedestal    = 0;
-   m_drzLowRejectionData  = drizzle_rejection_data();
-   m_drzHighRejectionData = drizzle_rejection_data();
+   m_drzPath         = String();
+   m_drzRejectionMap = UInt8Image();
+   m_scale           = DVector();
+   m_mean            = DVector();
+   m_median          = DVector();
+   m_avgDev          = DVector();
+   m_mad             = DVector();
+   m_bwmv            = DVector();
+   m_pbmv            = DVector();
+   m_sn              = DVector();
+   m_qn              = DVector();
+   m_ikss            = DVector();
+   m_iksl            = DVector();
+   m_location        = DVector();
+   m_dispersion      = DVector();
+   m_noise           = DVector();
+   m_pedestal        = 0;
 
    bool generateOutput = instance.p_generateIntegratedImage || instance.p_generateDrizzleData;
 
@@ -1109,7 +1108,6 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
 
    bool doMean   = m_mean.IsEmpty()   && needMean;
    bool doMedian = m_median.IsEmpty() && needMedian;
-   bool doStdDev = false; //m_stdDev.IsEmpty() && needStdDev; ### StdDev not used in this implementation
    bool doAvgDev = m_avgDev.IsEmpty() && needAvgDev;
    bool doMAD    = m_mad.IsEmpty()    && instance.p_weightScale == IIWeightScale::MAD;
    bool doBWMV   = m_bwmv.IsEmpty()   && instance.p_weightScale == IIWeightScale::BWMV;
@@ -1121,7 +1119,7 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
 
    SpinStatus spin;
 
-   if ( doMean || doStdDev || doMedian || doAvgDev || doMAD || doBWMV || doPBMV || doSn || doQn || doIKSS || doNoise )
+   if ( doMean || doMedian || doAvgDev || doMAD || doBWMV || doPBMV || doSn || doQn || doIKSS || doNoise )
    {
       if ( s_incremental )
       {
@@ -1135,16 +1133,14 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
       m_image->Status().DisableInitialization();
    }
 
-   if ( doMean || doStdDev || doMedian || doAvgDev || doMAD || doBWMV || doPBMV || doSn || doQn )
+   if ( doMean || doMedian || doAvgDev || doMAD || doBWMV || doPBMV || doSn || doQn )
    {
       ImageStatistics S;
       S.SetRejectionLimits( 0.00002, 0.99998 ); // 2e-5 ~= 1.2/65536
       S.EnableRejection();
       S.DisableExtremes();
       S.DisableSumOfSquares();
-
-      if ( !doStdDev )
-         S.DisableVariance();
+      S.DisableVariance();
 
       if ( !doMedian && !doAvgDev && !doMAD && !doBWMV && !doPBMV )
       {
@@ -1178,8 +1174,6 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
          m_median = DVector( s_numberOfChannels );
       if ( doAvgDev )
          m_avgDev = DVector( s_numberOfChannels );
-      if ( doStdDev )
-         m_stdDev = DVector( s_numberOfChannels );
       if ( doMAD )
          m_mad    = DVector( s_numberOfChannels );
       if ( doBWMV )
@@ -1201,8 +1195,6 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
             m_mean[c] = S.Mean();
          if ( doMedian )
             m_median[c] = S.Median();
-         if ( doStdDev )
-            m_stdDev[c] = S.StdDev();
          if ( doAvgDev )
             m_avgDev[c] = S.AvgDev();
          if ( doMAD )
@@ -1408,123 +1400,22 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
          throw Error( m_file->FilePath() + ": Missing drizzle data file path." );
       if ( !File::Exists( m_drzPath ) )
          throw Error( "No such file: " + m_drzPath );
-      m_drzLowRejectionData = drizzle_rejection_data( size_type( s_numberOfChannels ) );
-      m_drzHighRejectionData = drizzle_rejection_data( size_type( s_numberOfChannels ) );
    }
 }
 
-void IntegrationFile::ToDrizzleData( File& f ) const
+// ----------------------------------------------------------------------------
+
+void IntegrationFile::ToDrizzleData( DrizzleData& drz ) const
 {
-   f.OutText( "m{" );
-   for ( int i = 0, j = 1; ; ++i, ++j )
-   {
-      if ( j == s_numberOfChannels )
-      {
-         f.OutText( IsoString().Format( "%.16g}", m_location[i] ) );
-         break;
-      }
-      f.OutText( IsoString().Format( "%.16g,", m_location[i] ) );
-   }
-
-   f.OutText( "m0{" );
-   for ( int i = 0, j = 1; ; ++i, ++j )
-   {
-      if ( j == s_numberOfChannels )
-      {
-         f.OutText( IsoString().Format( "%.16g}", s_files[0]->m_location[i] ) );
-         break;
-      }
-      f.OutText( IsoString().Format( "%.16g,", s_files[0]->m_location[i] ) );
-   }
-
-   f.OutText( "s{" );
-   for ( int i = 0, j = 1; ; ++i, ++j )
-   {
-      if ( j == s_numberOfChannels )
-      {
-         f.OutText( IsoString().Format( "%.16g}", m_scale[i] ) );
-         break;
-      }
-      f.OutText( IsoString().Format( "%.16g,", m_scale[i] ) );
-   }
-
-   f.OutText( "w{" );
-   for ( int i = 0, j = 1; ; ++i, ++j )
-   {
-      if ( j == s_numberOfChannels )
-      {
-         f.OutText( IsoString().Format( "%.16g}", m_weight[i]/s_files[0]->m_weight[i] ) );
-         break;
-      }
-      f.OutText( IsoString().Format( "%.16g,", m_weight[i]/s_files[0]->m_weight[i] ) );
-   }
-
-   /*
-    * N.B.: If pixel rejection parameters are incorrect, a huge number of
-    * rejection coordinates could have to be generated in the drizzle file. In
-    * such cases the drizzle file generation process may take a very long time
-    * to complete, especially on typical low-end machines. For this reason we
-    * have to be responsive to a potential abort request from the user.
-    */
-
-   f.OutText( "Rl{" );
-   for ( int i = 0; i < s_numberOfChannels; ++i )
-   {
-      f.OutText( "{" );
-      if ( !m_drzLowRejectionData[i].IsEmpty() )
-      {
-         Console console;
-         for ( size_type j = 0, k = 1; ; ++j, ++k )
-         {
-            if ( j%100 == 0 )
-            {
-               Module->ProcessEvents();
-               if ( console.AbortRequested() )
-                  throw ProcessAborted();
-            }
-
-            const Point& p = m_drzLowRejectionData[i][j];
-            if ( k == m_drzLowRejectionData[i].Length() )
-            {
-               f.OutText( IsoString().Format( "%d,%d", p.x, p.y ) );
-               break;
-            }
-            f.OutText( IsoString().Format( "%d,%d,", p.x, p.y ) );
-         }
-      }
-      f.OutText( "}" );
-   }
-   f.OutText( "}" );
-
-   f.OutText( "Rh{" );
-   for ( int i = 0; i < s_numberOfChannels; ++i )
-   {
-      f.OutText( "{" );
-      if ( !m_drzHighRejectionData[i].IsEmpty() )
-      {
-         Console console;
-         for ( size_type j = 0, k = 1; ; ++j, ++k )
-         {
-            if ( j%100 == 0 )
-            {
-               Module->ProcessEvents();
-               if ( console.AbortRequested() )
-                  throw ProcessAborted();
-            }
-
-            const Point& p = m_drzHighRejectionData[i][j];
-            if ( k == m_drzHighRejectionData[i].Length() )
-            {
-               f.OutText( IsoString().Format( "%d,%d", p.x, p.y ) );
-               break;
-            }
-            f.OutText( IsoString().Format( "%d,%d,", p.x, p.y ) );
-         }
-      }
-      f.OutText( "}" );
-   }
-   f.OutText( "}" );
+   drz.SetLocation( m_location );
+   drz.SetReferenceLocation( s_files[0]->m_location );
+   drz.SetScale( m_scale );
+   drz.SetWeight( m_weight/s_files[0]->m_weight );
+   if ( !m_drzRejectionMap.IsEmpty() )
+      drz.SetRejectionMap( m_drzRejectionMap );
 }
+
+// ----------------------------------------------------------------------------
 
 double IntegrationFile::KeywordValue( const IsoString& keyName )
 {
@@ -1548,11 +1439,12 @@ double IntegrationFile::KeywordValue( const IsoString& keyName )
    return -1;
 }
 
+// ----------------------------------------------------------------------------
+
 void IntegrationFile::ResetCacheableData()
 {
    m_mean     = DVector();
    m_median   = DVector();
-   m_stdDev   = DVector();
    m_avgDev   = DVector();
    m_mad      = DVector();
    m_bwmv     = DVector();
@@ -1565,12 +1457,13 @@ void IntegrationFile::ResetCacheableData()
    m_pedestal = 0;
 }
 
+// ----------------------------------------------------------------------------
+
 void IntegrationFile::AddToCache( const String& path ) const
 {
    IntegrationCacheItem item( path );
    item.mean     = m_mean;
    item.median   = m_median;
-   item.stdDev   = m_stdDev;
    item.avgDev   = m_avgDev;
    item.mad      = m_mad;
    item.bwmv     = m_bwmv;
@@ -1584,6 +1477,8 @@ void IntegrationFile::AddToCache( const String& path ) const
    TheIntegrationCache->Add( item );
 }
 
+// ----------------------------------------------------------------------------
+
 bool IntegrationFile::GetFromCache( const String& path )
 {
    ResetCacheableData();
@@ -1594,7 +1489,6 @@ bool IntegrationFile::GetFromCache( const String& path )
 
    m_mean     = item.mean;
    m_median   = item.median;
-   m_stdDev   = item.stdDev;
    m_avgDev   = item.avgDev;
    m_mad      = item.mad;
    m_bwmv     = item.bwmv;
@@ -1609,7 +1503,6 @@ bool IntegrationFile::GetFromCache( const String& path )
    return
    (m_mean.IsEmpty()   || m_mean.Length()   == s_numberOfChannels) &&
    (m_median.IsEmpty() || m_median.Length() == s_numberOfChannels) &&
-   (m_stdDev.IsEmpty() || m_stdDev.Length() == s_numberOfChannels) &&
    (m_avgDev.IsEmpty() || m_avgDev.Length() == s_numberOfChannels) &&
    (m_mad.IsEmpty()    || m_mad.Length()    == s_numberOfChannels) &&
    (m_bwmv.IsEmpty()   || m_bwmv.Length()   == s_numberOfChannels) &&
@@ -1629,7 +1522,9 @@ class ImageIntegrationEngine
 public:
 
    ImageIntegrationEngine( const ImageIntegrationInstance& i, StatusMonitor& m ) :
-      instance( i ), monitor( m ), threadData( monitor, 0 )
+      instance( i ),
+      monitor( m ),
+      threadData( monitor, 0 )
    {
    }
 
@@ -1644,7 +1539,6 @@ protected:
    public:
 
       EngineThread( const ImageIntegrationEngine& engine, int firstStack, int endStack ) :
-         Thread(),
          m_data( engine.threadData ),
          m_firstStack( firstStack ),
          m_endStack( endStack )
@@ -1677,10 +1571,10 @@ public:
    typedef ImageIntegrationInstance::RejectionCounts     RejectionCounts;
    typedef ImageIntegrationInstance::RejectionSlopes     RejectionSlopes;
 
-   DataLoaderEngine( const ImageIntegrationInstance& aInstance, StatusMonitor& aMonitor,
-                     int ar, RejectionStacks& aR, RejectionCounts& aN, RejectionSlopes& aM ) :
-      ImageIntegrationEngine( aInstance, aMonitor ),
-      r( ar ), R( aR ), N( aN ), M( aM ), threads()
+   DataLoaderEngine( const ImageIntegrationInstance& instance_, StatusMonitor& monitor_,
+                     int r_, RejectionStacks& R_, RejectionCounts& N_, RejectionSlopes& M_ ) :
+      ImageIntegrationEngine( instance_, monitor_ ),
+      r( r_ ), R( R_ ), N( N_ ), M( M_ )
    {
       int numberOfThreads = Thread::NumberOfThreads( R.Length(), 1 );
       int stacksPerThread = R.Length()/numberOfThreads;
@@ -1788,12 +1682,11 @@ public:
    typedef ImageIntegrationInstance::RejectionCounts     RejectionCounts;
    typedef ImageIntegrationInstance::RejectionSlopes     RejectionSlopes;
 
-   RejectionEngine( const ImageIntegrationInstance& aInstance, StatusMonitor& aMonitor,
-                    RejectionStacks& aR, RejectionCounts& aN, RejectionSlopes& aM,
-                    const DVector& am, const DVector& as, const DVector& aq ) :
-      ImageIntegrationEngine( aInstance, aMonitor ),
-      R( aR ), N( aN ), M( aM ), m( am ), s( as ), q( aq ),
-      rangeThreads(), normalizeThreads(), rejectThreads(), threadPrivate()
+   RejectionEngine( const ImageIntegrationInstance& instance_, StatusMonitor& monitor_,
+                    RejectionStacks& R_, RejectionCounts& N_, RejectionSlopes& M_,
+                    const DVector& m_, const DVector& s_, const DVector& q_ ) :
+      ImageIntegrationEngine( instance_, monitor_ ),
+      R( R_ ), N( N_ ), M( M_ ), m( m_ ), s( s_ ), q( q_ )
    {
       int numberOfThreads = Thread::NumberOfThreads( R.Length(), 1 );
       int stacksPerThread = R.Length()/numberOfThreads;
@@ -2235,7 +2128,7 @@ void RejectionEngine::NormalizationThread::Run()
              *
              * ### N.B.: This normalization can yield negative pixel values. If
              * that happens, we must raise all pixels to remove negative
-             * values, since all rejection routines expect positive pixels.
+             * values, since all rejection routines expect positive data.
              */
             const DVector& m = E.m;
             const DVector& s = E.s;
@@ -2508,15 +2401,15 @@ void RejectionEngine::WinsorizedSigmaClipRejectionThread::Run()
 
 // ----------------------------------------------------------------------------
 
-RejectionEngine::AveragedSigmaClipRejectionThread::RejectionData::RejectionData( RejectionStacks& aR, RejectionCounts& aN ) :
+RejectionEngine::AveragedSigmaClipRejectionThread::RejectionData::RejectionData( RejectionStacks& R_, RejectionCounts& N_ ) :
    RejectionEngine::RejectionThreadPrivate(),
-   m( aR.Length() ),
-   s( aR.Length() )
+   m( R_.Length() ),
+   s( R_.Length() )
 {
-   RejectionMatrix* R = aR.DataPtr();
-   IVector* N = aN.DataPtr();
+   RejectionMatrix* R = R_.DataPtr();
+   IVector* N = N_.DataPtr();
 
-   for ( int k = 0; k < aR.Length(); ++k, ++R, ++N )
+   for ( int k = 0; k < R_.Length(); ++k, ++R, ++N )
    {
       m[k] = DVector( R->Rows() );
       s[k] = DVector( R->Rows() );
@@ -3047,6 +2940,8 @@ ImageWindow ImageIntegrationInstance::CreateImageWindow( const IsoString& id, in
    return window;
 }
 
+// ----------------------------------------------------------------------------
+
 inline static String YesNo( bool b )
 {
    return String( b ? "yes" : "no" );
@@ -3172,6 +3067,8 @@ ImageIntegrationInstance::IntegrationDescriptionItems::IntegrationDescriptionIte
                                instance.p_roi.x0, instance.p_roi.y0, instance.p_roi.Width(), instance.p_roi.Height() );
 }
 
+// ----------------------------------------------------------------------------
+
 String ImageIntegrationInstance::IntegrationDescription() const
 {
    IntegrationDescriptionItems items( *this );
@@ -3198,6 +3095,8 @@ String ImageIntegrationInstance::IntegrationDescription() const
       description += "\nRegion of interest ........ " + items.regionOfInterest;
    return description;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ImageIntegrationInstance::ExecuteGlobal()
 {
@@ -3299,8 +3198,8 @@ bool ImageIntegrationInstance::ExecuteGlobal()
          /*
           * Output data pointers
           */
-         float* resultData32 = 0;
-         double* resultData64 = 0;
+         float* resultData32 = nullptr;
+         double* resultData64 = nullptr;
          if ( p_generateIntegratedImage )
             if ( p_generate64BitResult )
                resultData64 = static_cast<DImage&>( *result )[c];
@@ -3310,13 +3209,13 @@ bool ImageIntegrationInstance::ExecuteGlobal()
          /*
           * Rejection map data pointers
           */
-         float* rejectionLowData = 0;
+         float* rejectionLowData = nullptr;
          if ( generateLowRejectionMap )
             rejectionLowData = static_cast<Image&>( *lowRejectionMap )[c];
-         float* rejectionHighData = 0;
+         float* rejectionHighData = nullptr;
          if ( generateHighRejectionMap )
             rejectionHighData = static_cast<Image&>( *highRejectionMap )[c];
-         float* slopeData = 0;
+         float* slopeData = nullptr;
          if ( generateSlopeMap )
             slopeData = static_cast<Image&>( *slopeMap )[c];
 
@@ -3952,21 +3851,11 @@ bool ImageIntegrationInstance::ExecuteGlobal()
 
             try
             {
-               IsoString text = File::ReadTextFile( F.DrizzleDataPath() );
-               IsoString data = DrizzleIntegrationFilter().Filter( text );
-               if ( data.IsEmpty() )
-               {
-                  console.WarningLn( "** Warning: Ignoring invalid drizzle data: " + F.DrizzleDataPath() );
-                  continue;
-               }
-
-               File f;
-               f.CreateForWriting( F.DrizzleDataPath() );
-               f.OutText( data );
-               F.ToDrizzleData( f );
-               f.Close();
-
-               console.WriteLn( F.DrizzleDataPath() );
+               DrizzleData drz( F.DrizzleDataPath(), true/*ignoreIntegrationData*/ );
+               F.ToDrizzleData( drz );
+               String newDrzDataPath = File::ChangeExtension( F.DrizzleDataPath(), ".xdrz" ); // don't overwrite old .drz files
+               drz.SerializeToFile( newDrzDataPath );
+               console.WriteLn( newDrzDataPath );
                ++succeeded;
             }
             catch ( ProcessAborted& )
@@ -4240,6 +4129,8 @@ void* ImageIntegrationInstance::LockParameter( const MetaParameter* p, size_type
    return nullptr;
 }
 
+// ----------------------------------------------------------------------------
+
 bool ImageIntegrationInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {
    if ( p == TheIIImagesParameter )
@@ -4308,6 +4199,8 @@ bool ImageIntegrationInstance::AllocateParameter( size_type sizeOrLength, const 
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 size_type ImageIntegrationInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
    if ( p == TheIIImagesParameter )
@@ -4339,4 +4232,4 @@ size_type ImageIntegrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInstance.cpp - Released 2017-04-14T23:07:12Z
+// EOF ImageIntegrationInstance.cpp - Released 2017-05-02T09:43:00Z

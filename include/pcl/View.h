@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// pcl/View.h - Released 2017-04-14T23:04:40Z
+// pcl/View.h - Released 2017-05-02T10:38:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -63,6 +63,7 @@
 #include <pcl/HistogramTransformation.h>
 #include <pcl/ImageStatistics.h>
 #include <pcl/ImageVariant.h>
+#include <pcl/Property.h>
 #include <pcl/UIObject.h>
 #include <pcl/Variant.h>
 
@@ -556,6 +557,86 @@ public:
    }
 
    /*!
+    * returns true iff the specified string \a id is the identifier of a
+    * reserved view property.
+    *
+    * Reserved view properties are computed and maintained automatically by the
+    * core application and cannot be modified arbitrarily by modules.
+    *
+    * This member function also returns true if the specified identifier starts
+    * with the string "PixInsight:". Although these identifiers are not
+    * strictly reserved, the core application defines a number of properties in
+    * the PixInsight namespace for its internal use. This namespace should not
+    * be used by modules.
+    *
+    * \sa ComputeProperty()
+    */
+   static bool IsReservedViewPropertyId( const IsoString& id );
+
+   /*!
+    * Returns a description of all data properties associated with this view.
+    * For each property, the returned array provides information on the unique
+    * identifier of a property and its data type.
+    *
+    * Returns an empty array if there are no properties in this view.
+    *
+    * \ingroup view_properties
+    */
+   PropertyDescriptionArray Properties() const;
+
+   /*!
+    * Returns an array with all readable (for the calling module) properties in
+    * this view.
+    *
+    * \ingroup view_properties
+    */
+   PropertyArray GetProperties() const;
+
+   /*!
+    * Returns an array with all readable (for the calling module) and storable
+    * properties in this view.
+    *
+    * Storable properties have the ViewPropertyAttribute::Storable attribute
+    * set and are intended to be persistent when writting view images to files.
+    *
+    * \ingroup view_properties
+    */
+   PropertyArray GetStorableProperties() const;
+
+   /*!
+    * Sets the values of a set of properties in this view.
+    *
+    * \param properties The properties that will be defined.
+    *
+    * \param notify     Whether to notify the platform on the property changes.
+    *                   This is true by default.
+    *
+    * \param attributes Optional attribute properties. If not specified, the
+    *                   current property attributes will be preserved. If not
+    *                   specified and the property is newly created, a default
+    *                   set of properties will be applied.
+    *
+    * For each item in the \a properties array, if the requested property is
+    * not a reserved property and does not exist in this view, a new one will
+    * be created with the specified identifier, value and attributes; see the
+    * Property class.
+    *
+    * If one or more properties exist but the calling module has no write
+    * access to them (see ViewPropertyAttribute::WriteProtected), an Error
+    * exception will be thrown.
+    *
+    * Reserved properties are simply ignored by this member function without
+    * raising exceptions. This allows for copying properties between views
+    * safely with a single-line call such as:
+    *
+    * \code view2.SetProperties( view1.GetProperties() ); \endcode
+    *
+    * \ingroup view_properties
+    */
+   void SetProperties( const PropertyArray& properties, bool notify = true,
+                       ViewPropertyAttributes attributes = ViewPropertyAttribute::NoChange );
+
+   /*!
     * Returns the value of the specified \a property in this view.
     *
     * If the requested property has not been defined for this view, the
@@ -597,6 +678,7 @@ public:
     * If the requested property is not recognized as a reserved view property,
     * this member function returns an invalid %Variant object.
     *
+    * \sa IsReservedViewPropertyId()
     * \ingroup view_properties
     */
    Variant ComputeProperty( const IsoString& property, bool notify = true );
@@ -620,6 +702,8 @@ public:
     * \endcode
     *
     * See ComputeProperty() for information on reserved view properties.
+    *
+    * \ingroup view_properties
     */
    template <class S>
    Variant ComputeOrFetchProperty( const S& property, bool notify = true )
@@ -668,8 +752,12 @@ public:
    /*!
     * Returns the data type of an existing \a property in this view.
     *
-    * If the requested \a property has not been defined for this view, an Error
-    * exception is thrown.
+    * If the requested \a property has not been defined for this view, this
+    * member function returns VariantType::Invalid.
+    *
+    * If the property exists but the calling module has no read access to it
+    * (see ViewPropertyAttributes::ReadProtected), an Error exception will be
+    * thrown.
     *
     * For a list of available view property types, see the VariantType
     * namespace.
@@ -833,4 +921,4 @@ protected:
 #endif   // __PCL_View_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/View.h - Released 2017-04-14T23:04:40Z
+// EOF pcl/View.h - Released 2017-05-02T10:38:59Z

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// pcl/Color.h - Released 2017-04-14T23:04:40Z
+// pcl/Color.h - Released 2017-05-02T10:38:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -383,4 +383,4 @@ IsoString PCL_FUNC CSSColorName( RGBA );
 #endif   // __PCL_Color_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Color.h - Released 2017-04-14T23:04:40Z
+// EOF pcl/Color.h - Released 2017-05-02T10:38:59Z

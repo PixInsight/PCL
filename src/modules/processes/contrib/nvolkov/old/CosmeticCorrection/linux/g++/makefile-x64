@@ -1,0 +1,71 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.94
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Sun, 23 Nov 2014 20:21:22 GMT
+# Project id ...... CosmeticCorrection
+# Project type .... Module
+# Platform ........ Linux/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/contrib/nvolkov/CosmeticCorrection/linux/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/CosmeticCorrection-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../CosmeticCorrectionInstance.cpp \
+../../CosmeticCorrectionInterface.cpp \
+../../CosmeticCorrectionModule.cpp \
+../../CosmeticCorrectionParameters.cpp \
+../../CosmeticCorrectionProcess.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/CosmeticCorrectionInstance.o \
+./x64/Release/CosmeticCorrectionInterface.o \
+./x64/Release/CosmeticCorrectionModule.o \
+./x64/Release/CosmeticCorrectionParameters.o \
+./x64/Release/CosmeticCorrectionProcess.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/CosmeticCorrectionInstance.d \
+./x64/Release/CosmeticCorrectionInterface.d \
+./x64/Release/CosmeticCorrectionModule.d \
+./x64/Release/CosmeticCorrectionParameters.d \
+./x64/Release/CosmeticCorrectionProcess.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/CosmeticCorrection-pxm.so: $(OBJ_FILES)
+	g++-4.8.2 -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/CosmeticCorrection-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/CosmeticCorrection-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/CosmeticCorrection-pxm.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	g++-4.8.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O3 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

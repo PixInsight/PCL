@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.01.0368
+// Standard ImageIntegration Process Module Version 01.14.00.0390
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInterface.h - Released 2017-04-14T23:07:12Z
+// DrizzleIntegrationInterface.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -144,6 +144,11 @@ private:
          HorizontalSizer   GridSize_Sizer;
             Label             GridSize_Label;
             SpinBox           GridSize_SpinBox;
+         HorizontalSizer   EnableCFA_Sizer;
+            CheckBox          EnableCFA_CheckBox;
+         HorizontalSizer   CFAPattern_Sizer;
+            Label             CFAPattern_Label;
+            ComboBox          CFAPattern_ComboBox;
          HorizontalSizer   EnableRejection_Sizer;
             CheckBox          EnableRejection_CheckBox;
          HorizontalSizer   EnableImageWeighting_Sizer;
@@ -212,4 +217,4 @@ PCL_END_LOCAL
 #endif   // __DrizzleIntegrationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInterface.h - Released 2017-04-14T23:07:12Z
+// EOF DrizzleIntegrationInterface.h - Released 2017-05-02T09:43:00Z

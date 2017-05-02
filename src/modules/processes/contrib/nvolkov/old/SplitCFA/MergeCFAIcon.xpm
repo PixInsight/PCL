@@ -1,0 +1,140 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard SplitCFA Process Module Version 01.00.05.0037
+// ****************************************************************************
+// MergeCFAIcon.xpm - Released 2014/11/14 17:19:24 UTC
+// ****************************************************************************
+// This file is part of the standard SplitCFA PixInsight module.
+//
+// Copyright (c) 2013-2014 Nikolay Volkov
+// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* MergeCFAIcon_XPM[]={
+/* width height num_colors chars_per_pixel */
+"24 24 57 1",
+/* colors */
+"  c #C20D0B",
+". c #039C03",
+"X c #10D915",
+"o c #F52219",
+"O c #13E219",
+"+ c #0DCE11",
+"@ c #04A204",
+"# c #D4130F",
+"$ c #F12017",
+"% c #0506A9",
+"& c #FA241A",
+"* c #04A004",
+"= c #090BBC",
+"- c #A20404",
+"; c #D0110E",
+": c #D91510",
+"> c #17EF1E",
+", c #17F120",
+"< c #0ED011",
+"1 c #1AFA24",
+"2 c #E21913",
+"3 c #06AE08",
+"4 c #0405A5",
+"5 c #080AB7",
+"6 c #06AC07",
+"7 c #1A24FA",
+"8 c #DE1711",
+"9 c #E71B14",
+"0 c #0709B2",
+"q c #171EEF",
+"w c #07B209",
+"e c #0FD413",
+"r c #FFFFFF",
+"t c #0608AE",
+"y c #04A505",
+"u c #0A0DC0",
+"i c #EC1D16",
+"p c #16EC1D",
+"a c #09BC0B",
+"s c #0404A0",
+"d c #19F522",
+"f c #05A906",
+"g c #0D11CE",
+"h c #11DE17",
+"j c #1015D9",
+"k c #1319E4",
+"l c #14E71B",
+"z c #0AC00D",
+"x c #03039C",
+"c c #020298",
+"v c #980202",
+"b c #0BC20D",
+"n c #029802",
+"m c #AC0706",
+"M c #B70A08",
+"N c #08B70A",
+"B c #13E419",
+/* pixels */
+"rrrrrrrrrrrrrrrrrrrrrrrr",
+"r&o$i928:#;rrzaNw3fy*.nr",
+"r&o$i928:#;rrzaNw3fy*.nr",
+"r&o$i928:#;rrzaNw3fy*.nr",
+"r&o$i928:#;rrzaNw3fy*.nr",
+"r&o$i928:#;rrzaNw3fy*.nr",
+"r&o$i9rrrrrrrrrrrrfy*.nr",
+"r&o$i9rv-mM +XB>1rfy*.nr",
+"r&o$i9rv-mM +XB>1rfy*.nr",
+"r&o$i9rv-mM +XB>1rfy*.nr",
+"r&o$i9rv-mM +XB>1rfy*.nr",
+"rrrrrrrv-mM +XB>1rrrrrrr",
+"rrrrrrrn@6Nbgjkq7rrrrrrr",
+"r1d,plrn@6Nbgjkq7r%4sxcr",
+"r1d,plrn@6Nbgjkq7r%4sxcr",
+"r1d,plrn@6Nbgjkq7r%4sxcr",
+"r1d,plrn@6Nbgjkq7r%4sxcr",
+"r1d,plrrrrrrrrrrrr%4sxcr",
+"r1d,plOhXe<rru=50t%4sxcr",
+"r1d,plOhXe<rru=50t%4sxcr",
+"r1d,plOhXe<rru=50t%4sxcr",
+"r1d,plOhXe<rru=50t%4sxcr",
+"r1d,plOhXe<rru=50t%4sxcr",
+"rrrrrrrrrrrrrrrrrrrrrrrr"
+};
+
+// ****************************************************************************
+// EOF MergeCFAIcon.xpm - Released 2014/11/14 17:19:24 UTC

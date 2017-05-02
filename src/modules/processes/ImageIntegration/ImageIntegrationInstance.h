@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.01.0368
+// Standard ImageIntegration Process Module Version 01.14.00.0390
 // ----------------------------------------------------------------------------
-// ImageIntegrationInstance.h - Released 2017-04-14T23:07:12Z
+// ImageIntegrationInstance.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -153,7 +153,7 @@ private:
    pcl_bool    p_generate64BitResult;     // generate a 64-bit floating point result instead of 32-bit
    pcl_bool    p_generateRejectionMaps;   // generate pixel rejection map images
    pcl_bool    p_generateIntegratedImage; // generate integrated image, or only rejection maps
-   pcl_bool    p_generateDrizzleData;   // append rejection and weight data to existing .drz files
+   pcl_bool    p_generateDrizzleData;     // append rejection and weight data to existing .drz files
    pcl_bool    p_closePreviousImages;     // close existing integration and map images before running
 
    int32       p_bufferSizeMB;  // size of a row buffer in megabytes
@@ -185,97 +185,32 @@ private:
       String     lowRejectionMapImageId;   // identifier of the output low rejection map image
       String     highRejectionMapImageId;  // identifier of the output high rejection map image
       String     slopeMapImageId;          // identifier of the output slope map image
-      int32      numberOfChannels;         // number of nominal channels (1 or 3)
-      uint64     numberOfPixels;           // area of the integrated image in pixels
-      uint64     totalPixels;              // total integrated pixels (area*numberOfFiles)
+      int32      numberOfChannels          = 0; // number of nominal channels (1 or 3)
+      uint64     numberOfPixels            = 0; // area of the integrated image in pixels
+      uint64     totalPixels               = 0; // total integrated pixels (area*numberOfFiles)
 
       // Per-channel data for the final integrated image
 
-      UI64Vector totalRejectedLow;         // low rejected pixels
-      UI64Vector totalRejectedHigh;        // high rejected pixels
-      DVector    finalNoiseEstimates;      // noise estimates for the integrated image
-      DVector    finalScaleEstimates;      // scale estimates for the integrated image
-      DVector    finalLocationEstimates;   // location estimates for the integrated image
-      FVector    referenceNoiseReductions; // noise reduction w.r.t. reference image
-      FVector    medianNoiseReductions;    // median noise reduction
-      FVector    referenceSNRIncrements;   // ### DEPRECATED - SNR increment w.r.t. the reference image
-      FVector    averageSNRIncrements;     // ### DEPRECATED - average SNR increment
+      UI64Vector totalRejectedLow          = UI64Vector( 0, 3 ); // low rejected pixels
+      UI64Vector totalRejectedHigh         = UI64Vector( 0, 3 ); // high rejected pixels
+      DVector    finalNoiseEstimates       = DVector( 0, 3 );    // noise estimates for the integrated image
+      DVector    finalScaleEstimates       = DVector( 0, 3 );    // scale estimates for the integrated image
+      DVector    finalLocationEstimates    = DVector( 0, 3 );    // location estimates for the integrated image
+      FVector    referenceNoiseReductions  = FVector( 0, 3 );    // noise reduction w.r.t. reference image
+      FVector    medianNoiseReductions     = FVector( 0, 3 );    // median noise reduction
+      FVector    referenceSNRIncrements    = FVector( 0, 3 );    // ### DEPRECATED - SNR increment w.r.t. the reference image
+      FVector    averageSNRIncrements      = FVector( 0, 3 );    // ### DEPRECATED - average SNR increment
 
       // Per-channel data for each integrated image
 
       struct ImageData
       {
-         FVector    weights;               // image weight (only if p_generateIntegratedImage)
-         UI64Vector rejectedLow;           // number of low rejected pixels
-         UI64Vector rejectedHigh;          // number of high rejected pixels
-
-         ImageData() : weights( 0, 3 ), rejectedLow( 0, 3 ), rejectedHigh( 0, 3 )
-         {
-         }
-
-         ImageData( const ImageData& x )
-         {
-            (void)operator =( x );
-         }
-
-         ImageData& operator =( const ImageData& x )
-         {
-            weights = x.weights;
-            rejectedLow = x.rejectedLow;
-            rejectedHigh = x.rejectedHigh;
-            return *this;
-         }
+         FVector    weights      = FVector( 0, 3 );    // image weight (only if p_generateIntegratedImage)
+         UI64Vector rejectedLow  = UI64Vector( 0, 3 ); // number of low rejected pixels
+         UI64Vector rejectedHigh = UI64Vector( 0, 3 ); // number of high rejected pixels
       };
 
       Array<ImageData> imageData;
-
-      OutputData() :
-         integrationImageId(),
-         lowRejectionMapImageId(),
-         highRejectionMapImageId(),
-         slopeMapImageId(),
-         numberOfChannels( 0 ),
-         numberOfPixels( 0 ),
-         totalPixels( 0 ),
-         totalRejectedLow( 0, 3 ),
-         totalRejectedHigh( 0, 3 ),
-         finalNoiseEstimates( 0, 3 ),
-         finalScaleEstimates( 0, 3 ),
-         finalLocationEstimates( 0, 3 ),
-         referenceNoiseReductions( 0, 3 ),
-         medianNoiseReductions( 0, 3 ),
-         referenceSNRIncrements( 0, 3 ),
-         averageSNRIncrements( 0, 3 ),
-         imageData()
-      {
-      }
-
-      OutputData( const OutputData& x )
-      {
-         (void)operator =( x );
-      }
-
-      OutputData& operator =( const OutputData& x )
-      {
-         integrationImageId       = x.integrationImageId;
-         lowRejectionMapImageId   = x.lowRejectionMapImageId;
-         highRejectionMapImageId  = x.highRejectionMapImageId;
-         slopeMapImageId          = x.slopeMapImageId;
-         numberOfChannels         = x.numberOfChannels;
-         numberOfPixels           = x.numberOfPixels;
-         totalPixels              = x.totalPixels;
-         totalRejectedLow         = x.totalRejectedLow;
-         totalRejectedHigh        = x.totalRejectedHigh;
-         finalNoiseEstimates      = x.finalNoiseEstimates;
-         finalScaleEstimates      = x.finalScaleEstimates;
-         finalLocationEstimates   = x.finalLocationEstimates;
-         referenceNoiseReductions = x.referenceNoiseReductions;
-         medianNoiseReductions    = x.medianNoiseReductions;
-         referenceSNRIncrements   = x.referenceSNRIncrements;
-         averageSNRIncrements     = x.averageSNRIncrements;
-         imageData                = x.imageData;
-         return *this;
-      }
    };
 
    OutputData o_output;
@@ -284,24 +219,13 @@ private:
 
    struct RejectionDataItem
    {
-      float value;            // scaled value
-      float raw;              // raw value
-      int   index           : 28;  // file index
-      bool  rejectLow       :  1;  // statistically rejected low pixel?
-      bool  rejectHigh      :  1;  // statistically rejected high pixel?
-      bool  rejectRangeLow  :  1;  // range rejected low pixel?
-      bool  rejectRangeHigh :  1;  // range rejected high pixel?
-
-      RejectionDataItem()
-      {
-      }
-
-      RejectionDataItem( const RejectionDataItem& x ) :
-         value( x.value ), raw( x.raw ), index( x.index ),
-         rejectLow( x.rejectLow ), rejectHigh( x.rejectHigh ),
-         rejectRangeLow( x.rejectRangeLow ), rejectRangeHigh( x.rejectRangeHigh )
-      {
-      }
+      float value;                // scaled value
+      float raw;                  // raw value
+      int   index           : 28; // file index
+      bool  rejectLow       :  1; // statistically rejected low pixel?
+      bool  rejectHigh      :  1; // statistically rejected high pixel?
+      bool  rejectRangeLow  :  1; // range rejected low pixel?
+      bool  rejectRangeHigh :  1; // range rejected high pixel?
 
       void Set( float v, int i )
       {
@@ -383,4 +307,4 @@ private:
 #endif   // __ImageIntegrationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInstance.h - Released 2017-04-14T23:07:12Z
+// EOF ImageIntegrationInstance.h - Released 2017-05-02T09:43:00Z

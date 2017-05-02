@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// pcl/MetaFileFormat.cpp - Released 2017-04-14T23:04:51Z
+// pcl/MetaFileFormat.cpp - Released 2017-05-02T10:39:13Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -136,12 +136,12 @@ void PCLImageOptionsToAPI( api_image_options& o, const ImageOptions& opt )
 // ----------------------------------------------------------------------------
 
 #define MANDATORY( funcName )       \
-   __Mandatory( Name(), funcName )
+   MandatoryError( Name(), funcName )
 
-static void __Mandatory( const IsoString& formatName, const char* funcName )
+static void MandatoryError( const IsoString& formatName, const char* funcName )
 {
    throw Error( String( formatName ) + "MetaFileFormat: " +
-                funcName + "() must be reimplemented in descendant class" );
+                funcName + "() must be reimplemented in descendant class." );
 }
 
 // ----------------------------------------------------------------------------
@@ -149,7 +149,7 @@ static void __Mandatory( const IsoString& formatName, const char* funcName )
 MetaFileFormat::MetaFileFormat() : MetaObject( Module ), FileFormatBase()
 {
    if ( Module == nullptr )
-      throw Error( "MetaFileFormat: Module not initialized - illegal MetaFileFormat instantiation" );
+      throw Error( "MetaFileFormat: Module not initialized - illegal MetaFileFormat instantiation." );
 }
 
 // ----------------------------------------------------------------------------
@@ -1825,4 +1825,4 @@ void MetaFileFormat::PerformAPIDefinitions() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaFileFormat.cpp - Released 2017-04-14T23:04:51Z
+// EOF pcl/MetaFileFormat.cpp - Released 2017-05-02T10:39:13Z

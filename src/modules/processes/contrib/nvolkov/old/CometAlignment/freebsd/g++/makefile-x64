@@ -1,0 +1,74 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.94
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Sun, 23 Nov 2014 20:21:21 GMT
+# Project id ...... CometAlignment
+# Project type .... Module
+# Platform ........ FreeBSD/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/contrib/nvolkov/CometAlignment/freebsd/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/CometAlignment-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../CometAlignmentInstance.cpp \
+../../CometAlignmentInterface.cpp \
+../../CometAlignmentModule.cpp \
+../../CometAlignmentParameters.cpp \
+../../CometAlignmentProcess.cpp \
+../../StarDetector.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/CometAlignmentInstance.o \
+./x64/Release/CometAlignmentInterface.o \
+./x64/Release/CometAlignmentModule.o \
+./x64/Release/CometAlignmentParameters.o \
+./x64/Release/CometAlignmentProcess.o \
+./x64/Release/StarDetector.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/CometAlignmentInstance.d \
+./x64/Release/CometAlignmentInterface.d \
+./x64/Release/CometAlignmentModule.d \
+./x64/Release/CometAlignmentParameters.d \
+./x64/Release/CometAlignmentProcess.d \
+./x64/Release/StarDetector.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/CometAlignment-pxm.so: $(OBJ_FILES)
+	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/CometAlignment-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/CometAlignment-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/CometAlignment-pxm.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -O3 -mtune=generic -msse3 -fomit-frame-pointer -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

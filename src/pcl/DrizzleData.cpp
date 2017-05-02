@@ -1,6 +1,56 @@
-
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.03.0823
+// ----------------------------------------------------------------------------
+// pcl/DrizzleData.cpp - Released 2017-05-02T10:39:13Z
+// ----------------------------------------------------------------------------
+// This file is part of the PixInsight Class Library (PCL).
+// PCL is a multiplatform C++ framework for development of PixInsight modules.
+//
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoPointer.h>
+#include <pcl/Compression.h>
 #include <pcl/Console.h>
 #include <pcl/DrizzleData.h>
 #include <pcl/XML.h>
@@ -26,8 +76,8 @@ void DrizzleData::ClearIntegrationData()
 {
    m_location = m_referenceLocation = m_scale = m_unitScale = m_weight = m_unitWeight = Vector();
    m_rejectionLowCount = m_rejectionHighCount = UI64Vector();
-   m_rejectLowData = m_rejectHighData = rejection_data();
    m_rejectionMap.FreeData();
+   m_rejectLowData = m_rejectHighData = rejection_data();
 }
 
 // ----------------------------------------------------------------------------
@@ -39,15 +89,14 @@ XMLDocument* DrizzleData::Serialize() const
         m_referenceWidth < 1 || m_referenceHeight < 1 ||
        !m_H.IsEmpty() && (m_H.Rows() != 3 || m_H.Columns() != 3) ||
         m_H.IsEmpty() && !m_S.IsValid() )
-      throw Error( "Invalid/insufficient image registration data." );
+      throw Error( "Invalid or insufficient image registration data." );
 
    // Validate image integration data
    if ( m_location.Length() != m_referenceLocation.Length() ||
-       !m_scale.IsEmpty()  && m_location.Length() != m_scale.Length() ||
+       !m_scale.IsEmpty() && m_location.Length() != m_scale.Length() ||
        !m_weight.IsEmpty() && m_location.Length() != m_weight.Length() ||
-       !m_rejectHighData.IsEmpty() && size_type( m_location.Length() ) != m_rejectHighData.Length() ||
-       !m_rejectLowData.IsEmpty()  && size_type( m_location.Length() ) != m_rejectLowData.Length() )
-      throw Error( "Invalid/insufficient image integration data." );
+       !m_rejectionMap.IsEmpty() && m_location.Length() != m_rejectionMap.NumberOfChannels() )
+      throw Error( "Invalid or insufficient image integration data." );
 
    AutoPointer<XMLDocument> xml = new XMLDocument;
    xml->SetXML( "1.0", "UTF-8" );
@@ -97,10 +146,8 @@ XMLDocument* DrizzleData::Serialize() const
          *(new XMLElement( *root, "ScaleFactors" )) << new XMLText( String().ToCommaSeparated( m_scale ) );
       if ( !m_weight.IsEmpty() )
          *(new XMLElement( *root, "Weights" )) << new XMLText( String().ToCommaSeparated( m_weight ) );
-      if ( !m_rejectHighData.IsEmpty() )
-         SerializeRejectionData( new XMLElement( *root, "RejectionHigh" ), m_rejectHighData );
-      if ( !m_rejectLowData.IsEmpty() )
-         SerializeRejectionData( new XMLElement( *root, "RejectionLow" ), m_rejectLowData );
+      if ( !m_rejectionMap.IsEmpty() )
+         SerializeRejectionMap( new XMLElement( *root, "RejectionMap" ) );
    }
 
    return xml.Release();
@@ -114,6 +161,27 @@ void DrizzleData::SerializeToFile( const String& path ) const
    xml->EnableAutoFormatting();
    xml->SetIndentSize( 3 );
    xml->SerializeToFile( path );
+}
+
+// ----------------------------------------------------------------------------
+
+static void WarnOnUnexpectedChildNode( const XMLNode& node, const String& parsingWhatElement )
+{
+   if ( !node.IsComment() )
+   {
+      XMLParseError e( node,
+            "Parsing " + parsingWhatElement + " element",
+            "Ignoring unexpected XML child node of " + XMLNodeType::AsString( node.NodeType() ) + " type." );
+      Console().WarningLn( "<end><cbr>** Warning: " + e.Message() );
+   }
+}
+
+static void WarnOnUnknownChildElement( const XMLElement& element, const String& parsingWhatElement )
+{
+   XMLParseError e( element,
+         "Parsing " + parsingWhatElement + " element",
+         "Skipping unknown \'" + element.Name() + "\' child element." );
+   Console().WarningLn( "<end><cbr>** Warning: " + e.Message() );
 }
 
 // ----------------------------------------------------------------------------
@@ -194,12 +262,6 @@ static IVector ParseListOfIntegerValues( IsoString& text, size_type start, size_
    return IVector( v.Begin(), int( v.Length() ) );
 }
 
-// static IVector ParseListOfIntegerValues( const XMLElement& element, size_type minCount = 0, size_type maxCount = ~size_type( 0 ) )
-// {
-//    IsoString text = IsoString( element.Text().Trimmed() );
-//    return ParseListOfIntegerValues( text, 0, text.Length(), minCount, maxCount );
-// }
-
 static double ParseRealValue( const IsoString& s, size_type start, size_type end )
 {
    double x;
@@ -216,30 +278,22 @@ static int ParseIntegerValue( const IsoString& s, size_type start, size_type end
    return x;
 }
 
-static DrizzleData::rejection_data ParseRejectionData( const XMLElement& element )
-{
-   IsoString text = IsoString( element.Text().Trimmed() );
-   DrizzleData::rejection_data data;
-   for ( size_type i = 0, j, n = text.Length(); i < n; ++i )
-   {
-      for ( j = i; j < n; ++j )
-         if ( text[j] == ':' )
-            break;
+// ----------------------------------------------------------------------------
 
-      IVector v = ParseListOfIntegerValues( text, i, j );
-      if ( v.Length() % 2 )
-         throw Error( "Parsing coordinate list: Insufficient items." );
-      DrizzleData::rejection_coordinates points( v.Length() >> 1 );
-      IVector::const_iterator p = v.Begin();
-      for ( size_type i = 0; i < points.Length(); ++i )
-      {
-         points[i].x = *p++;
-         points[i].y = *p++;
-      }
-      data << points;
-      i = j;
-   }
-   return data;
+template <typename T>
+static GenericVector<T> ParseBase64EncodedVector( const XMLElement& element, size_type minCount = 0, size_type maxCount = ~size_type( 0 ) )
+{
+   ByteArray data = IsoString( element.Text().Trimmed() ).FromBase64();
+   if ( data.IsEmpty() )
+      throw Error( "Missing encoded vector data in " + element.Name() + " element." );
+   if ( data.Size() % sizeof( T ) != 0 )
+      throw Error( "Invalid size of encoded vector data in " + element.Name() + " element." );
+   size_type n = data.Size()/sizeof( T );
+   if ( n < minCount )
+      throw Error( "Too few vector components in " + element.Name() + " element." );
+   if ( n > maxCount )
+      throw Error( "Too many vector components in " + element.Name() + " element." );
+   return GenericVector<T>( reinterpret_cast<const T*>( data.Begin() ), int( n ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -261,7 +315,32 @@ void DrizzleData::Parse( const String& filePath, bool ignoreIntegrationData )
 
       if ( !IsoCharTraits::IsSpace( ch ) )
       {
-         PlainTextDecoder( this ).Decode( text );
+         Clear();
+         PlainTextDecoder( this, ignoreIntegrationData ).Decode( text );
+
+         // Build rejection map from rejection coordinate lists.
+         if ( !m_rejectHighData.IsEmpty() || !m_rejectLowData.IsEmpty() )
+         {
+            m_rejectionMap.AllocateData( m_referenceWidth, m_referenceHeight, NumberOfChannels() );
+            m_rejectionMap.Zero();
+
+            if ( !m_rejectHighData.IsEmpty() )
+            {
+               for ( int c = 0; c < NumberOfChannels(); ++c )
+                  for ( const Point& p : m_rejectHighData[c] )
+                     m_rejectionMap( p, c ) = uint8( 1 );
+               m_rejectHighData.Clear();
+            }
+
+            if ( !m_rejectLowData.IsEmpty() )
+            {
+               for ( int c = 0; c < NumberOfChannels(); ++c )
+                  for ( const Point& p : m_rejectLowData[c] )
+                     m_rejectionMap( p, c ) |= uint8( 2 );
+               m_rejectLowData.Clear();
+            }
+         }
+
          return;
       }
    }
@@ -290,13 +369,7 @@ void DrizzleData::Parse( const XMLElement& root, bool ignoreIntegrationData )
    {
       if ( !node.IsElement() )
       {
-         if ( !node.IsComment() )
-         {
-            XMLParseError e( node,
-                  "Parsing xdrz root element",
-                  "Ignoring unexpected XML child node of " + XMLNodeType::AsString( node.NodeType() ) + " type." );
-            Console().WarningLn( "<end><cbr>** Warning: " + e.Message() );
-         }
+         WarnOnUnexpectedChildNode( node, "xdrz root" );
          continue;
       }
 
@@ -365,15 +438,10 @@ void DrizzleData::Parse( const XMLElement& root, bool ignoreIntegrationData )
             if ( !ignoreIntegrationData )
                m_weight = ParseListOfRealValues( element, 1 );
          }
-         else if ( element.Name() == "RejectionHigh" )
+         else if ( element.Name() == "RejectionMap" )
          {
             if ( !ignoreIntegrationData )
-               m_rejectHighData = ParseRejectionData( element );
-         }
-         else if ( element.Name() == "RejectionLow" )
-         {
-            if ( !ignoreIntegrationData )
-               m_rejectLowData = ParseRejectionData( element );
+               ParseRejectionMap( element );
          }
          else if ( element.Name() == "CreationTime" )
          {
@@ -381,10 +449,7 @@ void DrizzleData::Parse( const XMLElement& root, bool ignoreIntegrationData )
          }
          else
          {
-            XMLParseError e( node,
-                  "Parsing xdrz root element",
-                  "Skipping unknown \'" + element.Name() + "\' child element." );
-            Console().WarningLn( "<end><cbr>** Warning: " + e.Message() );
+            WarnOnUnknownChildElement( element, "xdrz root" );
          }
       }
       catch ( Exception& x )
@@ -427,28 +492,28 @@ void DrizzleData::Parse( const XMLElement& root, bool ignoreIntegrationData )
       if ( m_location.Length() != m_referenceLocation.Length() )
          throw Error( "Incongruent reference location vector definition." );
 
-      if ( m_location.Length() != m_scale.Length() )
-         throw Error( "Incongruent scale factors vector definition." );
+      if ( !m_scale.IsEmpty() )
+         if ( m_location.Length() != m_scale.Length() )
+            throw Error( "Incongruent scale factors vector definition." );
 
-      if ( m_location.Length() != m_weight.Length() )
-         throw Error( "Incongruent image weights vector definition." );
+      if ( !m_weight.IsEmpty() )
+         if ( m_location.Length() != m_weight.Length() )
+            throw Error( "Incongruent image weights vector definition." );
 
-      if ( !m_rejectHighData.IsEmpty() )
+      if ( !m_rejectionMap.IsEmpty() )
       {
-         if ( size_type( m_location.Length() ) != m_rejectHighData.Length() )
-            throw Error( "Incongruent high pixel rejection vector definition." );
+         if ( m_location.Length() != m_rejectionMap.NumberOfChannels() )
+            throw Error( "Incongruent pixel rejection map definition." );
          m_rejectionHighCount = UI64Vector( uint64( 0 ), m_location.Length() );
-         for ( int i = 0; i < m_location.Length(); ++i )
-            m_rejectionHighCount[i] = m_rejectHighData[i].Length();
-      }
-
-      if ( !m_rejectLowData.IsEmpty() )
-      {
-         if ( size_type( m_location.Length() ) != m_rejectLowData.Length() )
-            throw Error( "Incongruent low pixel rejection vector definition." );
          m_rejectionLowCount = UI64Vector( uint64( 0 ), m_location.Length() );
-         for ( int i = 0; i < m_location.Length(); ++i )
-            m_rejectionLowCount[i] = m_rejectLowData[i].Length();
+         for ( UInt8Image::const_pixel_iterator i( m_rejectionMap ); i; ++i )
+            for ( int j = 0; j < m_location.Length(); ++j )
+            {
+               if ( i[j] & 1 )
+                  ++m_rejectionHighCount[j];
+               if ( i[j] & 2 )
+                  ++m_rejectionLowCount[j];
+            }
       }
    }
 
@@ -458,6 +523,154 @@ void DrizzleData::Parse( const XMLElement& root, bool ignoreIntegrationData )
       m_S.m_Sy = m_Sy;
       m_Sx.Clear();
       m_Sy.Clear();
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+void DrizzleData::ParseRejectionMap( const XMLElement& root )
+{
+   String s = root.AttributeValue( "width" );
+   if ( s.IsEmpty() )
+      throw Error( "Missing rejection m_rejectionMap width attribute." );
+   int width = s.ToInt();
+   if ( width < 1 )
+      throw Error( "Invalid rejection m_rejectionMap width attribute value '" + s + '\'' );
+
+   s = root.AttributeValue( "height" );
+   if ( s.IsEmpty() )
+      throw Error( "Missing rejection m_rejectionMap height attribute." );
+   int height = s.ToInt();
+   if ( height < 1 )
+      throw Error( "Invalid rejection m_rejectionMap height attribute value '" + s + '\'' );
+
+   s = root.AttributeValue( "numberOfChannels" );
+   if ( s.IsEmpty() )
+      throw Error( "Missing rejection m_rejectionMap numberOfChannels attribute." );
+   int numberOfChannels = s.ToInt();
+   if ( numberOfChannels < 1 )
+      throw Error( "Invalid rejection m_rejectionMap numberOfChannels attribute value '" + s + '\'' );
+
+   m_rejectionMap.AllocateData( width, height, numberOfChannels );
+
+   int channel = 0;
+
+   for ( const XMLNode& node : root )
+   {
+      if ( !node.IsElement() )
+      {
+         WarnOnUnexpectedChildNode( node, "RejectionMap" );
+         continue;
+      }
+
+      const XMLElement& element = static_cast<const XMLElement&>( node );
+
+      if ( element.Name() == "ChannelData" )
+      {
+         if ( channel == numberOfChannels )
+            throw Error( "Unexpected ChannelData child element - all rejection m_rejectionMap channels are already defined." );
+
+         ByteArray channelData;
+
+         String compressionName = element.AttributeValue( "compression" ).CaseFolded();
+         if ( !compressionName.IsEmpty() )
+         {
+            AutoPointer<Compression> compression;
+            if ( compressionName == "lz4" )
+               compression = new LZ4Compression;
+            else if ( compressionName == "lz4hc" )
+               compression = new LZ4HCCompression;
+            else if ( compressionName == "zlib" )
+               compression = new ZLibCompression;
+            else
+               throw Error( "Unknown or unsupported compression codec '" + compressionName + '\'' );
+
+            Compression::subblock_list subblocks;
+
+            for ( const XMLNode& node : element )
+            {
+               if ( !node.IsElement() )
+               {
+                  WarnOnUnexpectedChildNode( node, "ChannelData" );
+                  continue;
+               }
+
+               const XMLElement& subElement = static_cast<const XMLElement&>( node );
+
+               if ( subElement.Name() == "Subblock" )
+               {
+                  Compression::Subblock subblock;
+                  s = subElement.AttributeValue( "uncompressedSize" );
+                  if ( s.IsEmpty() )
+                     throw Error( "Missing subblock uncompressedSize attribute." );
+                  subblock.uncompressedSize = s.ToUInt64();
+                  subblock.compressedData = IsoString( subElement.Text().Trimmed() ).FromBase64();
+                  subblocks << subblock;
+               }
+               else
+               {
+                  WarnOnUnknownChildElement( element, "ChannelData" );
+               }
+            }
+
+            if ( subblocks.IsEmpty() )
+               throw Error( "Parsing xdrz RejectionMap ChannelData element: Missing Subblock child element(s)." );
+
+            channelData = compression->Uncompress( subblocks );
+         }
+         else
+         {
+            channelData = IsoString( element.Text().Trimmed() ).FromBase64();
+         }
+
+         if ( channelData.Size() != m_rejectionMap.ChannelSize() )
+            throw Error( "Parsing xdrz RejectionMap ChannelData element: Invalid channel data size: "
+               "Expected " + String( m_rejectionMap.ChannelSize() ) + " bytes, "
+               "got " + String( channelData.Size() ) + " bytes." );
+
+         ::memcpy( m_rejectionMap[channel], channelData.Begin(), channelData.Size() );
+
+         ++channel;
+      }
+      else
+      {
+         WarnOnUnknownChildElement( element, "RejectionMap" );
+      }
+   }
+
+   if ( channel < numberOfChannels )
+      throw Error( "Missing rejection m_rejectionMap channel data." );
+}
+
+// ----------------------------------------------------------------------------
+
+void DrizzleData::SerializeRejectionMap( XMLElement* root ) const
+{
+   root->SetAttribute( "width", String( m_rejectionMap.Width() ) );
+   root->SetAttribute( "height", String( m_rejectionMap.Height() ) );
+   root->SetAttribute( "numberOfChannels", String( m_rejectionMap.NumberOfChannels() ) );
+
+   for ( int c = 0; c < m_rejectionMap.NumberOfChannels(); ++c )
+   {
+      XMLElement* element = new XMLElement( *root, "ChannelData" );
+      if ( m_compressionEnabled )
+      {
+         LZ4Compression compression;
+         Compression::subblock_list subblocks = compression.Compress( m_rejectionMap[c], m_rejectionMap.ChannelSize() );
+         if ( !subblocks.IsEmpty() )
+         {
+            element->SetAttribute( "compression", compression.AlgorithmName() );
+            for ( const Compression::Subblock& subblock : subblocks )
+            {
+               XMLElement* subblockElement = new XMLElement( *element, "Subblock" );
+               subblockElement->SetAttribute( "uncompressedSize", String( subblock.uncompressedSize ) );
+               *subblockElement << new XMLText( IsoString::ToBase64( subblock.compressedData ) );
+            }
+            continue;
+         }
+      }
+
+      *element << new XMLText( IsoString::ToBase64( m_rejectionMap[c], m_rejectionMap.ChannelSize() ) );
    }
 }
 
@@ -513,13 +726,7 @@ void DrizzleData::ParseSpline( DrizzleData::spline& S, const XMLElement& root )
    {
       if ( !node.IsElement() )
       {
-         if ( !node.IsComment() )
-         {
-            XMLParseError e( node,
-                  "Parsing xdrz AlignmentSplineX/AlignmentSplineY element",
-                  "Ignoring unexpected XML child node of " + XMLNodeType::AsString( node.NodeType() ) + " type." );
-            Console().WarningLn( "<end><cbr>** Warning: " + e.Message() );
-         }
+         WarnOnUnexpectedChildNode( node, "AlignmentSplineX/AlignmentSplineY" );
          continue;
       }
 
@@ -527,26 +734,23 @@ void DrizzleData::ParseSpline( DrizzleData::spline& S, const XMLElement& root )
 
       if ( element.Name() == "NodeXCoordinates" )
       {
-         S.m_x = ParseListOfRealValues( element, 3 );
+         S.m_x = ParseBase64EncodedVector<vector_spline::spline::scalar>( element, 3 );
       }
       else if ( element.Name() == "NodeYCoordinates" )
       {
-         S.m_y = ParseListOfRealValues( element, 3 );
+         S.m_y = ParseBase64EncodedVector<vector_spline::spline::scalar>( element, 3 );
       }
       else if ( element.Name() == "Coefficients" )
       {
-         S.m_spline = ParseListOfRealValues( element, 3 );
+         S.m_spline = ParseBase64EncodedVector<vector_spline::spline::scalar>( element, 3 );
       }
       else if ( element.Name() == "NodeWeights" )
       {
-         S.m_weights = ParseListOfRealValues( element );
+         S.m_weights = ParseBase64EncodedVector<FVector::scalar>( element, 3 );
       }
       else
       {
-         XMLParseError e( node,
-               "Parsing xdrz AlignmentSplineX/AlignmentSplineY element",
-               "Skipping unknown \'" + element.Name() + "\' child element." );
-         Console().WarningLn( "<end><cbr>** Warning: " + e.Message() );
+         WarnOnUnknownChildElement( element, "AlignmentSplineX/AlignmentSplineY" );
       }
    }
 
@@ -567,70 +771,29 @@ void DrizzleData::ParseSpline( DrizzleData::spline& S, const XMLElement& root )
 
 // ----------------------------------------------------------------------------
 
-void DrizzleData::MakeRejectionMap() const
-{
-   m_rejectionMap.FreeData();
-
-   if ( !m_rejectHighData.IsEmpty() || !m_rejectLowData.IsEmpty() )
-   {
-      m_rejectionMap.AllocateData( m_referenceWidth, m_referenceHeight, NumberOfChannels() );
-      m_rejectionMap.Zero();
-
-      if ( !m_rejectHighData.IsEmpty() )
-         for ( int c = 0; c < NumberOfChannels(); ++c )
-            for ( const Point& p : m_rejectHighData[c] )
-               m_rejectionMap( p, c ) = uint8( 1 );
-
-      if ( !m_rejectLowData.IsEmpty() )
-         for ( int c = 0; c < NumberOfChannels(); ++c )
-            for ( const Point& p : m_rejectLowData[c] )
-               m_rejectionMap( p, c ) |= uint8( 2 );
-   }
-}
-
-// ----------------------------------------------------------------------------
-
 void DrizzleData::SerializeSpline( XMLElement* root, const DrizzleData::spline& S )
 {
    root->SetAttribute( "scalingFactor", String( S.m_r0 ) );
    root->SetAttribute( "zeroOffsetX", String( S.m_x0 ) );
    root->SetAttribute( "zeroOffsetY", String( S.m_y0 ) );
    root->SetAttribute( "order", String( S.m_order ) );
-   *(new XMLElement( *root, "NodeXCoordinates" )) << new XMLText( String().ToCommaSeparated( S.m_x ) );
-   *(new XMLElement( *root, "NodeYCoordinates" )) << new XMLText( String().ToCommaSeparated( S.m_y ) );
-   *(new XMLElement( *root, "Coefficients" ))     << new XMLText( String().ToCommaSeparated( S.m_spline ) );
+   *(new XMLElement( *root, "NodeXCoordinates" )) << new XMLText( IsoString::ToBase64( S.m_x ) );
+   *(new XMLElement( *root, "NodeYCoordinates" )) << new XMLText( IsoString::ToBase64( S.m_y ) );
+   *(new XMLElement( *root, "Coefficients" ))     << new XMLText( IsoString::ToBase64( S.m_spline ) );
    if ( S.m_smoothing > 0 )
    {
       root->SetAttribute( "smoothing", String( S.m_smoothing ) );
       if ( !S.m_weights.IsEmpty() )
-         (*new XMLElement( *root, "NodeWeights" )) << new XMLText( String().ToCommaSeparated( S.m_weights ) );
+         (*new XMLElement( *root, "NodeWeights" )) << new XMLText( IsoString::ToBase64( S.m_weights ) );
    }
 }
 
 // ----------------------------------------------------------------------------
-
-void DrizzleData::SerializeRejectionData( XMLElement* root, const DrizzleData::rejection_data& R )
-{
-   String text;
-   for ( size_type i = 0; ; )
-   {
-      if ( !R[i].IsEmpty() )
-         for ( size_type j = 0; ; )
-         {
-            text.AppendFormat( "%d,%d", R[i][j].x, R[i][j].y );
-            if ( ++j == R[i].Length() )
-               break;
-            text << ',';
-         }
-      if ( ++i == R.Length() )
-         break;
-      text << ':';
-   }
-   *root << new XMLText( text );
-}
-
 // ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
+
+/*
+ * Compatibility with the old .drz plain text format.
+ */
 
 void DrizzleData::PlainTextDecoder::Decode( IsoString& s, size_type start, size_type end )
 {
@@ -702,21 +865,43 @@ void DrizzleData::PlainTextDecoder::ProcessBlock( IsoString& s, const IsoString&
       m_data->m_H = Matrix( v.Begin(), 3, 3 );
    }
    else if ( itemId == "Sx" ) // registration thin plates, X-axis
+   {
       m_data->m_Sx = ParseSurfaceSpline( s, start, end );
+   }
    else if ( itemId == "Sy" ) // registration thin plates, Y-axis
+   {
       m_data->m_Sy = ParseSurfaceSpline( s, start, end );
+   }
    else if ( itemId == "m" ) // location vector
-      m_data->m_location = ParseListOfRealValues( s, start, end, 1 );
+   {
+      if ( !m_ignoreIntegrationData )
+         m_data->m_location = ParseListOfRealValues( s, start, end, 1 );
+   }
    else if ( itemId == "m0" ) // reference location vector
-      m_data->m_referenceLocation = ParseListOfRealValues( s, start, end, 1 );
+   {
+      if ( !m_ignoreIntegrationData )
+         m_data->m_referenceLocation = ParseListOfRealValues( s, start, end, 1 );
+   }
    else if ( itemId == "s" ) // scaling factors vector
-      m_data->m_scale = ParseListOfRealValues( s, start, end, 1 );
+   {
+      if ( !m_ignoreIntegrationData )
+         m_data->m_scale = ParseListOfRealValues( s, start, end, 1 );
+   }
    else if ( itemId == "w" ) // image weights vector
-      m_data->m_weight = ParseListOfRealValues( s, start, end, 1 );
+   {
+      if ( !m_ignoreIntegrationData )
+         m_data->m_weight = ParseListOfRealValues( s, start, end, 1 );
+   }
    else if ( itemId == "Rl" ) // rejection pixel coordinates, low values
-      m_data->m_rejectLowData = ParseRejectionData( s, start, end );
+   {
+      if ( !m_ignoreIntegrationData )
+         m_data->m_rejectLowData = ParseRejectionData( s, start, end );
+   }
    else if ( itemId == "Rh" ) // rejection pixel coordinates, high values
-      m_data->m_rejectHighData = ParseRejectionData( s, start, end );
+   {
+      if ( !m_ignoreIntegrationData )
+         m_data->m_rejectHighData = ParseRejectionData( s, start, end );
+   }
    else
       throw Error( "At offset=" + String( start ) + ": Unknown item identifier \'" + itemId + '\'' );
 }
@@ -794,3 +979,6 @@ void DrizzleData::PlainTextSplineDecoder::ProcessBlock( IsoString& s, const IsoS
 // ----------------------------------------------------------------------------
 
 } // pcl
+
+// ----------------------------------------------------------------------------
+// EOF pcl/DrizzleData.cpp - Released 2017-05-02T10:39:13Z

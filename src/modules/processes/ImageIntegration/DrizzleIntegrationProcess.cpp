@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.01.0368
+// Standard ImageIntegration Process Module Version 01.14.00.0390
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationProcess.cpp - Released 2017-04-14T23:07:12Z
+// DrizzleIntegrationProcess.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -83,6 +83,8 @@ DrizzleIntegrationProcess::DrizzleIntegrationProcess() : MetaProcess()
    new DZKernelGridSize( this );
    new DZOriginX( this );
    new DZOriginY( this );
+   new DZEnableCFA( this );
+   new DZCFAPattern( this );
    new DZEnableRejection( this );
    new DZEnableImageWeighting( this );
    new DZEnableSurfaceSplines( this );
@@ -194,4 +196,4 @@ ProcessImplementation* DrizzleIntegrationProcess::Clone( const ProcessImplementa
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationProcess.cpp - Released 2017-04-14T23:07:12Z
+// EOF DrizzleIntegrationProcess.cpp - Released 2017-05-02T09:43:00Z

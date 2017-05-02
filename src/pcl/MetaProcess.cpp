@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// pcl/MetaProcess.cpp - Released 2017-04-14T23:04:51Z
+// pcl/MetaProcess.cpp - Released 2017-05-02T10:39:13Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -66,12 +66,12 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 #define MANDATORY( funcName )    \
-   __Mandatory( Id(), funcName )
+   MandatoryError( Id(), funcName )
 
-static void __Mandatory( const IsoString& procId, const char* funcName )
+static void MandatoryError( const IsoString& procId, const char* funcName )
 {
    throw Error( String( procId ) + ": MetaProcess::" +
-                funcName + "() must be reimplemented in descendant class" );
+                funcName + "() must be reimplemented in descendant class." );
 }
 
 // ----------------------------------------------------------------------------
@@ -79,7 +79,7 @@ static void __Mandatory( const IsoString& procId, const char* funcName )
 MetaProcess::MetaProcess() : MetaObject( Module )
 {
    if ( Module == nullptr )
-      throw Error( "MetaProcess: Module not initialized - illegal MetaProcess instantiation" );
+      throw Error( "MetaProcess: Module not initialized - illegal MetaProcess instantiation." );
 }
 
 // ----------------------------------------------------------------------------
@@ -913,4 +913,4 @@ void MetaProcess::PerformAPIDefinitions() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaProcess.cpp - Released 2017-04-14T23:04:51Z
+// EOF pcl/MetaProcess.cpp - Released 2017-05-02T10:39:13Z

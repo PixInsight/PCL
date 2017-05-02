@@ -1,0 +1,72 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.94
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Sun, 23 Nov 2014 20:21:21 GMT
+# Project id ...... Blink
+# Project type .... Module
+# Platform ........ MacOSX/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/contrib/nvolkov/Blink/macosx/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/Blink-pxm.dylib
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../BlinkInterface.cpp \
+../../BlinkModule.cpp \
+../../BlinkProcess.cpp \
+../../BlinkStatisticsDialog.cpp \
+../../BlinkVideoDialog.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/BlinkInterface.o \
+./x64/Release/BlinkModule.o \
+./x64/Release/BlinkProcess.o \
+./x64/Release/BlinkStatisticsDialog.o \
+./x64/Release/BlinkVideoDialog.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/BlinkInterface.d \
+./x64/Release/BlinkModule.d \
+./x64/Release/BlinkProcess.d \
+./x64/Release/BlinkStatisticsDialog.d \
+./x64/Release/BlinkVideoDialog.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/Blink-pxm.dylib: $(OBJ_FILES)
+	clang++ -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.8 -fPIC -headerpad_max_install_names -dynamiclib -install_name @executable_path/Blink-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/Blink-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/Blink-pxm.dylib
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/Blink-pxm.dylib $(PCLBINDIR64)
+	codesign --deep -s pleiades -f -v --timestamp $(PCLBINDIR64)/Blink-pxm.dylib
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.8 -fPIC -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -O3 -mtune=generic -msse3 -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

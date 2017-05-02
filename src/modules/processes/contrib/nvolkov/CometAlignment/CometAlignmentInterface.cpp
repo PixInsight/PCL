@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard CometAlignment Process Module Version 01.02.06.0146
+// Standard CometAlignment Process Module Version 01.02.06.0158
 // ----------------------------------------------------------------------------
-// CometAlignmentInterface.cpp - Released 2017-04-14T23:07:12Z
+// CometAlignmentInterface.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -62,7 +62,7 @@
 #include <pcl/ErrorHandler.h>
 #include <pcl/Graphics.h>
 #include <pcl/MessageBox.h>
-#include <pcl/DrizzleDataDecoder.h>
+#include <pcl/DrizzleData.h>
 
 #define IMAGELIST_MINHEIGHT( fnt )  RoundInt( 8.125*fnt.Height() )
 
@@ -799,29 +799,19 @@ void CometAlignmentInterface::__TargetImages_NodeSelectionUpdated (TreeBox& send
 
 String CometAlignmentInterface::DrizzleTargetName( const String& filePath )
 {
-   /*
-    * Load drizzle data file contents.
-    */
-   IsoString text = File::ReadTextFile( filePath );
+   DrizzleData drz( filePath, true/*ignoreIntegrationData*/ );
 
    /*
-    * If the .drz file includes a target path, return it.
+    * If the drizzle file includes a target alignment path, use it. Otherwise
+    * the target should have the same name as the drizzle data file.
     */
-   DrizzleTargetDecoder decoder;
-   decoder.Decode( text );
-   if ( decoder.HasTarget() )
-   {
-//      if ( GUI->StaticDrizzleTargets_CheckBox.IsChecked() )
-//         return File::ChangeExtension( decoder.TargetPath(), String() );
-      return File::ExtractName( decoder.TargetPath() );
-   }
+   String targetfilePath = drz.AlignmentTargetFilePath();
+   if ( targetfilePath.IsEmpty() )
+      targetfilePath = filePath;
 
-   /*
-    * Otherwise the target should have the same name as the .drz file.
-    */
-//   if ( GUI->StaticDrizzleTargets_CheckBox.IsChecked() )
-//      return File::ChangeExtension( filePath, String() );
-   return File::ExtractName( filePath );
+//    if ( GUI->StaticDrizzleTargets_CheckBox.IsChecked() )
+//       return File::ChangeExtension( targetfilePath, String() );
+   return File::ExtractName( targetfilePath );
 }
 
 void CometAlignmentInterface::AddFiles( const StringList& files )
@@ -878,6 +868,7 @@ void CometAlignmentInterface::__TargetImages_BottonClick (Button& sender, bool c
    {
       FileFilter drzFiles;
       drzFiles.SetDescription( "Drizzle Data Files" );
+      drzFiles.AddExtension( ".xdrz" );
       drzFiles.AddExtension( ".drz" );
 
       OpenFileDialog d;
@@ -1854,4 +1845,4 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CometAlignmentInterface.cpp - Released 2017-04-14T23:07:12Z
+// EOF CometAlignmentInterface.cpp - Released 2017-05-02T09:43:01Z

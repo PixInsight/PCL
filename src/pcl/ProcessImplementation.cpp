@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// pcl/ProcessImplementation.cpp - Released 2017-04-14T23:04:51Z
+// pcl/ProcessImplementation.cpp - Released 2017-05-02T10:39:13Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -62,12 +62,12 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 #define MANDATORY( funcName )          \
-   __Mandatory( meta->Id(), funcName )
+   MandatoryError( meta->Id(), funcName )
 
-static void __Mandatory( const IsoString& procId, const char* funcName )
+static void MandatoryError( const IsoString& procId, const char* funcName )
 {
    throw Error( String( procId ) + ": ProcessImplementation::" +
-                funcName + "() must be reimplemented in descendant class" );
+                funcName + "() must be reimplemented in descendant class." );
 }
 
 // ----------------------------------------------------------------------------
@@ -234,4 +234,4 @@ void ProcessImplementation::LaunchOn( ImageWindow& w ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessImplementation.cpp - Released 2017-04-14T23:04:51Z
+// EOF pcl/ProcessImplementation.cpp - Released 2017-05-02T10:39:13Z

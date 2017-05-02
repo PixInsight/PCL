@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0819
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.01.0368
+// Standard ImageIntegration Process Module Version 01.14.00.0390
 // ----------------------------------------------------------------------------
-// HDRCompositionInstance.h - Released 2017-04-14T23:07:12Z
+// HDRCompositionInstance.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -86,15 +86,14 @@ private:
 
    struct ImageItem
    {
-      pcl_bool  enabled;
+      pcl_bool  enabled = true;
       String    path;
-      size_type exposure;
+      size_type exposure = 0;
 
-      ImageItem( const String& p = String() ) : enabled( true ), path( p ), exposure( 0 )
-      {
-      }
+      ImageItem() = default;
+      ImageItem( const ImageItem& ) = default;
 
-      ImageItem( const ImageItem& x ) : enabled( x.enabled ), path( x.path ), exposure( x.exposure )
+      ImageItem( const String& p ) : path( p )
       {
       }
 
@@ -144,4 +143,4 @@ private:
 #endif   // __HDRCompositionInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF HDRCompositionInstance.h - Released 2017-04-14T23:07:12Z
+// EOF HDRCompositionInstance.h - Released 2017-05-02T09:43:00Z

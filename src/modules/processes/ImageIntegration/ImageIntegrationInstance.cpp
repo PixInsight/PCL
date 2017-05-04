@@ -65,6 +65,8 @@
 #include <pcl/ImageWindow.h>
 #include <pcl/LinearFit.h>
 #include <pcl/MetaModule.h>
+#include <pcl/MorphologicalTransformation.h>
+#include <pcl/MultiscaleMedianTransform.h>
 #include <pcl/Settings.h>
 #include <pcl/SpinStatus.h>
 #include <pcl/StdStatus.h>
@@ -111,6 +113,12 @@ ImageIntegrationInstance::ImageIntegrationInstance( const MetaProcess* m ) :
    p_rangeHigh( TheIIRangeHighParameter->DefaultValue() ),
    p_reportRangeRejection( TheIIReportRangeRejectionParameter->DefaultValue() ),
    p_mapRangeRejection( TheIIMapRangeRejectionParameter->DefaultValue() ),
+   p_largeScaleClipLow( TheIILargeScaleClipLowParameter->DefaultValue() ),
+   p_largeScaleClipLowProtectedLayers( TheIILargeScaleClipLowProtectedLayersParameter->DefaultValue() ),
+   p_largeScaleClipLowGrowth( TheIILargeScaleClipLowGrowthParameter->DefaultValue() ),
+   p_largeScaleClipHigh( TheIILargeScaleClipHighParameter->DefaultValue() ),
+   p_largeScaleClipHighProtectedLayers( TheIILargeScaleClipHighProtectedLayersParameter->DefaultValue() ),
+   p_largeScaleClipHighGrowth( TheIILargeScaleClipHighGrowthParameter->DefaultValue() ),
    p_generate64BitResult( TheIIGenerate64BitResultParameter->DefaultValue() ),
    p_generateRejectionMaps( TheIIGenerateRejectionMapsParameter->DefaultValue() ),
    p_generateIntegratedImage( TheIIGenerateIntegratedImageParameter->DefaultValue() ),
@@ -145,51 +153,57 @@ void ImageIntegrationInstance::Assign( const ProcessImplementation& p )
    const ImageIntegrationInstance* x = dynamic_cast<const ImageIntegrationInstance*>( &p );
    if ( x != nullptr )
    {
-      p_images                  = x->p_images;
-      p_inputHints              = x->p_inputHints;
-      p_combination             = x->p_combination;
-      p_normalization           = x->p_normalization;
-      p_weightMode              = x->p_weightMode;
-      p_weightKeyword           = x->p_weightKeyword;
-      p_weightScale             = x->p_weightScale;
-      p_ignoreNoiseKeywords     = x->p_ignoreNoiseKeywords;
-      p_rejection               = x->p_rejection;
-      p_rejectionNormalization  = x->p_rejectionNormalization;
-      p_minMaxLow               = x->p_minMaxLow;
-      p_minMaxHigh              = x->p_minMaxHigh;
-      p_pcClipLow               = x->p_pcClipLow;
-      p_pcClipHigh              = x->p_pcClipHigh;
-      p_sigmaLow                = x->p_sigmaLow;
-      p_sigmaHigh               = x->p_sigmaHigh;
-      p_linearFitLow            = x->p_linearFitLow;
-      p_linearFitHigh           = x->p_linearFitHigh;
-      p_ccdGain                 = x->p_ccdGain;
-      p_ccdReadNoise            = x->p_ccdReadNoise;
-      p_ccdScaleNoise           = x->p_ccdScaleNoise;
-      p_clipLow                 = x->p_clipLow;
-      p_clipHigh                = x->p_clipHigh;
-      p_rangeClipLow            = x->p_rangeClipLow;
-      p_rangeLow                = x->p_rangeLow;
-      p_rangeClipHigh           = x->p_rangeClipHigh;
-      p_rangeHigh               = x->p_rangeHigh;
-      p_reportRangeRejection    = x->p_reportRangeRejection;
-      p_mapRangeRejection       = x->p_mapRangeRejection;
-      p_generate64BitResult     = x->p_generate64BitResult;
-      p_generateRejectionMaps   = x->p_generateRejectionMaps;
-      p_generateIntegratedImage = x->p_generateIntegratedImage;
-      p_generateDrizzleData     = x->p_generateDrizzleData;
-      p_closePreviousImages     = x->p_closePreviousImages;
-      p_bufferSizeMB            = x->p_bufferSizeMB;
-      p_stackSizeMB             = x->p_stackSizeMB;
-      p_useROI                  = x->p_useROI;
-      p_roi                     = x->p_roi;
-      p_useCache                = x->p_useCache;
-      p_evaluateNoise           = x->p_evaluateNoise;
-      p_mrsMinDataFraction      = x->p_mrsMinDataFraction;
-      p_noGUIMessages           = x->p_noGUIMessages;
-      p_useFileThreads          = x->p_useFileThreads;
-      p_fileThreadOverload      = x->p_fileThreadOverload;
-      o_output                  = x->o_output;
+      p_images                            = x->p_images;
+      p_inputHints                        = x->p_inputHints;
+      p_combination                       = x->p_combination;
+      p_normalization                     = x->p_normalization;
+      p_weightMode                        = x->p_weightMode;
+      p_weightKeyword                     = x->p_weightKeyword;
+      p_weightScale                       = x->p_weightScale;
+      p_ignoreNoiseKeywords               = x->p_ignoreNoiseKeywords;
+      p_rejection                         = x->p_rejection;
+      p_rejectionNormalization            = x->p_rejectionNormalization;
+      p_minMaxLow                         = x->p_minMaxLow;
+      p_minMaxHigh                        = x->p_minMaxHigh;
+      p_pcClipLow                         = x->p_pcClipLow;
+      p_pcClipHigh                        = x->p_pcClipHigh;
+      p_sigmaLow                          = x->p_sigmaLow;
+      p_sigmaHigh                         = x->p_sigmaHigh;
+      p_linearFitLow                      = x->p_linearFitLow;
+      p_linearFitHigh                     = x->p_linearFitHigh;
+      p_ccdGain                           = x->p_ccdGain;
+      p_ccdReadNoise                      = x->p_ccdReadNoise;
+      p_ccdScaleNoise                     = x->p_ccdScaleNoise;
+      p_clipLow                           = x->p_clipLow;
+      p_clipHigh                          = x->p_clipHigh;
+      p_rangeClipLow                      = x->p_rangeClipLow;
+      p_rangeLow                          = x->p_rangeLow;
+      p_rangeClipHigh                     = x->p_rangeClipHigh;
+      p_rangeHigh                         = x->p_rangeHigh;
+      p_reportRangeRejection              = x->p_reportRangeRejection;
+      p_mapRangeRejection                 = x->p_mapRangeRejection;
+      p_largeScaleClipLow                 = x->p_largeScaleClipLow;
+      p_largeScaleClipLowProtectedLayers  = x->p_largeScaleClipLowProtectedLayers;
+      p_largeScaleClipLowGrowth           = x->p_largeScaleClipLowGrowth;
+      p_largeScaleClipHigh                = x->p_largeScaleClipHigh;
+      p_largeScaleClipHighProtectedLayers = x->p_largeScaleClipHighProtectedLayers;
+      p_largeScaleClipHighGrowth          = x->p_largeScaleClipHighGrowth;
+      p_generate64BitResult               = x->p_generate64BitResult;
+      p_generateRejectionMaps             = x->p_generateRejectionMaps;
+      p_generateIntegratedImage           = x->p_generateIntegratedImage;
+      p_generateDrizzleData               = x->p_generateDrizzleData;
+      p_closePreviousImages               = x->p_closePreviousImages;
+      p_bufferSizeMB                      = x->p_bufferSizeMB;
+      p_stackSizeMB                       = x->p_stackSizeMB;
+      p_useROI                            = x->p_useROI;
+      p_roi                               = x->p_roi;
+      p_useCache                          = x->p_useCache;
+      p_evaluateNoise                     = x->p_evaluateNoise;
+      p_mrsMinDataFraction                = x->p_mrsMinDataFraction;
+      p_noGUIMessages                     = x->p_noGUIMessages;
+      p_useFileThreads                    = x->p_useFileThreads;
+      p_fileThreadOverload                = x->p_fileThreadOverload;
+      o_output                            = x->o_output;
    }
 }
 
@@ -465,10 +479,6 @@ public:
 
    static void OpenFiles( const ImageIntegrationInstance& );
 
-   virtual ~IntegrationFile()
-   {
-   }
-
    String Path() const
    {
       return m_file.IsValid() ? m_file->FilePath() : String();
@@ -611,18 +621,21 @@ public:
       return m_pedestal;
    }
 
-   void AppendDrizzleHighRejectionData( int x, int y, int channel )
+   const UInt8Image& RejectionMap() const
    {
-      if ( m_drzRejectionMap.IsEmpty() )
-         InitializeDrizzleRejectionMap();
-      m_drzRejectionMap( x, y, channel ) |= 1;
+      return m_rejectionMap;
    }
 
-   void AppendDrizzleLowRejectionData( int x, int y, int channel )
+   UInt8Image& RejectionMap()
    {
-      if ( m_drzRejectionMap.IsEmpty() )
-         InitializeDrizzleRejectionMap();
-      m_drzRejectionMap( x, y, channel ) |= 2;
+      return m_rejectionMap;
+   }
+
+   void UpdateRejectionMap( int x, int y, int channel, uint8 mask )
+   {
+      if ( m_rejectionMap.IsEmpty() )
+         InitializeRejectionMap();
+      m_rejectionMap( x, y, channel ) |= mask;
    }
 
    void ToDrizzleData( DrizzleData& ) const;
@@ -674,8 +687,8 @@ public:
 
    static void UpdateBuffers( int startRow, int channel )
    {
-      for ( file_list::const_iterator i = s_files.Begin(); i != s_files.End(); ++i )
-         (*i)->Read( startRow, channel );
+      for ( IntegrationFile* file : s_files )
+         file->Read( startRow, channel );
    }
 
    static void CloseAll()
@@ -689,10 +702,10 @@ private:
 
    AutoPointer<FileFormatInstance> m_file;
    String                          m_drzPath;
-   UInt8Image                      m_drzRejectionMap;
-   AutoPointer<Image>              m_image;  // used for non-incremental file reading
+   AutoPointer<Image>              m_image;  // non-incremental file reading
    int                             m_currentChannel;
-   FMatrix                         m_buffer; // used for incremental file reading
+   FMatrix                         m_buffer; // incremental file reading
+   UInt8Image                      m_rejectionMap;
    DVector                         m_scale;
    DVector                         m_mean;
    DVector                         m_median;
@@ -822,10 +835,9 @@ private:
       return KeywordValue( IsoString( keyName ) );
    }
 
-   void InitializeDrizzleRejectionMap()
+   void InitializeRejectionMap()
    {
-      m_drzRejectionMap.AllocateData( s_width, s_height, s_numberOfChannels );
-      m_drzRejectionMap.Zero();
+      m_rejectionMap.AllocateData( s_width, s_height, s_numberOfChannels ).Zero();
    }
 
    void ResetCacheableData();
@@ -1052,23 +1064,23 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
          throw CatchedException();
    }
 
-   m_drzPath         = String();
-   m_drzRejectionMap = UInt8Image();
-   m_scale           = DVector();
-   m_mean            = DVector();
-   m_median          = DVector();
-   m_avgDev          = DVector();
-   m_mad             = DVector();
-   m_bwmv            = DVector();
-   m_pbmv            = DVector();
-   m_sn              = DVector();
-   m_qn              = DVector();
-   m_ikss            = DVector();
-   m_iksl            = DVector();
-   m_location        = DVector();
-   m_dispersion      = DVector();
-   m_noise           = DVector();
-   m_pedestal        = 0;
+   m_drzPath      = String();
+   m_rejectionMap = UInt8Image();
+   m_scale        = DVector();
+   m_mean         = DVector();
+   m_median       = DVector();
+   m_avgDev       = DVector();
+   m_mad          = DVector();
+   m_bwmv         = DVector();
+   m_pbmv         = DVector();
+   m_sn           = DVector();
+   m_qn           = DVector();
+   m_ikss         = DVector();
+   m_iksl         = DVector();
+   m_location     = DVector();
+   m_dispersion   = DVector();
+   m_noise        = DVector();
+   m_pedestal     = 0;
 
    bool generateOutput = instance.p_generateIntegratedImage || instance.p_generateDrizzleData;
 
@@ -1411,8 +1423,8 @@ void IntegrationFile::ToDrizzleData( DrizzleData& drz ) const
    drz.SetReferenceLocation( s_files[0]->m_location );
    drz.SetScale( m_scale );
    drz.SetWeight( m_weight/s_files[0]->m_weight );
-   if ( !m_drzRejectionMap.IsEmpty() )
-      drz.SetRejectionMap( m_drzRejectionMap );
+   if ( !m_rejectionMap.IsEmpty() )
+      drz.SetRejectionMap( m_rejectionMap );
 }
 
 // ----------------------------------------------------------------------------
@@ -2720,38 +2732,37 @@ public:
    typedef ImageIntegrationInstance::RejectionCounts     RejectionCounts;
    typedef ImageIntegrationInstance::RejectionSlopes     RejectionSlopes;
 
-   IntegrationEngine( const ImageIntegrationInstance& aInstance, StatusMonitor& aMonitor,
-                      int c, RejectionStacks& aR, const RejectionCounts& aN,
-                      const DVector& ad, DVector& am, const DVector& as,
-                      float* aResult32, double* aResult64 ) :
-      ImageIntegrationEngine( aInstance, aMonitor ),
-      chn( c ), R( aR ), N( aN ), d( ad ), m( am ), s( as ),
-      result32( aResult32 ), result64( aResult64 ),
-      threads()
+   IntegrationEngine( const ImageIntegrationInstance& instance, StatusMonitor& monitor,
+                      RejectionStacks& R, const RejectionCounts& N,
+                      const DVector& d, DVector& m, const DVector& s,
+                      int channel, float* result32, double* result64 ) :
+      ImageIntegrationEngine( instance, monitor ),
+      m_R( R ), m_N( N ), m_d( d ), m_m( m ), m_s( s ),
+      m_channel( channel ), m_result32( result32 ), m_result64( result64 )
    {
-      int numberOfThreads = Thread::NumberOfThreads( R.Length(), 1 );
-      int stacksPerThread = R.Length()/numberOfThreads;
+      int numberOfThreads = Thread::NumberOfThreads( m_R.Length(), 1 );
+      int stacksPerThread = m_R.Length()/numberOfThreads;
 
       for ( int i = 0; i < numberOfThreads; ++i )
       {
          int k0 = i*stacksPerThread;
-         int k1 = (i == numberOfThreads-1) ? R.Length() : k0+stacksPerThread;
-         threads << new IntegrationThread( *this, k0, k1 );
+         int k1 = (i == numberOfThreads-1) ? m_R.Length() : k0+stacksPerThread;
+         m_threads << new IntegrationThread( *this, k0, k1 );
       }
    }
 
    virtual ~IntegrationEngine()
    {
-      threads.Destroy();
+      m_threads.Destroy();
    }
 
    void Integrate()
    {
-      if ( !threads.IsEmpty() )
+      if ( !m_threads.IsEmpty() )
       {
-         threadData.total = R.Length();
+         threadData.total = m_R.Length();
          threadData.count = 0;
-         AbstractImage::RunThreads( threads, threadData );
+         AbstractImage::RunThreads( m_threads, threadData );
          monitor = threadData.status;
       }
    }
@@ -2777,15 +2788,15 @@ private:
 
    typedef ReferenceArray<IntegrationThread> thread_list;
 
-         int              chn; // current channel
-         RejectionStacks& R;   // set of pixel stacks
-   const RejectionCounts& N;   // set of counts
-   const DVector&         d;   // normalization: zero offset
-   const DVector&         m;   //              : median
-   const DVector&         s;   //              : scaling
-         float*           result32;
-         double*          result64;
-         thread_list      threads;
+         RejectionStacks& m_R;       // set of pixel stacks
+   const RejectionCounts& m_N;       // set of counts
+   const DVector&         m_d;       // normalization: zero offset
+   const DVector&         m_m;       //              : position
+   const DVector&         m_s;       //              : scaling
+         int              m_channel; // current channel
+         float*           m_result32;
+         double*          m_result64;
+         thread_list      m_threads;
 
    friend class IntegrationThread;
 };
@@ -2799,15 +2810,15 @@ void IntegrationEngine::IntegrationThread::Run()
    float* result32 = nullptr;
    double* result64 = nullptr;
    if ( I.p_generate64BitResult )
-      result64 = E.result64 + size_type( m_firstStack )*size_type( IntegrationFile::Width() );
+      result64 = E.m_result64 + size_type( m_firstStack )*size_type( IntegrationFile::Width() );
    else
-      result32 = E.result32 + size_type( m_firstStack )*size_type( IntegrationFile::Width() );
+      result32 = E.m_result32 + size_type( m_firstStack )*size_type( IntegrationFile::Width() );
 
-   RejectionMatrix* R = E.R.ComponentPtr( m_firstStack );
+   RejectionMatrix* R = E.m_R.ComponentPtr( m_firstStack );
 
    for ( int k = m_firstStack; k < m_endStack; ++k, ++R )
    {
-      const IVector& N = E.N[k];
+      const IVector& N = E.m_N[k];
 
       for ( int x = 0; x < R->Rows(); ++x )
       {
@@ -2824,9 +2835,9 @@ void IntegrationEngine::IntegrationThread::Run()
             thisCombination = IICombination::Median;
          }
 
-         const DVector& d = E.d;
-         const DVector& m = E.m;
-         const DVector& s = E.s;
+         const DVector& d = E.m_d;
+         const DVector& m = E.m_m;
+         const DVector& s = E.m_s;
 
          // Normalize/scale output
          switch ( I.p_normalization )
@@ -2870,7 +2881,7 @@ void IntegrationEngine::IntegrationThread::Run()
                   double ws = 0;
                   for ( int i = 0; i < n; ++i, ++r )
                   {
-                     double w = IntegrationFile::FileByIndex( r->index ).Weight( E.chn );
+                     double w = IntegrationFile::FileByIndex( r->index ).Weight( E.m_channel );
                      f += w*r->raw;
                      ws += w;
                   }
@@ -2910,6 +2921,438 @@ void IntegrationEngine::IntegrationThread::Run()
          else
             *result64++ = f;
       }
+
+      UPDATE_THREAD_MONITOR( 10 )
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+class MapIntegrationEngine : public ImageIntegrationEngine
+{
+public:
+
+   MapIntegrationEngine( const ImageIntegrationInstance& instance, StatusMonitor& monitor,
+                         const DVector& d, DVector& m, const DVector& s,
+                         int channel, int firstRow, int numberOfRows,
+                         float* result32, double* result64 ) :
+      ImageIntegrationEngine( instance, monitor ),
+      m_d( d ), m_m( m ), m_s( s ),
+      m_channel( channel ), m_firstRow( firstRow ), m_numberOfRows( numberOfRows ),
+      m_result32( result32 ), m_result64( result64 )
+   {
+      int numberOfThreads = Thread::NumberOfThreads( m_numberOfRows, 1 );
+      int rowsPerThread = m_numberOfRows/numberOfThreads;
+
+      for ( int i = 0; i < numberOfThreads; ++i )
+      {
+         int firstRow = i*rowsPerThread;
+         int endRow = (i == numberOfThreads-1) ? m_numberOfRows : firstRow+rowsPerThread;
+         m_threads << new IntegrationThread( *this, firstRow, endRow );
+      }
+   }
+
+   virtual ~MapIntegrationEngine()
+   {
+      m_threads.Destroy();
+   }
+
+   void Integrate()
+   {
+      if ( !m_threads.IsEmpty() )
+      {
+         threadData.total = size_type( m_numberOfRows );
+         threadData.count = 0;
+         AbstractImage::RunThreads( m_threads, threadData );
+         monitor = threadData.status;
+      }
+   }
+
+private:
+
+   class IntegrationThread : public EngineThread
+   {
+   public:
+
+      IntegrationThread( MapIntegrationEngine& engine, int firstRow, int endRow ) :
+         EngineThread( engine, firstRow, endRow ),
+         m_engine( engine )
+      {
+      }
+
+      virtual void Run();
+
+   private:
+
+      MapIntegrationEngine& m_engine;
+   };
+
+   typedef ReferenceArray<IntegrationThread> thread_list;
+
+   const DVector&    m_d;   // normalization: zero offset
+   const DVector&    m_m;   //              : position
+   const DVector&    m_s;   //              : scaling
+         int         m_channel;
+         int         m_firstRow;
+         int         m_numberOfRows;
+         float*      m_result32;
+         double*     m_result64;
+         thread_list m_threads;
+
+   friend class IntegrationThread;
+};
+
+// ----------------------------------------------------------------------------
+
+void MapIntegrationEngine::IntegrationThread::Run()
+{
+   INIT_THREAD_MONITOR()
+
+   float* result32 = nullptr;
+   double* result64 = nullptr;
+   if ( I.p_generate64BitResult )
+      result64 = E.m_result64 + size_type( m_firstStack )*size_type( IntegrationFile::Width() );
+   else
+      result32 = E.m_result32 + size_type( m_firstStack )*size_type( IntegrationFile::Width() );
+
+   for ( int k = m_firstStack; k < m_endStack; ++k )
+   {
+      for ( int x = 0; x < IntegrationFile::Width(); ++x )
+      {
+         int n = 0;
+         DVector stack( IntegrationFile::NumberOfFiles() );
+         IVector index( IntegrationFile::NumberOfFiles() );
+         for ( int i = 0; i < IntegrationFile::NumberOfFiles(); ++i )
+            if ( IntegrationFile::FileByIndex( i ).RejectionMap()( x, E.m_firstRow+k, E.m_channel ) == 0 )
+            {
+               stack[n] = IntegrationFile::FileByIndex( i )[k][x];
+               index[n] = i;
+               ++n;
+            }
+
+         pcl_enum thisCombination = I.p_combination;
+         if ( n == 0 )
+         {
+            // If all pixels have been rejected, take the median as
+            // the final pixel value for this stack.
+            for ( int i = 0; i < IntegrationFile::NumberOfFiles(); ++i )
+            {
+               stack[i] = IntegrationFile::FileByIndex( i )[k][x];
+               index[i] = i;
+            }
+            thisCombination = IICombination::Median;
+            n = IntegrationFile::NumberOfFiles();
+         }
+
+         const DVector& d = E.m_d;
+         const DVector& m = E.m_m;
+         const DVector& s = E.m_s;
+
+         // Normalize/scale output
+         switch ( I.p_normalization )
+         {
+         case IINormalization::NoNormalization:
+            break;
+         default:
+         case IINormalization::Additive:
+            for ( int i = 0; i < n; ++i )
+               stack[i] += d[index[i]];
+            break;
+         case IINormalization::Multiplicative:
+            for ( int i = 0; i < n; ++i )
+               stack[i] *= d[index[i]];
+            break;
+         case IINormalization::AdditiveWithScaling:
+            for ( int i = 0; i < n; ++i )
+               stack[i] = (stack[i] - m[index[i]])*s[index[i]] + m[0];
+            break;
+         case IINormalization::MultiplicativeWithScaling:
+            for ( int i = 0; i < n; ++i )
+               stack[i] = (stack[i] / m[index[i]])*s[index[i]] * m[0];
+            break;
+         }
+
+         // Integrate
+         double f;
+         switch ( thisCombination )
+         {
+         default:
+         case IICombination::Average:
+            {
+               f = 0;
+               if ( I.p_weightMode == IIWeightMode::DontCare )
+               {
+                  for ( int i = 0; i < n; ++i )
+                     f += stack[i];
+                  f /= n;
+               }
+               else
+               {
+                  double ws = 0;
+                  for ( int i = 0; i < n; ++i )
+                  {
+                     double w = IntegrationFile::FileByIndex( index[i] ).Weight( E.m_channel );
+                     f += w*stack[i];
+                     ws += w;
+                  }
+                  f /= ws;
+               }
+            }
+            break;
+
+         case IICombination::Median:
+         case IICombination::Minimum:
+         case IICombination::Maximum:
+            Sort( stack.Begin(), stack.At( n ) );
+            switch ( thisCombination )
+            {
+            default:
+            case IICombination::Median:
+               {
+                  int n2 = n >> 1;
+                  if ( n & 1 )
+                     f = stack[n2];
+                  else
+                     f = 0.5*(stack[n2] + stack[n2-1]);
+               }
+               break;
+            case IICombination::Minimum:
+               f = stack[0];
+               break;
+            case IICombination::Maximum:
+               f = stack[n-1];
+               break;
+            }
+            break;
+         }
+
+         if ( result32 != nullptr )
+            *result32++ = float( f );
+         else
+            *result64++ = f;
+      }
+
+      UPDATE_THREAD_MONITOR( 10 )
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+class LargeScaleRejectionMapGenerationEngine : public ImageIntegrationEngine
+{
+public:
+
+   LargeScaleRejectionMapGenerationEngine( const ImageIntegrationInstance& instance, StatusMonitor& monitor,
+                                           GenericVector<size_type>& N, bool high, int channel ) :
+      ImageIntegrationEngine( instance, monitor ),
+      m_high( high ), m_channel( channel ), m_N( N )
+   {
+      int numberOfThreads = Thread::NumberOfThreads( IntegrationFile::NumberOfFiles(), 1 );
+      int filesPerThread = IntegrationFile::NumberOfFiles()/numberOfThreads;
+
+      for ( int i = 0; i < numberOfThreads; ++i )
+      {
+         int firstFile = i*filesPerThread;
+         int endFile = (i == numberOfThreads-1) ? IntegrationFile::NumberOfFiles() : firstFile+filesPerThread;
+         m_threads << new GenerationThread( *this, firstFile, endFile );
+      }
+   }
+
+   virtual ~LargeScaleRejectionMapGenerationEngine()
+   {
+      m_threads.Destroy();
+   }
+
+   void Generate()
+   {
+      if ( !m_threads.IsEmpty() )
+      {
+         threadData.total = size_type( 4*IntegrationFile::NumberOfFiles() );
+         threadData.count = 0;
+         AbstractImage::RunThreads( m_threads, threadData );
+         monitor = threadData.status;
+         for ( const GenerationThread& thread : m_threads )
+            m_N += thread.N;
+      }
+   }
+
+private:
+
+   class GenerationThread : public EngineThread
+   {
+   public:
+
+      GenericVector<size_type> N;
+
+      GenerationThread( LargeScaleRejectionMapGenerationEngine& engine, int firstFile, int endFile ) :
+         EngineThread( engine, firstFile, endFile ),
+         N( size_type( 0 ), IntegrationFile::NumberOfFiles() ),
+         m_engine( engine )
+      {
+      }
+
+      virtual void Run();
+
+   private:
+
+      LargeScaleRejectionMapGenerationEngine& m_engine;
+   };
+
+   typedef ReferenceArray<GenerationThread> thread_list;
+
+   bool                      m_high;
+   int                       m_channel;
+   GenericVector<size_type>& m_N;
+   thread_list               m_threads;
+
+   friend class GenerationThread;
+};
+
+// ----------------------------------------------------------------------------
+
+void LargeScaleRejectionMapGenerationEngine::GenerationThread::Run()
+{
+   INIT_THREAD_MONITOR()
+
+   int protectedLayers = E.m_high ? I.p_largeScaleClipHighProtectedLayers : I.p_largeScaleClipLowProtectedLayers;
+   int growth = E.m_high ? I.p_largeScaleClipHighGrowth : I.p_largeScaleClipLowGrowth;
+   uint8 inputMask = E.m_high ? 0x01 : 0x02;
+   uint8 outputMask = E.m_high ? 0x10 : 0x20;
+
+   for ( int i = m_firstStack; i < m_endStack; ++i )
+   {
+      UInt8Image map;
+      map.AllocateData( IntegrationFile::Width(), IntegrationFile::Height() ).Zero();
+      {
+         UInt8Image::sample_iterator m( map );
+         for ( UInt8Image::const_sample_iterator r( IntegrationFile::FileByIndex( i ).RejectionMap(), E.m_channel ); r; ++r, ++m )
+            if ( *r & inputMask )
+               *m = 0xff;
+      }
+
+      UPDATE_THREAD_MONITOR( 1 )
+
+      {
+         MultiscaleMedianTransform T( Max( 1, protectedLayers ) );
+         for ( int i = 0; i < T.NumberOfLayers(); ++i )
+            T.DisableLayer( i );
+         T << map;
+         T >> map;
+      }
+
+      UPDATE_THREAD_MONITOR( 1 )
+
+      {
+         DilationFilter D;
+         CircularStructure C( (growth << 1) + 1 );
+         MorphologicalTransformation M( D, C );
+         M >> map;
+      }
+
+      UPDATE_THREAD_MONITOR( 1 )
+
+      {
+         UInt8Image::const_sample_iterator m( map );
+         for ( UInt8Image::sample_iterator r( IntegrationFile::FileByIndex( i ).RejectionMap(), E.m_channel ); r; ++r, ++m )
+            if ( *m )
+               if ( (*r |= outputMask) & 0x03 == 0 )
+                  ++N[i];
+      }
+
+      UPDATE_THREAD_MONITOR( 1 )
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+class RejectionMapGenerationEngine : public ImageIntegrationEngine
+{
+public:
+
+   RejectionMapGenerationEngine( const ImageIntegrationInstance& instance, StatusMonitor& monitor,
+                                 Image& map, bool high, int channel ) :
+      ImageIntegrationEngine( instance, monitor ),
+      m_map( map ), m_high( high ), m_channel( channel )
+   {
+      int numberOfThreads = Thread::NumberOfThreads( m_map.Height(), 1 );
+      int rowsPerThread = m_map.Height()/numberOfThreads;
+
+      for ( int i = 0; i < numberOfThreads; ++i )
+      {
+         int firstRow = i*rowsPerThread;
+         int endRow = (i == numberOfThreads-1) ? m_map.Height() : firstRow+rowsPerThread;
+         m_threads << new GenerationThread( *this, firstRow, endRow );
+      }
+   }
+
+   virtual ~RejectionMapGenerationEngine()
+   {
+      m_threads.Destroy();
+   }
+
+   void Generate()
+   {
+      if ( !m_threads.IsEmpty() )
+      {
+         threadData.total = size_type( m_map.Height() );
+         threadData.count = 0;
+         AbstractImage::RunThreads( m_threads, threadData );
+         monitor = threadData.status;
+      }
+   }
+
+private:
+
+   class GenerationThread : public EngineThread
+   {
+   public:
+
+      GenerationThread( RejectionMapGenerationEngine& engine, int firstRow, int endRow ) :
+         EngineThread( engine, firstRow, endRow ),
+         m_engine( engine )
+      {
+      }
+
+      virtual void Run();
+
+   private:
+
+      RejectionMapGenerationEngine& m_engine;
+   };
+
+   typedef ReferenceArray<GenerationThread> thread_list;
+
+   Image&      m_map;
+   bool        m_high;
+   int         m_channel;
+   thread_list m_threads;
+
+   friend class GenerationThread;
+};
+
+// ----------------------------------------------------------------------------
+
+void RejectionMapGenerationEngine::GenerationThread::Run()
+{
+   INIT_THREAD_MONITOR()
+
+   uint8 inputMask = E.m_high ? 0x11 : 0x22;
+   if ( I.p_mapRangeRejection )
+      inputMask |= E.m_high ? 0x04 : 0x08;
+
+   Rect rect( 0, m_firstStack, IntegrationFile::Width(), m_endStack );
+
+   GenericVector<UInt8Image::const_roi_sample_iterator> r( IntegrationFile::NumberOfFiles() );
+   for ( int i = 0; i < IntegrationFile::NumberOfFiles(); ++i )
+      r[i] = UInt8Image::const_roi_sample_iterator( IntegrationFile::FileByIndex( i ).RejectionMap(), rect, E.m_channel );
+
+   for ( Image::roi_sample_iterator m( E.m_map, rect, E.m_channel ); m; ++m )
+   {
+      int n = 0;
+      for ( int i = 0; i < IntegrationFile::NumberOfFiles(); ++i )
+         if ( *r[i]++ & inputMask )
+            ++n;
+      *m = float( n )/IntegrationFile::NumberOfFiles();
 
       UPDATE_THREAD_MONITOR( 10 )
    }
@@ -3133,8 +3576,6 @@ bool ImageIntegrationInstance::ExecuteGlobal()
       console.WriteLn( String().Format( "<end><cbr><br>Integration of %d images:", IntegrationFile::NumberOfFiles() ) );
       console.WriteLn( IntegrationDescription() );
 
-      bool doReject = p_rejection != IIRejection::NoRejection || p_rangeClipLow || p_rangeClipHigh;
-
       ImageVariant result;
       if ( p_generateIntegratedImage )
       {
@@ -3143,7 +3584,7 @@ bool ImageIntegrationInstance::ExecuteGlobal()
       }
 
       ImageVariant lowRejectionMap;
-      bool generateLowRejectionMap = p_generateRejectionMaps && (p_clipLow || p_rangeClipLow) && doReject;
+      bool generateLowRejectionMap = p_generateRejectionMaps && (p_rejection != IIRejection::NoRejection && p_clipLow || p_rangeClipLow);
       if ( generateLowRejectionMap )
       {
          lowRejectionMapWindow = CreateImageWindow( "rejection_low", 32 );
@@ -3151,7 +3592,7 @@ bool ImageIntegrationInstance::ExecuteGlobal()
       }
 
       ImageVariant highRejectionMap;
-      bool generateHighRejectionMap = p_generateRejectionMaps && (p_clipHigh || p_rangeClipHigh) && doReject;
+      bool generateHighRejectionMap = p_generateRejectionMaps && (p_rejection != IIRejection::NoRejection && p_clipHigh || p_rangeClipHigh);
       if ( generateHighRejectionMap )
       {
          highRejectionMapWindow = CreateImageWindow( "rejection_high", 32 );
@@ -3273,8 +3714,14 @@ bool ImageIntegrationInstance::ExecuteGlobal()
           */
          GenericVector<size_type> NRL( size_type( 0 ), IntegrationFile::NumberOfFiles() );
          GenericVector<size_type> NRH( size_type( 0 ), IntegrationFile::NumberOfFiles() );
-         GenericVector<size_type> NRRL( size_type( 0 ), IntegrationFile::NumberOfFiles() );
-         GenericVector<size_type> NRRH( size_type( 0 ), IntegrationFile::NumberOfFiles() );
+         GenericVector<size_type> NRLR( size_type( 0 ), IntegrationFile::NumberOfFiles() );
+         GenericVector<size_type> NRHR( size_type( 0 ), IntegrationFile::NumberOfFiles() );
+
+         bool doReject = p_rejection != IIRejection::NoRejection && (p_clipLow || p_clipHigh) || p_rangeClipLow || p_rangeClipHigh;
+         bool doLargeScaleRejectLow = p_rejection != IIRejection::NoRejection && p_clipLow && p_largeScaleClipLow;
+         bool doLargeScaleRejectHigh = p_rejection != IIRejection::NoRejection && p_clipHigh && p_largeScaleClipHigh;
+         bool doLargeScaleReject = doLargeScaleRejectLow || doLargeScaleRejectHigh;
+         bool doIntegrateAndReject = p_generateIntegratedImage && !doLargeScaleReject;
 
          /*
           * Integrate pixels
@@ -3287,8 +3734,8 @@ bool ImageIntegrationInstance::ExecuteGlobal()
             StandardStatus status;
             StatusMonitor monitor;
             monitor.SetCallback( &status );
-            monitor.Initialize( String().Format(
-               "<end><cbr>Integrating pixel rows: %5d -> %5d", y0, y0+numberOfRows-1 ), 5*numberOfRows );
+            monitor.Initialize( String( doIntegrateAndReject ? "Integrating" : "  Analyzing" ).AppendFormat(
+                                                 " pixel rows: %5d -> %5d", y0, y0+numberOfRows-1 ), 5*numberOfRows );
 
             IntegrationFile::UpdateBuffers( y0, c );
 
@@ -3367,13 +3814,13 @@ bool ImageIntegrationInstance::ExecuteGlobal()
                else
                   monitor += 3*numberOfStacks;
 
-               if ( p_generateIntegratedImage )
+               /*
+                * Integrate pixel stacks.
+                */
+               if ( doIntegrateAndReject )
                {
-                  /*
-                   * Integrate pixel stacks.
-                   */
-                  IntegrationEngine( *this, monitor, c,
-                                     stacks, counts, d, m, s, resultData32, resultData64 ).Integrate();
+                  IntegrationEngine( *this, monitor, stacks, counts,
+                                     d, m, s, c, resultData32, resultData64 ).Integrate();
                   size_type delta = size_type( numberOfStacks )*size_type( IntegrationFile::Width() );
                   if ( resultData32 != nullptr )
                      resultData32 += delta;
@@ -3407,20 +3854,26 @@ bool ImageIntegrationInstance::ExecuteGlobal()
                               if ( r->rejectRangeLow )
                               {
                                  ++nr;
-                                 ++NRRL[r->index];
+                                 ++NRLR[r->index];
                               }
 
-                              if ( p_generateDrizzleData )
-                                 if ( r->rejectLow || r->rejectRangeLow )
-                                    IntegrationFile::FileByIndex( r->index ).AppendDrizzleLowRejectionData( x, y, c );
+                              if ( doLargeScaleReject || p_generateDrizzleData )
+                              {
+                                 uint8 mask = r->rejectLow ? 0x02 : 0x00;
+                                 if ( r->rejectRangeLow )
+                                    mask |= 0x08;
+                                 if ( mask != 0 )
+                                    IntegrationFile::FileByIndex( r->index ).UpdateRejectionMap( x, y, c, mask );
+                              }
                            }
 
-                           if ( generateLowRejectionMap )
-                           {
-                              if ( p_mapRangeRejection )
-                                 n += nr;
-                              *rejectionLowData++ = float( n )/R.Cols();
-                           }
+                           if ( !doLargeScaleRejectLow )
+                              if ( generateLowRejectionMap )
+                              {
+                                 if ( p_mapRangeRejection )
+                                    n += nr;
+                                 *rejectionLowData++ = float( n )/R.Cols();
+                              }
                         }
 
                         if ( p_clipHigh || p_rangeClipHigh )
@@ -3437,20 +3890,26 @@ bool ImageIntegrationInstance::ExecuteGlobal()
                               if ( r->rejectRangeHigh )
                               {
                                  ++nr;
-                                 ++NRRH[r->index];
+                                 ++NRHR[r->index];
                               }
 
-                              if ( p_generateDrizzleData )
-                                 if ( r->rejectHigh || r->rejectRangeHigh )
-                                    IntegrationFile::FileByIndex( r->index ).AppendDrizzleHighRejectionData( x, y, c );
+                              if ( doLargeScaleReject || p_generateDrizzleData )
+                              {
+                                 uint8 mask = r->rejectHigh ? 0x01 : 0x00;
+                                 if ( r->rejectRangeHigh )
+                                    mask |= 0x04;
+                                 if ( mask != 0 )
+                                    IntegrationFile::FileByIndex( r->index ).UpdateRejectionMap( x, y, c, mask );
+                              }
                            }
 
-                           if ( generateHighRejectionMap )
-                           {
-                              if ( p_mapRangeRejection )
-                                 n += nr;
-                              *rejectionHighData++ = float( n )/R.Cols();
-                           }
+                           if ( !doLargeScaleRejectHigh )
+                              if ( generateHighRejectionMap )
+                              {
+                                 if ( p_mapRangeRejection )
+                                    n += nr;
+                                 *rejectionHighData++ = float( n )/R.Cols();
+                              }
                         }
 
                         if ( generateSlopeMap )
@@ -3461,6 +3920,67 @@ bool ImageIntegrationInstance::ExecuteGlobal()
 
             monitor.Complete();
          } // for each row
+
+         /*
+          * Large-scale pixel rejection.
+          */
+         if ( doLargeScaleReject )
+         {
+            StandardStatus status;
+            StatusMonitor monitor;
+            monitor.SetCallback( &status );
+
+            if ( doLargeScaleRejectLow )
+            {
+               monitor.Initialize( "Generating large-scale low rejection maps", 4*IntegrationFile::NumberOfFiles() );
+               LargeScaleRejectionMapGenerationEngine( *this, monitor, NRL, false/*high*/, c ).Generate();
+            }
+
+            if ( doLargeScaleRejectHigh )
+            {
+               monitor.Initialize( "Generating large-scale high rejection maps", 4*IntegrationFile::NumberOfFiles() );
+               LargeScaleRejectionMapGenerationEngine( *this, monitor, NRH, true/*high*/, c ).Generate();
+            }
+
+            /*
+             * Integrate with map-based rejection.
+             */
+            if ( p_generateIntegratedImage )
+               for ( int y0 = 0, numberOfRows; y0 < IntegrationFile::Height(); y0 += numberOfRows )
+               {
+                  Module->ProcessEvents();
+                  if ( console.AbortRequested() )
+                     throw ProcessAborted();
+
+                  // Number of rows in this strip
+                  numberOfRows = Min( IntegrationFile::BufferRows(), IntegrationFile::Height() - y0 );
+
+                  IntegrationFile::UpdateBuffers( y0, c );
+
+                  monitor.Initialize( String().Format( "Integrating pixel rows: %5d -> %5d", y0, y0+numberOfRows-1 ), numberOfRows );
+                  MapIntegrationEngine( *this, monitor, d, m, s, c, y0, numberOfRows, resultData32, resultData64 ).Integrate();
+
+                  size_type delta = size_type( numberOfRows )*size_type( IntegrationFile::Width() );
+                  if ( resultData32 != nullptr )
+                     resultData32 += delta;
+                  else
+                     resultData64 += delta;
+               }
+
+            if ( doLargeScaleRejectLow )
+               if ( generateLowRejectionMap )
+               {
+                  monitor.Initialize( "Generating low pixel rejection map", IntegrationFile::Height() );
+                  RejectionMapGenerationEngine( *this, monitor, static_cast<Image&>( *lowRejectionMap ), false/*high*/, c ).Generate();
+               }
+
+            if ( doLargeScaleRejectHigh )
+               if ( generateHighRejectionMap )
+               {
+                  monitor.Initialize( "Generating high pixel rejection map", IntegrationFile::Height() );
+                  RejectionMapGenerationEngine( *this, monitor, static_cast<Image&>( *highRejectionMap ), true/*high*/, c ).Generate();
+               }
+         }
 
          if ( doReject )
          {
@@ -3480,11 +4000,11 @@ bool ImageIntegrationInstance::ExecuteGlobal()
             for ( int i = 0; i < IntegrationFile::NumberOfFiles(); ++i )
             {
                size_type nl = NRL[i];
-               size_type nlr = NRRL[i];
+               size_type nlr = NRLR[i];
                NL += nl;
                NLR += nlr;
                size_type nh = NRH[i];
-               size_type nhr = NRRH[i];
+               size_type nhr = NRHR[i];
                NH += nh;
                NHR += nhr;
 
@@ -3551,7 +4071,7 @@ bool ImageIntegrationInstance::ExecuteGlobal()
 
             SpinStatus spin;
             result->SetStatusCallback( &spin );
-            result->Status().Initialize( "<end><cbr>Computing noise scaling factors" );
+            result->Status().Initialize( "Computing noise scaling factors" );
             result->Status().DisableInitialization();
 
             DVector iksl;
@@ -3990,6 +4510,18 @@ void* ImageIntegrationInstance::LockParameter( const MetaParameter* p, size_type
       return &p_reportRangeRejection;
    if ( p == TheIIMapRangeRejectionParameter )
       return &p_mapRangeRejection;
+   if ( p == TheIILargeScaleClipLowParameter )
+      return &p_largeScaleClipLow;
+   if ( p == TheIILargeScaleClipLowProtectedLayersParameter )
+      return &p_largeScaleClipLowProtectedLayers;
+   if ( p == TheIILargeScaleClipLowGrowthParameter )
+      return &p_largeScaleClipLowGrowth;
+   if ( p == TheIILargeScaleClipHighParameter )
+      return &p_largeScaleClipHigh;
+   if ( p == TheIILargeScaleClipHighProtectedLayersParameter )
+      return &p_largeScaleClipHighProtectedLayers;
+   if ( p == TheIILargeScaleClipHighGrowthParameter )
+      return &p_largeScaleClipHighGrowth;
    if ( p == TheIIGenerate64BitResultParameter )
       return &p_generate64BitResult;
    if ( p == TheIIGenerateRejectionMapsParameter )

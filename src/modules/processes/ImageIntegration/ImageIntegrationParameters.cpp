@@ -57,101 +57,107 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-IIImages*                    TheIIImagesParameter = nullptr;
-IIImageEnabled*              TheIIImageEnabledParameter = nullptr;
-IIImagePath*                 TheIIImagePathParameter = nullptr;
-IIDrizzlePath*               TheIIDrizzlePathParameter = nullptr;
-IIInputHints*                TheIIInputHintsParameter = nullptr;
-IICombination*               TheIICombinationParameter = nullptr;
-IIWeightMode*                TheIIWeightModeParameter = nullptr;
-IIWeightKeyword*             TheIIWeightKeywordParameter = nullptr;
-IIWeightScale*               TheIIWeightScaleParameter = nullptr;
-IIIgnoreNoiseKeywords*       TheIIIgnoreNoiseKeywordsParameter = nullptr;
-IINormalization*             TheIINormalizationParameter = nullptr;
-IIRejection*                 TheIIRejectionParameter = nullptr;
-IIRejectionNormalization*    TheIIRejectionNormalizationParameter = nullptr;
-IIMinMaxLow*                 TheIIMinMaxLowParameter = nullptr;
-IIMinMaxHigh*                TheIIMinMaxHighParameter = nullptr;
-IIPercentileLow*             TheIIPercentileLowParameter = nullptr;
-IIPercentileHigh*            TheIIPercentileHighParameter = nullptr;
-IISigmaLow*                  TheIISigmaLowParameter = nullptr;
-IISigmaHigh*                 TheIISigmaHighParameter = nullptr;
-IILinearFitLow*              TheIILinearFitLowParameter = nullptr;
-IILinearFitHigh*             TheIILinearFitHighParameter = nullptr;
-IICCDGain*                   TheIICCDGainParameter = nullptr;
-IICCDReadNoise*              TheIICCDReadNoiseParameter = nullptr;
-IICCDScaleNoise*             TheIICCDScaleNoiseParameter = nullptr;
-IIClipLow*                   TheIIClipLowParameter = nullptr;
-IIClipHigh*                  TheIIClipHighParameter = nullptr;
-IIRangeClipLow*              TheIIRangeClipLowParameter = nullptr;
-IIRangeLow*                  TheIIRangeLowParameter = nullptr;
-IIRangeClipHigh*             TheIIRangeClipHighParameter = nullptr;
-IIRangeHigh*                 TheIIRangeHighParameter = nullptr;
-IIMapRangeRejection*         TheIIMapRangeRejectionParameter = nullptr;
-IIReportRangeRejection*      TheIIReportRangeRejectionParameter = nullptr;
-IIGenerate64BitResult*       TheIIGenerate64BitResultParameter = nullptr;
-IIGenerateRejectionMaps*     TheIIGenerateRejectionMapsParameter = nullptr;
-IIGenerateIntegratedImage*   TheIIGenerateIntegratedImageParameter = nullptr;
-IIGenerateDrizzleData*       TheIIGenerateDrizzleDataParameter = nullptr;
-IIClosePreviousImages*       TheIIClosePreviousImagesParameter = nullptr;
-IIBufferSize*                TheIIBufferSizeParameter = nullptr;
-IIStackSize*                 TheIIStackSizeParameter = nullptr;
-IIUseROI*                    TheIIUseROIParameter = nullptr;
-IIROIX0*                     TheIIROIX0Parameter = nullptr;
-IIROIY0*                     TheIIROIY0Parameter = nullptr;
-IIROIX1*                     TheIIROIX1Parameter = nullptr;
-IIROIY1*                     TheIIROIY1Parameter = nullptr;
-IIUseCache*                  TheIIUseCacheParameter = nullptr;
-IIEvaluateNoise*             TheIIEvaluateNoiseParameter = nullptr;
-IIMRSMinDataFraction*        TheIIMRSMinDataFractionParameter = nullptr;
-IINoGUIMessages*             TheIINoGUIMessagesParameter = nullptr;
-IIUseFileThreads*            TheIIUseFileThreadsParameter = nullptr;
-IIFileThreadOverload*        TheIIFileThreadOverloadParameter = nullptr;
+IIImages*                            TheIIImagesParameter = nullptr;
+IIImageEnabled*                      TheIIImageEnabledParameter = nullptr;
+IIImagePath*                         TheIIImagePathParameter = nullptr;
+IIDrizzlePath*                       TheIIDrizzlePathParameter = nullptr;
+IIInputHints*                        TheIIInputHintsParameter = nullptr;
+IICombination*                       TheIICombinationParameter = nullptr;
+IIWeightMode*                        TheIIWeightModeParameter = nullptr;
+IIWeightKeyword*                     TheIIWeightKeywordParameter = nullptr;
+IIWeightScale*                       TheIIWeightScaleParameter = nullptr;
+IIIgnoreNoiseKeywords*               TheIIIgnoreNoiseKeywordsParameter = nullptr;
+IINormalization*                     TheIINormalizationParameter = nullptr;
+IIRejection*                         TheIIRejectionParameter = nullptr;
+IIRejectionNormalization*            TheIIRejectionNormalizationParameter = nullptr;
+IIMinMaxLow*                         TheIIMinMaxLowParameter = nullptr;
+IIMinMaxHigh*                        TheIIMinMaxHighParameter = nullptr;
+IIPercentileLow*                     TheIIPercentileLowParameter = nullptr;
+IIPercentileHigh*                    TheIIPercentileHighParameter = nullptr;
+IISigmaLow*                          TheIISigmaLowParameter = nullptr;
+IISigmaHigh*                         TheIISigmaHighParameter = nullptr;
+IILinearFitLow*                      TheIILinearFitLowParameter = nullptr;
+IILinearFitHigh*                     TheIILinearFitHighParameter = nullptr;
+IICCDGain*                           TheIICCDGainParameter = nullptr;
+IICCDReadNoise*                      TheIICCDReadNoiseParameter = nullptr;
+IICCDScaleNoise*                     TheIICCDScaleNoiseParameter = nullptr;
+IIClipLow*                           TheIIClipLowParameter = nullptr;
+IIClipHigh*                          TheIIClipHighParameter = nullptr;
+IIRangeClipLow*                      TheIIRangeClipLowParameter = nullptr;
+IIRangeLow*                          TheIIRangeLowParameter = nullptr;
+IIRangeClipHigh*                     TheIIRangeClipHighParameter = nullptr;
+IIRangeHigh*                         TheIIRangeHighParameter = nullptr;
+IIMapRangeRejection*                 TheIIMapRangeRejectionParameter = nullptr;
+IIReportRangeRejection*              TheIIReportRangeRejectionParameter = nullptr;
+IILargeScaleClipLow*                 TheIILargeScaleClipLowParameter = nullptr;
+IILargeScaleClipLowProtectedLayers*  TheIILargeScaleClipLowProtectedLayersParameter = nullptr;
+IILargeScaleClipLowGrowth*           TheIILargeScaleClipLowGrowthParameter = nullptr;
+IILargeScaleClipHigh*                TheIILargeScaleClipHighParameter = nullptr;
+IILargeScaleClipHighProtectedLayers* TheIILargeScaleClipHighProtectedLayersParameter = nullptr;
+IILargeScaleClipHighGrowth*          TheIILargeScaleClipHighGrowthParameter = nullptr;
+IIGenerate64BitResult*               TheIIGenerate64BitResultParameter = nullptr;
+IIGenerateRejectionMaps*             TheIIGenerateRejectionMapsParameter = nullptr;
+IIGenerateIntegratedImage*           TheIIGenerateIntegratedImageParameter = nullptr;
+IIGenerateDrizzleData*               TheIIGenerateDrizzleDataParameter = nullptr;
+IIClosePreviousImages*               TheIIClosePreviousImagesParameter = nullptr;
+IIBufferSize*                        TheIIBufferSizeParameter = nullptr;
+IIStackSize*                         TheIIStackSizeParameter = nullptr;
+IIUseROI*                            TheIIUseROIParameter = nullptr;
+IIROIX0*                             TheIIROIX0Parameter = nullptr;
+IIROIY0*                             TheIIROIY0Parameter = nullptr;
+IIROIX1*                             TheIIROIX1Parameter = nullptr;
+IIROIY1*                             TheIIROIY1Parameter = nullptr;
+IIUseCache*                          TheIIUseCacheParameter = nullptr;
+IIEvaluateNoise*                     TheIIEvaluateNoiseParameter = nullptr;
+IIMRSMinDataFraction*                TheIIMRSMinDataFractionParameter = nullptr;
+IINoGUIMessages*                     TheIINoGUIMessagesParameter = nullptr;
+IIUseFileThreads*                    TheIIUseFileThreadsParameter = nullptr;
+IIFileThreadOverload*                TheIIFileThreadOverloadParameter = nullptr;
 
-IIIntegrationImageId*        TheIIIntegrationImageIdParameter = nullptr;
-IILowRejectionMapImageId*    TheIILowRejectionMapImageIdParameter = nullptr;
-IIHighRejectionMapImageId*   TheIIHighRejectionMapImageIdParameter = nullptr;
-IISlopeMapImageId*           TheIISlopeMapImageIdParameter = nullptr;
-IINumberOfChannels*          TheIINumberOfChannelsParameter = nullptr;
-IINumberOfPixels*            TheIINumberOfPixelsParameter = nullptr;
-IITotalPixels*               TheIITotalPixelsParameter = nullptr;
-IITotalRejectedLowRK*        TheIITotalRejectedLowRKParameter = nullptr;
-IITotalRejectedLowG*         TheIITotalRejectedLowGParameter = nullptr;
-IITotalRejectedLowB*         TheIITotalRejectedLowBParameter = nullptr;
-IITotalRejectedHighRK*       TheIITotalRejectedHighRKParameter = nullptr;
-IITotalRejectedHighG*        TheIITotalRejectedHighGParameter = nullptr;
-IITotalRejectedHighB*        TheIITotalRejectedHighBParameter = nullptr;
-IIFinalNoiseEstimateRK*      TheIIFinalNoiseEstimateRKParameter = nullptr;
-IIFinalNoiseEstimateG*       TheIIFinalNoiseEstimateGParameter = nullptr;
-IIFinalNoiseEstimateB*       TheIIFinalNoiseEstimateBParameter = nullptr;
-IIFinalScaleEstimateRK*      TheIIFinalScaleEstimateRKParameter = nullptr;
-IIFinalScaleEstimateG*       TheIIFinalScaleEstimateGParameter = nullptr;
-IIFinalScaleEstimateB*       TheIIFinalScaleEstimateBParameter = nullptr;
-IIFinalLocationEstimateRK*   TheIIFinalLocationEstimateRKParameter = nullptr;
-IIFinalLocationEstimateG*    TheIIFinalLocationEstimateGParameter = nullptr;
-IIFinalLocationEstimateB*    TheIIFinalLocationEstimateBParameter = nullptr;
-IIReferenceNoiseReductionRK* TheIIReferenceNoiseReductionRKParameter = nullptr;
-IIReferenceNoiseReductionG*  TheIIReferenceNoiseReductionGParameter = nullptr;
-IIReferenceNoiseReductionB*  TheIIReferenceNoiseReductionBParameter = nullptr;
-IIMedianNoiseReductionRK*    TheIIMedianNoiseReductionRKParameter = nullptr;
-IIMedianNoiseReductionG*     TheIIMedianNoiseReductionGParameter = nullptr;
-IIMedianNoiseReductionB*     TheIIMedianNoiseReductionBParameter = nullptr;
-IIReferenceSNRIncrementRK*   TheIIReferenceSNRIncrementRKParameter = nullptr;
-IIReferenceSNRIncrementG*    TheIIReferenceSNRIncrementGParameter = nullptr;
-IIReferenceSNRIncrementB*    TheIIReferenceSNRIncrementBParameter = nullptr;
-IIAverageSNRIncrementRK*     TheIIAverageSNRIncrementRKParameter = nullptr;
-IIAverageSNRIncrementG*      TheIIAverageSNRIncrementGParameter = nullptr;
-IIAverageSNRIncrementB*      TheIIAverageSNRIncrementBParameter = nullptr;
-IIImageData*                 TheIIImageDataParameter = nullptr;
-IIImageWeightRK*             TheIIImageWeightRKParameter = nullptr;
-IIImageWeightG*              TheIIImageWeightGParameter = nullptr;
-IIImageWeightB*              TheIIImageWeightBParameter = nullptr;
-IIImageRejectedLowRK*        TheIIImageRejectedLowRKParameter = nullptr;
-IIImageRejectedLowG*         TheIIImageRejectedLowGParameter = nullptr;
-IIImageRejectedLowB*         TheIIImageRejectedLowBParameter = nullptr;
-IIImageRejectedHighRK*       TheIIImageRejectedHighRKParameter = nullptr;
-IIImageRejectedHighG*        TheIIImageRejectedHighGParameter = nullptr;
-IIImageRejectedHighB*        TheIIImageRejectedHighBParameter = nullptr;
+IIIntegrationImageId*                TheIIIntegrationImageIdParameter = nullptr;
+IILowRejectionMapImageId*            TheIILowRejectionMapImageIdParameter = nullptr;
+IIHighRejectionMapImageId*           TheIIHighRejectionMapImageIdParameter = nullptr;
+IISlopeMapImageId*                   TheIISlopeMapImageIdParameter = nullptr;
+IINumberOfChannels*                  TheIINumberOfChannelsParameter = nullptr;
+IINumberOfPixels*                    TheIINumberOfPixelsParameter = nullptr;
+IITotalPixels*                       TheIITotalPixelsParameter = nullptr;
+IITotalRejectedLowRK*                TheIITotalRejectedLowRKParameter = nullptr;
+IITotalRejectedLowG*                 TheIITotalRejectedLowGParameter = nullptr;
+IITotalRejectedLowB*                 TheIITotalRejectedLowBParameter = nullptr;
+IITotalRejectedHighRK*               TheIITotalRejectedHighRKParameter = nullptr;
+IITotalRejectedHighG*                TheIITotalRejectedHighGParameter = nullptr;
+IITotalRejectedHighB*                TheIITotalRejectedHighBParameter = nullptr;
+IIFinalNoiseEstimateRK*              TheIIFinalNoiseEstimateRKParameter = nullptr;
+IIFinalNoiseEstimateG*               TheIIFinalNoiseEstimateGParameter = nullptr;
+IIFinalNoiseEstimateB*               TheIIFinalNoiseEstimateBParameter = nullptr;
+IIFinalScaleEstimateRK*              TheIIFinalScaleEstimateRKParameter = nullptr;
+IIFinalScaleEstimateG*               TheIIFinalScaleEstimateGParameter = nullptr;
+IIFinalScaleEstimateB*               TheIIFinalScaleEstimateBParameter = nullptr;
+IIFinalLocationEstimateRK*           TheIIFinalLocationEstimateRKParameter = nullptr;
+IIFinalLocationEstimateG*            TheIIFinalLocationEstimateGParameter = nullptr;
+IIFinalLocationEstimateB*            TheIIFinalLocationEstimateBParameter = nullptr;
+IIReferenceNoiseReductionRK*         TheIIReferenceNoiseReductionRKParameter = nullptr;
+IIReferenceNoiseReductionG*          TheIIReferenceNoiseReductionGParameter = nullptr;
+IIReferenceNoiseReductionB*          TheIIReferenceNoiseReductionBParameter = nullptr;
+IIMedianNoiseReductionRK*            TheIIMedianNoiseReductionRKParameter = nullptr;
+IIMedianNoiseReductionG*             TheIIMedianNoiseReductionGParameter = nullptr;
+IIMedianNoiseReductionB*             TheIIMedianNoiseReductionBParameter = nullptr;
+IIReferenceSNRIncrementRK*           TheIIReferenceSNRIncrementRKParameter = nullptr;
+IIReferenceSNRIncrementG*            TheIIReferenceSNRIncrementGParameter = nullptr;
+IIReferenceSNRIncrementB*            TheIIReferenceSNRIncrementBParameter = nullptr;
+IIAverageSNRIncrementRK*             TheIIAverageSNRIncrementRKParameter = nullptr;
+IIAverageSNRIncrementG*              TheIIAverageSNRIncrementGParameter = nullptr;
+IIAverageSNRIncrementB*              TheIIAverageSNRIncrementBParameter = nullptr;
+IIImageData*                         TheIIImageDataParameter = nullptr;
+IIImageWeightRK*                     TheIIImageWeightRKParameter = nullptr;
+IIImageWeightG*                      TheIIImageWeightGParameter = nullptr;
+IIImageWeightB*                      TheIIImageWeightBParameter = nullptr;
+IIImageRejectedLowRK*                TheIIImageRejectedLowRKParameter = nullptr;
+IIImageRejectedLowG*                 TheIIImageRejectedLowGParameter = nullptr;
+IIImageRejectedLowB*                 TheIIImageRejectedLowBParameter = nullptr;
+IIImageRejectedHighRK*               TheIIImageRejectedHighRKParameter = nullptr;
+IIImageRejectedHighG*                TheIIImageRejectedHighGParameter = nullptr;
+IIImageRejectedHighB*                TheIIImageRejectedHighBParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -987,6 +993,148 @@ IsoString IIReportRangeRejection::Id() const
 bool IIReportRangeRejection::DefaultValue() const
 {
    return false;
+}
+
+// ----------------------------------------------------------------------------
+
+IILargeScaleClipLow::IILargeScaleClipLow( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheIILargeScaleClipLowParameter = this;
+}
+
+IsoString IILargeScaleClipLow::Id() const
+{
+   return "largeScaleClipLow";
+}
+
+bool IILargeScaleClipLow::DefaultValue() const
+{
+   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+IILargeScaleClipLowProtectedLayers::IILargeScaleClipLowProtectedLayers( MetaProcess* P ) : MetaInt32( P )
+{
+   TheIILargeScaleClipLowProtectedLayersParameter = this;
+}
+
+IsoString IILargeScaleClipLowProtectedLayers::Id() const
+{
+   return "largeScaleClipLowProtectedLayers";
+}
+
+double IILargeScaleClipLowProtectedLayers::DefaultValue() const
+{
+   return 2;
+}
+
+double IILargeScaleClipLowProtectedLayers::MinimumValue() const
+{
+   return 1;
+}
+
+double IILargeScaleClipLowProtectedLayers::MaximumValue() const
+{
+   return 6;
+}
+
+// ----------------------------------------------------------------------------
+
+IILargeScaleClipLowGrowth::IILargeScaleClipLowGrowth( MetaProcess* P ) : MetaInt32( P )
+{
+   TheIILargeScaleClipLowGrowthParameter = this;
+}
+
+IsoString IILargeScaleClipLowGrowth::Id() const
+{
+   return "largeScaleClipLowGrowth";
+}
+
+double IILargeScaleClipLowGrowth::DefaultValue() const
+{
+   return 2;
+}
+
+double IILargeScaleClipLowGrowth::MinimumValue() const
+{
+   return 1;
+}
+
+double IILargeScaleClipLowGrowth::MaximumValue() const
+{
+   return 7;
+}
+
+// ----------------------------------------------------------------------------
+
+IILargeScaleClipHigh::IILargeScaleClipHigh( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheIILargeScaleClipHighParameter = this;
+}
+
+IsoString IILargeScaleClipHigh::Id() const
+{
+   return "largeScaleClipHigh";
+}
+
+bool IILargeScaleClipHigh::DefaultValue() const
+{
+   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+IILargeScaleClipHighProtectedLayers::IILargeScaleClipHighProtectedLayers( MetaProcess* P ) : MetaInt32( P )
+{
+   TheIILargeScaleClipHighProtectedLayersParameter = this;
+}
+
+IsoString IILargeScaleClipHighProtectedLayers::Id() const
+{
+   return "largeScaleClipHighProtectedLayers";
+}
+
+double IILargeScaleClipHighProtectedLayers::DefaultValue() const
+{
+   return 2;
+}
+
+double IILargeScaleClipHighProtectedLayers::MinimumValue() const
+{
+   return 1;
+}
+
+double IILargeScaleClipHighProtectedLayers::MaximumValue() const
+{
+   return 6;
+}
+
+// ----------------------------------------------------------------------------
+
+IILargeScaleClipHighGrowth::IILargeScaleClipHighGrowth( MetaProcess* P ) : MetaInt32( P )
+{
+   TheIILargeScaleClipHighGrowthParameter = this;
+}
+
+IsoString IILargeScaleClipHighGrowth::Id() const
+{
+   return "largeScaleClipHighGrowth";
+}
+
+double IILargeScaleClipHighGrowth::DefaultValue() const
+{
+   return 2;
+}
+
+double IILargeScaleClipHighGrowth::MinimumValue() const
+{
+   return 1;
+}
+
+double IILargeScaleClipHighGrowth::MaximumValue() const
+{
+   return 7;
 }
 
 // ----------------------------------------------------------------------------

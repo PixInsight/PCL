@@ -51,9 +51,9 @@
 // ----------------------------------------------------------------------------
 
 #define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     14
+#define MODULE_VERSION_MINOR     15
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0390
+#define MODULE_VERSION_BUILD     0397
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017

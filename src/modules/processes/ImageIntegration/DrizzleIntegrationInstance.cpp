@@ -1221,9 +1221,8 @@ private:
     */
    bool Reject( const Point& p, int c ) const
    {
-      // Assume m_decoder.HasRejectionData() == true
-      const UInt8Image& map = m_decoder.RejectionMap();
-      return map.Includes( p ) && map( p, c ) != 0;
+      return m_decoder.RejectionMap().Includes( p )
+          && m_decoder.RejectionMap()( p, c ) != 0;
    }
 
    /*
@@ -1456,7 +1455,7 @@ void DrizzleIntegrationEngine::Perform()
 
                cfaIndex = CFAIndex( cfaPattern );
 
-               console.WriteLn(      "CFA pattern          : " + cfaPattern );
+               console.WriteLn( "CFA pattern   : " + cfaPattern );
 
                if ( m_numberOfChannels < 3 )
                   throw Error( String( "CFA mosaiced frames imply integration of an RGB color image, but this file " ) +

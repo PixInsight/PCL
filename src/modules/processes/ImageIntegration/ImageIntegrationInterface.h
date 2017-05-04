@@ -220,6 +220,26 @@ private:
          NumericControl    CCDReadNoise_NumericControl;
          NumericControl    CCDScaleNoise_NumericControl;
 
+      SectionBar        LargeScaleRejection_SectionBar;
+      Control           LargeScaleRejection_Control;
+      VerticalSizer     LargeScaleRejection_Sizer;
+         HorizontalSizer   RejectLargeScaleLow_Sizer;
+            CheckBox          RejectLargeScaleLow_CheckBox;
+         HorizontalSizer   SmallScaleLayersLow_Sizer;
+            Label             SmallScaleLayersLow_Label;
+            SpinBox           SmallScaleLayersLow_SpinBox;
+         HorizontalSizer   GrowthLow_Sizer;
+            Label             GrowthLow_Label;
+            SpinBox           GrowthLow_SpinBox;
+         HorizontalSizer   RejectLargeScaleHigh_Sizer;
+            CheckBox          RejectLargeScaleHigh_CheckBox;
+         HorizontalSizer   SmallScaleLayersHigh_Sizer;
+            Label             SmallScaleLayersHigh_Label;
+            SpinBox           SmallScaleLayersHigh_SpinBox;
+         HorizontalSizer   GrowthHigh_Sizer;
+            Label             GrowthHigh_Label;
+            SpinBox           GrowthHigh_SpinBox;
+
       SectionBar        ROI_SectionBar;
       Control           ROI_Control;
       VerticalSizer     ROI_Sizer;

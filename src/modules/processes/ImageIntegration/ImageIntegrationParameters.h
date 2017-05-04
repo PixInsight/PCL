@@ -610,6 +610,98 @@ extern IIReportRangeRejection* TheIIReportRangeRejectionParameter;
 
 // ----------------------------------------------------------------------------
 
+class IILargeScaleClipLow : public MetaBoolean
+{
+public:
+
+   IILargeScaleClipLow( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern IILargeScaleClipLow* TheIILargeScaleClipLowParameter;
+
+// ----------------------------------------------------------------------------
+
+class IILargeScaleClipLowProtectedLayers : public MetaInt32
+{
+public:
+
+   IILargeScaleClipLowProtectedLayers( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern IILargeScaleClipLowProtectedLayers* TheIILargeScaleClipLowProtectedLayersParameter;
+
+// ----------------------------------------------------------------------------
+
+class IILargeScaleClipLowGrowth : public MetaInt32
+{
+public:
+
+   IILargeScaleClipLowGrowth( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern IILargeScaleClipLowGrowth* TheIILargeScaleClipLowGrowthParameter;
+
+// ----------------------------------------------------------------------------
+
+class IILargeScaleClipHigh : public MetaBoolean
+{
+public:
+
+   IILargeScaleClipHigh( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern IILargeScaleClipHigh* TheIILargeScaleClipHighParameter;
+
+// ----------------------------------------------------------------------------
+
+class IILargeScaleClipHighProtectedLayers : public MetaInt32
+{
+public:
+
+   IILargeScaleClipHighProtectedLayers( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern IILargeScaleClipHighProtectedLayers* TheIILargeScaleClipHighProtectedLayersParameter;
+
+// ----------------------------------------------------------------------------
+
+class IILargeScaleClipHighGrowth : public MetaInt32
+{
+public:
+
+   IILargeScaleClipHighGrowth( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern IILargeScaleClipHighGrowth* TheIILargeScaleClipHighGrowthParameter;
+
+// ----------------------------------------------------------------------------
+
 class IIGenerate64BitResult : public MetaBoolean
 {
 public:

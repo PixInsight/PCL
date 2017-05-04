@@ -140,15 +140,22 @@ private:
    float       p_ccdReadNoise;  // CCD read noise in e-
    float       p_ccdScaleNoise; // CCD scale noise (or sensitivity noise), dimensionless
 
-   pcl_bool    p_clipLow;       // clip low pixels
-   pcl_bool    p_clipHigh;      // clip high pixels
+   pcl_bool    p_clipLow;       // reject low pixels?
+   pcl_bool    p_clipHigh;      // reject high pixels?
 
-   pcl_bool    p_rangeClipLow;  // perform low range clipping?
-   float       p_rangeLow;      // low range clipping point
-   pcl_bool    p_rangeClipHigh; // perform high range clipping?
-   float       p_rangeHigh;     // high range clipping point
+   pcl_bool    p_rangeClipLow;  // perform low range rejection?
+   float       p_rangeLow;      // low range rejection point
+   pcl_bool    p_rangeClipHigh; // perform high range rejection?
+   float       p_rangeHigh;     // high range rejection point
    pcl_bool    p_reportRangeRejection; // count range rejected pixels in rejection summaries
    pcl_bool    p_mapRangeRejection;    // include range rejected pixels in rejection maps
+
+   pcl_bool    p_largeScaleClipLow;       // perform low large-scale rejection?
+   int32       p_largeScaleClipLowProtectedLayers; // low large-scale rejection, protected small-scale layers
+   int32       p_largeScaleClipLowGrowth; // low large-scale rejection, growth of large-scale structures
+   pcl_bool    p_largeScaleClipHigh;      // perform high large-scale rejection?
+   int32       p_largeScaleClipHighProtectedLayers;// high large-scale rejection, protected small-scale layers
+   int32       p_largeScaleClipHighGrowth;// high large-scale rejection, growth of large-scale structures
 
    pcl_bool    p_generate64BitResult;     // generate a 64-bit floating point result instead of 32-bit
    pcl_bool    p_generateRejectionMaps;   // generate pixel rejection map images
@@ -297,6 +304,9 @@ private:
    friend class DataLoaderEngine;
    friend class RejectionEngine;
    friend class IntegrationEngine;
+   friend class MapIntegrationEngine;
+   friend class RejectionMapGenerationEngine;
+   friend class LargeScaleRejectionMapGenerationEngine;
    friend class ImageIntegrationInterface;
 };
 

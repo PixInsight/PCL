@@ -434,6 +434,34 @@ void ImageIntegrationInterface::UpdateRejectionControls()
 
    GUI->RangeHigh_NumericControl.Enable( instance.p_rangeClipHigh );
    GUI->RangeHigh_NumericControl.SetValue( instance.p_rangeHigh );
+
+   GUI->LargeScaleRejection_Control.Enable( doesRejection );
+
+   GUI->RejectLargeScaleLow_CheckBox.SetChecked( instance.p_largeScaleClipLow );
+   GUI->RejectLargeScaleLow_CheckBox.Enable( instance.p_clipLow );
+
+   GUI->SmallScaleLayersLow_Label.Enable( instance.p_clipLow && instance.p_largeScaleClipLow );
+
+   GUI->SmallScaleLayersLow_SpinBox.SetValue( instance.p_largeScaleClipLowProtectedLayers );
+   GUI->SmallScaleLayersLow_SpinBox.Enable( instance.p_clipLow && instance.p_largeScaleClipLow );
+
+   GUI->GrowthLow_Label.Enable( instance.p_clipLow && instance.p_largeScaleClipLow );
+
+   GUI->GrowthLow_SpinBox.SetValue( instance.p_largeScaleClipLowGrowth );
+   GUI->GrowthLow_SpinBox.Enable( instance.p_clipLow && instance.p_largeScaleClipLow );
+
+   GUI->RejectLargeScaleHigh_CheckBox.SetChecked( instance.p_largeScaleClipHigh );
+   GUI->RejectLargeScaleHigh_CheckBox.Enable( instance.p_clipHigh );
+
+   GUI->SmallScaleLayersHigh_Label.Enable( instance.p_clipHigh && instance.p_largeScaleClipHigh );
+
+   GUI->SmallScaleLayersHigh_SpinBox.SetValue( instance.p_largeScaleClipHighProtectedLayers );
+   GUI->SmallScaleLayersHigh_SpinBox.Enable( instance.p_clipHigh && instance.p_largeScaleClipHigh );
+
+   GUI->GrowthHigh_Label.Enable( instance.p_clipHigh && instance.p_largeScaleClipHigh );
+
+   GUI->GrowthHigh_SpinBox.SetValue( instance.p_largeScaleClipHighGrowth );
+   GUI->GrowthHigh_SpinBox.Enable( instance.p_clipHigh && instance.p_largeScaleClipHigh );
 }
 
 // ----------------------------------------------------------------------------
@@ -807,6 +835,14 @@ void ImageIntegrationInterface::__Rejection_SpinValueUpdated( SpinBox& sender, i
       instance.p_minMaxLow = value;
    else if ( sender == GUI->MinMaxHigh_SpinBox )
       instance.p_minMaxHigh = value;
+   else if ( sender == GUI->SmallScaleLayersLow_SpinBox )
+      instance.p_largeScaleClipLowProtectedLayers = value;
+   else if ( sender == GUI->GrowthLow_SpinBox )
+      instance.p_largeScaleClipLowGrowth = value;
+   else if ( sender == GUI->SmallScaleLayersHigh_SpinBox )
+      instance.p_largeScaleClipHighProtectedLayers = value;
+   else if ( sender == GUI->GrowthHigh_SpinBox )
+      instance.p_largeScaleClipHighGrowth = value;
 }
 
 // ----------------------------------------------------------------------------
@@ -870,6 +906,16 @@ void ImageIntegrationInterface::__Rejection_Click( Button& sender, bool checked 
       instance.p_reportRangeRejection = checked;
    else if ( sender == GUI->MapRangeRejection_CheckBox )
       instance.p_mapRangeRejection = checked;
+   else if ( sender == GUI->RejectLargeScaleLow_CheckBox )
+   {
+      instance.p_largeScaleClipLow = checked;
+      UpdateRejectionControls();
+   }
+   else if ( sender == GUI->RejectLargeScaleHigh_CheckBox )
+   {
+      instance.p_largeScaleClipHigh = checked;
+      UpdateRejectionControls();
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -1869,6 +1915,132 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
 
    //
 
+   LargeScaleRejection_SectionBar.SetTitle( "Large-Scale Pixel Rejection" );
+   LargeScaleRejection_SectionBar.SetSection( LargeScaleRejection_Control );
+   LargeScaleRejection_SectionBar.SetToolTip( "<p>Large-scale pixel rejection uses multiscale analysis techniques to detect structures "
+      "of rejected pixels. These structures are grown to cover borderline regions where high uncertainty may lead to insufficient rejection "
+      "by statistical pixel rejection algorithms.</p>"
+      "<p>This feature is very efficient to improve rejection of plane and satellite trails and flashes. With large-scale high pixel rejection "
+      "enabled, you can be sure these artifacts will be correctly rejected without needing to reduce clipping factors, which in turn allows "
+      "for more accurate rejection with inclusion of more signal in the integrated result. Large-scale low rejection may be useful to remove "
+      "dust motes and other relatively large dark artifacts.</p>" );
+   LargeScaleRejection_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&ImageIntegrationInterface::__ToggleSection, w );
+
+   RejectLargeScaleLow_CheckBox.SetText( "Reject low large-scale structures" );
+   RejectLargeScaleLow_CheckBox.SetToolTip( "<p>Enable large-scale rejection for low pixels. A low pixel sample has a value below the "
+      "estimated central value of its pixel stack.</p>" );
+   RejectLargeScaleLow_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Rejection_Click, w );
+
+   RejectLargeScaleLow_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
+   RejectLargeScaleLow_Sizer.Add( RejectLargeScaleLow_CheckBox );
+   RejectLargeScaleLow_Sizer.AddStretch();
+
+   const char* smallScaleLayersLowToolTip = "<p>Number of small-scale layers that will be excluded from large-scale low pixel "
+   "rejection maps. Increase this value to detect larger groups of contiguous rejected pixels. Excluding too few layers may lead to "
+   "excessive (unnecessary) large-scale rejection. Excluding too many layers may lead to insufficient large-scale rejection. The "
+   "default value of two layers is generally a good compromise.</p>";
+
+   SmallScaleLayersLow_Label.SetText( "Layers (low):" );
+   SmallScaleLayersLow_Label.SetFixedWidth( labelWidth1 );
+   SmallScaleLayersLow_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   SmallScaleLayersLow_Label.SetToolTip( smallScaleLayersLowToolTip );
+
+   SmallScaleLayersLow_SpinBox.SetRange( int( TheIILargeScaleClipHighProtectedLayersParameter->MinimumValue() ),
+                                         int( TheIILargeScaleClipHighProtectedLayersParameter->MaximumValue() ) );
+   SmallScaleLayersLow_SpinBox.SetToolTip( smallScaleLayersLowToolTip );
+   SmallScaleLayersLow_SpinBox.SetFixedWidth( editWidth2 );
+   SmallScaleLayersLow_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&ImageIntegrationInterface::__Rejection_SpinValueUpdated, w );
+
+   SmallScaleLayersLow_Sizer.SetSpacing( 4 );
+   SmallScaleLayersLow_Sizer.Add( SmallScaleLayersLow_Label );
+   SmallScaleLayersLow_Sizer.Add( SmallScaleLayersLow_SpinBox );
+   SmallScaleLayersLow_Sizer.AddStretch();
+
+   const char* growthLowToolTip = "<p>Growth of large-scale pixel rejection structures. Increase to extend rejection to more "
+   "adjacent pixels. Excessive growth will reject too many pixels unnecessarily around large-scale structures, such as plane trails. "
+   "Insufficient growth will leave unrejected pixels on high-uncertainty regions. The default value of two pixels is generally a "
+   "good option.</p>";
+
+   GrowthLow_Label.SetText( "Growth (low):" );
+   GrowthLow_Label.SetFixedWidth( labelWidth1 );
+   GrowthLow_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   GrowthLow_Label.SetToolTip( growthLowToolTip );
+
+   GrowthLow_SpinBox.SetRange( int( TheIILargeScaleClipHighGrowthParameter->MinimumValue() ),
+                               int( TheIILargeScaleClipHighGrowthParameter->MaximumValue() ) );
+   GrowthLow_SpinBox.SetToolTip( growthLowToolTip );
+   GrowthLow_SpinBox.SetFixedWidth( editWidth2 );
+   GrowthLow_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&ImageIntegrationInterface::__Rejection_SpinValueUpdated, w );
+
+   GrowthLow_Sizer.SetSpacing( 4 );
+   GrowthLow_Sizer.Add( GrowthLow_Label );
+   GrowthLow_Sizer.Add( GrowthLow_SpinBox );
+   GrowthLow_Sizer.AddStretch();
+
+   RejectLargeScaleHigh_CheckBox.SetText( "Reject high large-scale structures" );
+   RejectLargeScaleHigh_CheckBox.SetToolTip( "<p>Enable large-scale rejection for high pixels. A high pixel sample has a value above the "
+      "estimated central value of its pixel stack.</p>" );
+   RejectLargeScaleHigh_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Rejection_Click, w );
+
+   RejectLargeScaleHigh_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
+   RejectLargeScaleHigh_Sizer.Add( RejectLargeScaleHigh_CheckBox );
+   RejectLargeScaleHigh_Sizer.AddStretch();
+
+   const char* smallScaleLayersHighToolTip = "<p>Number of small-scale layers that will be excluded from large-scale high pixel "
+   "rejection maps. Increase this value to detect larger groups of contiguous rejected pixels. Excluding too few layers may lead to "
+   "excessive (unnecessary) large-scale rejection. Excluding too many layers may lead to insufficient large-scale rejection. The "
+   "default value of two layers is generally a good compromise.</p>";
+
+   SmallScaleLayersHigh_Label.SetText( "Layers (high):" );
+   SmallScaleLayersHigh_Label.SetFixedWidth( labelWidth1 );
+   SmallScaleLayersHigh_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   SmallScaleLayersHigh_Label.SetToolTip( smallScaleLayersHighToolTip );
+
+   SmallScaleLayersHigh_SpinBox.SetRange( int( TheIILargeScaleClipHighProtectedLayersParameter->MinimumValue() ),
+                                         int( TheIILargeScaleClipHighProtectedLayersParameter->MaximumValue() ) );
+   SmallScaleLayersHigh_SpinBox.SetToolTip( smallScaleLayersHighToolTip );
+   SmallScaleLayersHigh_SpinBox.SetFixedWidth( editWidth2 );
+   SmallScaleLayersHigh_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&ImageIntegrationInterface::__Rejection_SpinValueUpdated, w );
+
+   SmallScaleLayersHigh_Sizer.SetSpacing( 4 );
+   SmallScaleLayersHigh_Sizer.Add( SmallScaleLayersHigh_Label );
+   SmallScaleLayersHigh_Sizer.Add( SmallScaleLayersHigh_SpinBox );
+   SmallScaleLayersHigh_Sizer.AddStretch();
+
+   const char* growthHighToolTip = "<p>Growth of large-scale pixel rejection structures. Increase to extend rejection to more "
+   "adjacent pixels. Excessive growth will reject too many pixels unnecessarily around large-scale structures, such as plane trails. "
+   "Insufficient growth will leave unrejected pixels on high-uncertainty regions. The default value of two pixels is generally a "
+   "good option.</p>";
+
+   GrowthHigh_Label.SetText( "Growth (high):" );
+   GrowthHigh_Label.SetFixedWidth( labelWidth1 );
+   GrowthHigh_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   GrowthHigh_Label.SetToolTip( growthHighToolTip );
+
+   GrowthHigh_SpinBox.SetRange( int( TheIILargeScaleClipHighGrowthParameter->MinimumValue() ),
+                               int( TheIILargeScaleClipHighGrowthParameter->MaximumValue() ) );
+   GrowthHigh_SpinBox.SetToolTip( growthHighToolTip );
+   GrowthHigh_SpinBox.SetFixedWidth( editWidth2 );
+   GrowthHigh_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&ImageIntegrationInterface::__Rejection_SpinValueUpdated, w );
+
+   GrowthHigh_Sizer.SetSpacing( 4 );
+   GrowthHigh_Sizer.Add( GrowthHigh_Label );
+   GrowthHigh_Sizer.Add( GrowthHigh_SpinBox );
+   GrowthHigh_Sizer.AddStretch();
+
+   LargeScaleRejection_Sizer.SetSpacing( 4 );
+   LargeScaleRejection_Sizer.Add( RejectLargeScaleLow_Sizer );
+   LargeScaleRejection_Sizer.Add( SmallScaleLayersLow_Sizer );
+   LargeScaleRejection_Sizer.Add( GrowthLow_Sizer );
+   LargeScaleRejection_Sizer.Add( RejectLargeScaleHigh_Sizer );
+   LargeScaleRejection_Sizer.Add( SmallScaleLayersHigh_Sizer );
+   LargeScaleRejection_Sizer.Add( GrowthHigh_Sizer );
+
+   LargeScaleRejection_Control.SetSizer( LargeScaleRejection_Sizer );
+   LargeScaleRejection_Control.AdjustToContents();
+
+   //
+
    ROI_SectionBar.SetTitle( "Region of Interest" );
    ROI_SectionBar.EnableTitleCheckBox();
    ROI_SectionBar.SetSection( ROI_Control );
@@ -1979,6 +2151,8 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    Global_Sizer.Add( Rejection2_Control );
    Global_Sizer.Add( Rejection3_SectionBar );
    Global_Sizer.Add( Rejection3_Control );
+   Global_Sizer.Add( LargeScaleRejection_SectionBar );
+   Global_Sizer.Add( LargeScaleRejection_Control );
    Global_Sizer.Add( ROI_SectionBar );
    Global_Sizer.Add( ROI_Control );
 
@@ -1989,6 +2163,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    Rejection1_Control.Hide();
    Rejection2_Control.Hide();
    Rejection3_Control.Hide();
+   LargeScaleRejection_Control.Hide();
    ROI_Control.Hide();
 
    w.AdjustToContents();

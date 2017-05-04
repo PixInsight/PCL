@@ -105,6 +105,12 @@ ImageIntegrationProcess::ImageIntegrationProcess() : MetaProcess()
    new IIRangeHigh( this );
    new IIMapRangeRejection( this );
    new IIReportRangeRejection( this );
+   new IILargeScaleClipLow( this );
+   new IILargeScaleClipLowProtectedLayers( this );
+   new IILargeScaleClipLowGrowth( this );
+   new IILargeScaleClipHigh( this );
+   new IILargeScaleClipHighProtectedLayers( this );
+   new IILargeScaleClipHighGrowth( this );
    new IIGenerate64BitResult( this );
    new IIGenerateRejectionMaps( this );
    new IIGenerateIntegratedImage( this );

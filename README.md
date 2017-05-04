@@ -82,11 +82,11 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
    Makefiles for macOS >= 10.9 with clang C++ compiler/Xcode version >= 5.0
 </dd></dl>
 
-**[PCL]/src/modules/file-formats/[module_name]/windows/vc12**<br/>
-**[PCL]/src/modules/processes/[module_name]/windows/vc12**
+**[PCL]/src/modules/file-formats/[module_name]/windows/vc14**<br/>
+**[PCL]/src/modules/processes/[module_name]/windows/vc14**
 
 <dl><dd>
-   Project files (.vcxproj) for Microsoft Visual C++ 2013
+   Project files (.vcxproj) for Microsoft Visual C++ 2015
 </dd></dl>
 
 **[PCL]/src/pcl**

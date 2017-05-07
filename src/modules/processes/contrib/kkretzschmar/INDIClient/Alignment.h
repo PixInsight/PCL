@@ -89,17 +89,18 @@ struct SyncDataPoint {
  */
 class AlignmentModel {
 protected:
-	Console m_console;
+	Console  m_console;
 
 public:
 
+	AlignmentModel(){}
 	virtual ~AlignmentModel(){}
 
 	virtual void Apply(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) = 0;
 
 	virtual void ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) = 0;
 
-	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide) = 0;
+	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray) = 0;
 
 	virtual void writeObject(const String& fileName) = 0;
 
@@ -152,7 +153,7 @@ public:
 	static const size_t modelParameters = 11;
   public:
 
-	GeneralAnalyticalPointingModel(double siteLatitude,uint32_t modelConfig) : AlignmentModel (), m_numOfModelParameters(modelParameters), m_siteLatitude(siteLatitude * Const<double>::rad()), m_pointingModelWest(nullptr), m_pointingModelEast(nullptr),m_modelConfig(modelConfig)
+	GeneralAnalyticalPointingModel(double siteLatitude, uint32_t modelConfig, bool modelEachPierSide) : AlignmentModel(), m_modelEachPierSide(modelEachPierSide), m_numOfModelParameters(modelParameters), m_siteLatitude(siteLatitude * Const<double>::rad()), m_pointingModelWest(nullptr), m_pointingModelEast(nullptr),m_modelConfig(modelConfig)
   	{
 		m_pointingModelWest = new Vector(m_numOfModelParameters);
 		m_pointingModelEast = new Vector(m_numOfModelParameters);
@@ -168,11 +169,14 @@ public:
 
  	virtual void ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec);
 
- 	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide);
+ 	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray);
 
  	// siteLatidude given in degrees
  	static AlignmentModel* create( double siteLatitude, uint32_t modelConfig){
- 		return new GeneralAnalyticalPointingModel(siteLatitude,modelConfig);
+ 		return new GeneralAnalyticalPointingModel(siteLatitude, modelConfig, false);
+ 	}
+ 	static AlignmentModel* create( double siteLatitude, uint32_t modelConfig, bool modelEachPierSide){
+ 		return new GeneralAnalyticalPointingModel(siteLatitude, modelConfig, modelEachPierSide);
  	}
 
  	virtual void writeObject(const String& fileName);
@@ -185,7 +189,9 @@ public:
 
  	void evaluateBasis(Matrix& basisMatrix, double hourAngle, double dec);
  	void printParameterVector(Vector* parameters);
+ 	void fitModelForPierSide(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide);
 
+ 	bool   m_modelEachPierSide = false;
  	size_t m_numOfModelParameters;
  	double m_siteLatitude; // in radians
 

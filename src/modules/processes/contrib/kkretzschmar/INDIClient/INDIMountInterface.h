@@ -237,6 +237,8 @@ private:
 	  TabBox				AlignmentConfig_TabBox;
 		Control             AnalyticalAlignment_ConfigControl;
           VerticalSizer       MountAlignmentConfig_Sizer;
+
+            LABELED_CHECKBOX(ModelPierSide);
             LABELED_CHECKBOX(Offset);
             LABELED_CHECKBOX(Collimation);
             LABELED_CHECKBOX(NonPerpendicular);
@@ -438,6 +440,7 @@ public:
             ComboBox          SlewSpeed_ComboBox;
 
 
+      bool m_modelBothPierSides               = true;
       bool m_alignmentConfigOffset            = true;
       bool m_alignmentConfigCollimation       = true;
       bool m_alignmentConfigNonPerpendicular  = true;

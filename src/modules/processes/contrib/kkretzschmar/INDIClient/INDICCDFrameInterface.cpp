@@ -912,7 +912,7 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    ExternalFilterDevice_Combo.AddItem( "<No filter wheel>" );
    ExternalFilterDevice_Combo.SetToolTip( externalFilterDeviceToolTip );
    ExternalFilterDevice_Combo.Disable();
-   //ExternalFilterDevice_Combo.OnItemSelected( (ComboBox::item_event_handler)&INDICCDFrameInterface::e_ItemSelected, w );
+   ExternalFilterDevice_Combo.OnItemSelected( (ComboBox::item_event_handler)&INDICCDFrameInterface::e_ItemSelected, w );
 
    ExternalFilterDevice_Sizer.SetSpacing( 4 );
    ExternalFilterDevice_Sizer.Add( ExternalFilterDevice_Label );
@@ -1251,7 +1251,7 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
                indi->SendNewPropertyItem( m_device, "COOLER_CONNECTION", "INDI_SWITCH", "CONNECT_COOLER", "ON", true/*async*/ );
 
          // load configuration on server
-         INDIClient::TheClient()->SendNewPropertyItem( m_device, "CONFIG_PROCESS", "INDI_SWITCH", "CONFIG_LOAD", "ON");
+         indi->SendNewPropertyItem( m_device, "CONFIG_PROCESS", "INDI_SWITCH", "CONFIG_LOAD", "ON");
 
       }
    }
@@ -1280,13 +1280,12 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
    {
       indi->MaybeSendNewPropertyItem( m_device, "CCD_FRAME_TYPE", "INDI_SWITCH",
                                       INDICCDFrameInstance::CCDFrameTypePropertyString( itemIndex ), "ON", true/*async*/ );
-   } else if (sender == GUI->ExternalFilterDevice_Combo)
+   }
+   else if ( sender == GUI->ExternalFilterDevice_Combo )
    {
-	   String externalFilterWheelDeviceName = GUI->ExternalFilterDevice_Combo.ItemText(GUI->ExternalFilterDevice_Combo.CurrentItem());
-
+	   String externalFilterWheelDeviceName = sender.ItemText( itemIndex ).Trimmed();
 	   // load configuration on server
-	   INDIClient::TheClient()->SendNewPropertyItem( externalFilterWheelDeviceName, "CONFIG_PROCESS", "INDI_SWITCH", "CONFIG_LOAD", "ON");
-
+	   indi->SendNewPropertyItem( externalFilterWheelDeviceName, "CONFIG_PROCESS", "INDI_SWITCH", "CONFIG_LOAD", "ON", true/*async*/  );
    }
 }
 

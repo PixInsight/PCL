@@ -243,7 +243,7 @@ void GeneralAnalyticalPointingModel::Apply(double& hourAngleCor, double& decCor,
 	// compute correction vector
 	Vector alignCorrection(2);
 
-	Vector* modelParameters = hourAngle >= 0 ? m_pointingModelWest : m_pointingModelEast;
+	Vector* modelParameters = (!m_modelEachPierSide || hourAngle >= 0 ) ? m_pointingModelWest : m_pointingModelEast;
 
 	alignCorrection = (*modelParameters)[0] * basisVectors.ColumnVector(0);
 	for (size_t modelIndex = 1; modelIndex < m_numOfModelParameters; modelIndex++){
@@ -262,7 +262,7 @@ void GeneralAnalyticalPointingModel::ApplyInverse(double& hourAngleCor, double& 
 	// compute correction vector
 	Vector alignCorrection(2);
 
-	Vector* modelParameters = hourAngle >= 0 ? m_pointingModelWest : m_pointingModelEast;
+	Vector* modelParameters = (!m_modelEachPierSide || hourAngle >= 0) ? m_pointingModelWest : m_pointingModelEast;
 
 	alignCorrection = (*modelParameters)[0] * basisVectors.ColumnVector(0);
 	for (size_t modelIndex = 1; modelIndex < m_numOfModelParameters; modelIndex++){
@@ -273,7 +273,17 @@ void GeneralAnalyticalPointingModel::ApplyInverse(double& hourAngleCor, double& 
 	decCor        = dec + alignCorrection[1];
 }
 
-void GeneralAnalyticalPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide)
+void GeneralAnalyticalPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArray) {
+
+	if (!m_modelEachPierSide){
+		fitModelForPierSide(syncPointArray, IMCPierSide::None);
+	} else {
+		fitModelForPierSide(syncPointArray, IMCPierSide::West);
+		fitModelForPierSide(syncPointArray, IMCPierSide::East);
+	}
+}
+
+void GeneralAnalyticalPointingModel::fitModelForPierSide(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide)
 {
 
 	// Count data points for each pier side
@@ -331,7 +341,7 @@ void GeneralAnalyticalPointingModel::fitModel(const Array<SyncDataPoint>& syncPo
 		*m_pointingModelWest = pseudoInverse * *meauredDisplacements;
 
 	}
-	if (pierSide == IMCPierSide::None || pierSide == IMCPierSide::East) {
+	if (pierSide == IMCPierSide::East) {
 		*m_pointingModelEast = pseudoInverse * *meauredDisplacements;
 	}
 	delete designMatrices;
@@ -344,8 +354,8 @@ void GeneralAnalyticalPointingModel::writeObject(const String& fileName)
 	// save model parameters to disk
 	IsoString fileContent;
 
-	// west
-	fileContent.Append(IsoString().Format("%d,", IMCPierSide::West));
+	// west (or pierSide == None)
+	fileContent.Append(IsoString().Format("%d,", m_modelEachPierSide ? IMCPierSide::West : IMCPierSide::None));
 	for (size_t i=0; i < this->m_numOfModelParameters; ++i){
 		if (i < m_numOfModelParameters-1)
 			fileContent.Append(IsoString().Format("%f,",(*m_pointingModelWest)[i]));
@@ -356,15 +366,16 @@ void GeneralAnalyticalPointingModel::writeObject(const String& fileName)
 
 
 	// east
-	fileContent.Append(IsoString().Format("%d,",IMCPierSide::East));
-	for (size_t i=0; i < this->m_numOfModelParameters; ++i){
-		if (i < m_numOfModelParameters-1)
-			fileContent.Append(IsoString().Format("%f,",(*m_pointingModelEast)[i]));
-		else
-			fileContent.Append(IsoString().Format("%f",(*m_pointingModelEast)[i]));
+	if (m_modelEachPierSide) {
+		fileContent.Append(IsoString().Format("%d,",IMCPierSide::East));
+		for (size_t i=0; i < this->m_numOfModelParameters; ++i){
+			if (i < m_numOfModelParameters-1)
+				fileContent.Append(IsoString().Format("%f,",(*m_pointingModelEast)[i]));
+			else
+				fileContent.Append(IsoString().Format("%f",(*m_pointingModelEast)[i]));
+		}
+		fileContent.Append("\n");
 	}
-	fileContent.Append("\n");
-
 	// model config
 	fileContent.Append(IsoString().Format("%d\n", m_modelConfig));
 	// geographic site latitude
@@ -382,6 +393,7 @@ void GeneralAnalyticalPointingModel::readObject(const String& fileName)
 {
 	IsoStringList modelParameterList = File::ReadLines(fileName);
 
+
 	size_t lastIndex = 0;
 	for (size_t i = 0 ; i < modelParameterList.Length(); ++i) {
 		lastIndex=i;
@@ -397,7 +409,7 @@ void GeneralAnalyticalPointingModel::readObject(const String& fileName)
 				(*m_pointingModelWest)[j] = tokens[j+1].ToDouble();
 			}
 		}
-		if ((pcl_enum) tokens[0].ToInt() == IMCPierSide::None || (pcl_enum) tokens[0].ToInt() == IMCPierSide::East){
+		if ((pcl_enum) tokens[0].ToInt() == IMCPierSide::East){
 			// east
 			for (size_t j = 0; j < m_numOfModelParameters; ++j){
 				(*m_pointingModelEast)[j] = tokens[j+1].ToDouble();
@@ -435,10 +447,14 @@ void GeneralAnalyticalPointingModel::printParameters() {
 	m_console.NoteLn( "<end><cbr><br> Analytical Pointing Model Parameters" );
 	m_console.WriteLn("The parameters refer to the general analytical telescope pointing model as described by Marc W. Buie (2013)");
 	m_console.WriteLn("in his paper http://www.boulder.swri.edu/~buie/idl/downloads/pointing/pointing.pdf.");
-	m_console.WriteLn("<end><cbr><br>* Pierside: West");
+
+
+	if (m_modelEachPierSide) m_console.WriteLn("<end><cbr><br>* Pierside: West");
 	printParameterVector(m_pointingModelWest);
-	m_console.WriteLn("<end><cbr><br>* Pierside: East");
-	printParameterVector(m_pointingModelEast);
+	if (m_modelEachPierSide){
+		m_console.WriteLn("<end><cbr><br>* Pierside: East");
+		printParameterVector(m_pointingModelEast);
+	}
 }
 
 

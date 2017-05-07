@@ -506,8 +506,23 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
 	MountAlignmentConfig_Sizer.SetSpacing( 8 );
 	MountAlignmentConfig_Sizer.SetMargin( 8 );
 
+	const char* pierSideToolTipText =
+				"<p>Create a model for each side of the pier. This is useful for German Equatorial Mounts"
+			    "which perform a meridian flip when objects pass the meridian. However it requires more"
+			    "data points to create an accurate model";
+
+	ModelPierSide_Label.SetText("Model each pier side :");
+	ModelPierSide_Label.SetToolTip(pierSideToolTipText);
+	ModelPierSide_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
+	ModelPierSide_Label.SetFixedWidth(labelWidth1);
+
+	ModelPierSide_CheckBox.SetToolTip(pierSideToolTipText);
+	ModelPierSide_CheckBox.Check();
+
+	ADD_LABLED_CHECKBOXES_TO_SIZER(ModelPierSide);
+
 	const char* offsetToolTipText =
-			"<p>Zero-point offset in rightascension (RA) and declination axes.</p>";
+			"<p>Zero-point offset in rightascension (RA) and declination (DEC) axes.</p>";
 
 	Offset_Label.SetText("Offset:");
 	Offset_Label.SetToolTip(offsetToolTipText);
@@ -572,7 +587,7 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
 	ADD_LABLED_CHECKBOXES_TO_SIZER(TubeFlexure);
 
 	const char* forkFlexureToolTipText =
-					"<p>Fork flexure away from zenith.</p>";
+					"<p>Fork flexure away from zenith (only for non German Equatorial Mounts).</p>";
 
 	ForkFlexure_Label.SetText("Fork flexure:");
 	ForkFlexure_Label.SetToolTip(forkFlexureToolTipText);
@@ -584,7 +599,7 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
 	ADD_LABLED_CHECKBOXES_TO_SIZER(ForkFlexure);
 
 	const char* deltaAxisToolTipText =
-					"<p>Bending of declination axle (only for asymmetric mounts, ie., German Equatorial).</p>";
+					"<p>Bending of declination axle (only for German Equatorial Mounts).</p>";
 
 	DeltaAxisFlexure_Label.SetText("Dec axis bending:");
 	DeltaAxisFlexure_Label.SetToolTip(deltaAxisToolTipText);
@@ -597,7 +612,7 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
 	ADD_LABLED_CHECKBOXES_TO_SIZER(DeltaAxisFlexure);
 
 	const char* linearTermToolTipText =
-					"<p>Linear terms in hour angle and declination.</p>";
+					"<p>Linear scale error in hour angle.</p>";
 
 	Linear_Label.SetText("Linear:");
 	Linear_Label.SetToolTip(linearTermToolTipText);
@@ -610,7 +625,7 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
 	ADD_LABLED_CHECKBOXES_TO_SIZER(Linear);
 
 	const char* quadraticTermToolTipText =
-						"<p>Quadratic terms in hour angle and declination.</p>";
+						"<p>Quadratic scale error in hour angle.</p>";
 
 	Quadratic_Label.SetText("Quadratic:");
 	Quadratic_Label.SetToolTip(quadraticTermToolTipText);
@@ -665,6 +680,7 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
  void AlignmentConfigDialog::e_Click( Button& sender, bool checked ){
 
  	if (sender == Ok_Button){
+ 		m_interface.GUI->m_modelBothPierSides = ModelPierSide_CheckBox.IsChecked();
  		m_interface.GUI->m_alignmentConfigOffset = Offset_CheckBox.IsChecked();
  		m_interface.GUI->m_alignmentConfigCollimation = Collimation_CheckBox.IsChecked();
  		m_interface.GUI->m_alignmentConfigNonPerpendicular = NonPerpendicular_CheckBox.IsChecked();
@@ -1834,14 +1850,13 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
 	   GUI->getAlignmentConfigParamter(alignmentConfig);
 	   switch (GUI->m_aignmentModelIndex){
 	   case IMCAlignmentMethod::AnalyticalModel:
-		   aModel = GeneralAnalyticalPointingModel::create(m_geoLatitude, alignmentConfig);
+		   aModel = GeneralAnalyticalPointingModel::create(m_geoLatitude, alignmentConfig, GUI->m_modelBothPierSides);
 	   }
 	   Array<SyncDataPoint> syncDataList;
 	   INDIMountInstance::loadSyncData(syncDataList, GUI->SyncDataFile_Edit.Text());
 
-	   // fit model for both pier sides
-	   aModel->fitModel(syncDataList,IMCPierSide::West);
-	   aModel->fitModel(syncDataList,IMCPierSide::East);
+	   // fit model
+	   aModel->fitModel(syncDataList);
 	   aModel->writeObject(GUI->AlignmentFile_Edit.Text());
 	   aModel->printParameters();
 

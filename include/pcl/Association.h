@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Association.h - Released 2017-05-02T10:38:59Z
+// pcl/Association.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -76,26 +76,33 @@ public:
    T2 second;  //!< Second member of this association
 
    /*!
-    * Constructs an association with default member values.
+    * Constructs an association with default-constructed member values.
     */
-   Association()
-   {
-   }
-
-   /*!
-    * Constructs an association copying the specified member values \a x1
-    * and \a x2.
-    */
-   Association( const T1& x1, const T2& x2 ) :
-   first( x1 ), second( x2 )
-   {
-   }
+   Association() = default;
 
    /*!
     * Copy constructor.
     */
-   Association( const Association<T1, T2>& x ) :
-   first( x.first ), second( x.second )
+   Association( const Association<T1,T2>& ) = default;
+
+   /*!
+    * Move constructor.
+    */
+#ifndef _MSC_VER
+   Association( Association<T1,T2>&& ) = default;
+#else
+   Association( Association<T1,T2>&& x ) :
+      first( std::move( x.first ) ), second( std::move( x.second ) )
+   {
+   }
+#endif
+
+   /*!
+    * Constructs an association with the specified values \a x1 and \a x2,
+    * respectively for the \a first and \a second members.
+    */
+   Association( const T1& x1, const T2& x2 ) :
+      first( x1 ), second( x2 )
    {
    }
 };
@@ -112,9 +119,9 @@ public:
  * \ingroup association_utilities
  */
 template <typename T1, typename T2> inline
-Association<T1, T2> Associate( const T1& x1, const T2& x2 )
+Association<T1,T2> Associate( const T1& x1, const T2& x2 )
 {
-   return Association<T1, T2>( x1, x2 );
+   return Association<T1,T2>( x1, x2 );
 }
 
 /*!
@@ -123,7 +130,7 @@ Association<T1, T2> Associate( const T1& x1, const T2& x2 )
  * \ingroup association_utilities
  */
 template <typename T1, typename T2> inline
-bool operator ==( const Association<T1, T2>& x1, const Association<T1, T2>& x2 )
+bool operator ==( const Association<T1,T2>& x1, const Association<T1,T2>& x2 )
 {
    return x1.first == x2.first && x1.second == x2.second;
 }
@@ -147,7 +154,7 @@ bool operator ==( const Association<T1, T2>& x1, const Association<T1, T2>& x2 )
  * \ingroup association_utilities
  */
 template <typename T1, typename T2> inline
-bool operator <( const Association<T1, T2>& x1, const Association<T1, T2>& x2 )
+bool operator <( const Association<T1,T2>& x1, const Association<T1,T2>& x2 )
 {
    //return (x1.first == x2.first) ? x1.second < x2.second : x1.first < x2.first;
    return (x1.first < x2.first) ? true : ((x2.first < x1.first) ? false : x1.second < x2.second);
@@ -160,4 +167,4 @@ bool operator <( const Association<T1, T2>& x1, const Association<T1, T2>& x2 )
 #endif  // __PCL_Association_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Association.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/Association.h - Released 2017-05-28T08:28:50Z

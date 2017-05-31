@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/ImageWindow.h - Released 2017-05-02T10:38:59Z
+// pcl/ImageWindow.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -1274,25 +1274,39 @@ public:
    void DeleteICCProfile();
 
    /*!
+    * Returns a copy of the %FITS header keywords currently defined for the
+    * image in this window. Returns an empty array if this image has no %FITS
+    * keywords.
+    */
+   FITSKeywordArray Keywords() const;
+
+   /*!
     * Obtains a copy of the %FITS header keywords currently defined for the
     * image in this window. Returns true if this image has %FITS keywords.
     *
-    * \param[out] kwds     Reference to a container that will receive a copy of
+    * \param[out] keywords Reference to a container that will receive a copy of
     *                      the %FITS keywords defined in this image.
+    *
+    * \deprecated This member function has been deprecated. It is left only to
+    * keep existing code working. Use Keywords() in newly produced code.
     */
-   bool GetKeywords( FITSKeywordArray& kwds ) const;
+   bool GetKeywords( FITSKeywordArray& keywords ) const
+   {
+      keywords = Keywords();
+      return !keywords.IsEmpty();
+   }
 
    /*!
     * Sets the %FITS header keywords for this image as a copy of the set of
     * keywords in the specified container.
     *
-    * \param kwds    Reference to a %FITS keyword container whose contents will
-    *             be copied to the list of %FITS keywords of this image.
+    * \param keywords   Reference to a %FITS keyword array whose contents will
+    *                   be copied to the list of %FITS keywords of this image.
     *
     * The previous set of %FITS keywords in this image, if any, is lost and
     * replaced by the specified set.
     */
-   void SetKeywords( const FITSKeywordArray& kwds );
+   void SetKeywords( const FITSKeywordArray& keywords );
 
    /*!
     * Deletes all existing %FITS header keywords in this image window.
@@ -2796,4 +2810,4 @@ private:
 #endif   // __PCL_ImageWindow_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageWindow.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/ImageWindow.h - Released 2017-05-28T08:28:50Z

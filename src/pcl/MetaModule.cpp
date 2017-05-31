@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/MetaModule.cpp - Released 2017-05-02T10:39:13Z
+// pcl/MetaModule.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -193,6 +193,16 @@ void MetaModule::UnloadResource( const String& filePath, const String& rootPath 
 }
 
 // ----------------------------------------------------------------------------
+
+Variant MetaModule::EvaluateScript( const String& sourceCode, const IsoString& language )
+{
+   api_property_value result;
+   if ( (*API->Module->EvaluateScript)( ModuleHandle(), &result, sourceCode.c_str(), language.c_str() ) == api_false )
+      throw APIFunctionError( "EvaluateScript" );
+   return VariantFromAPIPropertyValue( result );
+}
+
+// ----------------------------------------------------------------------------
 // Global Context
 // ----------------------------------------------------------------------------
 
@@ -280,4 +290,4 @@ void MetaModule::PerformAPIDefinitions() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaModule.cpp - Released 2017-05-02T10:39:13Z
+// EOF pcl/MetaModule.cpp - Released 2017-05-28T08:29:05Z

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/LinearFit.h - Released 2017-05-02T10:38:59Z
+// pcl/LinearFit.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -92,7 +92,7 @@ public:
     * is the ordinate of its intersection with the Y axis. It represents a
     * constant additive pedestal present in the whole dataset.
     */
-   double a;
+   double a = 0;
 
    /*!
     * The \e b parameter is the slope of the fitted straight line:
@@ -102,14 +102,14 @@ public:
     * If the fitted line passes through two points {x1,y1} and {x2,y2}, then
     * its slope is equal to (y2 - y1)/(x2 - x1).
     */
-   double b;
+   double b = 0;
 
    /*!
-    * Mean (or average) absolute deviation of the linear fit. This is the
-    * mean absolute deviation computed for all data points with respect to the
-    * fitted straight line function.
+    * Mean absolute deviation of the linear fit. This is the mean absolute
+    * deviation computed for all data points with respect to the fitted
+    * straight line function.
     */
-   double adev;
+   double adev = 0;
 
    /*!
     * Returns true iff the fitted straight line model is valid. The model
@@ -133,9 +133,12 @@ public:
     * Constructs a default %LinearFit object. The resulting object corresponds
     * to a horizontal line crossing at the origin, i.e. the X axis.
     */
-   LinearFit() : a( 0 ), b( 0 ), adev( 0 )
-   {
-   }
+   LinearFit() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   LinearFit( const LinearFit& ) = default;
 
    /*!
     * Constructs a %LinearFit object representing the straight line that passes
@@ -245,4 +248,4 @@ private:
 #endif   // __LinearFit_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/LinearFit.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/LinearFit.h - Released 2017-05-28T08:28:50Z

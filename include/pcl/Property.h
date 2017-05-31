@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Property.h - Released 2017-05-02T10:38:59Z
+// pcl/Property.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -71,7 +71,9 @@ namespace pcl
  * properties associated with views and images on the PixInsight platform.
  *
  * The View and FileFormatInstance classes include member functions to generate
- * PropertyArray containers, namely View::
+ * PropertyArray containers, namely View::GetProperties(),
+ * FileFormatInstance::ReadProperties() and
+ * FileFormatInstance::ReadImageProperties().
  */
 class PCL_CLASS Property
 {
@@ -123,6 +125,15 @@ public:
    Property( const identifier_type& identifier, const value_type& value ) :
       m_id( identifier ),
       m_value( value )
+   {
+   }
+
+   /*!
+    * Constructs a %Property object with the specified property \a identifier
+    * and an undefined (invalid) property value.
+    */
+   Property( const identifier_type& identifier ) :
+      m_id( identifier )
    {
    }
 
@@ -273,4 +284,4 @@ typedef Array<Property> PropertyArray;
 #endif   // __PCL_Property_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Property.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/Property.h - Released 2017-05-28T08:28:50Z

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Random.h - Released 2017-05-02T10:38:59Z
+// pcl/Random.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -359,9 +359,11 @@ public:
       return UIN( n );
    }
 
-   /*
-    * Reinitializes this generator with a new \a seed. If the specified \a seed
-    * is zero, a unique random seed will be generated automatically.
+   /*!
+    * Reinitializes this generator with a new \a seed.
+    *
+    * If the specified \a seed is zero, a unique, high-quality random seed will
+    * be generated automatically by calling RandomSeed64().
     */
    void Initialize( uint64 x )
    {
@@ -391,4 +393,4 @@ private:
 #endif   // __PCL_Random_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Random.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/Random.h - Released 2017-05-28T08:28:50Z

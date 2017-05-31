@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/MultiscaleLinearTransform.cpp - Released 2017-05-02T10:39:13Z
+// pcl/MultiscaleLinearTransform.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -50,9 +50,11 @@
 // ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
+#include <pcl/AutoPointer.h>
 #include <pcl/Exception.h>
 #include <pcl/FFTConvolution.h>
 #include <pcl/GaussianFilter.h>
+#include <pcl/MeanFilter.h>
 #include <pcl/MultiscaleLinearTransform.h>
 #include <pcl/SeparableConvolution.h>
 
@@ -91,7 +93,7 @@ public:
             GenericImage<P> cj( cj0 );
             cj.Status() = status;
 
-            LinearFilterLayer( cj, T.FilterSize( j0 ), T.m_parallel, T.m_maxProcessors );
+            LinearFilterLayer( cj, T.FilterSize( j0 ), T.m_useMeanFilters, T.m_parallel, T.m_maxProcessors );
 
             status = cj.Status();
             cj.Status().Clear();
@@ -127,18 +129,20 @@ public:
 private:
 
    template <class P> static
-   void LinearFilterLayer( GenericImage<P>& cj, int n, bool parallel, int maxProcessors )
+   void LinearFilterLayer( GenericImage<P>& cj, int n, bool meanFilter, bool parallel, int maxProcessors )
    {
-      GaussianFilter H( n );
+      AutoPointer<KernelFilter> H( meanFilter ?
+         static_cast<KernelFilter*>( new MeanFilter( n ) ) :
+         static_cast<KernelFilter*>( new GaussianFilter( n ) ) );
       if ( n >= PCL_FFT_CONVOLUTION_IS_FASTER_THAN_SEPARABLE_FILTER_SIZE || cj.Width() < n || cj.Height() < n  )
       {
-         FFTConvolution Z( H );
+         FFTConvolution Z( *H );
          Z.EnableParallelProcessing( parallel, maxProcessors );
          Z >> cj;
       }
       else
       {
-         SeparableFilter S( H.AsSeparableFilter() );
+         SeparableFilter S( H->AsSeparableFilter() );
          SeparableConvolution C( S );
          C.EnableParallelProcessing( parallel, maxProcessors );
          C >> cj;
@@ -205,4 +209,4 @@ void MultiscaleLinearTransform::Transform( const UInt32Image& image )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MultiscaleLinearTransform.cpp - Released 2017-05-02T10:39:13Z
+// EOF pcl/MultiscaleLinearTransform.cpp - Released 2017-05-28T08:29:05Z

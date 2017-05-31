@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Console.h - Released 2017-05-02T10:38:59Z
+// pcl/Console.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -58,12 +58,14 @@
 
 #include <pcl/Defs.h>
 
-#include <pcl/String.h>
+#include <pcl/StringList.h>
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
+
+class PCL_CLASS View;
 
 /*!
  * \class  Console
@@ -85,8 +87,8 @@ namespace pcl
  *
  * From the module developer perspective, each module has an associated
  * console. Such associations between modules and consoles are managed
- * automatically by internal PCL routines: module developers just need to
- * instantiate the %Console class and use its member functions.
+ * automatically by internal core and PCL routines: module developers just need
+ * to instantiate the %Console class and use its member functions.
  *
  * For example, writing a message to the console can be as simple as:
  *
@@ -562,8 +564,8 @@ public:
    bool IsValid() const;
 
    /*!
-    * Returns true iff this console is valid and has been created by the calling
-    * thread; either by the root thread or by a running Thread object.
+    * Returns true iff this console is valid and has been created by the
+    * calling thread; either by the root thread or by a running Thread object.
     */
    bool IsCurrentThreadConsole() const;
 
@@ -611,15 +613,64 @@ public:
     * Clears the console. This is a convenience function that simply writes the
     * \<clr\> tag to the console.
     *
+    * \note Calling this function from a running thread has no effect. The
+    * console output text of a Thread object cannot be erased by this function.
+    *
     * \note In general, call this function only as a result of an explicit user
     * request to clear the console. Clearing the console arbitrarily, without
     * having an extremely good reason, is considered bad practice and can be
     * a good argument to deny certification of a module.
-    *
-    * \note Calling this function from a running thread has no effect. The
-    * console output text of a Thread object cannot be erased by this function.
     */
    void Clear();
+
+   /*!
+    *
+    */
+   void ExecuteCommand( const String& command );
+
+   /*!
+    * Executes a script file.
+    *
+    * \param filePath   Path to the script file that will be executed. Must be
+    *                   a path to an existing script on the local filesystem.
+    *
+    * \param arguments  A dynamic array, possibly empty, of StringKeyValue
+    *                   objects. Each object in this array represents a script
+    *                   argument. The key member is the parameter name, and the
+    *                   value member is the corresponding parameter value.
+    *
+    * The core application will load, parse, authorize and execute the
+    * specified script file. The scripting language will be detected
+    * automatically from the file name suffix in \a filePath. Currently the
+    * .scp and .js suffixes are interpreted for command-line shell scripts and
+    * JavaScript scripts, respectively. Future versions may accept more
+    * languages and apply language detection heuristics besides file suffixes.
+    *
+    * This member function returns normally if the script was loaded and
+    * executed. In the event of error, for example if the specified file does
+    * not exist or can't be accessed, or in the event of security errors or
+    * failure to authorize script execution from the calling module, this
+    * member function throws an Error exception.
+    *
+    * Note that command-line or JavaScript runtime execution errors cannot be
+    * reported by this function. That means that this function knows nothing
+    * about whether the script worked or not correctly, or as expected.
+    *
+    * \note If this function is called from a running thread, an Error
+    * exception will be thrown. In current versions of the PixInsight platform,
+    * scripts can only be executed from the root thread.
+    */
+   void ExecuteScript( const String& filePath, const StringKeyValueList& arguments = StringKeyValueList() );
+
+   /*!
+    *
+    */
+   void ExecuteScriptGlobal( const String& filePath, const StringKeyValueList& arguments = StringKeyValueList() );
+
+   /*!
+    *
+    */
+   void ExecuteScriptOn( const View& view, const String& filePath, const StringKeyValueList& arguments = StringKeyValueList() );
 
 protected:
 
@@ -701,4 +752,4 @@ inline Console& operator >>( Console& o, String& s )
 #endif   // __PCL_Console_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Console.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/Console.h - Released 2017-05-28T08:28:50Z

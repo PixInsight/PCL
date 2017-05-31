@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/APIInterface.h - Released 2017-05-02T10:38:59Z
+// pcl/APIInterface.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -56,7 +56,7 @@
 
 // Global namespace
 
-#define PCL_API_Version 0x0158
+#define PCL_API_Version 0x0160
 
 extern "C"
 {
@@ -554,6 +554,7 @@ struct api_context ModuleContext
 {
    api_bool    (api_func* LoadResource)( api_handle, const char16_type*, const char16_type* );
    api_bool    (api_func* UnloadResource)( api_handle, const char16_type*, const char16_type* );
+   api_bool    (api_func* EvaluateScript)( api_handle, api_property_value* result, const char16_type* sourceCode, const char* language );
 };
 
 // ----------------------------------------------------------------------------
@@ -2740,6 +2741,46 @@ struct api_context CodeEditorContext
 
 // ----------------------------------------------------------------------------
 
+struct api_context WebViewContext
+{
+   control_handle (api_func* CreateWebView)( api_handle hModule, api_handle hClient, control_handle hParent, uint32 flags );
+
+   api_bool       (api_func* SetWebViewContent)( control_handle, const void* data, size_type size, const char* mimeType );
+   api_bool       (api_func* LoadWebViewContent)( control_handle, const char16_type* URI );
+
+   api_bool       (api_func* RequestWebViewPlainText)( const_control_handle );
+   api_bool       (api_func* RequestWebViewHTML)( const_control_handle );
+
+   api_bool       (api_func* SaveWebViewAsPDF)( control_handle, const char16_type* filePath,
+                                                const double* pageWidth, const double* pageHeight,
+                                                const double* marginLeft, const double* marginTop, const double* marginRight, const double* marginBottom,
+                                                int32 orientation );
+
+   api_bool       (api_func* GetWebViewHasSelection)( const_control_handle );
+   api_bool       (api_func* GetWebViewSelectedText)( const_control_handle, char16_type*, size_type* );
+
+   api_bool       (api_func* GetWebViewZoomFactor)( const_control_handle, double* );
+   api_bool       (api_func* SetWebViewZoomFactor)( control_handle, const double* );
+
+   uint32         (api_func* GetWebViewBackgroundColor)( const_control_handle );
+   api_bool       (api_func* SetWebViewBackgroundColor)( control_handle, uint32 );
+
+   api_bool       (api_func* ReloadWebView)( control_handle );
+   api_bool       (api_func* StopWebView)( control_handle );
+
+   api_bool       (api_func* EvaluateWebViewScript)( control_handle, const char16_type* sourceCode, const char* language );
+
+   api_bool       (api_func* SetWebViewLoadStartedEventRoutine)( control_handle, api_handle, pcl::event_routine );
+   api_bool       (api_func* SetWebViewLoadProgressEventRoutine)( control_handle, api_handle, pcl::value_event_routine );
+   api_bool       (api_func* SetWebViewLoadFinishedEventRoutine)( control_handle, api_handle, pcl::state_event_routine );
+   api_bool       (api_func* SetWebViewSelectionUpdatedEventRoutine)( control_handle, api_handle, pcl::event_routine );
+   api_bool       (api_func* SetWebViewPlainTextAvailableEventRoutine)( control_handle, api_handle, pcl::unicode_event_routine );
+   api_bool       (api_func* SetWebViewHTMLAvailableEventRoutine)( control_handle, api_handle, pcl::unicode_event_routine );
+   api_bool       (api_func* SetWebViewScriptResultAvailableEventRoutine)( control_handle, api_handle, pcl::property_event_routine );
+};
+
+// ----------------------------------------------------------------------------
+
 struct api_context ExternalProcessContext
 {
    enum IOStream
@@ -2833,6 +2874,7 @@ struct api_context NetworkTransferContext
    api_bool       (api_func* SetNetworkTransferURL)( network_transfer_handle, const char16_type* url, const char16_type* userName, const char16_type* userPassword );
    api_bool       (api_func* SetNetworkTransferProxyURL)( network_transfer_handle, const char16_type* proxy, const char16_type* userName, const char16_type* userPassword );
    api_bool       (api_func* SetNetworkTransferSSL)( network_transfer_handle, api_bool useSSL, api_bool forceSSL, api_bool verifyPeer, api_bool verifyHost );
+   api_bool       (api_func* SetNetworkTransferCustomHTTPHeaders)( network_transfer_handle, const char16_type* nlsHeaders );
    api_bool       (api_func* SetNetworkTransferConnectionTimeout)( network_transfer_handle, int32 seconds );
 
    api_bool       (api_func* PerformNetworkTransferDownload)( network_transfer_handle );
@@ -2844,6 +2886,7 @@ struct api_context NetworkTransferContext
 
    api_bool       (api_func* GetNetworkTransferURL)( const_network_transfer_handle, char16_type*, size_type* );
    api_bool       (api_func* GetNetworkTransferProxyURL)( const_network_transfer_handle, char16_type*, size_type* );
+   api_bool       (api_func* GetNetworkTransferCustomHTTPHeaders)( const_network_transfer_handle, char16_type*, size_type* );
    api_bool       (api_func* GetNetworkTransferStatus)( const_network_transfer_handle );
    api_bool       (api_func* GetNetworkTransferIsAborted)( const_network_transfer_handle );
    int32          (api_func* GetNetworkTransferResponseCode)( const_network_transfer_handle );
@@ -2919,6 +2962,7 @@ struct APIInterface
    ImageWindowContext*           ImageWindow;
    ImageViewContext*             ImageView;
    CodeEditorContext*            CodeEditor;
+   WebViewContext*               WebView;
    ExternalProcessContext*       ExternalProcess;
    NetworkTransferContext*       NetworkTransfer;
 
@@ -2964,4 +3008,4 @@ extern "C" void* api_func APIFunctionResolver( const char* );
 #endif   // __PCL_API_APIInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/APIInterface.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/APIInterface.h - Released 2017-05-28T08:28:50Z

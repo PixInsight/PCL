@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/AbstractImage.h - Released 2017-05-02T10:38:59Z
+// pcl/AbstractImage.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -955,19 +955,16 @@ public:
     */
    struct ThreadData
    {
-      mutable StatusMonitor status;     //!< %Status monitoring object.
-      mutable Mutex         mutex;      //!< Mutual exclusion for synchronized thread access.
-      mutable size_type     count;      //!< current monitoring count.
-              size_type     total;      //!< Total monitoring count.
-              size_type     numThreads; //!< Number of concurrent threads being executed (set by RunThreads()).
+      mutable StatusMonitor status;         //!< %Status monitoring object.
+      mutable Mutex         mutex;          //!< Mutual exclusion for synchronized thread access.
+      mutable size_type     count = 0;      //!< current monitoring count.
+              size_type     total = 0;      //!< Total monitoring count.
+              size_type     numThreads = 0; //!< Number of concurrent threads being executed (set by RunThreads()).
 
       /*!
        * Constructs a default %ThreadData object.
        */
-      ThreadData() :
-         count( 0 ), total( 0 ), numThreads( 0 )
-      {
-      }
+      ThreadData() = default;
 
       /*!
        * Constructs a %ThreadData object with a copy of the current status
@@ -979,7 +976,8 @@ public:
        * function for more information.
        */
       ThreadData( const AbstractImage& image, size_type N ) :
-         status( image.Status() ), count( 0 ), total( N ), numThreads( 0 )
+         status( image.Status() ),
+         total( N )
       {
       }
 
@@ -992,7 +990,8 @@ public:
        * function for more information.
        */
       ThreadData( const StatusMonitor& a_status, size_type N ) :
-         status( a_status ), count( 0 ), total( N ), numThreads( 0 )
+         status( a_status ),
+         total( N )
       {
       }
    };
@@ -1147,9 +1146,8 @@ protected:
            unsigned        m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT;
 
    AbstractImage() :
-      ImageGeometry(), ImageColor(),
-      m_selected(), m_savedSelections(), m_status(),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      m_parallel( true ),
+      m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
 
@@ -1426,4 +1424,4 @@ protected:
 #endif   // __PCL_AbstractImage_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AbstractImage.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/AbstractImage.h - Released 2017-05-28T08:28:50Z

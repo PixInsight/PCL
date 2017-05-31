@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/NetworkTransfer.h - Released 2017-05-02T10:38:59Z
+// pcl/NetworkTransfer.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -226,6 +226,38 @@ public:
    void SetSSL( bool useSSL = true, bool forceSSL = true, bool verifyPeer = true, bool verifyHost = true );
 
    /*!
+    * Define a set of custom HTTP headers.
+    *
+    * \param nlsHeaders A newline-separated list of custom HTTP headers. To
+    *                   remove all custom headers and return to the default set
+    *                   of HTTP headers, specify an empty string.
+    *
+    * The specified list of custom headers will replace any previously defined
+    * list, if one was set by calling this function.
+    *
+    * To disable an HTTP header, specify an empty header value (no characters
+    * after the ':'). For example:
+    *
+    * "User-Agent:"
+    *
+    * To define a custom header without a value, include no ':' separator and
+    * end the header with a semicolon:
+    *
+    * "CustomHeader;"
+    *
+    * Example:
+    *
+    * \code
+    * NetworkTransfer N;
+    * N.SetURL( "http://foo-bar.com/" );
+    * N.SetCustomHTTPHeaders( "Content-Type: text/plain\nMyCustomHeader: 1" );
+    * N.OnUploadDataRequested( MyUploadDataFunc, receiver );
+    * N.Upload();
+    * \endcode
+    */
+   void SetCustomHTTPHeaders( const String& nlsHeaders );
+
+   /*!
     * Sets the connection timeout for this %NetworkTransfer object.
     *
     * \param seconds    Connection timeout in seconds. Can legally be zero to
@@ -338,6 +370,13 @@ public:
     * included in the URL returned by this function.
     */
    String URL() const;
+
+   /*!
+    * Returns the newline-separated list of custom HTTP headers defined for
+    * this object, or an empty string if no custom headers have been defined.
+    * Custom HTTP headers are defined by calling SetCustomHTTPHeaders().
+    */
+   String CustomHTTPHeaders() const;
 
    /*!
     * Returns the URL of the proxy server used in the last network transfer
@@ -566,4 +605,4 @@ private:
 #endif   // __PCL_NetworkTransfer_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/NetworkTransfer.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/NetworkTransfer.h - Released 2017-05-28T08:28:50Z

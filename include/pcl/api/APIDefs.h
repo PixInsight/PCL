@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/APIDefs.h - Released 2017-05-02T10:38:59Z
+// pcl/APIDefs.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -849,6 +849,8 @@ typedef void                  (api_func* button_check_event_routine)            
 typedef void                  (api_func* ascii_event_routine)                         ( control_handle, control_handle, const char* );
 typedef void                  (api_func* unicode_event_routine)                       ( control_handle, control_handle, const char16_type* );
 
+typedef void                  (api_func* property_event_routine)                      ( control_handle, control_handle, const api_property_value* );
+
 typedef void                  (api_func* event_routine)                               ( control_handle, control_handle );
 typedef void                  (api_func* value_event_routine)                         ( control_handle, control_handle, int32 );
 typedef void                  (api_func* range_event_routine)                         ( control_handle, control_handle, int32, int32 );
@@ -935,4 +937,4 @@ void PCL_FUNC PCLImageOptionsToAPI( api_image_options&, const ImageOptions& );
 #endif   // __PCL_API_APIDefs_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/APIDefs.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/APIDefs.h - Released 2017-05-28T08:28:50Z

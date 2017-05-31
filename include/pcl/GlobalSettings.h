@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/GlobalSettings.h - Released 2017-05-02T10:38:59Z
+// pcl/GlobalSettings.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -112,7 +112,7 @@ namespace GlobalVariableType
  * pcl::GlobalVariableType namespace for more details.
  *
  * Below is a complete list of all global settings available in current
- * versions of the PixInsight platform (updated as of core version 1.8.5.1209).
+ * versions of the PixInsight platform (updated as of core version 1.8.5.1219).
  *
  * <h3>PixInsight Public Global Variables</h3>
  *
@@ -276,6 +276,7 @@ namespace GlobalVariableType
  * <tr><td>Application/HighResMonoFont</td><td>Monospaced font family for automatic style sheet replacement on high-dpi displays.</td></tr>
  * <tr><td>Application/IncludeDirectory</td><td>Full path to the distribution's include directory. Read-only.</td></tr>
  * <tr><td>Application/LibDirectory</td><td>Full path to the distribution's lib directory. Read-only.</td></tr>
+ * <tr><td>Application/LibraryDirectory</td><td>Full path to the distribution's library directory. Read-only.</td></tr>
  * <tr><td>Application/LowResFont</td><td>%Font family for automatic style sheet replacement on low-dpi displays.</td></tr>
  * <tr><td>Application/LowResMonoFont</td><td>Monospaced font family for automatic style sheet replacement on low-dpi displays.</td></tr>
  * <tr><td>Application/ResourceFile01</td><td>Core resource file #1.</td></tr>
@@ -469,4 +470,4 @@ public:
 #endif   // __PCL_GlobalSettings_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/GlobalSettings.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/GlobalSettings.h - Released 2017-05-28T08:28:50Z

@@ -2,7 +2,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-05-02T09:40:41.985Z
+# Generated on .... 2017-05-27T21:09:45.015Z
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ Linux/g++
@@ -168,6 +168,7 @@ SRC_FILES= \
 ../../View.cpp \
 ../../ViewList.cpp \
 ../../ViewSelectionDialog.cpp \
+../../WebView.cpp \
 ../../Win32Exception.cpp \
 ../../XISF.cpp \
 ../../XISFReader.cpp \
@@ -329,6 +330,7 @@ OBJ_FILES= \
 ./x64/Release/View.o \
 ./x64/Release/ViewList.o \
 ./x64/Release/ViewSelectionDialog.o \
+./x64/Release/WebView.o \
 ./x64/Release/Win32Exception.o \
 ./x64/Release/XISF.o \
 ./x64/Release/XISFReader.o \
@@ -490,6 +492,7 @@ DEP_FILES= \
 ./x64/Release/View.d \
 ./x64/Release/ViewList.d \
 ./x64/Release/ViewSelectionDialog.d \
+./x64/Release/WebView.d \
 ./x64/Release/Win32Exception.d \
 ./x64/Release/XISF.d \
 ./x64/Release/XISFReader.d \

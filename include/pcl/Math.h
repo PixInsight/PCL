@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Math.h - Released 2017-05-02T10:38:59Z
+// pcl/Math.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -2557,6 +2557,54 @@ template <typename T, class BP> inline double Median( T* i, T* j, BP p )
 #undef MEAN
 
 /*!
+ * Returns the median value of a sequence [i,j) without altering its order of
+ * elements (non-destructive median).
+ *
+ * This function generates a temporary duplicate of the input sequence, then
+ * calls Median( T*, T* ) to find the median value.
+ *
+ * \ingroup statistical_functions
+ */
+template <typename T> inline double NondestructiveMedian( const T* i, const T* j )
+{
+   distance_type n = j - i;
+   if ( n < 2 )
+      return 0;
+   double* d = new double[ n ];
+   double* p = d;
+   for ( const T* f = i; f < j; ++f, ++p )
+      *p = double( *f );
+   double m = pcl::Median( d, d+n );
+   delete [] d;
+   return m;
+}
+
+/*!
+ * Returns the median value of a sequence [i,j) without altering its order of
+ * elements (non-destructive median). Element comparison is given by a binary
+ * predicate \a p such that p( a, b ) is true for any pair a, b of elements
+ * such that a precedes b.
+ *
+ * This function generates a temporary duplicate of the input sequence, then
+ * calls Median( T*, T*, BP ) to find the median value.
+ *
+ * \ingroup statistical_functions
+ */
+template <typename T, class BP> inline double NondestructiveMedian( const T* i, const T* j, BP p )
+{
+   distance_type n = j - i;
+   if ( n < 2 )
+      return 0;
+   double* d = new double[ n ];
+   double* t = d;
+   for ( const T* f = i; f < j; ++f, ++t )
+      *t = double( *f );
+   double m = pcl::Median( d, d+n, p );
+   delete [] d;
+   return m;
+}
+
+/*!
  * Returns the average absolute deviation of the values in a sequence [i,j)
  * with respect to the specified \a center value.
  *
@@ -2699,6 +2747,8 @@ template <typename T> inline double StableAvgDev( const T* i, const T* j )
  *
  * \note To make the MAD estimator consistent with the standard deviation of
  * a normal distribution, it must be multiplied by the constant 1.4826.
+ *
+ * \ingroup statistical_functions
  */
 template <typename T> inline double MAD( const T* i, const T* j, double center )
 {
@@ -2724,6 +2774,8 @@ template <typename T> inline double MAD( const T* i, const T* j, double center )
  *
  * \note To make the MAD estimator consistent with the standard deviation of
  * a normal distribution, it must be multiplied by the constant 1.4826.
+ *
+ * \ingroup statistical_functions
  */
 template <typename T> inline double MAD( const T* i, const T* j )
 {
@@ -2761,23 +2813,23 @@ template <typename T> inline double MAD( const T* i, const T* j )
  * implementation does not apply it (it uses c=1 implicitly), for
  * consistency with other implementations of scale estimators.
  *
- * \note This is a \e destructive algorithm: it may alter the initial order of
- * items in the specified [x,xn) sequence.
- *
- * \ingroup statistical_functions
- *
  * \b References
  *
  * P.J. Rousseeuw and C. Croux (1993), <em>Alternatives to the Median Absolute
  * Deviation,</em> Journal of the American Statistical Association, Vol. 88,
  * pp. 1273-1283.
+ *
+ * \note This is a \e destructive algorithm: it may alter the initial order of
+ * items in the specified [x,xn) sequence.
+ *
+ * \ingroup statistical_functions
  */
 template <typename T> double Sn( T* x, T* xn )
 {
    /*
-    * NB: In the code below, lines commented with an asterisk (*) have been
-    * modified with respect to the FORTRAN original to account for
-    * zero-based array indices.
+    * N.B.: In the code below, lines commented with an asterisk (*) have been
+    * modified with respect to the FORTRAN original to account for zero-based
+    * array indices.
     */
 
    distance_type n = xn - x;
@@ -2922,7 +2974,8 @@ template <typename T> double Sn( T* x, T* xn )
    return sn;
 }
 
-/*
+/*!
+ * \internal
  * Auxiliary routine for Qn().
  *
  * Algorithm to compute the weighted high median in O(n) time.
@@ -3007,16 +3060,16 @@ inline double __pcl_whimed__( double* a, distance_type* iw, distance_type n,
  * implementation does not apply it (it uses c=1 implicitly), for consistency
  * with other implementations of scale estimators.
  *
- * \note This is a \e destructive algorithm: it may alter the initial order of
- * items in the specified [x,xn) sequence.
- *
- * \ingroup statistical_functions
- *
  * \b References
  *
  * P.J. Rousseeuw and C. Croux (1993), <em>Alternatives to the Median Absolute
  * Deviation,</em> Journal of the American Statistical Association, Vol. 88,
  * pp. 1273-1283.
+ *
+ * \note This is a \e destructive algorithm: it may alter the initial order of
+ * items in the specified [x,xn) sequence.
+ *
+ * \ingroup statistical_functions
  */
 template <typename T> double Qn( T* x, T* xn )
 {
@@ -3541,4 +3594,4 @@ inline uint32 Hash32( const void* data, size_type size, uint32 seed = 0 )
 #endif   // __PCL_Math_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Math.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/Math.h - Released 2017-05-28T08:28:50Z

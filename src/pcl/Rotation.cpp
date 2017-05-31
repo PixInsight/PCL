@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Rotation.cpp - Released 2017-05-02T10:39:13Z
+// pcl/Rotation.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -187,20 +187,19 @@ private:
       ThreadData( double sinA, double cosA, const DPoint& a_center, const DPoint& a_origin,
                   int urWidth, int urHeight, int width, const StatusMonitor& a_status, size_type a_count ) :
          AbstractImage::ThreadData( a_status, a_count ),
-         f( nullptr ), fillValue( P::MinSampleValue() ),
          sa( sinA ), ca( cosA ), center( a_center ), origin( a_origin ),
          w0( urWidth ), h0( urHeight ), width( width )
       {
       }
 
-      typename P::sample* f;         // target data
-      typename P::sample  fillValue; // unmapped pixel value
-      double              sa, ca;    // sine and cosine of rotation angle
+      typename P::sample* f = nullptr; // target data
+      typename P::sample  fillValue = P::MinSampleValue(); // unmapped pixel value
+      double              sa, ca;      // sine and cosine of rotation angle
       DPoint              center;
       DPoint              origin;
-      int                 w0;        // unrotated width
-      int                 h0;        // unrotated height
-      int                 width;     // rotated width
+      int                 w0;          // unrotated width
+      int                 h0;          // unrotated height
+      int                 width;       // rotated width
    };
 
    template <class P>
@@ -278,4 +277,4 @@ void Rotation::Apply( pcl::UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Rotation.cpp - Released 2017-05-02T10:39:13Z
+// EOF pcl/Rotation.cpp - Released 2017-05-28T08:29:05Z

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/AdaptiveLocalFilter.cpp - Released 2017-05-02T10:39:13Z
+// pcl/AdaptiveLocalFilter.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -124,8 +124,7 @@ private:
    {
       ThreadData( GenericImage<P>& a_image, const AdaptiveLocalFilter& a_filter, size_type a_count ) :
          AbstractImage::ThreadData( a_image, a_count ),
-         image( a_image ),
-         filter( a_filter ),
+         image( a_image ), filter( a_filter ),
          noise( filter.UsingMAD() ? filter.Sigma() : filter.Sigma()*filter.Sigma() )
       {
       }
@@ -366,4 +365,4 @@ void AdaptiveLocalFilter::Apply( UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AdaptiveLocalFilter.cpp - Released 2017-05-02T10:39:13Z
+// EOF pcl/AdaptiveLocalFilter.cpp - Released 2017-05-28T08:29:05Z

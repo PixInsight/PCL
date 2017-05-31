@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Vector.h - Released 2017-05-02T10:38:59Z
+// pcl/Vector.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -127,8 +127,8 @@ public:
    typedef const T*                 const_iterator;
 
    /*!
-    * Constructs an empty vector.
-    * An empty vector has no component and zero length.
+    * Constructs an empty vector. An empty vector has no components and its
+    * length is zero.
     */
    GenericVector()
    {
@@ -149,7 +149,7 @@ public:
    }
 
    /*!
-    * Constructs a vector and fills it with a constant value.
+    * Constructs a vector and fills it with a constant component value.
     *
     * \param x       Initial value for all vector components.
     * \param len     Number of vector components (>= 0).
@@ -162,7 +162,8 @@ public:
    }
 
    /*!
-    * Constructs a vector and initializes it with values from a static array.
+    * Constructs a vector and initializes it with component values taken from a
+    * static array.
     *
     * \param a       Address of the first item of a static array for
     *                initialization of vector components. The array must provide
@@ -180,8 +181,8 @@ public:
    }
 
    /*!
-    * Constructs a three-component vector initialized with the specified
-    * \a x, \a y and \a z values.
+    * Constructs a three-component vector initialized with the specified \a x,
+    * \a y and \a z component values.
     */
    template <typename T1>
    GenericVector( const T1& x, const T1& y, const T1& z )
@@ -194,8 +195,8 @@ public:
    }
 
    /*!
-    * Constructs a four-component vector initialized with the specified
-    * \a x, \a y, \a z and \a t values.
+    * Constructs a four-component vector initialized with the specified \a x,
+    * \a y, \a z and \a t component values.
     */
    template <typename T1>
    GenericVector( const T1& x, const T1& y, const T1& z, const T1& t )
@@ -2765,4 +2766,4 @@ typedef F80Vector                   LDVector;
 #endif   // __PCL_Vector_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Vector.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/Vector.h - Released 2017-05-28T08:28:50Z

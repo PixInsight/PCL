@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/ImageColor.h - Released 2017-05-02T10:38:59Z
+// pcl/ImageColor.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -216,7 +216,7 @@ protected:
       }
    };
 
-   Color* m_color;
+   Color* m_color = nullptr;
 
    /*
     * The default RGB Working Space
@@ -228,12 +228,8 @@ protected:
     */
    static RGBColorSystem s_defaultRGBWS;
 
-   ImageColor() : m_color( nullptr )
-   {
-   }
-
+   ImageColor() = default;
    ImageColor( const ImageColor& ) = default;
-
    ImageColor& operator =( const ImageColor& ) = default;
 
    virtual ~ImageColor()
@@ -259,4 +255,4 @@ protected:
 #endif   // __PCL_ImageColor_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageColor.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/ImageColor.h - Released 2017-05-28T08:28:50Z

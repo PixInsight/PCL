@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-05-02T09:40:42.111Z
+# Generated on .... 2017-05-27T21:09:45.128Z
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ Windows/vc14
@@ -335,6 +335,7 @@
     <ClCompile Include="..\..\View.cpp"/>
     <ClCompile Include="..\..\ViewList.cpp"/>
     <ClCompile Include="..\..\ViewSelectionDialog.cpp"/>
+    <ClCompile Include="..\..\WebView.cpp"/>
     <ClCompile Include="..\..\Win32Exception.cpp"/>
     <ClCompile Include="..\..\XISF.cpp"/>
     <ClCompile Include="..\..\XISFReader.cpp"/>

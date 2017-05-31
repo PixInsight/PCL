@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Resample.cpp - Released 2017-05-02T10:39:13Z
+// pcl/Resample.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -242,11 +242,11 @@ private:
    {
       ThreadData( double a_xRatio, double a_yRatio, int a_width, const StatusMonitor& a_status, size_type a_count ) :
          AbstractImage::ThreadData( a_status, a_count ),
-         f( nullptr ), xRatio( a_xRatio ), yRatio( a_yRatio ), width( a_width )
+         xRatio( a_xRatio ), yRatio( a_yRatio ), width( a_width )
       {
       }
 
-      typename P::sample* f;
+      typename P::sample* f = nullptr;
                double     xRatio;
                double     yRatio;
                int        width;
@@ -328,4 +328,4 @@ void Resample::Apply( pcl::UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Resample.cpp - Released 2017-05-02T10:39:13Z
+// EOF pcl/Resample.cpp - Released 2017-05-28T08:29:05Z

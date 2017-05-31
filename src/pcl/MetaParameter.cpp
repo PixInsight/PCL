@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/MetaParameter.cpp - Released 2017-05-02T10:39:13Z
+// pcl/MetaParameter.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -436,4 +436,4 @@ uint32 MetaBlock::APIParType() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaParameter.cpp - Released 2017-05-02T10:39:13Z
+// EOF pcl/MetaParameter.cpp - Released 2017-05-28T08:29:05Z

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/XISFWriter.cpp - Released 2017-05-02T10:39:13Z
+// pcl/XISFWriter.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -1082,20 +1082,23 @@ private:
    void CompressBlock( XISFOutputBlock& block, int itemSize )
    {
       size_type uncompressedSize = block.data.Length();
-      int compressionLevel = XISF::CompressionLevelForMethod( m_xisfOptions.compressionCodec, m_xisfOptions.compressionLevel );
-      if ( m_xisfOptions.verbosity > 0 )
-         Log( "<end><cbr>Compressing block (" +
-               String( XISF::CompressionCodecId( m_xisfOptions.compressionCodec ) ) +
-               String().Format( ":%d): ", compressionLevel ) +
-               File::SizeAsString( uncompressedSize ) + " -> " );
-
-      block.CompressData( m_xisfOptions.compressionCodec, itemSize, compressionLevel );
-
-      if ( m_xisfOptions.verbosity > 0 )
+      if ( uncompressedSize > 64u ) // the minimum compressible length for all supported codecs
       {
-         size_type compressedSize = block.BlockSize();
-         LogLn( File::SizeAsString( compressedSize ) +
-            String().Format( " (%.2f%%)", 100*double( uncompressedSize - compressedSize )/uncompressedSize ) );
+         int compressionLevel = XISF::CompressionLevelForMethod( m_xisfOptions.compressionCodec, m_xisfOptions.compressionLevel );
+         if ( m_xisfOptions.verbosity > 0 )
+            Log( "<end><cbr>Compressing block (" +
+                 String( XISF::CompressionCodecId( m_xisfOptions.compressionCodec ) ) +
+                 String().Format( ":%d): ", compressionLevel ) +
+                 File::SizeAsString( uncompressedSize ) + " -> " );
+
+         block.CompressData( m_xisfOptions.compressionCodec, itemSize, compressionLevel );
+
+         if ( m_xisfOptions.verbosity > 0 )
+         {
+            size_type compressedSize = block.BlockSize();
+            LogLn( File::SizeAsString( compressedSize ) +
+               String().Format( " (%.2f%%)", 100*double( uncompressedSize - compressedSize )/uncompressedSize ) );
+         }
       }
    }
 
@@ -1625,6 +1628,30 @@ void XISFWriter::WriteImage( const UInt32Image& image )
    m_engine->WriteImage( image );
 }
 
+void XISFWriter::WriteImage( const ImageVariant& image )
+{
+   if ( image )
+      if ( image.IsFloatSample() )
+         switch ( image.BitsPerSample() )
+         {
+         case 32: WriteImage( static_cast<const Image&>( *image ) ); break;
+         case 64: WriteImage( static_cast<const DImage&>( *image ) ); break;
+         }
+      else if ( image.IsComplexSample() )
+         switch ( image.BitsPerSample() )
+         {
+         case 32: WriteImage( static_cast<const ComplexImage&>( *image ) ); break;
+         case 64: WriteImage( static_cast<const DComplexImage&>( *image ) ); break;
+         }
+      else
+         switch ( image.BitsPerSample() )
+         {
+         case  8: WriteImage( static_cast<const UInt8Image&>( *image ) ); break;
+         case 16: WriteImage( static_cast<const UInt16Image&>( *image ) ); break;
+         case 32: WriteImage( static_cast<const UInt32Image&>( *image ) ); break;
+         }
+}
+
 // ----------------------------------------------------------------------------
 
 void XISFWriter::CreateImage( const ImageInfo& info )
@@ -1704,4 +1731,4 @@ void XISFWriter::CheckClosedStream( const char* memberFunction ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/XISFWriter.cpp - Released 2017-05-02T10:39:13Z
+// EOF pcl/XISFWriter.cpp - Released 2017-05-28T08:29:05Z

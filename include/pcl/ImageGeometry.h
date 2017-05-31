@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/ImageGeometry.h - Released 2017-05-02T10:38:59Z
+// pcl/ImageGeometry.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -371,14 +371,10 @@ protected:
       }
    };
 
-   Geometry* m_geometry;
+   Geometry* m_geometry = nullptr;
 
-   ImageGeometry() : m_geometry( nullptr )
-   {
-   }
-
+   ImageGeometry() = default;
    ImageGeometry( const ImageGeometry& ) = default;
-
    ImageGeometry& operator =( const ImageGeometry& ) = default;
 
    virtual ~ImageGeometry()
@@ -405,4 +401,4 @@ protected:
 #endif   // __PCL_ImageGeometry_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageGeometry.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/ImageGeometry.h - Released 2017-05-28T08:28:50Z

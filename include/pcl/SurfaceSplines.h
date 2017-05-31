@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/SurfaceSplines.h - Released 2017-05-02T10:38:59Z
+// pcl/SurfaceSplines.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -501,7 +501,12 @@ public:
 
 private:
 
-   typedef BicubicSplineInterpolation<double> grid_interpolation;
+   /*!
+    * N.B.: Here we need a smooth interpolation function without negative
+    * lobes, in order to prevent small-scale oscillations. Other options are
+    * BilinearInterpolation and CubicBSplineFilter.
+    */
+   typedef BicubicBSplineInterpolation<double> grid_interpolation;
 
    Rect               m_rect;
    int                m_delta;
@@ -542,9 +547,238 @@ private:
 
 // ----------------------------------------------------------------------------
 
+/*!
+ * \class GridInterpolation
+ * \brief Discretized scalar surface spline interpolation/approximation in two
+ *        dimensions
+ *
+ * This class performs the same tasks as SurfaceSpline, but allows for much
+ * faster interpolation (maybe orders of magnitude faster, depending on
+ * interpolation vector lengths) with negligible accuracy loss in most
+ * practical applications.
+ */
+class GridInterpolation
+{
+public:
+
+   /*!
+    * Default constructor. Yields an empty instance that cannot be used without
+    * initialization.
+    */
+   GridInterpolation() : m_parallel( true )
+   {
+   }
+
+   /*!
+    * Copy constructor.
+    */
+   GridInterpolation( const GridInterpolation& ) = default;
+
+   /*!
+    * Move constructor.
+    */
+#ifndef _MSC_VER
+   GridInterpolation( GridInterpolation&& ) = default;
+#endif
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
+    */
+   GridInterpolation& operator =( const GridInterpolation& ) = default;
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+#ifndef _MSC_VER
+   GridInterpolation& operator =( GridInterpolation&& ) = default;
+#endif
+
+   /*!
+    * Initializes this %GridInterpolation object for the specified input data
+    * and interpolation parameters.
+    *
+    * \param rect    Reference rectangle. Interpolation will be initialized
+    *                within the boundaries of this rectangle at discrete
+    *                \a delta coordinate intervals.
+    *
+    * \param delta   Grid distance for calculation of discrete function values.
+    *                Must be > 0.
+    *
+    * \param S       Reference to a SurfaceSpline object that will be used as
+    *                the underlying interpolation to compute interpolation
+    *                values at discrete coordinate intervals. This object must
+    *                be previously initialized and must be valid.
+    *
+    * \param verbose If true, this function will write information to the
+    *                standard PixInsight console to provide some feedback to
+    *                the user during the (potentially long) initialization
+    *                process. If false, no feedback will be provided.
+    *
+    * If parallel processing is allowed for this object, this function executes
+    * the interpolation initialization process using multiple concurrent
+    * threads (see EnableParallelProcessing()).
+    */
+   template <typename T>
+   void Initialize( const Rect& rect, int delta, const SurfaceSpline<T>& S, bool verbose = true )
+   {
+      m_rect = rect;
+      m_delta = delta;
+
+      int w = rect.Width();
+      int h = rect.Height();
+      int rows = 1 + h/m_delta + ((h%m_delta) ? 1 : 0);
+      int cols = 1 + w/m_delta + ((w%m_delta) ? 1 : 0);
+
+      m_G = DMatrix( rows, cols );
+
+      if ( verbose )
+         Console().WriteLn( "<end><cbr>Building 2D surface interpolation grid...<flush>" );
+
+      int numberOfThreads = m_parallel ? Thread::NumberOfThreads( rows, 1 ) : 1;
+      int rowsPerThread = rows/numberOfThreads;
+      ReferenceArray<GridInitializationThread<T> > threads;
+      for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
+         threads.Add( new GridInitializationThread<T>( *this, S,
+                                                       i*rowsPerThread,
+                                                       (j < numberOfThreads) ? j*rowsPerThread : rows ) );
+      int n = 0;
+      for ( GridInitializationThread<T>& thread : threads )
+         thread.Start( ThreadPriority::DefaultMax, n++ );
+      for ( GridInitializationThread<T>& thread : threads )
+         thread.Wait();
+      threads.Destroy();
+
+      m_I.Initialize( m_G.Begin(), cols, rows );
+   }
+
+   /*!
+    * Returns true iff this is a valid, initialized object ready for
+    * interpolation.
+    */
+   bool IsValid() const
+   {
+      return !m_G.IsEmpty();
+   }
+
+   /*!
+    * Returns the current interpolation reference rectangle. See Initialize()
+    * for more information.
+    */
+   const Rect& ReferenceRect() const
+   {
+      return m_rect;
+   }
+
+   /*!
+    * Returns the current grid distance for calculation of discrete function
+    * values. See Initialize() for more information.
+    */
+   int Delta() const
+   {
+      return m_delta;
+   }
+
+   /*!
+    * Returns an interpolated function value at the specified coordinates.
+    */
+   template <typename T>
+   double operator ()( T x, T y ) const
+   {
+      double fx = (double( x ) - m_rect.x0)/m_delta;
+      double fy = (double( y ) - m_rect.y0)/m_delta;
+      return m_I( fx, fy );
+   }
+
+   /*!
+    * Returns an interpolated function value at \a p.x and \a p.y coordinates.
+    */
+   template <typename T>
+   double operator ()( const GenericPoint<T>& p ) const
+   {
+      return operator ()( p.x, p.y );
+   }
+
+   /*!
+    * Returns true iff this object is allowed to use multiple parallel
+    * execution threads (when multiple threads are permitted and available).
+    */
+   bool IsParallelProcessingEnabled() const
+   {
+      return m_parallel;
+   }
+
+   /*!
+    * Enables parallel processing for this instance.
+    *
+    * \param enable  Whether to enable or disable parallel processing. True by
+    *                default.
+    *
+    * Parallel processing is applied during the interpolation initialization
+    * process (see the Initialize() member function).
+    */
+   void EnableParallelProcessing( bool enable ) // ### TODO: Add a maxProcessors parameter
+   {
+      m_parallel = enable;
+   }
+
+   /*!
+    * Disables parallel processing for this instance.
+    *
+    * This is a convenience function, equivalent to:
+    * EnableParallelProcessing( !disable )
+    */
+   void DisableParallelProcessing( bool disable )
+   {
+      EnableParallelProcessing( !disable );
+   }
+
+private:
+
+   /*!
+    * N.B.: Here we need a smooth interpolation function without negative
+    * lobes, in order to prevent small-scale oscillations. Other options are
+    * BilinearInterpolation and CubicBSplineFilter.
+    */
+   typedef BicubicBSplineInterpolation<double> grid_interpolation;
+
+   Rect               m_rect;
+   int                m_delta;
+   DMatrix            m_G;
+   grid_interpolation m_I;
+   bool               m_parallel : 1;
+
+   template <typename T>
+   class GridInitializationThread : public Thread
+   {
+   public:
+
+      typedef SurfaceSpline<T> scalar_interpolation;
+
+      GridInitializationThread( GridInterpolation& grid, const scalar_interpolation& splines, int startRow, int endRow ) :
+         m_grid( grid ), m_splines( splines ), m_startRow( startRow ), m_endRow( endRow )
+      {
+      }
+
+      virtual PCL_HOT_FUNCTION void Run()
+      {
+         for ( int i = m_startRow; i < m_endRow; ++i )
+            for ( int j = 0, dx = 0, y = m_grid.m_rect.y0 + i*m_grid.m_delta; j < m_grid.m_G.Cols(); ++j, dx += m_grid.m_delta )
+               m_grid.m_G[i][j] = m_splines( m_grid.m_rect.x0 + dx, y );
+      }
+
+   private:
+
+      GridInterpolation&          m_grid;
+      const scalar_interpolation& m_splines;
+      int                         m_startRow, m_endRow;
+   };
+};
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 #endif   // __PCL_SurfaceSplines_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SurfaceSplines.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/SurfaceSplines.h - Released 2017-05-28T08:28:50Z

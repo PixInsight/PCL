@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Console.cpp - Released 2017-05-02T10:39:13Z
+// pcl/Console.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -51,6 +51,7 @@
 
 #include <pcl/Console.h>
 #include <pcl/MetaModule.h>
+#include <pcl/View.h>
 
 #include <pcl/api/APIInterface.h>
 #include <pcl/api/APIException.h>
@@ -270,23 +271,65 @@ void Console::Clear()
 
 // ----------------------------------------------------------------------------
 
-/*
- *
- * ### DISABLED FUNCTION - FOR SECURITY REASONS                            ###
- * ### DO NOT ENABLE THIS FUNCTION FOR PRODUCTION MODULES                  ###
- *
- *
-void Console::Execute( const String& command )
+void Console::ExecuteCommand( const String& command )
 {
-   if ( m_thread == 0 )
-      if ( (*API->Global->ExecuteCommand)( ModuleHandle(), m_handle, command.c_str() ) == api_false )
-         throw APIFunctionError( "ExecuteCommand" );
+   if ( m_thread != nullptr )
+      throw Error( "Console::ExecuteCommand() can only be invoked from the root thread." );
+
+   if ( (*API->Global->ExecuteCommand)( ModuleHandle(), m_handle, command.c_str() ) == api_false )
+      throw APIFunctionError( "ExecuteCommand" );
 }
- */
+
+// ----------------------------------------------------------------------------
+
+static String MakeScriptArguments( const StringKeyValueList& arguments )
+{
+   String scriptArgs;
+   for ( const StringKeyValue& arg : arguments )
+   {
+      String value = arg.value;
+      value.ReplaceString( "$", "\\$" ); // disable $ macro expansion in script arguments
+      scriptArgs << " -p=\""
+                 << arg.key
+                 << ','
+                 << value
+                 << '\"';
+   }
+   return scriptArgs;
+}
+
+// ----------------------------------------------------------------------------
+
+void Console::ExecuteScript( const String& filePath, const StringKeyValueList& arguments )
+{
+   ExecuteCommand( "run -x" + MakeScriptArguments( arguments ) +
+                   " \"" + filePath + '\"' );
+}
+
+// ----------------------------------------------------------------------------
+
+void Console::ExecuteScriptGlobal( const String& filePath, const StringKeyValueList& arguments )
+{
+   ExecuteCommand( "run -x" + MakeScriptArguments( arguments ) +
+                   " -p=\"isGlobalTarget,true\""
+                   " -p=\"isViewTarget,false\""
+                   " \"" + filePath + '\"' );
+}
+
+// ----------------------------------------------------------------------------
+
+void Console::ExecuteScriptOn( const View& view, const String& filePath, const StringKeyValueList& arguments )
+{
+   ExecuteCommand( "run -x" + MakeScriptArguments( arguments ) +
+                   " -p=\"isGlobalTarget,false\""
+                   " -p=\"isViewTarget,true\""
+                   " -p=\"targetView," + view.FullId() + '\"' +
+                   " \"" + filePath + '\"' );
+}
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Console.cpp - Released 2017-05-02T10:39:13Z
+// EOF pcl/Console.cpp - Released 2017-05-28T08:29:05Z

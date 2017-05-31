@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/TimePoint.h - Released 2017-05-02T10:38:59Z
+// pcl/TimePoint.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -506,6 +506,22 @@ public:
    IsoString ToIsoString( const char* format ) const
    {
       return ToIsoString( IsoString( format ) );
+   }
+
+   /*!
+    * String conversion operator. Equivalent to ToString().
+    */
+   explicit operator String() const
+   {
+      return ToString();
+   }
+
+   /*!
+    * IsoString conversion operator. Equivalent to ToIsoString().
+    */
+   explicit operator IsoString() const
+   {
+      return ToIsoString();
    }
 
    /*!
@@ -1084,4 +1100,4 @@ inline TimePoint operator -( const TimePoint& t, double d )
 #endif   // __PCL_TimePoint_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/TimePoint.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/TimePoint.h - Released 2017-05-28T08:28:50Z

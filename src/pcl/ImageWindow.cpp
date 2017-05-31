@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/ImageWindow.cpp - Released 2017-05-02T10:39:13Z
+// pcl/ImageWindow.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -482,27 +482,24 @@ void ImageWindow::SetGlobalRGBWS( const RGBColorSystem& rgbws )
 
 // ----------------------------------------------------------------------------
 
-bool ImageWindow::GetKeywords( FITSKeywordArray& keywords ) const
+FITSKeywordArray ImageWindow::Keywords() const
 {
-   keywords.Clear();
-
+   FITSKeywordArray keywords;
    int n = (*API->ImageWindow->GetImageWindowKeywordCount)( handle );
-   if ( n <= 0 )
-      return false;
-
-   for ( int i = 0; i < n; ++i )
-   {
-      IsoString name, value, comment;
-      name.Reserve( 16 );
-      value.Reserve( 96 );
-      comment.Reserve( 96 );
-      (*API->ImageWindow->GetImageWindowKeyword)( handle, i, name.Begin(), 16, value.Begin(), 96, comment.Begin(), 96 );
-      name.ResizeToNullTerminated();
-      value.ResizeToNullTerminated();
-      comment.ResizeToNullTerminated();
-      keywords << FITSHeaderKeyword( name.c_str(), value.c_str(), comment.c_str() );
-   }
-   return true;
+   if ( n > 0 )
+      for ( int i = 0; i < n; ++i )
+      {
+         IsoString name, value, comment;
+         name.Reserve( 16 );
+         value.Reserve( 96 );
+         comment.Reserve( 96 );
+         (*API->ImageWindow->GetImageWindowKeyword)( handle, i, name.Begin(), 16, value.Begin(), 96, comment.Begin(), 96 );
+         name.ResizeToNullTerminated();
+         value.ResizeToNullTerminated();
+         comment.ResizeToNullTerminated();
+         keywords << FITSHeaderKeyword( name.c_str(), value.c_str(), comment.c_str() );
+      }
+   return keywords;
 }
 
 // ----------------------------------------------------------------------------
@@ -1162,4 +1159,4 @@ Array<ImageWindow> ImageWindow::AllWindows( bool includeIconicWindows )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageWindow.cpp - Released 2017-05-02T10:39:13Z
+// EOF pcl/ImageWindow.cpp - Released 2017-05-28T08:29:05Z

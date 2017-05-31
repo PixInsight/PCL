@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/CharTraits.h - Released 2017-05-02T10:38:59Z
+// pcl/CharTraits.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -1450,4 +1450,4 @@ public:
 #endif   // __PCL_CharTraits_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/CharTraits.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/CharTraits.h - Released 2017-05-28T08:28:50Z

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/MetaModule.h - Released 2017-05-02T10:38:59Z
+// pcl/MetaModule.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -61,6 +61,7 @@
 
 #include <pcl/MetaObject.h>
 #include <pcl/String.h>
+#include <pcl/Variant.h>
 
 namespace pcl
 {
@@ -558,6 +559,44 @@ public:
     */
    void UnloadResource( const String& filePath, const String& rootPath = String() );
 
+   /*!
+    * Executes a script in the platform's core scripting engine.
+    *
+    * \param sourceCode    A string containing valid source code in the
+    *                      specified \a language.
+    *
+    * \param language      The name of a supported scripting language.
+    *                      Currently only the JavaScript language is supported
+    *                      by this function. JavaScript is assumed if this
+    *                      string is either empty or equal to "JavaScript".
+    *
+    * Returns the result value of the executed script. The result value is the
+    * value of the last executed expression statement in the script that is not
+    * in a function definition.
+    *
+    * The script will be executed in the core JavaScript Runtime (PJSR). All
+    * PJSR resources are available.
+    *
+    * If the script cannot be evaluated, for example because it has syntax
+    * errors, or attempts to execute invalid code, or throws an exception, this
+    * member function throws an Error exception.
+    *
+    * \note This function can only be called from the root thread, since the
+    * core JavaScript engine in not reentrant in current versions of
+    * PixInsight. Calling this function from a running thread will throw an
+    * Error exception.
+    *
+    * \warning You should make sure that your code has been well tested before
+    * calling this function. PixInsight pursues efficiency and script execution
+    * is no exception. Nothing will protect or watch your code, or help you
+    * stop it at any point. If your code enters an infinite loop, it will crash
+    * the whole PixInsight platform without remedy. Also bear in mind that
+    * scripts are extremely powerful and potentially dangerous if you don't
+    * know well what you are doing. What happens during execution of your
+    * scripts is your entire responsibility. We mean it.
+    */
+   Variant EvaluateScript( const String& sourceCode, const IsoString& language = IsoString() );
+
 private:
 
    virtual void PerformAPIDefinitions() const;
@@ -916,4 +955,4 @@ namespace InstallMode
 #endif   // __PCL_MetaModule_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaModule.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/MetaModule.h - Released 2017-05-28T08:28:50Z

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/NetworkTransfer.cpp - Released 2017-05-02T10:39:13Z
+// pcl/NetworkTransfer.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -143,6 +143,14 @@ void NetworkTransfer::SetSSL( bool useSSL, bool forceSSL, bool verifyPeer, bool 
 
 // ----------------------------------------------------------------------------
 
+void NetworkTransfer::SetCustomHTTPHeaders( const String& nlsHeaders )
+{
+   if ( (*API->NetworkTransfer->SetNetworkTransferCustomHTTPHeaders)( handle, nlsHeaders.c_str() ) == api_false )
+      throw APIFunctionError( "SetNetworkTransferCustomHTTPHeaders" );
+}
+
+// ----------------------------------------------------------------------------
+
 void NetworkTransfer::SetConnectionTimeout( int seconds )
 {
    if ( (*API->NetworkTransfer->SetNetworkTransferConnectionTimeout)( handle, seconds ) == api_false )
@@ -220,6 +228,24 @@ String NetworkTransfer::ProxyURL() const
       url.ResizeToNullTerminated();
    }
    return url;
+}
+
+// ----------------------------------------------------------------------------
+
+String NetworkTransfer::CustomHTTPHeaders() const
+{
+   size_type len = 0;
+   (*API->NetworkTransfer->GetNetworkTransferCustomHTTPHeaders)( handle, 0, &len );
+
+   String nlsHeaders;
+   if ( len > 0 )
+   {
+      nlsHeaders.SetLength( len );
+      if ( (*API->NetworkTransfer->GetNetworkTransferCustomHTTPHeaders)( handle, nlsHeaders.Begin(), &len ) == api_false )
+         throw APIFunctionError( "GetNetworkTransferCustomHTTPHeaders" );
+      nlsHeaders.ResizeToNullTerminated();
+   }
+   return nlsHeaders;
 }
 
 // ----------------------------------------------------------------------------
@@ -352,4 +378,4 @@ void* NetworkTransfer::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/NetworkTransfer.cpp - Released 2017-05-02T10:39:13Z
+// EOF pcl/NetworkTransfer.cpp - Released 2017-05-28T08:29:05Z

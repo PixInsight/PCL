@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/ButtonCodes.h - Released 2017-05-02T10:38:59Z
+// pcl/ButtonCodes.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -102,10 +102,10 @@ typedef Flags<MouseButton::mask_type>  MouseButtons;
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>KeyModifier::Shift</td>    <td>Shift key</td></tr>
- * <tr><td>KeyModifier::Control</td>  <td>Control key</td></tr>
+ * <tr><td>KeyModifier::Control</td>  <td>Control key (Command key on macOS)</td></tr>
  * <tr><td>KeyModifier::Alt</td>      <td>Alt key</td></tr>
  * <tr><td>KeyModifier::SpaceBar</td> <td>Space bar</td></tr>
- * <tr><td>KeyModifier::Meta</td>     <td>Meta key (Mac OS X)</td></tr>
+ * <tr><td>KeyModifier::Meta</td>     <td>Meta key (Control key on macOS)</td></tr>
  * </table>
  */
 namespace KeyModifier
@@ -113,10 +113,10 @@ namespace KeyModifier
    enum mask_type
    {
       Shift    = 0x01,  // Shift key
-      Control  = 0x02,  // Control key
+      Control  = 0x02,  // Control key (= Command on macOS)
       Alt      = 0x04,  // Alt key
       SpaceBar = 0x08,  // Space bar
-      Meta     = 0x10   // Meta key (Mac OS X)
+      Meta     = 0x10   // Meta key (= Control on macOS)
    };
 }
 
@@ -132,4 +132,4 @@ typedef Flags<KeyModifier::mask_type>  KeyModifiers;
 #endif   // __PCL_ButtonCodes_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ButtonCodes.h - Released 2017-05-02T10:38:59Z
+// EOF pcl/ButtonCodes.h - Released 2017-05-28T08:28:50Z

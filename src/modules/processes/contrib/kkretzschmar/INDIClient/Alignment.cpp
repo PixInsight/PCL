@@ -107,6 +107,10 @@ void AlignmentModel::getPseudoInverse(Matrix& pseudoInverse, const Matrix& matri
 	pseudoInverse = svd.V * WInverse * svd.U.Transpose();
 }
 
+pcl_enum AlignmentModel::getPierSide(double hourAngle) {
+	return (!m_modelEachPierSide || hourAngle >= 0 ) ? IMCPierSide::West : IMCPierSide::East;
+}
+
 static const double scaleArcmin = 60.0;
 static const double factorHaToDeg = 15.0;
 
@@ -274,16 +278,19 @@ void GeneralAnalyticalPointingModel::ApplyInverse(double& hourAngleCor, double& 
 }
 
 void GeneralAnalyticalPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArray) {
-
+	double residual=0;
 	if (!m_modelEachPierSide){
-		fitModelForPierSide(syncPointArray, IMCPierSide::None);
+		fitModelForPierSide(syncPointArray, IMCPierSide::None, residual);
+		m_residuals.Add(residual);
 	} else {
-		fitModelForPierSide(syncPointArray, IMCPierSide::West);
-		fitModelForPierSide(syncPointArray, IMCPierSide::East);
+		fitModelForPierSide(syncPointArray, IMCPierSide::West, residual);
+		m_residuals.Add(residual);
+		fitModelForPierSide(syncPointArray, IMCPierSide::East, residual);
+		m_residuals.Add(residual);
 	}
 }
 
-void GeneralAnalyticalPointingModel::fitModelForPierSide(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide)
+void GeneralAnalyticalPointingModel::fitModelForPierSide(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide, double& residual)
 {
 
 	// Count data points for each pier side
@@ -296,13 +303,12 @@ void GeneralAnalyticalPointingModel::fitModelForPierSide(const Array<SyncDataPoi
 
 	// fill a design matrix and an displacement vector
 	Matrix* designMatrices        = nullptr;
-	Vector* meauredDisplacements  = nullptr;
-
+	Vector* measuredDisplacements  = nullptr;
 
 	//  design matrix
 	designMatrices = new Matrix(2 * numOfPoints, m_numOfModelParameters);
 	// alignmentErrorVecotr
-	meauredDisplacements = new Vector (2 * numOfPoints);
+	measuredDisplacements = new Vector (2 * numOfPoints);
 
 	// fill design matrices
 	size_t counts = 0;
@@ -325,8 +331,8 @@ void GeneralAnalyticalPointingModel::fitModelForPierSide(const Array<SyncDataPoi
 		}
 
 		// compute measured alignment error
-		(*meauredDisplacements) [2*counts]     = (celestialHourAngle - telescopeHourAngle)*factorHaToDeg;
-		(*meauredDisplacements) [2*counts + 1] = syncPoint.celestialDEC - syncPoint.telecopeDEC;
+		(*measuredDisplacements) [2*counts]     = (celestialHourAngle - telescopeHourAngle)*factorHaToDeg;
+		(*measuredDisplacements) [2*counts + 1] = syncPoint.celestialDEC - syncPoint.telecopeDEC;
 
 		counts++;
 	}
@@ -338,14 +344,21 @@ void GeneralAnalyticalPointingModel::fitModelForPierSide(const Array<SyncDataPoi
 
 	// fit parameters
 	if (pierSide == IMCPierSide::None || pierSide == IMCPierSide::West) {
-		*m_pointingModelWest = pseudoInverse * *meauredDisplacements;
+		*m_pointingModelWest = pseudoInverse * *measuredDisplacements;
+		// compute residual
+		Vector residualVector = (*designMatrices) * *m_pointingModelWest - *measuredDisplacements;
+		residual = residualVector.Norm() / m_pointingModelWest->Norm();
 
 	}
 	if (pierSide == IMCPierSide::East) {
-		*m_pointingModelEast = pseudoInverse * *meauredDisplacements;
+		*m_pointingModelEast = pseudoInverse * *measuredDisplacements;
+		// compute residual
+		Vector residualVector = (*designMatrices) * *m_pointingModelEast - *measuredDisplacements;
+		residual = residualVector.Norm() / m_pointingModelEast->Norm();
 	}
+
 	delete designMatrices;
-	delete meauredDisplacements;
+	delete measuredDisplacements;
 }
 
 
@@ -356,23 +369,22 @@ void GeneralAnalyticalPointingModel::writeObject(const String& fileName)
 
 	// west (or pierSide == None)
 	fileContent.Append(IsoString().Format("%d,", m_modelEachPierSide ? IMCPierSide::West : IMCPierSide::None));
-	for (size_t i=0; i < this->m_numOfModelParameters; ++i){
-		if (i < m_numOfModelParameters-1)
+	for (size_t i=0; i < m_numOfModelParameters + 1; ++i){
+		if (i < m_numOfModelParameters)
 			fileContent.Append(IsoString().Format("%f,",(*m_pointingModelWest)[i]));
 		else
-			fileContent.Append(IsoString().Format("%f",(*m_pointingModelWest)[i]));
+			fileContent.Append(IsoString().Format("%f",m_residuals[IMCPierSide::West]));
 	}
 	fileContent.Append("\n");
-
 
 	// east
 	if (m_modelEachPierSide) {
 		fileContent.Append(IsoString().Format("%d,",IMCPierSide::East));
-		for (size_t i=0; i < this->m_numOfModelParameters; ++i){
-			if (i < m_numOfModelParameters-1)
+		for (size_t i=0; i < this->m_numOfModelParameters + 1; ++i){
+			if (i < m_numOfModelParameters)
 				fileContent.Append(IsoString().Format("%f,",(*m_pointingModelEast)[i]));
 			else
-				fileContent.Append(IsoString().Format("%f",(*m_pointingModelEast)[i]));
+				fileContent.Append(IsoString().Format("%f",m_residuals[IMCPierSide::East]));
 		}
 		fileContent.Append("\n");
 	}
@@ -400,7 +412,7 @@ void GeneralAnalyticalPointingModel::readObject(const String& fileName)
 		IsoStringList tokens;
 		modelParameterList[i].Break(tokens, ",", true);
 
-		if (tokens.Length()!= m_numOfModelParameters + 1)
+		if (tokens.Length() != m_numOfModelParameters + 2)
 			break;
 
 		if ((pcl_enum) tokens[0].ToInt() == IMCPierSide::None || (pcl_enum) tokens[0].ToInt() == IMCPierSide::West){
@@ -426,7 +438,9 @@ void GeneralAnalyticalPointingModel::readObject(const String& fileName)
 }
 
 
-void GeneralAnalyticalPointingModel::printParameterVector(Vector* parameters){
+void GeneralAnalyticalPointingModel::printParameterVector(Vector* parameters, double residual){
+	m_console.WriteLn( String().Format("<end>* fitting residual :.. ................................................%+.2f ",residual));
+
 	m_console.WriteLn( String().Format("<end>** hour angle offset:..................................................%+.2f (arcmin)",(*parameters)[0]*scaleArcmin));
 	m_console.WriteLn( String().Format("<end>** declination offset:.................................................%+.2f (arcmin)",(*parameters)[1]*scaleArcmin));
 	double poleSep = Sqrt((*parameters)[4] * (*parameters)[4] + (*parameters)[5]* (*parameters)[5]);
@@ -450,10 +464,10 @@ void GeneralAnalyticalPointingModel::printParameters() {
 
 
 	if (m_modelEachPierSide) m_console.WriteLn("<end><cbr><br>* Pierside: West");
-	printParameterVector(m_pointingModelWest);
+	printParameterVector(m_pointingModelWest, m_residuals[0]);
 	if (m_modelEachPierSide){
 		m_console.WriteLn("<end><cbr><br>* Pierside: East");
-		printParameterVector(m_pointingModelEast);
+		printParameterVector(m_pointingModelEast, m_residuals[1]);
 	}
 }
 

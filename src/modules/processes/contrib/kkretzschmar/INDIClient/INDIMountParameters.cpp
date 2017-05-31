@@ -114,7 +114,7 @@ DEFINE_BOOLEAN_PARAMETER_CLASS(IMCComputeApparentPosition,"computeApparentPositi
 
 // ----------------------------------------------------------------------------
 
-DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCCurrentLST,"currentLST",8,-1,-1,24);
+DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCCurrentLST,"currentLST",8,0,0,24);
 
 // ----------------------------------------------------------------------------
 
@@ -134,7 +134,7 @@ DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCApparentTargetDec,"apparentTargetDec"
 
 // ----------------------------------------------------------------------------
 
-DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCGeographicLatitude,"geographicLatitude",7,-91,-91,90);
+DEFINE_DOUBLE_PARAMETER_CLASS(IMCGeographicLatitude,"geographicLatitude",7,-91,-91,90);
 
 // ----------------------------------------------------------------------------
 
@@ -144,7 +144,7 @@ DEFINE_ENUM_PARAMETER_CLASS(IMCPierSide,"PierSide",PIERSIDE_ENUM, None);
 
 // ----------------------------------------------------------------------------
 
-DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncLST,"syncLST",8,-1,-1,24);
+DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncLST,"syncLST",8,0,0,24);
 DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncCelestialRA,"syncCelestialRA",8,0,0,24);
 DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncCelestialDec,"syncCelestialDec",7,0,-90,90);
 DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncTelescopeRA,"syncTelescopeRA",8,0,0,24);

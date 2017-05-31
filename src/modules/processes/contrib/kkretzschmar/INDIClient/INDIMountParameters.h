@@ -74,8 +74,8 @@ DECLARE_STRING_PARAMETER_CLASS(IMCDeviceName);
 		        ENUM_ITEM(MoveSouthStart) ENUM_ITEM(MoveSouthStop)\
 				ENUM_ITEM(MoveWestStart) ENUM_ITEM(MoveWestStop)\
 				ENUM_ITEM(MoveEastStart) ENUM_ITEM(MoveEastStop)\
-				ENUM_ITEM(GoTo) ENUM_ITEM(Sync)\
-				ENUM_ITEM(ParkDefault)
+				ENUM_ITEM(GoTo) ENUM_ITEM(Sync) ENUM_ITEM(ParkDefault)\
+				ENUM_ITEM(FitPointingModel) ENUM_ITEM(TestSync)
 
 
 
@@ -122,7 +122,7 @@ DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCApparentTargetDec);
 
 // ----------------------------------------------------------------------------
 
-DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCGeographicLatitude);
+DECLARE_DOUBLE_PARAMETER_CLASS(IMCGeographicLatitude);
 
 // ----------------------------------------------------------------------------
 

@@ -113,54 +113,84 @@ function INDIMountControllerTests( parent )
       }
    );
 
-   this.add(
-      function testSync()
-      {
-         let mountController = new INDIMount;
-         mountController.deviceName = MOUNT_DEVICE_NAME;
-         // execute in the global context to unpark
-         assertTrue( mountController.executeGlobal() );
-         // set synch command
-         mountController.Command = 11; // Sync
-         mountController.targetRA = mountController.currentRA - 0.01;
-         mountController.targetDec = mountController.currentDec + 0.01;
-         // execute in the global context
-         assertTrue( mountController.executeGlobal() );
-         // check current coordinates
-         expectEqualsWithPrecision( mountController.targetRA, mountController.currentRA, 0.1 );
-         expectEqualsWithPrecision( mountController.targetDec, mountController.currentDec, 0.1 );
 
-         // restore original positions
-         mountController.targetRA = mountController.currentRA + 0.01;
-         mountController.targetDec = mountController.currentDec - 0.01;
-         // execute in the global context
-         assertTrue( mountController.executeGlobal() );
-         // check current coordinates
-         expectEqualsWithPrecision( mountController.targetRA, mountController.currentRA, 0.1 );
-         expectEqualsWithPrecision( mountController.targetDec, mountController.currentDec, 0.1 );
-      }
-   );
 
    this.add(
-      function testAlignmentCorrection()
+      function testPointingModel()
       {
-         let mountController = new INDIMount;
-         mountController.deviceName = MOUNT_DEVICE_NAME;
-         mountController.alignmentModelFile="/home/klaus/data/Cpp/PCL/src/modules/processes/contrib/kkretzschmar/INDIClient/tests/OffsetTest.csv"
+         let currentDir = File.extractDirectory( #__FILE__ );
+         let pointingModelFile = currentDir + "/TestPointingModel.csv";
+         let syncDataFile = currentDir + "/TestSyncData.csv";
+         let pointingModelFileCreated = currentDir + "/TestPointingModelCreated.csv";
+
+         let mountController=new INDIMount;
+         mountController.deviceName=MOUNT_DEVICE_NAME;
+         mountController.alignmentModelFile=pointingModelFile;
+         assertTrue(File.exists(mountController.alignmentModelFile));
          mountController.AlignmentMethod=0;
-         mountController.enableAlignmentCorrection=true;
-         mountController.alignmentConfig=2;
-
-         mountController.targetRA = 1.0;
-         mountController.targetDec = 10;
-         mountController.Command = 10; // Goto
+         if (File.exists(syncDataFile)){
+            File.remove(syncDataFile);
+            File.createFileForWriting(syncDataFile);
+         }
+         mountController.syncDataFile=syncDataFile;
          // execute in the global context to unpark
          assertTrue( mountController.executeGlobal() );
 
-         var origPosRA = mountController.currentRA;
-         var origPosDEC = mountController.currentDec;
-         expectEqualsWithPrecision( mountController.targetRA - 0.01, mountController.currentRA, 0.1 );
-         expectEqualsWithPrecision( mountController.targetDec - 0.02, mountController.currentDec, 0.1 );
+         var  ra_lower    = 0.2;
+	      var  ra_upper    = 23.7;
+	      var  dec_lower   = -10;
+	      var  dec_upper   = 80;
+	      var  ra_step_deg = 10;
+	      var  ra_step  = Math.round(ra_step_deg / 15 * 1000000000000) / 1000000000000;
+
+	      var  dec_step_deg = 20;
+
+	      var num_of_ra_steps  = (ra_upper - ra_lower) /  ra_step;
+	      var num_of_dec_steps = (dec_upper - dec_lower) /  dec_step_deg;
+
+	      var count=0;
+	      for (var ra=ra_lower ; ra<=ra_upper ; ra+=ra_step ){
+		      for (var dec=dec_lower ; dec<=dec_upper ; dec+=dec_step_deg ) {
+               // set target coordinates
+               mountController.targetRA = ra;
+               mountController.targetDec = dec;
+               // set synch command
+               mountController.Command = 14; // TestSync
+               assertTrue( mountController.executeGlobal() );
+            }
+         }
+
+         // Fit the pointing model
+         if (File.exists(pointingModelFileCreated)){
+            File.remove(pointingModelFileCreated);
+            File.createFileForWriting(pointingModelFileCreated);
+         }
+         mountController.alignmentModelFile=pointingModelFileCreated;
+         mountController.alignmentConfig = 1918;
+         mountController.geographicLatitude = 49,261872611;
+         mountController.Command = 13; // FitPointingModel
+         assertTrue( mountController.executeGlobal());
+
+         // read
+         var lines = File.readLines(pointingModelFileCreated);
+         var linesExpected = File.readLines(pointingModelFile);
+
+         // line 0
+         var tokens = lines[0].split(",");
+         var tokensExpected = linesExpected[0].split(",");
+         for (var i=0; i < tokens.length; ++i){
+            var param = parseFloat(tokens[i]);
+            var paramExpected = parseFloat(tokens[i]);
+            expectEqualsWithPrecision( param, paramExpected, 0.01 );
+         }
+         // line 1
+         tokens = lines[1].split(",");
+         tokensExpected = linesExpected[1].split(",");
+         for (var i=0; i < tokens.length; ++i){
+            var param = parseFloat(tokens[i]);
+            var paramExpected = parseFloat(tokens[i]);
+            expectEqualsWithPrecision( param, paramExpected, 0.01 );
+         }
       }
    );
 

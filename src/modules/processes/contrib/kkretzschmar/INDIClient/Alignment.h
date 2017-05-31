@@ -89,11 +89,12 @@ struct SyncDataPoint {
  */
 class AlignmentModel {
 protected:
-	Console  m_console;
-
+	Console       m_console;
+	bool          m_modelEachPierSide = false;
+	Array<double> m_residuals;
 public:
-
 	AlignmentModel(){}
+	AlignmentModel(bool modelEachPierSide):m_modelEachPierSide(modelEachPierSide){}
 	virtual ~AlignmentModel(){}
 
 	virtual void Apply(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) = 0;
@@ -108,6 +109,9 @@ public:
 
 	virtual void printParameters() = 0;
 
+	pcl_enum getPierSide(double hourAngle);
+
+	// static methods
 	static void getPseudoInverse(Matrix& pseudoInverse, const Matrix& matrix);
 
 	static double rangeShiftHourAngle(double hourAngle){
@@ -131,6 +135,7 @@ public:
 		}
 		return shiftedRA;
 	}
+
 };
 
 // ----------------------------------------------------------------------------
@@ -150,10 +155,12 @@ public:
   *
   */
   class GeneralAnalyticalPointingModel : public AlignmentModel {
-	static const size_t modelParameters = 11;
+	static const size_t modelParameters   = 11;
+	static const size_t maxNumOfPierSides = 2;
   public:
 
-	GeneralAnalyticalPointingModel(double siteLatitude, uint32_t modelConfig, bool modelEachPierSide) : AlignmentModel(), m_modelEachPierSide(modelEachPierSide), m_numOfModelParameters(modelParameters), m_siteLatitude(siteLatitude * Const<double>::rad()), m_pointingModelWest(nullptr), m_pointingModelEast(nullptr),m_modelConfig(modelConfig)
+
+	GeneralAnalyticalPointingModel(double siteLatitude, uint32_t modelConfig, bool modelEachPierSide) : AlignmentModel(modelEachPierSide), m_numOfModelParameters(modelParameters), m_siteLatitude(siteLatitude * Const<double>::rad()), m_pointingModelWest(nullptr), m_pointingModelEast(nullptr),m_modelConfig(modelConfig)
   	{
 		m_pointingModelWest = new Vector(m_numOfModelParameters);
 		m_pointingModelEast = new Vector(m_numOfModelParameters);
@@ -188,10 +195,9 @@ public:
  private:
 
  	void evaluateBasis(Matrix& basisMatrix, double hourAngle, double dec);
- 	void printParameterVector(Vector* parameters);
- 	void fitModelForPierSide(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide);
+ 	void printParameterVector(Vector* parameters, double residual);
+ 	void fitModelForPierSide(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide, double& residual);
 
- 	bool   m_modelEachPierSide = false;
  	size_t m_numOfModelParameters;
  	double m_siteLatitude; // in radians
 

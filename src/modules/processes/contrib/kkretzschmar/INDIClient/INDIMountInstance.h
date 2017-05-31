@@ -133,6 +133,7 @@ private:
 
    friend class INDIMountInterface;
    friend class AbstractINDIMountExecution;
+
 };
 
 // ----------------------------------------------------------------------------
@@ -192,6 +193,8 @@ private:
 
    bool m_running, m_aborted;
 
+   void ApplyPointingModelCorrection(AlignmentModel* aModel, double& targetRA, double& targetDec);
+   void WriteSyncDataPointToFile(const SyncDataPoint& syncPoint);
 };
 
 // ----------------------------------------------------------------------------

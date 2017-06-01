@@ -156,6 +156,24 @@
 #    endif
 #  endif
 #endif
+
+/*
+ * __PCL_MACOS and __PCL_MACOSX are synonyms and both always defined on macOS.
+ */
+#ifdef __PCL_MACOS
+#  ifndef __PCL_MACOSX
+#    define __PCL_MACOSX
+#  endif
+#endif
+#ifdef __PCL_MACOSX
+#  ifndef __PCL_MACOS
+#    define __PCL_MACOS
+#  endif
+#endif
+
+/*
+ * Check for conflicting platform selection macros.
+ */
 #ifdef __PCL_FREEBSD
 #  if defined( __PCL_LINUX ) || defined( __PCL_MACOSX ) || defined( __PCL_WINDOWS )
 #    error Multiple platform selection macros have been defined.
@@ -178,21 +196,7 @@
 #endif
 
 /*
- * __PCL_MACOS and __PCL_MACOSX are synonyms and both always defined on macOS.
- */
-#ifdef __PCL_MACOS
-#  ifndef __PCL_MACOSX
-#    define __PCL_MACOSX
-#  endif
-#endif
-#ifdef __PCL_MACOSX
-#  ifndef __PCL_MACOS
-#    define __PCL_MACOS
-#  endif
-#endif
-
-/*
- * __PCL_UNIX is always defined on FreeBSD, Linux and Mac OS X platforms.
+ * __PCL_UNIX is always defined on FreeBSD, Linux and macOS platforms.
  */
 #if defined( __PCL_LINUX ) || defined( __PCL_FREEBSD ) || defined( __PCL_MACOSX )
 #  ifndef __PCL_UNIX

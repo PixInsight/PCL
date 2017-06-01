@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Arguments.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Arguments.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/Arguments.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Flags_h
 #include <pcl/Flags.h>
-#endif
-
-#ifndef __PCL_String_h
 #include <pcl/String.h>
-#endif
-
-#ifndef __PCL_StringList_h
 #include <pcl/StringList.h>
-#endif
 
 namespace pcl
 {
@@ -425,7 +415,7 @@ private:
 };
 
 /*!
- * \class ArgumentList
+ * \class pcl::ArgumentList
  * \brief A dynamic array of command-line arguments
  * \ingroup argument_parsing
  */
@@ -434,7 +424,7 @@ typedef Array<Argument> ArgumentList;
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace ArgumentItemMode
+ * \namespace pcl::ArgumentItemMode
  * \brief     Non-parametric argument parsing modes.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -458,8 +448,8 @@ namespace ArgumentItemMode
 }
 
 /*!
- * Represents an ArgumentItemMode value.
- *
+ * \class pcl::argument_item_mode
+ * \brief Represents an ArgumentItemMode enumerated value.
  * \ingroup argument_parsing
  */
 typedef ArgumentItemMode::value_type   argument_item_mode;
@@ -467,15 +457,15 @@ typedef ArgumentItemMode::value_type   argument_item_mode;
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace ArgumentOption
+ * \namespace pcl::ArgumentOption
  * \brief     Working options affecting how non-parametric arguments are
  *            interpreted.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
- * <tr><td>ArgumentOption::AllowWildcards</td>        <td>Allow wildcard characters (*?) in non-parametric items</td></tr>
- * <tr><td>ArgumentOption::NoPreviews</td>            <td>Don't allow preview specifications (with the '->' standard separator)</td></tr>
- * <tr><td>ArgumentOption::RecursiveDirSearch</td>    <td>Perform recursive directory searches for wild path specifications</td></tr>
- * <tr><td>ArgumentOption::RecursiveSearchArgs</td>   <td>Use standard arguments to toggle recursive directory searching</td></tr>
+ * <tr><td>ArgumentOption::AllowWildcards</td>      <td>Allow wildcard characters (*?) in non-parametric items</td></tr>
+ * <tr><td>ArgumentOption::NoPreviews</td>          <td>Don't allow preview specifications (with the '->' standard separator)</td></tr>
+ * <tr><td>ArgumentOption::RecursiveDirSearch</td>  <td>Perform recursive directory searches for wild path specifications</td></tr>
+ * <tr><td>ArgumentOption::RecursiveSearchArgs</td> <td>Use standard arguments to toggle recursive directory searching</td></tr>
  * </table>
  *
  * \ingroup argument_parsing
@@ -492,7 +482,7 @@ namespace ArgumentOption
 }
 
 /*!
- * \class ArgumentOptions
+ * \class pcl::ArgumentOptions
  * \brief A combination of ArgumentOption flags
  * \ingroup argument_parsing
  */
@@ -688,4 +678,4 @@ String PCL_FUNC ReplaceEnvironmentVariables( const String& s );
 #endif   // __PCL_Arguments_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Arguments.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Arguments.h - Released 2017-05-28T08:28:50Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/SectionBar.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/SectionBar.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -62,13 +62,8 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#ifdef _MSC_VER
-#  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
-#endif
-
 SectionBar::SectionBar( Control& parent ) :
-   Control( parent ),
-   m_section( nullptr )
+   Control( parent )
 {
    SetObjectId( "IWSectionBar" );
 
@@ -237,6 +232,54 @@ void SectionBar::OnCheck( check_event_handler f, Control& c )
 
 // ----------------------------------------------------------------------------
 
+void SectionBar::SetSectionVisible( bool visible )
+{
+   if ( m_section != nullptr )
+      if ( visible != m_section->IsVisible() )
+      {
+         Control* p = &m_section->Parent();
+         if ( !p->IsNull() )
+         {
+            while ( !p->Parent().IsNull() )
+               p = &p->Parent();
+            p->DisableUpdates();
+         }
+
+         m_section->SetVisible( visible );
+
+         /*
+          * On macOS, forcing event processing here causes a lot of flickering.
+          * On X11 and Windows, it's just the opposite... go figure!
+          */
+#ifndef __PCL_MACOSX
+         Module->ProcessEvents();
+#endif
+         if ( !p->IsNull() )
+         {
+            bool fixedWidth = p->IsFixedWidth();
+            if ( !fixedWidth )
+               p->SetFixedWidth();
+
+            bool fixedHeight = p->IsFixedHeight();
+            if ( fixedHeight )
+               p->SetVariableHeight();
+
+            p->AdjustToContents();
+
+            Module->ProcessEvents();
+
+            if ( !fixedWidth )
+               p->SetVariableWidth();
+            if ( fixedHeight )
+               p->SetFixedHeight();
+
+            p->EnableUpdates();
+         }
+      }
+}
+
+// ----------------------------------------------------------------------------
+
 void SectionBar::ButtonClick( Button& sender, bool checked )
 {
    if ( m_section != nullptr && sender == Title_ToolButton )
@@ -245,47 +288,7 @@ void SectionBar::ButtonClick( Button& sender, bool checked )
          if ( m_handlers->onToggleSection != nullptr )
             (m_handlers->onToggleSectionReceiver->*m_handlers->onToggleSection)( *this, *m_section, true );
 
-      bool visible = m_section->IsVisible();
-
-      Control* p = &m_section->Parent();
-      if ( !p->IsNull() )
-      {
-         while ( !p->Parent().IsNull() )
-            p = &p->Parent();
-         p->DisableUpdates();
-      }
-
-      if ( visible )
-         m_section->Hide();
-      else
-         m_section->Show();
-
-      // On OS X, forcing event processing here causes a lot of flickering.
-      // On X11 and Windows, it's just the opposite...
-#ifndef __PCL_MACOSX
-      Module->ProcessEvents();
-#endif
-      if ( !p->IsNull() )
-      {
-         bool fixedWidth = p->IsFixedWidth();
-         if ( !fixedWidth )
-            p->SetFixedWidth();
-
-         bool fixedHeight = p->IsFixedHeight();
-         if ( fixedHeight )
-            p->SetVariableHeight();
-
-         p->AdjustToContents();
-
-         Module->ProcessEvents();
-
-         if ( !fixedWidth )
-            p->SetVariableWidth();
-         if ( fixedHeight )
-            p->SetFixedHeight();
-
-         p->EnableUpdates();
-      }
+      SetSectionVisible( !m_section->IsVisible() );
 
       if ( !m_handlers.IsNull() )
          if ( m_handlers->onToggleSection != nullptr )
@@ -336,8 +339,9 @@ void SectionBar::ControlShow( Control& sender )
 
 void SectionBar::ControlHide( Control& sender )
 {
-   if ( m_section != 0 && sender == *m_section )
-      Title_ToolButton.SetIcon( Bitmap( ScaledResource( expand_icon ) ) );
+   if ( m_section != nullptr )
+      if ( sender == *m_section )
+         Title_ToolButton.SetIcon( Bitmap( ScaledResource( expand_icon ) ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -345,4 +349,4 @@ void SectionBar::ControlHide( Control& sender )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SectionBar.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/SectionBar.cpp - Released 2017-05-28T08:29:05Z

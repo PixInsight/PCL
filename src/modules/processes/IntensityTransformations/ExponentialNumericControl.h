@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0374
 // ----------------------------------------------------------------------------
-// ExponentialNumericControl.h - Released 2016/02/21 20:22:43 UTC
+// ExponentialNumericControl.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -76,14 +76,8 @@ class PCL_CLASS ExponentialNumericControl : public NumericEdit
 {
 public:
 
-   /*!
-      Constructs an %ExponentialNumericControl object as a child control of \a parent.
-   */
    ExponentialNumericControl( Control& parent = Null() );
 
-   /*!
-      Destroys an %ExponentialNumericControl object.
-   */
    virtual ~ExponentialNumericControl()
    {
    }
@@ -106,4 +100,4 @@ private:
 #endif   // __PCL_ExponentialNumericControl_h
 
 // ----------------------------------------------------------------------------
-// EOF ExponentialNumericControl.h - Released 2016/02/21 20:22:43 UTC
+// EOF ExponentialNumericControl.h - Released 2017-05-02T09:43:00Z

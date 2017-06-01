@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Console.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Console.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -51,6 +51,7 @@
 
 #include <pcl/Console.h>
 #include <pcl/MetaModule.h>
+#include <pcl/View.h>
 
 #include <pcl/api/APIInterface.h>
 #include <pcl/api/APIException.h>
@@ -68,10 +69,14 @@ Console::Console() : m_handle( 0 ), m_thread( 0 )
    m_thread = (*API->Thread->GetCurrentThread)();
 }
 
+// ----------------------------------------------------------------------------
+
 Console::~Console()
 {
    m_thread = 0;
 }
+
+// ----------------------------------------------------------------------------
 
 void Console::Write( const String& s )
 {
@@ -84,6 +89,8 @@ void Console::Write( const String& s )
       (*API->Thread->AppendThreadConsoleOutputText)( m_thread, s.c_str(), api_false );
 }
 
+// ----------------------------------------------------------------------------
+
 void Console::WriteLn( const String& s )
 {
    if ( m_thread == 0 )
@@ -94,6 +101,8 @@ void Console::WriteLn( const String& s )
    else
       (*API->Thread->AppendThreadConsoleOutputText)( m_thread, s.c_str(), api_true );
 }
+
+// ----------------------------------------------------------------------------
 
 void Console::WriteLn()
 {
@@ -136,7 +145,8 @@ String Console::ReadString()
 
 /*
  *
- * ### DISABLED FUNCTION - DO NOT ENABLE FOR PRODUCTION MODULES ###
+ * ### DISABLED FUNCTION - FOR SECURITY REASONS                            ###
+ * ### DO NOT ENABLE THIS FUNCTION FOR PRODUCTION MODULES                  ###
  *
  *
 String Console::Text() const
@@ -261,22 +271,65 @@ void Console::Clear()
 
 // ----------------------------------------------------------------------------
 
-/*
- *
- * ### DISABLED FUNCTION - DO NOT ENABLE FOR PRODUCTION MODULES ###
- *
- *
-void Console::Execute( const String& command )
+void Console::ExecuteCommand( const String& command )
 {
-   if ( m_thread == 0 )
-      if ( (*API->Global->ExecuteCommand)( ModuleHandle(), m_handle, command.c_str() ) == api_false )
-         throw APIFunctionError( "ExecuteCommand" );
+   if ( m_thread != nullptr )
+      throw Error( "Console::ExecuteCommand() can only be invoked from the root thread." );
+
+   if ( (*API->Global->ExecuteCommand)( ModuleHandle(), m_handle, command.c_str() ) == api_false )
+      throw APIFunctionError( "ExecuteCommand" );
 }
- */
+
+// ----------------------------------------------------------------------------
+
+static String MakeScriptArguments( const StringKeyValueList& arguments )
+{
+   String scriptArgs;
+   for ( const StringKeyValue& arg : arguments )
+   {
+      String value = arg.value;
+      value.ReplaceString( "$", "\\$" ); // disable $ macro expansion in script arguments
+      scriptArgs << " -p=\""
+                 << arg.key
+                 << ','
+                 << value
+                 << '\"';
+   }
+   return scriptArgs;
+}
+
+// ----------------------------------------------------------------------------
+
+void Console::ExecuteScript( const String& filePath, const StringKeyValueList& arguments )
+{
+   ExecuteCommand( "run -x" + MakeScriptArguments( arguments ) +
+                   " \"" + filePath + '\"' );
+}
+
+// ----------------------------------------------------------------------------
+
+void Console::ExecuteScriptGlobal( const String& filePath, const StringKeyValueList& arguments )
+{
+   ExecuteCommand( "run -x" + MakeScriptArguments( arguments ) +
+                   " -p=\"isGlobalTarget,true\""
+                   " -p=\"isViewTarget,false\""
+                   " \"" + filePath + '\"' );
+}
+
+// ----------------------------------------------------------------------------
+
+void Console::ExecuteScriptOn( const View& view, const String& filePath, const StringKeyValueList& arguments )
+{
+   ExecuteCommand( "run -x" + MakeScriptArguments( arguments ) +
+                   " -p=\"isGlobalTarget,false\""
+                   " -p=\"isViewTarget,true\""
+                   " -p=\"targetView," + view.FullId() + '\"' +
+                   " \"" + filePath + '\"' );
+}
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Console.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Console.cpp - Released 2017-05-28T08:29:05Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Thread.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Thread.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -49,6 +49,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
+#include <pcl/Atomic.h>
 #include <pcl/AutoLock.h>
 #include <pcl/Console.h>
 #include <pcl/GlobalSettings.h>
@@ -93,8 +94,9 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-static bool s_enableAffinity = false;
-static bool s_featureDataInitialized = false;
+static bool      s_enableAffinity = false;
+static AtomicInt s_featureDataInitialized;
+static AtomicInt s_numberOfRunningThreads;
 
 // ----------------------------------------------------------------------------
 
@@ -102,61 +104,86 @@ static bool s_featureDataInitialized = false;
 
 class ThreadDispatcher
 {
+private:
+
+   struct AutoCounter
+   {
+      AutoCounter()
+      {
+         s_numberOfRunningThreads.Increment();
+      }
+
+      ~AutoCounter()
+      {
+         s_numberOfRunningThreads.Decrement();
+      }
+   };
+
 public:
 
    static void api_func RunThread( thread_handle hThread )
    {
       try
       {
-         if ( s_enableAffinity && T->m_processorIndex >= 0 )
-            T->SetAffinity( T->m_processorIndex );
+         volatile AutoCounter counter;
+
+         if ( s_enableAffinity )
+            if ( T->m_processorIndex >= 0 )
+               T->SetAffinity( T->m_processorIndex );
+
          T->Run();
       }
       catch ( ... )
       {
-         /* ### Do _not_ propagate exceptions from a running thread */
+         /*
+          * ### Do _not_ propagate exceptions from a running thread. Never.
+          */
       }
    }
-
 }; // ThreadDispatcher
 
 #undef T
 
 // ----------------------------------------------------------------------------
 
-#ifdef _MSC_VER
-#  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
-#endif
+/*
+ * ### TODO: Implement pcl::Thread without core application support, in case
+ * we are running as an independent application.
+ *
+ * For now, we simply construct a null object when API = nullptr. The
+ * reimplemented Thread::Run() can be invoked single-threaded.
+ */
 
 Thread::Thread() :
-   UIObject( (*API->Thread->CreateThread)( ModuleHandle(), this, 0/*flags*/ ) ),
-   m_processorIndex( -1 ),
-   m_consoleOutputText()
+   UIObject( (API != nullptr) ? (*API->Thread->CreateThread)( ModuleHandle(), this, 0/*flags*/ ) : nullptr )
 {
-   if ( IsNull() )
-      throw APIFunctionError( "CreateThread" );
-
-   (*API->Thread->SetThreadExecRoutine)( handle, ThreadDispatcher::RunThread );
-
-   if ( !s_featureDataInitialized )
+   if ( API != nullptr )
    {
-      /*
-       * ### TODO: Add a new StartThreadEx() API function to allow specifying a
-       * logical processor index and other flags. In this way this wouldn't be
-       * necessary and thread scheduling and affinity would be controlled by
-       * the PI core application.
-       */
-      s_enableAffinity = PixInsightSettings::GlobalFlag( "Process/EnableThreadCPUAffinity" );
-      s_featureDataInitialized = true;
+      if ( IsNull() )
+         throw APIFunctionError( "CreateThread" );
+
+      (*API->Thread->SetThreadExecRoutine)( handle, ThreadDispatcher::RunThread );
+
+      if ( s_featureDataInitialized.Load() == 0 )
+      {
+         /*
+          * ### TODO: Add a new StartThreadEx() API function to allow
+          * specifying a logical processor index and other flags. In this way
+          * this wouldn't be necessary and thread scheduling and affinity would
+          * be controlled completely by the core application.
+          */
+         static Mutex mutex;
+         volatile AutoLock lock( mutex );
+         if ( s_featureDataInitialized.Load() == 0 )
+         {
+            s_enableAffinity = PixInsightSettings::GlobalFlag( "Process/EnableThreadCPUAffinity" );
+            s_featureDataInitialized.Store( 1 );
+         }
+      }
    }
 }
 
-Thread::Thread( void* h ) :
-   UIObject( h ),
-   m_processorIndex( -1 ),
-   m_consoleOutputText()
-{
-}
+// ----------------------------------------------------------------------------
 
 Thread& Thread::Null()
 {
@@ -168,11 +195,15 @@ Thread& Thread::Null()
    return *nullThread;
 }
 
+// ----------------------------------------------------------------------------
+
 void Thread::Start( Thread::priority p, int processor )
 {
    m_processorIndex = Range( processor, -1, PCL_MAX_PROCESSORS );
    (*API->Thread->StartThread)( handle, p );
 }
+
+// ----------------------------------------------------------------------------
 
 Array<int> Thread::Affinity() const
 {
@@ -197,6 +228,8 @@ Array<int> Thread::Affinity() const
    return processors;
 }
 
+// ----------------------------------------------------------------------------
+
 bool Thread::SetAffinity( const Array<int>& processors )
 {
    if ( (*API->Thread->IsThreadActive)( handle ) == api_false )
@@ -204,11 +237,11 @@ bool Thread::SetAffinity( const Array<int>& processors )
 #ifdef __PCL_LINUX
    cpu_set_t set;
    CPU_ZERO( &set );
-   for ( Array<int>::const_iterator i = processors.Begin(); i != processors.End(); ++i )
+   for ( int p : processors )
    {
-      if ( *i < 0 || *i >= CPU_SETSIZE )
+      if ( p < 0 || p >= CPU_SETSIZE )
          return false;
-      CPU_SET( *i, &set );
+      CPU_SET( p, &set );
    }
    return sched_setaffinity( 0, sizeof( cpu_set_t ), &set ) >= 0;
 #endif
@@ -220,16 +253,18 @@ bool Thread::SetAffinity( const Array<int>& processors )
 #endif
 #ifdef __PCL_WINDOWS
    DWORD_PTR mask = 0;
-   for ( Array<int>::const_iterator i = processors.Begin(); i != processors.End(); ++i )
+   for ( int p : processors )
    {
-      if ( *i < 0 || *i >= sizeof( DWORD_PTR )<<3 )
+      if ( p < 0 || p >= sizeof( DWORD_PTR )<<3 )
          return false;
-      mask |= DWORD_PTR( 1u ) << *i;
+      mask |= DWORD_PTR( 1u ) << p;
    }
    return SetThreadAffinityMask( GetCurrentThread(), mask ) != 0;
 #endif
    return false;
 }
+
+// ----------------------------------------------------------------------------
 
 bool Thread::SetAffinity( int processor )
 {
@@ -252,47 +287,63 @@ bool Thread::SetAffinity( int processor )
 #ifdef __PCL_WINDOWS
    if ( processor < 0 || processor >= sizeof( DWORD_PTR )<<3 )
       return false;
-   DWORD_PTR mask = 1u << processor;
+   DWORD_PTR mask = uint64( 1u ) << processor;
    return SetThreadAffinityMask( GetCurrentThread(), mask ) != 0;
 #endif
    return false;
 }
+
+// ----------------------------------------------------------------------------
 
 void Thread::Kill()
 {
    (*API->Thread->KillThread)( handle );
 }
 
+// ----------------------------------------------------------------------------
+
 bool Thread::IsActive() const
 {
    return (*API->Thread->IsThreadActive)( handle ) != api_false;
 }
+
+// ----------------------------------------------------------------------------
 
 Thread::priority Thread::Priority() const
 {
    return priority( (*API->Thread->GetThreadPriority)( handle ) );
 }
 
+// ----------------------------------------------------------------------------
+
 void Thread::SetPriority( Thread::priority p )
 {
    (*API->Thread->SetThreadPriority)( handle, p );
 }
+
+// ----------------------------------------------------------------------------
 
 void Thread::Wait()
 {
    (void)(*API->Thread->WaitThread)( handle, uint32_max );
 }
 
+// ----------------------------------------------------------------------------
+
 bool Thread::Wait( unsigned ms )
 {
    return (*API->Thread->WaitThread)( handle, ms ) != api_false;
 }
+
+// ----------------------------------------------------------------------------
 
 void Thread::Sleep( unsigned ms )
 {
    //(*API->Thread->SleepThread)( handle, ms );
    SLEEP( ms )
 }
+
+// ----------------------------------------------------------------------------
 
 /*
 Thread& Thread::CurrentThread()
@@ -313,25 +364,42 @@ Thread& Thread::CurrentThread()
 }
 */
 
+// ----------------------------------------------------------------------------
+
 bool Thread::IsRootThread()
 {
    return (*API->Thread->GetCurrentThread)() == 0;
 }
+
+// ----------------------------------------------------------------------------
+
+int Thread::NumberOfRunningThreads()
+{
+   return s_numberOfRunningThreads.Load();
+}
+
+// ----------------------------------------------------------------------------
 
 uint32 Thread::Status() const
 {
    return (*API->Thread->GetThreadStatus)( handle );
 }
 
+// ----------------------------------------------------------------------------
+
 bool Thread::TryGetStatus( uint32& status ) const
 {
    return (*API->Thread->GetThreadStatusEx)( handle, &status, 0x00000001 ) != api_false;
 }
 
+// ----------------------------------------------------------------------------
+
 void Thread::SetStatus( uint32 status )
 {
    (*API->Thread->SetThreadStatus)( handle, status );
 }
+
+// ----------------------------------------------------------------------------
 
 String Thread::ConsoleOutputText() const
 {
@@ -349,10 +417,14 @@ String Thread::ConsoleOutputText() const
    return text;
 }
 
+// ----------------------------------------------------------------------------
+
 void Thread::ClearConsoleOutputText()
 {
    (*API->Thread->ClearThreadConsoleOutputText)( handle );
 }
+
+// ----------------------------------------------------------------------------
 
 void Thread::FlushConsoleOutputText()
 {
@@ -363,6 +435,8 @@ void Thread::FlushConsoleOutputText()
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void* Thread::CloneHandle() const
 {
    throw Error( "Cannot clone a Thread handle" );
@@ -372,20 +446,30 @@ void* Thread::CloneHandle() const
 
 int Thread::NumberOfThreads( size_type N, size_type overheadLimit )
 {
-   static int numberOfProcessors = 0;
-   if ( numberOfProcessors == 0 )
+   if ( API != nullptr )
    {
-      numberOfProcessors = PixInsightSettings::GlobalInteger( "System/NumberOfProcessors" );
-      if ( numberOfProcessors <= 0 )
-         return 1;
-   }
+      static AtomicInt numberOfProcessors;
+      int nf = numberOfProcessors.Load();
+      if ( nf == 0 )
+      {
+         static Mutex mutex;
+         volatile AutoLock lock( mutex );
+         if ( (nf = numberOfProcessors.Load()) == 0 )
+            numberOfProcessors.Store( nf = Max( 1, PixInsightSettings::GlobalInteger( "System/NumberOfProcessors" ) ) );
+      }
 
-   if ( N > overheadLimit &&
-        PixInsightSettings::GlobalFlag( "Process/EnableParallelProcessing" ) &&
-        PixInsightSettings::GlobalFlag( "Process/EnableParallelModuleProcessing" ) )
-   {
-      size_type np = Min( numberOfProcessors, PixInsightSettings::GlobalInteger( "Process/MaxProcessors" ) );
-      return Max( 1, int( Min( np, N/Max( overheadLimit, N/np ) ) ) );
+      int nr = NumberOfRunningThreads();
+      if ( nr > 0 )
+         nf -= nr - 1;
+
+      if ( nf > 1 &&
+         N > overheadLimit &&
+         PixInsightSettings::GlobalFlag( "Process/EnableParallelProcessing" ) &&
+         PixInsightSettings::GlobalFlag( "Process/EnableParallelModuleProcessing" ) )
+      {
+         size_type np = Min( nf, PixInsightSettings::GlobalInteger( "Process/MaxProcessors" ) );
+         return Max( 1, int( Min( np, N/Max( overheadLimit, N/np ) ) ) );
+      }
    }
 
    return 1;
@@ -404,4 +488,4 @@ void PCL_FUNC Sleep( unsigned ms )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Thread.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Thread.cpp - Released 2017-05-28T08:29:05Z

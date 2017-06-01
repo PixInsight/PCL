@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/NumericControl.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/NumericControl.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -78,6 +78,7 @@ NumericEdit::NumericEdit( Control& parent ) :
    label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    label.OnMousePress( (Control::mouse_button_event_handler)&NumericEdit::MousePress, *this );
 
+   edit.OnKeyPress( (Control::keyboard_event_handler)&NumericEdit::KeyPressed, *this );
    edit.OnEditCompleted( (Edit::edit_event_handler)&NumericEdit::EditCompleted, *this );
    edit.OnReturnPressed( (Edit::edit_event_handler)&NumericEdit::ReturnPressed, *this );
    edit.OnGetFocus( (Control::event_handler)&NumericEdit::GetFocus, *this );
@@ -285,6 +286,15 @@ void NumericEdit::EditCompleted( Edit& sender )
    PCL_REENTRANCY_GUARDED_END
 }
 
+// ----------------------------------------------------------------------------
+
+void NumericEdit::KeyPressed( Control& sender, int key, unsigned modifiers, bool& wantsKey )
+{
+   wantsKey = false;
+}
+
+// ----------------------------------------------------------------------------
+
 void NumericEdit::ReturnPressed( Edit& /*sender*/ )
 {
 }
@@ -344,19 +354,20 @@ void NumericControl::UpdateControls()
 {
    NumericEdit::UpdateControls();
 
-   int i0, i1;
-   slider.GetRange( i0, i1 );
-   slider.SetValue( i0 + RoundInt( (m_value - m_lowerBound)/(m_upperBound - m_lowerBound)*(i1 - i0) ) );
+   int minSliderValue, maxSliderValue;
+   slider.GetRange( minSliderValue, maxSliderValue );
+   slider.SetValue( minSliderValue
+      + RoundInt( (m_value - m_lowerBound)/(m_upperBound - m_lowerBound)*(maxSliderValue - minSliderValue) ) );
 }
 
 // ----------------------------------------------------------------------------
 
 void NumericControl::ValueUpdated( Slider& sender, int v )
 {
-   int i0, i1;
-   sender.GetRange( i0, i1 );
-   double d = i1 - i0;
-   double newValue = Round( m_lowerBound + (m_upperBound - m_lowerBound)*((v - i0)/d),
+   int minSliderValue, maxSliderValue;
+   sender.GetRange( minSliderValue, maxSliderValue );
+   double d = maxSliderValue - minSliderValue;
+   double newValue = Round( m_lowerBound + (m_upperBound - m_lowerBound)*((v - minSliderValue)/d),
                             m_real ? Max( 0, TruncInt( Log( d ) ) ) : 0 );
    if ( newValue != m_value )
    {
@@ -389,7 +400,44 @@ void NumericControl::GetFocus( Control& sender )
 
 // ----------------------------------------------------------------------------
 
+void NumericControl::KeyPressed( Control& sender, int key, unsigned modifiers, bool& wantsKey )
+{
+   int delta;
+   switch ( key )
+   {
+   case KeyCode::Up:
+      delta = -100;
+      break;
+   case KeyCode::Down:
+      delta = +100;
+      break;
+   case KeyCode::PageUp:
+      delta = -10;
+      break;
+   case KeyCode::PageDown:
+      delta = +10;
+      break;
+   default:
+      wantsKey = false;
+      return;
+   }
+
+   int minSliderValue, maxSliderValue;
+   slider.GetRange( minSliderValue, maxSliderValue );
+   int sliderValue = slider.Value();
+   int newSliderValue = RoundInt( sliderValue + double( slider.MaxValue() - slider.MinValue() )/delta );
+   newSliderValue = Range( newSliderValue, minSliderValue, maxSliderValue );
+   if ( newSliderValue != sliderValue )
+   {
+      slider.SetValue( newSliderValue );
+      ValueUpdated( slider, newSliderValue );
+   }
+   wantsKey = true;
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/NumericControl.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/NumericControl.cpp - Released 2017-05-28T08:29:05Z

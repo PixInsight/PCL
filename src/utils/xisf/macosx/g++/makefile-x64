@@ -1,0 +1,59 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
+######################################################################
+# Generated on .... 2017-04-15T09:50:21.245Z
+# Project id ...... xisf
+# Project type .... Executable
+# Platform ........ MacOSX/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/utils/xisf/macosx/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/xisf
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../xisf.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/xisf.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/xisf.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/xisf: $(OBJ_FILES)
+	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.9 -stdlib=libc++ -Wl,-dead_strip -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/xisf $(OBJ_FILES) -framework AppKit -framework ApplicationServices -lpthread -lPCL-pxi -llz4-pxi -lzlib-pxi -lRFC6234-pxi -llcms-pxi -lcminpack-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/xisf
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/xisf $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.9 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

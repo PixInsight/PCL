@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/ScrollBox.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/ScrollBox.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,10 +58,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-
-#ifdef _MSC_VER
-#  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
-#endif
 
 ScrollBox::ScrollBox( Control& parent ) :
    Frame( (*API->ScrollBox->CreateScrollBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
@@ -312,7 +308,7 @@ void ScrollBox::OnHorizontalScrollPosUpdated( pos_event_handler f, Control& rece
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->ScrollBox->SetScrollBoxHorizontalPosUpdatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? ScrollBoxEventDispatcher::HorizontalScrollPosUpdated : 0 ) == api_false )
+                  (f != nullptr) ? ScrollBoxEventDispatcher::HorizontalScrollPosUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetScrollBoxHorizontalPosUpdatedEventRoutine" );
    m_handlers->onHorizontalScrollPosUpdated = f;
 }
@@ -321,7 +317,7 @@ void ScrollBox::OnVerticalScrollPosUpdated( pos_event_handler f, Control& receiv
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->ScrollBox->SetScrollBoxVerticalPosUpdatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? ScrollBoxEventDispatcher::VerticalScrollPosUpdated : 0 ) == api_false )
+                  (f != nullptr) ? ScrollBoxEventDispatcher::VerticalScrollPosUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetScrollBoxVerticalPosUpdatedEventRoutine" );
    m_handlers->onVerticalScrollPosUpdated = f;
 }
@@ -330,7 +326,7 @@ void ScrollBox::OnHorizontalScrollRangeUpdated( range_event_handler f, Control& 
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->ScrollBox->SetScrollBoxHorizontalRangeUpdatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? ScrollBoxEventDispatcher::HorizontalScrollRangeUpdated : 0 ) == api_false )
+                  (f != nullptr) ? ScrollBoxEventDispatcher::HorizontalScrollRangeUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetScrollBoxHorizontalRangeUpdatedEventRoutine" );
    m_handlers->onHorizontalScrollRangeUpdated = f;
 }
@@ -339,7 +335,7 @@ void ScrollBox::OnVerticalScrollRangeUpdated( range_event_handler f, Control& re
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->ScrollBox->SetScrollBoxVerticalRangeUpdatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? ScrollBoxEventDispatcher::VerticalScrollRangeUpdated : 0 ) == api_false )
+                  (f != nullptr) ? ScrollBoxEventDispatcher::VerticalScrollRangeUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetScrollBoxVerticalRangeUpdatedEventRoutine" );
    m_handlers->onVerticalScrollRangeUpdated = f;
 }
@@ -351,4 +347,4 @@ void ScrollBox::OnVerticalScrollRangeUpdated( range_event_handler f, Control& re
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ScrollBox.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/ScrollBox.cpp - Released 2017-05-28T08:29:05Z

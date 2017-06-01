@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/FileFormat.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/FileFormat.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -49,6 +49,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
+#include <pcl/File.h>
 #include <pcl/FileFormat.h>
 
 #include <pcl/api/APIInterface.h>
@@ -112,7 +113,7 @@ private:
    {
       // Strict aliasing safe code
 #ifndef _MSC_VER
-      // ### FIXME - MSVC++ 2013 thinks that api_format_capabilities is larger than 8 bytes !?
+      // ### FIXME - VC++ 2015 says that api_format_capabilities is larger than 8 bytes !?
       static_assert( sizeof( api_format_capabilities ) <= sizeof( uint64 ), "Invalid sizeof( api_format_capabilities )" );
 #endif
       union { api_format_capabilities capabilities; uint64 u; } v;
@@ -217,8 +218,8 @@ StringList FileFormat::FileExtensions() const
       if ( (*API->FileFormat->GetFileFormatFileExtensions)( m_data->handle, ptrs.Begin(), &count, &maxLen ) == api_false )
          throw APIFunctionError( "GetFileFormatFileExtensions" );
 
-      for ( StringList::iterator i = extensions.Begin(); i != extensions.End(); ++i )
-         i->ResizeToNullTerminated();
+      for ( String& ext : extensions )
+         ext.ResizeToNullTerminated();
    }
    return extensions;
 }
@@ -244,8 +245,8 @@ IsoStringList FileFormat::MimeTypes() const
       if ( (*API->FileFormat->GetFileFormatMimeTypes)( m_data->handle, ptrs.Begin(), &count, &maxLen ) == api_false )
          throw APIFunctionError( "GetFileFormatMimeTypes" );
 
-      for ( IsoStringList::iterator i = mimeTypes.Begin(); i != mimeTypes.End(); ++i )
-         i->ResizeToNullTerminated();
+      for ( IsoString& mimeType : mimeTypes )
+         mimeType.ResizeToNullTerminated();
    }
    return mimeTypes;
 }
@@ -427,6 +428,11 @@ bool FileFormat::CanStoreProperties() const
    return m_data->capabilities.canStoreProperties;
 }
 
+bool FileFormat::CanStoreImageProperties() const
+{
+   return m_data->capabilities.canStoreImageProperties;
+}
+
 bool FileFormat::CanStoreRGBWS() const
 {
    return m_data->capabilities.canStoreRGBWS;
@@ -510,7 +516,148 @@ Array<FileFormat> FileFormat::AllFormats()
 
 // ----------------------------------------------------------------------------
 
+bool FileFormat::IsSupportedFileFormatBySuffix( const String& path, bool toRead, bool toWrite )
+{
+   String suffix = File::ExtractSuffix( path ).Trimmed().CaseFolded();
+   if ( suffix.IsEmpty() )
+      return false;
+   return (*API->FileFormat->GetFileFormatByFileExtension)( ModuleHandle(), suffix.c_str(), toRead, toWrite ) != nullptr;
+}
+
+// ----------------------------------------------------------------------------
+
+static void
+FindSupportedImageFiles( StringList& list, const String& dirPath, const String& rootPath,
+                         bool toRead, bool toWrite, bool recursive, bool followLinks )
+{
+   /*
+    * Secure search: Block any attempts to escape from the initial subtree
+    * (e.g., through symbolic links).
+    */
+   if ( !dirPath.StartsWith( rootPath ) )
+      return;
+
+   pcl::FindFileInfo info;
+   StringList directories;
+   for ( File::Find f( dirPath + "/*" ); f.NextItem( info ); )
+#ifndef __PCL_WINDOWS
+      if ( followLinks || !info.attributes.IsFlagSet( FileAttribute::SymbolicLink ) )
+#endif
+         if ( info.IsDirectory() )
+         {
+            if ( recursive )
+               if ( info.name != "." )
+                  if ( info.name != ".." )
+                     directories << info.name;
+         }
+         else
+         {
+            {
+               String ext = File::ExtractSuffix( info.name );
+               if ( (*API->FileFormat->GetFileFormatByFileExtension)( ModuleHandle(), ext.c_str(), toRead, toWrite ) != nullptr )
+                  list << File::FullPath( dirPath + '/' + info.name );
+            }
+         }
+
+   for ( const String& dir : directories )
+      FindSupportedImageFiles( list, File::FullPath( dirPath + '/' + dir ), rootPath, toRead, toWrite, recursive, followLinks );
+}
+
+StringList FileFormat::SupportedImageFiles( const String& dirPath, bool toRead, bool toWrite, bool recursive, bool followLinks )
+{
+   StringList list;
+
+#ifdef __PCL_WINDOWS
+   String path = File::WindowsPathToUnix( dirPath.Trimmed() );
+#else
+   String path = dirPath.Trimmed();
+#endif
+   if ( !path.IsEmpty() )
+   {
+      // Strip away a trailing slash, except for root directories.
+      if ( path.Length() > 1 && path.EndsWith( '/' )
+#ifdef __PCL_WINDOWS
+        && !(path.Length() == 3 && path[1] == ':')
+#endif
+         )
+         path.Delete( path.UpperBound() );
+
+      path = File::FullPath( path );
+
+      FindSupportedImageFiles( list, path, path, toRead, toWrite, recursive, followLinks );
+   }
+
+   return list;
+}
+
+// ----------------------------------------------------------------------------
+
+static void
+FindDrizzleFiles( StringList& list, const String& dirPath, const String& rootPath, bool recursive, bool followLinks )
+{
+   /*
+    * Secure search: Block any attempts to escape from the initial subtree
+    * (e.g., through symbolic links).
+    */
+   if ( !dirPath.StartsWith( rootPath ) )
+      return;
+
+   pcl::FindFileInfo info;
+   StringList directories;
+   for ( File::Find f( dirPath + "/*" ); f.NextItem( info ); )
+#ifndef __PCL_WINDOWS
+      if ( followLinks || !info.attributes.IsFlagSet( FileAttribute::SymbolicLink ) )
+#endif
+         if ( info.IsDirectory() )
+         {
+            if ( recursive )
+               if ( info.name != "." )
+                  if ( info.name != ".." )
+                     directories << info.name;
+         }
+         else
+         {
+            {
+               String ext = File::ExtractSuffix( info.name ).CaseFolded();
+               if ( ext == ".xdrz" || ext == ".drz" )
+                  list << File::FullPath( dirPath + '/' + info.name );
+            }
+         }
+
+   for ( const String& dir : directories )
+      FindDrizzleFiles( list, File::FullPath( dirPath + '/' + dir ), rootPath, recursive, followLinks );
+}
+
+StringList FileFormat::DrizzleFiles( const String& dirPath, bool recursive, bool followLinks )
+{
+   StringList list;
+
+#ifdef __PCL_WINDOWS
+   String path = File::WindowsPathToUnix( dirPath.Trimmed() );
+#else
+   String path = dirPath.Trimmed();
+#endif
+   if ( !path.IsEmpty() )
+   {
+      // Strip away a trailing slash, except for root directories.
+      if ( path.Length() > 1 && path.EndsWith( '/' )
+#ifdef __PCL_WINDOWS
+        && !(path.Length() == 3 && path[1] == ':')
+#endif
+         )
+         path.Delete( path.UpperBound() );
+
+      path = File::FullPath( path );
+
+      FindDrizzleFiles( list, path, path, recursive, followLinks );
+   }
+
+   return list;
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormat.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/FileFormat.cpp - Released 2017-05-28T08:29:05Z

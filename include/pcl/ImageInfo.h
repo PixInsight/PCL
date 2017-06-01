@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/ImageInfo.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ImageInfo.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/ImageInfo.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Relational_h
-#include <pcl/Relational.h>
-#endif
-
-#ifndef __PCL_AbstractImage_h
 #include <pcl/AbstractImage.h>
-#endif
+#include <pcl/Relational.h>
 
 namespace pcl
 {
@@ -79,11 +72,17 @@ class PCL_CLASS ImageInfo
 {
 public:
 
-   int   width;            //!< %Image width in pixels
-   int   height;           //!< %Image height in pixels
-   int   numberOfChannels; //!< Number of channels, including alpha channels
-   int   colorSpace;       //!< %Color space, compatible with ImageColor::color_space
-   bool  supported;        //!< Whether we support this image
+   /*!
+    * Represents a color space. See the ColorSpace namespace for supported
+    * values.
+    */
+   typedef ColorSpace::value_type   color_space;
+
+   int         width;            //!< %Image width in pixels
+   int         height;           //!< %Image height in pixels
+   int         numberOfChannels; //!< Number of channels, including alpha channels
+   color_space colorSpace;       //!< %Color space, compatible with ImageColor::color_space
+   bool        supported;        //!< Whether we support this image
 
    /*!
     * Constructs an %ImageInfo object with default values.
@@ -158,20 +157,18 @@ public:
              colorSpace != ColorSpace::Unknown &&
              numberOfChannels >= ((colorSpace == ColorSpace::Gray) ? 1 : 3);
    }
+
+   /*!
+    * Returns true iff this object is equal to another instance \a x.
+    */
+   bool operator ==( const ImageInfo& x ) const
+   {
+      return width == x.width &&
+             height == x.height &&
+             numberOfChannels == x.numberOfChannels &&
+             colorSpace == x.colorSpace;
+   }
 };
-
-// ----------------------------------------------------------------------------
-
-/*!
- * Returns true iff two ImageInfo structures \a a and \a b are equal.
- */
-inline bool operator ==( const ImageInfo& a, const ImageInfo& b )
-{
-   return a.width == b.width &&
-          a.height == b.height &&
-          a.numberOfChannels == b.numberOfChannels &&
-          a.colorSpace == b.colorSpace;
-}
 
 // ----------------------------------------------------------------------------
 
@@ -180,4 +177,4 @@ inline bool operator ==( const ImageInfo& a, const ImageInfo& b )
 #endif   // __PCL_ImageInfo_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageInfo.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ImageInfo.h - Released 2017-05-28T08:28:50Z

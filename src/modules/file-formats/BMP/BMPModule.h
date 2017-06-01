@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard BMP File Format Module Version 01.00.03.0276
+// Standard BMP File Format Module Version 01.00.03.0295
 // ----------------------------------------------------------------------------
-// BMPModule.h - Released 2016/02/21 20:22:34 UTC
+// BMPModule.h - Released 2017-05-02T09:42:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard BMP PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -84,4 +84,4 @@ public:
 #endif   // __BMPModule_h
 
 // ----------------------------------------------------------------------------
-// EOF BMPModule.h - Released 2016/02/21 20:22:34 UTC
+// EOF BMPModule.h - Released 2017-05-02T09:42:51Z

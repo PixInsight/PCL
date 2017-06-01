@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0199
+// Standard INDIClient Process Module Version 01.00.15.0203
 // ----------------------------------------------------------------------------
-// INDIMountInterface.cpp - Released 2016/06/20 17:47:31 UTC
+// INDIMountInterface.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2016 Klaus Kretzschmar
+// Copyright (c) 2014-2017 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -90,8 +90,6 @@ INDIMountInterface* TheINDIMountInterface = nullptr;
 // ----------------------------------------------------------------------------
 
 CoordinateSearchDialog::CoordinateSearchDialog() :
-   Dialog(),
-   m_objectName(),
    m_RA( 0 ),
    m_Dec( 0 ),
    m_muRA( 0 ),
@@ -847,11 +845,7 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
 
 INDIMountInterface::INDIMountInterface() :
    ProcessInterface(),
-   m_device(),
-   m_execution( nullptr ),
-   m_searchDialog( nullptr ),
-   m_syncDataListDialog ( nullptr ),
-   GUI( nullptr )
+   m_device()
 {
    TheINDIMountInterface = this;
 }
@@ -976,15 +970,10 @@ ProcessImplementation* INDIMountInterface::NewProcess() const
 
 bool INDIMountInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const INDIMountInstance* r = dynamic_cast<const INDIMountInstance*>( &p );
-   if ( r == nullptr )
-   {
-      whyNot = "Not an INDIMount instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const INDIMountInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an INDIMount instance.";
+   return false;
 }
 
 bool INDIMountInterface::RequiresInstanceValidation() const
@@ -2180,4 +2169,4 @@ void INDIMountInterface::plotAlignemtResiduals(AlignmentModel* model, const Arra
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInterface.cpp - Released 2016/06/20 17:47:31 UTC
+// EOF INDIMountInterface.cpp - Released 2017-05-02T09:43:01Z

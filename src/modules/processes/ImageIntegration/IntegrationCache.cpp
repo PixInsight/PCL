@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.14.00.0390
 // ----------------------------------------------------------------------------
-// IntegrationCache.cpp - Released 2016/11/13 17:30:54 UTC
+// IntegrationCache.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,7 +59,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-IntegrationCache* TheIntegrationCache = 0;
+IntegrationCache* TheIntegrationCache = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -81,6 +81,8 @@ void IntegrationCacheItem::AssignData( const FileDataCacheItem& item )
    pedestal = x.pedestal;
 #undef src
 }
+
+// ----------------------------------------------------------------------------
 
 String IntegrationCacheItem::DataAsString() const
 {
@@ -111,9 +113,11 @@ String IntegrationCacheItem::DataAsString() const
       tokens.Append( "noise" + VectorAsString( noise ) );
    if ( pedestal >= 0 )
       tokens.Append( String().Format( "pedestal\n%.4f", pedestal ) );
-   String nsTokens;
-   return tokens.ToSeparated( nsTokens, '\n' );
+
+   return String().ToNewLineSeparated( tokens );
 }
+
+// ----------------------------------------------------------------------------
 
 bool IntegrationCacheItem::GetDataFromTokens( const StringList& tokens )
 {
@@ -199,15 +203,17 @@ bool IntegrationCacheItem::GetDataFromTokens( const StringList& tokens )
 
 IntegrationCache::IntegrationCache() : FileDataCache( "/ImageIntegration/Cache" )
 {
-   if ( TheIntegrationCache == 0 )
+   if ( TheIntegrationCache == nullptr )
       TheIntegrationCache = this;
    Load();
 }
 
+// ----------------------------------------------------------------------------
+
 IntegrationCache::~IntegrationCache()
 {
    if ( TheIntegrationCache == this )
-      TheIntegrationCache = 0;
+      TheIntegrationCache = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -215,4 +221,4 @@ IntegrationCache::~IntegrationCache()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IntegrationCache.cpp - Released 2016/11/13 17:30:54 UTC
+// EOF IntegrationCache.cpp - Released 2017-05-02T09:43:00Z

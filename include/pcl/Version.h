@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Version.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Version.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/Version.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_String_h
 #include <pcl/String.h>
-#endif
 
 namespace pcl
 {
@@ -82,6 +75,30 @@ namespace pcl
 class PCL_CLASS Version
 {
 public:
+
+   /*!
+    * Default constructor. This constructor is disabled because %Version is not
+    * an instantiable class.
+    */
+   Version() = delete;
+
+   /*!
+    * Copy constructor. This constructor is disabled because %Version is not an
+    * instantiable class.
+    */
+   Version( const Version& ) = delete;
+
+   /*!
+    * Copy assignment. This operator is disabled because %Version is not an
+    * instantiable class.
+    */
+   Version& operator =( const Version& ) = delete;
+
+   /*!
+    * Destructor. This destructor is disabled because %Version is not an
+    * instantiable class.
+    */
+   ~Version() = delete;
 
    /*!
     * Returns the current PCL major version number.
@@ -131,14 +148,6 @@ public:
     * Returns a readable representation of the current PCL version.
     */
    static String AsString();
-
-private:
-
-   // Not an instantiable class.
-   Version() = delete;
-   Version( const Version& ) = delete;
-   void operator =( const Version& ) = delete;
-   ~Version() = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -153,6 +162,30 @@ private:
 class PCL_CLASS PixInsightVersion
 {
 public:
+
+   /*!
+    * Default constructor. This constructor is disabled because
+    * %PixInsightVersion is not an instantiable class.
+    */
+   PixInsightVersion() = delete;
+
+   /*!
+    * Copy constructor. This constructor is disabled because %PixInsightVersion
+    * is not an instantiable class.
+    */
+   PixInsightVersion( const PixInsightVersion& ) = delete;
+
+   /*!
+    * Copy assignment. This operator is disabled because %PixInsightVersion is
+    * not an instantiable class.
+    */
+   PixInsightVersion& operator =( const PixInsightVersion& ) = delete;
+
+   /*!
+    * Destructor. This destructor is disabled because %PixInsightVersion is not
+    * an instantiable class.
+    */
+   ~PixInsightVersion() = delete;
 
    /*!
     * Returns the major version number of the PixInsight core application.
@@ -235,14 +268,6 @@ public:
     */
    static String AsString( bool withCodename = false );
 
-private:
-
-   // Not an instantiable class.
-   PixInsightVersion() = delete;
-   PixInsightVersion( const PixInsightVersion& ) = delete;
-   void operator =( const PixInsightVersion& ) = delete;
-   ~PixInsightVersion() = delete;
-
    friend class GlobalContextDispatcher;
 };
 
@@ -253,4 +278,4 @@ private:
 #endif   // __PCL_Version_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Version.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Version.h - Released 2017-05-28T08:28:50Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Sandbox Process Module Version 01.00.02.0211
+// Standard Sandbox Process Module Version 01.00.02.0230
 // ----------------------------------------------------------------------------
-// SandboxProcess.cpp - Released 2016/02/21 20:22:43 UTC
+// SandboxProcess.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Sandbox PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -69,7 +69,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-SandboxProcess* TheSandboxProcess = 0;
+SandboxProcess* TheSandboxProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -77,7 +77,9 @@ SandboxProcess::SandboxProcess() : MetaProcess()
 {
    TheSandboxProcess = this;
 
-   // Instantiate process parameters
+   /*
+    * Instantiate process parameters.
+    */
    new SandboxParameterOne( this );
    new SandboxParameterTwo( this );
    new SandboxParameterThree( this );
@@ -113,7 +115,8 @@ String SandboxProcess::Description() const
    return
    "<html>"
    "<p>Sandbox is just a starting point for development of PixInsight modules. It is an empty module that "
-   "does nothing but to provide the basic structure of a module with a process and a process interface.</p>"
+   "does nothing but to provide the basic structure of a module with a process, a few parameters, and a "
+   "process interface.</p>"
    "</html>";
 }
 
@@ -121,7 +124,7 @@ String SandboxProcess::Description() const
 
 const char** SandboxProcess::IconImageXPM() const
 {
-   return 0; // SandboxIcon_XPM; ---> put a nice icon here
+   return nullptr; // SandboxIcon_XPM; ---> put a nice icon here
 }
 // ----------------------------------------------------------------------------
 
@@ -140,8 +143,8 @@ ProcessImplementation* SandboxProcess::Create() const
 
 ProcessImplementation* SandboxProcess::Clone( const ProcessImplementation& p ) const
 {
-   const SandboxInstance* instPtr = dynamic_cast<const SandboxInstance*>( &p );
-   return (instPtr != 0) ? new SandboxInstance( *instPtr ) : 0;
+   const SandboxInstance* instance = dynamic_cast<const SandboxInstance*>( &p );
+   return (instance != nullptr) ? new SandboxInstance( *instance ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -171,18 +174,15 @@ static void ShowHelp()
 
 int SandboxProcess::ProcessCommandLine( const StringList& argv ) const
 {
-   ArgumentList arguments =
-      ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
+   ArgumentList arguments = ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
 
    SandboxInstance instance( this );
 
    bool launchInterface = false;
    int count = 0;
 
-   for ( ArgumentList::const_iterator i = arguments.Begin(); i != arguments.End(); ++i )
+   for ( const Argument& arg : arguments )
    {
-      const Argument& arg = *i;
-
       if ( arg.IsNumeric() )
       {
          throw Error( "Unknown numeric argument: " + arg.Token() );
@@ -242,4 +242,4 @@ int SandboxProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SandboxProcess.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF SandboxProcess.cpp - Released 2017-05-02T09:43:01Z

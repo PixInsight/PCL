@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard CometAlignment Process Module Version 01.02.06.0137
+// Standard CometAlignment Process Module Version 01.02.06.0158
 // ----------------------------------------------------------------------------
-// CometAlignmentInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// CometAlignmentInstance.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
-// Copyright (c) 2012-2015 Nikolay Volkov
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2012-2017 Nikolay Volkov
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -65,7 +65,7 @@
 #include <pcl/Translation.h>
 #include <pcl/Vector.h>
 #include <pcl/Version.h>
-#include <pcl/DrizzleDataDecoder.h>
+#include <pcl/DrizzleData.h>
 #include <pcl/Algebra.h>
 
 namespace pcl
@@ -159,7 +159,6 @@ bool CometAlignmentInstance::CanExecuteGlobal (String& whyNot) const
             whyNot = "File not found: " + i->path;
             return false;
          }
-      whyNot.Clear ();
       return true;
    }
    return false;
@@ -475,14 +474,14 @@ struct FileData
    {
       format = new FileFormat (file.Format ());
 
-      if (format->UsesFormatSpecificData ())
-         fsData = file.FormatSpecificData ();
+      if ( format->UsesFormatSpecificData() )
+         fsData = file.FormatSpecificData();
 
-      if (format->CanStoreKeywords ())
-         file.Extract (keywords);
+      if ( format->CanStoreKeywords() )
+         file.ReadFITSKeywords( keywords );
 
-      if (format->CanStoreICCProfiles ())
-         file.Extract (profile);
+      if ( format->CanStoreICCProfiles() )
+         file.ReadICCProfile( profile );
    }
 
    ~FileData ()
@@ -496,84 +495,6 @@ struct FileData
    }
 };
 
-class DrizzleSAFilter : public DrizzleDecoderBase
-{
-public:
-
-   DrizzleSAFilter() : DrizzleDecoderBase()
-   {
-      Initialize();
-   }
-
-   virtual ~DrizzleSAFilter()
-   {
-   }
-
-   bool HasSplines() const
-   {
-      return m_hasSplines;
-   }
-
-   bool HasMatrix() const
-   {
-      return m_hasMatrix;
-   }
-
-private:
-
-   bool m_hasSplines : 1;
-   bool m_hasMatrix  : 1;
-
-   virtual void Initialize()
-   {
-      m_hasSplines = false;
-      m_hasMatrix = false;
-   }
-
-   // Returns true to filter out a .drz item, false to keep it.
-   virtual bool FilterBlock( const IsoString& itemId )
-   {
-      if ( itemId == "Sx" || itemId == "Sy" )
-      {
-         m_hasSplines = true;
-         return true;
-      }
-
-      if ( itemId == "H" )
-      {
-         m_hasMatrix = true;
-         return false;
-      }
-      return itemId != "P" && itemId != "T" && itemId != "D";
-   }
-};
-
-class DrizzleSADataDecoder : public DrizzleDataDecoder
-{
-public:
-
-   DrizzleSADataDecoder() : DrizzleDataDecoder()
-   {
-   }
-
-   virtual ~DrizzleSADataDecoder()
-   {
-   }
-
-private:
-
-   virtual void Validate()
-   {
-		if ( m_filePath.IsEmpty() )
-         throw Error( "No file path definition." );
-      if ( m_referenceWidth < 1 )
-         throw Error( "No reference width definition." );
-      if ( m_referenceHeight < 1 )
-         throw Error( "No reference height definition." );
-      if ( m_H.IsEmpty() )
-         throw Error( "No alignment matrix definition." );
-   }
-};
 // ----------------------------------------------------------------------------
 
 class CAThread : public Thread
@@ -583,9 +504,12 @@ public:
 	String monitor;		//curent processing step status
 	int monitor2;
 
-   CAThread (ImageVariant* t, FileData* fd, const String& tp, const DPoint d, const bool dzr, const Matrix m,
+   CAThread( ImageVariant* t, FileData* fd, const String& tp, const DPoint d,
+             const bool dzr, const Matrix m, const String& drzSrcCFAFilePath, const String& drzSrcCFAPattern,
              const ImageVariant* o, const CometAlignmentInstance* _instance) :
-   target (t), fileData (fd), targetPath (tp), delta (d), drizzle(dzr), drzMatrix(m), operand (o)
+   target (t), fileData (fd), targetPath (tp), delta (d),
+   drizzle(dzr), drzMatrix(m), m_drzSrcCFAFilePath( drzSrcCFAFilePath ), m_drzSrcCFAPattern( drzSrcCFAPattern ),
+   operand (o)
    {
 	   monitor = "Prepare";
 	   monitor2 = 0;
@@ -782,6 +706,16 @@ public:
       return drzMatrix;
    }
 
+   String DrzSrcCFAFilePath() const
+   {
+      return m_drzSrcCFAFilePath;
+   }
+
+   String DrzSrcCFAPattern() const
+   {
+      return m_drzSrcCFAPattern;
+   }
+
    LinearFitEngine::linear_fit_set GetLinearFitSet() const
    {
       return LFSet;
@@ -805,6 +739,8 @@ private:
 	DPoint delta; // Comet movement Delta x, y around drzMatrix
 	bool drizzle; // true == drizzle mode
 	Matrix drzMatrix; //drizzle AlignmentMatrix
+	String m_drzSrcCFAFilePath;
+   String m_drzSrcCFAPattern;
 	const ImageVariant* operand; //Image for subtraction from target
 	LinearFitEngine::linear_fit_set LFSet;
 	ImageVariant saImg; //pureStarAligned
@@ -953,32 +889,24 @@ static void LoadImageFile (ImageVariant& image, FileFormatInstance& file, ImageO
 
 inline thread_list CometAlignmentInstance::LoadTargetFrame (const size_t fileIndex)
 {
-	Console console;
-	const ImageItem& item = p_targetFrames[fileIndex];
-	const ImageItem& r = p_targetFrames[p_reference];
-	const DPoint delta (item.x - r.x, item.y - r.y);
-	String filePath;
-	DrizzleSADataDecoder decoder;
-	const String drzPath = item.drzPath;
-	bool drizzle(!drzPath.IsEmpty());
-	if(drizzle)
-	{
-		console.WriteLn ("Use origin drizzle integrable image");
-      IsoString text = File::ReadTextFile( drzPath );
-		DrizzleSAFilter filter;
-		text = filter.Filter( text );
-		if ( text.IsEmpty() )
-			throw Error( "The drizzle file has no image alignment data: " + drzPath );
-		if ( filter.HasSplines() )
-			throw Error( "Surface splines are not supported for drizzle by this version of CometAlignment: " + drzPath );
-		if ( !filter.HasMatrix() )
-			throw Error( "The drizzle file does not define an alignment matrix: " + drzPath );
-
-		decoder.Decode( text );
-		filePath = decoder.FilePath();
-	}
-	else
-		filePath = item.path;
+   Console console;
+   const ImageItem& item = p_targetFrames[fileIndex];
+   const ImageItem& r = p_targetFrames[p_reference];
+   const DPoint delta (item.x - r.x, item.y - r.y);
+   String filePath;
+   DrizzleData decoder;
+   const String drzPath = item.drzPath;
+   bool drizzle( !drzPath.IsEmpty() );
+   if( drizzle )
+   {
+      console.WriteLn( "<end><cbr>Use origin drizzle integrable image." );
+      decoder.Parse( drzPath, true/*ignoreIntegrationData*/ );
+      if ( !decoder.HasAlignmentMatrix() )
+         throw Error( "The drizzle file does not define an alignment matrix: " + drzPath );
+      filePath = decoder.SourceFilePath();
+   }
+   else
+      filePath = item.path;
    console.WriteLn ("Open " + filePath);
 
    FileFormat format (File::ExtractExtension (filePath), true, false);
@@ -1005,7 +933,9 @@ inline thread_list CometAlignmentInstance::LoadTargetFrame (const size_t fileInd
 			m_geometry = target->Bounds ();
 
 		FileData* inputData = new FileData (file, images[0].options);
-		threads.Add (new CAThread (target, inputData, filePath, delta, drizzle, decoder.AlignmentMatrix(), m_OperandImage, this));
+		threads.Add( new CAThread( target, inputData, filePath, delta,
+                                 drizzle, decoder.AlignmentMatrix(), decoder.CFASourceFilePath(), decoder.CFASourcePattern(),
+                                 m_OperandImage, this ) );
 
       console.WriteLn ("Close " + filePath);
       file.Close ();
@@ -1022,11 +952,13 @@ inline thread_list CometAlignmentInstance::LoadTargetFrame (const size_t fileInd
 
 // ----------------------------------------------------------------------------
 
-inline void UpdateSADrizzleFileForCA( const String& i, const String& o, const DPoint& d, const Matrix& m, const bool operand, const int8 mode, const int w, const int h )
+inline void UpdateSADrizzleFileForCA( const String& i, const String& o, const DPoint& d,
+                                      const Matrix& m, const String& drzSrcCFAFilePath, const String& drzSrcCFAPattern,
+                                      const bool operand, const int8 mode, const int w, const int h )
 {
 	if ( i == o )
-      throw Error( "UpdateSADrizzleFileForCA(): Internal error: Source and destination .drz files must be different." );
-	String outputDrizleFile(File::ChangeExtension (o,".drz"));
+      throw Error( "UpdateSADrizzleFileForCA(): Internal error: Source and destination .xdrz files must be different." );
+	String outputDrizleFile(File::ChangeExtension (o,".xdrz"));
 
 	Matrix H=m; // starAlignment matrix
 	if (!operand || mode==2)
@@ -1036,25 +968,17 @@ inline void UpdateSADrizzleFileForCA( const String& i, const String& o, const DP
 	}
 
    Console().WriteLn ("Write drizzle file: " +outputDrizleFile);
-   File file;
-   file.CreateForWriting( outputDrizleFile );
-   file.OutText( "P{" );
-   file.OutText( IsoString( i.ToUTF8() ) ); // drizzle integrable source image
-   file.OutText( "}" );
-   file.OutText( "T{" );
-   file.OutText( IsoString( o.ToUTF8() ) );  // registration target image
-   file.OutText( "}" );
-   file.OutText( IsoString().Format( "D{%d,%d}", w, h ) ); // width, height
-   for(int i=0;i<3;i++)
-	   for(int j=0;j<3;j++)
-		   Console().WriteLn (String().Format("H[%d][%d]:%.16g",i,j,H[i][j]));
-
-   file.OutText( IsoString().Format( "H{%.16g,%.16g,%.16g,%.16g,%.16g,%.16g,%.16g,%.16g,%.16g}",
-                    H[0][0], H[0][1], H[0][2],
-                    H[1][0], H[1][1], H[1][2],
-                    H[2][0], H[2][1], H[2][2] ) );
-   file.Close();
-
+   DrizzleData drz;
+   drz.SetSourceFilePath( i );
+   drz.SetAlignmentTargetFilePath( o );
+   drz.SetReferenceDimensions( w, h );
+   drz.SetAlignmentMatrix( H );
+   if ( !drzSrcCFAFilePath.IsEmpty() )
+   {
+      drz.SetCFASourceFilePath( drzSrcCFAFilePath );
+      drz.SetCFASourcePattern( drzSrcCFAPattern );
+   }
+   drz.SerializeToFile( outputDrizleFile );
 }
 
 template <class P>
@@ -1205,13 +1129,13 @@ void CometAlignmentInstance::Save(const ImageVariant* img, CAThread* t, const in
 	  keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.X: " + IsoString(delta.x)));
       keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.Y:" +IsoString(delta.y)));
 
-      outputFile.Embed (keywords);
+      outputFile.WriteFITSKeywords( keywords );
    }
    else if (!data.keywords.IsEmpty ())
       console.WarningLn ("** Warning: The output format cannot store FITS keywords - original keywords not embedded.");
 
    if (data.profile.IsProfile ())
-      if (outputFormat.CanStoreICCProfiles ()) outputFile.Embed (data.profile);
+      if (outputFormat.CanStoreICCProfiles ()) outputFile.WriteICCProfile( data.profile );
       else console.WarningLn ("** Warning: The output format cannot store ICC profiles - original profile not embedded.");
 
    SaveImageFile (*img, outputFile);
@@ -1223,8 +1147,10 @@ void CometAlignmentInstance::Save(const ImageVariant* img, CAThread* t, const in
    {
 	   if(operand && mode==0) //new not registred drizzle integrable image writen
 		   t->TargetPath(outputImgPath);//store path to CAThread
-	   else // create .drz file
-		   UpdateSADrizzleFileForCA( inputImgPath, outputImgPath, delta, t->DrzMatrix(), !p_subtractFile.IsEmpty(), mode, img->Width(), img->Height() );
+	   else // create .xdrz file
+		   UpdateSADrizzleFileForCA( inputImgPath, outputImgPath, delta,
+                                   t->DrzMatrix(), t->DrzSrcCFAFilePath(), t->DrzSrcCFAPattern(),
+                                   !p_subtractFile.IsEmpty(), mode, img->Width(), img->Height() );
    }
 }
 void CometAlignmentInstance::SaveImage ( CAThread* t)
@@ -1752,4 +1678,4 @@ size_type CometAlignmentInstance::ParameterLength (const MetaParameter* p, size_
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CometAlignmentInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF CometAlignmentInstance.cpp - Released 2017-05-02T09:43:01Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard GradientDomain Process Module Version 00.06.04.0165
+// Standard GradientDomain Process Module Version 00.06.04.0184
 // ----------------------------------------------------------------------------
-// GradientsBase.cpp - Released 2016/02/21 20:22:43 UTC
+// GradientsBase.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -334,7 +334,7 @@ GradientsBase::solveImage(imageType_t const &rLaplaceImage_p, imageType_t &rSolu
 
 #ifdef __PCL_WINDOWS
 
-#define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
+#define DELTA_EPOCH_IN_MICROSECS  116444736000000000Ui64
 
 int gettimeofday( timeval* tv, void*/*not_used*/ )
 {
@@ -415,4 +415,4 @@ GradientsBase::TimeMessage::~TimeMessage()
 };
 
 // ----------------------------------------------------------------------------
-// EOF GradientsBase.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF GradientsBase.cpp - Released 2017-05-02T09:43:01Z

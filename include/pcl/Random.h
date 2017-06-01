@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Random.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Random.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/Random.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_AutoPointer_h
 #include <pcl/AutoPointer.h>
-#endif
-
-#ifndef __PCL_Vector_h
 #include <pcl/Vector.h>
-#endif
 
 namespace pcl
 {
@@ -76,7 +66,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup random_numbers Random Numbers
+ * \defgroup random_numbers Random Number Generation
  */
 
 /*!
@@ -273,8 +263,8 @@ private:
  * \brief Implementation of the XorShift1024* pseudo-random number generator.
  *
  * Generation of pseudo-random uniform deviates using the xorshift1024*
- * generator developed in 2014 by Sebastiano Vigna. This generator has a period
- * of 2^1024-1 and passes strong statistical test suites.
+ * generator developed in 2014 by Sebastiano Vigna. This is a fast, top-quality
+ * generator with a period of 2^1024-1, passing strong statistical test suites.
  *
  * Examples of use:
  *
@@ -369,9 +359,11 @@ public:
       return UIN( n );
    }
 
-   /*
-    * Reinitializes this generator with a new \a seed. If the specified \a seed
-    * is zero, a unique random seed will be generated automatically.
+   /*!
+    * Reinitializes this generator with a new \a seed.
+    *
+    * If the specified \a seed is zero, a unique, high-quality random seed will
+    * be generated automatically by calling RandomSeed64().
     */
    void Initialize( uint64 x )
    {
@@ -401,4 +393,4 @@ private:
 #endif   // __PCL_Random_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Random.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Random.h - Released 2017-05-28T08:28:50Z

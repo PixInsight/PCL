@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/LinearInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// pcl/LinearInterpolation.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/LinearInterpolation.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_UnidimensionalInterpolation_h
 #include <pcl/UnidimensionalInterpolation.h>
-#endif
 
 namespace pcl
 {
@@ -137,7 +130,7 @@ public:
             return this->m_y[0];
          if ( x >= this->m_y.Length()-1 )
             return this->m_y[this->m_y.Length()-1];
-         int i0 = TruncI( x );
+         int i0 = TruncInt( x );
          double y0( this->m_y[i0] );
          return y0 + (x - i0)*(double( this->m_y[i0+1] ) - y0);
       }
@@ -151,4 +144,4 @@ public:
 #endif  // __PCL_LinearInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/LinearInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/LinearInterpolation.h - Released 2017-05-28T08:28:50Z

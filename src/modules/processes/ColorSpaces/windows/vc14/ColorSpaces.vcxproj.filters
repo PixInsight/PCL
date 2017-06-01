@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+######################################################################
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
+######################################################################
+# Generated on .... 2017-05-02T09:41:00.460Z
+# Project id ...... ColorSpaces
+# Project type .... Module
+# Platform ........ Windows/vc14
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Additional preprocessor definitions:
+# _CRT_SECURE_NO_WARNINGS
+######################################################################
+-->
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>falsefalsefalsefalsefalsefalsefalsefalse-falsefalsefalsefalse-4falsefalsefalse-falsefalsefalsefalse-falsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalse</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>falsefalsefalsefalsefalsefalsefalsefalse-falsefalsefalsefalse-4falsefalsefalse-falsefalsefalsefalse-falsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalse</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Image Files">
+      <UniqueIdentifier>falsefalsefalsefalsefalsefalsefalsefalse-falsefalsefalsefalse-4falsefalsefalse-falsefalsefalsefalse-falsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalse</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\ChannelCombinationInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ChannelCombinationInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ChannelCombinationParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ChannelCombinationProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ChannelExtractionInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ChannelExtractionInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ChannelExtractionParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ChannelExtractionProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ChannelParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ChannelSourceSelectionDialog.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ColorSpacesModule.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ExtractCIELAction.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GrayscaleRGBActions.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GrayscaleRGBInstances.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GrayscaleRGBProcesses.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\LRGBCombinationInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\LRGBCombinationInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\LRGBCombinationParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\LRGBCombinationProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RGBWorkingSpaceInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RGBWorkingSpaceInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RGBWorkingSpaceParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RGBWorkingSpaceProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SplitRGBChannelsAction.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\ChannelCombinationInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ChannelCombinationInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ChannelCombinationParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ChannelCombinationProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ChannelExtractionInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ChannelExtractionInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ChannelExtractionParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ChannelExtractionProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ChannelParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ChannelSourceSelectionDialog.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ColorSpacesModule.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ExtractCIELAction.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GrayscaleRGBActions.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GrayscaleRGBInstances.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GrayscaleRGBProcesses.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LRGBCombinationInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LRGBCombinationInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LRGBCombinationParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LRGBCombinationProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\RGBWorkingSpaceInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\RGBWorkingSpaceInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\RGBWorkingSpaceParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\RGBWorkingSpaceProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SplitRGBChannelsAction.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\ChannelCombinationIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ChannelExtractionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ConvertToGrayscaleActionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ConvertToGrayscaleIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ConvertToRGBColorActionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ConvertToRGBColorIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ExtractBlueChannelActionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ExtractCIELActionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ExtractGreenChannelActionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ExtractRedChannelActionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\LRGBCombinationIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\RGBWorkingSpaceIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\SplitRGBChannelsActionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard SplitCFA Process Module Version 01.00.06.0116
+// Standard SplitCFA Process Module Version 01.00.06.0135
 // ----------------------------------------------------------------------------
-// SplitCFAInterface.cpp - Released 2016/05/12 12:53:00 UTC
+// SplitCFAInterface.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
-// Copyright (c) 2013-2016 Nikolay Volkov
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2017 Nikolay Volkov
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -133,15 +133,10 @@ ProcessImplementation* SplitCFAInterface::NewProcess() const
 
 bool SplitCFAInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const SplitCFAInstance* r = dynamic_cast<const SplitCFAInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not an SplitCFA instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const SplitCFAInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an SplitCFA instance.";
+   return false;
 }
 
 bool SplitCFAInterface::RequiresInstanceValidation() const
@@ -152,7 +147,6 @@ bool SplitCFAInterface::RequiresInstanceValidation() const
 bool SplitCFAInterface::ImportProcess( const ProcessImplementation& p )
 {
    m_instance.Assign( p );
-
    UpdateControls();
    return true;
 }
@@ -167,9 +161,9 @@ void FileShow( const String& path )   // load ( if not loaded before ) and bring
    #endif
    if ( ImageWindow::WindowByFilePath( path ).IsNull() )
    {
-      Array<ImageWindow> w = ImageWindow::Open( path );
-      for ( Array<ImageWindow>::iterator i = w.Begin(); i != w.End(); ++i )
-         i->Show();
+      Array<ImageWindow> windows = ImageWindow::Open( path, IsoString()/*id*/, "raw cfa"/*formatHints*/ );
+      for ( ImageWindow& window : windows )
+         window.Show();
    }
    else
       ImageWindow::WindowByFilePath( path ).BringToFront();
@@ -743,4 +737,4 @@ SplitCFAInterface::GUIData::GUIData( SplitCFAInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SplitCFAInterface.cpp - Released 2016/05/12 12:53:00 UTC
+// EOF SplitCFAInterface.cpp - Released 2017-05-02T09:43:01Z

@@ -1,6 +1,10 @@
 #ifndef __CMINPACK_H__
 #define __CMINPACK_H__
 
+/* ### BEGIN CUSTOM CODE --------------------------------------------------- */
+#define CMINPACK_NO_DLL 1
+/* ### END CUSTOM CODE ----------------------------------------------------- */
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

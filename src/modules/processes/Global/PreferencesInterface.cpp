@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0328
+// Standard Global Process Module Version 01.02.07.0347
 // ----------------------------------------------------------------------------
-// PreferencesInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// PreferencesInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -79,8 +79,7 @@ static global_item_ref_list globalItemControls;
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-GlobalItemControl::GlobalItemControl() :
-   Control()
+GlobalItemControl::GlobalItemControl()
 {
    Restyle();
 
@@ -102,11 +101,7 @@ GlobalItemControl::GlobalItemControl() :
 
 // ----------------------------------------------------------------------------
 
-GlobalFlagControl::GlobalFlagControl() :
-   GlobalItemControl(),
-   item( 0 ),
-   enableControl( 0 ),
-   disableControl( 0 )
+GlobalFlagControl::GlobalFlagControl()
 {
    checkBox.OnClick( (Button::click_event_handler)&GlobalFlagControl::__Click, *this );
    checkBox.SetButtonColor( BackgroundColor() );
@@ -116,19 +111,19 @@ GlobalFlagControl::GlobalFlagControl() :
 
 void GlobalFlagControl::Synchronize()
 {
-   if ( item != 0 )
+   if ( item != nullptr )
    {
       checkBox.SetChecked( *item );
-      if ( enableControl != 0 )
+      if ( enableControl != nullptr )
          enableControl->Enable( *item );
-      if ( disableControl != 0 )
+      if ( disableControl != nullptr )
          disableControl->Disable( *item );
    }
 }
 
 void GlobalFlagControl::__Click( Button&/*sender*/, bool checked )
 {
-   if ( item != 0 )
+   if ( item != nullptr )
    {
       *item = checked;
       if ( enableControl != 0 )
@@ -140,9 +135,7 @@ void GlobalFlagControl::__Click( Button&/*sender*/, bool checked )
 
 // ----------------------------------------------------------------------------
 
-GlobalIntegerControl::GlobalIntegerControl() :
-   GlobalItemControl(),
-   item( 0 )
+GlobalIntegerControl::GlobalIntegerControl()
 {
    spinBox.OnValueUpdated( (SpinBox::value_event_handler)&GlobalIntegerControl::__ValueUpdated, *this );
    spinSizer.Add( spinBox );
@@ -154,19 +147,19 @@ GlobalIntegerControl::GlobalIntegerControl() :
 
 void GlobalIntegerControl::Synchronize()
 {
-   if ( item != 0 )
+   if ( item != nullptr )
       spinBox.SetValue( *item );
 }
 
 void GlobalIntegerControl::__ValueUpdated( SpinBox& /*sender*/, int value )
 {
-   if ( item != 0 )
+   if ( item != nullptr )
       *item = int32( value );
 }
 
 // ----------------------------------------------------------------------------
 
-GlobalSetControl::GlobalSetControl() : GlobalItemControl(), item( 0 ), minValue( 0 )
+GlobalSetControl::GlobalSetControl()
 {
    comboBox.OnItemSelected( (ComboBox::item_event_handler)&GlobalSetControl::__ItemSelected, *this );
    comboSizer.Add( comboBox );
@@ -178,19 +171,19 @@ GlobalSetControl::GlobalSetControl() : GlobalItemControl(), item( 0 ), minValue(
 
 void GlobalSetControl::Synchronize()
 {
-   if ( item != 0 )
+   if ( item != nullptr )
       comboBox.SetCurrentItem( *item - minValue );
 }
 
 void GlobalSetControl::__ItemSelected( ComboBox& /*sender*/, int itemIndex )
 {
-   if ( item != 0 )
+   if ( item != nullptr )
       *item = int32( itemIndex + minValue );
 }
 
 // ----------------------------------------------------------------------------
 
-GlobalRealControl::GlobalRealControl() : GlobalItemControl(), item( 0 )
+GlobalRealControl::GlobalRealControl()
 {
    numericEdit.label.Hide();
    numericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&GlobalRealControl::__ValueUpdated, *this );
@@ -203,19 +196,19 @@ GlobalRealControl::GlobalRealControl() : GlobalItemControl(), item( 0 )
 
 void GlobalRealControl::Synchronize()
 {
-   if ( item != 0 )
+   if ( item != nullptr )
       numericEdit.SetValue( *item );
 }
 
 void GlobalRealControl::__ValueUpdated( NumericEdit& /*sender*/, double value )
 {
-   if ( item != 0 )
+   if ( item != nullptr )
       *item = value;
 }
 
 // ----------------------------------------------------------------------------
 
-GlobalStringControl::GlobalStringControl() : GlobalItemControl(), item( 0 )
+GlobalStringControl::GlobalStringControl()
 {
    edit.OnEditCompleted( (Edit::edit_event_handler)&GlobalStringControl::__EditCompleted, *this );
 
@@ -225,7 +218,7 @@ GlobalStringControl::GlobalStringControl() : GlobalItemControl(), item( 0 )
 
 void GlobalStringControl::Synchronize()
 {
-   if ( item != 0 )
+   if ( item != nullptr )
       edit.SetText( *item );
 }
 
@@ -236,7 +229,7 @@ String GlobalStringControl::GetText( const String& s )
 
 void GlobalStringControl::__EditCompleted( Edit& sender )
 {
-   if ( item != 0 )
+   if ( item != nullptr )
    {
       try
       {
@@ -245,7 +238,6 @@ void GlobalStringControl::__EditCompleted( Edit& sender )
          sender.SetText( *item = GetText( s ) );
          return;
       }
-
       ERROR_HANDLER
       sender.SetText( *item );
       sender.Focus();
@@ -254,11 +246,14 @@ void GlobalStringControl::__EditCompleted( Edit& sender )
 
 // ----------------------------------------------------------------------------
 
-GlobalDirectoryControl::GlobalDirectoryControl() : GlobalStringControl()
+GlobalDirectoryControl::GlobalDirectoryControl()
 {
    selectDirButton.SetText( "Select directory..." );
    selectDirButton.OnClick( (Button::click_event_handler)&GlobalDirectoryControl::__SelectDir, *this );
    sizer.Add( selectDirButton );
+
+   edit.OnFileDrag( (Control::file_drag_event_handler)&GlobalDirectoryControl::__FileDrag, *this );
+   edit.OnFileDrop( (Control::file_drop_event_handler)&GlobalDirectoryControl::__FileDrop, *this );
 }
 
 String GlobalDirectoryControl::GetText( const String& s )
@@ -276,12 +271,11 @@ String GlobalDirectoryControl::GetText( const String& s )
 
 void GlobalDirectoryControl::__SelectDir( Button& /*sender*/, bool /*checked*/ )
 {
-   if ( item != 0 )
+   if ( item != nullptr )
    {
       GetDirectoryDialog dlg;
       dlg.SetCaption( "Select Directory" );
       dlg.SetInitialPath( *item );
-
       if ( dlg.Execute() )
       {
          *item = dlg.Directory();
@@ -290,13 +284,32 @@ void GlobalDirectoryControl::__SelectDir( Button& /*sender*/, bool /*checked*/ )
    }
 }
 
+void GlobalDirectoryControl::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+{
+   if ( sender == edit )
+      wantsFiles = files.Length() == 1 && File::DirectoryExists( files[0] );
+}
+
+void GlobalDirectoryControl::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+{
+   if ( sender == edit )
+      if ( File::DirectoryExists( files[0] ) )
+      {
+         *item = files[0];
+         Synchronize();
+      }
+}
+
 // ----------------------------------------------------------------------------
 
-GlobalFileControl::GlobalFileControl() : GlobalStringControl()
+GlobalFileControl::GlobalFileControl()
 {
    selectFileButton.SetText( "Select file..." );
    selectFileButton.OnClick( (Button::click_event_handler)&GlobalFileControl::__SelectFile, *this );
    sizer.Add( selectFileButton );
+
+   edit.OnFileDrag( (Control::file_drag_event_handler)&GlobalFileControl::__FileDrag, *this );
+   edit.OnFileDrop( (Control::file_drop_event_handler)&GlobalFileControl::__FileDrop, *this );
 }
 
 String GlobalFileControl::GetText( const String& s )
@@ -317,12 +330,11 @@ String GlobalFileControl::GetText( const String& s )
 
 void GlobalFileControl::__SelectFile( Button& /*sender*/, bool /*checked*/ )
 {
-   if ( item != 0 )
+   if ( item != nullptr )
    {
       OpenFileDialog dlg;
       dlg.SetCaption( "Select File" );
       dlg.SetInitialPath( *item );
-
       if ( dlg.Execute() )
       {
          *item = dlg.FileName();
@@ -331,9 +343,25 @@ void GlobalFileControl::__SelectFile( Button& /*sender*/, bool /*checked*/ )
    }
 }
 
+void GlobalFileControl::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+{
+   if ( sender == edit )
+      wantsFiles = files.Length() == 1 && File::Exists( files[0] );
+}
+
+void GlobalFileControl::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+{
+   if ( sender == edit )
+      if ( File::Exists( files[0] ) )
+      {
+         *item = files[0];
+         Synchronize();
+      }
+}
+
 // ----------------------------------------------------------------------------
 
-GlobalFileExtensionControl::GlobalFileExtensionControl() : GlobalStringControl()
+GlobalFileExtensionControl::GlobalFileExtensionControl()
 {
 }
 
@@ -359,7 +387,7 @@ String GlobalIdentifierControl::GetText( const String& s )
 
 // ----------------------------------------------------------------------------
 
-GlobalColorControl::GlobalColorControl() : GlobalItemControl(), item( 0 )
+GlobalColorControl::GlobalColorControl()
 {
    colorComboBox.OnColorSelected( (ColorComboBox::color_event_handler)&GlobalColorControl::__ColorSelected, *this );
 
@@ -378,7 +406,7 @@ GlobalColorControl::GlobalColorControl() : GlobalItemControl(), item( 0 )
 
 void GlobalColorControl::Synchronize()
 {
-   if ( item != 0 )
+   if ( item != nullptr )
    {
       colorComboBox.SetCurrentColor( *item );
       colorSample.Update();
@@ -387,7 +415,7 @@ void GlobalColorControl::Synchronize()
 
 void GlobalColorControl::__ColorSelected( ColorComboBox& /*sender*/, RGBA color )
 {
-   if ( item != 0 )
+   if ( item != nullptr )
    {
       *item = uint32( color );
       colorSample.Update();
@@ -396,7 +424,7 @@ void GlobalColorControl::__ColorSelected( ColorComboBox& /*sender*/, RGBA color 
 
 void GlobalColorControl::__ColorSample_Paint( Control& sender, const Rect& /*updateRect*/ )
 {
-   if ( item != 0 )
+   if ( item != nullptr )
    {
       Graphics g( sender );
       g.SetBrush( *item );
@@ -408,20 +436,21 @@ void GlobalColorControl::__ColorSample_Paint( Control& sender, const Rect& /*upd
 void GlobalColorControl::__ColorSample_MouseRelease(
    Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
 {
-   if ( item != 0 && sender.IsUnderMouse() )
-   {
-      SimpleColorDialog dlg( item );
-      if ( dlg.Execute() == StdDialogCode::Ok )
+   if ( item != nullptr )
+      if ( sender.IsUnderMouse() )
       {
-         colorComboBox.SetCurrentColor( *item );
-         colorSample.Update();
+         SimpleColorDialog dlg( item );
+         if ( dlg.Execute() == StdDialogCode::Ok )
+         {
+            colorComboBox.SetCurrentColor( *item );
+            colorSample.Update();
+         }
       }
-   }
 }
 
 // ----------------------------------------------------------------------------
 
-GlobalFontControl::GlobalFontControl() : GlobalItemControl(), item( 0 ), itemSize( 0 ), itemSizeAuto( 0 )
+GlobalFontControl::GlobalFontControl()
 {
    fontComboBox.OnFontSelected( (FontComboBox::font_event_handler)&GlobalFontControl::__FontSelected, *this );
 
@@ -456,13 +485,13 @@ GlobalFontControl::GlobalFontControl() : GlobalItemControl(), item( 0 ), itemSiz
 
 void GlobalFontControl::Synchronize()
 {
-   if ( item != 0 )
+   if ( item != nullptr )
    {
       fontComboBox.SetCurrentFont( *item );
       if ( item->IsEmpty() )
          *item = fontComboBox.CurrentFontFace();
 
-      if ( itemSize != 0 && itemSizeAuto != 0 )
+      if ( itemSize != nullptr && itemSizeAuto != nullptr )
       {
          sizeAutoCheckBox.SetChecked( *itemSizeAuto );
          sizeAutoCheckBox.Enable();
@@ -486,7 +515,7 @@ void GlobalFontControl::Synchronize()
          sizeAutoCheckBox.Hide();
       }
 
-      if ( itemSize != 0 )
+      if ( itemSize != nullptr )
          sizeSpinBox.SetValue( *itemSize );
       else
       {
@@ -494,13 +523,13 @@ void GlobalFontControl::Synchronize()
          sizeSpinBox.Disable();
       }
 
-      fontSample.SetFont( pcl::Font( *item, (itemSize != 0) ? *itemSize : 9) );
+      fontSample.SetFont( pcl::Font( *item, (itemSize != nullptr) ? *itemSize : 9) );
    }
 }
 
 void GlobalFontControl::__FontSelected( FontComboBox& /*sender*/, const String& fontFace )
 {
-   if ( item != 0 )
+   if ( item != nullptr )
    {
       *item = fontFace;
       Synchronize();
@@ -509,7 +538,7 @@ void GlobalFontControl::__FontSelected( FontComboBox& /*sender*/, const String& 
 
 void GlobalFontControl::__SizeUpdated( SpinBox& /*sender*/, int value )
 {
-   if ( itemSize != 0 )
+   if ( itemSize != nullptr )
    {
       *itemSize = value;
       Synchronize();
@@ -518,7 +547,7 @@ void GlobalFontControl::__SizeUpdated( SpinBox& /*sender*/, int value )
 
 void GlobalFontControl::__AutoSizeClick( Button& /*sender*/, bool checked )
 {
-   if ( itemSizeAuto != 0 )
+   if ( itemSizeAuto != nullptr )
    {
       *itemSizeAuto = checked;
       Synchronize();
@@ -527,7 +556,7 @@ void GlobalFontControl::__AutoSizeClick( Button& /*sender*/, bool checked )
 
 // ----------------------------------------------------------------------------
 
-GlobalDirectoryListControl::GlobalDirectoryListControl() : GlobalItemControl(), item( 0 )
+GlobalDirectoryListControl::GlobalDirectoryListControl()
 {
    directoriesTreeBox.SetNumberOfColumns( 1 );
    directoriesTreeBox.HideHeader();
@@ -536,6 +565,8 @@ GlobalDirectoryListControl::GlobalDirectoryListControl() : GlobalItemControl(), 
    directoriesTreeBox.EnableAlternateRowColor();
    directoriesTreeBox.SetScaledMinHeight( 80 );
    directoriesTreeBox.OnNodeActivated( (TreeBox::node_event_handler)&GlobalDirectoryListControl::__NodeActivated, *this );
+   directoriesTreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler)&GlobalDirectoryListControl::__FileDrag, *this );
+   directoriesTreeBox.Viewport().OnFileDrop( (Control::file_drop_event_handler)&GlobalDirectoryListControl::__FileDrop, *this );
 
    addPushButton.SetText( "Add" );
    addPushButton.SetToolTip( "<p>Add an existing directory to the list.</p>" );
@@ -562,7 +593,7 @@ GlobalDirectoryListControl::GlobalDirectoryListControl() : GlobalItemControl(), 
 
 void GlobalDirectoryListControl::Synchronize()
 {
-   if ( item != 0 )
+   if ( item != nullptr )
    {
       int currentIdx = directoriesTreeBox.ChildIndex( directoriesTreeBox.CurrentNode() );
 
@@ -582,7 +613,7 @@ void GlobalDirectoryListControl::Synchronize()
 
 void GlobalDirectoryListControl::__NodeActivated( TreeBox& sender, TreeBox::Node& node, int col )
 {
-   if ( item != 0 )
+   if ( item != nullptr )
    {
       GetDirectoryDialog d;
       d.SetCaption( dialogTitle );
@@ -597,7 +628,7 @@ void GlobalDirectoryListControl::__NodeActivated( TreeBox& sender, TreeBox::Node
 
 void GlobalDirectoryListControl::__Click( Button& sender, bool checked )
 {
-   if ( item != 0 )
+   if ( item != nullptr )
    {
       const TreeBox::Node* n = directoriesTreeBox.CurrentNode();
 
@@ -605,17 +636,16 @@ void GlobalDirectoryListControl::__Click( Button& sender, bool checked )
       {
          GetDirectoryDialog d;
          d.SetCaption( dialogTitle );
-
          if ( d.Execute() )
          {
-            int i = (n != 0) ? directoriesTreeBox.ChildIndex( n ) + 1 : directoriesTreeBox.NumberOfChildren();
+            int i = (n != nullptr) ? directoriesTreeBox.ChildIndex( n ) + 1 : directoriesTreeBox.NumberOfChildren();
             item->Insert( item->At( i ), d.Directory() );
             Synchronize();
          }
       }
       else if ( sender == removePushButton )
       {
-         if ( n != 0 )
+         if ( n != nullptr )
          {
             item->Remove( item->At( directoriesTreeBox.ChildIndex( n ) ) );
             Synchronize();
@@ -629,9 +659,31 @@ void GlobalDirectoryListControl::__Click( Button& sender, bool checked )
    }
 }
 
+void GlobalDirectoryListControl::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+{
+   if ( item != nullptr )
+      if ( sender == directoriesTreeBox.Viewport() )
+         wantsFiles = true;
+}
+
+void GlobalDirectoryListControl::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+{
+   if ( item != nullptr )
+      if ( sender == directoriesTreeBox.Viewport() )
+      {
+         StringList inputDirs;
+         for ( const String& item : files )
+            if ( File::DirectoryExists( item ) )
+               inputDirs << item;
+         inputDirs.Sort();
+         item->Append( inputDirs );
+         Synchronize();
+      }
+}
+
 // ----------------------------------------------------------------------------
 
-GlobalFileSetControl::GlobalFileSetControl() : GlobalItemControl(), items()
+GlobalFileSetControl::GlobalFileSetControl()
 {
    filesTreeBox.SetNumberOfColumns( 1 );
    filesTreeBox.HideHeader();
@@ -698,7 +750,6 @@ void GlobalFileSetControl::__NodeActivated( TreeBox& sender, TreeBox::Node& node
    d.SetCaption( dialogTitle );
    d.SetInitialPath( *items[sender.ChildIndex( &node )] );
    d.DisableOverwritePrompt();
-
    if ( d.Execute() )
    {
       *items[sender.ChildIndex( &node )] = d.FileName();
@@ -713,7 +764,6 @@ void GlobalFileSetControl::__Click( Button& sender, bool checked )
       SaveFileDialog d;
       d.SetCaption( dialogTitle );
       d.DisableOverwritePrompt();
-
       if ( d.Execute() )
       {
          *items[filesTreeBox.NumberOfChildren()] = d.FileName();
@@ -723,7 +773,7 @@ void GlobalFileSetControl::__Click( Button& sender, bool checked )
    else if ( sender == removePushButton )
    {
       const TreeBox::Node* n = filesTreeBox.CurrentNode();
-      if ( n != 0 )
+      if ( n != nullptr )
       {
          items[filesTreeBox.ChildIndex( n )]->Clear();
          Synchronize();
@@ -740,14 +790,14 @@ void GlobalFileSetControl::__Click( Button& sender, bool checked )
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-PreferencesInterface* ThePreferencesInterface = 0;
+PreferencesInterface* ThePreferencesInterface = nullptr;
 
 #include "PreferencesIcon.xpm"
 
 // ----------------------------------------------------------------------------
 
 PreferencesInterface::PreferencesInterface() :
-ProcessInterface(), instance( ThePreferencesProcess ), GUI( 0 )
+   instance( ThePreferencesProcess )
 {
    ThePreferencesInterface = this;
 }
@@ -755,8 +805,8 @@ ProcessInterface(), instance( ThePreferencesProcess ), GUI( 0 )
 PreferencesInterface::~PreferencesInterface()
 {
    globalItemControls.Clear();
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString PreferencesInterface::Id() const
@@ -787,7 +837,7 @@ void PreferencesInterface::ResetInstance()
 
 bool PreferencesInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "Preferences" );
@@ -805,15 +855,10 @@ ProcessImplementation* PreferencesInterface::NewProcess() const
 
 bool PreferencesInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const PreferencesInstance* r = dynamic_cast<const PreferencesInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a Preferences instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const PreferencesInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a Preferences instance.";
+   return false;
 }
 
 bool PreferencesInterface::RequiresInstanceValidation() const
@@ -843,7 +888,7 @@ void PreferencesInterface::UpdateControls()
    GUI->PerformAllPageAdditionalUpdates();
 
    TreeBox::Node* node = GUI->CategorySelection_TreeBox.CurrentNode();
-   if ( node == 0 )
+   if ( node == nullptr )
    {
       node = GUI->CategorySelection_TreeBox[0];
       GUI->CategorySelection_TreeBox.SetCurrentNode( node );
@@ -953,8 +998,8 @@ MainWindowPreferencesPage::MainWindowPreferencesPage( PreferencesInstance& insta
    NativeMenuBar_Flag.checkBox.SetText( "Native menu bar" );
    NativeMenuBar_Flag.item = &instance.mainWindow.nativeMenuBar;
    NativeMenuBar_Flag.SetToolTip(
-      "<p>When enabled, PixInsight will use a native menu bar on OS X. When disabled, a multiplatform "
-      "menu bar will be used. This option only works on OS X; it is ignored on X11 (FreeBSD, Linux) "
+      "<p>When enabled, PixInsight will use a native menu bar on macOS. When disabled, a multiplatform "
+      "menu bar will be used. This option only works on macOS; it is ignored on X11 (FreeBSD, Linux) "
       "and Windows platforms. Changing this option requires a restart of the PixInsight core application "
       "to take effect.</p>" );
 
@@ -964,13 +1009,13 @@ MainWindowPreferencesPage::MainWindowPreferencesPage( PreferencesInstance& insta
       "<p>When this option is enabled, menu bar items will be written in uppercase characters "
       "(FILE, EDIT, ...). When disabled, only the first letter of each menu bar item will be uppercase "
       "(File, Edit, ...), following more traditional UI criteria. Note that this option does not apply to "
-      "native menu bars on OS X. Changing this option requires an application restart to take effect.</p>" );
+      "native menu bars on macOS. Changing this option requires an application restart to take effect.</p>" );
 
    WindowButtonsOnTheLeft_Flag.checkBox.SetText( "Window title bar buttons on the left" );
    WindowButtonsOnTheLeft_Flag.item = &instance.mainWindow.windowButtonsOnTheLeft;
    WindowButtonsOnTheLeft_Flag.SetToolTip(
       "<p>Enable this option to place window title bar buttons (minimize, maximize, close, etc) on the left side; "
-      "disable it to place buttons on the right side. This option is only enabled by default on OS X.</p>"
+      "disable it to place buttons on the right side. This option is only enabled by default on macOS.</p>"
       "<p>Already existing windows cannot apply changes made to this option. The selected buttons layout will be "
       "fully applied the next time PixInsight is executed.</p>" );
 
@@ -992,6 +1037,35 @@ MainWindowPreferencesPage::MainWindowPreferencesPage( PreferencesInstance& insta
       "<p>This is the maximum number of recently opened files that PixInsight can remember "
       "for quick access from the File > Open Recent menu.</p>" );
 
+   ShowRecentlyUsed_Flag.checkBox.SetText( "Show recently used processes" );
+   ShowRecentlyUsed_Flag.item = &instance.mainWindow.showRecentlyUsed;
+   ShowRecentlyUsed_Flag.SetToolTip(
+      "<p>Show the Recently Used tree item on Process Explorer, where the most recently launched processes and "
+      "executed scripts are gathered as a list sorted chronologically.</p>" );
+
+   ShowMostUsed_Flag.checkBox.SetText( "Show most used processes" );
+   ShowMostUsed_Flag.item = &instance.mainWindow.showMostUsed;
+   ShowMostUsed_Flag.SetToolTip(
+      "<p>Show the Most Used tree item on Process Explorer, where the most frequently launched processes and "
+      "executed scripts are gathered as a sorted list.</p>" );
+
+   MaxUsageListLength_Integer.label.SetText( "Maximum length of usage lists" );
+   MaxUsageListLength_Integer.item = &instance.mainWindow.maxUsageListLength;
+   MaxUsageListLength_Integer.spinBox.SetRange( 0, 64 );
+   MaxUsageListLength_Integer.SetToolTip(
+      "<p>The maximum number of items shown on the Recently Used and Most Used tree items on Process Explorer.</p>" );
+
+   ExpandUsageItemsAtStartup_Flag.checkBox.SetText( "Expand usage list items at startup" );
+   ExpandUsageItemsAtStartup_Flag.item = &instance.mainWindow.expandUsageItemsAtStartup;
+   ExpandUsageItemsAtStartup_Flag.SetToolTip(
+      "<p>Show the Recently Used and Most Used tree items expanded on Process Explorer upon application startup.</p>" );
+
+   OpenURLsWithInternalBrowser_Flag.checkBox.SetText( "Open URLs with the internal browser" );
+   OpenURLsWithInternalBrowser_Flag.item = &instance.mainWindow.openURLsWithInternalBrowser;
+   OpenURLsWithInternalBrowser_Flag.SetToolTip(
+      "<p>Use the web browser integrated with the PixInsight core application to open URLs (for example, from the "
+      "RESOURCES main menu), instead of the default browser application. True by default since core version 1.8.5.</p>" );
+
    Page_Sizer.SetSpacing( 4 );
    Page_Sizer.Add( MaximizeAtStartup_Flag );
    Page_Sizer.Add( FullScreenAtStartup_Flag );
@@ -1004,6 +1078,12 @@ MainWindowPreferencesPage::MainWindowPreferencesPage( PreferencesInstance& insta
    Page_Sizer.Add( AcceptDroppedFiles_Flag );
    Page_Sizer.Add( DoubleClickLaunchesOpenDialog_Flag );
    Page_Sizer.Add( MaxRecentFiles_Integer );
+   Page_Sizer.Add( ShowRecentlyUsed_Flag );
+   Page_Sizer.Add( ShowMostUsed_Flag );
+   Page_Sizer.Add( MaxUsageListLength_Integer );
+   Page_Sizer.Add( ExpandUsageItemsAtStartup_Flag );
+   Page_Sizer.Add( OpenURLsWithInternalBrowser_Flag );
+
    Page_Sizer.AddStretch();
 
    SetSizer( Page_Sizer );
@@ -1016,9 +1096,17 @@ void MainWindowPreferencesPage::TransferSettings( PreferencesInstance& to, const
    to.mainWindow.showSplashAtStartup           = from.mainWindow.showSplashAtStartup;
    to.mainWindow.checkForUpdatesAtStartup      = from.mainWindow.checkForUpdatesAtStartup;
    to.mainWindow.confirmProgramTermination     = from.mainWindow.confirmProgramTermination;
+   to.mainWindow.nativeMenuBar                 = from.mainWindow.nativeMenuBar;
+   to.mainWindow.capitalizedMenuBars           = from.mainWindow.capitalizedMenuBars;
+   to.mainWindow.windowButtonsOnTheLeft        = from.mainWindow.windowButtonsOnTheLeft;
    to.mainWindow.acceptDroppedFiles            = from.mainWindow.acceptDroppedFiles;
    to.mainWindow.doubleClickLaunchesOpenDialog = from.mainWindow.doubleClickLaunchesOpenDialog;
    to.mainWindow.maxRecentFiles                = from.mainWindow.maxRecentFiles;
+   to.mainWindow.showRecentlyUsed              = from.mainWindow.showRecentlyUsed;
+   to.mainWindow.showMostUsed                  = from.mainWindow.showMostUsed;
+   to.mainWindow.maxUsageListLength            = from.mainWindow.maxUsageListLength;
+   to.mainWindow.expandUsageItemsAtStartup     = from.mainWindow.expandUsageItemsAtStartup;
+   to.mainWindow.openURLsWithInternalBrowser   = from.mainWindow.openURLsWithInternalBrowser;
 }
 
 // ----------------------------------------------------------------------------
@@ -1311,9 +1399,6 @@ void GUIEffectsPreferencesPage::TransferSettings( PreferencesInstance& to, const
 {
    to.mainWindow.hoverableAutoHideWindows   = from.mainWindow.hoverableAutoHideWindows;
    to.mainWindow.desktopSettingsAware       = from.mainWindow.desktopSettingsAware;
-   to.mainWindow.nativeMenuBar              = from.mainWindow.nativeMenuBar;
-   to.mainWindow.capitalizedMenuBars        = from.mainWindow.capitalizedMenuBars;
-   to.mainWindow.windowButtonsOnTheLeft     = from.mainWindow.windowButtonsOnTheLeft;
    to.mainWindow.translucentWindows         = from.mainWindow.translucentWindows;
    to.mainWindow.translucentChildWindows    = from.mainWindow.translucentChildWindows;
    to.mainWindow.fadeWindows                = from.mainWindow.fadeWindows;
@@ -1350,12 +1435,12 @@ FileIOPreferencesPage::FileIOPreferencesPage( PreferencesInstance& instance )
    NativeFileDialogs_Flag.checkBox.SetText( "Use native file dialogs" );
    NativeFileDialogs_Flag.item = &instance.imageWindow.nativeFileDialogs;
    NativeFileDialogs_Flag.SetToolTip(
-      "<p>Use native file dialogs on FreeBSD, Linux, OS X and Windows platforms.</p>"
+      "<p>Use native file dialogs on FreeBSD, Linux, macOS and Windows platforms.</p>"
       "<p>When this option is disabled, PixInsight uses its own, platform-independent file dialogs for "
       "all <i>file open</i> and <i>file save</i> operations. Platform-independent file dialogs are "
       "extremely reliable and behave consistently on all supported operating systems.</p>"
       "<p>If this option is enabled, PixInsight uses the native dialogs provided by the host operating "
-      "system. On Windows and OS X, PixInsight will use the <i>common dialogs</i> provided by these "
+      "system. On Windows and macOS, PixInsight will use the <i>common dialogs</i> provided by these "
       "operating systems. On FreeBSD/X11 and Linux/X11 platforms, PixInsight supports native file dialogs "
       "on KDE4 and GNOME/GTK+. However, this option is currently disabled by default on X11 due to some "
       "problematic interactions between KDE file dialogs and the PixInsight Core application.</p>" );
@@ -1419,6 +1504,7 @@ void FileIOPreferencesPage::TransferSettings( PreferencesInstance& to, const Pre
    to.imageWindow.strictFileSaveMode     = from.imageWindow.strictFileSaveMode;
    to.imageWindow.fileFormatWarnings     = from.imageWindow.fileFormatWarnings;
    to.imageWindow.defaultEmbedThumbnails = from.imageWindow.defaultEmbedThumbnails;
+   to.imageWindow.defaultEmbedProperties = from.imageWindow.defaultEmbedProperties;
 }
 
 // ----------------------------------------------------------------------------
@@ -1449,7 +1535,7 @@ DirectoriesAndNetworkPreferencesPage::DirectoriesAndNetworkPreferencesPage( Pref
       "<p><b>* Important *</b> Many critical operations depend on fast sequential access to very large files on the "
       "PixInsight platform. For this reason, a highly fragmented filesystem may degrade performance. Under MS Windows "
       "(both FAT and NTFS filesystems), it is very important to avoid heavy disk fragmentation by running the "
-      "<i>defrag</i> utility (or equivalent) on a regular basis. Under UNIX/Linux and OS X, there are no "
+      "<i>defrag</i> utility (or equivalent) on a regular basis. Under UNIX/Linux and macOS, there are no "
       "fragmentation problems because the native filesystems on these platforms prevent fragmentation automatically.</p>" );
 
    SwapCompression_Flag.checkBox.SetText( "Swap file compression" );
@@ -1479,7 +1565,7 @@ DirectoriesAndNetworkPreferencesPage::DirectoriesAndNetworkPreferencesPage( Pref
    VerboseNetworkOperations_Flag.item = &instance.imageWindow.verboseNetworkOperations;
    VerboseNetworkOperations_Flag.SetToolTip(
       "<p>Enable this option to obtain information about network operations on PixInsight's stdout. Currently "
-      "this only works under UNIX/Linux and OS X.</p>"
+      "this only works under UNIX/Linux and macOS.</p>"
       "<p><b>* Warning * Be aware that sensitive information, including user passwords and IP addresses, "
       "can be written to stdout as part of the generated reports.</b></p>" );
 
@@ -1625,7 +1711,7 @@ DefaultTransparencySettingsPreferencesPage::DefaultTransparencySettingsPreferenc
 void DefaultTransparencySettingsPreferencesPage::TransferSettings( PreferencesInstance& to, const PreferencesInstance& from )
 {
    to.imageWindow.defaultTransparencyMode = from.imageWindow.defaultTransparencyMode;
-   to.imageWindow.transparencyBrush    = from.imageWindow.transparencyBrush;
+   to.imageWindow.transparencyBrush       = from.imageWindow.transparencyBrush;
 }
 
 // ----------------------------------------------------------------------------
@@ -1702,13 +1788,13 @@ MiscImageWindowSettingsPreferencesPage::MiscImageWindowSettingsPreferencesPage( 
    HighDPIRenditions_Flag.item = &instance.imageWindow.highDPIRenditions;
    HighDPIRenditions_Flag.SetToolTip(
       "<p>Render images using physical screen pixels on Retina displays working in high-dpi modes.<p>"
-      "<p>Currently this option is only available on OS X. On Linux/FreeBSD and Windows, all screen output "
+      "<p>Currently this option is only available on macOS. On Linux/FreeBSD and Windows, all screen output "
       "is always performed at the physical display resolution, so the state of this option is immaterial. "
       "On high-dpi Retina display modes, physical screen pixels are used for images represented at reduced "
       "zoom ratios 1:2 and lower. When this option is enabled in these modes, an image is represented at its "
       "full size on physical pixels when the zoom ratio is 1:2. This is because the ratio of physical to "
       "logical pixels is always 2 in Retina high-dpi modes.</p>"
-      "<p>Enabling this option on OS X with capable hardware may slow down screen image renditions, since the "
+      "<p>Enabling this option on macOS with capable hardware may slow down screen image renditions, since the "
       "volume of the generated pixel data is four times the volume required when working with logical pixels. "
       "Furthermore, when this option is enabled, certain optimizations that can yield faster screen renditions "
       "have to be disabled. If you experience slow screen performance working with big images, especially on "
@@ -1756,7 +1842,6 @@ void MiscImageWindowSettingsPreferencesPage::TransferSettings( PreferencesInstan
    to.imageWindow.showCaptionIdentifiers           = from.imageWindow.showCaptionIdentifiers;
    to.imageWindow.showCaptionFullPaths             = from.imageWindow.showCaptionFullPaths;
    to.imageWindow.showActiveSTFIndicators          = from.imageWindow.showActiveSTFIndicators;
-   to.imageWindow.createPreviewsFromCoreProperties = from.imageWindow.createPreviewsFromCoreProperties;
    to.imageWindow.cursorTolerance                  = from.imageWindow.cursorTolerance;
    to.imageWindow.touchEvents                      = from.imageWindow.touchEvents;
    to.imageWindow.pinchSensitivity                 = from.imageWindow.pinchSensitivity;
@@ -1764,6 +1849,7 @@ void MiscImageWindowSettingsPreferencesPage::TransferSettings( PreferencesInstan
    to.imageWindow.fastScreenRenditionThreshold     = from.imageWindow.fastScreenRenditionThreshold;
    to.imageWindow.highDPIRenditions                = from.imageWindow.highDPIRenditions;
    to.imageWindow.default24BitScreenLUT            = from.imageWindow.default24BitScreenLUT;
+   to.imageWindow.createPreviewsFromCoreProperties = from.imageWindow.createPreviewsFromCoreProperties;
 }
 
 // ----------------------------------------------------------------------------
@@ -1936,7 +2022,7 @@ ParallelProcessingPreferencesPage::ParallelProcessingPreferencesPage( Preference
       "<p><b>Note</b> The state of this setting is only fetched upon application startup. Changes "
       "to this setting require a restart of the PixInsight core application to take effect.</p>"
       "<p><b>Note</b> Currently this option only works on Linux and Windows platforms. It does not "
-      "work on OS X and FreeBSD. Support for all platforms will be implemented in a future "
+      "work on macOS and FreeBSD. Support for all platforms will be implemented in a future "
       "version of PixInsight.</p>" );
 
    MaxModuleThreadPriority_Set.label.SetText( "Maximum module thread priority" );
@@ -1992,6 +2078,7 @@ void ParallelProcessingPreferencesPage::TransferSettings( PreferencesInstance& t
    to.process.enableParallelCoreRendering       = from.process.enableParallelCoreRendering;
    to.process.enableParallelCoreColorManagement = from.process.enableParallelCoreColorManagement;
    to.process.enableParallelModuleProcessing    = from.process.enableParallelModuleProcessing;
+   to.process.enableThreadCPUAffinity           = from.process.enableThreadCPUAffinity;
    to.process.maxModuleThreadPriority           = from.process.maxModuleThreadPriority;
    to.process.maxProcessors                     = from.process.maxProcessors;
 }
@@ -2065,8 +2152,25 @@ MiscProcessingPreferencesPage::MiscProcessingPreferencesPage( PreferencesInstanc
    AlertOnProcessCompleted_Flag.SetToolTip(
       "<p>When this option is enabled, the PixInsight core application generates a visible <i>alert</i> when "
       "a running process completes its execution. On Windows and most X11 (UNIX/Linux) desktops, an alert causes "
-      "the application icon to flash intermittently on the task bar. On OS X, an alert causes the application "
+      "the application icon to flash intermittently on the task bar. On macOS, an alert causes the application "
       "icon to start bouncing on the dock. This option is disabled by default.</p>" );
+
+   EnableExecutionStatistics_Flag.checkBox.SetText( "Enable execution statistics" );
+   EnableExecutionStatistics_Flag.item = &instance.process.enableExecutionStatistics;
+   EnableExecutionStatistics_Flag.SetToolTip(
+      "<p>When this option is enabled, PixInsight gathers process and script execution statistics automatically. "
+      "This includes, among other items, the total number of times a process or featured script has been executed, "
+      "the date and time of the last execution, and the total execution time. This option must be enabled for the "
+      "Recently Used and Most Used tree items to be shown on Process Explorer. This option is enabled by default.</p>" );
+
+   EnableLaunchStatistics_Flag.checkBox.SetText( "Enable launch statistics" );
+   EnableLaunchStatistics_Flag.item = &instance.process.enableLaunchStatistics;
+   EnableLaunchStatistics_Flag.SetToolTip(
+      "<p>When this option is enabled, PixInsight gathers process launch statistics automatically. A process is "
+      "launched when one of its associated interfaces is opened. Launch statistics include, among other items, the "
+      "total number of times a process has been launched and the date and time of the last launch. This option must "
+      "be enabled for the Recently Used and Most Used tree items to be shown on Process Explorer. This option is "
+      "enabled by default.</p>" );
 
    Page_Sizer.SetSpacing( 4 );
    Page_Sizer.Add( BackupPSMFiles_Flag );
@@ -2075,6 +2179,8 @@ MiscProcessingPreferencesPage::MiscProcessingPreferencesPage( PreferencesInstanc
    Page_Sizer.Add( ConsoleDelay_Integer );
    Page_Sizer.Add( AutoSavePSMPeriod_Integer );
    Page_Sizer.Add( AlertOnProcessCompleted_Flag );
+   Page_Sizer.Add( EnableExecutionStatistics_Flag );
+   Page_Sizer.Add( EnableLaunchStatistics_Flag );
    Page_Sizer.AddStretch();
 
    SetSizer( Page_Sizer );
@@ -2082,11 +2188,13 @@ MiscProcessingPreferencesPage::MiscProcessingPreferencesPage( PreferencesInstanc
 
 void MiscProcessingPreferencesPage::TransferSettings( PreferencesInstance& to, const PreferencesInstance& from )
 {
-   to.process.backupFiles             = from.process.backupFiles;
-   to.process.generateScriptComments  = from.process.generateScriptComments;
-   to.process.consoleDelay            = from.process.consoleDelay;
-   to.process.autoSavePSMPeriod       = from.process.autoSavePSMPeriod;
-   to.process.alertOnProcessCompleted = from.process.alertOnProcessCompleted;
+   to.process.backupFiles               = from.process.backupFiles;
+   to.process.generateScriptComments    = from.process.generateScriptComments;
+   to.process.consoleDelay              = from.process.consoleDelay;
+   to.process.autoSavePSMPeriod         = from.process.autoSavePSMPeriod;
+   to.process.alertOnProcessCompleted   = from.process.alertOnProcessCompleted;
+   to.process.enableExecutionStatistics = from.process.enableExecutionStatistics;
+   to.process.enableLaunchStatistics    = from.process.enableLaunchStatistics;
 }
 
 // ----------------------------------------------------------------------------
@@ -2262,4 +2370,4 @@ void PreferencesInterface::GUIData::InitializeCategories()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF PreferencesInterface.cpp - Released 2017-05-02T09:43:00Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0352
+// Standard Image Process Module Version 01.02.09.0371
 // ----------------------------------------------------------------------------
-// ImageIdentifierInterface.h - Released 2016/02/21 20:22:43 UTC
+// ImageIdentifierInterface.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -78,8 +78,6 @@ public:
    virtual MetaProcess* Process() const;
    virtual const char** IconImageXPM() const;
 
-   virtual void Initialize();
-
    virtual void ApplyInstance() const;
    virtual void ResetInstance();
 
@@ -106,11 +104,13 @@ private:
             Edit              Identifier_Edit;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
 
-   void Identifier_EditCompleted( Edit& sender );
+   void __EditCompleted( Edit& sender );
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
 
    friend struct GUIData;
 };
@@ -128,4 +128,4 @@ PCL_END_LOCAL
 #endif   // __ImageIdentifierInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF ImageIdentifierInterface.h - Released 2016/02/21 20:22:43 UTC
+// EOF ImageIdentifierInterface.h - Released 2017-05-02T09:43:00Z

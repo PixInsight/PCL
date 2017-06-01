@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/LinearFit.h - Released 2016/02/21 20:22:12 UTC
+// pcl/LinearFit.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/LinearFit.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Math_h
-#include <pcl/Math.h>
-#endif
-
-#ifndef __PCL_Exception_h
 #include <pcl/Exception.h>
-#endif
+#include <pcl/Math.h>
 
 namespace pcl
 {
@@ -99,7 +92,7 @@ public:
     * is the ordinate of its intersection with the Y axis. It represents a
     * constant additive pedestal present in the whole dataset.
     */
-   double a;
+   double a = 0;
 
    /*!
     * The \e b parameter is the slope of the fitted straight line:
@@ -109,14 +102,14 @@ public:
     * If the fitted line passes through two points {x1,y1} and {x2,y2}, then
     * its slope is equal to (y2 - y1)/(x2 - x1).
     */
-   double b;
+   double b = 0;
 
    /*!
-    * Mean (or average) absolute deviation of the linear fit. This is the
-    * mean absolute deviation computed for all data points with respect to the
-    * fitted straight line function.
+    * Mean absolute deviation of the linear fit. This is the mean absolute
+    * deviation computed for all data points with respect to the fitted
+    * straight line function.
     */
-   double adev;
+   double adev = 0;
 
    /*!
     * Returns true iff the fitted straight line model is valid. The model
@@ -140,9 +133,12 @@ public:
     * Constructs a default %LinearFit object. The resulting object corresponds
     * to a horizontal line crossing at the origin, i.e. the X axis.
     */
-   LinearFit() : a( 0 ), b( 0 ), adev( 0 )
-   {
-   }
+   LinearFit() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   LinearFit( const LinearFit& ) = default;
 
    /*!
     * Constructs a %LinearFit object representing the straight line that passes
@@ -252,4 +248,4 @@ private:
 #endif   // __LinearFit_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/LinearFit.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/LinearFit.h - Released 2017-05-28T08:28:50Z

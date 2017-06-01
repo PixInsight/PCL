@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/BicubicInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// pcl/BicubicInterpolation.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,25 +54,12 @@
 
 /// \file pcl/BicubicInterpolation.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Utility_h
-#include <pcl/Utility.h>
-#endif
-
-#ifndef __PCL_BidimensionalInterpolation_h
 #include <pcl/BidimensionalInterpolation.h>
-#endif
-
-#ifndef __PCL_Math_h
 #include <pcl/Math.h>
-#endif
+#include <pcl/Utility.h>
 
 namespace pcl
 {
@@ -114,8 +101,8 @@ protected:
       PCL_PRECONDITION( int( y ) < m_height )
 
       // Central grid coordinates
-      i1 = pcl::Range( TruncI( y ), 0, m_height-1 );
-      j1 = pcl::Range( TruncI( x ), 0, m_width-1 );
+      i1 = pcl::Range( TruncInt( y ), 0, m_height-1 );
+      j1 = pcl::Range( TruncInt( x ), 0, m_width-1 );
 
       // Set up source matrix
 
@@ -183,8 +170,8 @@ __done:
       PCL_PRECONDITION( int( y ) < m_height )
 
       // Central grid coordinates
-      i1 = pcl::Range( TruncI( y ), 0, m_height-1 );
-      j1 = pcl::Range( TruncI( x ), 0, m_width-1 );
+      i1 = pcl::Range( TruncInt( y ), 0, m_height-1 );
+      j1 = pcl::Range( TruncInt( x ), 0, m_width-1 );
 
       // Set up source matrix
 
@@ -625,7 +612,7 @@ private:
 };
 
 /*!
- * \class pcl::BicubicInterpolation
+ * \class BicubicInterpolation
  * \brief Bicubic interpolation - an alias for BicubicSplineInterpolation
  *
  * %BicubicInterpolation is a synonym for the BicubicSplineInterpolation class.
@@ -781,4 +768,4 @@ private:
 #endif   // __PCL_BicubicInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/BicubicInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/BicubicInterpolation.h - Released 2017-05-28T08:28:50Z

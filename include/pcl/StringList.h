@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/StringList.h - Released 2016/02/21 20:22:12 UTC
+// pcl/StringList.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/StringList.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Array_h
 #include <pcl/Array.h>
-#endif
-
-#ifndef __PCL_String_h
-#include <pcl/String.h>
-#endif
-
-#ifndef __PCL_KeyValue_h
 #include <pcl/KeyValue.h>
-#endif
+#include <pcl/String.h>
 
 namespace pcl
 {
@@ -159,4 +149,4 @@ typedef SortedArray<IsoStringKeyValue> SortedIsoStringKeyValueList;
 #endif   // __PCL_StringList_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/StringList.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/StringList.h - Released 2017-05-28T08:28:50Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/SurfaceSpline.h - Released 2016/02/21 20:22:12 UTC
+// pcl/SurfaceSpline.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/SurfaceSpline.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Vector_h
 #include <pcl/Vector.h>
-#endif
 
 namespace pcl
 {
@@ -116,18 +109,22 @@ class PCL_CLASS SurfaceSpline : private SurfaceSplineBase
 public:
 
    /*!
-    * Represents a vector of coordinates or spline coefficients.
+    * Represents a vector of coordinates, function values or spline
+    * coefficients.
     */
-   typedef GenericVector<T>   vector_type;
+   typedef GenericVector<T>               vector_type;
 
    /*!
-    * Default constructor. Constructs a two-dimensional interpolating surface
-    * spline of second order.
+    * The numeric type used to represent coordinates, function values and
+    * spline coefficients.
     */
-   SurfaceSpline() :
-      SurfaceSplineBase(), m_order( 2 ), m_smoothing( 0 )
-   {
-   }
+   typedef typename vector_type::scalar   scalar;
+
+   /*!
+    * Default constructor. Constructs an empty, two-dimensional interpolating
+    * surface spline of second order.
+    */
+   SurfaceSpline() = default;
 
    /*!
     * Copy constructor.
@@ -142,7 +139,7 @@ public:
 #endif
 
    /*!
-    * Destroys a %SurfaceSpline instance.
+    * Virtual destructor.
     */
    virtual ~SurfaceSpline()
    {
@@ -358,15 +355,18 @@ public:
 
 protected:
 
-   vector_type m_x;         // vector of normalized X node coordinates
-   vector_type m_y;         // vector of normalized Y node coordinates
-   double      m_r0;        // scaling factor for normalization of node coordinates
-   double      m_x0;        // zero offset for normalization of X node coordinates
-   double      m_y0;        // zero offset for normalization of Y node coordinates
-   int         m_order;     // derivative order > 0
-   float       m_smoothing; // smoothing factor, or interpolating 2-D spline if m_smoothing == 0
-   FVector     m_weights;   // vector of node weights if m_smoothing != 0, otherwise ignored (empty)
-   vector_type m_spline;    // coefficients of the 2-D surface spline
+   vector_type m_x;             // vector of normalized X node coordinates
+   vector_type m_y;             // vector of normalized Y node coordinates
+   double      m_r0        = 1; // scaling factor for normalization of node coordinates
+   double      m_x0        = 0; // zero offset for normalization of X node coordinates
+   double      m_y0        = 0; // zero offset for normalization of Y node coordinates
+   int         m_order     = 2; // derivative order > 0
+   float       m_smoothing = 0; // smoothing factor, or interpolating 2-D spline if m_smoothing == 0
+   FVector     m_weights;       // vector of node weights if m_smoothing != 0, otherwise ignored (empty)
+   vector_type m_spline;        // coefficients of the 2-D surface spline
+
+   friend class DrizzleData;
+   friend class DrizzleDataDecoder;
 };
 
 // ----------------------------------------------------------------------------
@@ -376,4 +376,4 @@ protected:
 #endif   // __PCL_SurfaceSpline_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SurfaceSpline.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/SurfaceSpline.h - Released 2017-05-28T08:28:50Z

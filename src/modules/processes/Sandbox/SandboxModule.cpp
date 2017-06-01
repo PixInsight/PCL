@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Sandbox Process Module Version 01.00.02.0211
+// Standard Sandbox Process Module Version 01.00.02.0230
 // ----------------------------------------------------------------------------
-// SandboxModule.cpp - Released 2016/02/21 20:22:43 UTC
+// SandboxModule.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Sandbox PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  02
-#define MODULE_VERSION_BUILD     0211
+#define MODULE_VERSION_BUILD     0230
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2016
-#define MODULE_RELEASE_MONTH     2
-#define MODULE_RELEASE_DAY       21
+#define MODULE_RELEASE_YEAR      2017
+#define MODULE_RELEASE_MONTH     5
+#define MODULE_RELEASE_DAY       2
 
 #include "SandboxModule.h"
 #include "SandboxProcess.h"
@@ -140,18 +140,19 @@ void SandboxModule::GetReleaseDate( int& year, int& month, int& day ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
-//
-// Module installation routine.
-//
-// If this routine is defined as a public symbol in a module, the PixInsight
-// core application will call it just after loading and initializing the module
-// shared object or dynamic-link library.
-//
-// The mode argument specifies the kind of installation being performed by the
-// core application. See the pcl::InstallMode namespace for more information.
-// ----------------------------------------------------------------------------
 
+/*
+ * PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
+ *
+ * Module installation routine.
+ *
+ * If this routine is defined as a public symbol in a module, the PixInsight
+ * core application will call it just after loading and initializing the module
+ * shared object or dynamic-link library.
+ *
+ * The mode argument specifies the kind of installation being performed by the
+ * core application. See the pcl::InstallMode namespace for more information.
+ */
 PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 {
    /*
@@ -161,7 +162,7 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
    new pcl::SandboxModule;
 
    /*
-    * The mode argument tells us what kind of installation is being requested
+    * The mode argument tells us which kind of installation is being requested
     * by the PixInsight application. Incomplete installation requests only need
     * module descriptions.
     */
@@ -178,4 +179,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF SandboxModule.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF SandboxModule.cpp - Released 2017-05-02T09:43:01Z

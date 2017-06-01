@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0352
+// Standard Image Process Module Version 01.02.09.0371
 // ----------------------------------------------------------------------------
-// StatisticsInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// StatisticsInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -71,7 +71,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-StatisticsInterface* TheStatisticsInterface = 0;
+StatisticsInterface* TheStatisticsInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -186,7 +186,7 @@ public:
 
 private:
 
-   int m_checkedCount;
+   int m_checkedCount = 0;
 
    VerticalSizer     Global_Sizer;
       GroupBox          Statistics_GroupBox;
@@ -221,12 +221,11 @@ private:
          PushButton        Cancel_PushButton;
 
    void __Button_Click( Button& sender, bool checked );
-
    void __Dialog_Execute( Dialog& sender );
    void __Dialog_Return( Dialog& sender, int retVal );
 };
 
-StatisticsOptionsDialog::StatisticsOptionsDialog() : Dialog(), m_checkedCount( 0 )
+StatisticsOptionsDialog::StatisticsOptionsDialog()
 {
    Count_CheckBox.SetText( "Count" );
    Count_CheckBox.SetToolTip( "<p>Total number of pixel samples within the estimation range ]0,1[ (clipped) or [0,1] (unclipped).</p>" );
@@ -484,8 +483,7 @@ void StatisticsOptionsDialog::__Button_Click( Button& sender, bool checked )
          if ( MinimumPos_CheckBox.IsChecked() )     items.Append( "MinimumPos" );
          if ( MaximumPos_CheckBox.IsChecked() )     items.Append( "MaximumPos" );
 
-         String contents;
-         items.ToCommaSeparated( contents );
+         String contents = String().ToCommaSeparated( items );
          Settings::Write( TheStatisticsInterface->SettingsKey() + "Contents", contents );
 
          MessageBox( "<p>Default statistics set saved:</p>"
@@ -582,36 +580,34 @@ void StatisticsOptionsDialog::__Dialog_Return( Dialog& sender, int retVal )
 // ----------------------------------------------------------------------------
 
 StatisticsInterface::StatisticsInterface() :
-ProcessInterface(),
-m_doCount( true ),
-m_doMean( true ),
-m_doModulus( false ),
-m_doNorm( false ),
-m_doSumOfSquares( false ),
-m_doMeanOfSquares( false ),
-m_doMedian( true ),
-m_doVariance( false ),
-m_doStdDev( false ),
-m_doAvgDev( true ),
-m_doMAD( true ),
-m_doBWMV( false ),
-m_doPBMV( false ),
-m_doSn( false ),
-m_doQn( false ),
-m_doMinimum( true ),
-m_doMinimumPos( false ),
-m_doMaximum( true ),
-m_doMaximumPos( false ),
-m_rangeBits( 0 ),
-GUI( 0 )
+   m_doCount( true ),
+   m_doMean( true ),
+   m_doModulus( false ),
+   m_doNorm( false ),
+   m_doSumOfSquares( false ),
+   m_doMeanOfSquares( false ),
+   m_doMedian( true ),
+   m_doVariance( false ),
+   m_doStdDev( false ),
+   m_doAvgDev( true ),
+   m_doMAD( true ),
+   m_doBWMV( false ),
+   m_doPBMV( false ),
+   m_doSn( false ),
+   m_doQn( false ),
+   m_doMinimum( true ),
+   m_doMinimumPos( false ),
+   m_doMaximum( true ),
+   m_doMaximumPos( false ),
+   m_rangeBits( 0 )
 {
    TheStatisticsInterface = this;
 }
 
 StatisticsInterface::~StatisticsInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString StatisticsInterface::Id() const
@@ -636,7 +632,7 @@ InterfaceFeatures StatisticsInterface::Features() const
 
 void StatisticsInterface::TrackViewUpdated( bool active )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( active )
       {
          ImageWindow w = ImageWindow::ActiveWindow();
@@ -649,7 +645,7 @@ void StatisticsInterface::TrackViewUpdated( bool active )
 
 bool StatisticsInterface::Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "Statistics" );
@@ -678,14 +674,14 @@ bool StatisticsInterface::WantsImageNotifications() const
 
 void StatisticsInterface::ImageUpdated( const View& view )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( view == m_currentView )
          UpdateControls();
 }
 
 void StatisticsInterface::ImageFocused( const View& view )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( IsTrackViewActive() )
       {
          GUI->AllViews_ViewList.SelectView( view ); // normally not necessary, but we can invoke this f() directly
@@ -695,7 +691,7 @@ void StatisticsInterface::ImageFocused( const View& view )
 
 void StatisticsInterface::ImageDeleted( const View& view )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( view == m_currentView )
          UpdateControls();
 }
@@ -707,7 +703,7 @@ bool StatisticsInterface::WantsViewPropertyNotifications() const
 
 void StatisticsInterface::ViewPropertyDeleted( const View& view, const IsoString& property )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( view == m_currentView )
          if ( ViewPropertyRequired( property ) )
          {
@@ -1273,12 +1269,30 @@ void StatisticsInterface::__ComboBox_ItemSelected( ComboBox& sender, int itemInd
    }
 }
 
+void StatisticsInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->AllViews_ViewList || sender == GUI->Data_TreeBox.Viewport() )
+      wantsView = true;
+}
+
+void StatisticsInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->AllViews_ViewList || sender == GUI->Data_TreeBox.Viewport() )
+   {
+      DeactivateTrackView();
+      GUI->AllViews_ViewList.SelectView( view );
+      UpdateControls();
+   }
+}
+
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 StatisticsInterface::GUIData::GUIData( StatisticsInterface& w )
 {
    AllViews_ViewList.OnViewSelected( (ViewList::view_event_handler)&StatisticsInterface::__ViewList_ViewSelected, w );
+   AllViews_ViewList.OnViewDrag( (Control::view_drag_event_handler)&StatisticsInterface::__ViewDrag, w );
+   AllViews_ViewList.OnViewDrop( (Control::view_drop_event_handler)&StatisticsInterface::__ViewDrop, w );
 
    for ( size_type i = 0; i < ItemsInArray( s_comboBoxRangeItems ); ++i )
       Range_ComboBox.AddItem( s_comboBoxRangeItems[i] );
@@ -1336,9 +1350,10 @@ StatisticsInterface::GUIData::GUIData( StatisticsInterface& w )
          "}"
       ) );
    Data_TreeBox.HideHeader();
-
    Data_TreeBox.Restyle();
    Data_TreeBox.SetMinSize( Data_TreeBox.Font().Width( String( 'M', 60 ) ), w.LogicalPixelsToPhysical( 220 ) );
+   Data_TreeBox.Viewport().OnViewDrag( (Control::view_drag_event_handler)&StatisticsInterface::__ViewDrag, w );
+   Data_TreeBox.Viewport().OnViewDrop( (Control::view_drop_event_handler)&StatisticsInterface::__ViewDrop, w );
 
    Global_Sizer.SetMargin( 4 );
    Global_Sizer.SetSpacing( 4 );
@@ -1355,4 +1370,4 @@ StatisticsInterface::GUIData::GUIData( StatisticsInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF StatisticsInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF StatisticsInterface.cpp - Released 2017-05-02T09:43:00Z

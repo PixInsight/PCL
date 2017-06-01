@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/ImageVariant.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/ImageVariant.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -83,48 +83,21 @@ struct SwapFileHeader
    uint8  bitsPerSample    = 0;
    uint8  sRGB             = 0;
    uint8  sRGBGamma        = 0;
-#ifndef _MSC_VER
    uint8  rsv1[ 10 ]       = {}; // reserved
-#else
-   uint8  rsv1[ 10 ];
-#endif
    int32  width            = 0;
    int32  height           = 0;
    int32  numberOfChannels = 0;
    int32  colorSpace       = 0;
    float  gamma            = 0;
-#ifndef _MSC_VER
    float  Y[ 3 ]           = {};
    float  x[ 3 ]           = {};
    float  y[ 3 ]           = {};
    uint8  rsv2[ 20 ]       = {}; // reserved
-#else
-   float  Y[ 3 ];
-   float  x[ 3 ];
-   float  y[ 3 ];
-   uint8  rsv2[ 20 ];
-#endif
    int32  numberOfThreads  = 0;
    uint8  compression      = SwapCompression::None;
-#ifndef _MSC_VER
    uint8  rsv3[ 19 ]       = {}; // reserved
-#else
-   uint8  rsv3[ 19 ];
-#endif
 
-#ifndef _MSC_VER
    SwapFileHeader() = default;
-#else
-   SwapFileHeader()
-   {
-      ::memset( rsv1, 0, sizeof( rsv1 ) );
-      ::memset( rsv2, 0, sizeof( rsv2 ) );
-      ::memset( rsv3, 0, sizeof( rsv3 ) );
-      Y[0] = Y[1] = Y[2] =
-      x[0] = x[1] = x[2] =
-      y[0] = y[1] = y[2] = 0;
-   }
-#endif
 
    SwapFileHeader( const SwapFileHeader& ) = default;
 
@@ -181,15 +154,16 @@ public:
 
       if ( threads.Length() > 1 )
       {
-         for ( thread_list::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, Distance( threads.Begin(), i ) );
+         int n = 0;
+         for ( SwapFileThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, n++ );
          if ( processEvents )
-            for ( thread_list::iterator i = threads.Begin(); i != threads.End(); ++i )
-               while ( !i->Wait( 250 ) )
+            for ( SwapFileThread& thread : threads )
+               while ( !thread.Wait( 250 ) )
                   Module->ProcessEvents( true/*excludeUserInputEvents*/ );
          else
-            for ( thread_list::iterator i = threads.Begin(); i != threads.End(); ++i )
-               i->Wait();
+            for ( SwapFileThread& thread : threads )
+               thread.Wait();
       }
       else
       {
@@ -207,10 +181,10 @@ public:
       {
          size_type transferSize = 0;
          double compressorTime = 0;
-         for ( thread_list::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( const SwapFileThread& thread : threads )
          {
-            transferSize += i->TransferSize();
-            compressorTime += i->CompressorTime();
+            transferSize += thread.TransferSize();
+            compressorTime += thread.CompressorTime();
          }
 
          size_type size = image.ImageSize();
@@ -244,34 +218,34 @@ protected:
    static Mutex      m_mutex;
    static StringList m_errors;
 
-   static size_type WriteSubblock( File& f, Compression::subblock_list::const_iterator i )
+   static size_type WriteSubblock( File& file, const Compression::Subblock& subblock )
    {
-      f.WriteUI64( i->compressedData.Length() );
-      f.WriteUI64( i->uncompressedSize );
-      f.WriteUI64( i->checksum );
-      f.WriteUI64( 0u ); // reserved
-      f.Write( reinterpret_cast<const void*>( i->compressedData.Begin() ), fsize_type( i->compressedData.Length() ) );
-      return i->compressedData.Length() + 4 * sizeof( uint64 );
+      file.WriteUI64( subblock.compressedData.Length() );
+      file.WriteUI64( subblock.uncompressedSize );
+      file.WriteUI64( subblock.checksum );
+      file.WriteUI64( 0u ); // reserved
+      file.Write( reinterpret_cast<const void*>( subblock.compressedData.Begin() ), fsize_type( subblock.compressedData.Length() ) );
+      return subblock.compressedData.Length() + 4 * sizeof( uint64 );
    }
 
-   static size_type ReadSubblock( File& f, Compression::subblock_list::iterator i )
+   static size_type ReadSubblock( File& file, Compression::Subblock& subblock )
    {
       size_type compressedSize = 0;
-      f.ReadUI64( compressedSize );
-      i->compressedData = ByteArray( compressedSize );
-      f.ReadUI64( i->uncompressedSize );
-      f.ReadUI64( i->checksum );
+      file.ReadUI64( compressedSize );
+      subblock.compressedData = ByteArray( compressedSize );
+      file.ReadUI64( subblock.uncompressedSize );
+      file.ReadUI64( subblock.checksum );
 #ifndef _MSC_VER
       volatile uint64 rsv;
 #else
       uint64 rsv;
 #endif
-      f.ReadUI64( rsv ); // reserved
-      f.Read( reinterpret_cast<void*>( i->compressedData.Begin() ), fsize_type( compressedSize ) );
+      file.ReadUI64( rsv ); // reserved
+      file.Read( reinterpret_cast<void*>( subblock.compressedData.Begin() ), fsize_type( compressedSize ) );
       return compressedSize + 4 * sizeof( uint64 );
    }
 
-   static size_type WriteData( File& f,
+   static size_type WriteData( File& file,
                                const Compression* compressor, double& compressionTimeAcc,
                                const void* data, size_type size )
    {
@@ -280,37 +254,37 @@ protected:
          ElapsedTime T;
          Compression::subblock_list subblocks = compressor->Compress( data, size );
          compressionTimeAcc += T();
-         f.WriteUI32( subblocks.Length() );
+         file.WriteUI32( subblocks.Length() );
          if ( !subblocks.IsEmpty() )
          {
             // Data compressed.
             size_type compressedSize = 0;
-            for ( Compression::subblock_list::const_iterator i = subblocks.Begin(); i != subblocks.End(); ++i )
-               compressedSize += WriteSubblock( f, i );
+            for ( const Compression::Subblock& subblock : subblocks )
+               compressedSize += WriteSubblock( file, subblock );
             return compressedSize;
          }
       }
 
       // Either no compression, or the data is not compressible.
-      f.Write( data, fsize_type( size ) );
+      file.Write( data, fsize_type( size ) );
       return size;
    }
 
-   static size_type ReadData( File& f,
+   static size_type ReadData( File& file,
                               const Compression* compressor, double& decompressionTimeAcc,
                               void* data, size_type size )
    {
       if ( compressor != nullptr )
       {
          size_type subblockCount = 0;
-         f.ReadUI32( subblockCount );
+         file.ReadUI32( subblockCount );
          if ( subblockCount > 0 )
          {
             // Compressed data.
             Compression::subblock_list subblocks( subblockCount );
             size_type compressedSize = 0;
-            for ( Compression::subblock_list::iterator i = subblocks.Begin(); i != subblocks.End(); ++i )
-               compressedSize += ReadSubblock( f, i );
+            for ( Compression::Subblock& subblock : subblocks )
+               compressedSize += ReadSubblock( file, subblock );
             ElapsedTime T;
             (void)compressor->Uncompress( data, size, subblocks );
             decompressionTimeAcc += T();
@@ -319,7 +293,7 @@ protected:
       }
 
       // Either no compression, or data was not compressible.
-      f.Read( data, fsize_type( size ) );
+      file.Read( data, fsize_type( size ) );
       return size;
    }
 
@@ -327,7 +301,7 @@ protected:
    {
    public:
 
-      IncrementalReader( File& f, const Compression* compressor, size_type size ) : m_file( f )
+      IncrementalReader( File& file, const Compression* compressor, size_type size ) : m_file( file )
       {
          if ( compressor != nullptr )
          {
@@ -337,8 +311,8 @@ protected:
             {
                // Compressed data.
                Compression::subblock_list subblocks( subblockCount );
-               for ( Compression::subblock_list::iterator i = subblocks.Begin(); i != subblocks.End(); ++i )
-                  ReadSubblock( f, i );
+               for ( Compression::Subblock& subblock : subblocks )
+                  ReadSubblock( file, subblock );
                m_data = ByteArray( size );
                compressor->Uncompress( m_data.Begin(), size, subblocks );
             }
@@ -663,13 +637,13 @@ static void ValidateSwapFileParameters( const String& routine, const String& fil
    if ( directories.IsEmpty() )
       throw Error( routine + "(): Empty directory list." );
 
-   for ( StringList::const_iterator i = directories.Begin(); i != directories.End(); ++i )
+   for ( const String& dir : directories )
    {
-      String dir = i->Trimmed();
-      if ( dir.IsEmpty() )
+      String path = dir.Trimmed();
+      if ( path.IsEmpty() )
          throw Error( routine + "(): Empty directory." );
-      if ( !File::DirectoryExists( dir ) )
-         throw Error( routine + "(): No such directory: " + dir );
+      if ( !File::DirectoryExists( path ) )
+         throw Error( routine + "(): No such directory: " + path );
    }
 }
 
@@ -709,8 +683,8 @@ CreateSwapWriterThreads( const GenericImage<P>& image,
    StringList sortedDirectories = directories;
 #ifdef __PCL_WINDOWS
    rootDirectory.ToUppercase();
-   for ( StringList::iterator i = sortedDirectories.Begin(); i != sortedDirectories.End(); ++i )
-      i->ToUppercase();
+   for ( String& dir : sortedDirectories )
+      dir.ToUppercase();
 #endif
    sortedDirectories.Sort();
    for ( int i = 0, j = 1; i < header.numberOfThreads; i = j, ++j )
@@ -858,11 +832,11 @@ Compression* ImageVariant::NewCompression( swap_compression algorithm, int itemS
       compressor = new ZLibCompression;
       break;
    case SwapCompression::LZ4:
-   case SwapCompression::LZ4_SH:
+   case SwapCompression::LZ4_Sh:
       compressor = new LZ4Compression;
       break;
    case SwapCompression::LZ4HC:
-   case SwapCompression::LZ4HC_SH:
+   case SwapCompression::LZ4HC_Sh:
       compressor = new LZ4HCCompression;
       break;
    default:
@@ -871,8 +845,8 @@ Compression* ImageVariant::NewCompression( swap_compression algorithm, int itemS
    switch ( algorithm )
    {
    case SwapCompression::ZLib_SH:
-   case SwapCompression::LZ4_SH:
-   case SwapCompression::LZ4HC_SH:
+   case SwapCompression::LZ4_Sh:
+   case SwapCompression::LZ4HC_Sh:
       compressor->EnableByteShuffling();
       compressor->SetItemSize( itemSize );
       break;
@@ -1404,4 +1378,4 @@ void ImageVariant::MaskImage( const ImageVariant& src, const ImageVariant& mask,
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageVariant.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/ImageVariant.cpp - Released 2017-05-28T08:29:05Z

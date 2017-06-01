@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Control.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Control.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,53 +56,19 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Flags_h
-#include <pcl/Flags.h>
-#endif
-
-#ifndef __PCL_AutoPointer_h
 #include <pcl/AutoPointer.h>
-#endif
-
-#ifndef __PCL_UIObject_h
-#include <pcl/UIObject.h>
-#endif
-
-#ifndef __PCL_Rectangle_h
-#include <pcl/Rectangle.h>
-#endif
-
-#ifndef __PCL_Sizer_h
-#include <pcl/Sizer.h>
-#endif
-
-#ifndef __PCL_KeyCodes_h
-#include <pcl/KeyCodes.h>
-#endif
-
-#ifndef __PCL_ButtonCodes_h
 #include <pcl/ButtonCodes.h>
-#endif
-
-#ifndef __PCL_Color_h
 #include <pcl/Color.h>
-#endif
-
-#ifndef __PCL_Cursor_h
 #include <pcl/Cursor.h>
-#endif
-
-#ifndef __PCL_Font_h
+#include <pcl/Flags.h>
 #include <pcl/Font.h>
-#endif
-
-#ifndef __PCL_UIScaling_h
+#include <pcl/KeyCodes.h>
+#include <pcl/Rectangle.h>
+#include <pcl/Sizer.h>
+#include <pcl/UIObject.h>
 #include <pcl/UIScaling.h>
-#endif
 
 #endif   // !__PCL_BUILDING_PIXINSIGHT_APPLICATION
 
@@ -112,7 +78,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace FocusStyle
+ * \namespace pcl::FocusStyle
  * \brief Control focus styles
  *
  * Focus styles refer to the way a control can gain the keyboard focus.
@@ -148,6 +114,8 @@ typedef Flags<FocusStyle::mask_type>   FocusStyles;
 
 // ----------------------------------------------------------------------------
 
+class PCL_CLASS View;
+
 /*!
  * \class Control
  * \brief Client-side interface to a PixInsight %Control object
@@ -174,6 +142,30 @@ public:
    virtual ~Control()
    {
    }
+
+   /*!
+    * Copy constructor. Copy and move semantics are disabled for UI controls
+    * because of client/server parent-children and event handling relations.
+    */
+   Control( const Control& ) = delete;
+
+   /*!
+    * Copy assignment. Copy and move semantics are disabled for UI controls
+    * because of client/server parent-children and event handling relations.
+    */
+   Control& operator =( const Control& ) = delete;
+
+   /*!
+    * Move constructor. Copy and move semantics are disabled for UI controls
+    * because of client/server parent-children and event handling relations.
+    */
+   Control( Control&& ) = delete;
+
+   /*!
+    * Move assignment. Copy and move semantics are disabled for UI controls
+    * because of client/server parent-children and event handling relations.
+    */
+   Control& operator =( Control&& ) = delete;
 
    /*!
     * Ensures that the server-side object managed by this instance is uniquely
@@ -811,6 +803,16 @@ public:
    /*! #
     */
    bool IsVisible() const;
+
+   /*! #
+    */
+   void SetVisible( bool visible )
+   {
+      if ( visible )
+         Show();
+      else
+         Hide();
+   }
 
    /*! #
     */
@@ -1479,6 +1481,10 @@ public:
    // void OnMousePress( Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers );
    // void OnMouseRelease( Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers );
    // void OnMouseWheel( Control& sender, const pcl::Point& pos, int delta, unsigned buttons, unsigned modifiers );
+   // void OnFileDrag( Control& sender, const pcl::Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+   // void OnFileDrop( Control& sender, const pcl::Point& pos, const StringList& files, unsigned modifiers )
+   // void OnViewDrag( Control& sender, const pcl::Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+   // void OnViewDrop( Control& sender, const pcl::Point& pos, const View& view, unsigned modifiers )
    // void OnChildCreate( Control& sender, Control& child );
    // void OnChildDestroy( Control& sender, Control& child );
 
@@ -1530,6 +1536,26 @@ public:
     * \ingroup control_event_handlers
     */
    typedef void (Control::*mouse_wheel_event_handler)( Control& sender, const pcl::Point& pos, int delta, unsigned buttons, unsigned modifiers );
+
+   /*! #
+    * \ingroup control_event_handlers
+    */
+   typedef void (Control::*file_drag_event_handler)( Control& sender, const pcl::Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
+
+   /*! #
+    * \ingroup control_event_handlers
+    */
+   typedef void (Control::*file_drop_event_handler)( Control& sender, const pcl::Point& pos, const StringList& files, unsigned modifiers );
+
+   /*! #
+    * \ingroup control_event_handlers
+    */
+   typedef void (Control::*view_drag_event_handler)( Control& sender, const pcl::Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+
+   /*! #
+    * \ingroup control_event_handlers
+    */
+   typedef void (Control::*view_drop_event_handler)( Control& sender, const pcl::Point& pos, const View& view, unsigned modifiers );
 
    /*! #
     * \ingroup control_event_handlers
@@ -1629,6 +1655,26 @@ public:
    /*! #
     * \ingroup control_event_handlers
     */
+   void OnFileDrag( file_drag_event_handler, Control& );
+
+   /*! #
+    * \ingroup control_event_handlers
+    */
+   void OnFileDrop( file_drop_event_handler, Control& );
+
+   /*! #
+    * \ingroup control_event_handlers
+    */
+   void OnViewDrag( view_drag_event_handler, Control& );
+
+   /*! #
+    * \ingroup control_event_handlers
+    */
+   void OnViewDrop( view_drop_event_handler, Control& );
+
+   /*! #
+    * \ingroup control_event_handlers
+    */
    void OnChildCreate( child_event_handler, Control& );
 
    /*! #
@@ -1660,6 +1706,10 @@ private:
       mouse_button_event_handler onMousePress       = nullptr;
       mouse_button_event_handler onMouseRelease     = nullptr;
       mouse_wheel_event_handler  onMouseWheel       = nullptr;
+      file_drag_event_handler    onFileDrag         = nullptr;
+      file_drop_event_handler    onFileDrop         = nullptr;
+      view_drag_event_handler    onViewDrag         = nullptr;
+      view_drop_event_handler    onViewDrop         = nullptr;
       child_event_handler        onChildCreate      = nullptr;
       child_event_handler        onChildDestroy     = nullptr;
 
@@ -1669,15 +1719,6 @@ private:
    };
 
    AutoPointer<EventHandlers> m_handlers;
-
-   /*
-    * Copy and move semantics are disabled for UI controls because of
-    * client/server parent-children and event handling relations.
-    */
-   Control( const Control& ) = delete;
-   Control& operator =( const Control& ) = delete;
-   Control( Control&& ) = delete;
-   Control& operator =( Control&& ) = delete;
 
 protected:
 
@@ -1719,6 +1760,7 @@ protected:
    friend class ToolButton;
    friend class TreeBox;
    friend class ViewList;
+   friend class WebView;
 };
 
 // ----------------------------------------------------------------------------
@@ -1771,4 +1813,4 @@ int CanonicalControlHeightImplementation()
 #endif   // __PCL_Control_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Control.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Control.h - Released 2017-05-28T08:28:50Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/IndirectSortedArray.h - Released 2016/02/21 20:22:12 UTC
+// pcl/IndirectSortedArray.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/IndirectSortedArray.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_IndirectArray_h
 #include <pcl/IndirectArray.h>
-#endif
-
-#ifndef __PCL_SortedArray_h
 #include <pcl/SortedArray.h>
-#endif
 
 namespace pcl
 {
@@ -79,8 +69,22 @@ namespace pcl
  * \class IndirectSortedArray
  * \brief Generic dynamic sorted array of pointers to objects.
  *
- * ### TODO: Write a detailed description for %IndirectSortedArray.
+ * %IndirectSortedArray is a generic, finite sorted sequence of pointers to
+ * objects, implemented as a reference-counted, dynamic array of T pointers
+ * with automatic sorting of inserted array elements. The type A provides
+ * dynamic allocation for contiguous sequences of void* elements
+ * (StandardAllocator is used by default).
  *
+ * Ordering of array elements is implemented by indirection, that is, the
+ * pointed-to objects are compared for sorting, not the contained pointers.
+ *
+ * Unlike ReferenceArray and ReferenceSortedArray, %IndirectSortedArray can
+ * contain null pointers, which are ignored automatically in all internal
+ * operations controlling the implicit ordering of the (indirectly) contained
+ * elements.
+ *
+ * \sa IndirectArray, ReferenceArray, ReferenceSortedArray, Array, SortedArray,
+ * ReferenceCounter
  * \ingroup dynamic_arrays
  */
 template <class T, class A = StandardAllocator>
@@ -671,6 +675,41 @@ public:
       m_array.Remove( i, j );
    }
 
+   /*!
+    * Removes a trailing sequence of contiguous pointers from the specified
+    * iterator of this indirect array. This operation is equivalent to:
+    *
+    * \code Remove( i, End() ) \endcode
+    *
+    * If the specified iterator is located at or after the end of this array,
+    * this function does nothing. Otherwise the iterator is constrained to stay
+    * in the range [Begin(),End()) of existing array elements.
+    *
+    * Only pointers are removed by this function; the pointed objects are not
+    * affected in any way.
+    */
+   void Truncate( const_iterator i )
+   {
+      m_array.Truncate( i );
+   }
+
+   /*!
+    * Removes a contiguous trailing sequence of \a n existing pointers from
+    * this indirect array. This operation is equivalent to:
+    *
+    * \code Truncate( End() - n ) \endcode
+    *
+    * If the specified count \a n is greater than or equal to the length of
+    * this array, this function calls Clear() to yield an empty array.
+    *
+    * Only pointers are removed by this function; the pointed objects are not
+    * affected in any way.
+    */
+   void Shrink( size_type n = 1 )
+   {
+      m_array.Shrink( n );
+   }
+
    /*! #
     */
    void Remove( const T& v )
@@ -1190,32 +1229,36 @@ private:
 // ----------------------------------------------------------------------------
 
 /*!
- * Adds a pointer to an object \a p to an indirect sorted array \a x. Returns a
- * reference to the indirect sorted array.
+ * Adds a pointer \a p to an indirect sorted array \a x. Returns a reference to
+ * the left-hand indirect sorted array.
+ *
+ * A pointer to the template argument type V must be statically castable to T*.
  * \ingroup array_insertion_operators
  */
-template <class T, class A> inline
-IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>& x, const T* p )
+template <class T, class A, class V> inline
+IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>& x, const V* p )
 {
-   x.Add( p );
+   x.Add( static_cast<const T*>( p ) );
    return x;
 }
 
 /*!
- * Adds a pointer to an object \a p to an indirect sorted array \a x. Returns a
- * reference to the indirect sorted array.
+ * Adds a pointer \a p to a temporary indirect sorted array \a x. Returns a
+ * reference to the left-hand indirect sorted array.
+ *
+ * A pointer to the template argument type V must be statically castable to T*.
  * \ingroup array_insertion_operators
  */
-template <class T, class A> inline
-IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>&& x, const T* p )
+template <class T, class A, class V> inline
+IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>&& x, const V* p )
 {
-   x.Add( p );
+   x.Add( static_cast<const T*>( p ) );
    return x;
 }
 
 /*!
- * Adds an indirect sorted array \a x2 to another indirect sorted array \a x1.
- * Returns a reference to the left-hand indirect sorted array \a x1.
+ * Adds an indirect sorted array \a x2 to an indirect sorted array \a x1.
+ * Returns a reference to the left-hand indirect sorted array.
  * \ingroup array_insertion_operators
  */
 template <class T, class A> inline
@@ -1226,8 +1269,8 @@ IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>& x1, const Indir
 }
 
 /*!
- * Adds an indirect sorted array \a x2 to another indirect sorted array \a x1.
- * Returns a reference to the left-hand indirect sorted array \a x1.
+ * Adds an indirect sorted array \a x2 to a temporary indirect sorted array
+ * \a x1. Returns a reference to the left-hand indirect sorted array.
  * \ingroup array_insertion_operators
  */
 template <class T, class A> inline
@@ -1239,7 +1282,7 @@ IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>&& x1, const Indi
 
 /*!
  * Adds an indirect array \a x2 to an indirect sorted array \a x1. Returns a
- * reference to the left-hand indirect sorted array \a x1.
+ * reference to the left-hand indirect sorted array.
  * \ingroup array_insertion_operators
  */
 template <class T, class A> inline
@@ -1250,8 +1293,8 @@ IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>& x1, const Indir
 }
 
 /*!
- * Adds an indirect array \a x2 to an indirect sorted array \a x1. Returns a
- * reference to the left-hand indirect sorted array \a x1.
+ * Adds an indirect array \a x2 to a temporary indirect sorted array \a x1.
+ * Returns a reference to the left-hand indirect sorted array.
  * \ingroup array_insertion_operators
  */
 template <class T, class A> inline
@@ -1268,4 +1311,4 @@ IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>&& x1, const Indi
 #endif  // __PCL_IndirectSortedArray_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/IndirectSortedArray.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/IndirectSortedArray.h - Released 2017-05-28T08:28:50Z

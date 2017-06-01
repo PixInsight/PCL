@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/PyramidalWaveletTransform.h - Released 2016/02/21 20:22:12 UTC
+// pcl/PyramidalWaveletTransform.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,25 +54,12 @@
 
 /// \file pcl/PyramidalWaveletTransform.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_ImageTransformation_h
 #include <pcl/ImageTransformation.h>
-#endif
-
-#ifndef __PCL_Vector_h
-#include <pcl/Vector.h>
-#endif
-
-#ifndef __PCL_String_h
 #include <pcl/String.h>
-#endif
+#include <pcl/Vector.h>
 
 namespace pcl
 {
@@ -84,6 +71,8 @@ namespace pcl
  * \brief Abstract base class of all orthogonal wavelet filters.
  *
  * ### TODO: Write a detailed description for %WaveletFilter.
+ *
+ * \ingroup multiscale_transforms
  */
 class PCL_CLASS WaveletFilter
 {
@@ -158,6 +147,7 @@ private:
 /*!
  * \class Daubechies4Filter
  * \brief Daubechies-4 wavelet filter.
+ * \ingroup multiscale_transforms
  */
 class PCL_CLASS Daubechies4Filter : public WaveletFilter
 {
@@ -183,6 +173,7 @@ extern PCL_DATA Daubechies4Filter Daubechies4;
 /*!
  * \class Daubechies6Filter
  * \brief Daubechies-6 wavelet filter.
+ * \ingroup multiscale_transforms
  */
 class PCL_CLASS Daubechies6Filter : public WaveletFilter
 {
@@ -208,6 +199,7 @@ extern PCL_DATA Daubechies6Filter Daubechies6;
 /*!
  * \class Daubechies8Filter
  * \brief Daubechies-8 wavelet filter.
+ * \ingroup multiscale_transforms
  */
 class PCL_CLASS Daubechies8Filter : public WaveletFilter
 {
@@ -233,6 +225,7 @@ extern PCL_DATA Daubechies8Filter Daubechies8;
 /*!
  * \class Daubechies10Filter
  * \brief Daubechies-10 wavelet filter.
+ * \ingroup multiscale_transforms
  */
 class PCL_CLASS Daubechies10Filter : public WaveletFilter
 {
@@ -258,6 +251,7 @@ extern PCL_DATA Daubechies10Filter Daubechies10;
 /*!
  * \class Daubechies12Filter
  * \brief Daubechies-12 wavelet filter.
+ * \ingroup multiscale_transforms
  */
 class PCL_CLASS Daubechies12Filter : public WaveletFilter
 {
@@ -283,6 +277,7 @@ extern PCL_DATA Daubechies12Filter Daubechies12;
 /*!
  * \class Daubechies20Filter
  * \brief Daubechies-20 wavelet filter.
+ * \ingroup multiscale_transforms
  */
 class PCL_CLASS Daubechies20Filter : public WaveletFilter
 {
@@ -318,6 +313,8 @@ extern PCL_DATA Daubechies20Filter Daubechies20;
  * et al.
  *
  * ### TODO: Write a detailed description for %PyramidalWaveletTransform.
+ *
+ * \ingroup multiscale_transforms
  */
 class PCL_CLASS PyramidalWaveletTransform : public BidirectionalImageTransformation
 {
@@ -546,4 +543,4 @@ protected:
 #endif   // __PCL_PyramidalWaveletTransform_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/PyramidalWaveletTransform.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/PyramidalWaveletTransform.h - Released 2017-05-28T08:28:50Z

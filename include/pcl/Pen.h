@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Pen.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Pen.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,21 +56,11 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_UIObject_h
-#include <pcl/UIObject.h>
-#endif
-
-#ifndef __PCL_Color_h
-#include <pcl/Color.h>
-#endif
-
-#ifndef __PCL_Brush_h
 #include <pcl/Brush.h>
-#endif
+#include <pcl/Color.h>
+#include <pcl/UIObject.h>
 
 #endif   // __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
@@ -80,8 +70,8 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace PenStyle
- * \brief     Pen drawing styles.
+ * \namespace pcl::PenStyle
+ * \brief     Pen drawing styles
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>PenStyle::Empty</td>      <td>Nothing is drawn</td></tr>
@@ -110,8 +100,8 @@ namespace PenStyle
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace PenCap
- * \brief     Pen cap styles.
+ * \namespace pcl::PenCap
+ * \brief     Pen cap styles
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>PenCap::Flat</td>   <td>Square caps not reaching the end points of lines</td></tr>
@@ -134,8 +124,8 @@ namespace PenCap
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace PenJoin
- * \brief     Pen join styles.
+ * \namespace pcl::PenJoin
+ * \brief     Pen join styles
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>PenJoin::Miter</td> <td>Lines are joined by sharp corners</td></tr>
@@ -165,7 +155,7 @@ class PCL_CLASS Brush;
 
 /*!
  * \class Pen
- * \brief Client-side interface to a PixInsight %Pen object.
+ * \brief Client-side interface to a PixInsight %Pen object
  *
  * ### TODO: Write a detailed description for %Pen.
  */
@@ -193,7 +183,7 @@ public:
     * and drawing, cap and join styles.
     */
    Pen( RGBA color = 0xff000000, float width = 0, style s = PenStyle::Solid,
-         cap c = PenCap::Square, join j = PenJoin::Miter );
+        cap c = PenCap::Square, join j = PenJoin::Miter );
 
    /*!
     * Copy constructor. This object will reference the same server-side pen
@@ -378,4 +368,4 @@ private:
 #endif   // __PCL_Pen_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Pen.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Pen.h - Released 2017-05-28T08:28:50Z

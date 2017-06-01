@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.04.03.0213
+// Standard Debayer Process Module Version 01.05.00.0236
 // ----------------------------------------------------------------------------
-// DebayerParameters.cpp - Released 2016/02/21 20:22:43 UTC
+// DebayerParameters.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,21 +57,22 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-DebayerBayerPatternParameter*	   TheDebayerBayerPatternParameter = 0;
-DebayerMethodParameter*          TheDebayerMethodParameter = 0;
-DebayerEvaluateNoise*            TheDebayerEvaluateNoiseParameter = 0;
-DebayerNoiseEvaluationAlgorithm* TheDebayerNoiseEvaluationAlgorithmParameter = 0;
-DebayerShowImages*               TheDebayerShowImagesParameter = 0;
-DebayerOutputImage*              TheDebayerOutputImageParameter = 0;
-DebayerNoiseEstimateR*           TheDebayerNoiseEstimateRParameter = 0;
-DebayerNoiseEstimateG*           TheDebayerNoiseEstimateGParameter = 0;
-DebayerNoiseEstimateB*           TheDebayerNoiseEstimateBParameter = 0;
-DebayerNoiseFractionR*           TheDebayerNoiseFractionRParameter = 0;
-DebayerNoiseFractionG*           TheDebayerNoiseFractionGParameter = 0;
-DebayerNoiseFractionB*           TheDebayerNoiseFractionBParameter = 0;
-DebayerNoiseAlgorithmR*          TheDebayerNoiseAlgorithmRParameter = 0;
-DebayerNoiseAlgorithmG*          TheDebayerNoiseAlgorithmGParameter = 0;
-DebayerNoiseAlgorithmB*          TheDebayerNoiseAlgorithmBParameter = 0;
+DebayerBayerPatternParameter*	   TheDebayerBayerPatternParameter = nullptr;
+DebayerMethodParameter*          TheDebayerMethodParameter = nullptr;
+DebayerEvaluateNoise*            TheDebayerEvaluateNoiseParameter = nullptr;
+DebayerNoiseEvaluationAlgorithm* TheDebayerNoiseEvaluationAlgorithmParameter = nullptr;
+DebayerShowImages*               TheDebayerShowImagesParameter = nullptr;
+DebayerCFASourceFilePath*        TheDebayerCFASourceFilePathParameter = nullptr;
+DebayerOutputImage*              TheDebayerOutputImageParameter = nullptr;
+DebayerNoiseEstimateR*           TheDebayerNoiseEstimateRParameter = nullptr;
+DebayerNoiseEstimateG*           TheDebayerNoiseEstimateGParameter = nullptr;
+DebayerNoiseEstimateB*           TheDebayerNoiseEstimateBParameter = nullptr;
+DebayerNoiseFractionR*           TheDebayerNoiseFractionRParameter = nullptr;
+DebayerNoiseFractionG*           TheDebayerNoiseFractionGParameter = nullptr;
+DebayerNoiseFractionB*           TheDebayerNoiseFractionBParameter = nullptr;
+DebayerNoiseAlgorithmR*          TheDebayerNoiseAlgorithmRParameter = nullptr;
+DebayerNoiseAlgorithmG*          TheDebayerNoiseAlgorithmGParameter = nullptr;
+DebayerNoiseAlgorithmB*          TheDebayerNoiseAlgorithmBParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -82,12 +83,12 @@ DebayerBayerPatternParameter::DebayerBayerPatternParameter( MetaProcess* P ) : M
 
 IsoString DebayerBayerPatternParameter::Id() const
 {
-   return "bayerPattern";
+   return "cfaPattern";
 }
 
 IsoString DebayerBayerPatternParameter::Aliases() const
 {
-   return "BayerPattern";
+   return "BayerPattern,bayerPattern";
 }
 
 size_type DebayerBayerPatternParameter::NumberOfElements() const
@@ -100,10 +101,15 @@ IsoString DebayerBayerPatternParameter::ElementId( size_type i ) const
    switch ( i )
    {
    default:
+   case Auto: return "Auto";
    case RGGB: return "RGGB";
    case BGGR: return "BGGR";
    case GBRG: return "GBRG";
    case GRBG: return "GRBG";
+   case GRGB: return "GRGB";
+   case GBGR: return "GBGR";
+   case RGBG: return "RGBG";
+   case BGRG: return "BGRG";
    }
 }
 
@@ -192,7 +198,7 @@ IsoString DebayerNoiseEvaluationAlgorithm::Id() const
 
 size_type DebayerNoiseEvaluationAlgorithm::NumberOfElements() const
 {
-   return NumberOfNoiseEvaluationAlgorithms;
+   return NumberOfItems;
 }
 
 IsoString DebayerNoiseEvaluationAlgorithm::ElementId( size_type i ) const
@@ -230,6 +236,18 @@ IsoString DebayerShowImages::Id() const
 bool DebayerShowImages::DefaultValue() const
 {
    return true;
+}
+
+// ----------------------------------------------------------------------------
+
+DebayerCFASourceFilePath::DebayerCFASourceFilePath( MetaProcess* P ) : MetaString( P )
+{
+   TheDebayerCFASourceFilePathParameter = this;
+}
+
+IsoString DebayerCFASourceFilePath::Id() const
+{
+   return "cfaSourceFilePath";
 }
 
 // ----------------------------------------------------------------------------
@@ -452,4 +470,4 @@ bool DebayerNoiseAlgorithmB::IsReadOnly() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DebayerParameters.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF DebayerParameters.cpp - Released 2017-05-02T09:43:01Z

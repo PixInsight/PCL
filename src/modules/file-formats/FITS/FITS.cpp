@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.04.0358
+// Standard FITS File Format Module Version 01.01.05.0381
 // ----------------------------------------------------------------------------
-// FITS.cpp - Released 2016/02/21 20:22:34 UTC
+// FITS.cpp - Released 2017-05-02T09:42:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -52,19 +52,36 @@
 
 #include "FITS.h"
 
+#ifdef __PCL_WINDOWS
+# include <pcl/AutoLock.h>
+#endif
 #include <pcl/Console.h>
 #include <pcl/ErrorHandler.h>
 #include <pcl/ICCProfile.h>
 #include <pcl/MetaModule.h>
+#include <pcl/StdStatus.h>
 #include <pcl/Version.h>
 
 // Tell fitsio.h that we do support 64-bit integers.
 #define HAVE_LONGLONG   1
 
-#include <fitsio.h>
+#include <cfitsio/fitsio.h>
 
 namespace pcl
 {
+
+// ----------------------------------------------------------------------------
+
+/*
+ * ### N.B.: The Windows implementation of CFITSIO has caused thread safety
+ * problems. For sanity, we prevent concurrent accesses to CFITSIO on Windows.
+ */
+#ifdef __PCL_WINDOWS
+static Mutex s_mutex;
+# define CFITSIO_LOCK volatile AutoLock lock( s_mutex );
+#else
+# define CFITSIO_LOCK
+#endif
 
 // ----------------------------------------------------------------------------
 
@@ -80,11 +97,14 @@ String FITS::Error::Message() const
    }
 
    IsoString cfitsioMsgStack;
-   char cfitsioMsg[ 96 ]; // 80 would suffice, acc. to cfitsio's doc.
-   for ( int i = 1; fits_read_errmsg( cfitsioMsg ) != 0; ++i )
+   char cfitsioMsg[ 96 ]; // 80 should suffice, according to cfitsio's doc.
    {
-      cfitsioMsgStack += IsoString().Format( "\n%02d : ", i );
-      cfitsioMsgStack += cfitsioMsg;
+      CFITSIO_LOCK
+      for ( int i = 1; ::fits_read_errmsg( cfitsioMsg ) != 0; ++i )
+      {
+         cfitsioMsgStack += IsoString().Format( "\n%02d : ", i );
+         cfitsioMsgStack += cfitsioMsg;
+      }
    }
    if ( !cfitsioMsgStack.IsEmpty() )
       message += "\nCFITSIO error message stack: " + cfitsioMsgStack;
@@ -96,15 +116,19 @@ String FITS::Error::Message() const
 
 struct FITSFileData
 {
-   void* fits = nullptr; // CFITSIO's ::fitsfile*
-   int   status = 0;     // CFITSIO's persistent error code
+   void* fits         = nullptr; // CFITSIO's ::fitsfile*
+   mutable int status = 0;       // CFITSIO's persistent error code
 
    FITSFileData() = default;
 
    ~FITSFileData()
    {
       if ( fits != nullptr )
-         ::fits_close_file( (::fitsfile*)fits, &status ), fits = nullptr;
+      {
+         CFITSIO_LOCK
+         ::fits_close_file( (::fitsfile*)fits, &status );
+         fits = nullptr;
+      }
    }
 };
 
@@ -112,51 +136,45 @@ struct FITSFileData
 
 struct FITSHDUData
 {
-   int       bitpix           = 0;           // file sample type
-   int       equivBitpix      = 0;           // equivalent sample type
-   int       naxis            = 0;           // image dimensions: 0=empty, 2=grayscale, 3=RGBA or 3=gray+alpha
-#ifdef _MSC_VER
-   long      naxes[3];
-#else
-   long      naxes[3] = { 0, 0, 0 };         // width, height, number of channels
-#endif
-   int       colorSpace       = ColorSpace::Unknown;  // working safe copy
-   int       hduNumber        = -1;          // index of this HDU in the FITS file (zero-based)
-   double    zeroOffset       = 0;           // BZERO
-   double    scaleRange       = 1;           // BSCALE
-   bool      signedIsPhysical = false;       // signed integer values store physical pixel data
-   IsoString iccExtName;   // name of ICC profile extension
-   IsoString thumbExtName; // name of thumbnail image extension
-
-#ifdef _MSC_VER
-   // ### FIXME: Workaround for VC++'s lack of support for direct
-   // initialization of array class members.
-   FITSHDUData()
-   {
-	   naxes[0] = naxes[1] = naxes[2] = 0;
-   }
-#endif
+   int                        bitpix           = 0;           // file sample type
+   int                        equivBitpix      = 0;           // equivalent sample type
+   int                        naxis            = 0;           // image dimensions: 0=empty, 2=grayscale, 3=RGBA or 3=gray+alpha
+   long                       naxes[3]         = { 0, 0, 0 }; // width, height, number of channels
+   AbstractImage::color_space colorSpace       = ColorSpace::Unknown; // working safe copy
+   int                        hduNumber        = -1;          // index of this HDU in the FITS file (zero-based)
+   double                     zeroOffset       = 0;           // BZERO
+   double                     scaleRange       = 1;           // BSCALE
+   bool                       signedIsPhysical = false;       // signed integer values store physical pixel data
+   IsoString                  iccExtName;                     // name of ICC profile extension
+   IsoString                  thumbExtName;                   // name of thumbnail image extension
 };
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-bool FITS::IsOpenStream() const
+FITS::FITS()
 {
-   return fileData != nullptr && fileData->fits != nullptr;
 }
 
-void FITS::CloseStream() // ### derived must call base
+FITS::~FITS()
 {
-   // Close TIFF file stream and clean up libtiff data.
-   if ( fileData != nullptr )
-      delete fileData, fileData = nullptr;
+   CloseStream();
+}
+
+bool FITS::IsOpenStream() const
+{
+   return m_fileData && m_fileData->fits != nullptr;
+}
+
+void FITS::CloseStream() // ### N.B.: Derived must call base
+{
+   m_fileData.Destroy();
 }
 
 // ----------------------------------------------------------------------------
 
-#define fits_handle  ((::fitsfile*)fileData->fits)
-#define fitsStatus   (fileData->status)
+#define fits_handle  ((::fitsfile*)m_fileData->fits)
+#define fitsStatus   (m_fileData->status)
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -170,9 +188,9 @@ struct FITSReaderData
 
 // ----------------------------------------------------------------------------
 
-#define hdus        data->hdus
-#define keywords    data->keywords
-#define fitsOptions data->fitsOptions
+#define hdus        m_data->hdus
+#define keywords    m_data->keywords
+#define fitsOptions m_data->fitsOptions
 
 // ----------------------------------------------------------------------------
 
@@ -186,10 +204,10 @@ public:
       if ( !reader.IsOpen() )
          throw FITS::InvalidReadOperation( String() );
 
-      if ( reader.index >= int( reader.hdus.Length() ) )
-         throw FITS::InvalidReadOperation( reader.path );
+      if ( reader.m_index >= int( reader.hdus.Length() ) )
+         throw FITS::InvalidReadOperation( reader.m_path );
 
-      const FITSHDUData& hdu = reader.hdus[reader.index];
+      const FITSHDUData& hdu = reader.hdus[reader.m_index];
 
       if ( hdu.naxis == 0 ) // empty image ?
       {
@@ -198,45 +216,50 @@ public:
       }
 
       if ( !reader.Info().IsValid() )
-         throw FITS::InvalidImage( reader.path );
+         throw FITS::InvalidImage( reader.m_path );
 
       if ( reader.Options().lowerRange >= reader.Options().upperRange )
-         throw FITS::InvalidNormalizationRange( reader.path );
+         throw FITS::InvalidNormalizationRange( reader.m_path );
 
-      FITSFileData* fileData = reader.fileData;
-
-      double* buffer = nullptr;
+      FITSFileData* m_fileData = reader.m_fileData;
 
       try
       {
          // Restore CFITSIO's current HDU to the current image HDU.
          // N.B.: CFITSIO expects HDU numbers relative to 1.
-         ::fits_movabs_hdu( fits_handle, hdu.hduNumber+1, 0, &fitsStatus );
+         {
+            CFITSIO_LOCK
+            ::fits_movabs_hdu( fits_handle, hdu.hduNumber+1, 0, &fitsStatus );
+         }
          if ( fitsStatus != 0 )
-            throw FITS::UnableToAccessCurrentHDU( reader.path );
+            throw FITS::UnableToAccessCurrentHDU( reader.m_path );
 
          // Allocate pixel data.
          // Don't trust info fields since they are publicly accessible.
          image.AllocateData( hdu.naxes[0], hdu.naxes[1],
-                           (hdu.naxis == 2) ? 1 : hdu.naxes[2],
-                           typename GenericImage<P>::color_space( hdu.colorSpace ) );
+                             (hdu.naxis == 2) ? 1 : hdu.naxes[2],
+                             typename GenericImage<P>::color_space( hdu.colorSpace ) );
 
-         //
-         // Read pixels
-         //
-
-         if ( image.Status().IsInitializationEnabled() )
-            image.Status().Initialize( String().Format(
-                     "Reading FITS image: %d-bit %s, %d channel(s), %dx%d pixels",
-                     reader.Options().bitsPerSample,
-                     reader.Options().ieeefpSampleFormat ? "floating point" : "integers",
-                     image.NumberOfChannels(), image.Width(), image.Height() ),
-               image.NumberOfSamples() );
+         /*
+          * Read pixels
+          */
+         StatusMonitor monitor;
+         StandardStatus status;
+         if ( reader.FITSOptions().verbosity > 0 )
+         {
+            monitor.SetCallback( &status );
+            monitor.Initialize( String().Format(
+                  "Reading FITS image: %d-bit %s, %d channel(s), %dx%d pixels",
+                  reader.Options().bitsPerSample,
+                  reader.Options().ieeefpSampleFormat ? "floating point" : "integers",
+                        image.NumberOfChannels(), image.Width(), image.Height() ),
+                  image.NumberOfSamples() );
+         }
 
          // To support 32-bit integer samples and to provide for arbitrary integer
          // format output, we'll ask FITSIO to store 64-bit floating point pixel
          // values in a temporary row buffer.
-         buffer = new double[ image.Width() ];
+         F64Vector buffer( image.Width() );
 
          // A rescaling operation is required for integer sample values if the
          // source data type (as provided by FITSIO, i.e taking BZERO into account)
@@ -261,14 +284,17 @@ public:
             fpixel[1] = 0;
 
             // For each row
-            for ( int i = 0; i < image.Height(); ++i, image.Status() += image.Width() )
+            for ( int i = 0; i < image.Height(); ++i )
             {
                ++fpixel[1]; // next row
 
                // Read a row of pixels.
-               ::fits_read_pix( fits_handle, TDOUBLE, fpixel, image.Width(), 0, buffer, 0, &fitsStatus );
+               {
+                  CFITSIO_LOCK
+                  ::fits_read_pix( fits_handle, TDOUBLE, fpixel, image.Width(), 0, buffer.Begin(), 0, &fitsStatus );
+               }
                if ( fitsStatus != 0 )
-                  throw FITS::FileReadError( reader.path );
+                  throw FITS::FileReadError( reader.m_path );
 
                // When reading floating point images, replace NaN and infinity IEEE 754 entities
                // with zeros. For sanity, we perform this cleaning task for all image types, as
@@ -294,15 +320,14 @@ public:
                else
                   for ( int j = 0; j < image.Width(); ++j )
                      f[j] = typename P::sample( buffer[j] );
+
+               if ( reader.FITSOptions().verbosity > 0 )
+                  monitor += image.Width();
             }
          }
-
-         delete [] buffer, buffer = nullptr;
       }
       catch ( ... )
       {
-         if ( buffer != nullptr )
-            delete [] buffer;
          image.FreeData();
          reader.Close();
          throw;
@@ -310,38 +335,39 @@ public:
    }
 
    template <class T, class P> inline
-   static void ReadPixels( T* f, P*, int startRow, int rowCount, int c, FITSReader& reader )
+   static void ReadSamples( T* f, P*, int startRow, int rowCount, int c, FITSReader& reader )
    {
       if ( !reader.IsOpen() )
          throw FITS::InvalidReadOperation( String() );
 
-      if ( reader.index >= int( reader.hdus.Length() ) )
-         throw FITS::InvalidReadOperation( reader.path );
+      if ( reader.m_index >= int( reader.hdus.Length() ) )
+         throw FITS::InvalidReadOperation( reader.m_path );
 
-      const FITSHDUData& hdu = reader.hdus[reader.index];
+      const FITSHDUData& hdu = reader.hdus[reader.m_index];
 
       if ( hdu.naxis == 0 ||
              startRow < 0 || startRow+rowCount > hdu.naxes[1] ||
                     c < 0 || c >= ((hdu.naxis == 2) ? 1 : hdu.naxes[2]) )
-         throw FITS::ReadCoordinatesOutOfRange( reader.path );
+         throw FITS::ReadCoordinatesOutOfRange( reader.m_path );
 
       if ( reader.Options().lowerRange >= reader.Options().upperRange )
-         throw FITS::InvalidNormalizationRange( reader.path );
+         throw FITS::InvalidNormalizationRange( reader.m_path );
 
       if ( reader.FITSOptions().bottomUp )
          startRow = hdu.naxes[1] - startRow - rowCount;
 
-      FITSFileData* fileData = reader.fileData;
-
-      double* buffer = nullptr;
+      FITSFileData* m_fileData = reader.m_fileData;
 
       try
       {
          // Restore CFITSIO's current HDU to the current image HDU.
          // N.B.: CFITSIO expects HDU numbers relative to 1.
-         ::fits_movabs_hdu( fits_handle, hdu.hduNumber+1, 0, &fitsStatus );
+         {
+            CFITSIO_LOCK
+            ::fits_movabs_hdu( fits_handle, hdu.hduNumber+1, 0, &fitsStatus );
+         }
          if ( fitsStatus != 0 )
-            throw FITS::UnableToAccessCurrentHDU( reader.path );
+            throw FITS::UnableToAccessCurrentHDU( reader.m_path );
 
          // Number of samples to read.
          long N = hdu.naxes[0]*rowCount;
@@ -349,7 +375,7 @@ public:
          // To support 32-bit integer samples and to provide for arbitrary integer
          // format output, we'll ask FITSIO to store 64-bit floating point pixel
          // values in a temporary row buffer.
-         buffer = new double[ N ];
+         F64Vector buffer( N );
 
          // A rescaling operation is required for integer sample values if the
          // source data type (as provided by FITSIO, i.e taking BZERO into account)
@@ -367,9 +393,12 @@ public:
          fpixel[2] = c + 1;
 
          // Read a strip of FITS rows.
-         ::fits_read_pix( fits_handle, TDOUBLE, fpixel, N, 0, buffer, 0, &fitsStatus );
+         {
+            CFITSIO_LOCK
+            ::fits_read_pix( fits_handle, TDOUBLE, fpixel, N, 0, buffer.Begin(), 0, &fitsStatus );
+         }
          if ( fitsStatus != 0 )
-            throw FITS::FileReadError( reader.path );
+            throw FITS::FileReadError( reader.m_path );
 
          // When reading floating point images, replace NaN and infinity IEEE 754 entities
          // with zeros. For sanity, we perform this cleaning task for all image types, as
@@ -399,13 +428,9 @@ public:
             for ( int t = 0, b = rowCount; --b > t; ++t )
                for ( int i = t*hdu.naxes[0], j = b*hdu.naxes[0], i1 = i + hdu.naxes[0]; i != i1; ++i, ++j )
                   Swap( f[i], f[j] );
-
-         delete [] buffer, buffer = nullptr;
       }
       catch ( ... )
       {
-         if ( buffer != nullptr )
-            delete [] buffer;
          reader.Close();
          throw;
       }
@@ -414,6 +439,15 @@ public:
 
 // ----------------------------------------------------------------------------
 
+FITSReader::FITSReader()
+{
+}
+
+FITSReader::~FITSReader()
+{
+   Close();
+}
+
 bool FITSReader::IsOpen() const
 {
    return FITS::IsOpenStream();
@@ -421,61 +455,69 @@ bool FITSReader::IsOpen() const
 
 void FITSReader::Close()
 {
-   if ( data != nullptr )
-      delete data, data = nullptr;
-   index = 0;
+   m_data.Destroy();
+   m_index = 0;
    FITS::CloseStream();
 }
 
 void FITSReader::Open( const String& filePath )
 {
    if ( IsOpen() )
-      throw InvalidReadOperation( path );
+      throw FITS::InvalidReadOperation( m_path );
 
    if ( filePath.IsEmpty() )
-      throw InvalidFilePath( filePath );
+      throw FITS::InvalidFilePath( filePath );
 
    try
    {
-      if ( fileData == nullptr )
-         fileData = new FITSFileData;
+      if ( !m_fileData )
+         m_fileData = new FITSFileData;
 
-      if ( data == nullptr )
-         data = new FITSReaderData;
+      if ( !m_data )
+         m_data = new FITSReaderData;
 
 #ifdef __PCL_WINDOWS
-      path = File::WindowsPathToUnix( filePath );
+      m_path = File::WindowsPathToUnix( filePath );
 #else
-      path = filePath;
+      m_path = filePath;
 #endif
 
       // Open the FITS image file stream for reading.
 
       IsoString path8 =
 #ifdef __PCL_WINDOWS
-         File::UnixPathToWindows( path ).ToMBS();
+         File::UnixPathToWindows( m_path ).ToMBS();
 #else
-         path.ToUTF8();
+         m_path.ToUTF8();
 #endif
       fitsStatus = 0;
-      ::fits_open_diskfile( (::fitsfile**)&fileData->fits, path8.c_str(), READONLY, &fitsStatus );
+      {
+         CFITSIO_LOCK
+         ::fits_open_diskfile( (::fitsfile**)&m_fileData->fits, path8.c_str(), READONLY, &fitsStatus );
+      }
       if ( fitsStatus != 0 )
-         throw UnableToOpenFile( path );
+         throw FITS::UnableToOpenFile( m_path );
 
       // Explore all image HDUs
 
       int numberOfReadableImages = 0;
       int numberOfHDUs;
-      ::fits_get_num_hdus( fits_handle, &numberOfHDUs, &fitsStatus );
+      {
+         CFITSIO_LOCK
+         ::fits_get_num_hdus( fits_handle, &numberOfHDUs, &fitsStatus );
+      }
       if ( fitsStatus != 0 )
-         throw FileReadError( path );
+         throw FITS::FileReadError( m_path );
       if ( numberOfHDUs == 0 )
-         throw UnableToAccessPrimaryHDU( path );
+         throw FITS::UnableToAccessPrimaryHDU( m_path );
 
       for ( int i = 0; i < numberOfHDUs; ++i )
       {
          int hduType;
-         ::fits_movabs_hdu( fits_handle, i+1, &hduType, &fitsStatus );
+         {
+            CFITSIO_LOCK
+            ::fits_movabs_hdu( fits_handle, i+1, &hduType, &fitsStatus );
+         }
 
          // Skip non-image HDUs
          if ( hduType != IMAGE_HDU )
@@ -488,34 +530,46 @@ void FITSReader::Open( const String& filePath )
 
          hdu.hduNumber = i;
 
-         // Get the file sample type.
-         ::fits_get_img_type( fits_handle, &hdu.bitpix, &fitsStatus );
+         {
+            CFITSIO_LOCK
 
-         // Get the equivalent image sample type (e.g., BZERO/BSCALE trick for unsigned integers).
-         ::fits_get_img_equivtype( fits_handle, &hdu.equivBitpix, &fitsStatus );
+            // Get the file sample type.
+            ::fits_get_img_type( fits_handle, &hdu.bitpix, &fitsStatus );
+
+            // Get the equivalent image sample type (e.g., BZERO/BSCALE trick for unsigned integers).
+            ::fits_get_img_equivtype( fits_handle, &hdu.equivBitpix, &fitsStatus );
+         }
 
          // 64-bit integer FITS files are not supported in this implementation.
          if ( hdu.bitpix == LONGLONG_IMG || hdu.equivBitpix == LONGLONG_IMG )
          {
-            Console().WarningLn( String().Format( "<end><cbr>** Skipping unsupported 64-bit integer image in HDU #%d", i+1 ) );
+            if ( FITSOptions().verbosity > 0 )
+               Console().WarningLn( String().Format( "<end><cbr>** Skipping unsupported 64-bit integer image in HDU #%d", i+1 ) );
             continue;
          }
 
          // Get the number of image dimensions.
          // Must be either 0 (empty), 2 (grayscale), or 3 (RGB or gray+alpha)
-         ::fits_get_img_dim( fits_handle, &hdu.naxis, &fitsStatus );
+         {
+            CFITSIO_LOCK
+            ::fits_get_img_dim( fits_handle, &hdu.naxis, &fitsStatus );
+         }
          if ( hdu.naxis > 0 && hdu.naxis != 2 && hdu.naxis != 3 )
          {
             // NAXIS=1 for data extensions, such as ICC profile extensions or data properties.
             if ( hdu.naxis != 1 )
-               Console().WarningLn( String().Format( "<end><cbr>** Skipping image with unsupported dimensions (%d) in HDU #%d", hdu.naxis, i+1 ) );
+               if ( FITSOptions().verbosity > 0 )
+                  Console().WarningLn( String().Format( "<end><cbr>** Skipping image with unsupported dimensions (%d) in HDU #%d", hdu.naxis, i+1 ) );
             continue;
          }
 
          if ( hdu.naxis > 0 )
          {
             // Get the size of the image for each dimension.
-            ::fits_get_img_size( fits_handle, 3, hdu.naxes, &fitsStatus );
+            {
+               CFITSIO_LOCK
+               ::fits_get_img_size( fits_handle, 3, hdu.naxes, &fitsStatus );
+            }
 
             // Guess a default value for the color space of this image, based on
             // the number of dimensions. Optional keywords may modify this later.
@@ -637,15 +691,21 @@ void FITSReader::Open( const String& filePath )
          // data scaling. Optional normalization of floating-point samples will
          // be done on raw pixel values directly.
          if ( hdu.naxis > 0 && image.options.ieeefpSampleFormat )
+         {
+            CFITSIO_LOCK
             ::fits_set_bscale( fits_handle, 1, 0, &fitsStatus );
+         }
 
          // Read HDU keywords
 
          // Learn the length of the keywords list.
          int keysexist;
-         ::fits_get_hdrspace( fits_handle, &keysexist, 0, &fitsStatus );
+         {
+            CFITSIO_LOCK
+            ::fits_get_hdrspace( fits_handle, &keysexist, 0, &fitsStatus );
+         }
          if ( fitsStatus != 0 )
-            throw KeywordReadError( path );
+            throw FITS::KeywordReadError( m_path );
 
          // Prepare flags to control presence of two essential keywords.
          int seenBSCALE = 0, seenBZERO = 0;
@@ -658,15 +718,18 @@ void FITSReader::Open( const String& filePath )
             char cname[ 81 ], cvalue[ 81 ], ccomment[ 81 ];
 
             // Read this keyword's elements.
-            ::fits_read_keyn( fits_handle, j, cname, cvalue, ccomment, &fitsStatus );
+            {
+               CFITSIO_LOCK
+               ::fits_read_keyn( fits_handle, j, cname, cvalue, ccomment, &fitsStatus );
+            }
             if ( fitsStatus != 0 )
-               throw KeywordReadError( path );
+               throw FITS::KeywordReadError( m_path );
 
             // Create a FITSHeaderKeyword instance.
             FITSHeaderKeyword k( cname, cvalue, ccomment );
 
             // Check out critical reserved keywords.
-            // This includes a few private PCL keywords.
+            // This includes a few of our private PCL keywords.
 
             if ( !k.name.CompareIC( "BSCALE" ) )
             {
@@ -689,9 +752,7 @@ void FITSReader::Open( const String& filePath )
             else if ( !k.name.CompareIC( "COLORSPC" ) )
             {
                // *** PCL private keyword: Color Space
-
                IsoString value = k.StripValueDelimiters();
-
                if ( !value.CompareIC( "Grayscale" ) || !value.CompareIC( "Gray" ) )
                   hdu.colorSpace = ColorSpace::Gray;
                else if ( !value.CompareIC( "RGB" ) || !value.CompareIC( "RGBColor" ) )
@@ -707,27 +768,22 @@ void FITSReader::Open( const String& filePath )
             else if ( !k.name.CompareIC( "RESOLUTN" ) )
             {
                // *** PCL private keyword: Resolution in both axes.
-
                image.options.xResolution = image.options.yResolution = ::atof( k.value.c_str() );
             }
             else if ( !k.name.CompareIC( "XRESOLTN" ) )
             {
                // *** PCL private keyword: Horizontal resolution.
-
                image.options.xResolution = ::atof( k.value.c_str() );
             }
             else if ( !k.name.CompareIC( "YRESOLTN" ) )
             {
                // *** PCL private keyword: Vertical resolution.
-
                image.options.yResolution = ::atof( k.value.c_str() );
             }
             else if ( !k.name.CompareIC( "RESOUNIT" ) )
             {
                // *** PCL private keyword: Resolution units.
-
                IsoString value = k.StripValueDelimiters();
-
                image.options.metricResolution =
                   !value.CompareIC( "cm" ) ||
                   !value.CompareIC( "centimeter" ) ||
@@ -736,7 +792,6 @@ void FITSReader::Open( const String& filePath )
             else if ( !k.name.CompareIC( "ICCPROFL" ) )
             {
                // *** PCL private keyword: ICC profile extension.
-
                IsoString extName = k.StripValueDelimiters();
                if ( extName.IsValidIdentifier() )
                   hdu.iccExtName = extName;
@@ -744,7 +799,6 @@ void FITSReader::Open( const String& filePath )
             else if ( !k.name.CompareIC( "THUMBIMG" ) )
             {
                // *** PCL private keyword: Thumbnail image extension.
-
                IsoString extName = k.StripValueDelimiters();
                if ( extName.IsValidIdentifier() )
                   hdu.thumbExtName = extName;
@@ -779,14 +833,14 @@ void FITSReader::Open( const String& filePath )
          hdus.Add( hdu );
          keywords.Add( keys );
          fitsOptions.Add( fits );
-         images.Add( image );
+         m_images.Add( image );
       }
 
       if ( hdus.IsEmpty() )
-         throw NoImageHDU( path );
+         throw FITS::NoImageHDU( m_path );
 
       if ( numberOfReadableImages == 0 )
-         throw NoReadableImage( path );
+         throw FITS::NoReadableImage( m_path );
    }
    catch ( ... )
    {
@@ -800,24 +854,24 @@ void FITSReader::Open( const String& filePath )
 const FITSImageOptions& FITSReader::FITSOptions() const
 {
    if ( !IsOpen() )
-      throw InvalidReadOperation( String() );
+      throw FITS::InvalidReadOperation( String() );
 
-   if ( index >= int( fitsOptions.Length() ) )
-      throw InvalidReadOperation( path );
+   if ( m_index >= int( fitsOptions.Length() ) )
+      throw FITS::InvalidReadOperation( m_path );
 
-   return fitsOptions[index];
+   return fitsOptions[m_index];
 }
 
 void FITSReader::SetFITSOptions( const FITSImageOptions& newOptions )
 {
    if ( !IsOpen() )
-      throw InvalidReadOperation( String() );
+      throw FITS::InvalidReadOperation( String() );
 
-   if ( index >= int( fitsOptions.Length() ) )
-      throw InvalidReadOperation( path );
+   if ( m_index >= int( fitsOptions.Length() ) )
+      throw FITS::InvalidReadOperation( m_path );
 
-   FITSImageOptions& fits = fitsOptions[index];
-   FITSHDUData& hdu = hdus[index];
+   FITSImageOptions& fits = fitsOptions[m_index];
+   FITSHDUData& hdu = hdus[m_index];
 
    fits = newOptions;
 
@@ -864,51 +918,29 @@ void FITSReader::SetFITSOptions( const FITSImageOptions& newOptions )
 
 // ----------------------------------------------------------------------------
 
-bool FITSReader::Extract( FITSKeywordArray& k )
+ICCProfile FITSReader::ReadICCProfile()
 {
    if ( !IsOpen() )
-      throw InvalidReadOperation( String() );
-
-   if ( index >= int( hdus.Length() ) )
-      throw InvalidReadOperation( path );
-
-   k = keywords[index];
-   return true;
-}
-
-// ----------------------------------------------------------------------------
-
-bool FITSReader::Extract( ICCProfile& icc )
-{
-   if ( !IsOpen() )
-      throw InvalidReadOperation( String() );
-
-   if ( index >= int( hdus.Length() ) )
-      throw InvalidReadOperation( path );
-
-   icc.Clear();
+      throw FITS::InvalidReadOperation( String() );
+   if ( m_index >= int( hdus.Length() ) )
+      throw FITS::InvalidReadOperation( m_path );
 
    ByteArray iccData;
+   if ( !hdus[m_index].iccExtName.IsEmpty() )
+      if ( ReadBLOB( iccData, hdus[m_index].iccExtName ) )
+         return ICCProfile( iccData );
 
-   bool ok = false;
+   if ( ReadBLOB( iccData, "ICCProfile" ) ||
+        ReadBLOB( iccData, "ICC_PROFILE" ) ||
+        ReadBLOB( iccData, "ICCPROFILE" ) )
+      return ICCProfile( iccData );
 
-   if ( !hdus[index].iccExtName.IsEmpty() )
-      ok = Extract( iccData, hdus[index].iccExtName );
-
-   if ( !ok )
-      ok = Extract( iccData, "ICCProfile" ) ||
-           Extract( iccData, "ICC_PROFILE" ) ||
-           Extract( iccData, "ICCPROFILE" );
-
-   if ( ok )
-      icc.Set( iccData );
-
-   return true;
+   return ICCProfile();
 }
 
 // ----------------------------------------------------------------------------
 
-bool FITSReader::Extract( UInt8Image& image )
+UInt8Image FITSReader::ReadThumbnail()
 {
    static const char* extNames[] =
    {
@@ -920,18 +952,21 @@ bool FITSReader::Extract( UInt8Image& image )
    };
 
    if ( !IsOpen() )
-      throw InvalidReadOperation( String() );
+      throw FITS::InvalidReadOperation( String() );
 
-   if ( index >= int( hdus.Length() ) )
-      throw InvalidReadOperation( path );
+   if ( m_index >= int( hdus.Length() ) )
+      throw FITS::InvalidReadOperation( m_path );
 
-   image.FreeData();
+   UInt8Image image;
 
    bool ok = false;
 
-   if ( !hdus[index].thumbExtName.IsEmpty() )
+   if ( !hdus[m_index].thumbExtName.IsEmpty() )
    {
-      ::fits_movnam_hdu( fits_handle, IMAGE_HDU, hdus[index].thumbExtName.Begin(), 0, &fitsStatus );
+      {
+         CFITSIO_LOCK
+         ::fits_movnam_hdu( fits_handle, IMAGE_HDU, hdus[m_index].thumbExtName.Begin(), 0, &fitsStatus );
+      }
       if ( fitsStatus == 0 ) // HDU found ?
          ok = true;
    }
@@ -939,14 +974,17 @@ bool FITSReader::Extract( UInt8Image& image )
    for ( const char** x = extNames; !ok; )
    {
       IsoString hduName( *x ); // make a temporary copy because fits_movnam_hdu takes a char* instead of const char* (?!)
-      ::fits_movnam_hdu( fits_handle, IMAGE_HDU, hduName.Begin(), 0, &fitsStatus );
+      {
+         CFITSIO_LOCK
+         ::fits_movnam_hdu( fits_handle, IMAGE_HDU, hduName.Begin(), 0, &fitsStatus );
+      }
       if ( fitsStatus == 0 ) // HDU found ?
          ok = true;
       else
       {
          fitsStatus = 0;  // this is not an actual error condition
          if ( *++x == nullptr ) // no more extension names to look for ?
-            return true;
+            return UInt8Image();
       }
    }
 
@@ -954,39 +992,42 @@ bool FITSReader::Extract( UInt8Image& image )
    {
       // Get number of thumbnail image dimensions.
       // Must be 2 (x,y = grayscale) or 3 (x,y,c = RGB)
-
       int naxis;
-      ::fits_get_img_dim( fits_handle, &naxis, &fitsStatus );
-
+      {
+         CFITSIO_LOCK
+         ::fits_get_img_dim( fits_handle, &naxis, &fitsStatus );
+      }
       if ( naxis != 2 && naxis != 3 )
-         throw UnsupportedThumbnailImageDimensions( path );
+         throw FITS::UnsupportedThumbnailImageDimensions( m_path );
 
       // Get the size of the image for each dimension.
       // Both dimensions must be within predefined limits.
-
       long naxes[ 3 ];
-      ::fits_get_img_size( fits_handle, 3, naxes, &fitsStatus );
-
+      {
+         CFITSIO_LOCK
+         ::fits_get_img_size( fits_handle, 3, naxes, &fitsStatus );
+      }
       if ( naxes[0] < MinThumbnailSize || naxes[1] < MinThumbnailSize ||
            naxes[0] > MaxThumbnailSize || naxes[1] > MaxThumbnailSize ||
            naxis == 3 && naxes[2] != 3 )
       {
-         throw InvalidThumbnailImage( path );
+         throw FITS::InvalidThumbnailImage( m_path );
       }
 
       // Get thumbnail image sample type.
       // Thumbnails must be unsigned 8-bit images.
-
       int bitpix;
-      ::fits_get_img_type( fits_handle, &bitpix, &fitsStatus );
-
+      {
+         CFITSIO_LOCK
+         ::fits_get_img_type( fits_handle, &bitpix, &fitsStatus );
+      }
       if ( bitpix != BYTE_IMG )
-         throw UnsupportedThumbnailSampleFormat( path );
+         throw FITS::UnsupportedThumbnailSampleFormat( m_path );
 
       // Allocate thumbnail pixel data.
       image.AllocateData( naxes[0], naxes[1],
-                           (naxis == 2) ? 1 : 3,
-                           (naxis == 2) ? ColorSpace::Gray : ColorSpace::RGB );
+                          (naxis == 2) ? 1 : 3,
+                          (naxis == 2) ? ColorSpace::Gray : ColorSpace::RGB );
 
       // Coordinate selectors. N.B.: CFITSIO expects one-based indexes.
       long fpixel[ 3 ];
@@ -998,21 +1039,25 @@ bool FITSReader::Extract( UInt8Image& image )
       for ( int c = 0; c < image.NumberOfChannels(); ++c )
       {
          ++fpixel[2]; // next channel
-
-         ::fits_read_pix( fits_handle, TBYTE, fpixel,
-                  long( image.NumberOfPixels() ), 0, image[c], 0, &fitsStatus );
-
+         {
+            CFITSIO_LOCK
+            ::fits_read_pix( fits_handle, TBYTE, fpixel,
+                             long( image.NumberOfPixels() ), 0, image[c], 0, &fitsStatus );
+         }
          if ( fitsStatus != 0 )
-            throw FITS::FileReadError( path );
+            throw FITS::FileReadError( m_path );
       }
 
       // Restore CFITSIO's current HDU to the current image HDU.
       // N.B.: CFITSIO expects HDU numbers relative to 1.
-      ::fits_movabs_hdu( fits_handle, hdus[index].hduNumber+1, 0, &fitsStatus );
+      {
+         CFITSIO_LOCK
+         ::fits_movabs_hdu( fits_handle, hdus[m_index].hduNumber+1, 0, &fitsStatus );
+      }
       if ( fitsStatus != 0 )
-         throw UnableToAccessCurrentHDU( path );
+         throw FITS::UnableToAccessCurrentHDU( m_path );
 
-      return true;
+      return image;
    }
    catch ( UnableToAccessCurrentHDU& )
    {
@@ -1021,31 +1066,46 @@ bool FITSReader::Extract( UInt8Image& image )
    catch ( ... )
    {
       int dummy;
-      ::fits_movabs_hdu( fits_handle, hdus[index].hduNumber+1, 0, &dummy );
+      {
+         CFITSIO_LOCK
+         ::fits_movabs_hdu( fits_handle, hdus[m_index].hduNumber+1, 0, &dummy );
+      }
       throw;
    }
 }
 
 // ----------------------------------------------------------------------------
 
-bool FITSReader::Extract( ByteArray& extData, const IsoString& extName )
+FITSKeywordArray FITSReader::ReadFITSKeywords()
 {
    if ( !IsOpen() )
-      throw InvalidReadOperation( String() );
+      throw FITS::InvalidReadOperation( String() );
+   if ( m_index >= int( hdus.Length() ) )
+      throw FITS::InvalidReadOperation( m_path );
+   return keywords[m_index];
+}
 
-   if ( index >= int( hdus.Length() ) )
-      throw InvalidReadOperation( path );
+// ----------------------------------------------------------------------------
+
+bool FITSReader::ReadBLOB( ByteArray& extData, const IsoString& extName )
+{
+   if ( !IsOpen() )
+      throw FITS::InvalidReadOperation( String() );
+   if ( m_index >= int( hdus.Length() ) )
+      throw FITS::InvalidReadOperation( m_path );
 
    extData.Clear();
 
    // Select an existing extension HDU.
-
-   ::fits_movnam_hdu( fits_handle, IMAGE_HDU, const_cast<char*>( extName.c_str() ), 0, &fitsStatus );
+   {
+      CFITSIO_LOCK
+      ::fits_movnam_hdu( fits_handle, IMAGE_HDU, const_cast<char*>( extName.c_str() ), 0, &fitsStatus );
+   }
 
    if ( fitsStatus != 0 ) // HDU not found ?
    {
       fitsStatus = 0; // this is not an error condition
-      return true;
+      return false;
    }
 
    try
@@ -1054,26 +1114,35 @@ bool FITSReader::Extract( ByteArray& extData, const IsoString& extName )
       int bitpix;
       int naxis;
       long naxes[ 3 ];
-      ::fits_get_img_param( fits_handle, 1, &bitpix, &naxis, naxes, &fitsStatus );
+      {
+         CFITSIO_LOCK
+         ::fits_get_img_param( fits_handle, 1, &bitpix, &naxis, naxes, &fitsStatus );
+      }
 
       // Supported extension HDUs are simple, nonempty image extensions.
       if ( bitpix != BYTE_IMG || naxis != 1 || *naxes == 0 )
-         throw InvalidExtensionHDU( String( "Extension \'" + extName + "\' in " ) + path );
+         throw FITS::InvalidExtensionHDU( String( "Extension \'" + extName + "\' in " ) + m_path );
 
       // Make room for the data block.
       extData = ByteArray( *naxes );
 
       // Read data block.
       long fpixel = 1;
-      ::fits_read_pix( fits_handle, TBYTE, &fpixel, *naxes, 0, extData.Begin(), 0, &fitsStatus );
+      {
+         CFITSIO_LOCK
+         ::fits_read_pix( fits_handle, TBYTE, &fpixel, *naxes, 0, extData.Begin(), 0, &fitsStatus );
+      }
       if ( fitsStatus != 0 )
-         throw FileReadError( path );
+         throw FITS::FileReadError( m_path );
 
       // Restore CFITSIO's current HDU to the current image HDU.
       // N.B.: CFITSIO expects HDU numbers relative to 1.
-      ::fits_movabs_hdu( fits_handle, hdus[index].hduNumber+1, 0, &fitsStatus );
+      {
+         CFITSIO_LOCK
+         ::fits_movabs_hdu( fits_handle, hdus[m_index].hduNumber+1, 0, &fitsStatus );
+      }
       if ( fitsStatus != 0 )
-         throw UnableToAccessCurrentHDU( path );
+         throw FITS::UnableToAccessCurrentHDU( m_path );
 
       return true;
    }
@@ -1092,7 +1161,10 @@ bool FITSReader::Extract( ByteArray& extData, const IsoString& extName )
       catch ( ... )
       {
          int dummy;
-         ::fits_movabs_hdu( fits_handle, hdus[index].hduNumber+1, 0, &dummy );
+         {
+            CFITSIO_LOCK
+            ::fits_movabs_hdu( fits_handle, hdus[m_index].hduNumber+1, 0, &dummy );
+         }
          throw;
       }
    }
@@ -1108,17 +1180,23 @@ static bool IsReservedExtensionName( const IsoString& extName )
 IsoStringList FITSReader::DataExtensionNames() const
 {
    int numberOfHDUs;
-   ::fits_get_num_hdus( fits_handle, &numberOfHDUs, &fitsStatus );
+   {
+      CFITSIO_LOCK
+      ::fits_get_num_hdus( fits_handle, &numberOfHDUs, &fitsStatus );
+   }
    if ( fitsStatus != 0 )
-      throw FileReadError( path );
+      throw FITS::FileReadError( m_path );
    if ( numberOfHDUs == 0 )
-      throw UnableToAccessPrimaryHDU( path );
+      throw FITS::UnableToAccessPrimaryHDU( m_path );
 
    IsoStringList extNames;
    for ( int i = 0; i < numberOfHDUs; ++i )
    {
       int hduType;
-      ::fits_movabs_hdu( fits_handle, i+1, &hduType, &fitsStatus );
+      {
+         CFITSIO_LOCK
+         ::fits_movabs_hdu( fits_handle, i+1, &hduType, &fitsStatus );
+      }
 
       // Skip non-image HDUs
       if ( hduType != IMAGE_HDU )
@@ -1126,11 +1204,17 @@ IsoStringList FITSReader::DataExtensionNames() const
 
       // Get the number of image dimensions. NAXIS=1 for data extensions.
       int naxis;
-      ::fits_get_img_dim( fits_handle, &naxis, &fitsStatus );
+      {
+         CFITSIO_LOCK
+         ::fits_get_img_dim( fits_handle, &naxis, &fitsStatus );
+      }
       if ( naxis == 1 )
       {
          char cvalue[ 81 ], ccomment[ 81 ];
-         ::fits_read_keyword( fits_handle, "EXTNAME", cvalue, ccomment, &fitsStatus );
+         {
+            CFITSIO_LOCK
+            ::fits_read_keyword( fits_handle, "EXTNAME", cvalue, ccomment, &fitsStatus );
+         }
          if ( fitsStatus == 0 ) // keyword found
          {
             IsoString extName = FITSHeaderKeyword( "EXTNAME", cvalue ).StripValueDelimiters();
@@ -1160,7 +1244,7 @@ IsoStringList FITSReader::DataExtensionNames() const
    if ( Options().readNormalized )                                               \
    {                                                                             \
       StatusMonitor status = image.Status();                                     \
-      image.SetStatusCallback( 0 );                                              \
+      image.SetStatusCallback( nullptr );                                        \
                                                                                  \
       /* Replace NaNs and infinities with zeros. */                              \
       image.ResetSelections();                                                   \
@@ -1223,29 +1307,29 @@ void FITSReader::ReadImage( UInt32Image& image )
 
 // ----------------------------------------------------------------------------
 
-void FITSReader::Read( FImage::sample* f, int startRow, int rowCount, int c )
+void FITSReader::ReadSamples( FImage::sample* f, int startRow, int rowCount, int c )
 {
-   FITSReaderPrivate::ReadPixels( f, (FImage::pixel_traits*)0, startRow, rowCount, c, *this );
+   FITSReaderPrivate::ReadSamples( f, (FImage::pixel_traits*)0, startRow, rowCount, c, *this );
 }
 
-void FITSReader::Read( DImage::sample* f, int startRow, int rowCount, int c )
+void FITSReader::ReadSamples( DImage::sample* f, int startRow, int rowCount, int c )
 {
-   FITSReaderPrivate::ReadPixels( f, (DImage::pixel_traits*)0, startRow, rowCount, c, *this );
+   FITSReaderPrivate::ReadSamples( f, (DImage::pixel_traits*)0, startRow, rowCount, c, *this );
 }
 
-void FITSReader::Read( UInt8Image::sample* f, int startRow, int rowCount, int c )
+void FITSReader::ReadSamples( UInt8Image::sample* f, int startRow, int rowCount, int c )
 {
-   FITSReaderPrivate::ReadPixels( f, (UInt8Image::pixel_traits*)0, startRow, rowCount, c, *this );
+   FITSReaderPrivate::ReadSamples( f, (UInt8Image::pixel_traits*)0, startRow, rowCount, c, *this );
 }
 
-void FITSReader::Read( UInt16Image::sample* f, int startRow, int rowCount, int c )
+void FITSReader::ReadSamples( UInt16Image::sample* f, int startRow, int rowCount, int c )
 {
-   FITSReaderPrivate::ReadPixels( f, (UInt16Image::pixel_traits*)0, startRow, rowCount, c, *this );
+   FITSReaderPrivate::ReadSamples( f, (UInt16Image::pixel_traits*)0, startRow, rowCount, c, *this );
 }
 
-void FITSReader::Read( UInt32Image::sample* f, int startRow, int rowCount, int c )
+void FITSReader::ReadSamples( UInt32Image::sample* f, int startRow, int rowCount, int c )
 {
-   FITSReaderPrivate::ReadPixels( f, (UInt32Image::pixel_traits*)0, startRow, rowCount, c, *this );
+   FITSReaderPrivate::ReadSamples( f, (UInt32Image::pixel_traits*)0, startRow, rowCount, c, *this );
 }
 
 // ----------------------------------------------------------------------------
@@ -1290,7 +1374,7 @@ struct FITSExtensionData
 
 struct FITSWriterData
 {
-   FITSHDUData*             hdu = nullptr; // current image HDU
+   AutoPointer<FITSHDUData> hdu; // current image HDU
    FITSImageOptions         fitsOptions;
    FITSKeywordArray         keywords;
    ICCProfile               iccProfile;
@@ -1300,14 +1384,14 @@ struct FITSWriterData
 
 // ----------------------------------------------------------------------------
 
-#define hdu               data->hdu
-#define fitsOptions       data->fitsOptions
-#define keywords          data->keywords
-#define iccProfile        data->iccProfile
-#define iccProfileExtName data->iccProfileExtName
-#define thumbnail         data->thumbnail
-#define thumbnailExtName  data->thumbnailExtName
-#define extensions        data->extensions
+#define hdu               m_data->hdu
+#define fitsOptions       m_data->fitsOptions
+#define keywords          m_data->keywords
+#define iccProfile        m_data->iccProfile
+#define iccProfileExtName m_data->iccProfileExtName
+#define thumbnail         m_data->thumbnail
+#define thumbnailExtName  m_data->thumbnailExtName
+#define extensions        m_data->extensions
 
 // ----------------------------------------------------------------------------
 
@@ -1318,9 +1402,7 @@ public:
    template <class P> inline
    static void WriteImage( const GenericImage<P>& image, FITSWriter& writer )
    {
-      FITSFileData* fileData = writer.fileData;
-
-      double* buffer = nullptr;
+      FITSFileData* m_fileData = writer.m_fileData;
 
       try
       {
@@ -1328,21 +1410,26 @@ public:
 
          writer.CreateImage( info );
 
-         if ( image.Status().IsInitializationEnabled() )
-            image.Status().Initialize( String().Format(
-                     "Writing FITS image: %d-bit %s, %d channel(s), %dx%d pixels",
-                     writer.options.bitsPerSample,
-                     writer.options.ieeefpSampleFormat ? "floating point" :
-                              (writer.FITSOptions().unsignedIntegers ? "unsigned integers" : "signed integers"),
-                     info.numberOfChannels,
-                     info.width, info.height ),
+         StatusMonitor monitor;
+         StandardStatus status;
+         if ( writer.FITSOptions().verbosity > 0 )
+         {
+            monitor.SetCallback( &status );
+            monitor.Initialize( String().Format(
+                  "Writing FITS image: %d-bit %s, %d channel(s), %dx%d pixels",
+                  writer.m_options.bitsPerSample,
+                  writer.m_options.ieeefpSampleFormat ? "floating point" :
+                        (writer.FITSOptions().unsignedIntegers ? "unsigned integers" : "signed integers"),
+                  info.numberOfChannels,
+                  info.width, info.height ),
                   info.NumberOfSamples() );
+         }
 
          if ( fitsStatus != 0 )
-            throw FITS::FileWriteError( writer.path );
+            throw FITS::FileWriteError( writer.m_path );
 
          // Allocate a one-row buffer
-         buffer = new double[ info.width ];
+         F64Vector buffer( info.width );
 
          // Get range of source pixel values.
          //
@@ -1351,8 +1438,8 @@ public:
          // For floating-point source samples, the actual range of pixel values
          // has been declared in optional image parameters.
 
-         double k0 = P::IsFloatSample() ? writer.options.lowerRange : double( P::MinSampleValue() );
-         double k1 = P::IsFloatSample() ? writer.options.upperRange : double( P::MaxSampleValue() );
+         double k0 = P::IsFloatSample() ? writer.m_options.lowerRange : double( P::MinSampleValue() );
+         double k1 = P::IsFloatSample() ? writer.m_options.upperRange : double( P::MaxSampleValue() );
 
          // Rescaling is necessary to write integer samples if the source and
          // output sample types don't match.
@@ -1377,7 +1464,7 @@ public:
 
             // Loop over selected rows
 
-            for ( int i = 0; i < info.height; ++i, image.Status() += info.width )
+            for ( int i = 0; i < info.height; ++i )
             {
                fpixel[1] = const_cast<const FITSWriter&>( writer ).FITSOptions().bottomUp ? info.height - i : i + 1;
 
@@ -1406,20 +1493,22 @@ public:
                }
 
                // Do write them
-               ::fits_write_pix( fits_handle, TDOUBLE, fpixel, info.width, buffer, &fitsStatus );
+               {
+                  CFITSIO_LOCK
+                  ::fits_write_pix( fits_handle, TDOUBLE, fpixel, info.width, buffer.Begin(), &fitsStatus );
+               }
                if ( fitsStatus != 0 )
-                  throw FITS::FileWriteError( writer.path );
+                  throw FITS::FileWriteError( writer.m_path );
+
+               if ( writer.FITSOptions().verbosity > 0 )
+                  monitor += info.width;
             }
          }
-
-         delete [] buffer, buffer = nullptr;
 
          writer.CloseImage();
       }
       catch ( ... )
       {
-         if ( buffer != nullptr )
-            delete [] buffer;
          fitsStatus = 1; // in case this is a non-CFITSIO error
          writer.Close();
          throw;
@@ -1427,23 +1516,21 @@ public:
    }
 
    template <class T, class P> inline
-   static void WritePixels( const T* f, P*, int startRow, int rowCount, int c, FITSWriter& writer )
+   static void WriteSamples( const T* f, P*, int startRow, int rowCount, int c, FITSWriter& writer )
    {
-      if ( !writer.IsOpen() || writer.hdu == 0 )
-         throw FITS::InvalidWriteOperation( writer.path );
+      if ( !writer.IsOpen() || !writer.hdu )
+         throw FITS::InvalidWriteOperation( writer.m_path );
 
       // Ensure arguments in the valid range.
       if ( writer.hdu->naxis == 0 ||
                      startRow < 0 || startRow+rowCount > writer.hdu->naxes[1] ||
                             c < 0 || c >= writer.hdu->naxes[2] )
-         throw FITS::WriteCoordinatesOutOfRange( writer.path );
+         throw FITS::WriteCoordinatesOutOfRange( writer.m_path );
 
       if ( writer.FITSOptions().bottomUp )
          startRow = writer.hdu->naxes[1] - startRow - rowCount;
 
-      FITSFileData* fileData = writer.fileData;
-
-      double* buffer = nullptr;
+      FITSFileData* m_fileData = writer.m_fileData;
 
       try
       {
@@ -1458,7 +1545,7 @@ public:
          long N = rowCount * writer.hdu->naxes[0];
 
          // Allocate space for them.
-         buffer = new double[ N ];
+         F64Vector buffer( N );
 
          // Get range of source pixel values.
          //
@@ -1467,8 +1554,8 @@ public:
          // For floating-point source samples, the actual range of pixel values
          // has been declared in optional image parameters.
 
-         double k0 = P::IsFloatSample() ? writer.options.lowerRange : double( P::MinSampleValue() );
-         double k1 = P::IsFloatSample() ? writer.options.upperRange : double( P::MaxSampleValue() );
+         double k0 = P::IsFloatSample() ? writer.m_options.lowerRange : double( P::MinSampleValue() );
+         double k1 = P::IsFloatSample() ? writer.m_options.upperRange : double( P::MaxSampleValue() );
 
          // Rescaling is necessary to write integer samples if the source and
          // output sample types don't match.
@@ -1502,16 +1589,15 @@ public:
          }
 
          // Write strip of FITS rows
-         ::fits_write_pix( fits_handle, TDOUBLE, fpixel, N, buffer, &fitsStatus );
+         {
+            CFITSIO_LOCK
+            ::fits_write_pix( fits_handle, TDOUBLE, fpixel, N, buffer.Begin(), &fitsStatus );
+         }
          if ( fitsStatus != 0 )
-            throw FITS::FileWriteError( writer.path );
-
-         delete [] buffer, buffer = nullptr;
+            throw FITS::FileWriteError( writer.m_path );
       }
       catch ( ... )
       {
-         if ( buffer != nullptr )
-            delete [] buffer;
          fitsStatus = 1; // in case this is a non-CFITSIO error
          writer.Close();
          throw;
@@ -1521,6 +1607,15 @@ public:
 
 // ----------------------------------------------------------------------------
 
+FITSWriter::FITSWriter()
+{
+}
+
+FITSWriter::~FITSWriter()
+{
+   Close();
+}
+
 bool FITSWriter::IsOpen() const
 {
    return FITS::IsOpenStream();
@@ -1529,13 +1624,13 @@ bool FITSWriter::IsOpen() const
 void FITSWriter::Create( const String& filePath, int count )
 {
    if ( IsOpen() )
-      throw InvalidWriteOperation( path );
+      throw FITS::InvalidWriteOperation( m_path );
 
    if ( filePath.IsEmpty() )
-      throw InvalidFilePath( filePath );
+      throw FITS::InvalidFilePath( filePath );
 
    if ( count <= 0 )
-      throw NotImplemented( *this, "Write empty FITS files" );
+      throw pcl::NotImplemented( *this, "Write empty FITS files" );
 
    Reset();
 
@@ -1543,16 +1638,15 @@ void FITSWriter::Create( const String& filePath, int count )
 
    try
    {
-      if ( fileData == 0 )
-         fileData = new FITSFileData;
-
-      if ( data == 0 )
-         data = new FITSWriterData;
+      if ( !m_fileData )
+         m_fileData = new FITSFileData;
+      if ( !m_data )
+         m_data = new FITSWriterData;
 
 #ifdef __PCL_WINDOWS
-      path = File::WindowsPathToUnix( filePath );
+      m_path = File::WindowsPathToUnix( filePath );
 #else
-      path = filePath;
+      m_path = filePath;
 #endif
 
       /*
@@ -1561,12 +1655,12 @@ void FITSWriter::Create( const String& filePath, int count )
        * create a new one (which is irresponsible to say the least), we'll
        * backup it until a new file has been successfully created.
        */
-      if ( File::Exists( path ) )
+      if ( File::Exists( m_path ) )
       {
-         backupPath = path + '~';
+         backupPath = m_path + '~';
          if ( File::Exists( backupPath ) )
-            backupPath = File::UniqueFileName( File::ExtractDrive( path ) + File::ExtractDirectory( path ) );
-         File::Move( path, backupPath );
+            backupPath = File::UniqueFileName( File::ExtractDrive( m_path ) + File::ExtractDirectory( m_path ) );
+         File::Move( m_path, backupPath );
       }
 
       /*
@@ -1574,14 +1668,17 @@ void FITSWriter::Create( const String& filePath, int count )
        */
       IsoString path8 =
 #ifdef __PCL_WINDOWS
-         File::UnixPathToWindows( path ).ToMBS();
+         File::UnixPathToWindows( m_path ).ToMBS();
 #else
-         path.ToUTF8();
+         m_path.ToUTF8();
 #endif
       fitsStatus = 0;
-      ::fits_create_diskfile( (::fitsfile**)&fileData->fits, path8.c_str(), &fitsStatus );
+      {
+         CFITSIO_LOCK
+         ::fits_create_diskfile( (::fitsfile**)&m_fileData->fits, path8.c_str(), &fitsStatus );
+      }
       if ( fitsStatus != 0 )
-         throw UnableToCreateFile( path );
+         throw FITS::UnableToCreateFile( m_path );
 
       if ( count > 1 )
       {
@@ -1591,29 +1688,35 @@ void FITSWriter::Create( const String& filePath, int count )
           * will be written as image extensions.
           */
          long naxes[ 3 ] = { 0, 0, 0 };
-         ::fits_create_img( fits_handle, 16, 0, naxes, &fitsStatus );
+         {
+            CFITSIO_LOCK
+            ::fits_create_img( fits_handle, 16, 0, naxes, &fitsStatus );
+         }
          if ( fitsStatus != 0 )
-            throw UnableToCreatePrimaryHDU( path );
+            throw FITS::UnableToCreatePrimaryHDU( m_path );
 
          /*
           * Software information keywords.
           */
-         IsoString version( PixInsightVersion::AsString() );
-         ::fits_write_key_str( fits_handle, "PROGRAM",
-                              const_cast<char*>( version.c_str() ),
-                              "Software that created this file",
-                              &fitsStatus );
-         version = "PixInsight Class Library: " + Version::AsString();
-         ::fits_write_comment( fits_handle,
-                              const_cast<char*>( version.c_str() ),
-                              &fitsStatus );
-         version = Module->ReadableVersion();
-         ::fits_write_comment( fits_handle,
-                              const_cast<char*>( version.c_str() ),
-                              &fitsStatus );
+         {
+            CFITSIO_LOCK
 
+            IsoString version( PixInsightVersion::AsString() );
+            ::fits_write_key_str( fits_handle, "PROGRAM",
+                                  const_cast<char*>( version.c_str() ),
+                                  "Software that created this file",
+                                  &fitsStatus );
+            version = "PixInsight Class Library: " + Version::AsString();
+            ::fits_write_comment( fits_handle,
+                                  const_cast<char*>( version.c_str() ),
+                                  &fitsStatus );
+            version = Module->ReadableVersion();
+            ::fits_write_comment( fits_handle,
+                                  const_cast<char*>( version.c_str() ),
+                                  &fitsStatus );
+         }
          if ( fitsStatus != 0 )
-            throw KeywordWriteError( path );
+            throw FITS::KeywordWriteError( m_path );
       }
 
       if ( !backupPath.IsEmpty() && File::Exists( backupPath ) )
@@ -1632,9 +1735,9 @@ void FITSWriter::Create( const String& filePath, int count )
    {
       if ( !backupPath.IsEmpty() && File::Exists( backupPath ) )
       {
-         if ( File::Exists( path ) )
-            File::Remove( path );
-         File::Move( backupPath, path );
+         if ( File::Exists( m_path ) )
+            File::Remove( m_path );
+         File::Move( backupPath, m_path );
       }
 
       fitsStatus = 1; // in case this is a non-CFITSIO error
@@ -1652,38 +1755,43 @@ const FITSImageOptions& FITSWriter::FITSOptions() const
 
 void FITSWriter::SetFITSOptions( const FITSImageOptions& newOptions )
 {
-   if ( hdu != nullptr )
-      throw InvalidWriteOperation( path );
+   if ( hdu )
+      throw FITS::InvalidWriteOperation( m_path );
    fitsOptions = newOptions;
 }
 
 // ----------------------------------------------------------------------------
 
-void FITSWriter::Embed( const FITSKeywordArray& _keywords )
+void FITSWriter::WriteICCProfile( const ICCProfile& profile )
 {
-   if ( hdu != nullptr )
-      throw InvalidWriteOperation( path );
-   keywords = _keywords;
+   if ( hdu )
+      throw FITS::InvalidWriteOperation( m_path );
+   iccProfile = profile;
 }
 
-void FITSWriter::Embed( const ICCProfile& _icc )
+void FITSWriter::WriteThumbnail( const UInt8Image& image )
 {
-   if ( hdu != nullptr )
-      throw InvalidWriteOperation( path );
-   iccProfile = _icc;
+   if ( hdu )
+      throw FITS::InvalidWriteOperation( m_path );
+   thumbnail = image;
 }
 
-void FITSWriter::Embed( const UInt8Image& _thumbnail )
+void FITSWriter::WriteFITSKeywords( const FITSKeywordArray& kwds )
 {
-   if ( hdu != nullptr )
-      throw InvalidWriteOperation( path );
-   thumbnail = _thumbnail;
+   if ( hdu )
+      throw FITS::InvalidWriteOperation( m_path );
+   keywords = kwds;
 }
 
-void FITSWriter::Embed( const ByteArray& extData, const IsoString& extName )
+const FITSKeywordArray& FITSWriter::FITSKeywords() const
 {
-   if ( hdu != nullptr )
-      throw InvalidWriteOperation( path );
+   return keywords;
+}
+
+void FITSWriter::WriteBLOB( const ByteArray& extData, const IsoString& extName )
+{
+   if ( hdu )
+      throw FITS::InvalidWriteOperation( m_path );
    extensions.Add( FITSExtensionData( extData, extName ) );
 }
 
@@ -1716,49 +1824,29 @@ void FITSWriter::WriteImage( const UInt32Image& image )
 
 // ----------------------------------------------------------------------------
 
-const FITSKeywordArray& FITSWriter::EmbeddedKeywords() const
+void FITSWriter::WriteSamples( const FImage::sample* f, int startRow, int rowCount, int c )
 {
-   if ( data != nullptr )
-      return keywords;
-   static FITSKeywordArray noKeywords;
-   return noKeywords;
+   FITSWriterPrivate::WriteSamples( f, (FImage::pixel_traits*)0, startRow, rowCount, c, *this );
 }
 
-const ICCProfile* FITSWriter::EmbeddedICCProfile() const
+void FITSWriter::WriteSamples( const DImage::sample* f, int startRow, int rowCount, int c )
 {
-   return (data != nullptr) ? &iccProfile : nullptr;
+   FITSWriterPrivate::WriteSamples( f, (DImage::pixel_traits*)0, startRow, rowCount, c, *this );
 }
 
-const UInt8Image* FITSWriter::EmbeddedThumbnail() const
+void FITSWriter::WriteSamples( const UInt8Image::sample* f, int startRow, int rowCount, int c )
 {
-   return (data != nullptr) ? &thumbnail : nullptr;
+   FITSWriterPrivate::WriteSamples( f, (UInt8Image::pixel_traits*)0, startRow, rowCount, c, *this );
 }
 
-// ----------------------------------------------------------------------------
-
-void FITSWriter::Write( const FImage::sample* f, int startRow, int rowCount, int c )
+void FITSWriter::WriteSamples( const UInt16Image::sample* f, int startRow, int rowCount, int c )
 {
-   FITSWriterPrivate::WritePixels( f, (FImage::pixel_traits*)0, startRow, rowCount, c, *this );
+   FITSWriterPrivate::WriteSamples( f, (UInt16Image::pixel_traits*)0, startRow, rowCount, c, *this );
 }
 
-void FITSWriter::Write( const DImage::sample* f, int startRow, int rowCount, int c )
+void FITSWriter::WriteSamples( const UInt32Image::sample* f, int startRow, int rowCount, int c )
 {
-   FITSWriterPrivate::WritePixels( f, (DImage::pixel_traits*)0, startRow, rowCount, c, *this );
-}
-
-void FITSWriter::Write( const UInt8Image::sample* f, int startRow, int rowCount, int c )
-{
-   FITSWriterPrivate::WritePixels( f, (UInt8Image::pixel_traits*)0, startRow, rowCount, c, *this );
-}
-
-void FITSWriter::Write( const UInt16Image::sample* f, int startRow, int rowCount, int c )
-{
-   FITSWriterPrivate::WritePixels( f, (UInt16Image::pixel_traits*)0, startRow, rowCount, c, *this );
-}
-
-void FITSWriter::Write( const UInt32Image::sample* f, int startRow, int rowCount, int c )
-{
-   FITSWriterPrivate::WritePixels( f, (UInt32Image::pixel_traits*)0, startRow, rowCount, c, *this );
+   FITSWriterPrivate::WriteSamples( f, (UInt32Image::pixel_traits*)0, startRow, rowCount, c, *this );
 }
 
 // ----------------------------------------------------------------------------
@@ -1961,18 +2049,18 @@ static void CleanupKeywordField( IsoString& k )
 void FITSWriter::CreateImage( const ImageInfo& info )
 {
    if ( !IsOpen() )
-      throw InvalidWriteOperation( String() );
+      throw FITS::InvalidWriteOperation( String() );
 
    CloseImage();
 
-   if ( options.complexSample )
-      throw UnsupportedComplexFITS( path );
+   if ( m_options.complexSample )
+      throw FITS::UnsupportedComplexFITS( m_path );
 
-   if ( options.bitsPerSample == 64 && !options.ieeefpSampleFormat )
-      throw Unsupported64BitFITS( path );
+   if ( m_options.bitsPerSample == 64 && !m_options.ieeefpSampleFormat )
+      throw FITS::Unsupported64BitFITS( m_path );
 
-   if ( options.lowerRange >= options.upperRange )
-      throw InvalidNormalizationRange( path );
+   if ( m_options.lowerRange >= m_options.upperRange )
+      throw FITS::InvalidNormalizationRange( m_path );
 
    try
    {
@@ -1983,11 +2071,14 @@ void FITSWriter::CreateImage( const ImageInfo& info )
       hdu = new FITSHDUData;
 
       // Zero-based position of this image HDU in this FITS file
-      ::fits_get_num_hdus( fits_handle, &hdu->hduNumber, &fitsStatus );
+      {
+         CFITSIO_LOCK
+         ::fits_get_num_hdus( fits_handle, &hdu->hduNumber, &fitsStatus );
+      }
       if ( fitsStatus != 0 )
-         throw FileReadError( path );
+         throw FITS::FileReadError( m_path );
 
-      switch ( options.bitsPerSample )
+      switch ( m_options.bitsPerSample )
       {
       case 8:
          /*
@@ -2029,11 +2120,11 @@ void FITSWriter::CreateImage( const ImageInfo& info )
          break;
 
       case 32:
-         if ( options.ieeefpSampleFormat )
+         if ( m_options.ieeefpSampleFormat )
          {
             hdu->bitpix = FLOAT_IMG;
-            hdu->zeroOffset = options.lowerRange;
-            hdu->scaleRange = options.upperRange;
+            hdu->zeroOffset = m_options.lowerRange;
+            hdu->scaleRange = m_options.upperRange;
          }
          else
          {
@@ -2058,12 +2149,12 @@ void FITSWriter::CreateImage( const ImageInfo& info )
           * Conditions already enforced by initial checks.
           */
          /*
-         if ( options.ieeefpSampleFormat )
+         if ( m_options.ieeefpSampleFormat )
          {
          */
             hdu->bitpix = DOUBLE_IMG;
-            hdu->zeroOffset = options.lowerRange;
-            hdu->scaleRange = options.upperRange;
+            hdu->zeroOffset = m_options.lowerRange;
+            hdu->scaleRange = m_options.upperRange;
          /*
          }
          else
@@ -2092,27 +2183,32 @@ void FITSWriter::CreateImage( const ImageInfo& info )
          hdu->naxes[0] = hdu->naxes[1] = hdu->naxes[2] = 0;
       }
 
-      ::fits_create_img( fits_handle, hdu->bitpix, hdu->naxis, hdu->naxes, &fitsStatus );
+      {
+         CFITSIO_LOCK
+         ::fits_create_img( fits_handle, hdu->bitpix, hdu->naxis, hdu->naxes, &fitsStatus );
+      }
       if ( fitsStatus != 0 )
-         throw UnableToCreateImageHDU( path );
+         throw FITS::UnableToCreateImageHDU( m_path );
 
       /*
        * Software information keywords.
        */
       {
+         CFITSIO_LOCK
+
          IsoString version( PixInsightVersion::AsString() );
          ::fits_write_key_str( fits_handle, "PROGRAM",
-                              const_cast<char*>( version.c_str() ),
-                              "Software that created this HDU",
-                              &fitsStatus );
+                               const_cast<char*>( version.c_str() ),
+                               "Software that created this HDU",
+                               &fitsStatus );
          version = "PixInsight Class Library: " + Version::AsString();
          ::fits_write_comment( fits_handle,
-                              const_cast<char*>( version.c_str() ),
-                              &fitsStatus );
+                               const_cast<char*>( version.c_str() ),
+                               &fitsStatus );
          version = Module->ReadableVersion();
          ::fits_write_comment( fits_handle,
-                              const_cast<char*>( version.c_str() ),
-                              &fitsStatus );
+                               const_cast<char*>( version.c_str() ),
+                               &fitsStatus );
       }
 
       /*
@@ -2121,21 +2217,25 @@ void FITSWriter::CreateImage( const ImageInfo& info )
        */
       bool hduNameWritten = false;
       bool extNameWritten = false;
-      if ( !id.IsEmpty() )
+      if ( !m_id.IsEmpty() )
          if ( hdu->hduNumber == 0 )
          {
+            CFITSIO_LOCK
+
             ::fits_write_key_str( fits_handle, "HDUNAME",
-                              const_cast<char*>( id.c_str() ),
-                              "Identifier of primary image HDU",
-                              &fitsStatus );
+                                  const_cast<char*>( m_id.c_str() ),
+                                  "Identifier of primary image HDU",
+                                  &fitsStatus );
             hduNameWritten = true;
          }
          else
          {
+            CFITSIO_LOCK
+
             ::fits_write_key_str( fits_handle, "EXTNAME",
-                              const_cast<char*>( id.c_str() ),
-                              "Identifier of image extension HDU",
-                              &fitsStatus );
+                                  const_cast<char*>( m_id.c_str() ),
+                                  "Identifier of image extension HDU",
+                                  &fitsStatus );
             extNameWritten = true;
          }
 
@@ -2143,10 +2243,12 @@ void FITSWriter::CreateImage( const ImageInfo& info )
        * Optional BZERO and BSCALE keywords for signed data (added 2009 Feb 28)
        * Some FITS readers out there need this or they get fool...
        */
-      if ( !options.ieeefpSampleFormat )
+      if ( !m_options.ieeefpSampleFormat )
          if ( !fitsOptions.unsignedIntegers )
             if ( fitsOptions.writeScalingKeywordsForSignedData )
             {
+               CFITSIO_LOCK
+
                ::fits_write_key_flt( fits_handle, "BZERO",
                                      0.0, -6,
                                      "PCL: Default signed data offset",
@@ -2159,87 +2261,91 @@ void FITSWriter::CreateImage( const ImageInfo& info )
 
       if ( info.IsValid() )
       {
+         CFITSIO_LOCK
+
          /*
           * The COLORSPC keyword identifies the color space for this image
           */
          ::fits_write_key_str( fits_handle, "COLORSPC",
-                              const_cast<char*>( (info.colorSpace == ColorSpace::RGB) ? "RGB" : "Grayscale" ),
-                              "PCL: Color space",
-                              &fitsStatus );
+                               const_cast<char*>( (info.colorSpace == ColorSpace::RGB) ? "RGB" : "Grayscale" ),
+                               "PCL: Color space",
+                               &fitsStatus );
 
          /*
           * Signal presence of alpha channels
           */
          if ( info.numberOfChannels > ((info.colorSpace == ColorSpace::RGB) ? 3 : 1) )
             ::fits_write_key_flt( fits_handle, "ALPHACHN",
-                              info.numberOfChannels - ((info.colorSpace == ColorSpace::RGB) ? 3 : 1), -6,
-                              "PCL: Image includes alpha channels",
-                              &fitsStatus );
+                                  info.numberOfChannels - ((info.colorSpace == ColorSpace::RGB) ? 3 : 1), -6,
+                                  "PCL: Image includes alpha channels",
+                                  &fitsStatus );
 
          /*
           * Image resolution keywords
           */
-         if ( options.xResolution == options.yResolution )
+         if ( m_options.xResolution == m_options.yResolution )
             ::fits_write_key_flt( fits_handle, "RESOLUTN",
-                              options.xResolution, -6,
-                              "PCL: Resolution in pixels per resolution unit",
-                              &fitsStatus );
+                                  m_options.xResolution, -6,
+                                  "PCL: Resolution in pixels per resolution unit",
+                                  &fitsStatus );
          else
          {
             ::fits_write_key_flt( fits_handle, "XRESOLTN",
-                              options.xResolution, -6,
-                              "PCL: Resolution in pixels: X-axis",
-                              &fitsStatus );
+                                  m_options.xResolution, -6,
+                                  "PCL: Resolution in pixels: X-axis",
+                                  &fitsStatus );
             ::fits_write_key_flt( fits_handle, "YRESOLTN",
-                              options.yResolution, -6,
-                              "PCL: Resolution in pixels: Y-axis",
-                              &fitsStatus );
+                                  m_options.yResolution, -6,
+                                  "PCL: Resolution in pixels: Y-axis",
+                                  &fitsStatus );
          }
          // Resolution unit
          ::fits_write_key_str( fits_handle, "RESOUNIT",
-                              const_cast<char*>( options.metricResolution ? "cm" : "inch" ),
-                              "PCL: Resolution unit",
-                              &fitsStatus );
+                               const_cast<char*>( m_options.metricResolution ? "cm" : "inch" ),
+                               "PCL: Resolution unit",
+                               &fitsStatus );
 
          /*
           * Signal presence of an ICC Profile extension, if ICC profile
           * embedding has been requested, the profile has been specified, and
           * it is not empty.
           */
-         if ( options.embedICCProfile && iccProfile.IsProfile() )
-         {
-            if ( hdu->hduNumber > 0 )
-               hdu->iccExtName.Format( "ICCProfile%02d", hdu->hduNumber );
-            else
-               hdu->iccExtName = "ICCProfile";
+         if ( m_options.embedICCProfile )
+            if ( iccProfile.IsProfile() )
+            {
+               if ( hdu->hduNumber > 0 )
+                  hdu->iccExtName.Format( "ICCProfile%02d", hdu->hduNumber );
+               else
+                  hdu->iccExtName = "ICCProfile";
 
-            ::fits_write_key_str( fits_handle, "ICCPROFL",
-                              const_cast<char*>( hdu->iccExtName.c_str() ),
-                              "PCL: File includes ICC profile extension",
-                              &fitsStatus );
-         }
+               ::fits_write_key_str( fits_handle, "ICCPROFL",
+                                     const_cast<char*>( hdu->iccExtName.c_str() ),
+                                     "PCL: File includes ICC color profile extension",
+                                     &fitsStatus );
+            }
 
          /*
           * Signal presence of a thumbnail image extension, if thumbnail
           * embedding has been requested and a valid thumbnail image has been
           * specified.
           */
-         if ( options.embedThumbnail && !thumbnail.IsEmpty() )
-         {
-            if ( hdu->hduNumber > 0 )
-               hdu->thumbExtName.Format( "Thumbnail%02d", hdu->hduNumber );
-            else
-               hdu->thumbExtName = "Thumbnail";
+         if ( m_options.embedThumbnail )
+            if ( !thumbnail.IsEmpty() )
+            {
+               if ( hdu->hduNumber > 0 )
+                  hdu->thumbExtName.Format( "Thumbnail%02d", hdu->hduNumber );
+               else
+                  hdu->thumbExtName = "Thumbnail";
 
-            ::fits_write_key_str( fits_handle, "THUMBIMG",
-                              const_cast<char*>( hdu->thumbExtName.c_str() ),
-                              "PCL: File includes thumbnail image extension",
-                              &fitsStatus );
-         }
+               ::fits_write_key_str( fits_handle, "THUMBIMG",
+                                     const_cast<char*>( hdu->thumbExtName.c_str() ),
+                                     "PCL: File includes thumbnail image extension",
+                                     &fitsStatus );
+            }
       }
 
       if ( fitsStatus != 0 )
-         throw KeywordWriteError( path );
+         throw FITS::KeywordWriteError( m_path );
 
       /*
        * Write the list of user keywords, if it has been specified.
@@ -2298,8 +2404,10 @@ void FITSWriter::CreateImage( const ImageInfo& info )
 
             // Try to find a keyword with the same name as this one.
             char cvalue[ 81 ], ccomment[ 81 ];
-            ::fits_read_keyword( fits_handle, kname.c_str(), cvalue, ccomment, &fitsStatus );
-
+            {
+               CFITSIO_LOCK
+               ::fits_read_keyword( fits_handle, kname.c_str(), cvalue, ccomment, &fitsStatus );
+            }
             if ( fitsStatus == 0 ) // keyword found, don't include if identical
                if ( k == FITSHeaderKeyword( k.name.c_str(), cvalue, ccomment ) )
                   continue;
@@ -2318,77 +2426,78 @@ void FITSWriter::CreateImage( const ImageInfo& info )
             /*
              * Write a keyword.
              */
-            if ( kname == "COMMENT" || kname == "HISTORY" )
             {
-               // COMMENT and HISTORY keywords are special cases.
+               CFITSIO_LOCK
 
-               IsoString comment = k.value;
-
-               // COMMENT and HISTORY keywords cannot have a value string.
-               // If present, move the value to the comment field.
-
-               if ( !k.value.IsEmpty() )
-                  comment += "// "; // use a C++ comment to indicate this
-
-               comment += k.comment;
-
-               if ( kname == "COMMENT" )
-                  ::fits_write_comment( fits_handle, comment.c_str(), &fitsStatus );
-               else
-                  ::fits_write_history( fits_handle, comment.c_str(), &fitsStatus );
-            }
-            else if ( k.IsNull() )
-            {
-               // Write a "null" keyword without a value field.
-               // This case has to be handled in a special way with CFITSIO.
-               ::fits_write_key_null( fits_handle, k.name.c_str(), k.comment.c_str(), &fitsStatus );
-            }
-            else if ( k.IsString() )
-            {
-               // Write a string keyword.
-               // We identify this by a prepending delimiter.
-               IsoString kvalue( k.StripValueDelimiters() );
-               ::fits_write_key_str( fits_handle, k.name.c_str(), kvalue.c_str(), k.comment.c_str(), &fitsStatus );
-            }
-            else if ( k.IsBoolean() )
-            {
-               // Write a logical keyword.
-               // Logical keyword values are T and F, no delimiters.
-               ::fits_write_key_log( fits_handle, k.name.c_str(), k.value[0] == 'T', k.comment.c_str(), &fitsStatus );
-            }
-            else
-            {
-               // Should be a numerical keyword, but we don't write
-               // incorrect numerals...
-
-               // Use ::strtod() to verify that this is a valid floating
-               // point numeric numeral.
-               char* endptr = 0;
-               double kvalue = ::strtod( k.value.c_str(), &endptr );
-
-               if ( endptr != 0 && *endptr != '\0' )  // invalid numeral ?
+               if ( kname == "COMMENT" || kname == "HISTORY" )
                {
-                  // Assume this keyword is a string.
-                  ::fits_write_key_str( fits_handle, k.name.c_str(), k.value.c_str(), k.comment.c_str(), &fitsStatus );
+                  // COMMENT and HISTORY keywords are special cases.
+
+                  IsoString comment = k.value;
+
+                  // COMMENT and HISTORY keywords cannot have a value string.
+                  // If present, move the value to the comment field.
+
+                  if ( !k.value.IsEmpty() )
+                     comment += "// "; // use a C++ comment to indicate this
+
+                  comment += k.comment;
+
+                  if ( kname == "COMMENT" )
+                     ::fits_write_comment( fits_handle, comment.c_str(), &fitsStatus );
+                  else
+                     ::fits_write_history( fits_handle, comment.c_str(), &fitsStatus );
+               }
+               else if ( k.IsNull() )
+               {
+                  // Write a "null" keyword without a value field.
+                  // This case has to be handled in a special way with CFITSIO.
+                  ::fits_write_key_null( fits_handle, k.name.c_str(), k.comment.c_str(), &fitsStatus );
+               }
+               else if ( k.IsString() )
+               {
+                  // Write a string keyword.
+                  // We identify this by a prepending delimiter.
+                  IsoString kvalue( k.StripValueDelimiters() );
+                  ::fits_write_key_str( fits_handle, k.name.c_str(), kvalue.c_str(), k.comment.c_str(), &fitsStatus );
+               }
+               else if ( k.IsBoolean() )
+               {
+                  // Write a logical keyword.
+                  // Logical keyword values are T and F, no delimiters.
+                  ::fits_write_key_log( fits_handle, k.name.c_str(), k.value[0] == 'T', k.comment.c_str(), &fitsStatus );
                }
                else
                {
-                  // Write a valid floating-point numerical keyword
-                  ::fits_write_key_dbl( fits_handle, k.name.c_str(), kvalue,
-                                        fitsOptions.writeFixedFloatKeywords ? +15 : -15,
-                                        k.comment.c_str(),
-                                        &fitsStatus );
+                  // Should be a numeric keyword.
+                  double kvalue;
+                  if ( k.value.TryToDouble( kvalue ) )  // valid numeral?
+                  {
+                     // Write a valid floating-point numeric keyword
+                     ::fits_write_key_dbl( fits_handle, k.name.c_str(), kvalue,
+                                           fitsOptions.writeFixedFloatKeywords ? +15 : -15,
+                                           k.comment.c_str(),
+                                           &fitsStatus );
+                  }
+                  else
+                  {
+                     // Assume this keyword is a string.
+                     ::fits_write_key_str( fits_handle, k.name.c_str(), k.value.c_str(), k.comment.c_str(), &fitsStatus );
+                  }
                }
             }
 
             if ( fitsStatus != 0 )
-               throw KeywordWriteError( path );
+               throw FITS::KeywordWriteError( m_path );
          }
       }
 
       // Turn off CFITSIO's automatic data scaling for floating-point samples.
-      if ( options.ieeefpSampleFormat )
+      if ( m_options.ieeefpSampleFormat )
+      {
+         CFITSIO_LOCK
          ::fits_set_bscale( fits_handle, 1, 0, &fitsStatus );
+      }
    }
    catch ( ... )
    {
@@ -2402,44 +2511,49 @@ void FITSWriter::CreateImage( const ImageInfo& info )
 
 void FITSWriter::CloseImage()
 {
-   if ( !IsOpen() || data == 0 )
-      throw InvalidCloseImageOperation( path );
+   if ( !IsOpen() || !m_data )
+      throw FITS::InvalidCloseImageOperation( m_path );
 
-   // hdu != 0 if we have a file currently open
-   if ( hdu == nullptr )
+   // hdu != nullptr if we have an image currently open
+   if ( !hdu )
       return;
 
    try
    {
-      // Reload the keywords list with actual file keywords, if requested.
-
+      /*
+       * Reload the keywords list with actual file keywords, if requested.
+       */
       if ( fitsOptions.reloadKeywords )
       {
          // Learn the actual number of existing FITS keywords
          int count;
-         ::fits_get_hdrspace( fits_handle, &count, 0, &fitsStatus );
+         {
+            CFITSIO_LOCK
+            ::fits_get_hdrspace( fits_handle, &count, 0, &fitsStatus );
+         }
          if ( fitsStatus != 0 )
-            throw KeywordReadError( path );
+            throw FITS::KeywordReadError( m_path );
 
          // Reload keywords
-
          keywords.Clear();
-
          for ( int i = 1; i <= count; ++i )
          {
             char cname[ 81 ], cvalue[ 81 ], ccomment[ 81 ];
-
-            ::fits_read_keyn( fits_handle, i, cname, cvalue, ccomment, &fitsStatus );
+            {
+               CFITSIO_LOCK
+               ::fits_read_keyn( fits_handle, i, cname, cvalue, ccomment, &fitsStatus );
+            }
             if ( fitsStatus != 0 )
-               throw KeywordReadError( path );
+               throw FITS::KeywordReadError( m_path );
 
-            keywords.Add( FITSHeaderKeyword( cname, cvalue, ccomment ) );
+            keywords << FITSHeaderKeyword( cname, cvalue, ccomment );
          }
       }
 
-      // Embed thumbnail image if requested/specified
-
-      if ( options.embedThumbnail && !thumbnail.IsEmpty() )
+      /*
+       * Embed thumbnail image if requested and specified.
+       */
+      if ( m_options.embedThumbnail && !thumbnail.IsEmpty() )
       {
          long naxes[ 3 ];
          naxes[0] = thumbnail.Width();
@@ -2447,32 +2561,36 @@ void FITSWriter::CloseImage()
          naxes[2] = thumbnail.NumberOfChannels();
 
          // Verify validity of thumbnail image
-
          if ( naxes[0] < MinThumbnailSize || naxes[1] < MinThumbnailSize ||
               naxes[0] > MaxThumbnailSize || naxes[1] > MaxThumbnailSize ||
               thumbnail.ColorSpace() != ColorSpace::Gray && thumbnail.ColorSpace() != ColorSpace::RGB ||
               naxes[2] != (thumbnail.IsColor() ? 3 : 1) )
          {
-            throw InvalidThumbnailImage( path );
+            throw FITS::InvalidThumbnailImage( m_path );
          }
 
          // Create the thumbnail image extension HDU
-
-         ::fits_create_img( fits_handle, BYTE_IMG, (naxes[2] == 1) ? 2 : 3, naxes, &fitsStatus );
+         {
+            CFITSIO_LOCK
+            ::fits_create_img( fits_handle, BYTE_IMG, (naxes[2] == 1) ? 2 : 3, naxes, &fitsStatus );
+         }
          if ( fitsStatus != 0 )
-            throw UnableToCreateThumbnailHDU( path );
+            throw FITS::UnableToCreateThumbnailHDU( m_path );
 
          // Emit the extension name keyword.
 
          IsoString ivers( Version::AsString() );
-         ::fits_write_key_str( fits_handle, "EXTNAME",
-                              const_cast<char*>( hdu->thumbExtName.c_str() ),
-                              const_cast<char*>( ivers.c_str() ),
-                              &fitsStatus );
+         {
+            CFITSIO_LOCK
+            ::fits_write_key_str( fits_handle, "EXTNAME",
+                                  const_cast<char*>( hdu->thumbExtName.c_str() ),
+                                  const_cast<char*>( ivers.c_str() ),
+                                  &fitsStatus );
+         }
          if ( fitsStatus != 0 )
-            throw FITS::FileWriteError( path );
+            throw FITS::FileWriteError( m_path );
 
-         // Coordinate selectors. NB: CFITSIO expects one-based indexes.
+         // Coordinate selectors. N.B.: CFITSIO expects one-based indexes.
          long fpixel[ 3 ];
          fpixel[0] = 1;
          fpixel[1] = 1;
@@ -2482,21 +2600,24 @@ void FITSWriter::CloseImage()
          for ( int c = 0; c < thumbnail.NumberOfChannels(); ++c )
          {
             ++fpixel[2]; // next channel
-
-            ::fits_write_pix( fits_handle, TBYTE, fpixel,
-                  long( thumbnail.NumberOfPixels() ), const_cast<uint8*>( thumbnail[c] ), &fitsStatus );
-
+            {
+               CFITSIO_LOCK
+               ::fits_write_pix( fits_handle, TBYTE, fpixel,
+                                 long( thumbnail.NumberOfPixels() ),
+                                 const_cast<uint8*>( thumbnail[c] ), &fitsStatus );
+            }
             if ( fitsStatus != 0 )
-               throw FITS::FileWriteError( path );
+               throw FITS::FileWriteError( m_path );
          }
       }
 
-      // Embed an ICC Profile if requested/specified
-
-      if ( options.embedICCProfile && iccProfile.IsProfile() )
+      /*
+       * Embed an ICC color profile if requested and specified.
+       */
+      if ( m_options.embedICCProfile && iccProfile.IsProfile() )
          WriteExtensionHDU( FITSExtensionData( iccProfile.ProfileData(), hdu->iccExtName ) );
 
-      delete hdu, hdu = nullptr;
+      hdu.Destroy();
    }
    catch ( ... )
    {
@@ -2510,7 +2631,7 @@ void FITSWriter::CloseImage()
 
 void FITSWriter::Close()
 {
-   if ( data != nullptr )
+   if ( m_data )
    {
       if ( fitsStatus == 0 )
       {
@@ -2524,13 +2645,13 @@ void FITSWriter::Close()
          }
          catch ( ... )
          {
-            delete data, data = nullptr;
+            m_data.Destroy();
             FITS::CloseStream();
             throw;
          }
       }
 
-      delete data, data = nullptr;
+      m_data.Destroy();
    }
 
    FITS::CloseStream();
@@ -2544,23 +2665,26 @@ void FITSWriter::WriteExtensionHDU( const FITSExtensionData& ext )
    if ( !ext.IsValid() )
       return;
 
-   // Create extension HDU.
-   long size = long( ext.data.Length() );
-   ::fits_create_img( fits_handle, BYTE_IMG, 1, &size, &fitsStatus );
+   {
+      CFITSIO_LOCK
 
-   // Emit the extension name keyword.
-   IsoString ivers( Version::AsString() );
-   ::fits_write_key_str( fits_handle, "EXTNAME",
-                           const_cast<char*>( ext.name.c_str() ),
-                           const_cast<char*>( ivers.c_str() ),
-                           &fitsStatus );
+      // Create extension HDU.
+      long size = long( ext.data.Length() );
+      ::fits_create_img( fits_handle, BYTE_IMG, 1, &size, &fitsStatus );
 
-   // Write extension data block.
-   long fpixel = 1;
-   ::fits_write_pix( fits_handle, TBYTE, &fpixel, size, const_cast<uint8*>( ext.data.Begin() ), &fitsStatus );
+      // Emit the extension name keyword.
+      IsoString ivers( Version::AsString() );
+      ::fits_write_key_str( fits_handle, "EXTNAME",
+                            const_cast<char*>( ext.name.c_str() ),
+                            const_cast<char*>( ivers.c_str() ),
+                            &fitsStatus );
 
+      // Write extension data block.
+      long fpixel = 1;
+      ::fits_write_pix( fits_handle, TBYTE, &fpixel, size, const_cast<uint8*>( ext.data.Begin() ), &fitsStatus );
+   }
    if ( fitsStatus != 0 )
-      throw FileWriteError( path );
+      throw FITS::FileWriteError( m_path );
 }
 
 // ----------------------------------------------------------------------------
@@ -2568,4 +2692,4 @@ void FITSWriter::WriteExtensionHDU( const FITSExtensionData& ext )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITS.cpp - Released 2016/02/21 20:22:34 UTC
+// EOF FITS.cpp - Released 2017-05-02T09:42:51Z

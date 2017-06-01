@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/View.h - Released 2016/02/21 20:22:12 UTC
+// pcl/View.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,37 +56,16 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_UIObject_h
-#include <pcl/UIObject.h>
-#endif
-
-#ifndef __PCL_ImageVariant_h
-#include <pcl/ImageVariant.h>
-#endif
-
-#ifndef __PCL_Histogram_h
-#include <pcl/Histogram.h>
-#endif
-
-#ifndef __PCL_ImageStatistics_h
-#include <pcl/ImageStatistics.h>
-#endif
-
-#ifndef __PCL_HistogramTransformation_h
-#include <pcl/HistogramTransformation.h>
-#endif
-
-#ifndef __PCL_Array_h
 #include <pcl/Array.h>
-#endif
-
-#ifndef __PCL_Variant_h
+#include <pcl/Histogram.h>
+#include <pcl/HistogramTransformation.h>
+#include <pcl/ImageStatistics.h>
+#include <pcl/ImageVariant.h>
+#include <pcl/Property.h>
+#include <pcl/UIObject.h>
 #include <pcl/Variant.h>
-#endif
 
 namespace pcl
 {
@@ -98,13 +77,13 @@ class PCL_CLASS ImageWindow;
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup view_properties Module-defined view properties.
+ * \defgroup view_properties Module-Defined View Properties
  */
 
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace ViewPropertyAttribute
+ * \namespace pcl::ViewPropertyAttribute
  * \brief     Attributes of view properties.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -200,19 +179,16 @@ public:
     * Constructs a null view. A null view does not correspond to an existing
     * view in the PixInsight core application.
     */
-   View() : UIObject( nullptr )
-   {
-   }
+   View() = default;
 
    /*!
     * Constructs a %View instance as an alias of an existing %View object.
     *
     * \note It cannot be overemphasized that this constructor <em>does not
     * create a new view</em>. It only creates an \e alias object for an
-    * existing view <em>in your module</em>. In all respects, the alias and
-    * aliased objects are completely interchangeable; they behave exactly in
-    * the same way because both refer to the same server-side object living in
-    * the PixInsight core application.
+    * existing view <em>in the calling module</em>. In all respects, the alias
+    * and aliased objects are completely interchangeable; they behave exactly
+    * in the same way because both refer to the same server-side object.
     */
    View( const View& v ) : UIObject( v )
    {
@@ -581,6 +557,86 @@ public:
    }
 
    /*!
+    * returns true iff the specified string \a id is the identifier of a
+    * reserved view property.
+    *
+    * Reserved view properties are computed and maintained automatically by the
+    * core application and cannot be modified arbitrarily by modules.
+    *
+    * This member function also returns true if the specified identifier starts
+    * with the string "PixInsight:". Although these identifiers are not
+    * strictly reserved, the core application defines a number of properties in
+    * the PixInsight namespace for its internal use. This namespace should not
+    * be used by modules.
+    *
+    * \sa ComputeProperty()
+    */
+   static bool IsReservedViewPropertyId( const IsoString& id );
+
+   /*!
+    * Returns a description of all data properties associated with this view.
+    * For each property, the returned array provides information on the unique
+    * identifier of a property and its data type.
+    *
+    * Returns an empty array if there are no properties in this view.
+    *
+    * \ingroup view_properties
+    */
+   PropertyDescriptionArray Properties() const;
+
+   /*!
+    * Returns an array with all readable (for the calling module) properties in
+    * this view.
+    *
+    * \ingroup view_properties
+    */
+   PropertyArray GetProperties() const;
+
+   /*!
+    * Returns an array with all readable (for the calling module) and storable
+    * properties in this view.
+    *
+    * Storable properties have the ViewPropertyAttribute::Storable attribute
+    * set and are intended to be persistent when writting view images to files.
+    *
+    * \ingroup view_properties
+    */
+   PropertyArray GetStorableProperties() const;
+
+   /*!
+    * Sets the values of a set of properties in this view.
+    *
+    * \param properties The properties that will be defined.
+    *
+    * \param notify     Whether to notify the platform on the property changes.
+    *                   This is true by default.
+    *
+    * \param attributes Optional attribute properties. If not specified, the
+    *                   current property attributes will be preserved. If not
+    *                   specified and the property is newly created, a default
+    *                   set of properties will be applied.
+    *
+    * For each item in the \a properties array, if the requested property is
+    * not a reserved property and does not exist in this view, a new one will
+    * be created with the specified identifier, value and attributes; see the
+    * Property class.
+    *
+    * If one or more properties exist but the calling module has no write
+    * access to them (see ViewPropertyAttribute::WriteProtected), an Error
+    * exception will be thrown.
+    *
+    * Reserved properties are simply ignored by this member function without
+    * raising exceptions. This allows for copying properties between views
+    * safely with a single-line call such as:
+    *
+    * \code view2.SetProperties( view1.GetProperties() ); \endcode
+    *
+    * \ingroup view_properties
+    */
+   void SetProperties( const PropertyArray& properties, bool notify = true,
+                       ViewPropertyAttributes attributes = ViewPropertyAttribute::NoChange );
+
+   /*!
     * Returns the value of the specified \a property in this view.
     *
     * If the requested property has not been defined for this view, the
@@ -622,6 +678,7 @@ public:
     * If the requested property is not recognized as a reserved view property,
     * this member function returns an invalid %Variant object.
     *
+    * \sa IsReservedViewPropertyId()
     * \ingroup view_properties
     */
    Variant ComputeProperty( const IsoString& property, bool notify = true );
@@ -645,6 +702,8 @@ public:
     * \endcode
     *
     * See ComputeProperty() for information on reserved view properties.
+    *
+    * \ingroup view_properties
     */
    template <class S>
    Variant ComputeOrFetchProperty( const S& property, bool notify = true )
@@ -693,8 +752,12 @@ public:
    /*!
     * Returns the data type of an existing \a property in this view.
     *
-    * If the requested \a property has not been defined for this view, an Error
-    * exception is thrown.
+    * If the requested \a property has not been defined for this view, this
+    * member function returns VariantType::Invalid.
+    *
+    * If the property exists but the calling module has no read access to it
+    * (see ViewPropertyAttributes::ReadProtected), an Error exception will be
+    * thrown.
     *
     * For a list of available view property types, see the VariantType
     * namespace.
@@ -832,7 +895,7 @@ protected:
    {
    }
 
-   View( std::nullptr_t h ) : UIObject( h )
+   View( std::nullptr_t ) : UIObject( nullptr )
    {
    }
 
@@ -842,6 +905,7 @@ protected:
    friend class ProcessInstance;       // for ExecuteOn() and related functions
    friend class ViewList;
    friend class ViewListEventDispatcher;
+   friend class ControlEventDispatcher;
    friend class ProcessContextDispatcher;
    friend class InterfaceDispatcher;
    friend class InternalViewEnumerator;
@@ -857,4 +921,4 @@ protected:
 #endif   // __PCL_View_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/View.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/View.h - Released 2017-05-28T08:28:50Z

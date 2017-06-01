@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/ImageColor.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ImageColor.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,25 +54,12 @@
 
 /// \file pcl/ImageColor.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_ColorSpace_h
 #include <pcl/ColorSpace.h>
-#endif
-
-#ifndef __PCL_RGBColorSystem_h
-#include <pcl/RGBColorSystem.h>
-#endif
-
-#ifndef __PCL_String_h
-#include <pcl/String.h>
-#endif
-
-#ifndef __PCL_Exception_h
 #include <pcl/Exception.h>
-#endif
+#include <pcl/RGBColorSystem.h>
+#include <pcl/String.h>
 
 namespace pcl
 {
@@ -100,8 +87,9 @@ namespace pcl
  *
  * RGB working spaces are implemented by the RGBColorSystem class.
  *
- * Note that for a shared image (i.e. an image living in the PixInsight core
- * application) the RGBWS is controlled exclusively by its parent ImageWindow.
+ * Note that for a shared image (that is, an image living in the PixInsight
+ * core application) the RGBWS is controlled exclusively by its parent
+ * ImageWindow.
  *
  * \sa ImageGeometry, AbstractImage, GenericImage
  */
@@ -127,7 +115,7 @@ public:
    /*!
     * Associates a given RGB working space (RGBWS) with this image.
     *
-    * \note For shared images (i.e. images living in the PixInsight core
+    * \note For shared images (that is, images living in the PixInsight core
     * application), the RGB working space cannot be changed by calling this
     * function. This is because the RGBWS of a shared image is a property
     * controlled by its parent image window. See the documentation for the
@@ -228,7 +216,7 @@ protected:
       }
    };
 
-   Color* m_color;
+   Color* m_color = nullptr;
 
    /*
     * The default RGB Working Space
@@ -240,12 +228,8 @@ protected:
     */
    static RGBColorSystem s_defaultRGBWS;
 
-   ImageColor() : m_color( nullptr )
-   {
-   }
-
+   ImageColor() = default;
    ImageColor( const ImageColor& ) = default;
-
    ImageColor& operator =( const ImageColor& ) = default;
 
    virtual ~ImageColor()
@@ -271,4 +255,4 @@ protected:
 #endif   // __PCL_ImageColor_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageColor.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ImageColor.h - Released 2017-05-28T08:28:50Z

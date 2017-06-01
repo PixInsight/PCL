@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Translation.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Translation.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -144,16 +144,14 @@ private:
    template <class P>
    struct ThreadData : public AbstractImage::ThreadData
    {
-      ThreadData( const DPoint& a_delta, int a_width, int a_height,
-                  const StatusMonitor& a_status, size_type a_count ) :
+      ThreadData( const DPoint& a_delta, int a_width, int a_height, const StatusMonitor& a_status, size_type a_count ) :
          AbstractImage::ThreadData( a_status, a_count ),
-         f( nullptr ), fillValue( P::MinSampleValue() ),
          delta( a_delta ), width( a_width ), height( a_height )
       {
       }
 
-      typename P::sample* f;         // target data
-      typename P::sample  fillValue; // unmapped pixel value
+      typename P::sample* f = nullptr; // target data
+      typename P::sample  fillValue = P::MinSampleValue(); // unmapped pixel value
       DPoint              delta;
       int                 width;
       int                 height;
@@ -233,4 +231,4 @@ void Translation::Apply( UInt32Image& img ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Translation.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Translation.cpp - Released 2017-05-28T08:29:05Z

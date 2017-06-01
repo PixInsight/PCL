@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Rotation.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Rotation.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -75,8 +75,8 @@ void GetRotatedBounds( int& width, int& height, double& x0, double& y0, const Ro
    x0 = pcl::Min( p1.x, pcl::Min( p2.x, pcl::Min( p3.x, p4.x ) ) );
    y0 = pcl::Min( p1.y, pcl::Min( p2.y, pcl::Min( p3.y, p4.y ) ) );
 
-   width = 1 + RoundI( pcl::Max( p1.x, pcl::Max( p2.x, pcl::Max( p3.x, p4.x ) ) ) - x0 );
-   height = 1 + RoundI( pcl::Max( p1.y, pcl::Max( p2.y, pcl::Max( p3.y, p4.y ) ) ) - y0 );
+   width = 1 + RoundInt( pcl::Max( p1.x, pcl::Max( p2.x, pcl::Max( p3.x, p4.x ) ) ) - x0 );
+   height = 1 + RoundInt( pcl::Max( p1.y, pcl::Max( p2.y, pcl::Max( p3.y, p4.y ) ) ) - y0 );
 }
 
 void Rotation::GetNewSizes( int& width, int& height ) const
@@ -187,20 +187,19 @@ private:
       ThreadData( double sinA, double cosA, const DPoint& a_center, const DPoint& a_origin,
                   int urWidth, int urHeight, int width, const StatusMonitor& a_status, size_type a_count ) :
          AbstractImage::ThreadData( a_status, a_count ),
-         f( nullptr ), fillValue( P::MinSampleValue() ),
          sa( sinA ), ca( cosA ), center( a_center ), origin( a_origin ),
          w0( urWidth ), h0( urHeight ), width( width )
       {
       }
 
-      typename P::sample* f;         // target data
-      typename P::sample  fillValue; // unmapped pixel value
-      double              sa, ca;    // sine and cosine of rotation angle
+      typename P::sample* f = nullptr; // target data
+      typename P::sample  fillValue = P::MinSampleValue(); // unmapped pixel value
+      double              sa, ca;      // sine and cosine of rotation angle
       DPoint              center;
       DPoint              origin;
-      int                 w0;        // unrotated width
-      int                 h0;        // unrotated height
-      int                 width;     // rotated width
+      int                 w0;          // unrotated width
+      int                 h0;          // unrotated height
+      int                 width;       // rotated width
    };
 
    template <class P>
@@ -278,4 +277,4 @@ void Rotation::Apply( pcl::UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Rotation.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Rotation.cpp - Released 2017-05-28T08:29:05Z

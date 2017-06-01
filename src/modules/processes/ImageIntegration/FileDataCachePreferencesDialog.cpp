@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.14.00.0390
 // ----------------------------------------------------------------------------
-// FileDataCachePreferencesDialog.cpp - Released 2016/11/13 17:30:54 UTC
+// FileDataCachePreferencesDialog.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -251,4 +251,4 @@ void FileDataCachePreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FileDataCachePreferencesDialog.cpp - Released 2016/11/13 17:30:54 UTC
+// EOF FileDataCachePreferencesDialog.cpp - Released 2017-05-02T09:43:00Z

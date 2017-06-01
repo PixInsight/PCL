@@ -1,0 +1,59 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
+######################################################################
+# Generated on .... 2017-04-15T09:50:21.209Z
+# Project id ...... xisf
+# Project type .... Executable
+# Platform ........ Linux/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/utils/xisf/linux/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/xisf
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../xisf.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/xisf.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/xisf.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/xisf: $(OBJ_FILES)
+	g++ -m64 -fPIC -pthread -Wl,-fuse-ld=gold -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/xisf $(OBJ_FILES) -lpthread -lPCL-pxi -llz4-pxi -lzlib-pxi -lRFC6234-pxi -llcms-pxi -lcminpack-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/xisf
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/xisf $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.04.03.0213
+// Standard Debayer Process Module Version 01.05.00.0236
 // ----------------------------------------------------------------------------
-// DebayerInstance.h - Released 2016/02/21 20:22:43 UTC
+// DebayerInstance.h - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,7 +53,7 @@
 #ifndef __DebayerInstance_h
 #define __DebayerInstance_h
 
-#include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
+#include <pcl/MetaParameter.h> // pcl_bool, pcl_enum
 #include <pcl/ProcessImplementation.h>
 
 namespace pcl
@@ -87,6 +87,10 @@ private:
    pcl_bool p_evaluateNoise;
    pcl_enum p_noiseEvaluationAlgorithm;
    pcl_bool p_showImages;
+   String   p_cfaSourceFilePath;
+
+   // working CFA pattern
+   pcl_enum m_bayerPattern;
 
    /*
     * Read-only output properties
@@ -113,4 +117,4 @@ private:
 #endif   // __DebayerInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF DebayerInstance.h - Released 2016/02/21 20:22:43 UTC
+// EOF DebayerInstance.h - Released 2017-05-02T09:43:01Z

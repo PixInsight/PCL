@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.04.0358
+// Standard FITS File Format Module Version 01.01.05.0381
 // ----------------------------------------------------------------------------
-// FITS.h - Released 2016/02/21 20:22:34 UTC
+// FITS.h - Released 2017-05-02T09:42:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,16 +57,28 @@
 #include <pcl/Defs.h>
 #endif
 
-#ifndef __PCL_Diagnostics_h
-#include <pcl/Diagnostics.h>
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
+#ifndef __PCL_File_h
+#include <pcl/File.h>
 #endif
 
 #ifndef __PCL_FITSHeaderKeyword_h
 #include <pcl/FITSHeaderKeyword.h>
 #endif
 
-#ifndef __PCL_ImageStream_h
-#include <pcl/ImageStream.h>
+#ifndef __PCL_ICCProfile_h
+#include <pcl/ICCProfile.h>
+#endif
+
+#ifndef __PCL_Image_h
+#include <pcl/Image.h>
+#endif
+
+#ifndef __PCL_ImageDescription_h
+#include <pcl/ImageDescription.h>
 #endif
 
 namespace pcl
@@ -97,7 +109,8 @@ public:
    bool   signedIntegersArePhysical         :  1; // If true, truncate to [0,2^(n/2-1)] and do not rescale.
                                                   //   Otherwise the full range is [-2^(n/2),+2^(n/2-1)]
    bool   cleanupHeaders                    :  1; // Transform header keywords for FITS standard compliance before writing
-   uint32 __rsv__                           : 25; // Reserved for future extension -- must be zero
+   uint8  verbosity                         :  3; // Verbosity level: 0 = quiet, > 0 = write console state messages.
+   uint32 __rsv__                           : 22; // Reserved for future extension -- must be zero
 
    double zeroOffset; // Zero offset value of read pixel values
    double scaleRange; // Scaling value of read pixel values
@@ -120,6 +133,7 @@ public:
       bottomUp                          = false;
       signedIntegersArePhysical         = false;
       cleanupHeaders                    = false;
+      verbosity                         = 1;
       __rsv__                           = 0;
       zeroOffset                        = 0;
       scaleRange                        = 1;
@@ -151,7 +165,7 @@ public:
 
       virtual String ExceptionClass() const
       {
-         return "PCL FITS Format Support";
+         return "PCL Legacy FITS Format Support";
       }
 
       virtual String Message() const; // reimplements File::Error
@@ -174,6 +188,8 @@ public:
                            "Invalid read operation in FITS file" )
    PCL_DECLARE_FITS_ERROR( InvalidImage,
                            "Invalid image" )
+   PCL_DECLARE_FITS_ERROR( NoImageAvailable,
+                           "No images available in stream" )
    PCL_DECLARE_FITS_ERROR( InvalidNormalizationRange,
                            "Invalid pixel normalization range" )
    PCL_DECLARE_FITS_ERROR( UnableToAccessCurrentHDU,
@@ -229,47 +245,133 @@ public:
       MaxThumbnailSize = 1024
    };
 
-   FITS() = default;
+   FITS();
 
-   virtual ~FITS()
+   FITS( const FITS& ) = delete;
+   FITS& operator =( const FITS& ) = delete;
+
+   virtual ~FITS();
+
+   String Path() const
    {
-      CloseStream();
+      return m_path;
    }
 
 protected:
 
-   FITSFileData* fileData = nullptr;
+   String                    m_path;
+   AutoPointer<FITSFileData> m_fileData;
 
    bool IsOpenStream() const;
    void CloseStream(); // ### derived must call base
-
-private:
-
-   FITS( const FITS& ) = delete;
-   void operator =( const FITS& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
 
 /*
- * FITS image file reader
+ * FITS Image File Reader
  */
-class FITSReader : public ImageReader, public FITS
+class FITSReader : public FITS
 {
 public:
 
-   FITSReader() = default;
+   FITSReader();
 
-   virtual ~FITSReader()
+   FITSReader( const FITSReader& ) = delete;
+   FITSReader& operator =( const FITSReader& ) = delete;
+
+   virtual ~FITSReader();
+
+   /*!
+    * Returns true iff this input stream is open.
+    */
+   bool IsOpen() const;
+
+   /*!
+    * Closes this input stream and destroys all internal working structures.
+    */
+   void Close();
+
+   /*!
+    * Opens an existing file at the specified \a path.
+    */
+   void Open( const String& path );
+
+   /*!
+    * Returns the number of images available in this input stream.
+    */
+   size_type NumberOfImages() const
    {
-      Close(); // in case MSVC fails
+      return m_images.Length();
    }
 
-   virtual bool IsOpen() const;
+   /*!
+    * Sets the current image index in this input stream.
+    */
+   void SetIndex( int i )
+   {
+      m_index = m_images.IsEmpty() ? 0 : Range( i, 0, int( NumberOfImages() ) - 1 );
+   }
 
-   virtual void Close();
+   /*!
+    * Returns the current image index in this input stream.
+    */
+   int Index() const
+   {
+      return m_index;
+   }
 
-   virtual void Open( const String& filePath );
+   /*!
+    * Returns a reference to the immutable basic image data structure for the
+    * current image in this input stream.
+    */
+   const ImageInfo& Info() const
+   {
+      if ( m_images.IsEmpty() )
+         throw NoImageAvailable( m_path );
+      return m_images[m_index].info;
+   }
+
+   /*!
+    * Returns a reference to an immutable format-independent options structure
+    * corresponding to the current image in this input stream.
+    */
+   const ImageOptions& Options() const
+   {
+      if ( m_images.IsEmpty() )
+         throw NoImageAvailable( m_path );
+      return m_images[m_index].options;
+   }
+
+   /*!
+    * Sets a new set of format-independent options for the current image in
+    * this input stream.
+    *
+    * You should only call this function \e before any image read operation,
+    * and only options that modify the reading behavior of the stream will be
+    * taken into account. Not all image formats can use all reading options
+    * available, so any call to this function can be simply ignored by an
+    * instance of a derived class.
+    */
+   void SetOptions( const ImageOptions& options )
+   {
+      if ( m_images.IsEmpty() )
+         throw NoImageAvailable( m_path );
+      m_images[m_index].options = options;
+   }
+
+   /*!
+    * Returns the identifier of the current image in this input stream.
+    *
+    * Not all image formats support image identifiers. If no identifier is
+    * available, this function returns an empty string.
+    */
+   IsoString Id() const
+   {
+      if ( m_images.IsEmpty() )
+         throw NoImageAvailable( m_path );
+      return m_images[m_index].id;
+   }
 
    /*
     * Returns a reference to the immutable FITS-specific options of the current
@@ -279,14 +381,17 @@ public:
 
    /*
     * Sets new FITS-specific options for the current image in this FITS input
-    * stream. If you change options, you should do that \e before reading the
+    * stream. If you change options, you should do that *before* reading the
     * next image from this FITS file.
     */
    void SetFITSOptions( const FITSImageOptions& );
 
-   virtual bool Extract( FITSKeywordArray& );
-   virtual bool Extract( ICCProfile& icc );
-   virtual bool Extract( UInt8Image& thumbnail );
+   /*
+    * Embedded data.
+    */
+   ICCProfile ReadICCProfile();
+   UInt8Image ReadThumbnail();
+   FITSKeywordArray ReadFITSKeywords();
 
    /*
     * Extracts a FITS extension with the specified name.
@@ -294,7 +399,7 @@ public:
     * Returns true if the specified extension exists. In such case, a copy of
     * the extension's data is stored in the specified ByteArray container.
     */
-   bool Extract( ByteArray& data, const IsoString& name );
+   bool ReadBLOB( ByteArray& data, const IsoString& name );
 
    /*
     * Returns a list of data extensions in this FITS file.
@@ -304,33 +409,26 @@ public:
    /*
     * Image reading
     */
-   virtual void ReadImage( FImage& img );
-   virtual void ReadImage( DImage& img );
-   virtual void ReadImage( UInt8Image& img );
-   virtual void ReadImage( UInt16Image& img );
-   virtual void ReadImage( UInt32Image& img );
-
-   virtual void ReadImage( ImageVariant& v )
-   {
-      ImageReader::ReadImage( v );
-   }
+   void ReadImage( FImage& img );
+   void ReadImage( DImage& img );
+   void ReadImage( UInt8Image& img );
+   void ReadImage( UInt16Image& img );
+   void ReadImage( UInt32Image& img );
 
    /*
     * Incremental reading
     */
-   virtual void Read( FImage::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Read( DImage::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Read( UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Read( UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Read( UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
+   void ReadSamples( FImage::sample* buffer, int startRow, int rowCount, int channel );
+   void ReadSamples( DImage::sample* buffer, int startRow, int rowCount, int channel );
+   void ReadSamples( UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
+   void ReadSamples( UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
+   void ReadSamples( UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
 
 private:
 
-   FITSReaderData* data = nullptr;
-
-   // Image streams are unique
-   FITSReader( const FITSReader& ) = delete;
-   FITSReader& operator =( const FITSReader& ) = delete;
+   ImageDescriptionArray       m_images;
+   int                         m_index;  // current image index
+   AutoPointer<FITSReaderData> m_data;
 
    friend class FITSReaderPrivate;
 };
@@ -340,26 +438,73 @@ private:
 /*
  * FITS image file writer
  */
-class FITSWriter : public ImageWriter, public FITS
+class FITSWriter : public FITS
 {
 public:
 
-   FITSWriter() = default;
+   FITSWriter();
 
-   virtual ~FITSWriter()
+   FITSWriter( const FITSWriter& ) = delete;
+   FITSWriter& operator =( const FITSWriter& ) = delete;
+
+   virtual ~FITSWriter();
+
+   /*!
+    * Returns true iff this stream is open.
+    */
+   bool IsOpen() const;
+
+   /*!
+    * Closes this output stream and destroys all internal working structures.
+    */
+   void Close();
+
+   /*!
+    * Creates a new file for writing at the specified \a path, and prepares for
+    * subsequent \a count image write and data embedding operations.
+    */
+   void Create( const String& path, int count );
+
+   /*!
+    * Returns a reference to a format-independent options structure
+    * corresponding to the next image that will be written by this output
+    * stream.
+    */
+   const ImageOptions& Options() const
    {
-      Close(); // in case MSVC fails
+      return m_options;
    }
 
-   virtual bool IsOpen() const;
-
-   virtual void Close();
-
-   virtual void Create( const String& filePath, int count );
-
-   virtual void Create( const String& filePath )
+   /*!
+    * Sets a new set of format-independent options for the next image written
+    * by this output stream.
+    *
+    * Only options that modify the writing behavior of the stream will be taken
+    * into account. Not all image formats can use all output options available,
+    * so any call to this function can be simply ignored by an instance of a
+    * derived class.
+    */
+   void SetOptions( const ImageOptions& options )
    {
-      Create( filePath, 1 );
+      m_options = options;
+   }
+
+   /*!
+    * Sets the identifier of the current image (that is, of the next image that
+    * will be written) in this output stream.
+    */
+   void SetId( const IsoString& identifier )
+   {
+      m_id = identifier.Trimmed();
+   }
+
+   /*!
+    * Returns the identifier of the current image (that is, of the next image
+    * that will be written) in this output stream.
+    */
+   IsoString Id() const
+   {
+      return m_id;
    }
 
    /*
@@ -378,58 +523,36 @@ public:
    /*
     * Embeddings
     */
-   virtual void Embed( const FITSKeywordArray& );
-   virtual void Embed( const ICCProfile& );
-   virtual void Embed( const UInt8Image& );
+   void WriteICCProfile( const ICCProfile& );
+   void WriteThumbnail( const UInt8Image& );
+   void WriteFITSKeywords( const FITSKeywordArray& );
+
+   const FITSKeywordArray& FITSKeywords() const;
 
    /*
-    * Embeds an arbitrary FITS extension with the specified data and name.
+    * Writes a FITS extension with the specified name.
     */
-   void Embed( const ByteArray& extData, const IsoString& extName );
-
-   /*
-    * Returns a reference to the list of embedded FITS keywords. The returned
-    * list is empty if no keywords have been embedded in this FITSWriter
-    * object, or if an empty set has been embedded.
-    */
-   const FITSKeywordArray& EmbeddedKeywords() const;
-
-   /*
-    * Returns a pointer to the embedded ICC profile. Returns a zero pointer if
-    * no ICC profile has been embedded in this FITSWriter object.
-    */
-   const ICCProfile* EmbeddedICCProfile() const;
-
-   /*
-    * Returns a pointer to the embedded thumbnail image. Returns a zero pointer
-    * if no thumbnail has been embedded in this FITSWriter object.
-    */
-   const UInt8Image* EmbeddedThumbnail() const;
+   void WriteBLOB( const ByteArray& extData, const IsoString& extName );
 
    /*
     * Image writing
     */
-   virtual void WriteImage( const FImage& );
-   virtual void WriteImage( const DImage& );
-   virtual void WriteImage( const UInt8Image& );
-   virtual void WriteImage( const UInt16Image& );
-   virtual void WriteImage( const UInt32Image& );
-
-   virtual void WriteImage( const ImageVariant& v )
-   {
-      ImageWriter::WriteImage( v );
-   }
+   void WriteImage( const FImage& );
+   void WriteImage( const DImage& );
+   void WriteImage( const UInt8Image& );
+   void WriteImage( const UInt16Image& );
+   void WriteImage( const UInt32Image& );
 
    /*
     * Incremental writing
     */
-   virtual void CreateImage( const ImageInfo& );
-
-   virtual void Write( const FImage::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Write( const DImage::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Write( const UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Write( const UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Write( const UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
+   void CreateImage( const ImageInfo& );
+   void WriteSamples( const FImage::sample* buffer, int startRow, int rowCount, int channel );
+   void WriteSamples( const DImage::sample* buffer, int startRow, int rowCount, int channel );
+   void WriteSamples( const UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
+   void WriteSamples( const UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
+   void WriteSamples( const UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
+   void CloseImage();
 
    void Reset()
    {
@@ -438,14 +561,11 @@ public:
 
 private:
 
-   FITSWriterData* data = nullptr;
+   ImageOptions                m_options; // format-independent options for the next image
+   IsoString                   m_id;      // identifier for the next image
+   AutoPointer<FITSWriterData> m_data;
 
    void WriteExtensionHDU( const FITSExtensionData& );
-   void CloseImage();
-
-   // Image streams are unique.
-   FITSWriter( const FITSWriter& ) = delete;
-   FITSWriter& operator =( const FITSWriter& ) = delete;
 
    friend class FITSWriterPrivate;
 };
@@ -457,4 +577,4 @@ private:
 #endif   // __PCL_FITS_h
 
 // ----------------------------------------------------------------------------
-// EOF FITS.h - Released 2016/02/21 20:22:34 UTC
+// EOF FITS.h - Released 2017-05-02T09:42:51Z

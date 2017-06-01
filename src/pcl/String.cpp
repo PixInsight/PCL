@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/String.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/String.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,6 +58,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <time.h>
 #include <errno.h>
 
 /*
@@ -2283,7 +2284,65 @@ IsoString IsoString::ToISO8601DateTime( int year, int month, int day, double day
 
 // ----------------------------------------------------------------------------
 
+template <class T> static
+T CurrentUTCISO8601DateTime( const ISO8601ConversionOptions& options )
+{
+   time_t now = ::time( nullptr );
+   tm ut;
+   {
+      static Mutex mutex;
+      volatile AutoLock lock( mutex );
+      ut = *::gmtime( &now );
+   }
+   return T::ToISO8601DateTime( ut.tm_year+1900, ut.tm_mon+1, ut.tm_mday,
+                                (ut.tm_hour + (ut.tm_min + ut.tm_sec/60.0)/60)/24/*dayf*/,
+                                0/*tz*/,
+                                options );
+}
+
+String String::CurrentUTCISO8601DateTime( const ISO8601ConversionOptions& options )
+{
+   return pcl::CurrentUTCISO8601DateTime<String>( options );
+}
+
+IsoString IsoString::CurrentUTCISO8601DateTime( const ISO8601ConversionOptions& options )
+{
+   return pcl::CurrentUTCISO8601DateTime<IsoString>( options );
+}
+
+
+// ----------------------------------------------------------------------------
+
+template <class T> static
+T CurrentLocalISO8601DateTime( const ISO8601ConversionOptions& options )
+{
+   time_t now = ::time( nullptr );
+   tm ut, lt;
+   {
+      static Mutex mutex;
+      volatile AutoLock lock( mutex );
+      ut = *::gmtime( &now );
+      lt = *::localtime( &now );
+   }
+   return T::ToISO8601DateTime( lt.tm_year+1900, lt.tm_mon+1, lt.tm_mday,
+                                (lt.tm_hour + (lt.tm_min + lt.tm_sec/60.0)/60)/24/*dayf*/,
+                                ::difftime( ::mktime( &lt ), ::mktime( &ut ) )/3600/*tz*/,
+                                options );
+}
+
+String String::CurrentLocalISO8601DateTime( const ISO8601ConversionOptions& options )
+{
+   return pcl::CurrentLocalISO8601DateTime<String>( options );
+}
+
+IsoString IsoString::CurrentLocalISO8601DateTime( const ISO8601ConversionOptions& options )
+{
+   return pcl::CurrentLocalISO8601DateTime<IsoString>( options );
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/String.cpp - Released 2017-05-28T08:29:05Z

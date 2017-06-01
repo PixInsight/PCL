@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Bitmap.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Bitmap.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,29 +56,13 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_UIObject_h
-#include <pcl/UIObject.h>
-#endif
-
-#ifndef __PCL_Rectangle_h
-#include <pcl/Rectangle.h>
-#endif
-
-#ifndef __PCL_Color_h
 #include <pcl/Color.h>
-#endif
-
-#ifndef __PCL_String_h
-#include <pcl/String.h>
-#endif
-
-#ifndef __PCL_ImageRenderingModes_h
 #include <pcl/ImageRenderingModes.h>
-#endif
+#include <pcl/Rectangle.h>
+#include <pcl/String.h>
+#include <pcl/UIObject.h>
 
 #endif   // __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
@@ -88,7 +72,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace BitmapFormat
+ * \namespace pcl::BitmapFormat
  * \brief Bitmap pixel value interpretation modes.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -1409,4 +1393,4 @@ private:
 #endif   // __PCL_Bitmap_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Bitmap.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Bitmap.h - Released 2017-05-28T08:28:50Z

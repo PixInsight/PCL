@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0352
+// Standard Image Process Module Version 01.02.09.0371
 // ----------------------------------------------------------------------------
-// NewImageInterface.h - Released 2016/02/21 20:22:43 UTC
+// NewImageInterface.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,17 +53,16 @@
 #ifndef __NewImageInterface_h
 #define __NewImageInterface_h
 
-#include <pcl/ProcessInterface.h>
-
-#include <pcl/Sizer.h>
-#include <pcl/Label.h>
-#include <pcl/Edit.h>
-#include <pcl/RadioButton.h>
-#include <pcl/PushButton.h>
-#include <pcl/SpinBox.h>
 #include <pcl/ComboBox.h>
-#include <pcl/NumericControl.h>
+#include <pcl/Edit.h>
 #include <pcl/GroupBox.h>
+#include <pcl/Label.h>
+#include <pcl/NumericControl.h>
+#include <pcl/ProcessInterface.h>
+#include <pcl/PushButton.h>
+#include <pcl/RadioButton.h>
+#include <pcl/Sizer.h>
+#include <pcl/SpinBox.h>
 
 #include "NewImageInstance.h"
 
@@ -136,7 +135,7 @@ private:
             VerticalSizer     GeometryMiddle_Sizer;
                Label             SizeInfo_Label;
             VerticalSizer     GeometryRight_Sizer;
-               PushButton        SetToActiveImage_Button;
+               PushButton        SetAsActiveImage_Button;
          GroupBox          InitialValues_GroupBox;
          HorizontalSizer   InitialValues_Sizer;
             VerticalSizer     InitialValuesLeft_Sizer;
@@ -147,21 +146,24 @@ private:
             Control           ColorSample_Control;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
    void UpdateInitialValue( Edit&, Slider&, double );
    void UpdateSizeInfo();
 
-   // Event Handlers
    void __Identifier_GetFocus( Control& sender );
    void __Identifier_EditCompleted( Edit& sender );
    void __SampleFormat_ItemSelected( ComboBox& sender, int itemIndex );
    void __ColorSpace_Click( Button& sender, bool checked );
    void __Geometry_ValueUpdated( SpinBox& sender, int value );
-   void __SetToActiveImage_Click( Button& sender, bool checked );
+   void __SetAsActiveImage_Click( Button& sender, bool checked );
    void __InitialValue_ValueUpdated( NumericEdit& sender, double value );
    void __ColorSample_Paint( Control& sender, const Rect& updateRect );
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
+
+   void SetAsImage( const ImageWindow& );
 
    friend struct GUIData;
 };
@@ -179,4 +181,4 @@ PCL_END_LOCAL
 #endif   // __NewImageInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF NewImageInterface.h - Released 2016/02/21 20:22:43 UTC
+// EOF NewImageInterface.h - Released 2017-05-02T09:43:00Z

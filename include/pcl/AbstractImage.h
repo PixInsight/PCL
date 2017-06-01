@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/AbstractImage.h - Released 2016/02/21 20:22:12 UTC
+// pcl/AbstractImage.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,41 +54,16 @@
 
 /// \file pcl/AbstractImage.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_ImageGeometry_h
-#include <pcl/ImageGeometry.h>
-#endif
-
-#ifndef __PCL_ImageColor_h
-#include <pcl/ImageColor.h>
-#endif
-
-#ifndef __PCL_ImageSelections_h
-#include <pcl/ImageSelections.h>
-#endif
-
-#ifndef __PCL_Array_h
 #include <pcl/Array.h>
-#endif
-
-#ifndef __PCL_ReferenceArray_h
-#include <pcl/ReferenceArray.h>
-#endif
-
-#ifndef __PCL_StatusMonitor_h
-#include <pcl/StatusMonitor.h>
-#endif
-
-#ifndef __PCL_Thread_h
-#include <pcl/Thread.h>
-#endif
-
-#ifndef __PCL_Mutex_h
+#include <pcl/ImageColor.h>
+#include <pcl/ImageGeometry.h>
+#include <pcl/ImageSelections.h>
 #include <pcl/Mutex.h>
-#endif
+#include <pcl/ReferenceArray.h>
+#include <pcl/StatusMonitor.h>
+#include <pcl/Thread.h>
 
 #ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 namespace pi
@@ -126,8 +101,9 @@ namespace pcl
  * rectangular selection (also known as <em>region of interest</em>, or ROI), a
  * channel range, and an anchor point. Image selections can be stored in a
  * local stack for quick retrieval (see PushSelections() and PopSelections()).
- * Note that image selections are implemented as \c mutable data members, so
- * modifying selections is possible for unmodifiable %AbstractImage instances.
+ * Note that for practical reasons, image selections have been implemented as
+ * \c mutable data members internally, so modifying selections is possible for
+ * immutable %AbstractImage instances.
  *
  * Finally, %AbstractImage provides function and data members to manage status
  * monitoring of images. The status monitoring mechanism can be used to provide
@@ -979,17 +955,16 @@ public:
     */
    struct ThreadData
    {
-              StatusMonitor status; //!< %Status monitoring object.
-      mutable Mutex         mutex;  //!< Mutual exclusion for synchronized thread access.
-      mutable size_type     count;  //!< current monitoring count.
-              size_type     total;  //!< Total monitoring count.
+      mutable StatusMonitor status;         //!< %Status monitoring object.
+      mutable Mutex         mutex;          //!< Mutual exclusion for synchronized thread access.
+      mutable size_type     count = 0;      //!< current monitoring count.
+              size_type     total = 0;      //!< Total monitoring count.
+              size_type     numThreads = 0; //!< Number of concurrent threads being executed (set by RunThreads()).
 
       /*!
        * Constructs a default %ThreadData object.
        */
-      ThreadData() : count( 0 ), total( 0 )
-      {
-      }
+      ThreadData() = default;
 
       /*!
        * Constructs a %ThreadData object with a copy of the current status
@@ -1001,7 +976,8 @@ public:
        * function for more information.
        */
       ThreadData( const AbstractImage& image, size_type N ) :
-      status( image.Status() ), count( 0 ), total( N )
+         status( image.Status() ),
+         total( N )
       {
       }
 
@@ -1014,7 +990,8 @@ public:
        * function for more information.
        */
       ThreadData( const StatusMonitor& a_status, size_type N ) :
-      status( a_status ), count( 0 ), total( N )
+         status( a_status ),
+         total( N )
       {
       }
    };
@@ -1027,7 +1004,9 @@ public:
     *                   %ReferenceArray contains pointers to objects and allows
     *                   direct iteration and access by reference. It cannot
     *                   contain null pointers. Each %ReferenceArray element
-    *                   must be an instance of a derived class of Thread.
+    *                   must be an instance of a derived class of Thread, where
+    *                   a reimplemented Thread::Run() member function should
+    *                   perform the required parallel processing.
     *
     * \param data       Reference to a ThreadData object for synchronization.
     *
@@ -1040,32 +1019,46 @@ public:
     *                   of the three conditions above is false, the thread(s)
     *                   will be run without forcing their processor affinities.
     *
-    * This static member function launches the threads in sequence and waits
-    * until all threads have finished execution. While the threads are running,
-    * the \c status member of ThreadData is incremented to perform the process
-    * monitoring task. This also ensures that the graphical interface remains
-    * responsive during the whole process.
+    * When the \a threads array contains more than one thread, this static
+    * member function launches the threads in sequence and waits until all
+    * threads have finished execution. While the threads are running, the
+    * \c status member of ThreadData is incremented regularly to perform the
+    * process monitoring task. This also ensures that the graphical interface
+    * remains responsive during the whole process.
     *
-    * For normal thread execution with maximum performance, the \a useAffinity
-    * parameter should be true, in order to minimize cache invalidations due to
-    * processor reassignments of running threads. However, there are cases
-    * where forcing processor affinities can be counterproductive. An example
-    * is real-time previewing of intensive processes requiring continuous GUI
-    * updates. In these cases, disabling processor affinity can help to keep
-    * the GUI responsive with the required granularity.
+    * When the \a threads array contains just one thread, this member function
+    * simply calls the Thread::Run() member function for the unique thread in
+    * the array, so no additional parallel execution is performed in the
+    * single-threaded case. If the reimplemented Thread::Run() member function
+    * uses standard PCL macros to perform the thread monitoring task (see the
+    * INIT_THREAD_MONITOR() and UPDATE_THREAD_MONITOR() macros), all possible
+    * situations will be handled correctly and automatically.
+    *
+    * For normal execution of multiple concurrent threads with maximum
+    * performance, the \a useAffinity parameter should be true in order to
+    * minimize cache invalidations due to processor reassignments of running
+    * threads. However, there are cases where forcing processor affinities can
+    * be counterproductive. An example is real-time previewing of intensive
+    * processes requiring continuous GUI updates. In these cases, disabling
+    * processor affinity can help to keep the GUI responsive with the required
+    * granularity.
     *
     * The threads can be aborted asynchronously with the standard
     * Thread::Abort() mechanism, or through StatusMonitor/StatusCallback. If
     * one or more threads are aborted, this function destroys all the threads
     * by calling ReferenceArray::Destroy(), and then throws a ProcessAborted
-    * exception. Otherwise, if all threads complete execution normally, the
-    * \a threads array is left intact and the function returns. The caller is
-    * then responsible for destroying the threads, when appropriate.
+    * exception. In the single-threaded case, if the reimplemented
+    * Thread::Run() member function throws an exception, the array is also
+    * destroyed and the exception is thrown. Otherwise, if all threads complete
+    * execution normally, the \a threads array is left intact and the function
+    * returns. The caller is then responsible for destroying the threads when
+    * appropriate.
     *
-    * \warning Do not call this function from a high-priority thread. Doing so
-    * can lead to a significant performance loss because this function will
-    * consume too much processing time just for process monitoring. In general,
-    * you should call this function from normal priority threads.
+    * \warning For parallel execution of two or more threads, do not call this
+    * function from a high-priority thread. Doing so can lead to a significant
+    * performance loss because this function will consume too much processing
+    * time just for process monitoring. In general, you should call this
+    * function from normal priority threads.
     */
    template <class thread>
    static void RunThreads( ReferenceArray<thread>& threads, ThreadData& data, bool useAffinity = true )
@@ -1073,12 +1066,30 @@ public:
       if ( threads.IsEmpty() )
          return;
 
+      data.numThreads = threads.Length();
+      if ( data.numThreads == 1 )
+      {
+         try
+         {
+            threads[0].Run();
+            return;
+         }
+         catch ( ... )
+         {
+            threads.Destroy();
+            throw;
+         }
+      }
+
       if ( useAffinity )
-         if ( threads.Length() == 1 || !Thread::IsRootThread() )
+         if ( !Thread::IsRootThread() )
             useAffinity = false;
 
-      for ( typename ReferenceArray<thread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-         i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
+      {
+         int n = 0;
+         for ( thread& t : threads )
+            t.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+      }
 
       uint32 waitTime = StatusMonitor::RefreshRate() >> 1;
       waitTime += waitTime >> 2; // waitTime = 0.625 * StatusMonitor::RefreshRate()
@@ -1115,10 +1126,10 @@ public:
             catch ( ... )
             {
                data.mutex.Unlock();
-               for ( typename ReferenceArray<thread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-                  i->Abort();
-               for ( typename ReferenceArray<thread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-                  i->Wait();
+               for ( thread& t : threads )
+                  t.Abort();
+               for ( thread& t : threads )
+                  t.Wait();
                threads.Destroy();
                throw ProcessAborted();
             }
@@ -1135,9 +1146,8 @@ protected:
            unsigned        m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT;
 
    AbstractImage() :
-      ImageGeometry(), ImageColor(),
-      m_selected(), m_savedSelections(), m_status(),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      m_parallel( true ),
+      m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
 
@@ -1195,7 +1205,7 @@ protected:
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup thread_monitoring_macros Helper Macros for Synchronized Status
+ * \defgroup thread_monitoring_macros Helper Macros for Synchronized Status&nbsp;\
  * Monitoring of Image Processing Threads
  */
 
@@ -1303,17 +1313,27 @@ protected:
 #define UPDATE_THREAD_MONITOR( N )                    \
    if ( ++___n1___ == (N) )                           \
    {                                                  \
-      if ( this->TryIsAborted() )                     \
-         return;                                      \
-      ___n___ += ___n1___;                            \
+      if ( this->m_data.numThreads > 1 )              \
+      {                                               \
+         if ( this->TryIsAborted() )                  \
+            return;                                   \
+         ___n___ += (N);                              \
+         if ( this->m_data.total > 0 )                \
+            if ( this->m_data.mutex.TryLock() )       \
+            {                                         \
+               this->m_data.count += ___n___;         \
+               this->m_data.mutex.Unlock();           \
+               ___n___ = 0;                           \
+            }                                         \
+      }                                               \
+      else                                            \
+      {                                               \
+         if ( this->m_data.total > 0 )                \
+            this->m_data.status += (N);               \
+         else                                         \
+            ++this->m_data.status;                    \
+      }                                               \
       ___n1___ = 0;                                   \
-      if ( this->m_data.total > 0 )                   \
-         if ( this->m_data.mutex.TryLock() )          \
-         {                                            \
-            this->m_data.count += ___n___;            \
-            this->m_data.mutex.Unlock();              \
-            ___n___ = 0;                              \
-         }                                            \
    }
 
 /*!
@@ -1374,17 +1394,27 @@ protected:
 #define UPDATE_THREAD_MONITOR_CHUNK( N, chunkSize )   \
    if ( (___n1___ += (chunkSize)) == (N) )            \
    {                                                  \
-      if ( this->TryIsAborted() )                     \
-         return;                                      \
-      ___n___ += ___n1___;                            \
+      if ( this->m_data.numThreads > 1 )              \
+      {                                               \
+         if ( this->TryIsAborted() )                  \
+            return;                                   \
+         ___n___ += (N);                              \
+         if ( this->m_data.total > 0 )                \
+            if ( this->m_data.mutex.TryLock() )       \
+            {                                         \
+               this->m_data.count += ___n___;         \
+               this->m_data.mutex.Unlock();           \
+               ___n___ = 0;                           \
+            }                                         \
+      }                                               \
+      else                                            \
+      {                                               \
+         if ( this->m_data.total > 0 )                \
+            this->m_data.status += (N);               \
+         else                                         \
+            ++this->m_data.status;                    \
+      }                                               \
       ___n1___ = 0;                                   \
-      if ( this->m_data.total > 0 )                   \
-         if ( this->m_data.mutex.TryLock() )          \
-         {                                            \
-            this->m_data.count += ___n___;            \
-            this->m_data.mutex.Unlock();              \
-            ___n___ = 0;                              \
-         }                                            \
    }
 
 // ----------------------------------------------------------------------------
@@ -1394,4 +1424,4 @@ protected:
 #endif   // __PCL_AbstractImage_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AbstractImage.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/AbstractImage.h - Released 2017-05-28T08:28:50Z

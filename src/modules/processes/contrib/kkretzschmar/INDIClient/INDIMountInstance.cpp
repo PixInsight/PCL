@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0199
+// Standard INDIClient Process Module Version 01.00.15.0203
 // ----------------------------------------------------------------------------
-// INDIMountInstance.cpp - Released 2016/06/20 17:47:31 UTC
+// INDIMountInstance.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2016 Klaus Kretzschmar
+// Copyright (c) 2014-2017 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -173,7 +173,6 @@ bool INDIMountInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) co
       }
    }
 
-   whyNot.Clear();
    return true;
 }
 
@@ -184,7 +183,6 @@ bool INDIMountInstance::IsHistoryUpdater( const View& ) const
 
 bool INDIMountInstance::CanExecuteGlobal( pcl::String& whyNot ) const
 {
-   whyNot.Clear();
    return true;
 }
 
@@ -1063,4 +1061,4 @@ void AbstractINDIMountExecution::Abort()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInstance.cpp - Released 2016/06/20 17:47:31 UTC
+// EOF INDIMountInstance.cpp - Released 2017-05-02T09:43:01Z

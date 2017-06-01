@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0199
+// Standard INDIClient Process Module Version 01.00.15.0203
 // ----------------------------------------------------------------------------
-// INDIMountInterface.h - Released 2016/06/20 17:47:31 UTC
+// INDIMountInterface.h - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2016 Klaus Kretzschmar
+// Copyright (c) 2014-2017 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -333,6 +333,7 @@ public:
  private:
 
    String                       m_device;
+
    INDIMountInterfaceExecution* m_execution              = nullptr;
    CoordinateSearchDialog*      m_searchDialog           = nullptr;
    SyncDataListDialog*          m_syncDataListDialog     = nullptr;
@@ -456,7 +457,7 @@ public:
       void getAlignmentConfigParamter(int32& configParam);
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    double m_geoLatitude  = 0;
    double m_geoLongitude = 0;
@@ -491,4 +492,4 @@ PCL_END_LOCAL
 #endif   // __INDIMountInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInterface.h - Released 2016/06/20 17:47:31 UTC
+// EOF INDIMountInterface.h - Released 2017-05-02T09:43:01Z

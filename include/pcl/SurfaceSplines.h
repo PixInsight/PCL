@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/SurfaceSplines.h - Released 2016/02/21 20:22:12 UTC
+// pcl/SurfaceSplines.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -71,119 +71,6 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \class SerializableSurfaceSpline
- * \brief An interpolating/approximating two-dimensional surface spline
- *        serializable as drizzle data (.drz format)
- */
-template <typename T>
-class SerializableSurfaceSpline : public SurfaceSpline<T>
-{
-public:
-
-   /*!
-    * Represents a vector of coordinates or spline coefficients.
-    */
-   typedef typename SurfaceSpline<T>::vector_type  vector_type;
-
-   /*!
-    * Default constructor.
-    */
-   SerializableSurfaceSpline() = default;
-
-   /*!
-    * Constructor from base class.
-    */
-   SerializableSurfaceSpline( const SurfaceSpline<T>& S ) :
-      SurfaceSpline<T>( S )
-   {
-   }
-
-   /*!
-    * Virtual destructor.
-    */
-   virtual ~SerializableSurfaceSpline()
-   {
-   }
-
-   /*!
-    * Copy assignment from base class. Returns a reference to this object.
-    */
-   SerializableSurfaceSpline& operator =( const SurfaceSpline<T>& S )
-   {
-      return SurfaceSpline<T>::operator =( S );
-   }
-
-   /*!
-    * Serializes this spline as drizzle integration data in .drz plain text
-    * format.
-    *
-    * The generated data will be appended to the specified file, which must
-    * allow write access, and will contain all node coordinates, node weights
-    * (for an approximating spline only), reference coordinates, and spline
-    * coefficients.
-    */
-   void ToDrizzleData( File& f ) const
-   {
-      if ( this->IsValid() )
-      {
-         f.OutText( "x{" );
-         for ( int i = 0, n = this->m_x.Length()-1; ; )
-         {
-            f.OutText( IsoString().Format( "%.16g,", this->m_x[i] ) );
-            if ( ++i == n )
-            {
-               f.OutText( IsoString().Format( "%.16g}", this->m_x[n] ) );
-               break;
-            }
-         }
-         f.OutText( "y{" );
-         for ( int i = 0, n = this->m_y.Length()-1; ; )
-         {
-            f.OutText( IsoString().Format( "%.16g,", this->m_y[i] ) );
-            if ( ++i == n )
-            {
-               f.OutText( IsoString().Format( "%.16g}", this->m_y[n] ) );
-               break;
-            }
-         }
-         f.OutText( IsoString().Format( "r0{%.16g}", this->m_r0 ) );
-         f.OutText( IsoString().Format( "x0{%.16g}", this->m_x0 ) );
-         f.OutText( IsoString().Format( "y0{%.16g}", this->m_y0 ) );
-         f.OutText( IsoString().Format( "m{%d}", this->m_order ) );
-         f.OutText( IsoString().Format( "r{%.8g}", this->m_smoothing ) );
-         if ( this->m_smoothing > 0 )
-            if ( !this->m_weights.IsEmpty() )
-            {
-               f.OutText( "w{" );
-               for ( int i = 0, n = this->m_weights.Length()-1; ; )
-               {
-                  f.OutText( IsoString().Format( "%.8g,", this->m_weights[i] ) );
-                  if ( ++i == n )
-                  {
-                     f.OutText( IsoString().Format( "%.8g}", this->m_weights[n] ) );
-                     break;
-                  }
-               }
-            }
-         f.OutText( "s{" );
-         for ( int i = 0, n = this->m_spline.Length()-1; ; )
-         {
-            f.OutText( IsoString().Format( "%.16g,", this->m_spline[i] ) );
-            if ( ++i == n )
-            {
-               f.OutText( IsoString().Format( "%.16g}", this->m_spline[n] ) );
-               break;
-            }
-         }
-      }
-   }
-
-   friend class DrizzleSplineDecoder;
-};
-
-// ----------------------------------------------------------------------------
-
-/*!
  * \class PointSurfaceSpline
  * \brief Vector surface spline interpolation/approximation in two dimensions
  *
@@ -194,7 +81,7 @@ public:
  * respectively, of an interpolation point. In addition, the scalar types of
  * the x and y point members must support conversion to double semantics.
  */
-template <class P = FPoint>
+template <class P = DPoint>
 class PointSurfaceSpline
 {
 public:
@@ -202,17 +89,17 @@ public:
    /*!
     * Represents an interpolation point in two dimensions.
     */
-   typedef P                                 point;
+   typedef P                     point;
 
    /*!
     * Represents a sequence of interpolation points.
     */
-   typedef Array<point>                      point_list;
+   typedef Array<point>          point_list;
 
    /*!
     * Represents a coordinate interpolating/approximating surface spline.
     */
-   typedef SerializableSurfaceSpline<double> spline;
+   typedef SurfaceSpline<double> spline;
 
    /*!
     * Default constructor. Yields an empty instance that cannot be used without
@@ -398,27 +285,6 @@ public:
    }
 
    /*!
-    * Serializes this point spline as drizzle integration data in .drz plain
-    * text format.
-    *
-    * The generated data will be appended to the specified file, which must
-    * allow write access, and will contain all node coordinates, node weights
-    * (for an approximating spline only), reference coordinates, and spline
-    * coefficients in the X and Y directions.
-    */
-   void ToDrizzleData( File& f ) const
-   {
-      if ( IsValid() )
-      {
-         f.OutText( "Sx{" );
-         m_Sx.ToDrizzleData( f );
-         f.OutText( "}Sy{" );
-         m_Sy.ToDrizzleData( f );
-         f.OutText( "}" );
-      }
-   }
-
-   /*!
     * Returns an interpolated point at the specified coordinates.
     */
    template <typename T>
@@ -438,8 +304,9 @@ public:
 
 private:
 
-   spline m_Sx, m_Sy;   // the surface splines in the X and Y directions.
+   spline m_Sx, m_Sy; // the surface splines in the X and Y plane directions.
 
+   friend class DrizzleData;
    friend class DrizzleDataDecoder;
 };
 
@@ -540,10 +407,11 @@ public:
          threads.Add( new GridInitializationThread<P>( *this, S,
                                                        i*rowsPerThread,
                                                        (j < numberOfThreads) ? j*rowsPerThread : rows ) );
-      for ( int i = 0; i < numberOfThreads; ++i )
-         threads[i].Start( ThreadPriority::DefaultMax, i );
-      for ( int i = 0; i < numberOfThreads; ++i )
-         threads[i].Wait();
+      int n = 0;
+      for ( GridInitializationThread<P>& thread : threads )
+         thread.Start( ThreadPriority::DefaultMax, n++ );
+      for ( GridInitializationThread<P>& thread : threads )
+         thread.Wait();
       threads.Destroy();
 
       m_Ix.Initialize( m_Gx.Begin(), cols, rows );
@@ -633,7 +501,12 @@ public:
 
 private:
 
-   typedef BicubicSplineInterpolation<double> grid_interpolation;
+   /*!
+    * N.B.: Here we need a smooth interpolation function without negative
+    * lobes, in order to prevent small-scale oscillations. Other options are
+    * BilinearInterpolation and CubicBSplineFilter.
+    */
+   typedef BicubicBSplineInterpolation<double> grid_interpolation;
 
    Rect               m_rect;
    int                m_delta;
@@ -674,9 +547,238 @@ private:
 
 // ----------------------------------------------------------------------------
 
+/*!
+ * \class GridInterpolation
+ * \brief Discretized scalar surface spline interpolation/approximation in two
+ *        dimensions
+ *
+ * This class performs the same tasks as SurfaceSpline, but allows for much
+ * faster interpolation (maybe orders of magnitude faster, depending on
+ * interpolation vector lengths) with negligible accuracy loss in most
+ * practical applications.
+ */
+class GridInterpolation
+{
+public:
+
+   /*!
+    * Default constructor. Yields an empty instance that cannot be used without
+    * initialization.
+    */
+   GridInterpolation() : m_parallel( true )
+   {
+   }
+
+   /*!
+    * Copy constructor.
+    */
+   GridInterpolation( const GridInterpolation& ) = default;
+
+   /*!
+    * Move constructor.
+    */
+#ifndef _MSC_VER
+   GridInterpolation( GridInterpolation&& ) = default;
+#endif
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
+    */
+   GridInterpolation& operator =( const GridInterpolation& ) = default;
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+#ifndef _MSC_VER
+   GridInterpolation& operator =( GridInterpolation&& ) = default;
+#endif
+
+   /*!
+    * Initializes this %GridInterpolation object for the specified input data
+    * and interpolation parameters.
+    *
+    * \param rect    Reference rectangle. Interpolation will be initialized
+    *                within the boundaries of this rectangle at discrete
+    *                \a delta coordinate intervals.
+    *
+    * \param delta   Grid distance for calculation of discrete function values.
+    *                Must be > 0.
+    *
+    * \param S       Reference to a SurfaceSpline object that will be used as
+    *                the underlying interpolation to compute interpolation
+    *                values at discrete coordinate intervals. This object must
+    *                be previously initialized and must be valid.
+    *
+    * \param verbose If true, this function will write information to the
+    *                standard PixInsight console to provide some feedback to
+    *                the user during the (potentially long) initialization
+    *                process. If false, no feedback will be provided.
+    *
+    * If parallel processing is allowed for this object, this function executes
+    * the interpolation initialization process using multiple concurrent
+    * threads (see EnableParallelProcessing()).
+    */
+   template <typename T>
+   void Initialize( const Rect& rect, int delta, const SurfaceSpline<T>& S, bool verbose = true )
+   {
+      m_rect = rect;
+      m_delta = delta;
+
+      int w = rect.Width();
+      int h = rect.Height();
+      int rows = 1 + h/m_delta + ((h%m_delta) ? 1 : 0);
+      int cols = 1 + w/m_delta + ((w%m_delta) ? 1 : 0);
+
+      m_G = DMatrix( rows, cols );
+
+      if ( verbose )
+         Console().WriteLn( "<end><cbr>Building 2D surface interpolation grid...<flush>" );
+
+      int numberOfThreads = m_parallel ? Thread::NumberOfThreads( rows, 1 ) : 1;
+      int rowsPerThread = rows/numberOfThreads;
+      ReferenceArray<GridInitializationThread<T> > threads;
+      for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
+         threads.Add( new GridInitializationThread<T>( *this, S,
+                                                       i*rowsPerThread,
+                                                       (j < numberOfThreads) ? j*rowsPerThread : rows ) );
+      int n = 0;
+      for ( GridInitializationThread<T>& thread : threads )
+         thread.Start( ThreadPriority::DefaultMax, n++ );
+      for ( GridInitializationThread<T>& thread : threads )
+         thread.Wait();
+      threads.Destroy();
+
+      m_I.Initialize( m_G.Begin(), cols, rows );
+   }
+
+   /*!
+    * Returns true iff this is a valid, initialized object ready for
+    * interpolation.
+    */
+   bool IsValid() const
+   {
+      return !m_G.IsEmpty();
+   }
+
+   /*!
+    * Returns the current interpolation reference rectangle. See Initialize()
+    * for more information.
+    */
+   const Rect& ReferenceRect() const
+   {
+      return m_rect;
+   }
+
+   /*!
+    * Returns the current grid distance for calculation of discrete function
+    * values. See Initialize() for more information.
+    */
+   int Delta() const
+   {
+      return m_delta;
+   }
+
+   /*!
+    * Returns an interpolated function value at the specified coordinates.
+    */
+   template <typename T>
+   double operator ()( T x, T y ) const
+   {
+      double fx = (double( x ) - m_rect.x0)/m_delta;
+      double fy = (double( y ) - m_rect.y0)/m_delta;
+      return m_I( fx, fy );
+   }
+
+   /*!
+    * Returns an interpolated function value at \a p.x and \a p.y coordinates.
+    */
+   template <typename T>
+   double operator ()( const GenericPoint<T>& p ) const
+   {
+      return operator ()( p.x, p.y );
+   }
+
+   /*!
+    * Returns true iff this object is allowed to use multiple parallel
+    * execution threads (when multiple threads are permitted and available).
+    */
+   bool IsParallelProcessingEnabled() const
+   {
+      return m_parallel;
+   }
+
+   /*!
+    * Enables parallel processing for this instance.
+    *
+    * \param enable  Whether to enable or disable parallel processing. True by
+    *                default.
+    *
+    * Parallel processing is applied during the interpolation initialization
+    * process (see the Initialize() member function).
+    */
+   void EnableParallelProcessing( bool enable ) // ### TODO: Add a maxProcessors parameter
+   {
+      m_parallel = enable;
+   }
+
+   /*!
+    * Disables parallel processing for this instance.
+    *
+    * This is a convenience function, equivalent to:
+    * EnableParallelProcessing( !disable )
+    */
+   void DisableParallelProcessing( bool disable )
+   {
+      EnableParallelProcessing( !disable );
+   }
+
+private:
+
+   /*!
+    * N.B.: Here we need a smooth interpolation function without negative
+    * lobes, in order to prevent small-scale oscillations. Other options are
+    * BilinearInterpolation and CubicBSplineFilter.
+    */
+   typedef BicubicBSplineInterpolation<double> grid_interpolation;
+
+   Rect               m_rect;
+   int                m_delta;
+   DMatrix            m_G;
+   grid_interpolation m_I;
+   bool               m_parallel : 1;
+
+   template <typename T>
+   class GridInitializationThread : public Thread
+   {
+   public:
+
+      typedef SurfaceSpline<T> scalar_interpolation;
+
+      GridInitializationThread( GridInterpolation& grid, const scalar_interpolation& splines, int startRow, int endRow ) :
+         m_grid( grid ), m_splines( splines ), m_startRow( startRow ), m_endRow( endRow )
+      {
+      }
+
+      virtual PCL_HOT_FUNCTION void Run()
+      {
+         for ( int i = m_startRow; i < m_endRow; ++i )
+            for ( int j = 0, dx = 0, y = m_grid.m_rect.y0 + i*m_grid.m_delta; j < m_grid.m_G.Cols(); ++j, dx += m_grid.m_delta )
+               m_grid.m_G[i][j] = m_splines( m_grid.m_rect.x0 + dx, y );
+      }
+
+   private:
+
+      GridInterpolation&          m_grid;
+      const scalar_interpolation& m_splines;
+      int                         m_startRow, m_endRow;
+   };
+};
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 #endif   // __PCL_SurfaceSplines_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SurfaceSplines.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/SurfaceSplines.h - Released 2017-05-28T08:28:50Z

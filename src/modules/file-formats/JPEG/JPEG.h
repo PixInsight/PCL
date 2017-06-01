@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard JPEG File Format Module Version 01.00.03.0295
+// Standard JPEG File Format Module Version 01.00.04.0316
 // ----------------------------------------------------------------------------
-// JPEG.h - Released 2016/02/21 20:22:34 UTC
+// JPEG.h - Released 2017-05-02T09:42:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,12 +57,24 @@
 #include <pcl/Defs.h>
 #endif
 
-#ifndef __PCL_ImageStream_h
-#include <pcl/ImageStream.h>
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
+#ifndef __PCL_File_h
+#include <pcl/File.h>
 #endif
 
 #ifndef __PCL_ICCProfile_h
 #include <pcl/ICCProfile.h>
+#endif
+
+#ifndef __PCL_Image_h
+#include <pcl/Image.h>
+#endif
+
+#ifndef __PCL_ImageDescription_h
+#include <pcl/ImageDescription.h>
 #endif
 
 namespace pcl
@@ -111,7 +123,8 @@ public:
    bool     JFIFMarker        : 1; // Include JFIF marker
    uint8    JFIFMajorVersion  : 4; // JFIF main version number
    uint8    JFIFMinorVersion  : 4; // JFIF second version number
-   uint32   __rsv2__          : 7; // reserved for future extension --must be zero
+   uint8    verbosity         : 3; // verbosity level: 0 = quiet, > 0 = write console state messages.
+   uint32   __rsv2__          : 4; // reserved for future extension --must be zero
 
    JPEGImageOptions()
    {
@@ -132,6 +145,7 @@ public:
       JFIFMarker       = true;
       JFIFMajorVersion = 1;
       JFIFMinorVersion = 2;
+      verbosity        = 1;
       __rsv2__         = 0;
    }
 };
@@ -195,34 +209,35 @@ public:
    PCL_DECLARE_JPEG_ERROR( InvalidChannelSelection,
                            "Internal error: Invalid channel selection in JPEG write operation" )
 
-   JPEG() = default;
+   JPEG();
 
-   virtual ~JPEG()
-   {
-      CloseStream();
-   }
+   JPEG( const JPEG& ) = delete;
+   JPEG& operator =( const JPEG& ) = delete;
+
+   virtual ~JPEG();
 
    const JPEGImageOptions& JPEGOptions() const
    {
-      return jpegOptions;
+      return m_jpegOptions;
    }
 
-   JPEGImageOptions& JPEGOptions()
+   void SetJPEGOptions( const JPEGImageOptions& options )
    {
-      return jpegOptions;
+      m_jpegOptions = options;
+   }
+
+   String Path() const
+   {
+      return m_path;
    }
 
 protected:
 
-   JPEGImageOptions jpegOptions;
-   JPEGFileData*    fileData = nullptr;
+   String                    m_path;
+   JPEGImageOptions          m_jpegOptions;
+   AutoPointer<JPEGFileData> m_fileData;
 
    void CloseStream(); // ### derived must call base
-
-private:
-
-   JPEG( const JPEG& ) = delete;
-   JPEG& operator =( const JPEG& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -230,49 +245,47 @@ private:
 /*
  * JPEG image file reader
  */
-class JPEGReader : public ImageReader, public JPEG
+class JPEGReader : public JPEG
 {
 public:
 
-   JPEGReader() : ImageReader(), JPEG()
+   JPEGReader() = default;
+
+   JPEGReader( const JPEGReader& ) = delete;
+   JPEGReader& operator =( const JPEGReader& ) = delete;
+
+   virtual ~JPEGReader();
+
+   bool IsOpen() const;
+   void Close();
+   void Open( const String& filePath );
+
+   const ImageInfo& Info() const
    {
-      images.Add( ImageDescription() ); // make room for an image description
+      return m_image.info;
    }
 
-   virtual ~JPEGReader()
+   const ImageOptions& Options() const
    {
+      return m_image.options;
    }
 
-   virtual bool IsOpen() const;
-
-   virtual void Close();
-
-   virtual void Open( const String& filePath );
-
-   virtual void SetIndex( int i )
+   void SetOptions( const ImageOptions& options )
    {
-      if ( i != 0 )
-         throw NotImplemented( *this, "Read multiple images from a JPEG file" );
+      m_image.options = options;
    }
 
-   virtual bool Extract( ICCProfile& icc );
+   ICCProfile ReadICCProfile();
 
-   virtual void ReadImage( FImage& );
-   virtual void ReadImage( DImage& );
-   virtual void ReadImage( UInt8Image& );
-   virtual void ReadImage( UInt16Image& );
-   virtual void ReadImage( UInt32Image& );
-
-   virtual void ReadImage( ImageVariant& v )
-   {
-      ImageReader::ReadImage( v );
-   }
+   void ReadImage( FImage& );
+   void ReadImage( DImage& );
+   void ReadImage( UInt8Image& );
+   void ReadImage( UInt16Image& );
+   void ReadImage( UInt32Image& );
 
 private:
 
-   // Image streams are unique
-   JPEGReader( const JPEGReader& ) = delete;
-   JPEGReader& operator =( const JPEGReader& ) = delete;
+   ImageDescription m_image;
 };
 
 // ----------------------------------------------------------------------------
@@ -280,64 +293,49 @@ private:
 /*
  * JPEG image file writer
  */
-class JPEGWriter : public ImageWriter, public JPEG
+class JPEGWriter : public JPEG
 {
 public:
 
    JPEGWriter() = default;
 
-   virtual ~JPEGWriter()
+   JPEGWriter( const JPEGWriter& ) = delete;
+   JPEGWriter& operator =( const JPEGWriter& ) = delete;
+
+   virtual ~JPEGWriter();
+
+   bool IsOpen() const;
+   void Close();
+   void Create( const String& filePath );
+
+   const ImageOptions& Options() const
    {
+      return m_options;
    }
 
-   virtual bool IsOpen() const;
-
-   virtual void Close();
-
-   virtual void Create( const String& filePath, int count );
-
-   virtual void Create( const String& filePath )
+   void SetOptions( const ImageOptions& options )
    {
-      Create( filePath, 1 );
+      m_options = options;
    }
 
-   virtual void Embed( const ICCProfile& _icc )
-   {
-      icc = _icc;
-   }
+   void WriteICCProfile( const ICCProfile& icc );
 
-   const ICCProfile* EmbeddedICCProfile() const
-   {
-      return &icc;
-   }
-
-   virtual void WriteImage( const FImage& );
-   virtual void WriteImage( const DImage& );
-   virtual void WriteImage( const UInt8Image& );
-   virtual void WriteImage( const UInt16Image& );
-   virtual void WriteImage( const UInt32Image& );
-
-   virtual void WriteImage( const ImageVariant& v )
-   {
-      ImageWriter::WriteImage( v );
-   }
+   void WriteImage( const FImage& );
+   void WriteImage( const DImage& );
+   void WriteImage( const UInt8Image& );
+   void WriteImage( const UInt16Image& );
+   void WriteImage( const UInt32Image& );
 
    void Reset()
    {
       Close();
-      icc.Clear();
+      m_iccProfile.Clear();
    }
 
 protected:
 
-   // Embedded data
-   ICCProfile icc;
-
-private:
-
-   // Image streams are unique
-   JPEGWriter( const JPEGWriter& ) = delete;
-   JPEGWriter& operator =( const JPEGWriter& ) = delete;
+   ImageOptions m_options;
+   ICCProfile   m_iccProfile;
 };
 
 // ----------------------------------------------------------------------------
@@ -347,4 +345,4 @@ private:
 #endif   // __PCL_JPEG_h
 
 // ----------------------------------------------------------------------------
-// EOF JPEG.h - Released 2016/02/21 20:22:34 UTC
+// EOF JPEG.h - Released 2017-05-02T09:42:51Z

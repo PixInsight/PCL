@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0328
+// Standard Global Process Module Version 01.02.07.0347
 // ----------------------------------------------------------------------------
-// PreferencesParameters.h - Released 2016/02/21 20:22:42 UTC
+// PreferencesParameters.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,9 +54,9 @@
 #define __PreferencesParameters_h
 
 #include <pcl/Color.h>
-#include <pcl/ImageWindow.h>  // for pcl::BackgroundBrush
+#include <pcl/ImageWindow.h>  // pcl::BackgroundBrush
 #include <pcl/MetaParameter.h>
-#include <pcl/Thread.h>       // for pcl::ThreadPriority
+#include <pcl/Thread.h>       // pcl::ThreadPriority
 
 //
 
@@ -266,11 +266,7 @@ DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  translucentWindows,               t
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  translucentChildWindows,          true )
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  fadeWindows,                      true )
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  fadeAutoHideWindows,              true )
-#ifdef __PCL_MACOSX
-DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  translucentAutoHideWindows,       false )
-#else
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  translucentAutoHideWindows,       true )
-#endif
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  fadeWorkspaces,                   true )
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  fadeMenu,                         true )
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  fadeToolTip,                      true )
@@ -282,6 +278,11 @@ DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  animateCombo,                     t
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  animateToolTip,                   true )
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  animateToolBox,                   true )
 DECLARE_INT32_METAPARAMETER   ( MainWindow,  maxRecentFiles,                   32, 2, 128 )
+DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  showRecentlyUsed,                 true )
+DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  showMostUsed,                     true )
+DECLARE_INT32_METAPARAMETER   ( MainWindow,  maxUsageListLength,               12, 0, 64 )
+DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  expandUsageItemsAtStartup,        true )
+DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  openURLsWithInternalBrowser,      true )
 
 // ----------------------------------------------------------------------------
 
@@ -292,18 +293,10 @@ DECLARE_INT32_METAPARAMETER   ( ImageWindow, defaultTransparencyMode,          T
 DECLARE_DOUBLE_METAPARAMETER  ( ImageWindow, defaultHorizontalResolution,      72.0, 1.0, 10000.0 )
 DECLARE_DOUBLE_METAPARAMETER  ( ImageWindow, defaultVerticalResolution,        72.0, 1.0, 10000.0 )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, defaultMetricResolution,          false )
-DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, defaultEmbedThumbnails,           false )
+DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, defaultEmbedThumbnails,           true )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, defaultEmbedProperties,           true )
 DECLARE_STRING_METAPARAMETER  ( ImageWindow, defaultFileExtension,             ".xisf" )
-#ifdef __PCL_X11
-/*
- * ### FIXME: Native KDE file dialogs are causing problems, especially an
- * ill-posed interaction with ScriptEditor, leading to GUI corruption.
- */
-DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, nativeFileDialogs,                false )
-#else
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, nativeFileDialogs,                true )
-#endif
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, rememberFileOpenType,             false )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, rememberFileSaveType,             true )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, strictFileSaveMode,               true )
@@ -363,6 +356,8 @@ DECLARE_INT32_METAPARAMETER   ( Process, maxConsoleLines,                      1
 DECLARE_INT32_METAPARAMETER   ( Process, consoleDelay,                         750, 0, 60000 )
 DECLARE_INT32_METAPARAMETER   ( Process, autoSavePSMPeriod,                    30, 0, 600 )
 DECLARE_BOOLEAN_METAPARAMETER ( Process, alertOnProcessCompleted,              false )
+DECLARE_BOOLEAN_METAPARAMETER ( Process, enableExecutionStatistics,            true )
+DECLARE_BOOLEAN_METAPARAMETER ( Process, enableLaunchStatistics,               true )
 
 // ----------------------------------------------------------------------------
 
@@ -373,4 +368,4 @@ PCL_END_LOCAL
 #endif   // __PreferencesParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesParameters.h - Released 2016/02/21 20:22:42 UTC
+// EOF PreferencesParameters.h - Released 2017-05-02T09:43:00Z

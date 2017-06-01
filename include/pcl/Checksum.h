@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Checksum.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Checksum.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/Checksum.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_ByteArray_h
 #include <pcl/ByteArray.h>
-#endif
 
 namespace pcl
 {
@@ -72,7 +65,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup checksum_functions_and_classes Checksum Calculation Functions and Classes
+ * \defgroup checksum_functions Checksum Calculation Functions
  */
 
 /*!
@@ -83,12 +76,12 @@ namespace pcl
  * \param data    Address of the first byte in the data sequence.
  * \param length  Length in bytes of the data sequence.
  *
- * \ingroup checksum_functions_and_classes
+ * \ingroup checksum_functions
  * \sa Checksum( const C& )
  */
 size_type PCL_FUNC inline Checksum( const void* data, size_type length )
 {
-   PCL_PRECONDITION( data != 0 )
+   PCL_PRECONDITION( data != nullptr )
    size_type S = 0;
    for ( const uint8* p = (const uint8*)data, * p1 = p+length; p < p1; ++p )
    {
@@ -112,7 +105,7 @@ size_type PCL_FUNC inline Checksum( const void* data, size_type length )
  *                calculated. The checksum number will be generated for the
  *                current data bytes in this container instance.
  *
- * \ingroup checksum_functions_and_classes
+ * \ingroup checksum_functions
  * \sa Checksum( const void*, size_type )
  */
 template <class C> inline
@@ -137,7 +130,7 @@ uint32 Checksum( const C& data )
  * not be changed or removed and no warranty is either expressed or implied by
  * its publication or distribution.</em>
  *
- * \ingroup checksum_functions_and_classes
+ * \ingroup checksum_functions
  * \sa CRC32( const C& )
  */
 uint32 PCL_FUNC CRC32( const void* data, size_type length );
@@ -149,7 +142,7 @@ uint32 PCL_FUNC CRC32( const void* data, size_type length );
  *                calculated. The checksum code will be generated for the
  *                current data bytes in this container instance.
  *
- * \ingroup checksum_functions_and_classes
+ * \ingroup checksum_functions
  * \sa CRC32( const void*, size_type )
  */
 template <class C> inline
@@ -165,4 +158,4 @@ uint32 CRC32( const C& data )
 #endif   // __PCL_Checksum_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Checksum.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Checksum.h - Released 2017-05-28T08:28:50Z

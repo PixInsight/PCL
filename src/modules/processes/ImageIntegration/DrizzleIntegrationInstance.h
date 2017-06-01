@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.14.00.0390
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInstance.h - Released 2016/11/13 17:30:54 UTC
+// DrizzleIntegrationInstance.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -87,14 +87,13 @@ private:
 
    struct DataItem
    {
-      pcl_bool enabled;
+      pcl_bool enabled = true;
       String   path; // drizzle data file
 
-      DataItem( const String& p = String() ) : enabled( true ), path( p )
-      {
-      }
+      DataItem() = default;
+      DataItem( const DataItem& ) = default;
 
-      DataItem( const DataItem& x ) : enabled( x.enabled ), path( x.path )
+      DataItem( const String& path_ ) : path( path_ )
       {
       }
 
@@ -114,6 +113,8 @@ private:
    pcl_enum        p_kernelFunction;       // drop kernel function (square, circular, Gaussian, VariableShape...)
    int32           p_kernelGridSize;       // grid size for double integration of kernel functions
    FPoint          p_origin;               // origin of image registration coordinates in reference image pixels
+   pcl_bool        p_enableCFA;            // work with monochrome input CFA frames to integrate an RGB color image
+   String          p_cfaPattern;           // the CFA pattern, such as "RGGB", "GRBG", etc.
    pcl_bool        p_enableRejection;      // enable pixel rejection
    pcl_bool        p_enableImageWeighting; // enable image weights
    pcl_bool        p_enableSurfaceSplines; // enable registration surface splines
@@ -124,99 +125,46 @@ private:
    pcl_enum        p_onError;              // error policy
 
    /*
-    * Read-only output properties
+    * Read-only output properties.
     */
-
    struct OutputData
    {
-      // General integration data
+      /*
+       * General integration data.
+       */
+      String     integrationImageId;     // identifier of the output drizzle integrated image
+      String     weightImageId;          // identifier of the output drizzle weight image
+      int32      numberOfChannels  = 0;  // number of pixel components
+      uint64     outputPixels      = 0;  // area of the integrated image in square pixels
+      uint64     integratedPixels  = 0;  // total integrated source pixels
+      UI64Vector totalRejectedLow  = UI64Vector( 0, 3 );  // per-channel total low rejected pixels
+      UI64Vector totalRejectedHigh = UI64Vector( 0, 3 );  // per-channel total high rejected pixels
+      float      outputData        = 0;  // total data gathered in input image units
 
-      String     integrationImageId;       // identifier of the output drizzle integrated image
-      String     weightImageId;            // identifier of the output drizzle weight image
-      int32      numberOfChannels;         // number of pixel components
-      uint64     outputPixels;             // area of the integrated image in square pixels
-      uint64     integratedPixels;         // total integrated source pixels
-      UI64Vector totalRejectedLow;         // per-channel total low rejected pixels
-      UI64Vector totalRejectedHigh;        // per-channel total high rejected pixels
-      float      outputData;               // total data gathered in input image units
-
-      // Per-channel data for each integrated image
-
+      /*
+       * Per-channel data for each integrated image.
+       */
       struct ImageData
       {
-         String     filePath;              // source image file
-         FVector    weight;                // image weight (only if p_generateIntegratedImage)
-         DVector    location;              // location estimates
-         DVector    referenceLocation;     // reference location estimates
-         DVector    scale;                 // scaling factors
-         UI64Vector rejectedLow;           // number of low rejected pixels
-         UI64Vector rejectedHigh;          // number of high rejected pixels
-         float      outputData;            // total data gathered from this image in [0,1]
+         String     filePath;                               // source image file
+         FVector    weight            = FVector( 0, 3 );    // image weight (only if p_generateIntegratedImage)
+         DVector    location          = DVector( 0, 3 );    // location estimates
+         DVector    referenceLocation = DVector( 0, 3 );    // reference location estimates
+         DVector    scale             = DVector( 0, 3 );    // scaling factors
+         UI64Vector rejectedLow       = UI64Vector( 0, 3 ); // number of low rejected pixels
+         UI64Vector rejectedHigh      = UI64Vector( 0, 3 ); // number of high rejected pixels
+         float      outputData        = 0;                  // total data gathered from this image in [0,1]
 
-         ImageData( const String& a_filePath = String() ) :
-            filePath( a_filePath ),
-            weight( 0, 3 ),
-            location( 0, 3 ),
-            referenceLocation( 0, 3 ),
-            scale( 0, 3 ),
-            rejectedLow( 0, 3 ),
-            rejectedHigh( 0, 3 ),
-            outputData( 0 )
-         {
-         }
+         ImageData() = default;
+         ImageData( const ImageData& ) = default;
+         ImageData& operator =( const ImageData& ) = default;
 
-         ImageData( const ImageData& x )
+         ImageData( const String& filePath_ ) : filePath( filePath_ )
          {
-            (void)operator =( x );
-         }
-
-         ImageData& operator =( const ImageData& x )
-         {
-            filePath = x.filePath;
-            weight = x.weight;
-            location = x.location;
-            referenceLocation = x.referenceLocation;
-            scale = x.scale;
-            rejectedLow = x.rejectedLow;
-            rejectedHigh = x.rejectedHigh;
-            outputData = x.outputData;
-            return *this;
          }
       };
 
       Array<ImageData> imageData;
-
-      OutputData() :
-         integrationImageId(),
-         weightImageId(),
-         numberOfChannels( 0 ),
-         outputPixels( 0 ),
-         integratedPixels( 0 ),
-         totalRejectedLow( 0, 3 ),
-         totalRejectedHigh( 0, 3 ),
-         outputData( 0 ),
-         imageData()
-      {
-      }
-
-      OutputData( const OutputData& x )
-      {
-         (void)operator =( x );
-      }
-
-      OutputData& operator =( const OutputData& x )
-      {
-         integrationImageId = x.integrationImageId;
-         weightImageId = x.weightImageId;
-         numberOfChannels = x.numberOfChannels;
-         outputPixels = x.outputPixels;
-         integratedPixels = x.integratedPixels;
-         totalRejectedLow = x.totalRejectedLow;
-         totalRejectedHigh = x.totalRejectedHigh;
-         outputData = x.outputData;
-         imageData = x.imageData;
-         return *this;
-      }
    };
 
    OutputData o_output;
@@ -232,4 +180,4 @@ private:
 #endif   // __DrizzleIntegrationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInstance.h - Released 2016/11/13 17:30:54 UTC
+// EOF DrizzleIntegrationInstance.h - Released 2017-05-02T09:43:00Z

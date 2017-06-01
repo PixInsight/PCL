@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/FastRotation.h - Released 2016/02/21 20:22:12 UTC
+// pcl/FastRotation.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/FastRotation.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_GeometricTransformation_h
 #include <pcl/GeometricTransformation.h>
-#endif
 
 namespace pcl
 {
@@ -72,12 +65,12 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup fast_rotations Noninterpolating Rotations and Specular
+ * \defgroup fast_rotations Non-interpolating Rotations and Specular&nbsp;\
  * Transformations.
  *
- * <em>Fast rotations</em> are noninterpolating geometric transformations: they
- * carry out image rotation and specular projection operations exclusively by
- * copying and swapping pixels.
+ * <em>Fast rotations</em> are non-interpolating geometric transformations:
+ * they carry out image rotation and specular projection operations exclusively
+ * by copying and swapping pixels.
  *
  * Since no pixel interpolation is performed, there is absolutely no data
  * degradation after an arbitrary number of consecutive fast rotations.
@@ -245,4 +238,4 @@ protected:
 #endif   // __PCL_FastRotation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FastRotation.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/FastRotation.h - Released 2017-05-28T08:28:50Z

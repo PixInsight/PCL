@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0352
+// Standard Image Process Module Version 01.02.09.0371
 // ----------------------------------------------------------------------------
-// ExtractAlphaChannelsInterface.h - Released 2016/02/21 20:22:43 UTC
+// ExtractAlphaChannelsInterface.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -135,4 +135,4 @@ PCL_END_LOCAL
 #endif   // __ExtractAlphaChannelsInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF ExtractAlphaChannelsInterface.h - Released 2016/02/21 20:22:43 UTC
+// EOF ExtractAlphaChannelsInterface.h - Released 2017-05-02T09:43:00Z

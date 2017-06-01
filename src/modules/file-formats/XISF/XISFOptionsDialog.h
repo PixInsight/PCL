@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.06.0107
+// Standard XISF File Format Module Version 01.00.09.0135
 // ----------------------------------------------------------------------------
-// XISFOptionsDialog.h - Released 2016/07/05 10:44:57 UTC
+// XISFOptionsDialog.h - Released 2017-05-02T09:42:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -63,8 +63,7 @@
 #include <pcl/RadioButton.h>
 #include <pcl/Sizer.h>
 #include <pcl/SpinBox.h>
-
-#include "XISF.h"
+#include <pcl/XISF.h>
 
 namespace pcl
 {
@@ -104,11 +103,11 @@ protected:
       PushButton        OK_PushButton;
       PushButton        Cancel_PushButton;
 
-   int CompressionMethodToComboBoxItem( int );
-   int ComboBoxItemToCompressionMethod( int );
+   int CompressionCodecToComboBoxItem( XISF::block_compression );
+   XISF::block_compression ComboBoxItemToCompressionCodec( int );
 
-   int ChecksumMethodToComboBoxItem( int );
-   int ComboBoxItemToChecksumMethod( int );
+   int ChecksumAlgorithmToComboBoxItem( XISF::block_checksum );
+   XISF::block_checksum ComboBoxItemToChecksumAlgorithm( int );
 
    void GetBaseParameters();
 
@@ -180,4 +179,4 @@ private:
 #endif   // XISFOptionsDialog_h
 
 // ----------------------------------------------------------------------------
-// EOF XISFOptionsDialog.h - Released 2016/07/05 10:44:57 UTC
+// EOF XISFOptionsDialog.h - Released 2017-05-02T09:42:51Z

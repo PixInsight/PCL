@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0352
+// Standard Image Process Module Version 01.02.09.0371
 // ----------------------------------------------------------------------------
-// NewImageInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// NewImageInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -65,7 +65,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-NewImageInterface* TheNewImageInterface = 0;
+NewImageInterface* TheNewImageInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -74,7 +74,7 @@ NewImageInterface* TheNewImageInterface = 0;
 // ----------------------------------------------------------------------------
 
 NewImageInterface::NewImageInterface() :
-ProcessInterface(), instance( TheNewImageProcess ), GUI( 0 )
+   instance( TheNewImageProcess )
 {
    TheNewImageInterface = this;
 }
@@ -83,8 +83,8 @@ ProcessInterface(), instance( TheNewImageProcess ), GUI( 0 )
 
 NewImageInterface::~NewImageInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -134,8 +134,7 @@ void NewImageInterface::ResetInstance()
 
 bool NewImageInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "NewImage" );
@@ -157,15 +156,10 @@ ProcessImplementation* NewImageInterface::NewProcess() const
 
 bool NewImageInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const NewImageInstance* r = dynamic_cast<const NewImageInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a NewImage instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const NewImageInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a NewImage instance.";
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -199,33 +193,34 @@ bool NewImageInterface::WantsReadoutNotifications() const
 
 void NewImageInterface::UpdateReadout( const View& v, const DPoint&, double R, double G, double B, double A )
 {
-   if ( GUI != 0 && IsVisible() )
-   {
-      if ( ISCOLOR || !v.IsColor() )
+   if ( GUI != nullptr )
+      if ( IsVisible() )
       {
-         instance.v0 = R;
-         instance.v1 = G;
-         instance.v2 = B;
-      }
-      else
-      {
-         RGBColorSystem rgb;
-         v.Window().GetRGBWS( rgb );
-         instance.v0 = instance.v1 = instance.v2 = rgb.Lightness( R, G, B );
-      }
+         if ( ISCOLOR || !v.IsColor() )
+         {
+            instance.v0 = R;
+            instance.v1 = G;
+            instance.v2 = B;
+         }
+         else
+         {
+            RGBColorSystem rgb;
+            v.Window().GetRGBWS( rgb );
+            instance.v0 = instance.v1 = instance.v2 = rgb.Lightness( R, G, B );
+         }
 
-      GUI->V0_NumericControl.SetValue( instance.v0 );
-      GUI->V1_NumericControl.SetValue( instance.v1 );
-      GUI->V2_NumericControl.SetValue( instance.v2 );
+         GUI->V0_NumericControl.SetValue( instance.v0 );
+         GUI->V1_NumericControl.SetValue( instance.v1 );
+         GUI->V2_NumericControl.SetValue( instance.v2 );
 
-      if ( HASALPHA )
-      {
-         instance.va = A;
-         GUI->VA_NumericControl.SetValue( instance.va );
+         if ( HASALPHA )
+         {
+            instance.va = A;
+            GUI->VA_NumericControl.SetValue( instance.va );
+         }
+
+         GUI->ColorSample_Control.Update();
       }
-
-      GUI->ColorSample_Control.Update();
-   }
 }
 
 // ----------------------------------------------------------------------------
@@ -297,9 +292,7 @@ void NewImageInterface::__Identifier_EditCompleted( Edit& sender )
 {
    try
    {
-      String id = sender.Text();
-      id.Trim();
-
+      String id = sender.Text().Trimmed();
       if ( !id.IsEmpty() && id != AUTO_ID && !id.IsValidIdentifier() )
          throw Error( "Invalid identifier: " + id );
 
@@ -358,13 +351,11 @@ void NewImageInterface::__Geometry_ValueUpdated( SpinBox& sender, int value )
    UpdateControls();
 }
 
-void NewImageInterface::__SetToActiveImage_Click( Button& /*sender*/, bool /*checked*/ )
+void NewImageInterface::SetAsImage( const ImageWindow& window )
 {
-   ImageWindow w = ImageWindow::ActiveWindow();
-   if ( !w.IsNull() )
+   if ( !window.IsNull() )
    {
-      ImageVariant image = w.MainView().Image();
-
+      ImageVariant image = window.MainView().Image();
       if ( image.IsFloatSample() )
          switch ( image.BitsPerSample() )
          {
@@ -383,9 +374,13 @@ void NewImageInterface::__SetToActiveImage_Click( Button& /*sender*/, bool /*che
       instance.width = image->Width();
       instance.height = image->Height();
       instance.numberOfChannels = image->NumberOfChannels();
-
       UpdateControls();
    }
+}
+
+void NewImageInterface::__SetAsActiveImage_Click( Button& /*sender*/, bool /*checked*/ )
+{
+   SetAsImage( ImageWindow::ActiveWindow() );
 }
 
 void NewImageInterface::__InitialValue_ValueUpdated( NumericEdit& sender, double value )
@@ -430,6 +425,21 @@ void NewImageInterface::__ColorSample_Paint( Control& sender, const Rect& /*upda
    g.DrawRect( sender.BoundsRect() );
 }
 
+void NewImageInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->Identifier_Edit || sender == GUI->SetAsActiveImage_Button )
+      wantsView = view.IsMainView();
+}
+
+void NewImageInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( view.IsMainView() )
+      if ( sender == GUI->Identifier_Edit )
+         GUI->Identifier_Edit.SetText( instance.id = view.Id() );
+      else if ( sender == GUI->SetAsActiveImage_Button )
+         SetAsImage( view.Window() );
+}
+
 // ----------------------------------------------------------------------------
 
 NewImageInterface::GUIData::GUIData( NewImageInterface& w )
@@ -445,6 +455,8 @@ NewImageInterface::GUIData::GUIData( NewImageInterface& w )
 
    Identifier_Edit.OnGetFocus( (Control::event_handler)&NewImageInterface::__Identifier_GetFocus, w );
    Identifier_Edit.OnEditCompleted( (Edit::edit_event_handler)&NewImageInterface::__Identifier_EditCompleted, w );
+   Identifier_Edit.OnViewDrag( (Control::view_drag_event_handler)&NewImageInterface::__ViewDrag, w );
+   Identifier_Edit.OnViewDrop( (Control::view_drop_event_handler)&NewImageInterface::__ViewDrop, w );
 
    Identifier_Sizer.SetSpacing( 4 );
    Identifier_Sizer.Add( Identifier_Label );
@@ -542,12 +554,14 @@ NewImageInterface::GUIData::GUIData( NewImageInterface& w )
 
    //
 
-   SetToActiveImage_Button.SetText( "Set As\nActive Image" );
-   SetToActiveImage_Button.SetVariableWidth();
-   SetToActiveImage_Button.OnClick( (Button::click_event_handler)&NewImageInterface::__SetToActiveImage_Click, w );
+   SetAsActiveImage_Button.SetText( "Set As\nActive Image" );
+   SetAsActiveImage_Button.SetVariableWidth();
+   SetAsActiveImage_Button.OnClick( (Button::click_event_handler)&NewImageInterface::__SetAsActiveImage_Click, w );
+   SetAsActiveImage_Button.OnViewDrag( (Control::view_drag_event_handler)&NewImageInterface::__ViewDrag, w );
+   SetAsActiveImage_Button.OnViewDrop( (Control::view_drop_event_handler)&NewImageInterface::__ViewDrop, w );
 
    GeometryRight_Sizer.AddStretch();
-   GeometryRight_Sizer.Add( SetToActiveImage_Button );
+   GeometryRight_Sizer.Add( SetAsActiveImage_Button );
    GeometryRight_Sizer.AddStretch();
 
    //
@@ -654,4 +668,4 @@ NewImageInterface::GUIData::GUIData( NewImageInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF NewImageInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF NewImageInterface.cpp - Released 2017-05-02T09:43:00Z

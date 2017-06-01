@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Fourier Process Module Version 01.00.04.0191
+// Standard Fourier Process Module Version 01.00.04.0210
 // ----------------------------------------------------------------------------
-// FourierTransformInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// FourierTransformInstance.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Fourier PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,17 +66,18 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 FourierTransformInstance::FourierTransformInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-radialCoordinates( TheFTRadialCoordinatesParameter->DefaultValue() ),
-centered( TheFTCenteredParameter->DefaultValue() )
+   ProcessImplementation( m ),
+   radialCoordinates( TheFTRadialCoordinatesParameter->DefaultValue() ),
+   centered( TheFTCenteredParameter->DefaultValue() )
 {
 }
 
 // ----------------------------------------------------------------------------
 
 FourierTransformInstance::FourierTransformInstance( const FourierTransformInstance& x ) :
-ProcessImplementation( x ),
-radialCoordinates( x.radialCoordinates ), centered( x.centered )
+   ProcessImplementation( x ),
+   radialCoordinates( x.radialCoordinates ),
+   centered( x.centered )
 {
 }
 
@@ -85,7 +86,7 @@ radialCoordinates( x.radialCoordinates ), centered( x.centered )
 void FourierTransformInstance::Assign( const ProcessImplementation& p )
 {
    const FourierTransformInstance* x = dynamic_cast<const FourierTransformInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       radialCoordinates = x->radialCoordinates;
       centered = x->centered;
@@ -102,7 +103,6 @@ bool FourierTransformInstance::CanExecuteOn( const View& v, pcl::String& whyNot 
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
@@ -113,8 +113,6 @@ bool FourierTransformInstance::IsHistoryUpdater( const View& ) const
    return false;
 }
 
-// ----------------------------------------------------------------------------
-// FourierTransformEngine
 // ----------------------------------------------------------------------------
 
 class FourierTransformEngine
@@ -250,7 +248,11 @@ private:
                                            GenericImage<P3>& _P,
                                            const GenericImage<P2>& _C,
                                            size_type _start, size_type _end ) :
-      Thread(), M( _M ), P( _P ), C( _C ), start( _start ), end( _end )
+         M( _M ),
+         P( _P ),
+         C( _C ),
+         start( _start ),
+         end( _end )
       {
       }
 
@@ -371,7 +373,8 @@ void* FourierTransformInstance::LockParameter( const MetaParameter* p, size_type
       return &radialCoordinates;
    if ( p == TheFTCenteredParameter )
       return &centered;
-   return 0;
+
+   return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -379,4 +382,4 @@ void* FourierTransformInstance::LockParameter( const MetaParameter* p, size_type
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FourierTransformInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF FourierTransformInstance.cpp - Released 2017-05-02T09:43:00Z

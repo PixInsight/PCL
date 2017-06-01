@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Exception.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Exception.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,20 +54,11 @@
 
 /// \file pcl/Exception.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_String_h
 #include <pcl/String.h>
-#endif
 
-#ifndef __typeinfo
 #include <typeinfo>
-#ifndef __typeinfo
-#define __typeinfo
-#endif
-#endif
 
 namespace pcl
 {
@@ -94,16 +85,12 @@ public:
    /*!
     * Constructs an %Exception object.
     */
-   Exception()
-   {
-   }
+   Exception() = default;
 
    /*!
     * Copy constructor.
     */
-   Exception( const pcl::Exception& )
-   {
-   }
+   Exception( const pcl::Exception& ) = default;
 
    /*!
     * Destroys an %Exception object.
@@ -228,21 +215,17 @@ public:
    /*!
     * Constructs an %Error object with an empty error message.
     */
-   Error() : pcl::Exception(), m_message()
-   {
-   }
+   Error() = default;
 
    /*!
     * Copy constructor.
     */
-   Error( const Error& x ) : pcl::Exception( x ), m_message( x.m_message )
-   {
-   }
+   Error( const Error& ) = default;
 
    /*!
     * Constructs an %Error object with the specified error \a message.
     */
-   Error( const String& message ) : pcl::Exception(), m_message( message )
+   Error( const String& message ) : m_message( message )
    {
    }
 
@@ -286,11 +269,9 @@ class PCL_CLASS FatalError : public Error
 public:
 
    /*!
-    * Constructs a %FatalError object.
+    * Constructs a %FatalError object with an empty message.
     */
-   FatalError() : Error()
-   {
-   }
+   FatalError() = default;
 
    /*!
     * Constructs a %FatalError object with the specified \a message.
@@ -309,9 +290,7 @@ public:
    /*!
     * Copy constructor.
     */
-   FatalError( const pcl::FatalError& x ) : Error( x )
-   {
-   }
+   FatalError( const pcl::FatalError& ) = default;
 
    /*!
     */
@@ -358,9 +337,7 @@ public:
    /*!
     * Copy constructor.
     */
-   NotImplemented( const NotImplemented& x ) : Error( x )
-   {
-   }
+   NotImplemented( const NotImplemented& ) = default;
 };
 
 // ----------------------------------------------------------------------------
@@ -382,20 +359,15 @@ class PCL_CLASS ParseError : public Error
 public:
 
    /*!
-    * Constructs an empty %ParseError object.
+    * Constructs an empty %ParseError object: no error message and no position
+    * information.
     */
-   ParseError() :
-      Error(), m_beingParsed(), m_errorPosition( -1 )
-   {
-   }
+   ParseError() = default;
 
    /*!
     * Copy constructor.
     */
-   ParseError( const ParseError& x ) :
-      Error( x ), m_beingParsed( x.m_beingParsed ), m_errorPosition( x.m_errorPosition )
-   {
-   }
+   ParseError( const ParseError& ) = default;
 
    /*!
     * Constructs a %ParseError object.
@@ -430,7 +402,7 @@ public:
 protected:
 
    String m_beingParsed;
-   int    m_errorPosition;
+   int    m_errorPosition = -1;
 };
 
 // ----------------------------------------------------------------------------
@@ -453,20 +425,15 @@ class PCL_CLASS SourceCodeError : public Error
 public:
 
    /*!
-    * Constructs an empty %SourceCodeError object.
+    * Constructs an empty %SourceCodeError object: no error message and no
+    * source code location information.
     */
-   SourceCodeError() :
-      Error(), m_lineNumber( -1 ), m_columnNumber( -1 )
-   {
-   }
+   SourceCodeError() = default;
 
    /*!
     * Copy constructor.
     */
-   SourceCodeError( const SourceCodeError& x ) :
-      Error( x ), m_lineNumber( x.m_lineNumber ), m_columnNumber( x.m_columnNumber )
-   {
-   }
+   SourceCodeError( const SourceCodeError& ) = default;
 
    /*!
     * Constructs a %SourceCodeError object.
@@ -577,8 +544,8 @@ public:
 
 protected:
 
-   int m_lineNumber;
-   int m_columnNumber;
+   int m_lineNumber   = -1;
+   int m_columnNumber = -1;
 };
 
 // ----------------------------------------------------------------------------
@@ -601,16 +568,12 @@ public:
    /*!
     * Constructs a %CatchedException object.
     */
-   CatchedException() : pcl::Exception()
-   {
-   }
+   CatchedException() = default;
 
    /*!
     * Copy constructor.
     */
-   CatchedException( const pcl::CatchedException& ) : pcl::Exception()
-   {
-   }
+   CatchedException( const pcl::CatchedException& ) = default;
 };
 
 }  // pcl
@@ -640,12 +603,8 @@ public:
    class PCL_CLASS className : public pcl::Exception                       \
    {                                                                       \
    public:                                                                 \
-      className() : pcl::Exception()                                       \
-      {                                                                    \
-      }                                                                    \
-      className( const className& x ) : pcl::Exception( x )                \
-      {                                                                    \
-      }                                                                    \
+      className() = default;                                               \
+      className( const className& ) = default;                             \
       virtual pcl::String ExceptionClass() const                           \
       {                                                                    \
          return exceptionClass;                                            \
@@ -677,4 +636,4 @@ PCL_DECLARE_EXCEPTION_CLASS( ProcessAborted, "Process aborted", String() );
 #endif   // __PCL_Exception_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Exception.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Exception.h - Released 2017-05-28T08:28:50Z

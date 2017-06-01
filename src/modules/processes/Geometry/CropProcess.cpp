@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0346
 // ----------------------------------------------------------------------------
-// CropProcess.cpp - Released 2016/11/17 18:14:58 UTC
+// CropProcess.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -85,6 +85,7 @@ CropProcess::CropProcess() : MetaProcess()
    TheCRFillGreenParameter = new FillGreen( this );
    TheCRFillBlueParameter = new FillBlue( this );
    TheCRFillAlphaParameter = new FillAlpha( this );
+   TheCRNoGUIMessagesParameter = new NoGUIMessages( this );
 }
 
 IsoString CropProcess::Id() const
@@ -133,4 +134,4 @@ ProcessImplementation* CropProcess::Clone( const ProcessImplementation& p ) cons
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CropProcess.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF CropProcess.cpp - Released 2017-05-02T09:43:00Z

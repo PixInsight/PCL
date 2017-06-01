@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0199
+// Standard INDIClient Process Module Version 01.00.15.0203
 // ----------------------------------------------------------------------------
-// INDICCDFrameInterface.h - Released 2016/06/20 17:47:31 UTC
+// INDICCDFrameInterface.h - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2016 Klaus Kretzschmar
+// Copyright (c) 2014-2017 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -121,7 +121,7 @@ public:
 private:
 
    String                          m_device;
-   INDICCDFrameInterfaceExecution* m_execution;
+   INDICCDFrameInterfaceExecution* m_execution = nullptr;
 
    struct GUIData
    {
@@ -223,7 +223,7 @@ private:
 
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
 
@@ -232,6 +232,8 @@ private:
    void e_Timer( Timer& sender );
    void e_Click( Button& sender, bool checked );
    void e_ItemSelected( ComboBox& sender, int itemIndex );
+   void e_FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
+   void e_FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
 
    friend class INDICCDFrameInterfaceExecution;
 };
@@ -249,4 +251,4 @@ PCL_END_LOCAL
 #endif   // __INDICCDFrameInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInterface.h - Released 2016/06/20 17:47:31 UTC
+// EOF INDICCDFrameInterface.h - Released 2017-05-02T09:43:01Z

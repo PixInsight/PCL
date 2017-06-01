@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/KernelFilter.h - Released 2016/02/21 20:22:12 UTC
+// pcl/KernelFilter.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,29 +54,13 @@
 
 /// \file pcl/KernelFilter.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Math_h
 #include <pcl/Math.h>
-#endif
-
-#ifndef __PCL_String_h
-#include <pcl/String.h>
-#endif
-
-#ifndef __PCL_Matrix_h
 #include <pcl/Matrix.h>
-#endif
-
-#ifndef __PCL_SeparableFilter_h
 #include <pcl/SeparableFilter.h>
-#endif
+#include <pcl/String.h>
 
 namespace pcl
 {
@@ -120,7 +104,8 @@ public:
     * Constructs an empty %KernelFilter object with optional \a name.
     */
    KernelFilter( const String& name = String() ) :
-      coefficients(), filterName( name ), flipped( false )
+      filterName( name ),
+      flipped( false )
    {
    }
 
@@ -133,7 +118,9 @@ public:
     * (which yields an empty filter), or an odd size >= 3.
     */
    KernelFilter( int n, const String& name = String() ) :
-      coefficients( PCL_VALID_KERNEL_SIZE( n ), PCL_VALID_KERNEL_SIZE( n ) ), filterName( name ), flipped( false )
+      coefficients( PCL_VALID_KERNEL_SIZE( n ), PCL_VALID_KERNEL_SIZE( n ) ),
+      filterName( name ),
+      flipped( false )
    {
       PCL_PRECONDITION( n == 0 || n >= 3 )
       PCL_PRECONDITION( n == 0 || (n & 1) )
@@ -145,7 +132,9 @@ public:
     */
    template <typename T>
    KernelFilter( int n, const T& x, const String& name = String() ) :
-      coefficients( x, PCL_VALID_KERNEL_SIZE( n ), PCL_VALID_KERNEL_SIZE( n ) ), filterName( name ), flipped( false )
+      coefficients( x, PCL_VALID_KERNEL_SIZE( n ), PCL_VALID_KERNEL_SIZE( n ) ),
+      filterName( name ),
+      flipped( false )
    {
       PCL_PRECONDITION( n == 0 || n >= 3 )
       PCL_PRECONDITION( n == 0 || (n & 1) )
@@ -156,7 +145,9 @@ public:
     * matrix \a F and optional \a name.
     */
    KernelFilter( const coefficient_matrix& F, const String& name = String() ) :
-      coefficients( F ), filterName( name ), flipped( false )
+      coefficients( F ),
+      filterName( name ),
+      flipped( false )
    {
    }
 
@@ -167,7 +158,9 @@ public:
     */
    template <typename T>
    KernelFilter( const T* k, int n, const String& name = String() ) :
-      coefficients( k, PCL_VALID_KERNEL_SIZE( n ), PCL_VALID_KERNEL_SIZE( n ) ), filterName( name ), flipped( false )
+      coefficients( k, PCL_VALID_KERNEL_SIZE( n ), PCL_VALID_KERNEL_SIZE( n ) ),
+      filterName( name ),
+      flipped( false )
    {
       PCL_PRECONDITION( n == 0 || n >= 3 )
       PCL_PRECONDITION( n == 0 || (n & 1) )
@@ -176,21 +169,24 @@ public:
    /*!
     * Copy constructor.
     */
-   KernelFilter( const KernelFilter& f ) :
-      coefficients( f.coefficients ), filterName( f.filterName ), flipped( f.flipped )
-   {
-   }
+   KernelFilter( const KernelFilter& ) = default;
 
    /*!
     * Move constructor.
     */
-   KernelFilter( KernelFilter&& f ) :
-      coefficients( std::move( f.coefficients ) ), filterName( std::move( f.filterName ) ), flipped( f.flipped )
+#ifndef _MSC_VER
+   KernelFilter( KernelFilter&& ) = default;
+#else
+   KernelFilter( KernelFilter&& x ) :
+      coefficients( std::move( x.coefficients ) ),
+      filterName( std::move( x.filterName ) ),
+      flipped( x.flipped )
    {
    }
+#endif
 
    /*!
-    * Destroys a %KernelFilter object.
+    * Virtual destructor.
     */
    virtual ~KernelFilter()
    {
@@ -248,24 +244,22 @@ public:
    /*!
     * Copy assignment operator. Returns a reference to this object.
     */
-   KernelFilter& operator =( const KernelFilter& f )
-   {
-      coefficients = f.coefficients;
-      filterName = f.filterName;
-      flipped = f.flipped;
-      return *this;
-   }
+   KernelFilter& operator =( const KernelFilter& ) = default;
 
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-   KernelFilter& operator =( KernelFilter&& f )
+#ifndef _MSC_VER
+   KernelFilter& operator =( KernelFilter&& ) = default;
+#else
+   KernelFilter& operator =( KernelFilter&& x )
    {
-      coefficients = std::move( f.coefficients );
-      filterName = std::move( f.filterName );
-      flipped = f.flipped;
+      coefficients = std::move( x.coefficients );
+      filterName = std::move( x.filterName );
+      flipped = x.flipped;
       return *this;
    }
+#endif
 
    /*!
     * Assigns the specified filter coefficient matrix \a F to this object.
@@ -618,4 +612,4 @@ protected:
 #endif   // __PCL_KernelFilter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/KernelFilter.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/KernelFilter.h - Released 2017-05-28T08:28:50Z

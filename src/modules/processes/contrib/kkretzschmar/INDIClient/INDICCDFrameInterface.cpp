@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0199
+// Standard INDIClient Process Module Version 01.00.15.0203
 // ----------------------------------------------------------------------------
-// INDICCDFrameInterface.cpp - Released 2016/06/20 17:47:31 UTC
+// INDICCDFrameInterface.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2016 Klaus Kretzschmar
+// Copyright (c) 2014-2017 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -217,11 +217,7 @@ void FilterConfigDialog::adjustTreeColumns()
 
 // ----------------------------------------------------------------------------
 
-INDICCDFrameInterface::INDICCDFrameInterface() :
-   ProcessInterface(),
-   m_device(),
-   m_execution( nullptr ),
-   GUI( nullptr )
+INDICCDFrameInterface::INDICCDFrameInterface()
 {
    TheINDICCDFrameInterface = this;
 }
@@ -244,7 +240,7 @@ MetaProcess* INDICCDFrameInterface::Process() const
 
 const char** INDICCDFrameInterface::IconImageXPM() const
 {
-   return 0; // INDICCDFrameProcess_XPM; // ### TODO
+   return nullptr; // INDICCDFrameProcess_XPM; // ### TODO
 }
 
 InterfaceFeatures INDICCDFrameInterface::Features() const
@@ -304,14 +300,10 @@ ProcessImplementation* INDICCDFrameInterface::NewProcess() const
 
 bool INDICCDFrameInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const INDICCDFrameInstance* instance = dynamic_cast<const INDICCDFrameInstance*>( &p );
-   if ( instance == nullptr )
-   {
-      whyNot = "Not an INDICCDFrame instance.";
-      return false;
-   }
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const INDICCDFrameInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an INDICCDFrame instance.";
+   return false;
 }
 
 bool INDICCDFrameInterface::RequiresInstanceValidation() const
@@ -707,6 +699,8 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    ClientDownloadDir_Label.Disable();
 
    ClientDownloadDir_Edit.SetToolTip( downloadDirToolTipText );
+   ClientDownloadDir_Edit.OnFileDrag( (Control::file_drag_event_handler)&INDICCDFrameInterface::e_FileDrag, w );
+   ClientDownloadDir_Edit.OnFileDrop( (Control::file_drop_event_handler)&INDICCDFrameInterface::e_FileDrop, w );
 
    ClientDownloadDir_ToolButton.SetIcon( w.ScaledResource( ":/icons/select-file.png" ) );
    ClientDownloadDir_ToolButton.SetScaledFixedSize( 22, 22 );
@@ -1289,6 +1283,21 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
    }
 }
 
+void INDICCDFrameInterface::e_FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+{
+   if ( sender == GUI->ClientDownloadDir_Edit )
+      if ( sender.IsEnabled() )
+         wantsFiles = files.Length() == 1 && File::DirectoryExists( files[0] );
+}
+
+void INDICCDFrameInterface::e_FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+{
+   if ( sender == GUI->ClientDownloadDir_Edit )
+      if ( sender.IsEnabled() )
+         if ( File::DirectoryExists( files[0] ) )
+            GUI->ClientDownloadDir_Edit.SetText( files[0] );
+}
+
 class INDICCDFrameInterfaceExecution : public AbstractINDICCDFrameExecution
 {
 public:
@@ -1495,4 +1504,4 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInterface.cpp - Released 2016/06/20 17:47:31 UTC
+// EOF INDICCDFrameInterface.cpp - Released 2017-05-02T09:43:01Z

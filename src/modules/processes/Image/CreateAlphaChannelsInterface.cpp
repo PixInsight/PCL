@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0352
+// Standard Image Process Module Version 01.02.09.0371
 // ----------------------------------------------------------------------------
-// CreateAlphaChannelsInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// CreateAlphaChannelsInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,7 +66,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-CreateAlphaChannelsInterface* TheCreateAlphaChannelsInterface = 0;
+CreateAlphaChannelsInterface* TheCreateAlphaChannelsInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -75,15 +75,15 @@ CreateAlphaChannelsInterface* TheCreateAlphaChannelsInterface = 0;
 // ----------------------------------------------------------------------------
 
 CreateAlphaChannelsInterface::CreateAlphaChannelsInterface() :
-ProcessInterface(), instance( TheCreateAlphaChannelsProcess ), GUI( 0 )
+   instance( TheCreateAlphaChannelsProcess )
 {
    TheCreateAlphaChannelsInterface = this;
 }
 
 CreateAlphaChannelsInterface::~CreateAlphaChannelsInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString CreateAlphaChannelsInterface::Id() const
@@ -114,8 +114,7 @@ void CreateAlphaChannelsInterface::ResetInstance()
 
 bool CreateAlphaChannelsInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "CreateAlphaChannels" );
@@ -133,16 +132,10 @@ ProcessImplementation* CreateAlphaChannelsInterface::NewProcess() const
 
 bool CreateAlphaChannelsInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const CreateAlphaChannelsInstance* r = dynamic_cast<const CreateAlphaChannelsInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not a CreateAlphaChannels instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const CreateAlphaChannelsInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a CreateAlphaChannels instance.";
+   return false;
 }
 
 bool CreateAlphaChannelsInterface::RequiresInstanceValidation() const
@@ -187,8 +180,9 @@ void CreateAlphaChannelsInterface::__SourceMode_Check( GroupBox& sender, bool ch
 void CreateAlphaChannelsInterface::__ImageId_GetFocus( Control& sender )
 {
    Edit* e = dynamic_cast<Edit*>( &sender );
-   if ( e != 0 && e->Text() == AUTO_ID )
-      e->Clear();
+   if ( e != nullptr )
+      if ( e->Text() == AUTO_ID )
+         e->Clear();
 }
 
 void CreateAlphaChannelsInterface::__ImageId_EditCompleted( Edit& sender )
@@ -197,14 +191,11 @@ void CreateAlphaChannelsInterface::__ImageId_EditCompleted( Edit& sender )
    {
       String id = sender.Text();
       id.Trim();
-
       if ( !id.IsEmpty() && id != AUTO_ID && !id.IsValidIdentifier() )
          throw Error( "Invalid identifier: " + id );
-
       instance.imageId = (id != AUTO_ID) ? id : String();
       sender.SetText( instance.imageId.IsEmpty() ? AUTO_ID : instance.imageId );
    }
-
    ERROR_CLEANUP(
       sender.SetText( instance.imageId );
       sender.SelectAll();
@@ -251,6 +242,22 @@ void CreateAlphaChannelsInterface::__Replace_Click( Button& /*sender*/, bool che
    instance.replace = checked;
 }
 
+void CreateAlphaChannelsInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->ImageId_Edit )
+      wantsView = view.IsMainView();
+}
+
+void CreateAlphaChannelsInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->ImageId_Edit )
+      if ( view.IsMainView() )
+      {
+         instance.imageId = view.Id();
+         UpdateControls();
+      }
+}
+
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
@@ -264,6 +271,8 @@ CreateAlphaChannelsInterface::GUIData::GUIData( CreateAlphaChannelsInterface& w 
    ImageId_Edit.SetMinWidth( editWidth );
    ImageId_Edit.OnGetFocus( (Control::event_handler)&CreateAlphaChannelsInterface::__ImageId_GetFocus, w );
    ImageId_Edit.OnEditCompleted( (Edit::edit_event_handler)&CreateAlphaChannelsInterface::__ImageId_EditCompleted, w );
+   ImageId_Edit.OnViewDrag( (Control::view_drag_event_handler)&CreateAlphaChannelsInterface::__ViewDrag, w );
+   ImageId_Edit.OnViewDrop( (Control::view_drop_event_handler)&CreateAlphaChannelsInterface::__ViewDrop, w );
 
    SelectSource_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    SelectSource_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -340,4 +349,4 @@ CreateAlphaChannelsInterface::GUIData::GUIData( CreateAlphaChannelsInterface& w 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CreateAlphaChannelsInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF CreateAlphaChannelsInterface.cpp - Released 2017-05-02T09:43:00Z

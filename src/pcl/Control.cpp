@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Control.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Control.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -51,6 +51,7 @@
 
 #include <pcl/AutoLock.h>
 #include <pcl/Control.h>
+#include <pcl/View.h>
 
 #include <pcl/api/APIException.h>
 #include <pcl/api/APIInterface.h>
@@ -59,10 +60,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-
-#ifdef _MSC_VER
-#  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
-#endif
 
 Control::Control( Control& parent, uint32 flags ) :
    UIObject( (*API->Control->CreateControl)( ModuleHandle(), this, parent.handle, flags ) )
@@ -1162,6 +1159,76 @@ public:
       }
       return api_false;
    }
+
+   static StringList MakeFileList( const char16_type* files, const size_type* lengths, size_type count )
+   {
+      StringList fileList;
+      for ( String::const_iterator i = files; count > 0; --count, ++lengths )
+      {
+         String::const_iterator j = i + *lengths;
+         fileList << String( i, j );
+         i = j;
+      }
+      return fileList;
+   }
+
+   static api_bool api_func FileDrag( control_handle hSender, control_handle hReceiver,
+                                      int32 x, int32 y,
+                                      const char16_type* files, const size_type* lengths, size_type count,
+                                      api_key_modifiers modifiers )
+   {
+      if ( handlers->onFileDrag != nullptr )
+      {
+         StringList fileList = MakeFileList( files, lengths, count );
+         bool wantsFiles = false;
+         (receiver->*handlers->onFileDrag)( *sender, pcl::Point( x, y ), fileList, modifiers, wantsFiles );
+         return wantsFiles;
+      }
+      return api_false;
+   }
+
+   static api_bool api_func FileDrop( control_handle hSender, control_handle hReceiver,
+                                      int32 x, int32 y,
+                                      const char16_type* files, const size_type* lengths, size_type count,
+                                      api_key_modifiers modifiers )
+   {
+      if ( handlers->onFileDrop != nullptr )
+      {
+         StringList fileList = MakeFileList( files, lengths, count );
+         (receiver->*handlers->onFileDrop)( *sender, pcl::Point( x, y ), fileList, modifiers );
+         return api_true;
+      }
+      return api_false;
+   }
+
+   static api_bool api_func ViewDrag( control_handle hSender, control_handle hReceiver,
+                                      int32 x, int32 y,
+                                      const_view_handle hView,
+                                      api_key_modifiers modifiers )
+   {
+      if ( handlers->onViewDrag != nullptr )
+      {
+         View view( hView );
+         bool wantsView = false;
+         (receiver->*handlers->onViewDrag)( *sender, pcl::Point( x, y ), view, modifiers, wantsView );
+         return wantsView;
+      }
+      return api_false;
+   }
+
+   static api_bool api_func ViewDrop( control_handle hSender, control_handle hReceiver,
+                                      int32 x, int32 y,
+                                      const_view_handle hView,
+                                      api_key_modifiers modifiers )
+   {
+      if ( handlers->onViewDrop != nullptr )
+      {
+         View view( hView );
+         (receiver->*handlers->onViewDrop)( *sender, pcl::Point( x, y ), view, modifiers );
+         return api_true;
+      }
+      return api_false;
+   }
 }; // ControlEventDispatcher
 
 #undef sender
@@ -1355,6 +1422,42 @@ void Control::OnChildDestroy( child_event_handler f, Control& receiver )
    m_handlers->onChildDestroy = f;
 }
 
+void Control::OnFileDrag( file_drag_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Control->SetFileDragEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ControlEventDispatcher::FileDrag : nullptr ) == api_false )
+      throw APIFunctionError( "SetFileDragEventRoutine" );
+   m_handlers->onFileDrag = f;
+}
+
+void Control::OnFileDrop( file_drop_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Control->SetFileDropEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ControlEventDispatcher::FileDrop : nullptr ) == api_false )
+      throw APIFunctionError( "SetFileDropEventRoutine" );
+   m_handlers->onFileDrop = f;
+}
+
+void Control::OnViewDrag( view_drag_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Control->SetViewDragEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ControlEventDispatcher::ViewDrag : nullptr ) == api_false )
+      throw APIFunctionError( "SetViewDragEventRoutine" );
+   m_handlers->onViewDrag = f;
+}
+
+void Control::OnViewDrop( view_drop_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Control->SetViewDropEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ControlEventDispatcher::ViewDrop : nullptr ) == api_false )
+      throw APIFunctionError( "SetViewDropEventRoutine" );
+   m_handlers->onViewDrop = f;
+}
+
 #undef INIT_EVENT_HANDLERS
 
 // ----------------------------------------------------------------------------
@@ -1362,4 +1465,4 @@ void Control::OnChildDestroy( child_event_handler f, Control& receiver )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Control.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Control.cpp - Released 2017-05-28T08:29:05Z

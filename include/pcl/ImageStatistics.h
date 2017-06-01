@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/ImageStatistics.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ImageStatistics.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,13 +54,9 @@
 
 /// \file pcl/ImageStatistics.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_ImageVariant_h
 #include <pcl/ImageVariant.h>
-#endif
 
 namespace pcl
 {
@@ -82,13 +78,19 @@ namespace pcl
  *
  * \li Variance and standard deviation from the mean.
  *
+ * \li Sum of squared samples.
+ *
  * \li Average deviation from the median.
  *
- * \li Median deviation from the median (MAD).
+ * \li Median absolute deviation from the median (MAD).
  *
- * \li Sn scale estimator of Rousseeuw/Croux.
+ * \li Biweight midvariance.
  *
- * \li Extreme pixel sample values: minimum and maximum and the image
+ * \li Percentage bend midvariance.
+ *
+ * \li Sn and Qn scale estimators of Rousseeuw/Croux.
+ *
+ * \li Extreme pixel sample values: minimum and maximum, and the image
  * coordinates of their first occurrences.
  *
  * All statistics can be enabled/disabled individually.
@@ -128,8 +130,8 @@ public:
       double      stdDev;              //!< Standard deviation (=Sqrt(variance)).
       double      avgDev;              //!< Average deviation from the median.
       double      MAD;                 //!< Median absolute deviation from the median.
-      double      bwmv;                //!< Biweight midvariance scale estimator.
-      double      pbmv;                //!< Percentage bend midvariance scale estimator.
+      double      bwmv;                //!< Biweight midvariance.
+      double      pbmv;                //!< Percentage bend midvariance.
       double      Sn;                  //!< Sn scale estimator of Rousseeuw and Croux.
       double      Qn;                  //!< Qn scale estimator of Rousseeuw and Croux.
       double      minimum;             //!< Minimum sample value.
@@ -158,37 +160,37 @@ public:
        * Constructs an %ImageStatistics::Data structure.
        */
       Data() :
-      count( 0 ),
-      mean( 0 ),
-      sumOfSquares( 0 ),
-      median( 0 ),
-      variance( 0 ),
-      stdDev( 0 ),
-      avgDev( 0 ),
-      MAD( 0 ),
-      bwmv( 0 ),
-      pbmv( 0 ),
-      Sn( 0 ),
-      Qn( 0 ),
-      minimum( 0 ),
-      minPos( 0 ),
-      maximum( 0 ),
-      maxPos( 0 ),
-      low( 0 ),
-      high( 0 ),
-      rejectLow( false ),
-      rejectHigh( false ),
-      noExtremes( false ),
-      noMean( false ),
-      noSumOfSquares( false ),
-      noVariance( false ),
-      noMedian( false ),
-      noAvgDev( false ),
-      noMAD( false ),
-      noBWMV( false ),
-      noPBMV( false ),
-      noSn( true ),
-      noQn( true )
+         count( 0 ),
+         mean( 0 ),
+         sumOfSquares( 0 ),
+         median( 0 ),
+         variance( 0 ),
+         stdDev( 0 ),
+         avgDev( 0 ),
+         MAD( 0 ),
+         bwmv( 0 ),
+         pbmv( 0 ),
+         Sn( 0 ),
+         Qn( 0 ),
+         minimum( 0 ),
+         minPos( 0 ),
+         maximum( 0 ),
+         maxPos( 0 ),
+         low( 0 ),
+         high( 0 ),
+         rejectLow( false ),
+         rejectHigh( false ),
+         noExtremes( false ),
+         noMean( false ),
+         noSumOfSquares( false ),
+         noVariance( false ),
+         noMedian( false ),
+         noAvgDev( false ),
+         noMAD( false ),
+         noBWMV( false ),
+         noPBMV( false ),
+         noSn( true ),
+         noQn( true )
       {
       }
 
@@ -418,8 +420,8 @@ public:
    }
 
    /*!
-    * Returns the biweight midvariance estimator for the evaluated pixel sample
-    * values in the normalized [0,1] range.
+    * Returns the biweight midvariance of the evaluated pixel sample values in
+    * the normalized [0,1] range.
     *
     * The square root of the biweight midvariance is a robust estimator of
     * scale. It is an efficient estimator with respect to many statistical
@@ -432,8 +434,8 @@ public:
    }
 
    /*!
-    * Returns the biweight midvariance estimator for the evaluated pixel sample
-    * values in the normalized [0,1] range.
+    * Returns the biweight midvariance of the evaluated pixel sample values in
+    * the normalized [0,1] range.
     *
     * This member function is a synonym for BiweightMidvariance().
     */
@@ -443,8 +445,8 @@ public:
    }
 
    /*!
-    * Returns the percentage bend midvariance estimator for the evaluated pixel
-    * sample values in the normalized [0,1] range.
+    * Returns the percentage bend midvariance of the evaluated pixel sample
+    * values in the normalized [0,1] range.
     *
     * The square root of the percentage bend midvariance is a robust estimator
     * of scale. As implemented in %ImageStatistics (beta=0.2), its Gaussian
@@ -456,8 +458,8 @@ public:
    }
 
    /*!
-    * Returns the percentage bend midvariance estimator for the evaluated pixel
-    * sample values in the normalized [0,1] range.
+    * Returns the percentage bend midvariance of the evaluated pixel sample
+    * values in the normalized [0,1] range.
     *
     * This member function is a synonym for BendMidvariance().
     */
@@ -751,8 +753,8 @@ public:
    }
 
    /*!
-    * Returns true iff calculation of the variance is currently enabled for this
-    * instance of %ImageStatistics.
+    * Returns true iff calculation of the variance is currently enabled for
+    * this instance of %ImageStatistics.
     */
    bool IsVarianceEnabled() const
    {
@@ -873,8 +875,8 @@ public:
    }
 
    /*!
-    * Returns true iff calculation of the biweight midvariance estimator (BWMV)
-    * is currently enabled for this instance of %ImageStatistics.
+    * Returns true iff calculation of the biweight midvariance (BWMV) is
+    * currently enabled for this instance of %ImageStatistics.
     */
    bool IsBWMVEnabled() const
    {
@@ -882,7 +884,7 @@ public:
    }
 
    /*!
-    * Enables calculation of the biweight midvariance estimator (BWMV) for this
+    * Enables calculation of the biweight midvariance (BWMV) for this
     * %ImageStatistics object.
     */
    void EnableBWMV( bool enable = true )
@@ -891,8 +893,8 @@ public:
    }
 
    /*!
-    * Disables calculation of the biweight midvariance estimator (BWMV) for
-    * this %ImageStatistics object.
+    * Disables calculation of the biweight midvariance (BWMV) for this
+    * %ImageStatistics object.
     */
    void DisableBWMV( bool disable = true )
    {
@@ -900,8 +902,8 @@ public:
    }
 
    /*!
-    * Returns true iff calculation of the percentage bend midvariance estimator
-    * (PBMV) is currently enabled for this instance of %ImageStatistics.
+    * Returns true iff calculation of the percentage bend midvariance (PBMV) is
+    * currently enabled for this instance of %ImageStatistics.
     */
    bool IsPBMVEnabled() const
    {
@@ -909,8 +911,8 @@ public:
    }
 
    /*!
-    * Enables calculation of the percentage bend midvariance estimator (PBMV)
-    * for this %ImageStatistics object.
+    * Enables calculation of the percentage bend midvariance (PBMV) for this
+    * %ImageStatistics object.
     */
    void EnablePBMV( bool enable = true )
    {
@@ -918,8 +920,8 @@ public:
    }
 
    /*!
-    * Disables calculation of the percentage bend midvariance estimator (PBMV)
-    * for this %ImageStatistics object.
+    * Disables calculation of the percentage bend midvariance (PBMV) for this
+    * %ImageStatistics object.
     */
    void DisablePBMV( bool disable = true )
    {
@@ -1033,15 +1035,15 @@ public:
             if ( image.IsFloatSample() )
                switch ( image.BitsPerSample() )
                {
-               case 32 : *this << static_cast<const Image&>( *image ); break;
-               case 64 : *this << static_cast<const DImage&>( *image ); break;
+               case 32: *this << static_cast<const Image&>( *image ); break;
+               case 64: *this << static_cast<const DImage&>( *image ); break;
                }
             else
                switch ( image.BitsPerSample() )
                {
-               case  8 : *this << static_cast<const UInt8Image&>( *image ); break;
-               case 16 : *this << static_cast<const UInt16Image&>( *image ); break;
-               case 32 : *this << static_cast<const UInt32Image&>( *image ); break;
+               case  8: *this << static_cast<const UInt8Image&>( *image ); break;
+               case 16: *this << static_cast<const UInt16Image&>( *image ); break;
+               case 32: *this << static_cast<const UInt32Image&>( *image ); break;
                }
       return image;
    }
@@ -1134,4 +1136,4 @@ protected:
 #endif   // __PCL_ImageStatistics_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageStatistics.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ImageStatistics.h - Released 2017-05-28T08:28:50Z

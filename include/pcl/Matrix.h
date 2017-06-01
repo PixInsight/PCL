@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Matrix.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Matrix.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,70 +54,29 @@
 
 /// \file pcl/Matrix.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_ReferenceCounter_h
-#include <pcl/ReferenceCounter.h>
-#endif
-
-#ifndef __PCL_Math_h
-#include <pcl/Math.h>
-#endif
-
-#ifndef __PCL_Memory_h
-#include <pcl/Memory.h>
-#endif
-
-#ifndef __PCL_Utility_h
-#include <pcl/Utility.h>
-#endif
-
-#ifndef __PCL_Rotate_h
-#include <pcl/Rotate.h> // for pcl::Reverse()
-#endif
-
-#ifndef __PCL_Vector_h
-#include <pcl/Vector.h>
-#endif
-
-#ifndef __PCL_Exception_h
 #include <pcl/Exception.h>
-#endif
+#include <pcl/Math.h>
+#include <pcl/Memory.h>
+#include <pcl/ReferenceCounter.h>
+#include <pcl/Rotate.h> // pcl::Reverse()
+#include <pcl/Utility.h>
+#include <pcl/Vector.h>
 
 #ifndef __PCL_NO_MATRIX_STATISTICS
-# ifndef __PCL_Sort_h
-#  include <pcl/Sort.h>
-# endif
-# ifndef __PCL_Selection_h
 #  include <pcl/Selection.h>
-# endif
+#  include <pcl/Sort.h>
 #endif
 
 #if !defined( __PCL_NO_MATRIX_IMAGE_RENDERING ) && !defined( __PCL_NO_MATRIX_IMAGE_CONVERSION )
-# ifndef __PCL_Image_h
 #  include <pcl/Image.h>
-# endif
-# ifndef __PCL_ImageVariant_h
 #  include <pcl/ImageVariant.h>
-# endif
 #endif
 
-#ifndef __PCL_NO_MATRIX_PHASE_MATRICES
-# ifndef __PCL_Complex_h
+#if !defined( __PCL_NO_MATRIX_PHASE_MATRICES ) && !defined( __PCL_NO_VECTOR_INSTANTIATE )
 #  include <pcl/Complex.h>
-# endif
-#endif
-
-#ifndef __PCL_NO_VECTOR_INSTANTIATE
-# ifndef __PCL_Complex_h
-#  include <pcl/Complex.h>
-# endif
 #endif
 
 /*
@@ -154,6 +113,8 @@ namespace pcl
  * inversion and transposition, scalar-to-matrix and matrix-to-matrix
  * arithmetic operations, and image to/from matrix conversions.
  *
+ * \li Calculation of a variety of descriptive statistics for matrix elements.
+ *
  * \sa GenericVector, \ref matrix_operators, \ref matrix_types
  */
 template <typename T>
@@ -189,10 +150,9 @@ public:
     * Constructs an empty matrix.
     * An empty matrix has no elements and zero dimensions.
     */
-   GenericMatrix() :
-      m_data( nullptr )
+   GenericMatrix()
    {
-      m_data = new Data( 0, 0 );
+      m_data = new Data;
    }
 
    /*!
@@ -204,8 +164,7 @@ public:
     * Matrix elements are not initialized by this constructor; the newly
     * created matrix will contain unpredictable values.
     */
-   GenericMatrix( int rows, int cols ) :
-      m_data( nullptr )
+   GenericMatrix( int rows, int cols )
    {
       m_data = new Data( rows, cols );
    }
@@ -217,8 +176,7 @@ public:
     * \param rows    Number of matrix rows (>= 0).
     * \param cols    Number of matrix columns (>= 0).
     */
-   GenericMatrix( const element& x, int rows, int cols ) :
-      m_data( nullptr )
+   GenericMatrix( const element& x, int rows, int cols )
    {
       m_data = new Data( rows, cols );
       pcl::Fill( m_data->Begin(), m_data->End(), x );
@@ -238,8 +196,7 @@ public:
     * \param cols    Number of matrix columns (>= 0).
     */
    template <typename T1>
-   GenericMatrix( const T1* a, int rows, int cols ) :
-      m_data( nullptr )
+   GenericMatrix( const T1* a, int rows, int cols )
    {
       m_data = new Data( rows, cols );
       if ( a != nullptr )
@@ -264,8 +221,7 @@ public:
    template <typename T1>
    GenericMatrix( const T1& a00, const T1& a01, const T1& a02,
                   const T1& a10, const T1& a11, const T1& a12,
-                  const T1& a20, const T1& a21, const T1& a22 ) :
-      m_data( nullptr )
+                  const T1& a20, const T1& a21, const T1& a22 )
    {
       m_data = new Data( 3, 3 );
       block_iterator v = m_data->Begin();
@@ -278,8 +234,7 @@ public:
     * Copy constructor. This object will reference the same data that is being
     * referenced by the specified matrix \a x.
     */
-   GenericMatrix( const GenericMatrix& x ) :
-      m_data( x.m_data )
+   GenericMatrix( const GenericMatrix& x ) : m_data( x.m_data )
    {
       m_data->Attach();
    }
@@ -287,8 +242,7 @@ public:
    /*!
     * Move constructor.
     */
-   GenericMatrix( GenericMatrix&& x ) :
-      m_data( x.m_data )
+   GenericMatrix( GenericMatrix&& x ) : m_data( x.m_data )
    {
       x.m_data = nullptr;
    }
@@ -315,8 +269,7 @@ public:
     * submatrix coordinates and dimensions to the nearest valid values,
     * possibly constructing an empty matrix.
     */
-   GenericMatrix( const GenericMatrix& x, int i0, int j0, int rows, int cols ) :
-      m_data( nullptr )
+   GenericMatrix( const GenericMatrix& x, int i0, int j0, int rows, int cols )
    {
       i0 = Range( i0, 0, Max( 0, x.Rows()-1 ) );
       j0 = Range( j0, 0, Max( 0, x.Cols()-1 ) );
@@ -367,8 +320,7 @@ public:
     * sample is outside the normalized [0,1] range.
     */
    template <class P>
-   GenericMatrix( const GenericImage<P>& image, const Rect& rect = Rect( 0 ), int channel = -1 ) :
-      m_data( nullptr )
+   GenericMatrix( const GenericImage<P>& image, const Rect& rect = Rect( 0 ), int channel = -1 )
    {
       GenericMatrix M = FromImage( image, rect, channel );
       pcl::Swap( m_data, M.m_data );
@@ -388,8 +340,7 @@ public:
     * GenericMatrix::GenericMatrix( const GenericImage&, const Rect&, int ) for
     * more information about the conversion performed by this constructor.
     */
-   GenericMatrix( const ImageVariant& image, const Rect& rect = Rect( 0 ), int channel = -1 ) :
-      m_data( nullptr )
+   GenericMatrix( const ImageVariant& image, const Rect& rect = Rect( 0 ), int channel = -1 )
    {
       GenericMatrix M = FromImage( image, rect, channel );
       pcl::Swap( m_data, M.m_data );
@@ -1264,6 +1215,21 @@ public:
    block_iterator* DataPtr()
    {
       return m_data->v;
+   }
+
+   /*!
+    * Returns a pointer to the first matrix element of row \a i.
+    *
+    * All elements in row \a i are guaranteed to be stored at consecutive
+    * locations addressable from the pointer returned by this function.
+    *
+    * This member function does not ensure that the data referenced by this
+    * matrix is unique. See DataPtr() for more information on how to use this
+    * member function.
+    */
+   block_iterator RowPtr( int i )
+   {
+      return m_data->v[i];
    }
 
 #ifndef __PCL_NO_STL_COMPATIBLE_ITERATORS
@@ -2416,15 +2382,12 @@ public:
       {
          s.Append( S( *i ) );
          if ( ++i < j )
-         {
-            S p( separator );
             do
             {
-               s.Append( p );
+               s.Append( separator );
                s.Append( S( *i ) );
             }
             while ( ++i < j );
-         }
       }
       return s;
    }
@@ -2741,15 +2704,13 @@ private:
     */
    struct Data : public ReferenceCounter
    {
-      int             n; // rows
-      int             m; // columns
-      block_iterator* v; // elements
+      int             n = 0;       //!< Number of matrix rows
+      int             m = 0;       //!< Number of matrix columns
+      block_iterator* v = nullptr; //!< Contiguous block of matrix elements
 
-      Data( int rows, int cols ) :
-         ReferenceCounter(),
-         n( 0 ),
-         m( 0 ),
-         v( nullptr )
+      Data() = default;
+
+      Data( int rows, int cols )
       {
          if ( rows > 0 && cols > 0 )
             Allocate( rows, cols );
@@ -2822,7 +2783,7 @@ private:
     * \internal
     * The reference-counted matrix data.
     */
-   Data* m_data;
+   Data* m_data = nullptr;
 
    /*!
     * \internal
@@ -2836,7 +2797,7 @@ private:
 
    /*!
     * \internal
-    * Invert a small matrix of dimension <= 3.
+    * Inverts a small matrix of dimension <= 3.
     */
    static bool Invert( block_iterator* Ai, const_block_iterator const* A, int n )
    {
@@ -3242,7 +3203,7 @@ GenericMatrix<T> operator ^( const T& x, const GenericMatrix<T>& A )
 #ifndef __PCL_NO_MATRIX_INSTANTIATE
 
 /*!
- * \defgroup matrix_types Predefined Matrix Types
+ * \defgroup matrix_types Matrix Types
  */
 
 /*!
@@ -3462,4 +3423,4 @@ typedef F80Matrix                   LDMatrix;
 #endif   // __PCL_Matrix_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Matrix.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Matrix.h - Released 2017-05-28T08:28:50Z

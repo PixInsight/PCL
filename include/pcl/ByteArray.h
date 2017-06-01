@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/ByteArray.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ByteArray.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/ByteArray.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Array_h
 #include <pcl/Array.h>
-#endif
-
-#ifndef __PCL_SortedArray_h
 #include <pcl/SortedArray.h>
-#endif
 
 namespace pcl
 {
@@ -77,19 +70,23 @@ namespace pcl
 
 /*!
  * \class pcl::ByteArray
- * \ingroup byte_arrays
  * \brief Dynamic array of 8-bit unsigned integers
  *
  * %ByteArray is a template instantiation of Array for \c uint8.
+ *
+ * \ingroup byte_arrays
+ * \ingroup dynamic_arrays
  */
 typedef Array<uint8>          ByteArray;
 
 /*!
  * \class pcl::SortedByteArray
- * \ingroup byte_arrays
  * \brief Dynamic sorted array of 8-bit unsigned integers
  *
  * %SortedByteArray is a template instantiation of SortedArray for \c uint8.
+ *
+ * \ingroup byte_arrays
+ * \ingroup dynamic_arrays
  */
 typedef SortedArray<uint8>    SortedByteArray;
 
@@ -100,4 +97,4 @@ typedef SortedArray<uint8>    SortedByteArray;
 #endif   // __PCL_ByteArray_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ByteArray.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ByteArray.h - Released 2017-05-28T08:28:50Z

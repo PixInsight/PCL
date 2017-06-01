@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/MorphologicalOperator.h - Released 2016/02/21 20:22:12 UTC
+// pcl/MorphologicalOperator.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,41 +54,16 @@
 
 /// \file pcl/MorphologicalOperator.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Exception_h
 #include <pcl/Exception.h>
-#endif
-
-#ifndef __PCL_Utility_h
-#include <pcl/Utility.h>
-#endif
-
-#ifndef __PCL_Math_h
 #include <pcl/Math.h>
-#endif
-
-#ifndef __PCL_Selection_h
-#include <pcl/Selection.h>
-#endif
-
-#ifndef __PCL_Sort_h
-#include <pcl/Sort.h>
-#endif
-
-#ifndef __PCL_String_h
-#include <pcl/String.h>
-#endif
-
-#ifndef __PCL_PixelTraits_h
 #include <pcl/PixelTraits.h>
-#endif
+#include <pcl/Selection.h>
+#include <pcl/Sort.h>
+#include <pcl/String.h>
+#include <pcl/Utility.h>
 
 namespace pcl
 {
@@ -1393,7 +1368,7 @@ private:
    template <typename T>
    T Operate( T* f, size_type n ) const
    {
-      return *pcl::Select( f, f+n, distance_type( pcl::RoundI( k*(n-1) ) ) );
+      return *pcl::Select( f, f+n, distance_type( pcl::RoundInt( k*(n-1) ) ) );
    }
 };
 
@@ -1600,7 +1575,7 @@ private:
    {
       pcl::Sort( f, f+n );
       double s = 0;
-      size_type i1 = RoundI( d*((n - 1) >> 1) );
+      size_type i1 = RoundInt( d*((n - 1) >> 1) );
       size_type i2 = n-i1;
       for ( size_type i = i1; i < i2; ++i )
          s += f[i];
@@ -1615,4 +1590,4 @@ private:
 #endif   // __PCL_MorphologicalOperator_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MorphologicalOperator.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/MorphologicalOperator.h - Released 2017-05-28T08:28:50Z

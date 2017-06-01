@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/ImageView.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ImageView.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,25 +56,12 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_AutoPointer_h
 #include <pcl/AutoPointer.h>
-#endif
-
-#ifndef __PCL_ScrollBox_h
-#include <pcl/ScrollBox.h>
-#endif
-
-#ifndef __PCL_ImageWindow_h
-#include <pcl/ImageWindow.h>
-#endif
-
-#ifndef __PCL_ImageVariant_h
 #include <pcl/ImageVariant.h>
-#endif
+#include <pcl/ImageWindow.h>
+#include <pcl/ScrollBox.h>
 
 namespace pcl
 {
@@ -1469,4 +1456,4 @@ protected:
 #endif   // __PCL_ImageView_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageView.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ImageView.h - Released 2017-05-28T08:28:50Z

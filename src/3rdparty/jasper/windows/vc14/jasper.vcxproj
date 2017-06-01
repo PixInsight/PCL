@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+######################################################################
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
+######################################################################
+# Generated on .... 2017-05-02T09:40:43.546Z
+# Project id ...... jasper
+# Project type .... StaticLibrary
+# Platform ........ Windows/vc14
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Additional preprocessor definitions:
+# _CRT_SECURE_NO_WARNINGS
+######################################################################
+-->
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{FALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSE-FALSEFALSEFALSEFALSE-4FALSEFALSEFALSE-FALSEFALSEFALSEFALSE-FALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSE}</ProjectGuid>
+    <RootNamespace>PixInsight</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v140_xp</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140_xp</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(PCLLIBDIR64)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(PCLLIBDIR32)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(PCLLIBDIR64)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(PCLLIBDIR32)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">jasper-pxi</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">jasper-pxi</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">jasper-pxi</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">jasper-pxi</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_CRT_SECURE_NO_WARNINGS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat></DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(PCLLIBDIR64)\jasper-pxi.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_CRT_SECURE_NO_WARNINGS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat></DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(PCLLIBDIR32)\jasper-pxi.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(PCLLIBDIR64)\jasper-pxi.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(PCLLIBDIR32)\jasper-pxi.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\dummy.c"/>
+    <ClCompile Include="..\..\base\jas_cm.c"/>
+    <ClCompile Include="..\..\base\jas_debug.c"/>
+    <ClCompile Include="..\..\base\jas_getopt.c"/>
+    <ClCompile Include="..\..\base\jas_icc.c"/>
+    <ClCompile Include="..\..\base\jas_iccdata.c"/>
+    <ClCompile Include="..\..\base\jas_image.c"/>
+    <ClCompile Include="..\..\base\jas_init.c"/>
+    <ClCompile Include="..\..\base\jas_malloc.c"/>
+    <ClCompile Include="..\..\base\jas_seq.c"/>
+    <ClCompile Include="..\..\base\jas_stream.c"/>
+    <ClCompile Include="..\..\base\jas_string.c"/>
+    <ClCompile Include="..\..\base\jas_tmr.c"/>
+    <ClCompile Include="..\..\base\jas_tvp.c"/>
+    <ClCompile Include="..\..\base\jas_version.c"/>
+    <ClCompile Include="..\..\jp2\jp2_cod.c"/>
+    <ClCompile Include="..\..\jp2\jp2_dec.c"/>
+    <ClCompile Include="..\..\jp2\jp2_enc.c"/>
+    <ClCompile Include="..\..\jpc\jpc_bs.c"/>
+    <ClCompile Include="..\..\jpc\jpc_cs.c"/>
+    <ClCompile Include="..\..\jpc\jpc_dec.c"/>
+    <ClCompile Include="..\..\jpc\jpc_enc.c"/>
+    <ClCompile Include="..\..\jpc\jpc_math.c"/>
+    <ClCompile Include="..\..\jpc\jpc_mct.c"/>
+    <ClCompile Include="..\..\jpc\jpc_mqcod.c"/>
+    <ClCompile Include="..\..\jpc\jpc_mqdec.c"/>
+    <ClCompile Include="..\..\jpc\jpc_mqenc.c"/>
+    <ClCompile Include="..\..\jpc\jpc_qmfb.c"/>
+    <ClCompile Include="..\..\jpc\jpc_t1cod.c"/>
+    <ClCompile Include="..\..\jpc\jpc_t1dec.c"/>
+    <ClCompile Include="..\..\jpc\jpc_t1enc.c"/>
+    <ClCompile Include="..\..\jpc\jpc_t2cod.c"/>
+    <ClCompile Include="..\..\jpc\jpc_t2dec.c"/>
+    <ClCompile Include="..\..\jpc\jpc_t2enc.c"/>
+    <ClCompile Include="..\..\jpc\jpc_tagtree.c"/>
+    <ClCompile Include="..\..\jpc\jpc_tsfb.c"/>
+    <ClCompile Include="..\..\jpc\jpc_util.c"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\jas_cm.h"/>
+    <ClInclude Include="..\..\jas_config.h"/>
+    <ClInclude Include="..\..\jas_config2.h"/>
+    <ClInclude Include="..\..\jas_debug.h"/>
+    <ClInclude Include="..\..\jas_fix.h"/>
+    <ClInclude Include="..\..\jas_getopt.h"/>
+    <ClInclude Include="..\..\jas_icc.h"/>
+    <ClInclude Include="..\..\jas_image.h"/>
+    <ClInclude Include="..\..\jas_init.h"/>
+    <ClInclude Include="..\..\jas_malloc.h"/>
+    <ClInclude Include="..\..\jas_math.h"/>
+    <ClInclude Include="..\..\jas_seq.h"/>
+    <ClInclude Include="..\..\jas_stream.h"/>
+    <ClInclude Include="..\..\jas_string.h"/>
+    <ClInclude Include="..\..\jas_tmr.h"/>
+    <ClInclude Include="..\..\jas_tvp.h"/>
+    <ClInclude Include="..\..\jas_types.h"/>
+    <ClInclude Include="..\..\jas_version.h"/>
+    <ClInclude Include="..\..\jasper.h"/>
+    <ClInclude Include="..\..\jp2\jp2_cod.h"/>
+    <ClInclude Include="..\..\jp2\jp2_dec.h"/>
+    <ClInclude Include="..\..\jpc\jpc_bs.h"/>
+    <ClInclude Include="..\..\jpc\jpc_cod.h"/>
+    <ClInclude Include="..\..\jpc\jpc_cs.h"/>
+    <ClInclude Include="..\..\jpc\jpc_dec.h"/>
+    <ClInclude Include="..\..\jpc\jpc_enc.h"/>
+    <ClInclude Include="..\..\jpc\jpc_fix.h"/>
+    <ClInclude Include="..\..\jpc\jpc_flt.h"/>
+    <ClInclude Include="..\..\jpc\jpc_math.h"/>
+    <ClInclude Include="..\..\jpc\jpc_mct.h"/>
+    <ClInclude Include="..\..\jpc\jpc_mqcod.h"/>
+    <ClInclude Include="..\..\jpc\jpc_mqdec.h"/>
+    <ClInclude Include="..\..\jpc\jpc_mqenc.h"/>
+    <ClInclude Include="..\..\jpc\jpc_qmfb.h"/>
+    <ClInclude Include="..\..\jpc\jpc_t1cod.h"/>
+    <ClInclude Include="..\..\jpc\jpc_t1dec.h"/>
+    <ClInclude Include="..\..\jpc\jpc_t1enc.h"/>
+    <ClInclude Include="..\..\jpc\jpc_t2cod.h"/>
+    <ClInclude Include="..\..\jpc\jpc_t2dec.h"/>
+    <ClInclude Include="..\..\jpc\jpc_t2enc.h"/>
+    <ClInclude Include="..\..\jpc\jpc_tagtree.h"/>
+    <ClInclude Include="..\..\jpc\jpc_tsfb.h"/>
+    <ClInclude Include="..\..\jpc\jpc_util.h"/>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

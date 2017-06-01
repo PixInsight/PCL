@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/ColorFilterArray.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ColorFilterArray.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/ColorFilterArray.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_String_h
-#include <pcl/String.h>
-#endif
-
-#ifndef __PCL_Exception_h
 #include <pcl/Exception.h>
-#endif
+#include <pcl/String.h>
 
 namespace pcl
 {
@@ -128,8 +118,8 @@ public:
    {
       if ( m_width < 1 || m_height < 1 || size_type( NumberOfElements() ) != m_pattern.Length() )
          throw Error( "Malformed CFA pattern" );
-      for ( IsoString::const_iterator i = m_pattern.Begin(); i != m_pattern.End(); ++i )
-         if ( !IsValidCFAElement( *i ) )
+      for ( auto element : m_pattern )
+         if ( !IsValidCFAElement( element ) )
             throw Error( "Invalid CFA pattern \'" + m_pattern + "\'" );
    }
 
@@ -352,4 +342,4 @@ public:
 #endif   // __PCL_ColorFilterArray_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ColorFilterArray.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ColorFilterArray.h - Released 2017-05-28T08:28:50Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0374
 // ----------------------------------------------------------------------------
-// AutoHistogramInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// AutoHistogramInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -132,15 +132,10 @@ ProcessImplementation* AutoHistogramInterface::NewProcess() const
 
 bool AutoHistogramInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const AutoHistogramInstance* r = dynamic_cast<const AutoHistogramInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not an AutoHistogram instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const AutoHistogramInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an AutoHistogram instance.";
+   return false;
 }
 
 bool AutoHistogramInterface::RequiresInstanceValidation() const
@@ -582,4 +577,4 @@ AutoHistogramInterface::GUIData::GUIData( AutoHistogramInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AutoHistogramInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF AutoHistogramInterface.cpp - Released 2017-05-02T09:43:00Z

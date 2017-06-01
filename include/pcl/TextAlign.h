@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/TextAlign.h - Released 2016/02/21 20:22:12 UTC
+// pcl/TextAlign.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,13 +54,9 @@
 
 /// \file pcl/TextAlign.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Flags_h
 #include <pcl/Flags.h>
-#endif
 
 namespace pcl
 {
@@ -68,10 +64,11 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace TextAlign
+ * \namespace pcl::TextAlign
  * \brief     Text alignment modes.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
+ * <tr><td>TextAlign::Unknown</td>    <td>Unknown or unsupported alignment</td></tr>
  * <tr><td>TextAlign::Left</td>       <td>Left alignment</td></tr>
  * <tr><td>TextAlign::Right</td>      <td>Right alignment</td></tr>
  * <tr><td>TextAlign::HorzCenter</td> <td>Centered horizontally</td></tr>
@@ -81,13 +78,13 @@ namespace pcl
  * <tr><td>TextAlign::VertCenter</td> <td>Centered vertically</td></tr>
  * <tr><td>TextAlign::Center</td>     <td>Centered horizontally and vertically. Equal to HorzCenter|VertCenter.</td></tr>
  * <tr><td>TextAlign::Default</td>    <td>Default alignment. Equal to Left|Top.</td></tr>
- * <tr><td>TextAlign::Unknown</td>    <td>Unknown or unsupported alignment</td></tr>
  * </table>
  */
 namespace TextAlign
 {
    enum mask_type
    {
+      Unknown     = 0x00,
       Left        = 0x01,
       Right       = 0x02,
       HorzCenter  = 0x04,
@@ -95,14 +92,8 @@ namespace TextAlign
       Top         = 0x20,
       Bottom      = 0x40,
       VertCenter  = 0x80,
-#if defined( _MSC_VER ) && _MSC_VER >= 1700 // VC++ >= 2012
-      Center      = 132,
-      Default     = 33,
-#else
       Center      = HorzCenter|VertCenter,
-      Default     = Left|Top,
-#endif
-      Unknown     = 0x00
+      Default     = Left|Top
    };
 }
 
@@ -118,4 +109,4 @@ typedef Flags<TextAlign::mask_type> TextAlignmentFlags;
 #endif   // __PCL_TextAlign_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/TextAlign.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/TextAlign.h - Released 2017-05-28T08:28:50Z

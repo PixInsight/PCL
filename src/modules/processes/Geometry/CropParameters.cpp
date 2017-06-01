@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0346
 // ----------------------------------------------------------------------------
-// CropParameters.cpp - Released 2016/11/17 18:14:58 UTC
+// CropParameters.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -70,6 +70,7 @@ FillRed*          TheCRFillRedParameter = nullptr;
 FillGreen*        TheCRFillGreenParameter = nullptr;
 FillBlue*         TheCRFillBlueParameter = nullptr;
 FillAlpha*        TheCRFillAlphaParameter = nullptr;
+NoGUIMessages*    TheCRNoGUIMessagesParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -183,4 +184,4 @@ size_type CRMode::DefaultValueIndex() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CropParameters.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF CropParameters.cpp - Released 2017-05-02T09:43:00Z

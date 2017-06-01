@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Sandbox Process Module Version 01.00.02.0211
+// Standard Sandbox Process Module Version 01.00.02.0230
 // ----------------------------------------------------------------------------
-// SandboxInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// SandboxInterface.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Sandbox PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,7 +59,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-SandboxInterface* TheSandboxInterface = 0;
+SandboxInterface* TheSandboxInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -68,15 +68,15 @@ SandboxInterface* TheSandboxInterface = 0;
 // ----------------------------------------------------------------------------
 
 SandboxInterface::SandboxInterface() :
-ProcessInterface(), instance( TheSandboxProcess ), GUI( 0 )
+   instance( TheSandboxProcess )
 {
    TheSandboxInterface = this;
 }
 
 SandboxInterface::~SandboxInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString SandboxInterface::Id() const
@@ -91,7 +91,7 @@ MetaProcess* SandboxInterface::Process() const
 
 const char** SandboxInterface::IconImageXPM() const
 {
-   return 0; // SandboxIcon_XPM; ---> put a nice icon here
+   return nullptr; // SandboxIcon_XPM; ---> put a nice icon here
 }
 
 void SandboxInterface::ApplyInstance() const
@@ -107,7 +107,7 @@ void SandboxInterface::ResetInstance()
 
 bool SandboxInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "Sandbox" );
@@ -125,15 +125,10 @@ ProcessImplementation* SandboxInterface::NewProcess() const
 
 bool SandboxInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const SandboxInstance* r = dynamic_cast<const SandboxInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a Sandbox instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const SandboxInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a Sandbox instance.";
+   return false;
 }
 
 bool SandboxInterface::RequiresInstanceValidation() const
@@ -203,9 +198,9 @@ void SandboxInterface::__EditCompleted( Edit& sender )
 
 SandboxInterface::GUIData::GUIData( SandboxInterface& w )
 {
-   pcl::Font fnt = w.Font();
-   int labelWidth1 = fnt.Width( String( "Three:" ) ); // the longest label text
-   int editWidth1 = fnt.Width( String( '0', 7 ) );
+   pcl::Font font = w.Font();
+   int labelWidth1 = font.Width( String( "Three:" ) ); // the longest label text
+   int editWidth1 = font.Width( String( '0', 7 ) );
 
    //
 
@@ -301,4 +296,4 @@ SandboxInterface::GUIData::GUIData( SandboxInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SandboxInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF SandboxInterface.cpp - Released 2017-05-02T09:43:01Z

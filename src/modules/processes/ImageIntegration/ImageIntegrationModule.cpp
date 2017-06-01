@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.14.00.0390
 // ----------------------------------------------------------------------------
-// ImageIntegrationModule.cpp - Released 2016/11/13 17:30:54 UTC
+// ImageIntegrationModule.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -51,14 +51,14 @@
 // ----------------------------------------------------------------------------
 
 #define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     11
+#define MODULE_VERSION_MINOR     15
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0344
+#define MODULE_VERSION_BUILD     0397
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2016
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       13
+#define MODULE_RELEASE_YEAR      2017
+#define MODULE_RELEASE_MONTH     5
+#define MODULE_RELEASE_DAY       2
 
 #include "DrizzleIntegrationInstance.h"
 #include "DrizzleIntegrationInterface.h"
@@ -81,6 +81,8 @@ ImageIntegrationModule::ImageIntegrationModule() : MetaModule()
 {
 }
 
+// ----------------------------------------------------------------------------
+
 const char* ImageIntegrationModule::Version() const
 {
    return PCL_MODULE_VERSION( MODULE_VERSION_MAJOR,
@@ -90,35 +92,49 @@ const char* ImageIntegrationModule::Version() const
                               MODULE_VERSION_LANGUAGE );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString ImageIntegrationModule::Name() const
 {
    return "ImageIntegration";
 }
+
+// ----------------------------------------------------------------------------
 
 String ImageIntegrationModule::Description() const
 {
    return "PixInsight Standard ImageIntegration Process Module";
 }
 
+// ----------------------------------------------------------------------------
+
 String ImageIntegrationModule::Company() const
 {
    return "Pleiades Astrophoto";
 }
+
+// ----------------------------------------------------------------------------
 
 String ImageIntegrationModule::Author() const
 {
    return "Juan Conejero, PTeam";
 }
 
+// ----------------------------------------------------------------------------
+
 String ImageIntegrationModule::Copyright() const
 {
-   return "Copyright (c) 2009-2015, Pleiades Astrophoto";
+   return "Copyright (c) 2009-2017, Pleiades Astrophoto";
 }
+
+// ----------------------------------------------------------------------------
 
 String ImageIntegrationModule::TradeMarks() const
 {
    return "PixInsight";
 }
+
+// ----------------------------------------------------------------------------
 
 String ImageIntegrationModule::OriginalFileName() const
 {
@@ -136,6 +152,8 @@ String ImageIntegrationModule::OriginalFileName() const
 #endif
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageIntegrationModule::GetReleaseDate( int& year, int& month, int& day ) const
 {
    year  = MODULE_RELEASE_YEAR;
@@ -143,21 +161,24 @@ void ImageIntegrationModule::GetReleaseDate( int& year, int& month, int& day ) c
    day   = MODULE_RELEASE_DAY;
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageIntegrationModule::OnLoad()
 {
-   // ### File caches are created and loaded the first time an instance
-   //     is executed, or the first time a preferences dialog is launched.
-   //     Loading them here would add unnecessary workload during startup.
-
    /*
-   if ( TheIntegrationCache == 0 )
-      new IntegrationCache;
-   */
+    * ### N.B.: File caches are created and loaded the first time an instance
+    * is executed, or the first time a preferences dialog is launched. Loading
+    * them here would add an unnecessary workload during startup.
+    */
+//    if ( TheIntegrationCache == nullptr )
+//       new IntegrationCache;
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageIntegrationModule::OnUnload()
 {
-   if ( TheIntegrationCache != 0 )
+   if ( TheIntegrationCache != nullptr )
       TheIntegrationCache->Save();
 }
 
@@ -166,28 +187,10 @@ void ImageIntegrationModule::OnUnload()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
-//
-// Module installation routine.
-//
-// If this routine is defined as a public symbol in a module, the PixInsight
-// core application calls it just after loading and initialization of the
-// module shared object.
-//
-// The mode argument specifies the kind of installation being performed by the
-// core application. See the pcl::InstallMode namespace for more information.
-// ----------------------------------------------------------------------------
 
 PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 {
-   // When the PixInsight application installs this module, we just have to
-   // instantiate the meta objects describing it.
-
    new pcl::ImageIntegrationModule;
-
-   // The mode argument tells us what kind of installation is being requested
-   // by the PixInsight application. Incomplete installation requests only need
-   // module descriptions.
 
    if ( mode == pcl::InstallMode::FullInstall )
    {
@@ -199,9 +202,8 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
       new pcl::ImageIntegrationInterface;
    }
 
-   // Return zero to signal successful installation
    return 0;
 }
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationModule.cpp - Released 2016/11/13 17:30:54 UTC
+// EOF ImageIntegrationModule.cpp - Released 2017-05-02T09:43:00Z

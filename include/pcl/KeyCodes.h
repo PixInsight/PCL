@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/KeyCodes.h - Released 2016/02/21 20:22:12 UTC
+// pcl/KeyCodes.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,9 +54,7 @@
 
 /// \file pcl/KeyCodes.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
 #ifndef __PCL_NO_KEY_QUERY_UTILITIES
 # ifdef __PCL_WINDOWS
@@ -70,7 +68,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace KeyCode
+ * \namespace pcl::KeyCode
  * \brief Defines PCL key codes.
  *
  * The %KeyCode namespace defines platform-independent keyboard key identifiers
@@ -453,6 +451,22 @@ inline bool IsMetaPressed()
 
 #endif // __PCL_MACOSX
 
+/*!
+ * On UNIX, Linux and Windows platforms, returns true iff a Control key is
+ * currently pressed. On macOS, returns true iff the Command key is currently
+ * pressed.
+ *
+ * \ingroup keyboard_utilities
+ */
+inline bool IsControlOrCmdPressed()
+{
+#if defined( __PCL_MACOSX )
+   return IsCmdPressed();
+#else
+   return IsControlPressed();
+#endif
+}
+
 #endif // !__PCL_NO_KEY_QUERY_UTILITIES
 
 #endif // !__PCL_BUILDING_PIXINSIGHT_APPLICATION
@@ -464,4 +478,4 @@ inline bool IsMetaPressed()
 #endif   // __PCL_KeyCodes_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/KeyCodes.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/KeyCodes.h - Released 2017-05-28T08:28:50Z

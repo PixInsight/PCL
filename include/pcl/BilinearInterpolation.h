@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/BilinearInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// pcl/BilinearInterpolation.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/BilinearInterpolation.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Utility_h
-#include <pcl/Utility.h>
-#endif
-
-#ifndef __PCL_BidimensionalInterpolation_h
 #include <pcl/BidimensionalInterpolation.h>
-#endif
+#include <pcl/Utility.h>
 
 namespace pcl
 {
@@ -121,8 +111,8 @@ public:
       PCL_PRECONDITION( m_data != nullptr )
       PCL_PRECONDITION( m_width > 0 && m_height > 0 )
 
-      int j0 = pcl::Range( TruncI( x ), 0, m_width-1 );
-      int i0 = pcl::Range( TruncI( y ), 0, m_height-1 );
+      int j0 = pcl::Range( TruncInt( x ), 0, m_width-1 );
+      int i0 = pcl::Range( TruncInt( y ), 0, m_height-1 );
 
       int j1 = j0 + 1;
       int i1 = i0 + 1;
@@ -166,4 +156,4 @@ __1:
 #endif   // __PCL_BilinearInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/BilinearInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/BilinearInterpolation.h - Released 2017-05-28T08:28:50Z

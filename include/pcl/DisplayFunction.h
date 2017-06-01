@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/DisplayFunction.h - Released 2016/02/21 20:22:12 UTC
+// pcl/DisplayFunction.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/DisplayFunction.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_HistogramTransformation_h
 #include <pcl/HistogramTransformation.h>
-#endif
-
-#ifndef __PCL_Vector_h
 #include <pcl/Vector.h>
-#endif
 
 namespace pcl
 {
@@ -459,4 +449,4 @@ private:
 #endif   // __PCL_DisplayFunction_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/DisplayFunction.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/DisplayFunction.h - Released 2017-05-28T08:28:50Z

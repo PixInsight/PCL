@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard GradientDomain Process Module Version 00.06.04.0165
+// Standard GradientDomain Process Module Version 00.06.04.0184
 // ----------------------------------------------------------------------------
-// GradientsHdrCompositionInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// GradientsHdrCompositionInterface.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -32,10 +32,11 @@
 #include "GradientsHdrCompositionProcess.h"
 
 #include <pcl/Dialog.h>
-#include <pcl/FileDialog.h>
-#include <pcl/ViewList.h>
-#include <pcl/GlobalSettings.h>
 #include <pcl/ErrorHandler.h>
+#include <pcl/FileDialog.h>
+#include <pcl/FileFormat.h>
+#include <pcl/GlobalSettings.h>
+#include <pcl/ViewList.h>
 
 #define IMAGELIST_MINHEIGHT( fnt )  RoundInt( 8.125*fnt.Height() )
 
@@ -44,7 +45,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-GradientsHdrCompositionInterface* TheGradientsHdrCompositionInterface = 0;
+GradientsHdrCompositionInterface* TheGradientsHdrCompositionInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 //FIXME
@@ -53,22 +54,22 @@ GradientsHdrCompositionInterface* TheGradientsHdrCompositionInterface = 0;
 // ----------------------------------------------------------------------------
 
 GradientsHdrCompositionInterface::GradientsHdrCompositionInterface() :
-  ProcessInterface(),
-  instance( TheGradientsHdrCompositionProcess ),
-  GUI( 0 )
+   instance( TheGradientsHdrCompositionProcess )
 {
    TheGradientsHdrCompositionInterface = this;
 
-   // The auto save geometry feature is of no good to interfaces that include
-   // both auto-expanding controls (e.g. TreeBox) and collapsible sections
-   // (e.g. SectionBar).
+   /*
+    * The auto save geometry feature is of no good to interfaces that include
+    * both auto-expanding controls (e.g. TreeBox) and collapsible sections
+    * (e.g. SectionBar).
+    */
    DisableAutoSaveGeometry();
 }
 
 GradientsHdrCompositionInterface::~GradientsHdrCompositionInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString GradientsHdrCompositionInterface::Id() const
@@ -88,7 +89,7 @@ MetaProcess* GradientsHdrCompositionInterface::Process() const
 
 const char** GradientsHdrCompositionInterface::IconImageXPM() const
 {
-  return 0;
+  return nullptr;
   // FIXME
   // return GradientsHdrCompositionIcon_XPM;
 }
@@ -111,8 +112,7 @@ void GradientsHdrCompositionInterface::ResetInstance()
 
 bool GradientsHdrCompositionInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "GradientHDRComposition" );
@@ -135,15 +135,10 @@ ProcessImplementation* GradientsHdrCompositionInterface::NewProcess() const
 
 bool GradientsHdrCompositionInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const GradientsHdrCompositionInstance* r = dynamic_cast<const GradientsHdrCompositionInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a GradientHDRComposition instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const GradientsHdrCompositionInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a GradientHDRComposition instance.";
+   return false;
 }
 
 bool GradientsHdrCompositionInterface::RequiresInstanceValidation() const
@@ -176,7 +171,7 @@ void GradientsHdrCompositionInterface::UpdateControls()
 void GradientsHdrCompositionInterface::UpdateTargetImageItem( size_type i )
 {
    TreeBox::Node* node = GUI->TargetImages_TreeBox[i];
-   if ( node == 0 )
+   if ( node == nullptr )
       return;
 
    const GradientsHdrCompositionInstance::ImageItem& item = instance.targetFrames[i];
@@ -244,13 +239,10 @@ void GradientsHdrCompositionInterface::UpdateParameters()
   GUI->GenerateMask_CheckBox.SetChecked(instance.generateMask);
 }
 
-
-
 // ----------------------------------------------------------------------------
 
 void GradientsHdrCompositionInterface::__TargetImages_CurrentNodeUpdated( TreeBox& sender,
-                                                                   TreeBox::Node& current,
-                                                                   TreeBox::Node& oldCurrent )
+                                                         TreeBox::Node& current, TreeBox::Node& oldCurrent )
 {
    // Actually do nothing (placeholder). Just perform a sanity check.
    int index = sender.ChildIndex( &current );
@@ -297,7 +289,7 @@ void GradientsHdrCompositionInterface::__TargetImages_NodeSelectionUpdated( Tree
 static size_type TreeInsertionIndex( const TreeBox& tree )
 {
    const TreeBox::Node* n = tree.CurrentNode();
-   return (n != 0) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
+   return (n != nullptr) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
 }
 
 void GradientsHdrCompositionInterface::__TargetImages_Click( Button& sender, bool checked )
@@ -308,7 +300,6 @@ void GradientsHdrCompositionInterface::__TargetImages_Click( Button& sender, boo
       d.EnableMultipleSelections();
       d.LoadImageFilters();
       d.SetCaption( "GradientsHdrComposition: Select Target Frames" );
-
       if ( d.Execute() )
       {
          size_type i0 = TreeInsertionIndex( GUI->TargetImages_TreeBox );
@@ -360,7 +351,6 @@ void GradientsHdrCompositionInterface::__TargetImages_Click( Button& sender, boo
    }
 }
 
-
 void GradientsHdrCompositionInterface::__ToggleSection( SectionBar& sender, Control& section, bool start )
 {
    if ( start )
@@ -372,31 +362,56 @@ void GradientsHdrCompositionInterface::__ToggleSection( SectionBar& sender, Cont
    }
 }
 
-
 void GradientsHdrCompositionInterface::__logBiasUpdated( NumericEdit& sender, double value )
 {
-  if ( sender == GUI->LogBias_NumericControl ){
-    instance.dLogBias = value;
-  }
+   if ( sender == GUI->LogBias_NumericControl )
+      instance.dLogBias = value;
 }
-
 
 void GradientsHdrCompositionInterface::__KeepLogClicked( Button& sender, bool checked )
 {
-  if (sender == GUI->KeepLog_CheckBox)
-    instance.bKeepLog=checked;
+   if ( sender == GUI->KeepLog_CheckBox )
+      instance.bKeepLog=checked;
 }
 
 void GradientsHdrCompositionInterface::__NegativeBiasClicked( Button& sender, bool checked )
 {
-  if (sender == GUI->NegativeBias_CheckBox)
-    instance.bNegativeBias=checked;
+   if ( sender == GUI->NegativeBias_CheckBox )
+      instance.bNegativeBias=checked;
 }
 
 void GradientsHdrCompositionInterface::__GenerateMaskClicked( Button& sender, bool checked )
 {
-  if (sender == GUI->GenerateMask_CheckBox)
-    instance.generateMask=checked;
+   if ( sender == GUI->GenerateMask_CheckBox )
+      instance.generateMask=checked;
+}
+
+void GradientsHdrCompositionInterface::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+{
+   if ( sender == GUI->TargetImages_TreeBox.Viewport() )
+      wantsFiles = true;
+}
+
+void GradientsHdrCompositionInterface::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+{
+   if ( sender == GUI->TargetImages_TreeBox.Viewport() )
+   {
+      StringList inputFiles;
+      bool recursive = IsControlOrCmdPressed();
+      for ( const String& item : files )
+         if ( File::Exists( item ) )
+            inputFiles << item;
+         else if ( File::DirectoryExists( item ) )
+            inputFiles << FileFormat::SupportedImageFiles( item, true/*toRead*/, false/*toWrite*/, recursive );
+
+      inputFiles.Sort();
+      size_type i0 = TreeInsertionIndex( GUI->TargetImages_TreeBox );
+      for ( const String& file : inputFiles )
+         instance.targetFrames.Insert( instance.targetFrames.At( i0++ ), GradientsHdrCompositionInstance::ImageItem( file ) );
+
+      UpdateTargetImagesList();
+      UpdateImageSelectionButtons();
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -409,13 +424,12 @@ GradientsHdrCompositionInterface::GUIData::GUIData( GradientsHdrCompositionInter
 
    //
 
-   w.SetToolTip("<p>Integrates images of different exposures into a combined image using a gradient domain method. "
+   w.SetToolTip( "<p>Integrates images of different exposures into a combined image using a gradient domain method. "
       "Useful for creating HDR images.</p>"
-		"<p>(c) 2011 Georg Viehoever, published under LGPL 2.1. "
-		"With important contributions in terms of tests, test data, code and ideas "
-		"by Carlos Milovic, Harry Page and Alejandro Tombolini.</p>");
+      "<p>(c) 2011 Georg Viehoever, published under LGPL 2.1. "
+      "With important contributions in terms of tests, test data, code and ideas "
+      "by Carlos Milovic, Harry Page and Alejandro Tombolini.</p>" );
 
-   //
    TargetImages_SectionBar.SetTitle( "Target Frames" );
    TargetImages_SectionBar.SetSection( TargetImages_Control );
    TargetImages_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&GradientsHdrCompositionInterface::__ToggleSection, w );
@@ -429,6 +443,8 @@ GradientsHdrCompositionInterface::GUIData::GUIData( GradientsHdrCompositionInter
    TargetImages_TreeBox.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler)&GradientsHdrCompositionInterface::__TargetImages_CurrentNodeUpdated, w );
    TargetImages_TreeBox.OnNodeActivated( (TreeBox::node_event_handler)&GradientsHdrCompositionInterface::__TargetImages_NodeActivated, w );
    TargetImages_TreeBox.OnNodeSelectionUpdated( (TreeBox::tree_event_handler)&GradientsHdrCompositionInterface::__TargetImages_NodeSelectionUpdated, w );
+   TargetImages_TreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler)&GradientsHdrCompositionInterface::__FileDrag, w );
+   TargetImages_TreeBox.Viewport().OnFileDrop( (Control::file_drop_event_handler)&GradientsHdrCompositionInterface::__FileDrop, w );
 
    AddFiles_PushButton.SetText( "Add Files..." );
    AddFiles_PushButton.SetToolTip( "<p>Add existing image files to the list.</p>" );
@@ -476,12 +492,9 @@ GradientsHdrCompositionInterface::GUIData::GUIData( GradientsHdrCompositionInter
    TargetImages_Control.SetSizer( TargetImages_Sizer );
    TargetImages_Control.AdjustToContents();
 
-   //
    Parameters_SectionBar.SetTitle( "Parameters" );
    Parameters_SectionBar.SetSection( Parameters_Control );
    Parameters_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&GradientsHdrCompositionInterface::__ToggleSection, w );
-
-   //
 
    const char *biasToolTip="<p>Log10 of bias of image. This should identify the true black point of the images. " // ### Clarify description
                            "Smallest value is neutral. Use if result image is too faint</p>";
@@ -496,7 +509,6 @@ GradientsHdrCompositionInterface::GUIData::GUIData( GradientsHdrCompositionInter
    LogBias_NumericControl.edit.SetFixedWidth( editWidth1 );
    LogBias_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&GradientsHdrCompositionInterface::__logBiasUpdated, w );
 
-   //
    const char* negativeBiasToolTip="<p>Experimental: Use if you suspect your image has a negative bias (very unusual).</p>";
    NegativeBias_Label.SetText("NegativeBias:");
    NegativeBias_Label.SetFixedWidth(labelWidth1);
@@ -506,10 +518,8 @@ GradientsHdrCompositionInterface::GUIData::GUIData( GradientsHdrCompositionInter
    NegativeBias_CheckBox.SetToolTip(negativeBiasToolTip);
    NegativeBias_CheckBox.OnClick( (pcl::Button::click_event_handler)&GradientsHdrCompositionInterface::__NegativeBiasClicked,w);
 
-   Bias_Sizer.SetSpacing( 4);
+   Bias_Sizer.SetSpacing( 4 );
    Bias_Sizer.Add(LogBias_NumericControl);
-
-   //
 
    const char* keepLogToolTip="<p>Check to keep the result in the logarithmic scale, which is better for visualization. "
                               "Uncheck to get a more or less linear result, which is better for further processing.</p>";
@@ -521,11 +531,9 @@ GradientsHdrCompositionInterface::GUIData::GUIData( GradientsHdrCompositionInter
    KeepLog_CheckBox.SetToolTip(keepLogToolTip);
    KeepLog_CheckBox.OnClick( (pcl::Button::click_event_handler)&GradientsHdrCompositionInterface::__KeepLogClicked,w);
 
-   KeepLog_Sizer.SetSpacing( 4);
+   KeepLog_Sizer.SetSpacing( 4 );
    KeepLog_Sizer.Add(KeepLog_Label);
    KeepLog_Sizer.Add(KeepLog_CheckBox);
-
-   //
 
    const char* maskToolTip="<p>Check to generate two masks showing the contributions of each image to horizontal and vertical "
                            "gradients. Each pixel identifies the image that contributed to the respective gradient. 0 means no image. "
@@ -538,7 +546,7 @@ GradientsHdrCompositionInterface::GUIData::GUIData( GradientsHdrCompositionInter
    GenerateMask_CheckBox.SetToolTip(maskToolTip);
    GenerateMask_CheckBox.OnClick( (pcl::Button::click_event_handler)&GradientsHdrCompositionInterface::__GenerateMaskClicked,w);
 
-   GenerateMask_Sizer.SetSpacing( 4);
+   GenerateMask_Sizer.SetSpacing( 4 );
    GenerateMask_Sizer.Add(GenerateMask_Label);
    GenerateMask_Sizer.Add(GenerateMask_CheckBox);
    GenerateMask_Sizer.Add(NegativeBias_Label);
@@ -552,8 +560,6 @@ GradientsHdrCompositionInterface::GUIData::GUIData( GradientsHdrCompositionInter
    Parameters_Control.SetSizer(Parameters_Sizer);
    Parameters_Control.AdjustToContents();
 
-   //
-
    Global_Sizer.SetMargin( 8 );
    Global_Sizer.SetSpacing( 6 );
    Global_Sizer.Add( TargetImages_SectionBar );
@@ -562,9 +568,7 @@ GradientsHdrCompositionInterface::GUIData::GUIData( GradientsHdrCompositionInter
    Global_Sizer.Add( Parameters_Control );
 
    w.SetSizer( Global_Sizer );
-
    w.SetFixedWidth();
-
    w.AdjustToContents();
 }
 
@@ -573,4 +577,4 @@ GradientsHdrCompositionInterface::GUIData::GUIData( GradientsHdrCompositionInter
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF GradientsHdrCompositionInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF GradientsHdrCompositionInterface.cpp - Released 2017-05-02T09:43:01Z

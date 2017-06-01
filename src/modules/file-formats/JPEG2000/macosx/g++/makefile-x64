@@ -1,23 +1,12 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.101
-# Copyright (C) 2009-2015 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Fri, 18 Mar 2016 13:16:44 GMT
+# Generated on .... 2017-05-02T09:40:58.086Z
 # Project id ...... JPEG2000
 # Project type .... Module
 # Platform ........ MacOSX/g++
 # Configuration ... Release/x64
-# --------------------------------------------------------------------
-# Additional preprocessor definitions:
-# EXCLUDE_JPG_SUPPORT
-# EXCLUDE_MIF_SUPPORT
-# EXCLUDE_PNM_SUPPORT
-# EXCLUDE_RAS_SUPPORT
-# EXCLUDE_BMP_SUPPORT
-# EXCLUDE_PGX_SUPPORT
-# --------------------------------------------------------------------
-# Additional include search directories:
-# $(PCLSRCDIR)/3rdparty/jasper/include
 # --------------------------------------------------------------------
 # Additional libraries:
 # jasper-pxi
@@ -68,7 +57,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/JPEG2000-pxm.dylib: $(OBJ_FILES)
-	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -stdlib=libc++ -Wl,-dead_strip -dynamiclib -install_name @executable_path/JPEG2000-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/JPEG2000-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -ljasper-pxi -lpthread -lPCL-pxi
+	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.9 -stdlib=libc++ -Wl,-dead_strip -dynamiclib -install_name @executable_path/JPEG2000-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/JPEG2000-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi -llz4-pxi -lzlib-pxi -lRFC6234-pxi -llcms-pxi -lcminpack-pxi -ljasper-pxi
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
@@ -82,6 +71,6 @@ post-build:
 	codesign --deep -s pleiades -f -v --timestamp $(PCLBINDIR64)/JPEG2000-pxm.dylib
 
 ./x64/Release/%.o: ../../%.cpp
-	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -D"EXCLUDE_JPG_SUPPORT" -D"EXCLUDE_MIF_SUPPORT" -D"EXCLUDE_PNM_SUPPORT" -D"EXCLUDE_RAS_SUPPORT" -D"EXCLUDE_BMP_SUPPORT" -D"EXCLUDE_PGX_SUPPORT" -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty/jasper/include" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.9 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

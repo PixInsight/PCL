@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------
 //
 //  Little Color Management System
-//  Copyright (c) 1998-2012 Marti Maria Saguer
+//  Copyright (c) 1998-2016 Marti Maria Saguer
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -147,23 +147,24 @@ typedef struct {
         SUBALLOCATOR   Allocator;             // String suballocator -- just to keep it fast
 
         // Parser state machine
-        SYMBOL         sy;                    // Current symbol
-        int            ch;                    // Current character
+        SYMBOL             sy;                // Current symbol
+        int                ch;                // Current character
 
-        int            inum;                  // integer value
-        cmsFloat64Number         dnum;                  // real value
+        cmsInt32Number     inum;              // integer value
+        cmsFloat64Number   dnum;              // real value
+
         char           id[MAXID];             // identifier
         char           str[MAXSTR];           // string
 
         // Allowed keywords & datasets. They have visibility on whole stream
-        KEYVALUE*     ValidKeywords;
-        KEYVALUE*     ValidSampleID;
+        KEYVALUE*      ValidKeywords;
+        KEYVALUE*      ValidSampleID;
 
         char*          Source;                // Points to loc. being parsed
-        int            lineno;                // line counter for error reporting
+        cmsInt32Number lineno;                // line counter for error reporting
 
         FILECTX*       FileStack[MAXINCLUDE]; // Stack of files being parsed
-        int            IncludeSP;             // Include Stack Pointer
+        cmsInt32Number IncludeSP;             // Include Stack Pointer
 
         char*          MemoryBlock;           // The stream if holded in memory
 
@@ -565,8 +566,8 @@ void ReadReal(cmsIT8* it8, int inum)
     // Exponent, example 34.00E+20
     if (toupper(it8->ch) == 'E') {
 
-        int e;
-        int sgn;
+        cmsInt32Number e;
+        cmsInt32Number sgn;
 
         NextCh(it8); sgn = 1;
 
@@ -584,7 +585,7 @@ void ReadReal(cmsIT8* it8, int inum)
             e = 0;
             while (isdigit(it8->ch)) {
 
-                if ((cmsFloat64Number) e * 10L < INT_MAX)
+                if ((cmsFloat64Number) e * 10L < (cmsFloat64Number) +2147483647.0)
                     e = e * 10 + (it8->ch - '0');
 
                 NextCh(it8);
@@ -596,7 +597,7 @@ void ReadReal(cmsIT8* it8, int inum)
 }
 
 // Parses a float number
-// This can not call directly atof because it uses locale dependant
+// This can not call directly atof because it uses locale dependent
 // parsing, while CCMX files always use . as decimal separator
 static
 cmsFloat64Number ParseFloatNumber(const char *Buffer)
@@ -623,7 +624,7 @@ cmsFloat64Number ParseFloatNumber(const char *Buffer)
     if (*Buffer == '.') {
 
         cmsFloat64Number frac = 0.0;      // fraction
-        int prec = 0;                     // precission
+        int prec = 0;                     // precision
 
         if (*Buffer) Buffer++;
 
@@ -774,14 +775,16 @@ void InSymbol(cmsIT8* it8)
 
                 while (isdigit(it8->ch)) {
 
-                    if ((long) it8->inum * 10L > (long) INT_MAX) {
+                    cmsInt32Number digit = (it8->ch - '0');
+
+                    if ((cmsFloat64Number) it8->inum * 10.0 + (cmsFloat64Number) digit > (cmsFloat64Number) +2147483647.0) {
                         ReadReal(it8, it8->inum);
                         it8->sy = SDNUM;
                         it8->dnum *= sign;
                         return;
                     }
 
-                    it8->inum = it8->inum * 10 + (it8->ch - '0');
+                    it8->inum = it8->inum * 10 + digit;
                     NextCh(it8);
                 }
 
@@ -801,11 +804,11 @@ void InSymbol(cmsIT8* it8)
 
                     if (it8 ->sy == SINUM) {
 
-                        sprintf(it8->id, "%d", it8->inum);
+                        snprintf(it8->id, 127, "%d", it8->inum);
                     }
                     else {
 
-                        sprintf(it8->id, it8 ->DoubleFormatter, it8->dnum);
+                        snprintf(it8->id, 127, it8 ->DoubleFormatter, it8->dnum);
                     }
 
                     k = (int) strlen(it8 ->id);
@@ -871,7 +874,7 @@ void InSymbol(cmsIT8* it8)
             k = 0;
             NextCh(it8);
 
-            while (k < MAXSTR && it8->ch != sng) {
+            while (k < (MAXSTR-1) && it8->ch != sng) {
 
                 if (it8->ch == '\n'|| it8->ch == '\r') k = MAXSTR+1;
                 else {
@@ -1363,7 +1366,7 @@ cmsBool CMSEXPORT cmsIT8SetPropertyDbl(cmsHANDLE hIT8, const char* cProp, cmsFlo
     cmsIT8* it8 = (cmsIT8*) hIT8;
     char Buffer[1024];
 
-    sprintf(Buffer, it8->DoubleFormatter, Val);
+    snprintf(Buffer, 1023, it8->DoubleFormatter, Val);
 
     return AddToList(it8, &GetTable(it8)->HeaderList, cProp, NULL, Buffer, WRITE_UNCOOKED) != NULL;
 }
@@ -1373,7 +1376,7 @@ cmsBool CMSEXPORT cmsIT8SetPropertyHex(cmsHANDLE hIT8, const char* cProp, cmsUIn
     cmsIT8* it8 = (cmsIT8*) hIT8;
     char Buffer[1024];
 
-    sprintf(Buffer, "%u", Val);
+    snprintf(Buffer, 1023, "%u", Val);
 
     return AddToList(it8, &GetTable(it8)->HeaderList, cProp, NULL, Buffer, WRITE_HEXADECIMAL) != NULL;
 }
@@ -1817,7 +1820,7 @@ cmsBool CMSEXPORT cmsIT8SaveToMem(cmsHANDLE hIT8, void *MemPtr, cmsUInt32Number*
 }
 
 
-// -------------------------------------------------------------- Higer level parsing
+// -------------------------------------------------------------- Higher level parsing
 
 static
 cmsBool DataFormatSection(cmsIT8* it8)
@@ -1944,67 +1947,67 @@ cmsBool HeaderSection(cmsIT8* it8)
 
 
         case SIDENT:
-                strncpy(VarName, it8->id, MAXID-1);
-                VarName[MAXID-1] = 0;
+            strncpy(VarName, it8->id, MAXID - 1);
+            VarName[MAXID - 1] = 0;
 
-                if (!IsAvailableOnList(it8-> ValidKeywords, VarName, NULL, &Key)) {
+            if (!IsAvailableOnList(it8->ValidKeywords, VarName, NULL, &Key)) {
 
 #ifdef CMS_STRICT_CGATS
-                 return SynError(it8, "Undefined keyword '%s'", VarName);
+                return SynError(it8, "Undefined keyword '%s'", VarName);
 #else
-                    Key = AddAvailableProperty(it8, VarName, WRITE_UNCOOKED);
-                    if (Key == NULL) return FALSE;
+                Key = AddAvailableProperty(it8, VarName, WRITE_UNCOOKED);
+                if (Key == NULL) return FALSE;
 #endif
+            }
+
+            InSymbol(it8);
+            if (!GetVal(it8, Buffer, MAXSTR - 1, "Property data expected")) return FALSE;
+
+            if (Key->WriteAs != WRITE_PAIR) {
+                AddToList(it8, &GetTable(it8)->HeaderList, VarName, NULL, Buffer,
+                    (it8->sy == SSTRING) ? WRITE_STRINGIFY : WRITE_UNCOOKED);
+            }
+            else {
+                const char *Subkey;
+                char *Nextkey;
+                if (it8->sy != SSTRING)
+                    return SynError(it8, "Invalid value '%s' for property '%s'.", Buffer, VarName);
+
+                // chop the string as a list of "subkey, value" pairs, using ';' as a separator
+                for (Subkey = Buffer; Subkey != NULL; Subkey = Nextkey)
+                {
+                    char *Value, *temp;
+
+                    //  identify token pair boundary
+                    Nextkey = (char*)strchr(Subkey, ';');
+                    if (Nextkey)
+                        *Nextkey++ = '\0';
+
+                    // for each pair, split the subkey and the value
+                    Value = (char*)strrchr(Subkey, ',');
+                    if (Value == NULL)
+                        return SynError(it8, "Invalid value for property '%s'.", VarName);
+
+                    // gobble the spaces before the coma, and the coma itself
+                    temp = Value++;
+                    do *temp-- = '\0'; while (temp >= Subkey && *temp == ' ');
+
+                    // gobble any space at the right
+                    temp = Value + strlen(Value) - 1;
+                    while (*temp == ' ') *temp-- = '\0';
+
+                    // trim the strings from the left
+                    Subkey += strspn(Subkey, " ");
+                    Value += strspn(Value, " ");
+
+                    if (Subkey[0] == 0 || Value[0] == 0)
+                        return SynError(it8, "Invalid value for property '%s'.", VarName);
+                    AddToList(it8, &GetTable(it8)->HeaderList, VarName, Subkey, Value, WRITE_PAIR);
                 }
+            }
 
-                InSymbol(it8);
-                if (!GetVal(it8, Buffer, MAXSTR-1, "Property data expected")) return FALSE;
-
-                if(Key->WriteAs != WRITE_PAIR) {
-                    AddToList(it8, &GetTable(it8)->HeaderList, VarName, NULL, Buffer,
-                                (it8->sy == SSTRING) ? WRITE_STRINGIFY : WRITE_UNCOOKED);
-                }
-                else {
-                    const char *Subkey;
-                    char *Nextkey;
-                    if (it8->sy != SSTRING)
-                        return SynError(it8, "Invalid value '%s' for property '%s'.", Buffer, VarName);
-
-                    // chop the string as a list of "subkey, value" pairs, using ';' as a separator
-                    for (Subkey = Buffer; Subkey != NULL; Subkey = Nextkey)
-                    {
-                        char *Value, *temp;
-
-                        //  identify token pair boundary
-                        Nextkey = (char*) strchr(Subkey, ';');
-                        if(Nextkey)
-                            *Nextkey++ = '\0';
-
-                        // for each pair, split the subkey and the value
-                        Value = (char*) strrchr(Subkey, ',');
-                        if(Value == NULL)
-                            return SynError(it8, "Invalid value for property '%s'.", VarName);
-
-                        // gobble the spaces before the coma, and the coma itself
-                        temp = Value++;
-                        do *temp-- = '\0'; while(temp >= Subkey && *temp == ' ');
-
-                        // gobble any space at the right
-                        temp = Value + strlen(Value) - 1;
-                        while(*temp == ' ') *temp-- = '\0';
-
-                        // trim the strings from the left
-                        Subkey += strspn(Subkey, " ");
-                        Value += strspn(Value, " ");
-
-                        if(Subkey[0] == 0 || Value[0] == 0)
-                            return SynError(it8, "Invalid value for property '%s'.", VarName);
-                        AddToList(it8, &GetTable(it8)->HeaderList, VarName, Subkey, Value, WRITE_PAIR);
-                    }
-                }
-
-                InSymbol(it8);
-                break;
+            InSymbol(it8);
+            break;
 
 
         case SEOLN: break;
@@ -2024,14 +2027,17 @@ cmsBool HeaderSection(cmsIT8* it8)
 static
 void ReadType(cmsIT8* it8, char* SheetTypePtr)
 {
+    cmsInt32Number cnt = 0;
+
     // First line is a very special case.
 
     while (isseparator(it8->ch))
             NextCh(it8);
 
-    while (it8->ch != '\r' && it8 ->ch != '\n' && it8->ch != '\t' && it8 -> ch != -1) {
+    while (it8->ch != '\r' && it8 ->ch != '\n' && it8->ch != '\t' && it8 -> ch != 0) {
 
-        *SheetTypePtr++= (char) it8 ->ch;
+        if (cnt++ < MAXSTR) 
+            *SheetTypePtr++= (char) it8 ->ch;
         NextCh(it8);
     }
 
@@ -2120,7 +2126,7 @@ cmsBool ParseIT8(cmsIT8* it8, cmsBool nosheet)
 
 
 
-// Init usefull pointers
+// Init useful pointers
 
 static
 void CookPointers(cmsIT8* it8)
@@ -2224,7 +2230,7 @@ void CookPointers(cmsIT8* it8)
 // that should be something like some printable characters plus a \n
 // returns 0 if this is not like a CGATS, or an integer otherwise. This integer is the number of words in first line?
 static
-int IsMyBlock(cmsUInt8Number* Buffer, int n)
+int IsMyBlock(const cmsUInt8Number* Buffer, int n)
 {
     int words = 1, space = 0, quot = 0;
     int i;
@@ -2288,7 +2294,7 @@ cmsBool IsMyFile(const char* FileName)
 // ---------------------------------------------------------- Exported routines
 
 
-cmsHANDLE  CMSEXPORT cmsIT8LoadFromMem(cmsContext ContextID, void *Ptr, cmsUInt32Number len)
+cmsHANDLE  CMSEXPORT cmsIT8LoadFromMem(cmsContext ContextID, const void *Ptr, cmsUInt32Number len)
 {
     cmsHANDLE hIT8;
     cmsIT8*  it8;
@@ -2297,7 +2303,7 @@ cmsHANDLE  CMSEXPORT cmsIT8LoadFromMem(cmsContext ContextID, void *Ptr, cmsUInt3
     _cmsAssert(Ptr != NULL);
     _cmsAssert(len != 0);
 
-    type = IsMyBlock((cmsUInt8Number*)Ptr, len);
+    type = IsMyBlock((const cmsUInt8Number*)Ptr, len);
     if (type == 0) return NULL;
 
     hIT8 = cmsIT8Alloc(ContextID);
@@ -2516,8 +2522,10 @@ int LocateSample(cmsIT8* it8, const char* cSample)
     for (i=0; i < t->nSamples; i++) {
 
         fld = GetDataFormat(it8, i);
-        if (cmsstrcasecmp(fld, cSample) == 0)
-            return i;
+        if (fld != NULL) {
+            if (cmsstrcasecmp(fld, cSample) == 0)
+                return i;
+        }
     }
 
     return -1;
@@ -2575,7 +2583,7 @@ cmsBool CMSEXPORT cmsIT8SetDataRowColDbl(cmsHANDLE hIT8, int row, int col, cmsFl
 
     _cmsAssert(hIT8 != NULL);
 
-    sprintf(Buff, it8->DoubleFormatter, Val);
+    snprintf(Buff, 255, it8->DoubleFormatter, Val);
 
     return SetData(it8, row, col, Buff);
 }

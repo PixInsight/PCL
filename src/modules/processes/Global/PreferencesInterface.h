@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0328
+// Standard Global Process Module Version 01.02.07.0347
 // ----------------------------------------------------------------------------
-// PreferencesInterface.h - Released 2016/02/21 20:22:42 UTC
+// PreferencesInterface.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -93,10 +93,10 @@ public:
 
    virtual void Synchronize();
 
-   pcl_bool* item;
+   pcl_bool* item = nullptr;
    CheckBox  checkBox;
-   Control*  enableControl;
-   Control*  disableControl;
+   Control*  enableControl = nullptr;
+   Control*  disableControl = nullptr;
 
 private:
 
@@ -113,7 +113,7 @@ public:
 
    virtual void Synchronize();
 
-   int32*          item;
+   int32*          item = nullptr;
    Label           label;
    HorizontalSizer spinSizer;
       SpinBox         spinBox;
@@ -133,8 +133,8 @@ public:
 
    virtual void Synchronize();
 
-   int32*          item;
-   int             minValue;
+   int32*          item = nullptr;
+   int             minValue = 0;
    Label           label;
    HorizontalSizer comboSizer;
       ComboBox       comboBox;
@@ -154,7 +154,7 @@ public:
 
    virtual void Synchronize();
 
-   double*         item;
+   double*         item = nullptr;
    Label           label;
    HorizontalSizer numericSizer;
       NumericEdit     numericEdit;
@@ -174,7 +174,7 @@ public:
 
    virtual void Synchronize();
 
-   String*  item;
+   String*  item = nullptr;
    Label    label;
    Edit     edit;
 
@@ -202,6 +202,8 @@ private:
    virtual String GetText( const String& s );
 
    void __SelectDir( Button& sender, bool checked );
+   void __FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
+   void __FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
 };
 
 // ----------------------------------------------------------------------------
@@ -219,6 +221,8 @@ private:
    virtual String GetText( const String& s );
 
    void __SelectFile( Button& sender, bool checked );
+   void __FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
+   void __FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
 };
 
 // ----------------------------------------------------------------------------
@@ -257,7 +261,7 @@ public:
 
    virtual void Synchronize();
 
-   uint32*         item;
+   uint32*         item = nullptr;
    Label           label;
    HorizontalSizer colorSizer;
       ColorComboBox   colorComboBox;
@@ -280,9 +284,9 @@ public:
 
    virtual void Synchronize();
 
-   String*         item;
-   int32*          itemSize;
-   pcl_bool*       itemSizeAuto;
+   String*         item         = nullptr;
+   int32*          itemSize     = nullptr;
+   pcl_bool*       itemSizeAuto = nullptr;
    Label           label;
    FontComboBox    fontComboBox;
    Edit            fontSample;
@@ -308,7 +312,7 @@ public:
 
    virtual void Synchronize();
 
-   StringList*     item;
+   StringList*     item = nullptr;
    Label           label;
    String          dialogTitle;
    TreeBox         directoriesTreeBox;
@@ -321,6 +325,8 @@ private:
 
    void __NodeActivated( TreeBox& sender, TreeBox::Node& node, int col );
    void __Click( Button& sender, bool checked );
+   void __FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
+   void __FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
 };
 
 // ----------------------------------------------------------------------------
@@ -377,21 +383,20 @@ class PreferencesCategory
 {
 public:
 
-   PreferencesCategoryPage* page;
+   PreferencesCategoryPage* page = nullptr;
 
-   PreferencesCategory() : page( 0 )
-   {
-   }
+   PreferencesCategory() = default;
 
    virtual ~PreferencesCategory()
    {
-      if ( page != 0 && page->Parent().IsNull() )
-         delete page;
+      if ( page != nullptr )
+         if ( page->Parent().IsNull() )
+            delete page, page = nullptr;
    }
 
    PreferencesCategoryPage* CreatePage( PreferencesInstance& instance )
    {
-      if ( page == 0 )
+      if ( page == nullptr )
          page = NewPage( instance );
       return page;
    }
@@ -405,19 +410,19 @@ public:
 
    void HidePage()
    {
-      if ( page != 0 )
+      if ( page != nullptr )
          page->Hide();
    }
 
    void PerformAdditionalUpdates()
    {
-      if ( page != 0 )
+      if ( page != nullptr )
          page->PerformAdditionalUpdates();
    }
 
    void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from )
    {
-      if ( page != 0 )
+      if ( page != nullptr )
          page->TransferSettings( to, from );
    }
 
@@ -456,17 +461,22 @@ public:
 
    virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
 
-   GlobalFlagControl    MaximizeAtStartup_Flag;
-   GlobalFlagControl    FullScreenAtStartup_Flag;
-   GlobalFlagControl    ShowSplashAtStartup_Flag;
-   GlobalFlagControl    CheckForUpdatesAtStartup_Flag;
-   GlobalFlagControl    ConfirmProgramTermination_Flag;
-   GlobalFlagControl    NativeMenuBar_Flag;
-   GlobalFlagControl    CapitalizedMenuBars_Flag;
-   GlobalFlagControl    WindowButtonsOnTheLeft_Flag;
-   GlobalFlagControl    AcceptDroppedFiles_Flag;
-   GlobalFlagControl    DoubleClickLaunchesOpenDialog_Flag;
-   GlobalIntegerControl MaxRecentFiles_Integer;
+   GlobalFlagControl          MaximizeAtStartup_Flag;
+   GlobalFlagControl          FullScreenAtStartup_Flag;
+   GlobalFlagControl          ShowSplashAtStartup_Flag;
+   GlobalFlagControl          CheckForUpdatesAtStartup_Flag;
+   GlobalFlagControl          ConfirmProgramTermination_Flag;
+   GlobalFlagControl          NativeMenuBar_Flag;
+   GlobalFlagControl          CapitalizedMenuBars_Flag;
+   GlobalFlagControl          WindowButtonsOnTheLeft_Flag;
+   GlobalFlagControl          AcceptDroppedFiles_Flag;
+   GlobalFlagControl          DoubleClickLaunchesOpenDialog_Flag;
+   GlobalIntegerControl       MaxRecentFiles_Integer;
+   GlobalFlagControl          ShowRecentlyUsed_Flag;
+   GlobalFlagControl          ShowMostUsed_Flag;
+   GlobalIntegerControl       MaxUsageListLength_Integer;
+   GlobalFlagControl          ExpandUsageItemsAtStartup_Flag;
+   GlobalFlagControl          OpenURLsWithInternalBrowser_Flag;
 };
 
 DEFINE_PREFERENCES_CATEGORY( MainWindow, "Main Window / Startup" )
@@ -481,18 +491,18 @@ public:
 
    virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
 
-   GlobalFileControl    StyleSheet_File;
-   GlobalFileSetControl Resources_FileSet;
-   GlobalFlagControl    AutoUIScaling_Flag;
-   HorizontalSizer      UIScaling_Sizer;
-      GlobalRealControl    UIScalingFactor_Real;
-      GlobalIntegerControl FontResolution_Integer;
-   HorizontalSizer      Font_Sizer;
-      GlobalStringControl  LowResFont_String;
-      GlobalStringControl  HighResFont_String;
-   HorizontalSizer      MonoFont_Sizer;
-      GlobalStringControl  LowResMonoFont_String;
-      GlobalStringControl  HighResMonoFont_String;
+   GlobalFileControl          StyleSheet_File;
+   GlobalFileSetControl       Resources_FileSet;
+   GlobalFlagControl          AutoUIScaling_Flag;
+   HorizontalSizer            UIScaling_Sizer;
+      GlobalRealControl          UIScalingFactor_Real;
+      GlobalIntegerControl       FontResolution_Integer;
+   HorizontalSizer            Font_Sizer;
+      GlobalStringControl        LowResFont_String;
+      GlobalStringControl        HighResFont_String;
+   HorizontalSizer            MonoFont_Sizer;
+      GlobalStringControl        LowResMonoFont_String;
+      GlobalStringControl        HighResMonoFont_String;
 };
 
 DEFINE_PREFERENCES_CATEGORY( Resources, "Core UI Resources" )
@@ -507,23 +517,23 @@ public:
 
    virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
 
-   GlobalFlagControl    HoverableAutoHideWindows_Flag;
-   GlobalFlagControl    DesktopSettingsAware_Flag;
-   GlobalFlagControl    TranslucentWindows_Flag;
-   GlobalFlagControl    TranslucentChildWindows_Flag;
-   GlobalFlagControl    FadeWindows_Flag;
-   GlobalFlagControl    FadeAutoHideWindows_Flag;
-   GlobalFlagControl    TranslucentAutoHideWindows_Flag;
-   GlobalFlagControl    FadeWorkspaces_Flag;
-   GlobalFlagControl    FadeMenu_Flag;
-   GlobalFlagControl    FadeToolTip_Flag;
-   GlobalFlagControl    ExplodeIcons_Flag;
-   GlobalFlagControl    ImplodeIcons_Flag;
-   GlobalFlagControl    AnimateWindows_Flag;
-   GlobalFlagControl    AnimateMenu_Flag;
-   GlobalFlagControl    AnimateCombo_Flag;
-   GlobalFlagControl    AnimateToolTip_Flag;
-   GlobalFlagControl    AnimateToolBox_Flag;
+   GlobalFlagControl          HoverableAutoHideWindows_Flag;
+   GlobalFlagControl          DesktopSettingsAware_Flag;
+   GlobalFlagControl          TranslucentWindows_Flag;
+   GlobalFlagControl          TranslucentChildWindows_Flag;
+   GlobalFlagControl          FadeWindows_Flag;
+   GlobalFlagControl          FadeAutoHideWindows_Flag;
+   GlobalFlagControl          TranslucentAutoHideWindows_Flag;
+   GlobalFlagControl          FadeWorkspaces_Flag;
+   GlobalFlagControl          FadeMenu_Flag;
+   GlobalFlagControl          FadeToolTip_Flag;
+   GlobalFlagControl          ExplodeIcons_Flag;
+   GlobalFlagControl          ImplodeIcons_Flag;
+   GlobalFlagControl          AnimateWindows_Flag;
+   GlobalFlagControl          AnimateMenu_Flag;
+   GlobalFlagControl          AnimateCombo_Flag;
+   GlobalFlagControl          AnimateToolTip_Flag;
+   GlobalFlagControl          AnimateToolBox_Flag;
 };
 
 DEFINE_PREFERENCES_CATEGORY( GUIEffects, "Special GUI Effects" )
@@ -538,15 +548,15 @@ public:
 
    virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
 
-   GlobalFlagControl    BackupFiles_Flag;
+   GlobalFlagControl          BackupFiles_Flag;
    GlobalFileExtensionControl DefaultFileExtension_Ext;
-   GlobalFlagControl    NativeFileDialogs_Flag;
-   GlobalFlagControl    RememberFileOpenType_Flag;
-   GlobalFlagControl    RememberFileSaveType_Flag;
-   GlobalFlagControl    StrictFileSaveMode_Flag;
-   GlobalFlagControl    FileFormatWarnings_Flag;
-   GlobalFlagControl    DefaultEmbedThumbnails_Flag;
-   GlobalFlagControl    DefaultEmbedProperties_Flag;
+   GlobalFlagControl          NativeFileDialogs_Flag;
+   GlobalFlagControl          RememberFileOpenType_Flag;
+   GlobalFlagControl          RememberFileSaveType_Flag;
+   GlobalFlagControl          StrictFileSaveMode_Flag;
+   GlobalFlagControl          FileFormatWarnings_Flag;
+   GlobalFlagControl          DefaultEmbedThumbnails_Flag;
+   GlobalFlagControl          DefaultEmbedProperties_Flag;
 };
 
 DEFINE_PREFERENCES_CATEGORY( FileIO, "File I/O Settings" )
@@ -562,10 +572,10 @@ public:
    virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
 
    GlobalDirectoryListControl SwapDirectories_DirList;
-   GlobalFlagControl    SwapCompression_Flag;
+   GlobalFlagControl          SwapCompression_Flag;
    GlobalDirectoryControl     DownloadsDirectory_Dir;
-   GlobalFlagControl    FollowDownloadLocations_Flag;
-   GlobalFlagControl    VerboseNetworkOperations_Flag;
+   GlobalFlagControl          FollowDownloadLocations_Flag;
+   GlobalFlagControl          VerboseNetworkOperations_Flag;
 };
 
 DEFINE_PREFERENCES_CATEGORY( DirectoriesAndNetwork, "Directories and Network" )
@@ -580,9 +590,9 @@ public:
 
    virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
 
-   GlobalRealControl    DefaultHorizontalResolution_Real;
-   GlobalRealControl    DefaultVerticalResolution_Real;
-   GlobalFlagControl    DefaultMetricResolution_Flag;
+   GlobalRealControl          DefaultHorizontalResolution_Real;
+   GlobalRealControl          DefaultVerticalResolution_Real;
+   GlobalFlagControl          DefaultMetricResolution_Flag;
 };
 
 DEFINE_PREFERENCES_CATEGORY( DefaultImageResolution, "Default Image Resolution" )
@@ -597,8 +607,8 @@ public:
 
    virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
 
-   GlobalFlagControl    DefaultMasksShown_Flag;
-   GlobalSetControl     DefaultMaskMode_Set;
+   GlobalFlagControl          DefaultMasksShown_Flag;
+   GlobalSetControl           DefaultMaskMode_Set;
 };
 
 DEFINE_PREFERENCES_CATEGORY( DefaultMaskSettings, "Default Mask Settings" )
@@ -613,8 +623,8 @@ public:
 
    virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
 
-   GlobalSetControl     DefaultTransparencyMode_Set;
-   GlobalSetControl     TransparencyBrush_Set;
+   GlobalSetControl           DefaultTransparencyMode_Set;
+   GlobalSetControl           TransparencyBrush_Set;
 };
 
 DEFINE_PREFERENCES_CATEGORY( DefaultTransparencySettings, "Default Transparency Settings" )
@@ -629,19 +639,19 @@ public:
 
    virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
 
-   GlobalFlagControl    ShowCaptionCurrentChannels_Flag;
-   GlobalFlagControl    ShowCaptionZoomRatios_Flag;
-   GlobalFlagControl    ShowCaptionIdentifiers_Flag;
-   GlobalFlagControl    ShowCaptionFullPaths_Flag;
-   GlobalFlagControl    ShowActiveSTFIndicators_Flag;
-   GlobalIntegerControl CursorTolerance_Integer;
-   GlobalFlagControl    TouchEvents_Flag;
-   GlobalRealControl    PinchSensitivity_Real;
-   GlobalFlagControl    FastScreenRenditions_Flag;
-   GlobalIntegerControl FastScreenRenditionThreshold_Integer;
-   GlobalFlagControl    HighDPIRenditions_Flag;
-   GlobalFlagControl    Default24BitScreenLUT_Flag;
-   GlobalFlagControl    CreatePreviewsFromCoreProperties_Flag;
+   GlobalFlagControl          ShowCaptionCurrentChannels_Flag;
+   GlobalFlagControl          ShowCaptionZoomRatios_Flag;
+   GlobalFlagControl          ShowCaptionIdentifiers_Flag;
+   GlobalFlagControl          ShowCaptionFullPaths_Flag;
+   GlobalFlagControl          ShowActiveSTFIndicators_Flag;
+   GlobalIntegerControl       CursorTolerance_Integer;
+   GlobalFlagControl          TouchEvents_Flag;
+   GlobalRealControl          PinchSensitivity_Real;
+   GlobalFlagControl          FastScreenRenditions_Flag;
+   GlobalIntegerControl       FastScreenRenditionThreshold_Integer;
+   GlobalFlagControl          HighDPIRenditions_Flag;
+   GlobalFlagControl          Default24BitScreenLUT_Flag;
+   GlobalFlagControl          CreatePreviewsFromCoreProperties_Flag;
 };
 
 DEFINE_PREFERENCES_CATEGORY( MiscImageWindowSettings, "Miscellaneous Image Window Settings" )
@@ -656,13 +666,13 @@ public:
 
    virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
 
-   GlobalFlagControl       UseFileNamesAsImageIdentifiers_Flag;
-   GlobalIdentifierControl WorkspacePrefix_Id;
-   GlobalIdentifierControl ImagePrefix_Id;
-   GlobalIdentifierControl PreviewPrefix_Id;
-   GlobalIdentifierControl ProcessIconPrefix_Id;
-   GlobalIdentifierControl ImageContainerIconPrefix_Id;
-   GlobalIdentifierControl ClonePostfix_Id;
+   GlobalFlagControl          UseFileNamesAsImageIdentifiers_Flag;
+   GlobalIdentifierControl    WorkspacePrefix_Id;
+   GlobalIdentifierControl    ImagePrefix_Id;
+   GlobalIdentifierControl    PreviewPrefix_Id;
+   GlobalIdentifierControl    ProcessIconPrefix_Id;
+   GlobalIdentifierControl    ImageContainerIconPrefix_Id;
+   GlobalIdentifierControl    ClonePostfix_Id;
 };
 
 DEFINE_PREFERENCES_CATEGORY( Identifiers, "Global Object Identifiers" )
@@ -677,12 +687,12 @@ public:
 
    virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
 
-   GlobalStringControl  NewImageCaption_String;
-   GlobalStringControl  NoViewsAvailableText_String;
-   GlobalStringControl  NoViewSelectedText_String;
-   GlobalStringControl  NoPreviewsAvailableText_String;
-   GlobalStringControl  NoPreviewSelectedText_String;
-   GlobalStringControl  BrokenLinkText_String;
+   GlobalStringControl        NewImageCaption_String;
+   GlobalStringControl        NoViewsAvailableText_String;
+   GlobalStringControl        NoViewSelectedText_String;
+   GlobalStringControl        NoPreviewsAvailableText_String;
+   GlobalStringControl        NoPreviewSelectedText_String;
+   GlobalStringControl        BrokenLinkText_String;
 };
 
 DEFINE_PREFERENCES_CATEGORY( Strings, "Global Strings and Indicators" )
@@ -698,14 +708,14 @@ public:
    virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
    virtual void PerformAdditionalUpdates();
 
-   GlobalFlagControl    EnableParallelProcessing_Flag;
-   GlobalFlagControl    EnableParallelCoreRendering_Flag;
-   GlobalFlagControl    EnableParallelCoreColorManagement_Flag;
-   GlobalFlagControl    EnableParallelModuleProcessing_Flag;
-   GlobalFlagControl    EnableThreadCPUAffinity_Flag;
-   GlobalSetControl     MaxModuleThreadPriority_Set;
-   GlobalIntegerControl MaxProcessors_Integer;
-   CheckBox             UseAllAvailableProcessors_CheckBox;
+   GlobalFlagControl          EnableParallelProcessing_Flag;
+   GlobalFlagControl          EnableParallelCoreRendering_Flag;
+   GlobalFlagControl          EnableParallelCoreColorManagement_Flag;
+   GlobalFlagControl          EnableParallelModuleProcessing_Flag;
+   GlobalFlagControl          EnableThreadCPUAffinity_Flag;
+   GlobalSetControl           MaxModuleThreadPriority_Set;
+   GlobalIntegerControl       MaxProcessors_Integer;
+   CheckBox                   UseAllAvailableProcessors_CheckBox;
 
    void __UseAllAvailableProcessors_ButtonClick( Button& sender, bool checked );
 };
@@ -722,12 +732,14 @@ public:
 
    virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
 
-   GlobalFlagControl    BackupPSMFiles_Flag;
-   GlobalFlagControl    GenerateScriptComments_Flag;
-   GlobalIntegerControl MaxConsoleLines_Integer;
-   GlobalIntegerControl ConsoleDelay_Integer;
-   GlobalIntegerControl AutoSavePSMPeriod_Integer;
-   GlobalFlagControl    AlertOnProcessCompleted_Flag;
+   GlobalFlagControl          BackupPSMFiles_Flag;
+   GlobalFlagControl          GenerateScriptComments_Flag;
+   GlobalIntegerControl       MaxConsoleLines_Integer;
+   GlobalIntegerControl       ConsoleDelay_Integer;
+   GlobalIntegerControl       AutoSavePSMPeriod_Integer;
+   GlobalFlagControl          AlertOnProcessCompleted_Flag;
+   GlobalFlagControl          EnableExecutionStatistics_Flag;
+   GlobalFlagControl          EnableLaunchStatistics_Flag;
 };
 
 DEFINE_PREFERENCES_CATEGORY( MiscProcessing, "Miscellaneous Process Settings" )
@@ -742,9 +754,9 @@ public:
 
    virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
 
-   GlobalColorControl   TransparencyBrushForegroundColor_Color;
-   GlobalColorControl   TransparencyBrushBackgroundColor_Color;
-   GlobalColorControl   DefaultTransparencyColor_Color;
+   GlobalColorControl         TransparencyBrushForegroundColor_Color;
+   GlobalColorControl         TransparencyBrushBackgroundColor_Color;
+   GlobalColorControl         DefaultTransparencyColor_Color;
 };
 
 DEFINE_PREFERENCES_CATEGORY( TransparencyColors, "Transparency Colors" )
@@ -837,7 +849,7 @@ private:
       void InitializeCategories();
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
    void SelectPageByTreeNode( TreeBox::Node* node );
@@ -861,4 +873,4 @@ PCL_END_LOCAL
 #endif   // __PreferencesInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInterface.h - Released 2016/02/21 20:22:42 UTC
+// EOF PreferencesInterface.h - Released 2017-05-02T09:43:00Z

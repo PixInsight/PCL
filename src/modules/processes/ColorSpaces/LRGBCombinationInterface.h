@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0298
+// Standard ColorSpaces Process Module Version 01.01.00.0317
 // ----------------------------------------------------------------------------
-// LRGBCombinationInterface.h - Released 2016/02/21 20:22:42 UTC
+// LRGBCombinationInterface.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,24 +53,20 @@
 #ifndef __LRGBCombinationInterface_h
 #define __LRGBCombinationInterface_h
 
-#include <pcl/ProcessInterface.h>
-
-#include <pcl/Sizer.h>
-#include <pcl/SectionBar.h>
 #include <pcl/CheckBox.h>
 #include <pcl/Edit.h>
-#include <pcl/ToolButton.h>
 #include <pcl/NumericControl.h>
+#include <pcl/ProcessInterface.h>
+#include <pcl/SectionBar.h>
+#include <pcl/Sizer.h>
 #include <pcl/SpinBox.h>
-#include <pcl/ViewList.h>
+#include <pcl/ToolButton.h>
 
 #include "LRGBCombinationInstance.h"
 
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// LRGBCombinationInterface
 // ----------------------------------------------------------------------------
 
 class LRGBCombinationInterface : public ProcessInterface
@@ -97,13 +93,9 @@ public:
    virtual bool RequiresInstanceValidation() const;
    virtual bool ImportProcess( const ProcessImplementation& );
 
-   // -------------------------------------------------------------------------
-
 private:
 
    LRGBCombinationInstance instance;
-
-   // -------------------------------------------------------------------------
 
    struct GUIData
    {
@@ -116,23 +108,24 @@ private:
       VerticalSizer     Channels_Sizer;
          HorizontalSizer   L_Sizer;
             CheckBox          L_CheckBox;
+            Label             L_Label;
             Edit              L_Edit;
             ToolButton        L_ToolButton;
          HorizontalSizer   R_Sizer;
             CheckBox          R_CheckBox;
+            Label             R_Label;
             Edit              R_Edit;
             ToolButton        R_ToolButton;
          HorizontalSizer   G_Sizer;
             CheckBox          G_CheckBox;
+            Label             G_Label;
             Edit              G_Edit;
             ToolButton        G_ToolButton;
          HorizontalSizer   B_Sizer;
             CheckBox          B_CheckBox;
+            Label             B_Label;
             Edit              B_Edit;
             ToolButton        B_ToolButton;
-         HorizontalSizer   TargetImage_Sizer;
-            Label             TargetImage_Label;
-            ViewList          TargetImage_ViewList;
 
       SectionBar        Weights_SectionBar;
       Control           Weights_Control;
@@ -161,7 +154,7 @@ private:
             SpinBox           LayersProtected_SpinBox;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
 
@@ -170,8 +163,6 @@ private:
    void __ChannelId_EditCompleted( Edit& sender );
    void __Channel_SelectSource_Click( Button& sender, bool checked );
 
-   void __TargetImage_ViewSelected( ViewList& sender, View& view );
-
    void __Channel_Weight_ValueUpdated( NumericEdit& sender, double value );
    void __ClipHighlights_Click( Button& sender, bool checked );
 
@@ -179,6 +170,9 @@ private:
 
    void __NoiseReduction_Check( SectionBar& sender, bool checked );
    void __NoiseReduction_ValueUpdated( SpinBox& sender, int value );
+
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
 
    friend struct GUIData;
    friend class  ChannelSourceSelectionDialog;
@@ -197,4 +191,4 @@ PCL_END_LOCAL
 #endif   // __LRGBCombinationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF LRGBCombinationInterface.h - Released 2016/02/21 20:22:42 UTC
+// EOF LRGBCombinationInterface.h - Released 2017-05-02T09:43:00Z

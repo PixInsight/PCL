@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Timer.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Timer.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -71,7 +71,7 @@ public:
    static void api_func TimerNotify( timer_handle hSender, control_handle hReceiver )
    {
       ++sender->count;
-      if ( sender->onTimer != 0 )
+      if ( sender->onTimer != nullptr )
          (receiver->*sender->onTimer)( *sender );
    }
 
@@ -82,31 +82,21 @@ public:
 
 // ----------------------------------------------------------------------------
 
-#ifdef _MSC_VER
-#  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
-#endif
-
 Timer::Timer() :
-UIObject( (*API->Timer->CreateTimer)( ModuleHandle(), this, 0/*flags*/ ) ),
-onTimer( 0 ),
-count( 0 )
+   UIObject( (*API->Timer->CreateTimer)( ModuleHandle(), this, 0/*flags*/ ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateTimer" );
-}
-
-Timer::Timer( void* h ) : UIObject( h ), onTimer( 0 ), count( 0 )
-{
 }
 
 // ----------------------------------------------------------------------------
 
 void Timer::OnTimer( timer_event_handler f, Control& receiver )
 {
-   onTimer = 0;
+   onTimer = nullptr;
    count = 0;
    if ( (*API->Timer->SetTimerNotifyEventRoutine)( handle, &receiver,
-        (f != 0) ? TimerEventDispatcher::TimerNotify : 0 ) == api_false )
+        (f != nullptr) ? TimerEventDispatcher::TimerNotify : nullptr ) == api_false )
    {
       throw APIFunctionError( "SetTimerNotifyEventRoutine" );
    }
@@ -117,10 +107,10 @@ void Timer::OnTimer( timer_event_handler f, Control& receiver )
 
 Timer& Timer::Null()
 {
-   static Timer* nullTimer = 0;
+   static Timer* nullTimer = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullTimer == 0 )
+   if ( nullTimer == nullptr )
       nullTimer = new Timer( reinterpret_cast<void*>( 0 ) );
    return *nullTimer;
 }
@@ -192,4 +182,4 @@ void* Timer::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Timer.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Timer.cpp - Released 2017-05-28T08:29:05Z

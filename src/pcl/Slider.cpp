@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Slider.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Slider.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,10 +60,6 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#ifdef _MSC_VER
-#  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
-#endif
-
 /*
  * ### TODO: Create a new class to encapsulate the common behavior of SpinBox
  *           and Slider. Proposed class name: RangeControl
@@ -103,7 +99,7 @@ double Slider::NormalizedValue() const
 void Slider::SetNormalizedValue( double f )
 {
    int v0, v1; GetRange( v0, v1 );
-   SetValue( v0 + RoundI( Range( f, 0.0, 1.0 )*(v1 - v0) ) );
+   SetValue( v0 + RoundInt( Range( f, 0.0, 1.0 )*(v1 - v0) ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -229,7 +225,7 @@ void Slider::OnValueUpdated( value_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->Slider->SetSliderValueUpdatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? SliderEventDispatcher::ValueUpdated : 0 ) == api_false )
+                  (f != nullptr) ? SliderEventDispatcher::ValueUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetSliderValueUpdatedEventRoutine" );
    m_handlers->onValueUpdated = f;
 }
@@ -238,7 +234,7 @@ void Slider::OnRangeUpdated( range_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->Slider->SetSliderRangeUpdatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? SliderEventDispatcher::RangeUpdated : 0 ) == api_false )
+                  (f != nullptr) ? SliderEventDispatcher::RangeUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetSliderRangeUpdatedEventRoutine" );
    m_handlers->onRangeUpdated = f;
 }
@@ -250,4 +246,4 @@ void Slider::OnRangeUpdated( range_event_handler f, Control& receiver )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Slider.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Slider.cpp - Released 2017-05-28T08:29:05Z

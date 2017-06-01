@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0346
 // ----------------------------------------------------------------------------
-// DynamicCropInterface.h - Released 2016/11/17 18:14:58 UTC
+// DynamicCropInterface.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -281,7 +281,7 @@ private:
          Control           ColorSample_Control;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void InitControls();
    void UpdateControls();
@@ -292,10 +292,6 @@ private:
    void UpdateResolutionControls();
    void UpdateFillColorControls();
    void UpdateView();
-
-   /*
-    * Event Handlers
-    */
 
    void __Size_ValueUpdated( NumericEdit& sender, double value );
    void __Pos_ValueUpdated( NumericEdit& sender, double value );
@@ -348,4 +344,4 @@ PCL_END_LOCAL
 #endif   // __DynamicCropInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropInterface.h - Released 2016/11/17 18:14:58 UTC
+// EOF DynamicCropInterface.h - Released 2017-05-02T09:43:00Z

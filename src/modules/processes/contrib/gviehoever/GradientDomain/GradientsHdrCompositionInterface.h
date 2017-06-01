@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard GradientDomain Process Module Version 00.06.04.0165
+// Standard GradientDomain Process Module Version 00.06.04.0184
 // ----------------------------------------------------------------------------
-// GradientsHdrCompositionInterface.h - Released 2016/02/21 20:22:43 UTC
+// GradientsHdrCompositionInterface.h - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -31,138 +31,133 @@
 #ifndef __GradientsHdrCompositionInterface_h
 #define __GradientsHdrCompositionInterface_h
 
-#include <pcl/ProcessInterface.h>
-
-#include <pcl/Sizer.h>
-#include <pcl/SectionBar.h>
-#include <pcl/ToolButton.h>
-#include <pcl/PushButton.h>
-#include <pcl/TreeBox.h>
 #include <pcl/CheckBox.h>
 #include <pcl/NumericControl.h>
+#include <pcl/ProcessInterface.h>
+#include <pcl/PushButton.h>
+#include <pcl/SectionBar.h>
+#include <pcl/Sizer.h>
+#include <pcl/ToolButton.h>
+#include <pcl/TreeBox.h>
 
 #include "GradientsHdrCompositionInstance.h"
 
 namespace pcl
 {
 
-  class GradientsHdrCompositionInterface: public ProcessInterface
-  {
-  public:
+// ----------------------------------------------------------------------------
 
-    GradientsHdrCompositionInterface();
-    virtual ~GradientsHdrCompositionInterface();
+class GradientsHdrCompositionInterface: public ProcessInterface
+{
+public:
 
-    virtual IsoString Id() const;
-    virtual IsoString Aliases() const;
-    virtual MetaProcess* Process() const;
-    virtual const char** IconImageXPM() const;
+   GradientsHdrCompositionInterface();
+   virtual ~GradientsHdrCompositionInterface();
 
-    InterfaceFeatures Features() const;
+   virtual IsoString Id() const;
+   virtual IsoString Aliases() const;
+   virtual MetaProcess* Process() const;
+   virtual const char** IconImageXPM() const;
 
-    virtual void ApplyInstance() const;
-    virtual void ResetInstance();
+   InterfaceFeatures Features() const;
 
-    virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
+   virtual void ApplyInstance() const;
+   virtual void ResetInstance();
 
-    virtual ProcessImplementation* NewProcess() const;
+   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
 
-    virtual bool ValidateProcess( const ProcessImplementation&, pcl::String& whyNot ) const;
-    virtual bool RequiresInstanceValidation() const;
+   virtual ProcessImplementation* NewProcess() const;
 
-    virtual bool ImportProcess( const ProcessImplementation& );
+   virtual bool ValidateProcess( const ProcessImplementation&, pcl::String& whyNot ) const;
+   virtual bool RequiresInstanceValidation() const;
 
-    virtual void SaveSettings() const;
+   virtual bool ImportProcess( const ProcessImplementation& );
 
-    // -------------------------------------------------------------------------
+   virtual void SaveSettings() const;
 
-  private:
+private:
 
-    GradientsHdrCompositionInstance instance;
+   GradientsHdrCompositionInstance instance;
 
-    // -------------------------------------------------------------------------
-
-    struct GUIData
-    {
-      GUIData(GradientsHdrCompositionInterface& );
+   struct GUIData
+   {
+      GUIData( GradientsHdrCompositionInterface& );
 
       VerticalSizer  Global_Sizer;
 
       SectionBar        TargetImages_SectionBar;
       Control           TargetImages_Control;
       HorizontalSizer   TargetImages_Sizer;
-       TreeBox           TargetImages_TreeBox;
-      VerticalSizer     TargetButtons_Sizer;
-       PushButton        AddFiles_PushButton;
-       PushButton        SelectAll_PushButton;
-       PushButton        InvertSelection_PushButton;
-       PushButton        ToggleSelected_PushButton;
-       PushButton        RemoveSelected_PushButton;
-       PushButton        Clear_PushButton;
-      CheckBox          FullPaths_CheckBox;
+         TreeBox           TargetImages_TreeBox;
+         VerticalSizer     TargetButtons_Sizer;
+            PushButton        AddFiles_PushButton;
+            PushButton        SelectAll_PushButton;
+            PushButton        InvertSelection_PushButton;
+            PushButton        ToggleSelected_PushButton;
+            PushButton        RemoveSelected_PushButton;
+            PushButton        Clear_PushButton;
+            CheckBox          FullPaths_CheckBox;
 
       SectionBar        Parameters_SectionBar;
-       Control           Parameters_Control;
-        VerticalSizer     Parameters_Sizer;
-        HorizontalSizer   Bias_Sizer;
-         NumericControl   LogBias_NumericControl;
-        HorizontalSizer   KeepLog_Sizer;
-         Label            KeepLog_Label;
-         CheckBox         KeepLog_CheckBox;
-        HorizontalSizer   GenerateMask_Sizer;
-         Label            GenerateMask_Label;
-         CheckBox         GenerateMask_CheckBox;
-         Label            NegativeBias_Label;
-         CheckBox         NegativeBias_CheckBox;
+      Control           Parameters_Control;
+      VerticalSizer     Parameters_Sizer;
+         HorizontalSizer   Bias_Sizer;
+            NumericControl    LogBias_NumericControl;
+         HorizontalSizer   KeepLog_Sizer;
+            Label             KeepLog_Label;
+            CheckBox          KeepLog_CheckBox;
+         HorizontalSizer   GenerateMask_Sizer;
+            Label             GenerateMask_Label;
+            CheckBox          GenerateMask_CheckBox;
+            Label             NegativeBias_Label;
+            CheckBox          NegativeBias_CheckBox;
+   };
 
-    };
+   GUIData* GUI = nullptr;
 
-    GUIData* GUI;
+   void UpdateControls();
+   void UpdateTargetImageItem( size_type );
+   void UpdateTargetImagesList();
+   void UpdateImageSelectionButtons();
+   void UpdateParameters();
 
-    // Interface Updates
+   void __TargetImages_CurrentNodeUpdated( TreeBox& sender, TreeBox::Node& current, TreeBox::Node& oldCurrent );
+   void __TargetImages_NodeActivated( TreeBox& sender, TreeBox::Node& node, int col );
+   void __TargetImages_NodeSelectionUpdated( TreeBox& sender );
+   void __TargetImages_Click( Button& sender, bool checked );
 
-    void UpdateControls();
-    void UpdateTargetImageItem( size_type );
-    void UpdateTargetImagesList();
-    void UpdateImageSelectionButtons();
-    void UpdateParameters();
+   // void __CheckSection( SectionBar& sender, bool checked );
+   void __ToggleSection( SectionBar& sender, Control& section, bool start );
 
-    // Event Handlers
+   /// callback for logBias numeric control
+   void __logBiasUpdated( NumericEdit& sender, double value );
 
-    void __TargetImages_CurrentNodeUpdated( TreeBox& sender, TreeBox::Node& current, TreeBox::Node& oldCurrent );
-    void __TargetImages_NodeActivated( TreeBox& sender, TreeBox::Node& node, int col );
-    void __TargetImages_NodeSelectionUpdated( TreeBox& sender );
-    void __TargetImages_Click( Button& sender, bool checked );
+   /// callback for keepLog checkbox
+   void __KeepLogClicked( Button& sender, bool checked );
 
-    // void __CheckSection( SectionBar& sender, bool checked );
-    void __ToggleSection( SectionBar& sender, Control& section, bool start );
+   /// callback for negativeBias checkbox
+   void __NegativeBiasClicked( Button& sender, bool checked );
 
-    /// callback for logBias numeric control
-    void __logBiasUpdated( NumericEdit& sender, double value );
+   /// callback for generate mask checkbox
+   void __GenerateMaskClicked( Button& sender, bool checked );
 
-    /// callback for keepLog checkbox
-    void __KeepLogClicked( Button& sender, bool checked );
+   void __FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
+   void __FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
 
-    /// callback for negativeBias checkbox
-    void __NegativeBiasClicked( Button& sender, bool checked );
+   friend struct GUIData;
+};
 
-    /// callback for generate mask checkbox
-    void __GenerateMaskClicked( Button& sender, bool checked );
+// ----------------------------------------------------------------------------
 
-    friend struct GUIData;
-  };
+PCL_BEGIN_LOCAL
+   extern GradientsHdrCompositionInterface* TheGradientsHdrCompositionInterface;
+PCL_END_LOCAL
 
-  // ----------------------------------------------------------------------------
-
-  PCL_BEGIN_LOCAL
-    extern GradientsHdrCompositionInterface* TheGradientsHdrCompositionInterface;
-  PCL_END_LOCAL
-
-  // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 } // pcl
 
 #endif
 
 // ----------------------------------------------------------------------------
-// EOF GradientsHdrCompositionInterface.h - Released 2016/02/21 20:22:43 UTC
+// EOF GradientsHdrCompositionInterface.h - Released 2017-05-02T09:43:01Z

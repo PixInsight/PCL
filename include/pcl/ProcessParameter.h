@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/ProcessParameter.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ProcessParameter.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,17 +56,10 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_AutoPointer_h
 #include <pcl/AutoPointer.h>
-#endif
-
-#ifndef __PCL_Variant_h
 #include <pcl/Variant.h>
-#endif
 
 namespace pcl
 {
@@ -74,7 +67,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace ProcessParameterType
+ * \namespace pcl::ProcessParameterType
  * \brief %Process parameter data types.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -120,15 +113,16 @@ namespace ProcessParameterType
    };
 
    /*!
-    * \defgroup process_parameter_classification Process Parameter Classification
+    * \defgroup process_parameter_classification Process Parameter&nbsp;\
+    * Classification
     */
 
    /*!
-    * Returns true ifff the specified \a type corresponds to a numeric parameter
-    * data type.
+    * Returns true ifff the specified \a type corresponds to a numeric
+    * parameter data type.
     * \ingroup process_parameter_classification
     */
-   inline static bool IsNumeric( int type )
+   inline bool IsNumeric( int type )
    {
       return type >= UInt8 && type <= Double;
    }
@@ -138,7 +132,7 @@ namespace ProcessParameterType
     * parameter data type.
     * \ingroup process_parameter_classification
     */
-   inline static bool IsInteger( int type )
+   inline bool IsInteger( int type )
    {
       return type >= UInt8 && type <= Int64;
    }
@@ -148,7 +142,7 @@ namespace ProcessParameterType
     * real parameter data type.
     * \ingroup process_parameter_classification
     */
-   inline static bool IsReal( int type )
+   inline bool IsReal( int type )
    {
       return type == Float || type == Double;
    }
@@ -158,7 +152,7 @@ namespace ProcessParameterType
     * parameter data type.
     * \ingroup process_parameter_classification
     */
-   inline static bool IsVariableLength( int type )
+   inline bool IsVariableLength( int type )
    {
       return type == String || type == Block || type == Table;
    }
@@ -700,4 +694,4 @@ private:
 #endif   // __PCL_ProcessParameter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessParameter.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ProcessParameter.h - Released 2017-05-28T08:28:50Z

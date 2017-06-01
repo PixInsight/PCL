@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard SplitCFA Process Module Version 01.00.06.0116
+// Standard SplitCFA Process Module Version 01.00.06.0135
 // ----------------------------------------------------------------------------
-// SplitCFAInstance.cpp - Released 2016/05/12 12:53:00 UTC
+// SplitCFAInstance.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
-// Copyright (c) 2013-2016 Nikolay Volkov
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2017 Nikolay Volkov
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -112,7 +112,6 @@ bool SplitCFAInstance::CanExecuteOn( const View& view, String& whyNot ) const
       whyNot = String().Format( "Invalid odd image dimension(s): %dx%d", view.Width(), view.Height() );
       return false;
    }
-   whyNot.Clear();
    return true;
 }
 
@@ -222,7 +221,6 @@ bool SplitCFAInstance::CanExecuteGlobal( String& whyNot ) const
          return false;
       }
 
-   whyNot.Clear();
    return true;
 }
 
@@ -244,9 +242,9 @@ struct FileData
       if ( format->UsesFormatSpecificData() )
          fsData = file.FormatSpecificData();
       if ( format->CanStoreKeywords() )
-         file.Extract( keywords );
+         file.ReadFITSKeywords( keywords );
       if ( format->CanStoreICCProfiles() )
-         file.Extract( profile );
+         file.ReadICCProfile( profile );
    }
 
    ~FileData()
@@ -585,13 +583,13 @@ void SplitCFAInstance::SaveImage( const SplitCFAThread* t )
          keywords.Add( FITSHeaderKeyword( "COMMENT", IsoString(), "SplitCFA with " + PixInsightVersion::AsString() ) );
          keywords.Add( FITSHeaderKeyword( "COMMENT", IsoString(), "SplitCFA with " + SplitCFAModule::ReadableVersion() ) );
          keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(), "SplitCFA" ) );
-         outputFile.Embed( keywords );
+         outputFile.WriteFITSKeywords( keywords );
       }
       else if ( !data.keywords.IsEmpty() )
             console.WarningLn( "** Warning: The output format cannot store FITS keywords - original keywords not embedded." );
 
       if ( data.profile.IsProfile() )
-         if ( outputFormat.CanStoreICCProfiles() ) outputFile.Embed( data.profile );
+         if ( outputFormat.CanStoreICCProfiles() ) outputFile.WriteICCProfile( data.profile );
          else console.WarningLn( "** Warning: The output format cannot store ICC profiles - original profile not embedded." );
 
       SaveImageFile( *t->TargetImage(i), outputFile );
@@ -901,4 +899,4 @@ size_type SplitCFAInstance::ParameterLength( const MetaParameter* p, size_type t
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SplitCFAInstance.cpp - Released 2016/05/12 12:53:00 UTC
+// EOF SplitCFAInstance.cpp - Released 2017-05-02T09:43:01Z

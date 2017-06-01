@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0346
 // ----------------------------------------------------------------------------
-// FastRotationInstance.cpp - Released 2016/11/17 18:14:58 UTC
+// FastRotationInstance.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,13 +66,15 @@ namespace pcl
 
 FastRotationInstance::FastRotationInstance( const MetaProcess* m, int r ) :
    ProcessImplementation( m ),
-   p_mode( r )
+   p_mode( r ),
+   p_noGUIMessages( TheFRNoGUIMessagesParameter->DefaultValue() )
 {
 }
 
 FastRotationInstance::FastRotationInstance( const FastRotationInstance& x ) :
    ProcessImplementation( x ),
-   p_mode( x.p_mode )
+   p_mode( x.p_mode ),
+   p_noGUIMessages( x.p_noGUIMessages )
 {
 }
 
@@ -80,7 +82,10 @@ void FastRotationInstance::Assign( const ProcessImplementation& p )
 {
    const FastRotationInstance* x = dynamic_cast<const FastRotationInstance*>( &p );
    if ( x != nullptr )
+   {
       p_mode = x->p_mode;
+      p_noGUIMessages = x->p_noGUIMessages;
+   }
 }
 
 bool FastRotationInstance::IsMaskable( const View&, const ImageWindow& ) const
@@ -101,13 +106,12 @@ bool FastRotationInstance::CanExecuteOn( const View& v, String& whyNot ) const
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
 bool FastRotationInstance::BeforeExecution( View& view )
 {
-   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id() );
+   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
 }
 
 bool FastRotationInstance::ExecuteOn( View& view )
@@ -159,6 +163,8 @@ void* FastRotationInstance::LockParameter( const MetaParameter* p, size_type /*t
 {
    if ( p == TheFRModeParameter )
       return &p_mode;
+   if ( p == TheFRNoGUIMessagesParameter )
+      return &p_noGUIMessages;
    return nullptr;
 }
 
@@ -167,4 +173,4 @@ void* FastRotationInstance::LockParameter( const MetaParameter* p, size_type /*t
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FastRotationInstance.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF FastRotationInstance.cpp - Released 2017-05-02T09:43:00Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.04.03.0213
+// Standard Debayer Process Module Version 01.05.00.0236
 // ----------------------------------------------------------------------------
-// DebayerInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// DebayerInstance.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -103,21 +103,22 @@ static IsoString ValidFullId( const IsoString& id )
 // ----------------------------------------------------------------------------
 
 DebayerInstance::DebayerInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-p_bayerPattern( DebayerBayerPatternParameter::Default ),
-p_debayerMethod( DebayerMethodParameter::Default ),
-p_evaluateNoise( TheDebayerEvaluateNoiseParameter->DefaultValue() ),
-p_noiseEvaluationAlgorithm( DebayerNoiseEvaluationAlgorithm::Default ),
-p_showImages( TheDebayerShowImagesParameter->DefaultValue() ),
-o_imageId(),
-o_noiseEstimates( 0.0F, 3 ),
-o_noiseFractions( 0.0F, 3 ),
-o_noiseAlgorithms( 3 )
+   ProcessImplementation( m ),
+   p_bayerPattern( DebayerBayerPatternParameter::Default ),
+   p_debayerMethod( DebayerMethodParameter::Default ),
+   p_evaluateNoise( TheDebayerEvaluateNoiseParameter->DefaultValue() ),
+   p_noiseEvaluationAlgorithm( DebayerNoiseEvaluationAlgorithm::Default ),
+   p_showImages( TheDebayerShowImagesParameter->DefaultValue() ),
+   p_cfaSourceFilePath( TheDebayerCFASourceFilePathParameter->DefaultValue() ),
+   o_imageId(),
+   o_noiseEstimates( 0.0F, 3 ),
+   o_noiseFractions( 0.0F, 3 ),
+   o_noiseAlgorithms( 3 )
 {
 }
 
 DebayerInstance::DebayerInstance( const DebayerInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -125,14 +126,14 @@ ProcessImplementation( x )
 void DebayerInstance::Assign( const ProcessImplementation& p )
 {
    const DebayerInstance* x = dynamic_cast<const DebayerInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       p_bayerPattern             = x->p_bayerPattern;
       p_debayerMethod            = x->p_debayerMethod;
       p_evaluateNoise            = x->p_evaluateNoise;
       p_noiseEvaluationAlgorithm = x->p_noiseEvaluationAlgorithm;
       p_showImages               = x->p_showImages;
-
+      p_cfaSourceFilePath        = x->p_cfaSourceFilePath;
       o_imageId                  = x->o_imageId;
       o_noiseEstimates           = x->o_noiseEstimates;
       o_noiseFractions           = x->o_noiseFractions;
@@ -147,10 +148,8 @@ bool DebayerInstance::CanExecuteOn( const View& view, String& whyNot ) const
    else if ( view.Image().Width() < 6 || view.Image().Height() < 6 )
       whyNot = "Debayer needs an image of at least 6 by 6 pixels";
    else
-   {
-      whyNot.Clear();
       return true;
-   }
+
    return false;
 }
 
@@ -169,7 +168,7 @@ public:
 
       target.AllocateData( target_w, target_h, 3, ColorSpace::RGB );
 
-      target.Status().Initialize( "SuperPixel debayering", target_h );
+      target.Status().Initialize( "SuperPixel demosaicing", target_h );
 
       int numberOfThreads = Thread::NumberOfThreads( target_h, 1 );
       int rowsPerThread = target_h/numberOfThreads;
@@ -196,7 +195,7 @@ public:
 
       target.AllocateData( target_w, target_h, 3, ColorSpace::RGB );
 
-      target.Status().Initialize( "Bilinear debayering", target_h-2 );
+      target.Status().Initialize( "Bilinear demosaicing", target_h-2 );
 
       int numberOfThreads = Thread::NumberOfThreads( target_h-2, 1 );
       int rowsPerThread = (target_h - 2)/numberOfThreads;
@@ -231,7 +230,7 @@ public:
 
       target.AllocateData( target_w, target_h, 3, ColorSpace::RGB );
 
-      target.Status().Initialize( "VNG debayering", target_h-4 );
+      target.Status().Initialize( "VNG demosaicing", target_h-4 );
 
       int numberOfThreads = Thread::NumberOfThreads( target_h-4, 1 );
       int rowsPerThread = (target_h - 4)/numberOfThreads;
@@ -348,7 +347,7 @@ private:
 
       SuperPixelThread( const AbstractImage::ThreadData& data,
                         Image& target, const GenericImage<P>& source, const DebayerInstance& instance, int start, int end ) :
-      DebayerThreadBase<P>( data, target, source, instance, start, end )
+         DebayerThreadBase<P>( data, target, source, instance, start, end )
       {
       }
 
@@ -363,48 +362,90 @@ private:
             for ( int col = 0; col < src_w2; col++ )
             {
                int red_col, red_row, green_col1, green_col2, green_row1, green_row2, blue_row, blue_col;
-               switch( m_instance.p_bayerPattern )
+               int col2 = col << 1;
+               int row2 = row << 1;
+               switch( m_instance.m_bayerPattern )
                {
                default:
                case DebayerBayerPatternParameter::RGGB:
-                  red_col = (col * 2);
-                  red_row = (row * 2);
-                  green_col1 = (col * 2) + 1;
-                  green_row1 = row * 2;
-                  green_col2 = col * 2;
-                  green_row2 = (row * 2) + 1;
-                  blue_col = col * 2 + 1;
-                  blue_row = row * 2 + 1;
+                  red_col    = col2;
+                  red_row    = row2;
+                  green_col1 = col2 + 1;
+                  green_row1 = row2;
+                  green_col2 = col2;
+                  green_row2 = row2 + 1;
+                  blue_col   = col2 + 1;
+                  blue_row   = row2 + 1;
                   break;
                case DebayerBayerPatternParameter::BGGR:
-                  red_col = (col * 2) + 1;
-                  red_row = (row * 2) + 1;
-                  green_col1 = (col * 2) + 1;
-                  green_row1 = row * 2;
-                  green_col2 = col * 2;
-                  green_row2 = (row * 2) + 1;
-                  blue_col = col * 2;
-                  blue_row = row * 2;
+                  red_col    = col2 + 1;
+                  red_row    = row2 + 1;
+                  green_col1 = col2 + 1;
+                  green_row1 = row2;
+                  green_col2 = col2;
+                  green_row2 = row2 + 1;
+                  blue_col   = col2;
+                  blue_row   = row2;
                   break;
                case DebayerBayerPatternParameter::GBRG:
-                  red_col = (col * 2);
-                  red_row = (row * 2) + 1;
-                  green_col1 = (col * 2);
-                  green_row1 = row * 2;
-                  green_col2 = (col * 2) + 1;
-                  green_row2 = (row * 2) + 1;
-                  blue_col = (col * 2) + 1;
-                  blue_row = row * 2;
+                  red_col    = col2;
+                  red_row    = row2 + 1;
+                  green_col1 = col2;
+                  green_row1 = row2;
+                  green_col2 = col2 + 1;
+                  green_row2 = row2 + 1;
+                  blue_col   = col2 + 1;
+                  blue_row   = row2;
                   break;
                case DebayerBayerPatternParameter::GRBG:
-                  red_col = (col * 2) + 1;
-                  red_row = (row * 2);
-                  green_col1 = (col * 2);
-                  green_row1 = (row * 2);
-                  green_col2 = (col * 2) + 1;
-                  green_row2 = (row * 2) + 1;
-                  blue_col = (col * 2);
-                  blue_row = (row * 2) + 1;
+                  red_col    = col2 + 1;
+                  red_row    = row2;
+                  green_col1 = col2;
+                  green_row1 = row2;
+                  green_col2 = col2 + 1;
+                  green_row2 = row2 + 1;
+                  blue_col   = col2;
+                  blue_row   = row2 + 1;
+                  break;
+               case DebayerBayerPatternParameter::GRGB:
+                  red_col    = col2 + 1;
+                  red_row    = row2;
+                  green_col1 = col2;
+                  green_row1 = row2;
+                  green_col2 = col2;
+                  green_row2 = row2 + 1;
+                  blue_col   = col2 + 1;
+                  blue_row   = row2 + 1;
+                  break;
+               case DebayerBayerPatternParameter::GBGR:
+                  red_col    = col2 + 1;
+                  red_row    = row2 + 1;
+                  green_col1 = col2;
+                  green_row1 = row2;
+                  green_col2 = col2;
+                  green_row2 = row2 + 1;
+                  blue_col   = col2 + 1;
+                  blue_row   = row2;
+                  break;
+               case DebayerBayerPatternParameter::RGBG:
+                  red_col    = col2;
+                  red_row    = row2;
+                  green_col1 = col2 + 1;
+                  green_row1 = row2;
+                  green_col2 = col2 + 1;
+                  green_row2 = row2 + 1;
+                  blue_col   = col2;
+                  blue_row   = row2 + 1;
+                  break;
+               case DebayerBayerPatternParameter::BGRG:
+                  red_col    = col2;
+                  red_row    = row2 + 1;
+                  green_col1 = col2 + 1;
+                  green_row1 = row2;
+                  green_col2 = col2 + 1;
+                  green_row2 = row2 + 1;
+                  blue_col   = col2;
+                  blue_row   = row2;
                   break;
                }
 
@@ -431,7 +472,7 @@ private:
 
       BilinearThread( const AbstractImage::ThreadData& data,
                       Image& target, const GenericImage<P>& source, const DebayerInstance& instance, int start, int end ) :
-      DebayerThreadBase<P>( data, target, source, instance, start, end )
+         DebayerThreadBase<P>( data, target, source, instance, start, end )
       {
       }
 
@@ -446,7 +487,7 @@ private:
          const int src_w = m_source.Width();
          int colors[ 2 ][ 2 ]; // [row][col]
 
-         switch ( m_instance.p_bayerPattern )
+         switch ( m_instance.m_bayerPattern )
          {
          default:
          case DebayerBayerPatternParameter::RGGB:
@@ -471,6 +512,30 @@ private:
             colors[0][0] = 1;
             colors[0][1] = 0;
             colors[1][0] = 2;
+            colors[1][1] = 1;
+            break;
+         case DebayerBayerPatternParameter::GRGB:
+            colors[0][0] = 1;
+            colors[0][1] = 0;
+            colors[1][0] = 1;
+            colors[1][1] = 2;
+            break;
+         case DebayerBayerPatternParameter::GBGR:
+            colors[0][0] = 1;
+            colors[0][1] = 2;
+            colors[1][0] = 1;
+            colors[1][1] = 0;
+            break;
+         case DebayerBayerPatternParameter::RGBG:
+            colors[0][0] = 0;
+            colors[0][1] = 1;
+            colors[1][0] = 2;
+            colors[1][1] = 1;
+            break;
+         case DebayerBayerPatternParameter::BGRG:
+            colors[0][0] = 2;
+            colors[0][1] = 1;
+            colors[1][0] = 0;
             colors[1][1] = 1;
             break;
          }
@@ -543,7 +608,7 @@ private:
 
       VNGThread( const AbstractImage::ThreadData& data,
                  Image& target, const GenericImage<P>& source, const DebayerInstance& instance, int start, int end ) :
-      DebayerThreadBase<P>( data, target, source, instance, start, end )
+         DebayerThreadBase<P>( data, target, source, instance, start, end )
       {
       }
 
@@ -557,7 +622,7 @@ private:
          int colors[ 2 ][ 2 ]; // [row][col]
 
          // store channel indices according to selected bayer pattern
-         switch ( m_instance.p_bayerPattern )
+         switch ( m_instance.m_bayerPattern )
          {
          default:
          case DebayerBayerPatternParameter::RGGB:
@@ -582,6 +647,30 @@ private:
             colors[0][0] = 1;
             colors[0][1] = 0;
             colors[1][0] = 2;
+            colors[1][1] = 1;
+            break;
+         case DebayerBayerPatternParameter::GRGB:
+            colors[0][0] = 1;
+            colors[0][1] = 0;
+            colors[1][0] = 1;
+            colors[1][1] = 2;
+            break;
+         case DebayerBayerPatternParameter::GBGR:
+            colors[0][0] = 1;
+            colors[0][1] = 2;
+            colors[1][0] = 1;
+            colors[1][1] = 0;
+            break;
+         case DebayerBayerPatternParameter::RGBG:
+            colors[0][0] = 0;
+            colors[0][1] = 1;
+            colors[1][0] = 2;
+            colors[1][1] = 1;
+            break;
+         case DebayerBayerPatternParameter::BGRG:
+            colors[0][0] = 2;
+            colors[0][1] = 1;
+            colors[1][0] = 0;
             colors[1][1] = 1;
             break;
          }
@@ -950,19 +1039,56 @@ bool DebayerInstance::ExecuteOn( View& view )
    case DebayerMethodParameter::Bilinear:   methodId = "Bilinear"; break;
    case DebayerMethodParameter::VNG:        methodId = "VNG"; break;
    default:
-      throw Error( "Internal error: Invalid de-Bayer method!" );
+      throw Error( String().Format( "Internal error: Invalid demosaicing algorithm 0x%x", p_debayerMethod ) );
    }
 
+   m_bayerPattern = p_bayerPattern;
    IsoString patternId;
    switch ( p_bayerPattern )
    {
+   case DebayerBayerPatternParameter::Auto:
+      {
+         Variant v = view.PropertyValue( "PCL:CFASourcePattern" );
+         if ( !v.IsValid() )
+            throw Error( "Unable to get CFA pattern information: Unavailable or inaccessible image properties." );
+         patternId = v.ToIsoString();
+              if ( patternId == "RGGB" )
+            m_bayerPattern = DebayerBayerPatternParameter::RGGB;
+         else if ( patternId == "BGGR" )
+            m_bayerPattern = DebayerBayerPatternParameter::BGGR;
+         else if ( patternId == "GBRG" )
+            m_bayerPattern = DebayerBayerPatternParameter::GBRG;
+         else if ( patternId == "GRBG" )
+            m_bayerPattern = DebayerBayerPatternParameter::GRBG;
+         else if ( patternId == "GRGB" )
+            m_bayerPattern = DebayerBayerPatternParameter::GRGB;
+         else if ( patternId == "GBGR" )
+            m_bayerPattern = DebayerBayerPatternParameter::GBGR;
+         else if ( patternId == "RGBG" )
+            m_bayerPattern = DebayerBayerPatternParameter::RGBG;
+         else if ( patternId == "BGRG" )
+            m_bayerPattern = DebayerBayerPatternParameter::BGRG;
+         else
+            throw Error( "Unsupported or invalid CFA pattern '" + patternId + '\'' );
+      }
+      break;
    case DebayerBayerPatternParameter::RGGB: patternId = "RGGB"; break;
    case DebayerBayerPatternParameter::BGGR: patternId = "BGGR"; break;
    case DebayerBayerPatternParameter::GBRG: patternId = "GBRG"; break;
    case DebayerBayerPatternParameter::GRBG: patternId = "GRBG"; break;
+   case DebayerBayerPatternParameter::GRGB: patternId = "GRGB"; break;
+   case DebayerBayerPatternParameter::GBGR: patternId = "GBGR"; break;
+   case DebayerBayerPatternParameter::RGBG: patternId = "RGBG"; break;
+   case DebayerBayerPatternParameter::BGRG: patternId = "BGRG"; break;
    default:
-      throw Error( "Internal error: Invalid Bayer pattern!" );
+      throw Error( String().Format( "Internal error: Invalid CFA pattern 0x%x", p_bayerPattern ) );
    }
+
+   Console console;
+   console.Write( "<end><cbr>CFA pattern" );
+   if ( p_bayerPattern == DebayerBayerPatternParameter::Auto )
+      console.Write( " (detected)" );
+   console.WriteLn( ": " + patternId );
 
    IsoString baseId = ValidFullId( view.FullId() ) + "_RGB";
 
@@ -995,20 +1121,26 @@ bool DebayerInstance::ExecuteOn( View& view )
       DoVNG( target, source );
       break;
    default:
-      throw Error( "Internal error: Invalid de-Bayer method!" );
+      throw Error( "Internal error: Invalid demosaicing algorithm!" );
    }
 
-   String filePath = view.Window().FilePath();
-   if ( !filePath.IsEmpty() )
-      targetWindow.MainView().SetPropertyValue( "CFASourceFilePath", filePath, true/*notify*/, ViewPropertyAttribute::Storable );
+   targetWindow.MainView().SetProperties( view.GetStorableProperties(), true/*notify*/, ViewPropertyAttribute::Storable );
+
+   String cfaSourceFilePath = p_cfaSourceFilePath.Trimmed();
+   if ( cfaSourceFilePath.IsEmpty() )
+      cfaSourceFilePath = view.Window().FilePath();
+   if ( !cfaSourceFilePath.IsEmpty() )
+      targetWindow.MainView().SetPropertyValue( "PCL:CFASourceFilePath", cfaSourceFilePath, true/*notify*/, ViewPropertyAttribute::Storable );
+   targetWindow.MainView().SetPropertyValue( "PCL:CFASourcePattern", patternId, true/*notify*/, ViewPropertyAttribute::Storable );
+   targetWindow.MainView().SetPropertyValue( "PCL:CFASourceInterpolation", methodId, true/*notify*/, ViewPropertyAttribute::Storable );
 
    FITSKeywordArray keywords;
    view.Window().GetKeywords( keywords );
 
-   keywords.Add( FITSHeaderKeyword( "COMMENT", IsoString(), "Debayering with "  + PixInsightVersion::AsString() ) );
-   keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(), "Debayering with "  + Module->ReadableVersion() ) );
-   keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(), "Debayer.pattern: " + patternId ) );
-   keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(), "Debayer.method: "  + methodId ) );
+   keywords << FITSHeaderKeyword( "COMMENT", IsoString(), "Demosaicing with "  + PixInsightVersion::AsString() )
+            << FITSHeaderKeyword( "HISTORY", IsoString(), "Demosaicing with "  + Module->ReadableVersion() )
+            << FITSHeaderKeyword( "HISTORY", IsoString(), "Debayer.pattern: " + patternId )
+            << FITSHeaderKeyword( "HISTORY", IsoString(), "Debayer.method: "  + methodId );
 
    if ( p_evaluateNoise )
    {
@@ -1024,23 +1156,19 @@ bool DebayerInstance::ExecuteOn( View& view )
          else
             ++i;
 
-      keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(), "Noise evaluation with " + Module->ReadableVersion() ) );
-      keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       IsoString().Format( "Debayer.noiseEstimates: %.3e %.3e %.3e",
-                                             o_noiseEstimates[0], o_noiseEstimates[1], o_noiseEstimates[2] ) ) );
+      keywords << FITSHeaderKeyword( "HISTORY", IsoString(), "Noise evaluation with " + Module->ReadableVersion() )
+               << FITSHeaderKeyword( "HISTORY", IsoString(), IsoString().Format( "Debayer.noiseEstimates: %.3e %.3e %.3e",
+                                                   o_noiseEstimates[0], o_noiseEstimates[1], o_noiseEstimates[2] ) );
       for ( int i = 0; i < 3; ++i )
-      {
-         keywords.Add( FITSHeaderKeyword( IsoString().Format( "NOISE%02d", i ),
-                                          IsoString().Format( "%.3e", o_noiseEstimates[i] ),
-                                          IsoString().Format( "Gaussian noise estimate, channel #%d", i ) ) );
-         keywords.Add( FITSHeaderKeyword( IsoString().Format( "NOISEF%02d", i ),
-                                          IsoString().Format( "%.3f", o_noiseFractions[i] ),
-                                          IsoString().Format( "Fraction of noise pixels, channel #%d", i ) ) );
-         keywords.Add( FITSHeaderKeyword( IsoString().Format( "NOISEA%02d", i ),
-                                          IsoString( o_noiseAlgorithms[i] ),
-                                          IsoString().Format( "Noise evaluation algorithm, channel #%d", i ) ) );
-      }
+         keywords << FITSHeaderKeyword( IsoString().Format( "NOISE%02d", i ),
+                                        IsoString().Format( "%.3e", o_noiseEstimates[i] ),
+                                        IsoString().Format( "Gaussian noise estimate, channel #%d", i ) )
+                  << FITSHeaderKeyword( IsoString().Format( "NOISEF%02d", i ),
+                                        IsoString().Format( "%.3f", o_noiseFractions[i] ),
+                                        IsoString().Format( "Fraction of noise pixels, channel #%d", i ) )
+                  << FITSHeaderKeyword( IsoString().Format( "NOISEA%02d", i ),
+                                        IsoString( o_noiseAlgorithms[i] ),
+                                        IsoString().Format( "Noise evaluation algorithm, channel #%d", i ) );
    }
 
    targetWindow.SetKeywords( keywords );
@@ -1121,6 +1249,8 @@ void* DebayerInstance::LockParameter( const MetaParameter* p, size_type /*tableR
       return &p_noiseEvaluationAlgorithm;
    if ( p == TheDebayerShowImagesParameter )
       return &p_showImages;
+   if ( p == TheDebayerCFASourceFilePathParameter )
+      return p_cfaSourceFilePath.Begin();
    if ( p == TheDebayerOutputImageParameter )
       return o_imageId.Begin();
    if ( p == TheDebayerNoiseEstimateRParameter )
@@ -1142,12 +1272,18 @@ void* DebayerInstance::LockParameter( const MetaParameter* p, size_type /*tableR
    if ( p == TheDebayerNoiseAlgorithmBParameter )
       return o_noiseAlgorithms[2].Begin();
 
-   return 0;
+   return nullptr;
 }
 
 bool DebayerInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {
-   if ( p == TheDebayerOutputImageParameter )
+   if ( p == TheDebayerCFASourceFilePathParameter )
+   {
+      p_cfaSourceFilePath.Clear();
+      if ( sizeOrLength > 0 )
+         p_cfaSourceFilePath.SetLength( sizeOrLength );
+   }
+   else if ( p == TheDebayerOutputImageParameter )
    {
       o_imageId.Clear();
       if ( sizeOrLength > 0 )
@@ -1179,6 +1315,8 @@ bool DebayerInstance::AllocateParameter( size_type sizeOrLength, const MetaParam
 
 size_type DebayerInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
+   if ( p == TheDebayerCFASourceFilePathParameter )
+      return p_cfaSourceFilePath.Length();
    if ( p == TheDebayerOutputImageParameter )
       return o_imageId.Length();
    if ( p == TheDebayerNoiseAlgorithmRParameter )
@@ -1196,4 +1334,4 @@ size_type DebayerInstance::ParameterLength( const MetaParameter* p, size_type ta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DebayerInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF DebayerInstance.cpp - Released 2017-05-02T09:43:01Z

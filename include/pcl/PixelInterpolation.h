@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/PixelInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// pcl/PixelInterpolation.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,53 +54,19 @@
 
 /// \file pcl/PixelInterpolation.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Exception_h
-#include <pcl/Exception.h>
-#endif
-
-#ifndef __PCL_AutoPointer_h
 #include <pcl/AutoPointer.h>
-#endif
-
-#ifndef __PCL_String_h
-#include <pcl/String.h>
-#endif
-
-#ifndef __PCL_PixelTraits_h
-#include <pcl/PixelTraits.h>
-#endif
-
-#ifndef __PCL_NearestNeighborInterpolation_h
-#include <pcl/NearestNeighborInterpolation.h>
-#endif
-
-#ifndef __PCL_BilinearInterpolation_h
-#include <pcl/BilinearInterpolation.h>
-#endif
-
-#ifndef __PCL_BicubicInterpolation_h
-#include <pcl/BicubicInterpolation.h>
-#endif
-
-#ifndef __PCL_BicubicFilterInterpolation_h
 #include <pcl/BicubicFilterInterpolation.h>
-#endif
-
-#ifndef __PCL_LanczosInterpolation_h
+#include <pcl/BicubicInterpolation.h>
+#include <pcl/BilinearInterpolation.h>
+#include <pcl/Exception.h>
 #include <pcl/LanczosInterpolation.h>
-#endif
-
-#ifndef __PCL_Point_h
+#include <pcl/NearestNeighborInterpolation.h>
+#include <pcl/PixelTraits.h>
 #include <pcl/Point.h>
-#endif
+#include <pcl/String.h>
 
 #ifdef _MSC_VER
 #  pragma warning( push )
@@ -134,7 +100,7 @@ public:
 
    /*!
     * \class pcl::PixelInterpolation::Interpolator
-    * \brief Generic two-dimensional pixel interpolator.
+    * \brief Generic two-dimensional pixel interpolator
     *
     * %Interpolator provides a common pixel interpolation interface that is
     * independent on a particular interpolation algorithm.
@@ -1063,4 +1029,4 @@ private:
 #endif   // __PCL_PixelInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/PixelInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/PixelInterpolation.h - Released 2017-05-28T08:28:50Z

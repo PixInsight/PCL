@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0272
+// Standard ImageCalibration Process Module Version 01.03.05.0291
 // ----------------------------------------------------------------------------
-// ImageCalibrationInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// ImageCalibrationInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -55,6 +55,7 @@
 
 #include <pcl/Dialog.h>
 #include <pcl/FileDialog.h>
+#include <pcl/FileFormat.h>
 #include <pcl/ViewList.h>
 #include <pcl/GlobalSettings.h>
 #include <pcl/ErrorHandler.h>
@@ -66,7 +67,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ImageCalibrationInterface* TheImageCalibrationInterface = 0;
+ImageCalibrationInterface* TheImageCalibrationInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -75,7 +76,7 @@ ImageCalibrationInterface* TheImageCalibrationInterface = 0;
 // ----------------------------------------------------------------------------
 
 ImageCalibrationInterface::ImageCalibrationInterface() :
-ProcessInterface(), instance( TheImageCalibrationProcess ), GUI( 0 )
+   instance( TheImageCalibrationProcess )
 {
    TheImageCalibrationInterface = this;
 
@@ -87,8 +88,8 @@ ProcessInterface(), instance( TheImageCalibrationProcess ), GUI( 0 )
 
 ImageCalibrationInterface::~ImageCalibrationInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString ImageCalibrationInterface::Id() const
@@ -119,8 +120,7 @@ void ImageCalibrationInterface::ResetInstance()
 
 bool ImageCalibrationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "ImageCalibration" );
@@ -143,15 +143,10 @@ ProcessImplementation* ImageCalibrationInterface::NewProcess() const
 
 bool ImageCalibrationInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const ImageCalibrationInstance* r = dynamic_cast<const ImageCalibrationInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not an ImageCalibration instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const ImageCalibrationInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an ImageCalibration instance.";
+   return false;
 }
 
 bool ImageCalibrationInterface::RequiresInstanceValidation() const
@@ -188,7 +183,7 @@ void ImageCalibrationInterface::UpdateControls()
 void ImageCalibrationInterface::UpdateTargetImageItem( size_type i )
 {
    TreeBox::Node* node = GUI->TargetImages_TreeBox[i];
-   if ( node == 0 )
+   if ( node == nullptr )
       return;
 
    const ImageCalibrationInstance::ImageItem& item = instance.targetFrames[i];
@@ -472,9 +467,9 @@ void ImageCalibrationInterface::__TargetImages_NodeActivated( TreeBox& sender, T
    case 2:
       {
          // Activate the item's path: open the image.
-         Array<ImageWindow> w = ImageWindow::Open( item.path );
-         for ( Array<ImageWindow>::iterator i = w.Begin(); i != w.End(); ++i )
-            i->Show();
+         Array<ImageWindow> windows = ImageWindow::Open( item.path, IsoString()/*id*/, instance.inputHints );
+         for ( ImageWindow& window : windows )
+            window.Show();
       }
       break;
    }
@@ -488,7 +483,7 @@ void ImageCalibrationInterface::__TargetImages_NodeSelectionUpdated( TreeBox& se
 static size_type TreeInsertionIndex( const TreeBox& tree )
 {
    const TreeBox::Node* n = tree.CurrentNode();
-   return (n != 0) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
+   return (n != nullptr) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
 }
 
 void ImageCalibrationInterface::__TargetImages_Click( Button& sender, bool checked )
@@ -854,6 +849,58 @@ void ImageCalibrationInterface::__ToggleSection( SectionBar& sender, Control& se
    }
 }
 
+void ImageCalibrationInterface::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+{
+   if ( sender == GUI->TargetImages_TreeBox.Viewport() )
+      wantsFiles = true;
+   else if ( sender == GUI->OutputDirectory_Edit )
+      wantsFiles = files.Length() == 1 && File::DirectoryExists( files[0] );
+   else if ( sender == GUI->MasterBiasPath_Edit || sender == GUI->MasterDarkPath_Edit || sender == GUI->MasterFlatPath_Edit )
+      wantsFiles = files.Length() == 1 && File::Exists( files[0] );
+}
+
+void ImageCalibrationInterface::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+{
+   if ( sender == GUI->TargetImages_TreeBox.Viewport() )
+   {
+      StringList inputFiles;
+      bool recursive = IsControlOrCmdPressed();
+      for ( const String& item : files )
+         if ( File::Exists( item ) )
+            inputFiles << item;
+         else if ( File::DirectoryExists( item ) )
+            inputFiles << FileFormat::SupportedImageFiles( item, true/*toRead*/, false/*toWrite*/, recursive );
+
+      inputFiles.Sort();
+      size_type i0 = TreeInsertionIndex( GUI->TargetImages_TreeBox );
+      for ( const String& file : inputFiles )
+         instance.targetFrames.Insert( instance.targetFrames.At( i0++ ), ImageCalibrationInstance::ImageItem( file ) );
+
+      UpdateTargetImagesList();
+      UpdateImageSelectionButtons();
+   }
+   else if ( sender == GUI->OutputDirectory_Edit )
+   {
+      if ( File::DirectoryExists( files[0] ) )
+         GUI->OutputDirectory_Edit.SetText( instance.outputDirectory = files[0] );
+   }
+   else if ( sender == GUI->MasterBiasPath_Edit )
+   {
+      if ( File::Exists( files[0] ) )
+         GUI->MasterBiasPath_Edit.SetText( instance.masterBias.path = files[0] );
+   }
+   else if ( sender == GUI->MasterDarkPath_Edit )
+   {
+      if ( File::Exists( files[0] ) )
+         GUI->MasterDarkPath_Edit.SetText( instance.masterDark.path = files[0] );
+   }
+   else if ( sender == GUI->MasterFlatPath_Edit )
+   {
+      if ( File::Exists( files[0] ) )
+         GUI->MasterFlatPath_Edit.SetText( instance.masterFlat.path = files[0] );
+   }
+}
+
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
@@ -880,6 +927,8 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
    TargetImages_TreeBox.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler)&ImageCalibrationInterface::__TargetImages_CurrentNodeUpdated, w );
    TargetImages_TreeBox.OnNodeActivated( (TreeBox::node_event_handler)&ImageCalibrationInterface::__TargetImages_NodeActivated, w );
    TargetImages_TreeBox.OnNodeSelectionUpdated( (TreeBox::tree_event_handler)&ImageCalibrationInterface::__TargetImages_NodeSelectionUpdated, w );
+   TargetImages_TreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler)&ImageCalibrationInterface::__FileDrag, w );
+   TargetImages_TreeBox.Viewport().OnFileDrop( (Control::file_drop_event_handler)&ImageCalibrationInterface::__FileDrop, w );
 
    AddFiles_PushButton.SetText( "Add Files" );
    AddFiles_PushButton.SetToolTip( "<p>Add existing image files to the list of target frames.</p>" );
@@ -993,6 +1042,8 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
 
    OutputDirectory_Edit.SetToolTip( outputDirectoryToolTip );
    OutputDirectory_Edit.OnEditCompleted( (Edit::edit_event_handler)&ImageCalibrationInterface::__OutputFiles_EditCompleted, w );
+   OutputDirectory_Edit.OnFileDrag( (Control::file_drag_event_handler)&ImageCalibrationInterface::__FileDrag, w );
+   OutputDirectory_Edit.OnFileDrop( (Control::file_drop_event_handler)&ImageCalibrationInterface::__FileDrop, w );
 
    OutputDirectory_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
    OutputDirectory_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -1729,6 +1780,8 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
 
    MasterBiasPath_Edit.SetToolTip( "<p>File path of the master bias frame.</p>" );
    MasterBiasPath_Edit.OnEditCompleted( (Edit::edit_event_handler)&ImageCalibrationInterface::__MasterFrame_EditCompleted, w );
+   MasterBiasPath_Edit.OnFileDrag( (Control::file_drag_event_handler)&ImageCalibrationInterface::__FileDrag, w );
+   MasterBiasPath_Edit.OnFileDrop( (Control::file_drop_event_handler)&ImageCalibrationInterface::__FileDrop, w );
 
    MasterBiasPath_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
    MasterBiasPath_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -1766,6 +1819,8 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
 
    MasterDarkPath_Edit.SetToolTip( "<p>File path of the master dark frame.</p>" );
    MasterDarkPath_Edit.OnEditCompleted( (Edit::edit_event_handler)&ImageCalibrationInterface::__MasterFrame_EditCompleted, w );
+   MasterDarkPath_Edit.OnFileDrag( (Control::file_drag_event_handler)&ImageCalibrationInterface::__FileDrag, w );
+   MasterDarkPath_Edit.OnFileDrop( (Control::file_drop_event_handler)&ImageCalibrationInterface::__FileDrop, w );
 
    MasterDarkPath_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
    MasterDarkPath_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -1894,6 +1949,8 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
 
    MasterFlatPath_Edit.SetToolTip( "<p>File path of the master flat frame.</p>" );
    MasterFlatPath_Edit.OnEditCompleted( (Edit::edit_event_handler)&ImageCalibrationInterface::__MasterFrame_EditCompleted, w );
+   MasterFlatPath_Edit.OnFileDrag( (Control::file_drag_event_handler)&ImageCalibrationInterface::__FileDrag, w );
+   MasterFlatPath_Edit.OnFileDrop( (Control::file_drop_event_handler)&ImageCalibrationInterface::__FileDrop, w );
 
    MasterFlatPath_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
    MasterFlatPath_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -1959,4 +2016,4 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF ImageCalibrationInterface.cpp - Released 2017-05-02T09:43:00Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard GradientDomain Process Module Version 00.06.04.0165
+// Standard GradientDomain Process Module Version 00.06.04.0184
 // ----------------------------------------------------------------------------
-// GradientsHdrInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// GradientsHdrInstance.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -91,7 +91,6 @@ bool GradientsHdrInstance::CanExecuteOn( const View& view, pcl::String& whyNot )
      whyNot = "GradientsHdrCompression requires that logMaxGradient> logMinGradient";
      return false;
    }
-   whyNot.Clear();
    return true;
 }
 
@@ -223,4 +222,4 @@ size_type GradientsHdrInstance::ParameterLength( const MetaParameter* p, size_ty
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF GradientsHdrInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF GradientsHdrInstance.cpp - Released 2017-05-02T09:43:01Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0272
+// Standard ImageCalibration Process Module Version 01.03.05.0291
 // ----------------------------------------------------------------------------
-// ImageCalibrationInterface.h - Released 2016/02/21 20:22:43 UTC
+// ImageCalibrationInterface.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -278,7 +278,7 @@ private:
             CheckBox          CalibrateMasterFlat_CheckBox;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    // Interface Updates
 
@@ -322,6 +322,9 @@ private:
    void __CheckSection( SectionBar& sender, bool checked );
    void __ToggleSection( SectionBar& sender, Control& section, bool start );
 
+   void __FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
+   void __FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
+
    friend struct GUIData;
 };
 
@@ -338,4 +341,4 @@ PCL_END_LOCAL
 #endif   // __ImageCalibrationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationInterface.h - Released 2016/02/21 20:22:43 UTC
+// EOF ImageCalibrationInterface.h - Released 2017-05-02T09:43:00Z

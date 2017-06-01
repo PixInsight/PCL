@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Sort.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Sort.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/Sort.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Iterator_h
 #include <pcl/Iterator.h>
-#endif
-
-#ifndef __PCL_Utility_h
 #include <pcl/Utility.h>
-#endif
 
 #define __PCL_QS_STACK_SIZE   32  // Stack size for the QuickSort algorithms
 #define __PCL_QS_IS_THRESHOLD 11  // QuickSort/InsertionSort switch threshold
@@ -591,4 +584,4 @@ void Sort( BI i, BI j, BP p )
 #endif  // __PCL_Sort_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Sort.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Sort.h - Released 2017-05-28T08:28:50Z

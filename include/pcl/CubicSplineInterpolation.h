@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/CubicSplineInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// pcl/CubicSplineInterpolation.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/CubicSplineInterpolation.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_UnidimensionalInterpolation_h
 #include <pcl/UnidimensionalInterpolation.h>
-#endif
 
 namespace pcl
 {
@@ -176,15 +169,14 @@ public:
    /*!
     * Generation of an interpolating cubic spline.
     *
-    * \param x    %Vector of x-values:
+    * \param x    %Vector of x-values:\n
+    *             \n
+    *    \li If \a x is not empty: Must be a vector of monotonically
+    *    increasing, distinct values: x[0] < x[1] < ... < x[n-1].\n
+    *    \li If \a x is empty: This function will generate a natural cubic
+    *    spline with implicit x[i] = i for i = {0,1,...,n-1}.
     *
-    *       \li If \a x is not empty: Must be a vector of monotonically
-    *       increasing, distinct values: x[0] < x[1] < ... < x[n-1].
-    *
-    *       \li If \a x is empty: This function will generate a natural cubic
-    *       spline with implicit x[i] = i for i = {0,1,...,n-1}.
-    *
-    * \param y    %Vector of function values for i = {0,...,n-1}.
+    * \param y    %Vector of function values for i = {0,1,...,n-1}.
     *
     * When \a x is an empty vector, a <em>natural spline</em> is always
     * generated: boundary conditions are ignored and taken as zero at both ends
@@ -270,4 +262,4 @@ private:
 #endif  // __PCL_CubicSplineInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/CubicSplineInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/CubicSplineInterpolation.h - Released 2017-05-28T08:28:50Z

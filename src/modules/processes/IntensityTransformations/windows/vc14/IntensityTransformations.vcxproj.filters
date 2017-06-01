@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+######################################################################
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
+######################################################################
+# Generated on .... 2017-05-02T09:41:05.162Z
+# Project id ...... IntensityTransformations
+# Project type .... Module
+# Platform ........ Windows/vc14
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Additional preprocessor definitions:
+# _CRT_SECURE_NO_WARNINGS
+######################################################################
+-->
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>falsefalsefalsefalsefalsefalsefalsefalse-falsefalsefalsefalse-4falsefalsefalse-falsefalsefalsefalse-falsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalse</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>falsefalsefalsefalsefalsefalsefalsefalse-falsefalsefalsefalse-4falsefalsefalse-falsefalsefalsefalse-falsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalse</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Image Files">
+      <UniqueIdentifier>falsefalsefalsefalsefalsefalsefalsefalse-falsefalsefalsefalse-4falsefalsefalse-falsefalsefalsefalse-falsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalse</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\AdaptiveStretchCurveGraphInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\AdaptiveStretchInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\AdaptiveStretchInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\AdaptiveStretchParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\AdaptiveStretchProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\AutoHistogramInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\AutoHistogramInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\AutoHistogramParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\AutoHistogramProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\BinarizeAction.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\BinarizeInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\BinarizeInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\BinarizeParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\BinarizeProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ColorSaturationInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ColorSaturationInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ColorSaturationParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ColorSaturationProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CurvesTransformationInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CurvesTransformationInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CurvesTransformationParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CurvesTransformationProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ExponentialNumericControl.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ExponentialTransformationInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ExponentialTransformationInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ExponentialTransformationParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ExponentialTransformationProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\HistogramAutoClipSetupDialog.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\HistogramTransformationInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\HistogramTransformationInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\HistogramTransformationParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\HistogramTransformationProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\IntensityTransformationsModule.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\InvertAction.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\InvertInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\InvertProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MaskedStretchInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MaskedStretchInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MaskedStretchParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MaskedStretchProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RescaleActions.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RescaleInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RescaleInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RescaleParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RescaleProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\STFAutoStretchAction.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\STFSliders.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ScreenTransferFunctionInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ScreenTransferFunctionInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ScreenTransferFunctionParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ScreenTransferFunctionProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\AdaptiveStretchCurveGraphInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\AdaptiveStretchInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\AdaptiveStretchInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\AdaptiveStretchParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\AdaptiveStretchProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\AutoHistogramInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\AutoHistogramInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\AutoHistogramParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\AutoHistogramProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BinarizeAction.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BinarizeInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BinarizeInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BinarizeParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BinarizeProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ColorSaturationInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ColorSaturationInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ColorSaturationParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ColorSaturationProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CurveBase.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CurvesTransformationInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CurvesTransformationInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CurvesTransformationParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CurvesTransformationProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ExponentialNumericControl.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ExponentialTransformationInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ExponentialTransformationInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ExponentialTransformationParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ExponentialTransformationProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\HistogramAutoClipSetupDialog.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\HistogramTransformationInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\HistogramTransformationInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\HistogramTransformationParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\HistogramTransformationProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\IntensityTransformationsModule.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\InvertAction.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\InvertInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\InvertProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MaskedStretchInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MaskedStretchInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MaskedStretchParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MaskedStretchProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\RescaleActions.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\RescaleInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\RescaleInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\RescaleParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\RescaleProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\STFAutoStretchAction.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\STFSliders.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ScreenTransferFunctionInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ScreenTransferFunctionInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ScreenTransferFunctionParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ScreenTransferFunctionProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\AdaptiveStretchIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\AutoHistogramIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\BinarizeActionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\BinarizeIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ColorSaturationIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\CurvesTransformationIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ExponentialTransformationIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\H_channel.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\HistogramTransformationIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\InvertActionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\InvertIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\L_channel.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\MaskedStretchIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\RescaleIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\RescaleLumActionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\RescaleRGBActionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\S_channel.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ScreenTransferFunctionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\a_channel.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\akima_interpolation.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\alpha_channel.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\alpha_small_channel.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\auto_clip_highlights.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\auto_clip_shadows.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\auto_zero_highlights.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\auto_zero_shadows.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\b_channel.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\blue_channel.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\blue_small_channel.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\c_channel.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cubic_spline_interpolation.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\delete_point_mode.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\edit_point_mode.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\green_channel.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\green_small_channel.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\linear_interpolation.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\lock_output.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\pan_cursor.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\raw_rgb.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\red_channel.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\red_small_channel.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\reject_saturated.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\restore_curve.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\reverse.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\rgbk_channel.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\rgbk_small_channel.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\select_point_mode.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\show_all_curves.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\show_curve.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\show_grid.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\store_curve.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\zoom_in_cursor.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\zoom_out_cursor.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\__private\AdaptiveStretchIcon.svg">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\__private\MaskedStretchIcon.svg">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\__private\icons.svg">
+        <Filter>Image Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0272
+// Standard ImageCalibration Process Module Version 01.03.05.0291
 // ----------------------------------------------------------------------------
-// DefectMapInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// DefectMapInstance.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -107,7 +107,6 @@ bool DefectMapInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) co
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
@@ -523,4 +522,4 @@ size_type DefectMapInstance::ParameterLength( const MetaParameter* p, size_type 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DefectMapInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF DefectMapInstance.cpp - Released 2017-05-02T09:43:00Z

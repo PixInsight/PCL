@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard CosmeticCorrection Process Module Version 01.02.05.0149
+// Standard CosmeticCorrection Process Module Version 01.02.05.0168
 // ----------------------------------------------------------------------------
-// CosmeticCorrectionInterface.h - Released 2016/02/21 20:22:43 UTC
+// CosmeticCorrectionInterface.h - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
-// Copyright (c) 2011-2015 Nikolay Volkov
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2017 Nikolay Volkov
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -108,13 +108,9 @@ public:
 
    virtual void SaveSettings() const;
 
-   // -------------------------------------------------------------------------
-
 private:
 
    CosmeticCorrectionInstance instance;
-
-   // -------------------------------------------------------------------------
 
    struct GUIData
    {
@@ -284,7 +280,6 @@ private:
    void   UpdateDefectListItem( size_type );
    void   UpdateDefectListControls();
 
-
    // RTP
           void RTPApplyBadMap( UInt16Image& target, const UInt8Image& map, const UInt16Image& value ) const;
    inline void RTPGetStatistics( Array<double>& avgDev, const View& view )const;
@@ -314,6 +309,8 @@ private:
    void   __Button_Click( Button& sender, bool checked );
    void   __RealValueUpdated( NumericEdit& sender, double value );
    void   __CheckSection( SectionBar& sender, bool checked );
+   void   __FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
+   void   __FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
 
    friend struct GUIData;
 };
@@ -331,4 +328,4 @@ PCL_END_LOCAL
 #endif   // __CosmeticCorrectionInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF CosmeticCorrectionInterface.h - Released 2016/02/21 20:22:43 UTC
+// EOF CosmeticCorrectionInterface.h - Released 2017-05-02T09:43:01Z

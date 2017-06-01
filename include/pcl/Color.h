@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Color.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Color.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/Color.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_String_h
-#include <pcl/String.h>
-#endif
-
-#ifndef __PCL_Math_h
 #include <pcl/Math.h>
-#endif
+#include <pcl/String.h>
 
 namespace pcl
 {
@@ -266,11 +259,14 @@ inline RGBA RGBAColor( int r, int g, int b )
  *
  * \ingroup rgba_utility_functions
  */
+inline RGBA RGBAColor( double r, double g, double b, double a )
+{
+   return RGBAColor( RoundInt( 255*r ), RoundInt( 255*g ), RoundInt( 255*b ), RoundInt( 255*a ) );
+}
+
 inline RGBA RGBAColor( float r, float g, float b, float a )
 {
-   return RGBAColor( pcl::RoundI( 255*r ),
-                     pcl::RoundI( 255*g ),
-                     pcl::RoundI( 255*b ), pcl::RoundI( 255*a ) );
+   return RGBAColor( double( r ), double( g ), double( b ), double( a ) );
 }
 
 /*!
@@ -286,11 +282,14 @@ inline RGBA RGBAColor( float r, float g, float b, float a )
  *
  * \ingroup rgba_utility_functions
  */
+inline RGBA RGBAColor( double r, double g, double b )
+{
+   return RGBAColor( RoundInt( 255*r ), RoundInt( 255*g ), RoundInt( 255*b ) );
+}
+
 inline RGBA RGBAColor( float r, float g, float b )
 {
-   return RGBAColor( pcl::RoundI( 255*r ),
-                     pcl::RoundI( 255*g ),
-                     pcl::RoundI( 255*b ) );
+   return RGBAColor( double( r ), double( g ), double( b ) );
 }
 
 /*!
@@ -384,4 +383,4 @@ IsoString PCL_FUNC CSSColorName( RGBA );
 #endif   // __PCL_Color_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Color.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Color.h - Released 2017-05-28T08:28:50Z

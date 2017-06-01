@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/MetaProcess.h - Released 2016/02/21 20:22:12 UTC
+// pcl/MetaProcess.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,36 +56,23 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_MetaObject_h
 #include <pcl/MetaObject.h>
-#endif
-
-#ifndef __PCL_StringList_h
-#include <pcl/StringList.h>
-#endif
-
-#ifndef __PCL_ProcessBase_h
 #include <pcl/ProcessBase.h>
-#endif
+#include <pcl/StringList.h>
 
 namespace pcl
 {
+
+// ----------------------------------------------------------------------------
 
 class View;
 class ImageWindow;
 class ProcessImplementation;
 class ProcessInterface;
 class MetaParameter;
-
-// ----------------------------------------------------------------------------
 
 /*!
  * \class MetaProcess
@@ -129,9 +116,33 @@ public:
     * Destroys this %MetaProcess object. Also destroys all MetaParameter
     * children of this %MetaProcess.
     */
-   virtual ~MetaProcess()
+   virtual ~MetaProcess() noexcept( false )
    {
    }
+
+   /*!
+    * Copy constructor. Copy semantics are disabled for %MetaProcess because
+    * this class represents unique server-side objects.
+    */
+   MetaProcess( const MetaProcess& ) = delete;
+
+   /*!
+    * Copy assignment. Copy semantics are disabled for %MetaProcess because
+    * this class represents unique server-side objects.
+    */
+   MetaProcess& operator =( const MetaProcess& ) = delete;
+
+   /*!
+    * Move constructor. Move semantics are disabled for %MetaProcess because
+    * because of parent-child server-side object relations.
+    */
+   MetaProcess( MetaProcess&& x ) = delete;
+
+   /*!
+    * Move assignment. Move semantics are disabled for %MetaProcess because
+    * because of parent-child server-side object relations.
+    */
+   MetaProcess& operator =( MetaProcess&& x ) = delete;
 
    /*!
    */
@@ -768,10 +779,6 @@ public:
 
 private:
 
-   // MetaProcess instances are unique objects.
-   MetaProcess( const MetaProcess& ) = delete;
-   void operator =( const MetaProcess& ) = delete;
-
    virtual void PerformAPIDefinitions() const;
 };
 
@@ -784,4 +791,4 @@ private:
 #endif   // __PCL_MetaProcess_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaProcess.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/MetaProcess.h - Released 2017-05-28T08:28:50Z

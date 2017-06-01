@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard JPEG File Format Module Version 01.00.03.0295
+// Standard JPEG File Format Module Version 01.00.04.0316
 // ----------------------------------------------------------------------------
-// JPEGInstance.h - Released 2016/02/21 20:22:34 UTC
+// JPEGInstance.h - Released 2017-05-02T09:42:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -78,9 +78,9 @@ public:
    virtual void Close();
 
    virtual void* FormatSpecificData() const;
-   virtual String ImageProperties() const;
+   virtual String ImageFormatInfo() const;
 
-   virtual void Extract( ICCProfile& icc );
+   virtual ICCProfile ReadICCProfile();
 
    virtual void ReadImage( Image& );
    virtual void ReadImage( DImage& );
@@ -92,7 +92,8 @@ public:
    virtual void Create( const String& filePath, int numberOfImages, const IsoString& hints );
    virtual void SetOptions( const ImageOptions& options );
    virtual void SetFormatSpecificData( const void* data );
-   virtual void Embed( const ICCProfile& icc );
+
+   virtual void WriteICCProfile( const ICCProfile& );
 
    virtual void WriteImage( const Image& );
    virtual void WriteImage( const DImage& );
@@ -104,13 +105,10 @@ public:
 
 private:
 
-   JPEGReader* reader;
-   JPEGWriter* writer;
-
-   int  readCount;      // how many times did us read the same image
-   bool queriedOptions; // did us query options to the user?
-
-   ICCProfile* embeddedICCProfile;
+   AutoPointer<JPEGReader> m_reader;
+   AutoPointer<JPEGWriter> m_writer;
+   int                     m_readCount = 0;          // how many times did us read the same image
+   bool                    m_queriedOptions = false; // did us query options to the user?
 };
 
 // ----------------------------------------------------------------------------
@@ -120,4 +118,4 @@ private:
 #endif   // __JPEGInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF JPEGInstance.h - Released 2016/02/21 20:22:34 UTC
+// EOF JPEGInstance.h - Released 2017-05-02T09:42:51Z

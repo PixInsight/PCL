@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.14.00.0390
 // ----------------------------------------------------------------------------
-// HDRCompositionInterface.cpp - Released 2016/11/13 17:30:54 UTC
+// HDRCompositionInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -65,7 +65,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-HDRCompositionInterface* TheHDRCompositionInterface = 0;
+HDRCompositionInterface* TheHDRCompositionInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -74,41 +74,55 @@ HDRCompositionInterface* TheHDRCompositionInterface = 0;
 // ----------------------------------------------------------------------------
 
 HDRCompositionInterface::HDRCompositionInterface() :
-ProcessInterface(), instance( TheHDRCompositionProcess ), GUI( 0 )
+   instance( TheHDRCompositionProcess )
 {
    TheHDRCompositionInterface = this;
 
-   // The auto save geometry feature is of no good to interfaces that include
-   // both auto-expanding controls (e.g. TreeBox) and collapsible sections
-   // (e.g. SectionBar).
+   /*
+    * The auto save geometry feature is of no good to interfaces that include
+    * both auto-expanding controls (e.g. TreeBox) and collapsible sections
+    * (e.g. SectionBar).
+    */
    DisableAutoSaveGeometry();
 }
 
+// ----------------------------------------------------------------------------
+
 HDRCompositionInterface::~HDRCompositionInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString HDRCompositionInterface::Id() const
 {
    return "HDRComposition";
 }
 
+// ----------------------------------------------------------------------------
+
 MetaProcess* HDRCompositionInterface::Process() const
 {
    return TheHDRCompositionProcess;
 }
+
+// ----------------------------------------------------------------------------
 
 const char** HDRCompositionInterface::IconImageXPM() const
 {
    return HDRCompositionIcon_XPM;
 }
 
+// ----------------------------------------------------------------------------
+
 InterfaceFeatures HDRCompositionInterface::Features() const
 {
    return InterfaceFeature::DefaultGlobal;
 }
+
+// ----------------------------------------------------------------------------
 
 void HDRCompositionInterface::ResetInstance()
 {
@@ -116,10 +130,11 @@ void HDRCompositionInterface::ResetInstance()
    ImportProcess( defaultInstance );
 }
 
+// ----------------------------------------------------------------------------
+
 bool HDRCompositionInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "HDRComposition" );
@@ -135,28 +150,31 @@ bool HDRCompositionInterface::Launch( const MetaProcess& P, const ProcessImpleme
    return &P == TheHDRCompositionProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* HDRCompositionInterface::NewProcess() const
 {
    return new HDRCompositionInstance( instance );
 }
 
+// ----------------------------------------------------------------------------
+
 bool HDRCompositionInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const HDRCompositionInstance* r = dynamic_cast<const HDRCompositionInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not an HDRComposition instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const HDRCompositionInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an HDRComposition instance.";
+   return false;
 }
+
+// ----------------------------------------------------------------------------
 
 bool HDRCompositionInterface::RequiresInstanceValidation() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool HDRCompositionInterface::ImportProcess( const ProcessImplementation& p )
 {
@@ -164,6 +182,8 @@ bool HDRCompositionInterface::ImportProcess( const ProcessImplementation& p )
    UpdateControls();
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void HDRCompositionInterface::SaveSettings() const
 {
@@ -182,10 +202,12 @@ void HDRCompositionInterface::UpdateControls()
    UpdateFittingRegionControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void HDRCompositionInterface::UpdateInputImagesItem( size_type i )
 {
    TreeBox::Node* node = GUI->InputImages_TreeBox[i];
-   if ( node == 0 )
+   if ( node == nullptr )
       return;
 
    const HDRCompositionInstance::ImageItem& item = instance.p_images[i];
@@ -203,6 +225,8 @@ void HDRCompositionInterface::UpdateInputImagesItem( size_type i )
    node->SetToolTip( 2, item.path );
    node->SetAlignment( 2, TextAlign::Left );
 }
+
+// ----------------------------------------------------------------------------
 
 void HDRCompositionInterface::UpdateInputImagesList()
 {
@@ -228,13 +252,15 @@ void HDRCompositionInterface::UpdateInputImagesList()
    GUI->InputImages_TreeBox.EnableUpdates();
 }
 
+// ----------------------------------------------------------------------------
+
 void HDRCompositionInterface::UpdateImageSelectionButtons()
 {
    bool hasItems = GUI->InputImages_TreeBox.NumberOfChildren() > 0;
    bool hasSelection = hasItems && GUI->InputImages_TreeBox.HasSelectedTopLevelNodes();
 
    TreeBox::Node* node = hasSelection ? GUI->InputImages_TreeBox.CurrentNode() : 0;
-   if ( node != 0 )
+   if ( node != nullptr )
    {
       int idx = GUI->InputImages_TreeBox.ChildIndex( node );
       GUI->MoveUp_PushButton.Enable( idx > 0 );
@@ -253,10 +279,14 @@ void HDRCompositionInterface::UpdateImageSelectionButtons()
    GUI->Clear_PushButton.Enable( hasItems );
 }
 
+// ----------------------------------------------------------------------------
+
 void HDRCompositionInterface::UpdateFormatHintsControls()
 {
    GUI->InputHints_Edit.SetText( instance.p_inputHints );
 }
+
+// ----------------------------------------------------------------------------
 
 void HDRCompositionInterface::UpdateHDRCompositionControls()
 {
@@ -270,6 +300,8 @@ void HDRCompositionInterface::UpdateHDRCompositionControls()
    GUI->OutputMasks_CheckBox.SetChecked( instance.p_outputMasks );
    GUI->ClosePreviousImages_CheckBox.SetChecked( instance.p_closePreviousImages );
 }
+
+// ----------------------------------------------------------------------------
 
 void HDRCompositionInterface::UpdateFittingRegionControls()
 {
@@ -288,9 +320,9 @@ void HDRCompositionInterface::__InputImages_CurrentNodeUpdated( TreeBox& sender,
    int index = sender.ChildIndex( &current );
    if ( index < 0 || size_type( index ) >= instance.p_images.Length() )
       throw Error( "HDRCompositionInterface: *Warning* Corrupted interface structures" );
-
-   // ### If there's something that depends on which image is selected in the list, do it now.
 }
+
+// ----------------------------------------------------------------------------
 
 void HDRCompositionInterface::__InputImages_NodeActivated( TreeBox& sender, TreeBox::Node& node, int col )
 {
@@ -310,23 +342,27 @@ void HDRCompositionInterface::__InputImages_NodeActivated( TreeBox& sender, Tree
       break;
    case 2:
       {
-         Array<ImageWindow> w = ImageWindow::Open( item.path );
-         for ( Array<ImageWindow>::iterator i = w.Begin(); i != w.End(); ++i )
-            i->Show();
+         Array<ImageWindow> windows = ImageWindow::Open( item.path, IsoString()/*id*/, instance.p_inputHints );
+         for ( ImageWindow& window : windows )
+            window.Show();
       }
       break;
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void HDRCompositionInterface::__InputImages_NodeSelectionUpdated( TreeBox& sender )
 {
    UpdateImageSelectionButtons();
 }
 
+// ----------------------------------------------------------------------------
+
 static size_type TreeInsertionIndex( const TreeBox& tree )
 {
    const TreeBox::Node* n = tree.CurrentNode();
-   return (n != 0) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
+   return (n != nullptr) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
 }
 
 void HDRCompositionInterface::__InputImages_Click( Button& sender, bool checked )
@@ -337,7 +373,6 @@ void HDRCompositionInterface::__InputImages_Click( Button& sender, bool checked 
       d.EnableMultipleSelections();
       d.LoadImageFilters();
       d.SetCaption( "HDRComposition: Select Input Images" );
-
       if ( d.Execute() )
       {
          size_type i0 = TreeInsertionIndex( GUI->InputImages_TreeBox );
@@ -351,7 +386,7 @@ void HDRCompositionInterface::__InputImages_Click( Button& sender, bool checked 
    else if ( sender == GUI->MoveUp_PushButton )
    {
       TreeBox::Node* node = GUI->InputImages_TreeBox.CurrentNode();
-      if ( node != 0 )
+      if ( node != nullptr )
       {
          int idx = GUI->InputImages_TreeBox.ChildIndex( node );
          if ( idx > 0 )
@@ -368,7 +403,7 @@ void HDRCompositionInterface::__InputImages_Click( Button& sender, bool checked 
    else if ( sender == GUI->MoveDown_PushButton )
    {
       TreeBox::Node* node = GUI->InputImages_TreeBox.CurrentNode();
-      if ( node != 0 )
+      if ( node != nullptr )
       {
          int idx = GUI->InputImages_TreeBox.ChildIndex( node );
          if ( idx < int( instance.p_images.Length()-1 ) )
@@ -427,6 +462,8 @@ void HDRCompositionInterface::__InputImages_Click( Button& sender, bool checked 
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void HDRCompositionInterface::__FormatHints_EditCompleted( Edit& sender )
 {
    String hints = sender.Text().Trimmed();
@@ -437,11 +474,15 @@ void HDRCompositionInterface::__FormatHints_EditCompleted( Edit& sender )
    sender.SetText( hints );
 }
 
+// ----------------------------------------------------------------------------
+
 void HDRCompositionInterface::__HDRComposition_EditValueUpdated( NumericEdit& sender, double value )
 {
    if ( sender == GUI->MaskBinarizingThreshold_NumericControl )
       instance.p_maskBinarizingThreshold = value;
 }
+
+// ----------------------------------------------------------------------------
 
 void HDRCompositionInterface::__HDRComposition_SpinValueUpdated( SpinBox& sender, int value )
 {
@@ -452,6 +493,8 @@ void HDRCompositionInterface::__HDRComposition_SpinValueUpdated( SpinBox& sender
    else if ( sender == GUI->ReplaceLargeScales_SpinBox )
       instance.p_replaceLargeScales = value;
 }
+
+// ----------------------------------------------------------------------------
 
 void HDRCompositionInterface::__HDRComposition_Click( Button& sender, bool checked )
 {
@@ -467,11 +510,15 @@ void HDRCompositionInterface::__HDRComposition_Click( Button& sender, bool check
       instance.p_closePreviousImages = checked;
 }
 
+// ----------------------------------------------------------------------------
+
 void HDRCompositionInterface::__FittingRegion_Check( SectionBar& sender, bool checked )
 {
    if ( sender == GUI->FittingRegion_SectionBar )
       instance.p_useFittingRegion = checked;
 }
+
+// ----------------------------------------------------------------------------
 
 void HDRCompositionInterface::__FittingRegion_SpinValueUpdated( SpinBox& sender, int value )
 {
@@ -484,6 +531,8 @@ void HDRCompositionInterface::__FittingRegion_SpinValueUpdated( SpinBox& sender,
    else if ( sender == GUI->FittingRectHeight_SpinBox )
       instance.p_fittingRect.y1 = instance.p_fittingRect.y0 + value;
 }
+
+// ----------------------------------------------------------------------------
 
 void HDRCompositionInterface::__FittingRegion_Click( Button& sender, bool checked )
 {
@@ -503,6 +552,8 @@ void HDRCompositionInterface::__FittingRegion_Click( Button& sender, bool checke
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void HDRCompositionInterface::__ToggleSection( SectionBar& sender, Control& section, bool start )
 {
    if ( start )
@@ -517,6 +568,60 @@ void HDRCompositionInterface::__ToggleSection( SectionBar& sender, Control& sect
       else
          SetFixedHeight();
    }
+}
+
+// ----------------------------------------------------------------------------
+
+void HDRCompositionInterface::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+{
+   if ( sender == GUI->InputImages_TreeBox.Viewport() )
+      wantsFiles = true;
+}
+
+// ----------------------------------------------------------------------------
+
+void HDRCompositionInterface::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+{
+   if ( sender == GUI->InputImages_TreeBox.Viewport() )
+   {
+      StringList inputFiles;
+      bool recursive = IsControlOrCmdPressed();
+      for ( const String& item : files )
+         if ( File::Exists( item ) )
+            inputFiles << item;
+         else if ( File::DirectoryExists( item ) )
+            inputFiles << FileFormat::SupportedImageFiles( item, true/*toRead*/, false/*toWrite*/, recursive );
+
+      inputFiles.Sort();
+      size_type i0 = TreeInsertionIndex( GUI->InputImages_TreeBox );
+      for ( const String& file : inputFiles )
+         instance.p_images.Insert( instance.p_images.At( i0++ ), HDRCompositionInstance::ImageItem( file ) );
+
+      UpdateInputImagesList();
+      UpdateImageSelectionButtons();
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+void HDRCompositionInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->FittingRegion_SectionBar || sender == GUI->FittingRegion_Control || sender == GUI->SelectPreview_Button )
+      wantsView = view.IsPreview();
+}
+
+// ----------------------------------------------------------------------------
+
+void HDRCompositionInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->FittingRegion_SectionBar || sender == GUI->FittingRegion_Control || sender == GUI->SelectPreview_Button )
+      if ( view.IsPreview() )
+      {
+         instance.p_useFittingRegion = true;
+         instance.p_fittingRect = view.Window().PreviewRect( view.Id() );
+         GUI->FittingRegion_SectionBar.ShowSection();
+         UpdateFittingRegionControls();
+      }
 }
 
 // ----------------------------------------------------------------------------
@@ -545,6 +650,8 @@ HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
    InputImages_TreeBox.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler)&HDRCompositionInterface::__InputImages_CurrentNodeUpdated, w );
    InputImages_TreeBox.OnNodeActivated( (TreeBox::node_event_handler)&HDRCompositionInterface::__InputImages_NodeActivated, w );
    InputImages_TreeBox.OnNodeSelectionUpdated( (TreeBox::tree_event_handler)&HDRCompositionInterface::__InputImages_NodeSelectionUpdated, w );
+   InputImages_TreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler)&HDRCompositionInterface::__FileDrag, w );
+   InputImages_TreeBox.Viewport().OnFileDrop( (Control::file_drop_event_handler)&HDRCompositionInterface::__FileDrop, w );
 
    AddFiles_PushButton.SetText( "Add Files" );
    AddFiles_PushButton.SetToolTip( "<p>Add existing image files to the list of input images.</p>" );
@@ -824,9 +931,11 @@ HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
 
    FittingRegion_SectionBar.SetTitle( "Fitting Region" );
    FittingRegion_SectionBar.EnableTitleCheckBox();
-   FittingRegion_SectionBar.OnCheck( (SectionBar::check_event_handler)&HDRCompositionInterface::__FittingRegion_Check, w );
    FittingRegion_SectionBar.SetSection( FittingRegion_Control );
+   FittingRegion_SectionBar.OnCheck( (SectionBar::check_event_handler)&HDRCompositionInterface::__FittingRegion_Check, w );
    FittingRegion_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&HDRCompositionInterface::__ToggleSection, w );
+   FittingRegion_SectionBar.OnViewDrag( (Control::view_drag_event_handler)&HDRCompositionInterface::__ViewDrag, w );
+   FittingRegion_SectionBar.OnViewDrop( (Control::view_drop_event_handler)&HDRCompositionInterface::__ViewDrop, w );
 
    const char* frX0ToolTip = "<p>X pixel coordinate of the upper-left corner of the fitting rectangle.</p>";
 
@@ -894,6 +1003,8 @@ HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
    SelectPreview_Button.SetText( "From Preview" );
    SelectPreview_Button.SetToolTip( "<p>Import ROI coordinates from an existing preview.</p>" );
    SelectPreview_Button.OnClick( (Button::click_event_handler)&HDRCompositionInterface::__FittingRegion_Click, w );
+   SelectPreview_Button.OnViewDrag( (Control::view_drag_event_handler)&HDRCompositionInterface::__ViewDrag, w );
+   SelectPreview_Button.OnViewDrop( (Control::view_drop_event_handler)&HDRCompositionInterface::__ViewDrop, w );
 
    FittingRectHeight_Sizer.SetSpacing( 4 );
    FittingRectHeight_Sizer.Add( FittingRectHeight_Label );
@@ -909,6 +1020,8 @@ HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
 
    FittingRegion_Control.SetSizer( FittingRegion_Sizer );
    FittingRegion_Control.AdjustToContents();
+   FittingRegion_Control.OnViewDrag( (Control::view_drag_event_handler)&HDRCompositionInterface::__ViewDrag, w );
+   FittingRegion_Control.OnViewDrop( (Control::view_drop_event_handler)&HDRCompositionInterface::__ViewDrop, w );
 
    FittingRegion_Control.SetToolTip( "<p>HDRComposition performs a linear fit to match the tonal ranges of each "
    "pair of combined images. Linear fitting can be restricted to a user-defined rectangular region of interest, "
@@ -946,4 +1059,4 @@ HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HDRCompositionInterface.cpp - Released 2016/11/13 17:30:54 UTC
+// EOF HDRCompositionInterface.cpp - Released 2017-05-02T09:43:00Z

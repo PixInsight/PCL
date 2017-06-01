@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/FileFormatImplementation.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/FileFormatImplementation.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -91,14 +91,15 @@ typedef Array<FileFormatProperty> FileFormatPropertyArray;
 
 struct FileFormatImplementationPrivate
 {
-           FITSKeywordArray                keywords;
-   mutable FITSKeywordArray::iterator      keywordIterator = nullptr;
-           ICCProfile                      iccProfile;
-           UInt8Image                      thumbnail;
-           FileFormatPropertyArray         properties;
-           RGBColorSystem                  rgbws;
-           DisplayFunction                 displayFunction;
-           ColorFilterArray                colorFilterArray;
+           ICCProfile                 iccProfile;
+           RGBColorSystem             rgbws;
+           DisplayFunction            displayFunction;
+           ColorFilterArray           colorFilterArray;
+           UInt8Image                 thumbnail;
+           FITSKeywordArray           keywords;
+   mutable FITSKeywordArray::iterator keywordIterator = nullptr;
+           FileFormatPropertyArray    properties;
+           FileFormatPropertyArray    imageProperties;
 
    FileFormatImplementationPrivate() = default;
 };
@@ -129,12 +130,12 @@ FileFormatImplementation::~FileFormatImplementation()
 // ----------------------------------------------------------------------------
 
 #define MANDATORY( funcName )             \
-   __Mandatory( meta->Name(), funcName )
+   MandatoryError( meta->Name(), funcName )
 
-static void __Mandatory( const IsoString& formatName, const char* funcName )
+static void MandatoryError( const IsoString& formatName, const char* funcName )
 {
-   throw Error( String( formatName ) + "FileFormatImplementation: " +
-                funcName + "() must be reimplemented in descendant class" );
+   throw Error( "FileFormatImplementation (" + String( formatName ) + "): " +
+                funcName + "() must be reimplemented in descendant class." );
 }
 
 // ----------------------------------------------------------------------------
@@ -193,61 +194,18 @@ void* FileFormatImplementation::FormatSpecificData() const
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::Extract( FITSKeywordArray& )
+ICCProfile FileFormatImplementation::ReadICCProfile()
 {
-   MANDATORY( "ExtractKeywords" );
+   MANDATORY( "ReadICCProfile" );
+   return ICCProfile();
 }
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::Extract( ICCProfile& )
+RGBColorSystem FileFormatImplementation::ReadRGBWorkingSpace()
 {
-   MANDATORY( "ExtractICCProfile" );
-}
-
-// ----------------------------------------------------------------------------
-
-void FileFormatImplementation::Extract( pcl::UInt8Image& )
-{
-   MANDATORY( "ExtractThumbnail" );
-}
-
-// ----------------------------------------------------------------------------
-
-ImagePropertyDescriptionArray FileFormatImplementation::Properties()
-{
-   MANDATORY( "Properties" );
-   return ImagePropertyDescriptionArray();
-}
-
-// ----------------------------------------------------------------------------
-
-Variant FileFormatImplementation::ReadProperty( const IsoString& property )
-{
-   MANDATORY( "ReadProperty" );
-   return Variant();
-}
-
-// ----------------------------------------------------------------------------
-
-void FileFormatImplementation::WriteProperty( const IsoString& property, const Variant& value )
-{
-   MANDATORY( "WriteProperty" );
-}
-
-// ----------------------------------------------------------------------------
-
-RGBColorSystem FileFormatImplementation::ReadRGBWS()
-{
-   MANDATORY( "ReadRGBWS" );
+   MANDATORY( "ReadRGBWorkingSpace" );
    return RGBColorSystem();
-}
-
-// ----------------------------------------------------------------------------
-
-void FileFormatImplementation::WriteRGBWS( const RGBColorSystem& rgbws )
-{
-   MANDATORY( "WriteRGBWS" );
 }
 
 // ----------------------------------------------------------------------------
@@ -260,13 +218,6 @@ DisplayFunction FileFormatImplementation::ReadDisplayFunction()
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::WriteDisplayFunction( const DisplayFunction& df )
-{
-   MANDATORY( "WriteDisplayFunction" );
-}
-
-// ----------------------------------------------------------------------------
-
 ColorFilterArray FileFormatImplementation::ReadColorFilterArray()
 {
    MANDATORY( "ReadColorFilterArray" );
@@ -275,9 +226,50 @@ ColorFilterArray FileFormatImplementation::ReadColorFilterArray()
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::WriteColorFilterArray( const ColorFilterArray& cfa )
+UInt8Image FileFormatImplementation::ReadThumbnail()
 {
-   MANDATORY( "WriteColorFilterArray" );
+   MANDATORY( "ReadThumbnail" );
+   return UInt8Image();
+}
+
+// ----------------------------------------------------------------------------
+
+FITSKeywordArray FileFormatImplementation::ReadFITSKeywords()
+{
+   MANDATORY( "ReadFITSKeywords" );
+   return FITSKeywordArray();
+}
+
+// ----------------------------------------------------------------------------
+
+PropertyDescriptionArray FileFormatImplementation::Properties()
+{
+   MANDATORY( "Properties" );
+   return PropertyDescriptionArray();
+}
+
+// ----------------------------------------------------------------------------
+
+Variant FileFormatImplementation::ReadProperty( const IsoString& property )
+{
+   MANDATORY( "ReadProperty" );
+   return Variant();
+}
+
+// ----------------------------------------------------------------------------
+
+PropertyDescriptionArray FileFormatImplementation::ImageProperties()
+{
+   MANDATORY( "ImageProperties" );
+   return PropertyDescriptionArray();
+}
+
+// ----------------------------------------------------------------------------
+
+Variant FileFormatImplementation::ReadImageProperty( const IsoString& property )
+{
+   MANDATORY( "ReadImageProperty" );
+   return Variant();
 }
 
 // ----------------------------------------------------------------------------
@@ -317,35 +309,35 @@ void FileFormatImplementation::ReadImage( UInt32Image& )
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::Read( pcl::Image::sample*, int, int, int )
+void FileFormatImplementation::ReadSamples( pcl::Image::sample*, int, int, int )
 {
    MANDATORY( "ReadIncrementalImage" );
 }
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::Read( pcl::DImage::sample*, int, int, int )
+void FileFormatImplementation::ReadSamples( pcl::DImage::sample*, int, int, int )
 {
    MANDATORY( "ReadIncrementalDImage" );
 }
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::Read( UInt8Image::sample*, int, int, int )
+void FileFormatImplementation::ReadSamples( UInt8Image::sample*, int, int, int )
 {
    MANDATORY( "ReadIncrementalUInt8Image" );
 }
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::Read( UInt16Image::sample*, int, int, int )
+void FileFormatImplementation::ReadSamples( UInt16Image::sample*, int, int, int )
 {
    MANDATORY( "ReadIncrementalUInt16Image" );
 }
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::Read( UInt32Image::sample*, int, int, int )
+void FileFormatImplementation::ReadSamples( UInt32Image::sample*, int, int, int )
 {
    MANDATORY( "ReadIncrementalUInt32Image" );
 }
@@ -366,23 +358,58 @@ void FileFormatImplementation::SetFormatSpecificData( const void* )
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::Embed( const FITSKeywordArray& )
+void FileFormatImplementation::WriteICCProfile( const ICCProfile& )
 {
-   MANDATORY( "EmbedKeywords" );
+   MANDATORY( "WriteICCProfile" );
 }
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::Embed( const ICCProfile& )
+void FileFormatImplementation::WriteRGBWorkingSpace( const RGBColorSystem& rgbws )
 {
-   MANDATORY( "EmbedICCProfile" );
+   MANDATORY( "WriteRGBWorkingSpace" );
 }
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::Embed( const pcl::UInt8Image& )
+void FileFormatImplementation::WriteDisplayFunction( const DisplayFunction& df )
 {
-   MANDATORY( "EmbedThumbnail" );
+   MANDATORY( "WriteDisplayFunction" );
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::WriteColorFilterArray( const ColorFilterArray& cfa )
+{
+   MANDATORY( "WriteColorFilterArray" );
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::WriteThumbnail( const pcl::UInt8Image& )
+{
+   MANDATORY( "WriteThumbnail" );
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::WriteFITSKeywords( const FITSKeywordArray& )
+{
+   MANDATORY( "WriteFITSKeywords" );
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::WriteProperty( const IsoString& property, const Variant& value )
+{
+   MANDATORY( "WriteProperty" );
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::WriteImageProperty( const IsoString& property, const Variant& value )
+{
+   MANDATORY( "WriteImageProperty" );
 }
 
 // ----------------------------------------------------------------------------
@@ -429,35 +456,42 @@ void FileFormatImplementation::CreateImage( const ImageInfo& )
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::Write( const pcl::Image::sample*, int, int, int )
+void FileFormatImplementation::CloseImage()
+{
+   MANDATORY( "CloseImage" );
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::WriteSamples( const pcl::Image::sample*, int, int, int )
 {
    MANDATORY( "WriteIncrementalImage" );
 }
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::Write( const pcl::DImage::sample*, int, int, int )
+void FileFormatImplementation::WriteSamples( const pcl::DImage::sample*, int, int, int )
 {
    MANDATORY( "WriteIncrementalDImage" );
 }
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::Write( const UInt8Image::sample*, int, int, int )
+void FileFormatImplementation::WriteSamples( const UInt8Image::sample*, int, int, int )
 {
    MANDATORY( "WriteIncrementalUInt8Image" );
 }
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::Write( const UInt16Image::sample*, int, int, int )
+void FileFormatImplementation::WriteSamples( const UInt16Image::sample*, int, int, int )
 {
    MANDATORY( "WriteIncrementalUInt16Image" );
 }
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::Write( const UInt32Image::sample*, int, int, int )
+void FileFormatImplementation::WriteSamples( const UInt32Image::sample*, int, int, int )
 {
    MANDATORY( "WriteIncrementalUInt32Image" );
 }
@@ -473,39 +507,10 @@ void FileFormatImplementation::BeginPrivate()
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::BeginKeywordExtraction()
-{
-   BeginPrivate();
-   m_data->keywords.Clear();
-   Extract( m_data->keywords );
-   m_data->keywordIterator = m_data->keywords.Begin();
-}
-
-size_type FileFormatImplementation::NumberOfKeywords() const
-{
-   return m_data->keywords.Length();
-}
-
-bool FileFormatImplementation::GetNextKeyword( FITSHeaderKeyword& k ) const
-{
-   if ( m_data->keywordIterator == m_data->keywords.End() )
-      return false;
-   k = *m_data->keywordIterator++; // N.B.: mutable keywordIterator
-   return true;
-}
-
-void FileFormatImplementation::EndKeywordExtraction()
-{
-   m_data->keywords.Clear();
-}
-
-// ----------------------------------------------------------------------------
-
 void FileFormatImplementation::BeginICCProfileExtraction()
 {
    BeginPrivate();
-   m_data->iccProfile.Clear();
-   Extract( m_data->iccProfile );
+   m_data->iccProfile = ReadICCProfile();
 }
 
 const ICCProfile& FileFormatImplementation::GetICCProfile() const
@@ -520,52 +525,10 @@ void FileFormatImplementation::EndICCProfileExtraction()
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::BeginThumbnailExtraction()
-{
-   BeginPrivate();
-   m_data->thumbnail.FreeData();
-   Extract( m_data->thumbnail );
-}
-
-const UInt8Image& FileFormatImplementation::GetThumbnail() const
-{
-   return m_data->thumbnail;
-}
-
-void FileFormatImplementation::EndThumbnailExtraction()
-{
-   m_data->thumbnail.FreeData();
-}
-
-// ----------------------------------------------------------------------------
-
-void FileFormatImplementation::BeginPropertyExtraction()
-{
-   BeginPrivate();
-   m_data->properties.Clear();
-}
-
-const Variant& FileFormatImplementation::GetImageProperty( const IsoString& id )
-{
-   IsoString tid = id.Trimmed();
-   FileFormatPropertyArray::const_iterator i = m_data->properties.Search( tid );
-   if ( i != m_data->properties.End() )
-      return i->value;
-   m_data->properties.Append( FileFormatProperty( tid, ReadProperty( tid ) ) );
-   return m_data->properties.Search( tid )->value;
-}
-
-void FileFormatImplementation::EndPropertyExtraction()
-{
-   m_data->properties.Clear();
-}
-
-// ----------------------------------------------------------------------------
-
 void FileFormatImplementation::BeginRGBWSExtraction()
 {
    BeginPrivate();
-   m_data->rgbws = ReadRGBWS();
+   m_data->rgbws = ReadRGBWorkingSpace();
 }
 
 const RGBColorSystem& FileFormatImplementation::GetRGBWS() const
@@ -616,21 +579,93 @@ void FileFormatImplementation::EndColorFilterArrayExtraction()
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::BeginKeywordEmbedding()
+void FileFormatImplementation::BeginThumbnailExtraction()
 {
    BeginPrivate();
+   m_data->thumbnail = ReadThumbnail();
+}
+
+const UInt8Image& FileFormatImplementation::GetThumbnail() const
+{
+   return m_data->thumbnail;
+}
+
+void FileFormatImplementation::EndThumbnailExtraction()
+{
+   m_data->thumbnail.FreeData();
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::BeginKeywordExtraction()
+{
+   BeginPrivate();
+   m_data->keywords = ReadFITSKeywords();
+   m_data->keywordIterator = m_data->keywords.Begin();
+}
+
+size_type FileFormatImplementation::NumberOfKeywords() const
+{
+   return m_data->keywords.Length();
+}
+
+bool FileFormatImplementation::GetNextKeyword( FITSHeaderKeyword& k ) const
+{
+   if ( m_data->keywordIterator == m_data->keywords.End() )
+      return false;
+   k = *m_data->keywordIterator++; // N.B.: mutable keywordIterator
+   return true;
+}
+
+void FileFormatImplementation::EndKeywordExtraction()
+{
    m_data->keywords.Clear();
 }
 
-void FileFormatImplementation::AddKeyword( const FITSHeaderKeyword& k )
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::BeginPropertyExtraction()
 {
-   m_data->keywords.Add( k );
+   BeginPrivate();
+   m_data->properties.Clear();
 }
 
-void FileFormatImplementation::EndKeywordEmbedding()
+const Variant& FileFormatImplementation::GetProperty( const IsoString& id )
 {
-   Embed( m_data->keywords );
-   m_data->keywords.Clear();
+   IsoString tid = id.Trimmed();
+   FileFormatPropertyArray::const_iterator i = m_data->properties.Search( tid );
+   if ( i != m_data->properties.End() )
+      return i->value;
+   m_data->properties.Append( FileFormatProperty( tid, ReadProperty( tid ) ) );
+   return m_data->properties.Search( tid )->value;
+}
+
+void FileFormatImplementation::EndPropertyExtraction()
+{
+   m_data->properties.Clear();
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::BeginImagePropertyExtraction()
+{
+   BeginPrivate();
+   m_data->imageProperties.Clear();
+}
+
+const Variant& FileFormatImplementation::GetImageProperty( const IsoString& id )
+{
+   IsoString tid = id.Trimmed();
+   FileFormatPropertyArray::const_iterator i = m_data->imageProperties.Search( tid );
+   if ( i != m_data->imageProperties.End() )
+      return i->value;
+   m_data->imageProperties.Append( FileFormatProperty( tid, ReadImageProperty( tid ) ) );
+   return m_data->imageProperties.Search( tid )->value;
+}
+
+void FileFormatImplementation::EndImagePropertyExtraction()
+{
+   m_data->imageProperties.Clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -653,59 +688,8 @@ void FileFormatImplementation::SetICCProfile( const ICCProfile& icc )
 void FileFormatImplementation::EndICCProfileEmbedding()
 {
    if ( m_data->iccProfile.IsProfile() ) // ### should allow embedding empty profiles here?
-      Embed( m_data->iccProfile );
+      WriteICCProfile( m_data->iccProfile );
    m_data->iccProfile.Clear();
-}
-
-// ----------------------------------------------------------------------------
-
-void FileFormatImplementation::BeginThumbnailEmbedding()
-{
-   BeginPrivate();
-   m_data->thumbnail.FreeData();
-}
-
-void FileFormatImplementation::SetThumbnail( const UInt8Image& img )
-{
-   if ( !img.IsEmpty() )
-      m_data->thumbnail.Assign( img );
-}
-
-void FileFormatImplementation::EndThumbnailEmbedding()
-{
-   if ( !m_data->thumbnail.IsEmpty() )
-   {
-      Embed( m_data->thumbnail );
-      m_data->thumbnail.FreeData();
-   }
-}
-
-// ----------------------------------------------------------------------------
-
-void FileFormatImplementation::BeginPropertyEmbedding()
-{
-   BeginPrivate();
-   m_data->properties.Clear();
-}
-
-void FileFormatImplementation::SetImageProperty( const IsoString& id, const Variant& value )
-{
-   IsoString tid = id.Trimmed();
-   if ( !tid.IsEmpty() && value.IsValid() )
-   {
-      FileFormatPropertyArray::iterator i = m_data->properties.Search( tid );
-      if ( i != m_data->properties.End() )
-         i->value = value;
-      else
-         m_data->properties.Append( FileFormatProperty( tid, value ) );
-   }
-}
-
-void FileFormatImplementation::EndPropertyEmbedding()
-{
-   for ( FileFormatPropertyArray::const_iterator i = m_data->properties.Begin(); i != m_data->properties.End(); ++i )
-      WriteProperty( i->id, i->value );
-   m_data->properties.Clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -723,7 +707,7 @@ void FileFormatImplementation::SetRGBWS( const RGBColorSystem& rgbws )
 
 void FileFormatImplementation::EndRGBWSEmbedding()
 {
-   WriteRGBWS( m_data->rgbws );
+   WriteRGBWorkingSpace( m_data->rgbws );
    m_data->rgbws = RGBColorSystem();
 }
 
@@ -769,7 +753,105 @@ void FileFormatImplementation::EndColorFilterArrayEmbedding()
 
 // ----------------------------------------------------------------------------
 
+void FileFormatImplementation::BeginThumbnailEmbedding()
+{
+   BeginPrivate();
+   m_data->thumbnail.FreeData();
+}
+
+void FileFormatImplementation::SetThumbnail( const UInt8Image& img )
+{
+   if ( !img.IsEmpty() )
+      m_data->thumbnail.Assign( img );
+}
+
+void FileFormatImplementation::EndThumbnailEmbedding()
+{
+   if ( !m_data->thumbnail.IsEmpty() )
+   {
+      WriteThumbnail( m_data->thumbnail );
+      m_data->thumbnail.FreeData();
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::BeginKeywordEmbedding()
+{
+   BeginPrivate();
+   m_data->keywords.Clear();
+}
+
+void FileFormatImplementation::AddKeyword( const FITSHeaderKeyword& k )
+{
+   m_data->keywords.Add( k );
+}
+
+void FileFormatImplementation::EndKeywordEmbedding()
+{
+   WriteFITSKeywords( m_data->keywords );
+   m_data->keywords.Clear();
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::BeginPropertyEmbedding()
+{
+   BeginPrivate();
+   m_data->properties.Clear();
+}
+
+void FileFormatImplementation::SetProperty( const IsoString& id, const Variant& value )
+{
+   IsoString tid = id.Trimmed();
+   if ( !tid.IsEmpty() && value.IsValid() )
+   {
+      FileFormatPropertyArray::iterator i = m_data->properties.Search( tid );
+      if ( i != m_data->properties.End() )
+         i->value = value;
+      else
+         m_data->properties.Append( FileFormatProperty( tid, value ) );
+   }
+}
+
+void FileFormatImplementation::EndPropertyEmbedding()
+{
+   for ( const FileFormatProperty& property : m_data->properties )
+      WriteProperty( property.id, property.value );
+   m_data->properties.Clear();
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::BeginImagePropertyEmbedding()
+{
+   BeginPrivate();
+   m_data->imageProperties.Clear();
+}
+
+void FileFormatImplementation::SetImageProperty( const IsoString& id, const Variant& value )
+{
+   IsoString tid = id.Trimmed();
+   if ( !tid.IsEmpty() && value.IsValid() )
+   {
+      FileFormatPropertyArray::iterator i = m_data->imageProperties.Search( tid );
+      if ( i != m_data->imageProperties.End() )
+         i->value = value;
+      else
+         m_data->imageProperties.Append( FileFormatProperty( tid, value ) );
+   }
+}
+
+void FileFormatImplementation::EndImagePropertyEmbedding()
+{
+   for ( const FileFormatProperty& property : m_data->imageProperties )
+      WriteImageProperty( property.id, property.value );
+   m_data->imageProperties.Clear();
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormatImplementation.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/FileFormatImplementation.cpp - Released 2017-05-28T08:29:05Z

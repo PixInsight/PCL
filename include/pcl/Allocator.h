@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/Allocator.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Allocator.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/Allocator.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Utility_h
-#include <pcl/Utility.h>
-#endif
-
-#ifndef __PCL_Relational_h
 #include <pcl/Relational.h>
-#endif
+#include <pcl/Utility.h>
 
 namespace pcl
 {
@@ -133,7 +123,7 @@ namespace pcl
  * has been previously allocated by any allocator of class A.
  *
  * StandardAllocator is an example of a block allocator that uses the standard
- * new and delete operators.
+ * \c new and \c delete operators.
  *
  * \sa StandardAllocator
  */
@@ -159,7 +149,7 @@ public:
    /*!
     * Copy constructor.
     */
-   Allocator( const Allocator<T, A>& x ) : A( x )
+   Allocator( const Allocator<T,A>& x ) : A( x )
    {
    }
 
@@ -246,7 +236,8 @@ public:
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup object_construction_destruction Construction and Destruction of Objects with Explicit Allocation
+ * \defgroup object_construction_destruction Construction and&nbsp;\
+ * Destruction of Objects with Explicit Allocation
  */
 
 /*!
@@ -412,4 +403,4 @@ inline void Destroy( long double**, long double** ) {}
 #endif  // __PCL_Allocator_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Allocator.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Allocator.h - Released 2017-05-28T08:28:50Z

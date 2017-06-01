@@ -140,42 +140,16 @@ void CFA2RGBModule::GetReleaseDate( int& year, int& month, int& day ) const
 
 } // pcl
 
-// ----------------------------------------------------------------------------
-// PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
-//
-// Module installation routine.
-//
-// If this routine is defined as a public symbol in a module, the PixInsight
-// core application calls it just after loading and initialization of the
-// module shared object.
-//
-// The mode argument specifies the kind of installation being performed by the
-// core application. See the pcl::InstallMode namespace for more information.
-// ----------------------------------------------------------------------------
-
 PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 {
-   /*
-    * When the PixInsight application installs this module, we just have to
-    * instantiate the meta objects describing it.
-    */
-
    new pcl::CFA2RGBModule;
 
-   /*
-    * The mode argument tells us what kind of installation is being requested
-    * by the PixInsight application. Incomplete installation requests only need
-    * module descriptions.
-    */
    if ( mode == pcl::InstallMode::FullInstall )
    {
       new pcl::CFA2RGBProcess;
       new pcl::CFA2RGBInterface;
    }
 
-   /*
-    * Return zero to signal successful installation
-    */
    return 0;
 }
 

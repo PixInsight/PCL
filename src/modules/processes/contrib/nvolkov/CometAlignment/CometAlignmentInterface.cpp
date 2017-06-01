@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard CometAlignment Process Module Version 01.02.06.0137
+// Standard CometAlignment Process Module Version 01.02.06.0158
 // ----------------------------------------------------------------------------
-// CometAlignmentInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// CometAlignmentInterface.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
-// Copyright (c) 2012-2015 Nikolay Volkov
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2012-2017 Nikolay Volkov
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -62,7 +62,7 @@
 #include <pcl/ErrorHandler.h>
 #include <pcl/Graphics.h>
 #include <pcl/MessageBox.h>
-#include <pcl/DrizzleDataDecoder.h>
+#include <pcl/DrizzleData.h>
 
 #define IMAGELIST_MINHEIGHT( fnt )  RoundInt( 8.125*fnt.Height() )
 
@@ -129,7 +129,6 @@ void CometAlignmentInterface::ResetInstance ()
 bool CometAlignmentInterface::Launch (const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/)
 
 {
-   // ### Deferred initialization
    if (GUI == 0)
 
    {
@@ -154,18 +153,11 @@ ProcessImplementation* CometAlignmentInterface::NewProcess () const
 }
 
 bool CometAlignmentInterface::ValidateProcess (const ProcessImplementation& p, pcl::String& whyNot) const
-
 {
-   const CometAlignmentInstance* r = dynamic_cast<const CometAlignmentInstance*> (&p);
-   if (r == 0)
-
-   {
-      whyNot = "Not an CometAlignment instance.";
-      return false;
-   }
-
-   whyNot.Clear ();
-   return true;
+   if ( dynamic_cast<const CometAlignmentInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an CometAlignment instance.";
+   return false;
 }
 
 bool CometAlignmentInterface::RequiresInstanceValidation () const
@@ -348,21 +340,19 @@ void CometAlignmentInterface::SaveSettings () const
 
 //-------------------------------------------------------------------------
 
-void FileShow (String& path) // load ( if not loaded before ) and bring to front the ImageWindow
-
+void FileShow( String& path ) // load ( if not loaded before ) and bring to front the ImageWindow
 {
 #if debug
-   Console ().WriteLn ("FileShow():" + path);
+   Console().WriteLn( "FileShow(): " + path );
 #endif
-   if (ImageWindow::WindowByFilePath (path).IsNull ())
-
+   if ( ImageWindow::WindowByFilePath( path ).IsNull() )
    {
-      Array<ImageWindow> w = ImageWindow::Open (path);
-      for (Array<ImageWindow>::iterator i = w.Begin (); i != w.End (); ++i)
-         i->Show ();
+      Array<ImageWindow> windows = ImageWindow::Open( path );
+      for ( ImageWindow& window : windows )
+         window.Show();
    }
    else
-      ImageWindow::WindowByFilePath (path).BringToFront ();
+      ImageWindow::WindowByFilePath( path ).BringToFront();
 }
 
 void CometAlignmentInterface::SetFirst (const DPoint pos)
@@ -684,7 +674,7 @@ inline bool OperandIsDrizzleIntegration(const String& filePath)//true == Drizzle
 		throw CatchedException ();
 	FITSKeywordArray keywords; // FITS keywords
 	if (format.CanStoreKeywords ())
-		if(!file.Extract (keywords)) throw CatchedException ();
+		if(!file.ReadFITSKeywords( keywords )) throw CatchedException ();
 		else
 			for ( int k = 0; k < int( keywords.Length() ); k++ )
 				if ( String( keywords[k].comment ) == "Integration with DrizzleIntegration process" )
@@ -726,7 +716,7 @@ inline bool GetDate (String& date, const String& filePath)
       if (!file.Open (images, filePath)) throw CatchedException ();
       if (images.IsEmpty ()) throw Error (filePath + ": Empty image.");
       FITSKeywordArray keywords;
-      file.Extract (keywords);
+      file.ReadFITSKeywords( keywords );
 
       file.Close ();
 
@@ -809,29 +799,47 @@ void CometAlignmentInterface::__TargetImages_NodeSelectionUpdated (TreeBox& send
 
 String CometAlignmentInterface::DrizzleTargetName( const String& filePath )
 {
-   /*
-    * Load drizzle data file contents.
-    */
-   IsoString text = File::ReadTextFile( filePath );
+   DrizzleData drz( filePath, true/*ignoreIntegrationData*/ );
 
    /*
-    * If the .drz file includes a target path, return it.
+    * If the drizzle file includes a target alignment path, use it. Otherwise
+    * the target should have the same name as the drizzle data file.
     */
-   DrizzleTargetDecoder decoder;
-   decoder.Decode( text );
-   if ( decoder.HasTarget() )
+   String targetfilePath = drz.AlignmentTargetFilePath();
+   if ( targetfilePath.IsEmpty() )
+      targetfilePath = filePath;
+
+//    if ( GUI->StaticDrizzleTargets_CheckBox.IsChecked() )
+//       return File::ChangeExtension( targetfilePath, String() );
+   return File::ExtractName( targetfilePath );
+}
+
+void CometAlignmentInterface::AddFiles( const StringList& files )
+{
+   Console().Show();
+   for ( const String& file : files )
    {
-//      if ( GUI->StaticDrizzleTargets_CheckBox.IsChecked() )
-//         return File::ChangeExtension( decoder.TargetPath(), String() );
-      return File::ExtractName( decoder.TargetPath() );
-   }
+      // skip files which already in list
+      size_t j = 0;
+      for ( ; j < m_instance.p_targetFrames.Length (); ++j )
+         if ( m_instance.p_targetFrames.At( j )->path == file )
+            break;
+      if ( j < m_instance.p_targetFrames.Length() )
+         continue; // file already in list >> skip file
 
-   /*
-    * Otherwise the target should have the same name as the .drz file.
-    */
-//   if ( GUI->StaticDrizzleTargets_CheckBox.IsChecked() )
-//      return File::ChangeExtension( filePath, String() );
-   return File::ExtractName( filePath );
+      String date, time;
+      if ( !GetDate( date, file ) ) // get DATE-OBS from file
+         continue; // on error
+
+      // insert the file to sorted list by DATE-OBS
+      j = 0;
+      for ( ; j < m_instance.p_targetFrames.Length(); ++j )
+         if ( m_instance.p_targetFrames.At( j )->date.Compare( date ) > 0 )
+            break;
+      m_instance.p_targetFrames.Insert( m_instance.p_targetFrames.At( j ), CometAlignmentInstance::ImageItem( file, date ) );
+   }
+   UpdateTargetImagesList();
+   UpdateImageSelectionButtons();
 }
 
 void CometAlignmentInterface::__TargetImages_BottonClick (Button& sender, bool checked)
@@ -840,34 +848,11 @@ void CometAlignmentInterface::__TargetImages_BottonClick (Button& sender, bool c
    if (sender == GUI->AddFiles_PushButton)
    {
       OpenFileDialog d;
-      d.LoadImageFilters ();
-      d.EnableMultipleSelections ();
-      d.SetCaption ("CometAlignment: Select Target Frames");
-      if (d.Execute ())
-      {
-         Console ().Show ();
-         for (StringList::const_iterator i = d.FileNames ().Begin (); i != d.FileNames ().End (); ++i)
-         {
-            // skip files which already in list
-            size_t j = 0;
-            for (; j < m_instance.p_targetFrames.Length (); j++)
-               if (m_instance.p_targetFrames.At (j)->path == *i) break;
-            if (j < m_instance.p_targetFrames.Length ()) continue; // file already in list >> skip file
-
-            String date;
-            String time;
-            if (!GetDate (date, *i)) // get DATE-OBS from file
-               continue; // on error
-
-            // insert the file to sorted list by DATE-OBS
-            j = 0;
-            for (; j < m_instance.p_targetFrames.Length (); j++)
-               if (m_instance.p_targetFrames.At (j)->date.Compare (date) > 0) break;
-            m_instance.p_targetFrames.Insert (m_instance.p_targetFrames.At (j), CometAlignmentInstance::ImageItem (*i, date));
-         }
-         UpdateTargetImagesList ();
-         UpdateImageSelectionButtons ();
-      }
+      d.LoadImageFilters();
+      d.EnableMultipleSelections();
+      d.SetCaption( "CometAlignment: Select Target Frames" );
+      if ( d.Execute() )
+         AddFiles( d.FileNames() );
    }
    else if ( sender == GUI->SetReference_PushButton )
    {
@@ -883,6 +868,7 @@ void CometAlignmentInterface::__TargetImages_BottonClick (Button& sender, bool c
    {
       FileFilter drzFiles;
       drzFiles.SetDescription( "Drizzle Data Files" );
+      drzFiles.AddExtension( ".xdrz" );
       drzFiles.AddExtension( ".drz" );
 
       OpenFileDialog d;
@@ -1178,6 +1164,46 @@ void CometAlignmentInterface::__ItemSelected (ComboBox& sender, int itemIndex)
    }
 }
 
+void CometAlignmentInterface::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+{
+   if ( sender == GUI->TargetImages_TreeBox.Viewport() )
+      wantsFiles = true;
+   else if ( sender == GUI->OutputDir_Edit )
+      wantsFiles = files.Length() == 1 && File::DirectoryExists( files[0] );
+   else if ( sender == GUI->SubtractFile_Edit )
+      wantsFiles = files.Length() == 1 && File::Exists( files[0] );
+}
+
+void CometAlignmentInterface::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+{
+   if ( sender == GUI->TargetImages_TreeBox.Viewport() )
+   {
+      StringList inputFiles;
+      bool recursive = IsControlOrCmdPressed();
+      for ( const String& item : files )
+         if ( File::Exists( item ) )
+            inputFiles << item;
+         else if ( File::DirectoryExists( item ) )
+            inputFiles << FileFormat::SupportedImageFiles( item, true/*toRead*/, false/*toWrite*/, recursive );
+
+      inputFiles.Sort();
+      AddFiles( inputFiles );
+   }
+   else if ( sender == GUI->OutputDir_Edit )
+   {
+      if ( File::DirectoryExists( files[0] ) )
+         GUI->OutputDir_Edit.SetText( m_instance.p_outputDir = files[0] );
+   }
+   else if ( sender == GUI->SubtractFile_Edit )
+   {
+      if ( File::Exists( files[0] ) )
+      {
+         GUI->SubtractFile_Edit.SetText( m_instance.p_subtractFile = files[0] );
+         UpdateSubtractSection();
+      }
+   }
+}
+
 // ----------------------------------------------------------------------------
 
 CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
@@ -1214,6 +1240,8 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    TargetImages_TreeBox.SetHeaderText (7, "dX");
    TargetImages_TreeBox.SetHeaderText (8, "dY");
    //TargetImages_TreeBox.SetHeaderText( 9, "" ); // hiden column for Stretch
+   TargetImages_TreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler)&CometAlignmentInterface::__FileDrag, w );
+   TargetImages_TreeBox.Viewport().OnFileDrop( (Control::file_drop_event_handler)&CometAlignmentInterface::__FileDrop, w );
 
    TargetImages_TreeBox.EnableMultipleSelections ();
    TargetImages_TreeBox.DisableRootDecoration ();
@@ -1352,6 +1380,8 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    OutputDir_Edit.SetToolTip (ToolTipOutputDir);
    OutputDir_Edit.OnMouseDoubleClick ((Control::mouse_event_handler) & CometAlignmentInterface::__MouseDoubleClick, w);
    OutputDir_Edit.OnEditCompleted ((Edit::edit_event_handler) & CometAlignmentInterface::__EditCompleted, w);
+   OutputDir_Edit.OnFileDrag( (Control::file_drag_event_handler)&CometAlignmentInterface::__FileDrag, w );
+   OutputDir_Edit.OnFileDrop( (Control::file_drop_event_handler)&CometAlignmentInterface::__FileDrop, w );
 
    OutputDir_SelectButton.SetIcon (Bitmap (w.ScaledResource( ":/browser/select-file.png" )));
    OutputDir_SelectButton.SetScaledFixedSize (19, 19);
@@ -1558,6 +1588,8 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    SubtractFile_Edit.SetToolTip (ToolTipSubtract);
    SubtractFile_Edit.OnMouseDoubleClick ((Control::mouse_event_handler) & CometAlignmentInterface::__MouseDoubleClick, w);
    SubtractFile_Edit.OnEditCompleted ((Edit::edit_event_handler) & CometAlignmentInterface::__EditCompleted, w);
+   SubtractFile_Edit.OnFileDrag( (Control::file_drag_event_handler)&CometAlignmentInterface::__FileDrag, w );
+   SubtractFile_Edit.OnFileDrop( (Control::file_drop_event_handler)&CometAlignmentInterface::__FileDrop, w );
 
    SubtractFile_SelectButton.SetIcon (Bitmap (w.ScaledResource( ":/browser/select-file.png" )));
    SubtractFile_SelectButton.SetScaledFixedSize (19, 19);
@@ -1813,4 +1845,4 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CometAlignmentInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF CometAlignmentInterface.cpp - Released 2017-05-02T09:43:01Z

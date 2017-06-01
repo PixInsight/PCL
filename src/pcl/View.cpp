@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/View.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/View.cpp - Released 2017-05-28T08:29:05Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -375,8 +375,96 @@ void View::EnableScreenTransferFunctions( bool enable, bool notify )
 
 // ----------------------------------------------------------------------------
 
+bool View::IsReservedViewPropertyId( const IsoString& id )
+{
+   return (*API->View->IsReservedViewPropertyId)( id.c_str() ) != api_false;
+}
+
+// ----------------------------------------------------------------------------
+
+static api_bool APIPropertyEnumerationCallback( const char* id, uint64 type, void* data )
+{
+   reinterpret_cast<PropertyDescriptionArray*>( data )->Append(
+         PropertyDescription( id, VariantTypeFromAPIPropertyType( type ) ) );
+   return api_true;
+}
+
+// ----------------------------------------------------------------------------
+
+PropertyDescriptionArray View::Properties() const
+{
+   PropertyDescriptionArray properties;
+   IsoString id;
+   size_type len = 0;
+   (*API->View->EnumerateViewProperties)( handle, 0, 0, &len, 0 ); // 1st call to get max identifier length
+   if ( len > 0 )
+   {
+      id.Reserve( len );
+      if ( (*API->View->EnumerateViewProperties)( handle, APIPropertyEnumerationCallback,
+                                                    id.Begin(), &len, &properties ) == api_false )
+         throw APIFunctionError( "EnumerateViewProperties" );
+   }
+   return properties;
+}
+
+// ----------------------------------------------------------------------------
+
+PropertyArray View::GetProperties() const
+{
+   PropertyDescriptionArray descriptions = Properties();
+   PropertyArray properties;
+   for ( const PropertyDescription& description : descriptions )
+   {
+      api_property_value value;
+      if ( (*API->View->GetViewPropertyValue)( ModuleHandle(), handle, description.id.c_str(), &value ) == api_false )
+         throw APIFunctionError( "GetViewPropertyValue" );
+      properties << Property( description.id, VariantFromAPIPropertyValue( value ) );
+   }
+   return properties;
+}
+
+// ----------------------------------------------------------------------------
+
+PropertyArray View::GetStorableProperties() const
+{
+   PropertyDescriptionArray descriptions = Properties();
+   PropertyArray properties;
+   for ( const PropertyDescription& description : descriptions )
+   {
+      uint32 flags = 0;
+      if ( (*API->View->GetViewPropertyAttributes)( ModuleHandle(), handle, description.id.c_str(), &flags, 0/*type*/ ) == api_false )
+         throw APIFunctionError( "GetViewPropertyAttributes" );
+      if ( flags & ViewPropertyAttribute::Storable )
+      {
+         api_property_value value;
+         if ( (*API->View->GetViewPropertyValue)( ModuleHandle(), handle, description.id.c_str(), &value ) == api_false )
+            throw APIFunctionError( "GetViewPropertyValue" );
+         properties << Property( description.id, VariantFromAPIPropertyValue( value ) );
+      }
+   }
+   return properties;
+}
+
+// ----------------------------------------------------------------------------
+
+void View::SetProperties( const PropertyArray& properties, bool notify, ViewPropertyAttributes attributes )
+{
+   for ( const Property& property : properties )
+      if ( !IsReservedViewPropertyId( property.Id() ) )
+      {
+         api_property_value apiValue;
+         APIPropertyValueFromVariant( apiValue, property.Value() );
+         if ( (*API->View->SetViewPropertyValue)( ModuleHandle(), handle, property.Id().c_str(), &apiValue, attributes, notify ) == api_false )
+            throw APIFunctionError( "SetViewPropertyValue" );
+      }
+}
+
+// ----------------------------------------------------------------------------
+
 Variant View::PropertyValue( const IsoString& property ) const
 {
+   if ( !HasProperty( property ) )
+      return Variant();
    api_property_value value;
    if ( (*API->View->GetViewPropertyValue)( ModuleHandle(), handle, property.c_str(), &value ) == api_false )
       throw APIFunctionError( "GetViewPropertyValue" );
@@ -407,6 +495,8 @@ void View::SetPropertyValue( const IsoString& property, const Variant& value, bo
 
 Variant::data_type View::PropertyType( const IsoString& property ) const
 {
+   if ( !HasProperty( property ) )
+      return VariantType::Invalid;
    uint64 type = 0;
    if ( (*API->View->GetViewPropertyAttributes)( ModuleHandle(), handle, property.c_str(), 0/*flags*/, &type ) == api_false )
       throw APIFunctionError( "GetViewPropertyAttributes" );
@@ -485,4 +575,4 @@ Array<View> View::AllPreviews()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/View.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/View.cpp - Released 2017-05-28T08:29:05Z

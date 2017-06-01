@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0346
 // ----------------------------------------------------------------------------
-// DynamicCropInterface.cpp - Released 2016/11/17 18:14:58 UTC
+// DynamicCropInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -77,7 +77,6 @@ DynamicCropInterface* TheDynamicCropInterface = nullptr;
 // ----------------------------------------------------------------------------
 
 DynamicCropInterface::DynamicCropInterface() :
-   ProcessInterface(),
    instance( TheDynamicCropProcess ),
    m_view(),
    m_width( 0 ),
@@ -94,8 +93,7 @@ DynamicCropInterface::DynamicCropInterface() :
    m_rect( 0 ),
    m_selectionColor( 0xFFFFFFFF ),
    m_centerColor( 0xFFFFFFFF ),
-   m_fillColor( 0x28FFFFFF ),
-   GUI( nullptr )
+   m_fillColor( 0x28FFFFFF )
 {
    TheDynamicCropInterface = this;
 }
@@ -199,15 +197,10 @@ ProcessImplementation* DynamicCropInterface::NewProcess() const
 
 bool DynamicCropInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const DynamicCropInstance* r = dynamic_cast<const DynamicCropInstance*>( &p );
-   if ( r == nullptr )
-   {
-      whyNot = "Not a DynamicCrop instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const DynamicCropInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a DynamicCrop instance.";
+   return false;
 }
 
 bool DynamicCropInterface::RequiresInstanceValidation() const
@@ -2101,4 +2094,4 @@ DynamicCropInterface::GUIData::GUIData( DynamicCropInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropInterface.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF DynamicCropInterface.cpp - Released 2017-05-02T09:43:00Z

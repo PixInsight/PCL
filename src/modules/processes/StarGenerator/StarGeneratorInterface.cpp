@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0247
+// Standard StarGenerator Process Module Version 01.01.00.0266
 // ----------------------------------------------------------------------------
-// StarGeneratorInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// StarGeneratorInterface.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -116,7 +116,6 @@ void StarGeneratorInterface::ResetInstance()
 
 bool StarGeneratorInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
    if ( GUI == 0 )
    {
       GUI = new GUIData( *this );
@@ -135,15 +134,10 @@ ProcessImplementation* StarGeneratorInterface::NewProcess() const
 
 bool StarGeneratorInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const StarGeneratorInstance* r = dynamic_cast<const StarGeneratorInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a StarGenerator instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const StarGeneratorInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a StarGenerator instance.";
+   return false;
 }
 
 bool StarGeneratorInterface::RequiresInstanceValidation() const
@@ -729,4 +723,4 @@ StarGeneratorInterface::GUIData::GUIData( StarGeneratorInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF StarGeneratorInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF StarGeneratorInterface.cpp - Released 2017-05-02T09:43:01Z

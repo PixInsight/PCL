@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard AssistedColorCalibration Process Module Version 01.00.00.0165
+// Standard AssistedColorCalibration Process Module Version 01.00.00.0184
 // ----------------------------------------------------------------------------
-// AssistedColorCalibrationInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// AssistedColorCalibrationInterface.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard AssistedColorCalibration PixInsight module.
 //
-// Copyright (c) 2010-2015 Zbynek Vrastil
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2010-2017 Zbynek Vrastil
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -122,8 +122,7 @@ void AssistedColorCalibrationInterface::ResetInstance()
 
 bool AssistedColorCalibrationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "AssistedColorCalibration" );
@@ -141,15 +140,10 @@ ProcessImplementation* AssistedColorCalibrationInterface::NewProcess() const
 
 bool AssistedColorCalibrationInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const AssistedColorCalibrationInstance* r = dynamic_cast<const AssistedColorCalibrationInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a AssistedColorCalibration instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const AssistedColorCalibrationInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an AssistedColorCalibration instance.";
+   return false;
 }
 
 bool AssistedColorCalibrationInterface::RequiresInstanceValidation() const
@@ -818,4 +812,4 @@ void AssistedColorCalibrationInterface::GUIData::SetUpSaturationNumericControl( 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AssistedColorCalibrationInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF AssistedColorCalibrationInterface.cpp - Released 2017-05-02T09:43:01Z

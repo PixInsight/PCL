@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/ProcessImplementation.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ProcessImplementation.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,21 +56,11 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_MetaProcess_h
-#include <pcl/MetaProcess.h>
-#endif
-
-#ifndef __PCL_String_h
-#include <pcl/String.h>
-#endif
-
-#ifndef __PCL_ImageWindow_h
 #include <pcl/ImageWindow.h>
-#endif
+#include <pcl/MetaProcess.h>
+#include <pcl/String.h>
 
 namespace pcl
 {
@@ -820,4 +810,4 @@ protected:
 #endif   // __PCL_ProcessImplementation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessImplementation.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ProcessImplementation.h - Released 2017-05-28T08:28:50Z

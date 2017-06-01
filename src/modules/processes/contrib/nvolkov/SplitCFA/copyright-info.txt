@@ -1,2 +1,2 @@
-Copyright (c) 2013-2016 Nikolay Volkov
-Copyright (c) 2003-2016 Pleiades Astrophoto S.L.
+Copyright (c) 2013-2017 Nikolay Volkov
+Copyright (c) 2003-2017 Pleiades Astrophoto S.L.

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0346
 // ----------------------------------------------------------------------------
-// GeometryModule.cpp - Released 2016/11/17 18:14:58 UTC
+// GeometryModule.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -52,14 +52,15 @@
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     02
-#define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0322
+#define MODULE_VERSION_REVISION  01
+#define MODULE_VERSION_BUILD     0346
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2016
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       17
+#define MODULE_RELEASE_YEAR      2017
+#define MODULE_RELEASE_MONTH     5
+#define MODULE_RELEASE_DAY       2
 
+#include <pcl/Console.h>
 #include <pcl/ImageWindow.h>
 #include <pcl/MessageBox.h>
 #include <pcl/View.h>
@@ -121,7 +122,7 @@ String GeometryModule::Author() const
 
 String GeometryModule::Copyright() const
 {
-   return "Copyright (c) 2005-2015, Pleiades Astrophoto";
+   return "Copyright (c) 2005-2017, Pleiades Astrophoto";
 }
 
 String GeometryModule::TradeMarks() const
@@ -165,18 +166,23 @@ void GeometryModule::OnLoad()
 
 static SortedIsoStringList s_astrometryKeywords;
 
-bool WarnOnAstrometryMetadataOrPreviewsOrMask( const ImageWindow& window, const IsoString& processId )
+bool WarnOnAstrometryMetadataOrPreviewsOrMask( const ImageWindow& window, const IsoString& processId, bool noGUIMessages )
 {
    if ( window.HasPreviews() || window.HasMaskReferences() || !window.Mask().IsNull() )
-      if ( MessageBox( "<p>" + window.MainView().Id() + "</p>"
-                       "<p>Existing previews and mask references will be deleted.</p>"
-                       "<p><b>Some of these side effects could be irreversible. Proceed?</b></p>",
-                       processId,
-                       StdIcon::Warning,
-                       StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
-      {
-         return false;
-      }
+   {
+      if ( !noGUIMessages )
+         if ( MessageBox( "<p>" + window.MainView().Id() + "</p>"
+                          "<p>Existing previews and mask references will be deleted.</p>"
+                          "<p><b>Some of these side effects could be irreversible. Proceed?</b></p>",
+                          processId,
+                          StdIcon::Warning,
+                          StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
+         {
+            return false;
+         }
+
+      Console().WarningLn( "<end><cbr><br>** Warning: " + processId + ": Existing previews and/or mask references will be deleted." );
+   }
 
    if ( s_astrometryKeywords.IsEmpty() )
       s_astrometryKeywords << "CTYPE1"
@@ -200,15 +206,18 @@ bool WarnOnAstrometryMetadataOrPreviewsOrMask( const ImageWindow& window, const 
    for ( auto k : keywords )
       if ( s_astrometryKeywords.Contains( k.name ) )
       {
-         if ( MessageBox( "<p>" + window.MainView().Id() + "</p>"
-                          "<p>The image contains an astrometric solution that will be deleted by the geometric transformation.</p>"
-                          "<p><b>This side effect could be irreversible. Proceed?</b></p>",
-                          processId,
-                          StdIcon::Warning,
-                          StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
-         {
-            return false;
-         }
+         if ( !noGUIMessages )
+            if ( MessageBox( "<p>" + window.MainView().Id() + "</p>"
+                             "<p>The image contains an astrometric solution that will be deleted by the geometric transformation.</p>"
+                             "<p><b>This side effect could be irreversible. Proceed?</b></p>",
+                             processId,
+                             StdIcon::Warning,
+                             StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
+            {
+               return false;
+            }
+
+         Console().WarningLn( "<end><cbr><br>** Warning: " + processId + ": Existing astrometric solution will be deleted." );
          break;
       }
 
@@ -243,29 +252,9 @@ void DeleteAstrometryMetadataAndPreviews( ImageWindow& window )
 
 } // pcl
 
-// ----------------------------------------------------------------------------
-// PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
-//
-// Module installation routine.
-//
-// If this routine is defined as a public symbol in a module, the PixInsight
-// core application calls it just after loading and initialization of the
-// module shared object.
-//
-// The mode argument specifies the kind of installation being performed by the
-// core application. See the pcl::InstallMode namespace for more information.
-// ----------------------------------------------------------------------------
-
 PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 {
-   // When the PixInsight application installs this module, we just have to
-   // instantiate the meta objects describing it.
-
    new pcl::GeometryModule;
-
-   // The mode argument tells us what kind of installation is being requested
-   // by the PixInsight application. Incomplete installation requests only need
-   // module descriptions.
 
    if ( mode == pcl::InstallMode::FullInstall )
    {
@@ -285,9 +274,8 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
       new pcl::CropInterface;
    }
 
-   // Return zero to signal successful installation
    return 0;
 }
 
 // ----------------------------------------------------------------------------
-// EOF GeometryModule.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF GeometryModule.cpp - Released 2017-05-02T09:43:00Z

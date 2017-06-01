@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Fourier Process Module Version 01.00.04.0191
+// Standard Fourier Process Module Version 01.00.04.0210
 // ----------------------------------------------------------------------------
-// InverseFourierTransformInterface.h - Released 2016/02/21 20:22:42 UTC
+// InverseFourierTransformInterface.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Fourier PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -114,13 +114,15 @@ private:
          ComboBox          OnOutOfRangeResult_ComboBox;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
 
    void __EditCompleted( Edit& sender );
    void __Click( Button& sender, bool checked );
    void __ItemSelected( ComboBox& sender, int itemIndex );
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
 
    friend struct GUIData;
 };
@@ -136,4 +138,4 @@ extern InverseFourierTransformInterface* TheInverseFourierTransformInterface;
 #endif   // __InverseFourierTransformInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF InverseFourierTransformInterface.h - Released 2016/02/21 20:22:42 UTC
+// EOF InverseFourierTransformInterface.h - Released 2017-05-02T09:43:00Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/ImageDescription.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ImageDescription.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,25 +54,11 @@
 
 /// \file pcl/ImageDescription.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_ImageInfo_h
-#include <pcl/ImageInfo.h>
-#endif
-
-#ifndef __PCL_ImageOptions_h
-#include <pcl/ImageOptions.h>
-#endif
-
-#ifndef __PCL_Variant_h
-#include <pcl/Variant.h>
-#endif
-
-#ifndef __PCL_Array_h
 #include <pcl/Array.h>
-#endif
+#include <pcl/ImageInfo.h>
+#include <pcl/ImageOptions.h>
 
 namespace pcl
 {
@@ -82,7 +68,7 @@ namespace pcl
 /*!
  * \class ImageDescription
  * \brief A structure to transport basic information and options for an image
- *        stored in an image file.
+ *        stored in an image file
  *
  * This structure is used (instantiated in ImageDescriptionArray containers) by
  * the FileFormatImplementation and FileFormaInstance classes to describe
@@ -137,7 +123,7 @@ struct PCL_CLASS ImageDescription
 
 /*!
  * \class pcl::ImageDescriptionArray
- * \brief Dynamic array of ImageDescription structures.
+ * \brief Dynamic array of ImageDescription structures
  *
  * %ImageDescriptionArray is a template instantiation of Array for
  * ImageDescription.
@@ -146,103 +132,9 @@ typedef Array<ImageDescription>  ImageDescriptionArray;
 
 // ----------------------------------------------------------------------------
 
-/*!
- * \class ImagePropertyDescription
- * \brief A structure to describe a data property stored in an image file.
- *
- * This structure is used (instantiated in ImagePropertyDescriptionArray
- * containers) by the FileFormatImplementation and FileFormaInstance classes to
- * describe data properties stored in image files.
- *
- * \sa FileFormatImplementation, FileFormatInstance
- */
-struct PCL_CLASS ImagePropertyDescription
-{
-   /*!
-    * An enumeration of supported property data types.
-    */
-   typedef VariantType::value_type  data_type;
-
-   IsoString id;   //!< Identifier of this property.
-   data_type type; //!< Property data type.
-
-   /*!
-    * Default constructor. Constructs an %ImagePropertyDescription object with
-    * an empty property identifier and unspecified (invalid) data type.
-    */
-   ImagePropertyDescription() :
-      id(), type( VariantType::Invalid )
-   {
-   }
-
-   /*!
-    * Constructs an %ImagePropertyDescription object with the specified
-    * property identifier and data type.
-    */
-   ImagePropertyDescription( const IsoString& s, data_type t = VariantType::Invalid ) :
-      id( s ), type( t )
-   {
-   }
-
-   /*!
-    * Copy constructor.
-    */
-   ImagePropertyDescription( const ImagePropertyDescription& ) = default;
-
-   /*!
-    * Copy assignment operator. Returns a reference to this object.
-    */
-   ImagePropertyDescription& operator =( const ImagePropertyDescription& ) = default;
-
-   /*!
-    * Returns true iff this object represents a valid data property.
-    */
-   bool IsValid() const
-   {
-      return type != VariantType::Invalid;
-   }
-
-   /*!
-    * Less-than relational operator. Returns true if this object precedes the
-    * specified object \a x; otherwise returns false.
-    *
-    * Since image property identifiers are unique (within an image file),
-    * comparisons of %ImagePropertyDescription structures only take into
-    * account the ImagePropertyDescription::id member.
-    */
-   bool operator <( const ImagePropertyDescription& x ) const
-   {
-      return id < x.id;
-   }
-
-   /*!
-    * Equality operator. Returns true if this object refers to the same image
-    * property as the specified object \a x; otherwise returns false.
-    *
-    * Since image property identifiers are unique (within an image file),
-    * comparisons of %ImagePropertyDescription structures only take into
-    * account the ImagePropertyDescription::id member.
-    */
-   bool operator ==( const ImagePropertyDescription& x ) const
-   {
-      return id == x.id;
-   }
-};
-
-/*!
- * \class pcl::ImagePropertyDescriptionArray
- * \brief Dynamic array of ImagePropertyDescription structures.
- *
- * %ImagePropertyDescriptionArray is a template instantiation of Array for
- * ImagePropertyDescription.
- */
-typedef Array<ImagePropertyDescription>  ImagePropertyDescriptionArray;
-
-// ----------------------------------------------------------------------------
-
 } // pcl
 
 #endif   // __PCL_ImageDescription_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageDescription.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ImageDescription.h - Released 2017-05-28T08:28:50Z

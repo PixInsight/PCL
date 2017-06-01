@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.14.00.0390
 // ----------------------------------------------------------------------------
-// ImageIntegrationParameters.h - Released 2016/11/13 17:30:54 UTC
+// ImageIntegrationParameters.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -610,6 +610,98 @@ extern IIReportRangeRejection* TheIIReportRangeRejectionParameter;
 
 // ----------------------------------------------------------------------------
 
+class IILargeScaleClipLow : public MetaBoolean
+{
+public:
+
+   IILargeScaleClipLow( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern IILargeScaleClipLow* TheIILargeScaleClipLowParameter;
+
+// ----------------------------------------------------------------------------
+
+class IILargeScaleClipLowProtectedLayers : public MetaInt32
+{
+public:
+
+   IILargeScaleClipLowProtectedLayers( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern IILargeScaleClipLowProtectedLayers* TheIILargeScaleClipLowProtectedLayersParameter;
+
+// ----------------------------------------------------------------------------
+
+class IILargeScaleClipLowGrowth : public MetaInt32
+{
+public:
+
+   IILargeScaleClipLowGrowth( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern IILargeScaleClipLowGrowth* TheIILargeScaleClipLowGrowthParameter;
+
+// ----------------------------------------------------------------------------
+
+class IILargeScaleClipHigh : public MetaBoolean
+{
+public:
+
+   IILargeScaleClipHigh( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern IILargeScaleClipHigh* TheIILargeScaleClipHighParameter;
+
+// ----------------------------------------------------------------------------
+
+class IILargeScaleClipHighProtectedLayers : public MetaInt32
+{
+public:
+
+   IILargeScaleClipHighProtectedLayers( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern IILargeScaleClipHighProtectedLayers* TheIILargeScaleClipHighProtectedLayersParameter;
+
+// ----------------------------------------------------------------------------
+
+class IILargeScaleClipHighGrowth : public MetaInt32
+{
+public:
+
+   IILargeScaleClipHighGrowth( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern IILargeScaleClipHighGrowth* TheIILargeScaleClipHighGrowthParameter;
+
+// ----------------------------------------------------------------------------
+
 class IIGenerate64BitResult : public MetaBoolean
 {
 public:
@@ -847,6 +939,37 @@ public:
 };
 
 extern IINoGUIMessages* TheIINoGUIMessagesParameter;
+
+// ----------------------------------------------------------------------------
+
+class IIUseFileThreads : public MetaBoolean
+{
+public:
+
+   IIUseFileThreads( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern IIUseFileThreads* TheIIUseFileThreadsParameter;
+
+// ----------------------------------------------------------------------------
+
+class IIFileThreadOverload : public MetaFloat
+{
+public:
+
+   IIFileThreadOverload( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern IIFileThreadOverload* TheIIFileThreadOverloadParameter;
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -1510,4 +1633,4 @@ PCL_END_LOCAL
 #endif   // __ImageIntegrationParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationParameters.h - Released 2016/11/13 17:30:54 UTC
+// EOF ImageIntegrationParameters.h - Released 2017-05-02T09:43:00Z

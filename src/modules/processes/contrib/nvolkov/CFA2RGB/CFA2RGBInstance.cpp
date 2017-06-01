@@ -84,13 +84,12 @@ void CFA2RGBInstance::Assign( const ProcessImplementation& p )
 bool CFA2RGBInstance::CanExecuteOn( const View& view, String& whyNot ) const
 {
    if ( view.Image().IsComplexSample() )
-      whyNot = "CFA2RGB cannot be executed on complex images.";
-   else
    {
-      whyNot.Clear();
-      return true;
+      whyNot = "CFA2RGB cannot be executed on complex images.";
+      return false;
    }
-   return false;
+
+   return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -155,7 +154,7 @@ void* CFA2RGBInstance::LockParameter( const MetaParameter* p, size_type /*tableR
 {
    if ( p == TheCFA2RGBBayerPatternParameter )
       return &p_bayerPattern;
- 
+
    return 0;
 }
 

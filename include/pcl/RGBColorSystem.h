@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/RGBColorSystem.h - Released 2016/02/21 20:22:12 UTC
+// pcl/RGBColorSystem.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/RGBColorSystem.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Math_h
 #include <pcl/Math.h>
-#endif
-
-#ifndef __PCL_Vector_h
-#include <pcl/Vector.h>
-#endif
-
-#ifndef __PCL_ReferenceCounter_h
 #include <pcl/ReferenceCounter.h>
-#endif
+#include <pcl/Vector.h>
 
 #define _1_3            3.333333333333333e-01 // 1/3
 #define _1_6            1.666666666666667e-01 // 1/6
@@ -121,43 +111,32 @@ public:
     */
    typedef double sample;
 
-#if !defined( _MSC_VER ) || _MSC_VER < 1800 // if not MSVC++ 2013
-
    /*!
-    * Constructs a %RGBColorSystem object as a copy of an existing instance, or
-    * as a new instance of the default RGB working space (which is sRGB).
+    * Constructs a %RGBColorSystem object as a new instance of the default RGB
+    * working space. The default RGBWS is sRGB in current versions of the
+    * PixInsight platform.
     *
     * This constructor increments the reference counter of the source RGB
     * working space data.
     */
-   RGBColorSystem( const RGBColorSystem& s = RGBColorSystem::sRGB ) :
-      m_data( s.m_data )
+   RGBColorSystem() : m_data( RGBColorSystem::sRGB.m_data )
    {
       if ( m_data != nullptr )
          m_data->Attach();
+      else
+         m_data = new Data( 2.2F/*gamma*/, true/*issRGB*/, sRGB_x, sRGB_y, sRGB_Y );
    }
 
-#else
-
-   /*
-    * Workaround for bogus C2535 'already defined' error (bug) in MSVC++ 2013
+   /*!
+    * Constructs a %RGBColorSystem object as a copy of an existing instance.
+    *
+    * This constructor increments the reference counter of the source RGB
+    * working space data.
     */
-
-   RGBColorSystem() :
-      m_data( RGBColorSystem::sRGB.m_data )
+   RGBColorSystem( const RGBColorSystem& s ) : m_data( s.m_data )
    {
-      if ( m_data != nullptr )
-         m_data->Attach();
+      m_data->Attach();
    }
-
-   RGBColorSystem( const RGBColorSystem& s ) :
-      m_data( s.m_data )
-   {
-      if ( m_data != nullptr )
-         m_data->Attach();
-   }
-
-#endif
 
    /*!
     * Constructs a new %RGBColorSystem instance by its RGB working space
@@ -178,9 +157,7 @@ public:
     * This constructor creates a new RGB working space data object with a
     * reference count value of one.
     */
-   RGBColorSystem( float gamma, bool issRGB,
-                   const FVector& x, const FVector& y, const FVector& Y ) :
-      m_data( nullptr )
+   RGBColorSystem( float gamma, bool issRGB, const FVector& x, const FVector& y, const FVector& Y )
    {
       m_data = new Data( gamma, issRGB, x, y, Y );
    }
@@ -204,9 +181,7 @@ public:
     * This constructor creates a new RGB working space data object with a
     * reference count value of one.
     */
-   RGBColorSystem( float gamma, bool issRGB,
-                   const float* x, const float* y, const float* Y ) :
-      m_data( nullptr )
+   RGBColorSystem( float gamma, bool issRGB, const float* x, const float* y, const float* Y )
    {
       m_data = new Data( gamma, issRGB, FVector( x, 3 ), FVector( y, 3 ), FVector( Y, 3 ) );
    }
@@ -987,7 +962,7 @@ public:
       {
          H *= 6;  // degrees -> quadrant index
 
-         int i = TruncI( Floor( H ) ); // i = sector 0 to 5
+         int i = TruncInt( Floor( H ) ); // i = sector 0 to 5
          sample f = H - i;             // f = fractional part of H
          sample p = V*(1 - S);
          sample q = V*(1 - S*f);
@@ -1282,7 +1257,8 @@ protected:
       sample cDelta;
 
       Data( float, bool, const FVector&, const FVector&, const FVector& );
-      Data( const Data& );
+      Data( float, bool, const float*, const float*, const float* );
+      Data( const Data& ) = default;
 
       void Initialize();
 
@@ -1435,7 +1411,7 @@ protected:
       }
    };
 
-   Data* m_data;
+   Data* m_data = nullptr;
 
    void DetachFromData()
    {
@@ -1606,4 +1582,4 @@ public:
 #endif   // __PCL_RGBColorSystem_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/RGBColorSystem.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/RGBColorSystem.h - Released 2017-05-28T08:28:50Z

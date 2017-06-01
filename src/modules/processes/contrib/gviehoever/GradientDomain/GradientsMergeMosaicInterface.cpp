@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard GradientDomain Process Module Version 00.06.04.0165
+// Standard GradientDomain Process Module Version 00.06.04.0184
 // ----------------------------------------------------------------------------
-// GradientsMergeMosaicInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// GradientsMergeMosaicInterface.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -32,10 +32,11 @@
 #include "GradientsMergeMosaicProcess.h"
 
 #include <pcl/Dialog.h>
-#include <pcl/FileDialog.h>
-#include <pcl/ViewList.h>
-#include <pcl/GlobalSettings.h>
 #include <pcl/ErrorHandler.h>
+#include <pcl/FileDialog.h>
+#include <pcl/FileFormat.h>
+#include <pcl/GlobalSettings.h>
+#include <pcl/ViewList.h>
 
 #define IMAGELIST_MINHEIGHT( fnt )  RoundInt( 8.125*fnt.Height() )
 
@@ -44,7 +45,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-GradientsMergeMosaicInterface* TheGradientsMergeMosaicInterface = 0;
+GradientsMergeMosaicInterface* TheGradientsMergeMosaicInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 //FIXME
@@ -53,22 +54,22 @@ GradientsMergeMosaicInterface* TheGradientsMergeMosaicInterface = 0;
 // ----------------------------------------------------------------------------
 
 GradientsMergeMosaicInterface::GradientsMergeMosaicInterface() :
-  ProcessInterface(),
-  instance( TheGradientsMergeMosaicProcess ),
-  GUI( 0 )
+  instance( TheGradientsMergeMosaicProcess )
 {
    TheGradientsMergeMosaicInterface = this;
 
-   // The auto save geometry feature is of no good to interfaces that include
-   // both auto-expanding controls (e.g. TreeBox) and collapsible sections
-   // (e.g. SectionBar).
+   /*
+    * The auto save geometry feature is of no good to interfaces that include
+    * both auto-expanding controls (e.g. TreeBox) and collapsible sections
+    * (e.g. SectionBar).
+    */
    DisableAutoSaveGeometry();
 }
 
 GradientsMergeMosaicInterface::~GradientsMergeMosaicInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString GradientsMergeMosaicInterface::Id() const
@@ -88,7 +89,7 @@ MetaProcess* GradientsMergeMosaicInterface::Process() const
 
 const char** GradientsMergeMosaicInterface::IconImageXPM() const
 {
-  return 0;
+  return nullptr;
   // FIXME
   // return GradientsMergeMosaicIcon_XPM;
 }
@@ -111,8 +112,7 @@ void GradientsMergeMosaicInterface::ResetInstance()
 
 bool GradientsMergeMosaicInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "GradientMergeMosaic" );
@@ -135,15 +135,10 @@ ProcessImplementation* GradientsMergeMosaicInterface::NewProcess() const
 
 bool GradientsMergeMosaicInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const GradientsMergeMosaicInstance* r = dynamic_cast<const GradientsMergeMosaicInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a GradientMergeMosaic instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const GradientsMergeMosaicInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a GradientMergeMosaic instance.";
+   return false;
 }
 
 bool GradientsMergeMosaicInterface::RequiresInstanceValidation() const
@@ -176,7 +171,7 @@ void GradientsMergeMosaicInterface::UpdateControls()
 void GradientsMergeMosaicInterface::UpdateTargetImageItem( size_type i )
 {
    TreeBox::Node* node = GUI->TargetImages_TreeBox[i];
-   if ( node == 0 )
+   if ( node == nullptr )
       return;
 
    const GradientsMergeMosaicInstance::ImageItem& item = instance.targetFrames[i];
@@ -248,13 +243,10 @@ void GradientsMergeMosaicInterface::UpdateParameters()
 
 }
 
-
-
 // ----------------------------------------------------------------------------
 
 void GradientsMergeMosaicInterface::__TargetImages_CurrentNodeUpdated( TreeBox& sender,
-                                                                   TreeBox::Node& current,
-                                                                   TreeBox::Node& oldCurrent )
+                                                      TreeBox::Node& current, TreeBox::Node& oldCurrent )
 {
    // Actually do nothing (placeholder). Just perform a sanity check.
    int index = sender.ChildIndex( &current );
@@ -301,7 +293,7 @@ void GradientsMergeMosaicInterface::__TargetImages_NodeSelectionUpdated( TreeBox
 static size_type TreeInsertionIndex( const TreeBox& tree )
 {
    const TreeBox::Node* n = tree.CurrentNode();
-   return (n != 0) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
+   return (n != nullptr) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
 }
 
 void GradientsMergeMosaicInterface::__TargetImages_Click( Button& sender, bool checked )
@@ -312,7 +304,6 @@ void GradientsMergeMosaicInterface::__TargetImages_Click( Button& sender, bool c
       d.EnableMultipleSelections();
       d.LoadImageFilters();
       d.SetCaption( "GradientsMergeMosaic: Select Target Frames" );
-
       if ( d.Execute() )
       {
          size_type i0 = TreeInsertionIndex( GUI->TargetImages_TreeBox );
@@ -324,49 +315,51 @@ void GradientsMergeMosaicInterface::__TargetImages_Click( Button& sender, bool c
    }
    else if ( sender == GUI->MoveUp_PushButton )
    {
-     for (int i=0,n = GUI->TargetImages_TreeBox.NumberOfChildren(); i<n; ++i) {
-       if ( GUI->TargetImages_TreeBox[i]->IsSelected() ) {
-	 if(i==0) {
-	   // first is selected, we cannot really do something about this
-	   break;
-	 } else {
-	   // swap order with previous one
-	   GradientsMergeMosaicInstance::ImageItem tmp=instance.targetFrames[i-1];
-	   instance.targetFrames[i-1]=instance.targetFrames[i];
-	   instance.targetFrames[i]=tmp;
-	   GUI->TargetImages_TreeBox[i]->Select(false);
-	   GUI->TargetImages_TreeBox[i-1]->Select(true);
-	   UpdateTargetImageItem(i);
-	   UpdateTargetImageItem(i-1);
-	 }
-       }
-     }
-     // FIXME this restores the original selection list, which is just what I dont want.
-     // Added UpdateTargetImageItem() above which is slightly less efficient
-     // UpdateTargetImagesList();
+      for ( int i = 0, n = GUI->TargetImages_TreeBox.NumberOfChildren(); i < n; ++i )
+         if ( GUI->TargetImages_TreeBox[i]->IsSelected() )
+            if ( i == 0 )
+            {
+               // first is selected, we cannot really do something about this
+               break;
+            }
+            else
+            {
+               // swap order with previous one
+               GradientsMergeMosaicInstance::ImageItem tmp=instance.targetFrames[i-1];
+               instance.targetFrames[i-1]=instance.targetFrames[i];
+               instance.targetFrames[i]=tmp;
+               GUI->TargetImages_TreeBox[i]->Select(false);
+               GUI->TargetImages_TreeBox[i-1]->Select(true);
+               UpdateTargetImageItem(i);
+               UpdateTargetImageItem(i-1);
+            }
+      // FIXME this restores the original selection list, which is just what I dont want.
+      // Added UpdateTargetImageItem() above which is slightly less efficient
+      // UpdateTargetImagesList();
    }
    else if ( sender == GUI->MoveDown_PushButton )
    {
-     for (int n = GUI->TargetImages_TreeBox.NumberOfChildren(),i=n-1; i>=0; --i) {
-       if ( GUI->TargetImages_TreeBox[i]->IsSelected() ) {
-	 if(i==n-1) {
-	   // first is selected, we cannot really do something about this
-	   break;
-	 } else {
-	   // swap order with next one
-	   GradientsMergeMosaicInstance::ImageItem tmp=instance.targetFrames[i];
-	   instance.targetFrames[i]=instance.targetFrames[i+1];
-	   instance.targetFrames[i+1]=tmp;
-	   GUI->TargetImages_TreeBox[i]->Select(false);
-	   GUI->TargetImages_TreeBox[i+1]->Select(true);
-	   UpdateTargetImageItem(i);
-	   UpdateTargetImageItem(i+1);
-	 }
-       }
-     }
-     // FIXME this restores the original selection list, which is just what I dont want.
-     // Added UpdateTargetImageItem() above which is slightly less efficient
-     // UpdateTargetImagesList();
+      for ( int n = GUI->TargetImages_TreeBox.NumberOfChildren(), i = n-1; i >= 0; --i )
+         if ( GUI->TargetImages_TreeBox[i]->IsSelected() )
+            if ( i == n-1 )
+            {
+               // first is selected, we cannot really do something about this
+               break;
+            }
+            else
+            {
+               // swap order with next one
+               GradientsMergeMosaicInstance::ImageItem tmp=instance.targetFrames[i];
+               instance.targetFrames[i]=instance.targetFrames[i+1];
+               instance.targetFrames[i+1]=tmp;
+               GUI->TargetImages_TreeBox[i]->Select(false);
+               GUI->TargetImages_TreeBox[i+1]->Select(true);
+               UpdateTargetImageItem(i);
+               UpdateTargetImageItem(i+1);
+            }
+      // FIXME this restores the original selection list, which is just what I dont want.
+      // Added UpdateTargetImageItem() above which is slightly less efficient
+      // UpdateTargetImagesList();
    }
    else if ( sender == GUI->SelectAll_PushButton )
    {
@@ -410,7 +403,6 @@ void GradientsMergeMosaicInterface::__TargetImages_Click( Button& sender, bool c
    }
 }
 
-
 void GradientsMergeMosaicInterface::__ToggleSection( SectionBar& sender, Control& section, bool start )
 {
    if ( start )
@@ -440,7 +432,6 @@ void GradientsMergeMosaicInterface::__FeatherRadiusValueUpdated( SpinBox& sender
      instance.featherRadius = value;
 }
 
-
 void GradientsMergeMosaicInterface::__BlackPointValueUpdated( NumericEdit& sender, double value )
 {
   if (sender == GUI->BlackPoint_NumericControl)
@@ -453,6 +444,34 @@ void GradientsMergeMosaicInterface::_GenerateMaskClicked( Button& sender, bool c
     instance.generateMask=checked;
 }
 
+void GradientsMergeMosaicInterface::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+{
+   if ( sender == GUI->TargetImages_TreeBox.Viewport() )
+      wantsFiles = true;
+}
+
+void GradientsMergeMosaicInterface::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+{
+   if ( sender == GUI->TargetImages_TreeBox.Viewport() )
+   {
+      StringList inputFiles;
+      bool recursive = IsControlOrCmdPressed();
+      for ( const String& item : files )
+         if ( File::Exists( item ) )
+            inputFiles << item;
+         else if ( File::DirectoryExists( item ) )
+            inputFiles << FileFormat::SupportedImageFiles( item, true/*toRead*/, false/*toWrite*/, recursive );
+
+      inputFiles.Sort();
+      size_type i0 = TreeInsertionIndex( GUI->TargetImages_TreeBox );
+      for ( const String& file : inputFiles )
+         instance.targetFrames.Insert( instance.targetFrames.At( i0++ ), GradientsMergeMosaicInstance::ImageItem( file ) );
+
+      UpdateTargetImagesList();
+      UpdateImageSelectionButtons();
+   }
+}
+
 // ----------------------------------------------------------------------------
 
 GradientsMergeMosaicInterface::GUIData::GUIData( GradientsMergeMosaicInterface& w )
@@ -463,12 +482,11 @@ GradientsMergeMosaicInterface::GUIData::GUIData( GradientsMergeMosaicInterface& 
 
    //
 
-   w.SetToolTip("<p>Merges together previously aligned images, usually successfully hiding any seams.</p>"
-		"<p>(c) 2011 Georg Viehoever, published under LGPL 2.1. "
-		"With important contributions in terms of tests, test data, code and ideas "
-		"by Juan Conejero, Carlos Milovic, Harry Page, David Raphael, Geert Vanhauwaert, Zbynek Vrastil, and others.</p>");
+   w.SetToolTip( "<p>Merges together previously aligned images, usually successfully hiding any seams.</p>"
+      "<p>(c) 2011 Georg Viehoever, published under LGPL 2.1. "
+      "With important contributions in terms of tests, test data, code and ideas "
+      "by Juan Conejero, Carlos Milovic, Harry Page, David Raphael, Geert Vanhauwaert, Zbynek Vrastil, and others.</p>" );
 
-   //
    TargetImages_SectionBar.SetTitle( "Target Frames" );
    TargetImages_SectionBar.SetSection( TargetImages_Control );
    TargetImages_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&GradientsMergeMosaicInterface::__ToggleSection, w );
@@ -482,6 +500,8 @@ GradientsMergeMosaicInterface::GUIData::GUIData( GradientsMergeMosaicInterface& 
    TargetImages_TreeBox.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler)&GradientsMergeMosaicInterface::__TargetImages_CurrentNodeUpdated, w );
    TargetImages_TreeBox.OnNodeActivated( (TreeBox::node_event_handler)&GradientsMergeMosaicInterface::__TargetImages_NodeActivated, w );
    TargetImages_TreeBox.OnNodeSelectionUpdated( (TreeBox::tree_event_handler)&GradientsMergeMosaicInterface::__TargetImages_NodeSelectionUpdated, w );
+   TargetImages_TreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler)&GradientsMergeMosaicInterface::__FileDrag, w );
+   TargetImages_TreeBox.Viewport().OnFileDrop( (Control::file_drop_event_handler)&GradientsMergeMosaicInterface::__FileDrop, w );
 
    AddFiles_PushButton.SetText( "Add Files..." );
    AddFiles_PushButton.SetToolTip( "<p>Add existing image files to the list.</p>" );
@@ -494,7 +514,6 @@ GradientsMergeMosaicInterface::GUIData::GUIData( GradientsMergeMosaicInterface& 
    MoveDown_PushButton.SetText( "Move Down" );
    MoveDown_PushButton.SetToolTip( "<p>Move selected images one down</p>" );
    MoveDown_PushButton.OnClick( (Button::click_event_handler)&GradientsMergeMosaicInterface::__TargetImages_Click, w );
-
 
    SelectAll_PushButton.SetText( "Select All" );
    SelectAll_PushButton.SetToolTip( "<p>Select all images.</p>" );
@@ -540,8 +559,6 @@ GradientsMergeMosaicInterface::GUIData::GUIData( GradientsMergeMosaicInterface& 
    TargetImages_Control.SetSizer( TargetImages_Sizer );
    TargetImages_Control.AdjustToContents();
 
-
-   //
    Parameters_SectionBar.SetTitle( "Parameters" );
    Parameters_SectionBar.SetSection( Parameters_Control );
    Parameters_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&GradientsMergeMosaicInterface::__ToggleSection, w );
@@ -645,9 +662,7 @@ GradientsMergeMosaicInterface::GUIData::GUIData( GradientsMergeMosaicInterface& 
    Global_Sizer.Add( Parameters_Control );
 
    w.SetSizer( Global_Sizer );
-
    w.SetFixedWidth();
-
    w.AdjustToContents();
 }
 
@@ -656,4 +671,4 @@ GradientsMergeMosaicInterface::GUIData::GUIData( GradientsMergeMosaicInterface& 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF GradientsMergeMosaicInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF GradientsMergeMosaicInterface.cpp - Released 2017-05-02T09:43:01Z

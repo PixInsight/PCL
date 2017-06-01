@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.14.00.0390
 // ----------------------------------------------------------------------------
-// ImageIntegrationProcess.cpp - Released 2016/11/13 17:30:54 UTC
+// ImageIntegrationProcess.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -105,6 +105,12 @@ ImageIntegrationProcess::ImageIntegrationProcess() : MetaProcess()
    new IIRangeHigh( this );
    new IIMapRangeRejection( this );
    new IIReportRangeRejection( this );
+   new IILargeScaleClipLow( this );
+   new IILargeScaleClipLowProtectedLayers( this );
+   new IILargeScaleClipLowGrowth( this );
+   new IILargeScaleClipHigh( this );
+   new IILargeScaleClipHighProtectedLayers( this );
+   new IILargeScaleClipHighGrowth( this );
    new IIGenerate64BitResult( this );
    new IIGenerateRejectionMaps( this );
    new IIGenerateIntegratedImage( this );
@@ -121,6 +127,8 @@ ImageIntegrationProcess::ImageIntegrationProcess() : MetaProcess()
    new IIEvaluateNoise( this );
    new IIMRSMinDataFraction( this );
    new IINoGUIMessages( this );
+   new IIUseFileThreads( this );
+   new IIFileThreadOverload( this );
 
    new IIIntegrationImageId( this );
    new IILowRejectionMapImageId( this );
@@ -232,4 +240,4 @@ ProcessImplementation* ImageIntegrationProcess::Clone( const ProcessImplementati
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationProcess.cpp - Released 2016/11/13 17:30:54 UTC
+// EOF ImageIntegrationProcess.cpp - Released 2017-05-02T09:43:00Z

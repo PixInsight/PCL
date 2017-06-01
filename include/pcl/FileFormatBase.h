@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.04.0827
 // ----------------------------------------------------------------------------
-// pcl/FileFormatBase.h - Released 2016/02/21 20:22:12 UTC
+// pcl/FileFormatBase.h - Released 2017-05-28T08:28:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,21 +56,11 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_StringList_h
-#include <pcl/StringList.h>
-#endif
-
-#ifndef __PCL_Bitmap_h
 #include <pcl/Bitmap.h>
-#endif
+#include <pcl/StringList.h>
 
 namespace pcl
 {
@@ -116,7 +106,7 @@ public:
    /*!
     * Destroys this %FileFormatBase object.
     */
-   virtual ~FileFormatBase()
+   virtual ~FileFormatBase() noexcept( false )
    {
    }
 
@@ -354,11 +344,25 @@ public:
 
    /*!
     * Returns true only if this file format implementation can store/retrieve
-    * data properties associated with images.
+    * data properties associated with format instances or image files.
     *
-    * \sa SupportsViewProperties()
+    * \note Don't confuse this member function with CanStoreImageProperties().
+    * This function returns true if the implementation can store properties
+    * associated with an entire file or format instance, while
+    * CanStoreImageProperties() returns true if the implementation can store
+    * properties associated with individual images.
+    *
+    * \sa CanStoreImageProperties(), SupportsViewProperties()
     */
    virtual bool CanStoreProperties() const = 0;
+
+   /*!
+    * Returns true only if this file format implementation can store/retrieve
+    * data properties associated with individual images.
+    *
+    * \sa CanStoreProperties(), SupportsViewProperties()
+    */
+   virtual bool CanStoreImageProperties() const = 0;
 
    /*!
     * Returns true only if this file format implementation can store/retrieve
@@ -409,7 +413,8 @@ public:
     * Complex32, etc.
     *
     * If this member function returns true, a reimplementation of
-    * CanStoreProperties() must also return true, and the format must implement
+    * CanStoreProperties() and/or CanStoreImageProperties() (depending on
+    * format capabilities) must also return true, and the format must implement
     * all property data types supported by View objects. For information on
     * supported view property types, see the VTYPE_XXX predefined constants in
     * PCL API headers.
@@ -418,7 +423,8 @@ public:
     * BLOB properties, represented as ByteArray objects, or a limited subset of
     * view property types.
     *
-    * \sa CanStoreProperties(), View::PropertyValue(), View::SetPropertyValue()
+    * \sa CanStoreProperties(), CanStoreImageProperties(),
+    * View::PropertyValue(), View::SetPropertyValue()
     */
    virtual bool SupportsViewProperties() const = 0;
 
@@ -506,4 +512,4 @@ public:
 #endif   // __PCL_FileFormatBase_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormatBase.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/FileFormatBase.h - Released 2017-05-28T08:28:50Z

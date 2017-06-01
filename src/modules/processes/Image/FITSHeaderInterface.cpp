@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0352
+// Standard Image Process Module Version 01.02.09.0371
 // ----------------------------------------------------------------------------
-// FITSHeaderInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// FITSHeaderInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -61,7 +61,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-FITSHeaderInterface* TheFITSHeaderInterface = 0;
+FITSHeaderInterface* TheFITSHeaderInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -74,15 +74,15 @@ FITSHeaderInterface* TheFITSHeaderInterface = 0;
 // ----------------------------------------------------------------------------
 
 FITSHeaderInterface::FITSHeaderInterface() :
-ProcessInterface(), instance( TheFITSHeaderProcess ), GUI( 0 )
+   instance( TheFITSHeaderProcess )
 {
    TheFITSHeaderInterface = this;
 }
 
 FITSHeaderInterface::~FITSHeaderInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString FITSHeaderInterface::Id() const
@@ -112,14 +112,15 @@ InterfaceFeatures FITSHeaderInterface::Features() const
 
 void FITSHeaderInterface::TrackViewUpdated( bool active )
 {
-   if ( GUI != 0 && active )
-   {
-      ImageWindow w = ImageWindow::ActiveWindow();
-      if ( !w.IsNull() )
-         ImageFocused( w.MainView() );
-      else
-         UpdateControls();
-   }
+   if ( GUI != nullptr )
+      if ( active )
+      {
+         ImageWindow w = ImageWindow::ActiveWindow();
+         if ( !w.IsNull() )
+            ImageFocused( w.MainView() );
+         else
+            UpdateControls();
+      }
 }
 
 void FITSHeaderInterface::ResetInstance()
@@ -130,8 +131,7 @@ void FITSHeaderInterface::ResetInstance()
 
 bool FITSHeaderInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "FITSHeader" );
@@ -150,16 +150,10 @@ ProcessImplementation* FITSHeaderInterface::NewProcess() const
 
 bool FITSHeaderInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const FITSHeaderInstance* r = dynamic_cast<const FITSHeaderInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not a FITSHeader instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const FITSHeaderInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a FITSHeader instance.";
+   return false;
 }
 
 bool FITSHeaderInterface::RequiresInstanceValidation() const
@@ -184,27 +178,29 @@ bool FITSHeaderInterface::WantsImageNotifications() const
 
 void FITSHeaderInterface::ImageUpdated( const View& v )
 {
-   if ( GUI != 0 && v == currentView )
-   {
-      instance.ImportKeywords( v.Window() );
-      UpdateControls();
-   }
+   if ( GUI != nullptr )
+      if ( v == currentView )
+      {
+         instance.ImportKeywords( v.Window() );
+         UpdateControls();
+      }
 }
 
 void FITSHeaderInterface::ImageFocused( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() )
-      if ( !v.IsNull() )
-      {
-         ImageWindow w = v.Window();
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+         if ( !v.IsNull() )
+         {
+            ImageWindow w = v.Window();
 
-         // This is normally not necessary, but in this way we can invoke this
-         // function from TrackViewUpdated().
-         GUI->AllImages_ViewList.SelectView( w.MainView() );
+            // This is normally not necessary, but in this way we can invoke this
+            // function from TrackViewUpdated().
+            GUI->AllImages_ViewList.SelectView( w.MainView() );
 
-         instance.ImportKeywords( v.Window() );
-         UpdateControls();
-      }
+            instance.ImportKeywords( v.Window() );
+            UpdateControls();
+         }
 }
 
 // ----------------------------------------------------------------------------
@@ -212,7 +208,7 @@ void FITSHeaderInterface::ImageFocused( const View& v )
 // This one is invoked by FITSHeaderAction.
 void FITSHeaderInterface::SelectImage( const ImageWindow& w )
 {
-   bool firstTime = GUI == 0;
+   bool firstTime = GUI == nullptr;
 
    bool dum1;
    unsigned dum2;
@@ -285,7 +281,7 @@ void FITSHeaderInterface::UpdateInfo()
    String info;
 
    TreeBox::Node* node = GUI->Keywords_List.CurrentNode();
-   if ( node != 0 )
+   if ( node != nullptr )
    {
       int index = GUI->Keywords_List.ChildIndex( node );
       if ( index >= 0 )
@@ -298,7 +294,7 @@ void FITSHeaderInterface::UpdateInfo()
 void FITSHeaderInterface::UpdateKeywordNode( int i )
 {
    TreeBox::Node* node = GUI->Keywords_List[i];
-   if ( node == 0 )
+   if ( node == nullptr )
       return;
 
    bool reserved = false;
@@ -406,15 +402,14 @@ bool FITSHeaderInterface::GetKeywordData( FITSHeaderInstance::Keyword& k )
 
    ERROR_HANDLER
 
-   Edit* e = 0;
+   Edit* e = nullptr;
    switch ( step )
    {
    case 0: e = &GUI->Name_Edit; break;
    case 1: e = &GUI->Value_Edit; break;
    case 2: e = &GUI->Comment_Edit; break;
    }
-
-   if ( e != 0 )
+   if ( e != nullptr )
    {
       e->SelectAll();
       e->Focus();
@@ -428,10 +423,8 @@ bool FITSHeaderInterface::GetKeywordData( FITSHeaderInstance::Keyword& k )
 void FITSHeaderInterface::__ViewList_ViewSelected( ViewList& sender, View& view )
 {
    DeactivateTrackView();
-
    if ( !currentView.IsNull() )
       instance.ImportKeywords( view.Window() );
-
    UpdateControls();
 }
 
@@ -483,7 +476,7 @@ void FITSHeaderInterface::__Keyword_ButtonClick( Button& sender, bool /*checked*
       if ( sender == GUI->Add_PushButton )
       {
          int index = 0;
-         if ( node != 0 )
+         if ( node != nullptr )
             index = GUI->Keywords_List.ChildIndex( node ) + 1;
 
          if ( size_type( index ) < instance.keywords.Length() )
@@ -497,7 +490,7 @@ void FITSHeaderInterface::__Keyword_ButtonClick( Button& sender, bool /*checked*
       }
       else if ( sender == GUI->Replace_PushButton )
       {
-         if ( node != 0 )
+         if ( node != nullptr )
          {
             int index = GUI->Keywords_List.ChildIndex( node );
 
@@ -515,6 +508,24 @@ void FITSHeaderInterface::__Keyword_ButtonClick( Button& sender, bool /*checked*
    GUI->AllImages_ViewList.SelectView( View::Null() );
 }
 
+void FITSHeaderInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->AllImages_ViewList || sender == GUI->Keywords_List.Viewport() )
+      wantsView = view.IsMainView();
+}
+
+void FITSHeaderInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->AllImages_ViewList || sender == GUI->Keywords_List.Viewport() )
+      if ( view.IsMainView() )
+      {
+         DeactivateTrackView();
+         instance.ImportKeywords( view.Window() );
+         GUI->AllImages_ViewList.SelectView( view );
+         UpdateControls();
+      }
+}
+
 // ----------------------------------------------------------------------------
 
 FITSHeaderInterface::GUIData::GUIData( FITSHeaderInterface& w )
@@ -525,6 +536,8 @@ FITSHeaderInterface::GUIData::GUIData( FITSHeaderInterface& w )
    //
 
    AllImages_ViewList.OnViewSelected( (ViewList::view_event_handler)&FITSHeaderInterface::__ViewList_ViewSelected, w );
+   AllImages_ViewList.OnViewDrag( (Control::view_drag_event_handler)&FITSHeaderInterface::__ViewDrag, w );
+   AllImages_ViewList.OnViewDrop( (Control::view_drop_event_handler)&FITSHeaderInterface::__ViewDrop, w );
 
    //
 
@@ -540,6 +553,8 @@ FITSHeaderInterface::GUIData::GUIData( FITSHeaderInterface& w )
    Keywords_List.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler)&FITSHeaderInterface::__Keywords_CurrentNodeUpdated, w );
    Keywords_List.OnNodeActivated( (TreeBox::node_event_handler)&FITSHeaderInterface::__Keywords_NodeActivated, w );
    Keywords_List.OnNodeSelectionUpdated( (TreeBox::tree_event_handler)&FITSHeaderInterface::__Keywords_NodeSelectionUpdated, w );
+   Keywords_List.Viewport().OnViewDrag( (Control::view_drag_event_handler)&FITSHeaderInterface::__ViewDrag, w );
+   Keywords_List.Viewport().OnViewDrop( (Control::view_drop_event_handler)&FITSHeaderInterface::__ViewDrop, w );
 
    //
 
@@ -626,4 +641,4 @@ FITSHeaderInterface::GUIData::GUIData( FITSHeaderInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITSHeaderInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF FITSHeaderInterface.cpp - Released 2017-05-02T09:43:00Z

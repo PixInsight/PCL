@@ -2329,6 +2329,75 @@ public:
    }
 
    /*!
+    * Gets a sequence of \e tokens (substrings) extracted from this string.
+    *
+    * \param[out] list  The list of extracted tokens. Must be a reference to a
+    *                container, such as Array or List, or a derived class.
+    *                Typically, this parameter is a reference to a StringList.
+    *
+    * \param ca      An array of token separator characters. Tokens will be
+    *                separated by instances of any character included in this
+    *                array. The template argument S must have type conversion
+    *                semantics to the character type of this string class
+    *                (char_type). If this array is empty, calling this function
+    *                has no effect and zero is returned.
+    *
+    * \param trim    True to \e trim the extracted tokens. If this parameter is
+    *                true, existing leading and trailing whitespace characters
+    *                will be removed from each extracted token.
+    *
+    * \param i       Starting character index.
+    *
+    * Returns the number of tokens extracted and added to the list.
+    */
+   template <class C, typename S>
+   size_type Break( C& list, const Array<S>& ca, bool trim = false, size_type i = 0 ) const
+   {
+      size_type count = 0;
+      if ( !ca.IsEmpty() )
+      {
+         size_type len = Length();
+         if ( i < len )
+         {
+            for ( ;; )
+            {
+               size_type j = i;
+               for ( const_iterator p = m_data->string + i; j < len; ++j, ++p )
+                  for ( auto c : ca )
+                     if ( *p == char_type( c ) )
+                        break;
+
+               GenericString t;
+               if ( i < j )
+               {
+                  const_iterator l = m_data->string + i;
+                  size_type m = j - i;
+                  if ( trim )
+                  {
+                     const_iterator r = l + m;
+                     l = R::SearchTrimLeft( l, r );
+                     m = R::SearchTrimRight( l, r ) - l;
+                  }
+                  if ( m > 0 )
+                  {
+                     t.m_data->Allocate( m );
+                     R::Copy( t.m_data->string, l, m );
+                  }
+               }
+               list.Add( t );
+               ++count;
+
+               if ( j == len )
+                  break;
+
+               i = j + 1;
+            }
+         }
+      }
+      return count;
+   }
+
+   /*!
     * Gets a sequence of \e tokens (substrings) extracted from this string by
     * performing case-insensitive comparisons with a token separation string.
     *
@@ -6596,6 +6665,25 @@ public:
    }
 
    /*!
+    * Evaluates this string as a sexagesimal numeric literal representation
+    * with the specified set of \a separators, and returns the result as a
+    * \c double value.
+    *
+    * This function is identical to SexagesimalToDouble( const IsoString& ),
+    * but a set of separator characters is specified as a dynamic array. Any
+    * occurrence of a character contained by \a separators will be valid as a
+    * token separator.
+    *
+    * \sa TrySexagesimalToDouble( double&, const Array<>& )
+    */
+   double SexagesimalToDouble( const Array<char_type>& separators ) const
+   {
+      int sign, s1, s2; double s3;
+      ParseSexagesimal( sign, s1, s2, s3, separators );
+      return sign*(s1 + (s2 + s3/60)/60);
+   }
+
+   /*!
     * Attempts to evaluate this string as a sexagesimal numeric literal with
     * the specified \a separator.
     *
@@ -6626,6 +6714,28 @@ public:
    bool TrySexagesimalToDouble( double& value, const S& separator ) const
    {
       return TrySexagesimalToDouble( value, IsoString( separator ) );
+   }
+
+   /*!
+    * Attempts to evaluate this string as a sexagesimal numeric literal with
+    * the specified set of \a separators.
+    *
+    * This function is identical to
+    * TrySexagesimalToDouble( double&, const IsoString& ), but a set of
+    * separator characters is specified as a dynamic array. Any occurrence of a
+    * character contained by \a separators will be valid as a token separator.
+    *
+    * \sa SexagesimalToDouble( const Array<>& )
+    */
+   bool TrySexagesimalToDouble( double& value, const Array<char_type>& separators ) const
+   {
+      int sign, s1, s2; double s3;
+      if ( TryParseSexagesimal( sign, s1, s2, s3, separators ) )
+      {
+         value = sign*(s1 + (s2 + s3/60)/60);
+         return true;
+      }
+      return false;
    }
 
    /*!
@@ -6662,6 +6772,21 @@ public:
    }
 
    /*!
+    * Evaluates this string as a sexagesimal numeric literal representation,
+    * using the specified set of \a separators, and stores the resulting
+    * components in the specified \a sign, \a s1, \a s2 and \a s3 variables.
+    *
+    * This function is identical to
+    * ParseSexagesimal( int&, int&, int&, double&, const IsoString& ), but a
+    * set of separator characters is specified as a dynamic array. Any
+    * occurrence of a character contained by \a separators will be valid as a
+    * token separator.
+    *
+    * \sa TryParseSexagesimal( int&, int&, int&, double&, const Array<>& )
+    */
+   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
+
+   /*!
     * Attempts to evaluate this string as a sexagesimal numeric literal
     * representation, using the specified \a separator. If successful, stores
     * the resulting components in the specified \a sign, \a s1, \a s2 and \a s3
@@ -6681,6 +6806,20 @@ public:
    {
       return TryParseSexagesimal( sign, s1, s2, s3, IsoString( separator ) );
    }
+
+   /*!
+    * Attempts to evaluate this string as a sexagesimal numeric literal
+    * representation, using the specified set of \a separators.
+    *
+    * This function is identical to
+    * TryParseSexagesimal( int&, int&, int&, double&, const IsoString& ), but a
+    * set of separator characters is specified as a dynamic array. Any
+    * occurrence of a character contained by \a separators will be valid as a
+    * token separator.
+    *
+    * \sa ParseSexagesimal( int&, int&, int&, double&, const Array<>& )
+    */
+   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
 
    /*!
     * Returns a sexagesimal ASCII representation of the specified components
@@ -9323,9 +9462,15 @@ public:
    }
 
    template <class C>
-   size_type Break( C& list, char8_type s, bool trim = false, size_type i = 0 ) const
+   size_type Break( C& list, char8_type c, bool trim = false, size_type i = 0 ) const
    {
-      return string_base::Break( list, char_type( s ), trim, i );
+      return string_base::Break( list, char_type( c ), trim, i );
+   }
+
+   template <class C, typename S>
+   size_type Break( C& list, const Array<S>& ca, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::Break( list, ca, trim, i );
    }
 
    // -------------------------------------------------------------------------
@@ -10572,6 +10717,25 @@ public:
    }
 
    /*!
+    * Evaluates this string as a sexagesimal numeric literal representation
+    * with the specified set of \a separators, and returns the result as a
+    * \c double value.
+    *
+    * This function is identical to SexagesimalToDouble( const String& ), but a
+    * set of separator characters is specified as a dynamic array. Any
+    * occurrence of a character contained by \a separators will be valid as a
+    * token separator.
+    *
+    * \sa TrySexagesimalToDouble( double&, const Array<>& )
+    */
+   double SexagesimalToDouble( const Array<char_type>& separators ) const
+   {
+      int sign, s1, s2; double s3;
+      ParseSexagesimal( sign, s1, s2, s3, separators );
+      return sign*(s1 + (s2 + s3/60)/60);
+   }
+
+   /*!
     * Attempts to evaluate this string as a sexagesimal numeric literal with
     * the specified \a separator.
     *
@@ -10602,6 +10766,28 @@ public:
    bool TrySexagesimalToDouble( double& value, const S& separator ) const
    {
       return TrySexagesimalToDouble( value, String( separator ) );
+   }
+
+   /*!
+    * Attempts to evaluate this string as a sexagesimal numeric literal with
+    * the specified set of \a separators.
+    *
+    * This function is identical to
+    * TrySexagesimalToDouble( double&, const String& ), but a set of separator
+    * characters is specified as a dynamic array. Any occurrence of a character
+    * contained by \a separators will be valid as a token separator.
+    *
+    * \sa SexagesimalToDouble( const Array<>& )
+    */
+   bool TrySexagesimalToDouble( double& value, const Array<char_type>& separators ) const
+   {
+      int sign, s1, s2; double s3;
+      if ( TryParseSexagesimal( sign, s1, s2, s3, separators ) )
+      {
+         value = sign*(s1 + (s2 + s3/60)/60);
+         return true;
+      }
+      return false;
    }
 
    /*!
@@ -10638,6 +10824,21 @@ public:
    }
 
    /*!
+    * Evaluates this string as a sexagesimal numeric literal representation,
+    * using the specified set of \a separators, and stores the resulting
+    * components in the specified \a sign, \a s1, \a s2 and \a s3 variables.
+    *
+    * This function is identical to
+    * ParseSexagesimal( int&, int&, int&, double&, const String& ), but a set
+    * of separator characters is specified as a dynamic array. Any occurrence
+    * of a character contained by \a separators will be valid as a token
+    * separator.
+    *
+    * \sa TryParseSexagesimal( int&, int&, int&, double&, const Array<>& )
+    */
+   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
+
+   /*!
     * Attempts to evaluate this string as a sexagesimal numeric literal
     * representation, using the specified \a separator. If successful, stores
     * the resulting components in the specified \a sign, \a s1, \a s2 and \a s3
@@ -10657,6 +10858,20 @@ public:
    {
       return TryParseSexagesimal( sign, s1, s2, s3, String( separator ) );
    }
+
+   /*!
+    * Attempts to evaluate this string as a sexagesimal numeric literal
+    * representation, using the specified set of \a separators.
+    *
+    * This function is identical to
+    * TryParseSexagesimal( int&, int&, int&, double&, const String& ), but a
+    * set of separator characters is specified as a dynamic array. Any
+    * occurrence of a character contained by \a separators will be valid as a
+    * token separator.
+    *
+    * \sa ParseSexagesimal( int&, int&, int&, double&, const Array<>& )
+    */
+   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
 
    /*!
     * Returns a sexagesimal ASCII representation of the specified components

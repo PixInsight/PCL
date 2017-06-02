@@ -16,7 +16,7 @@ namespace pcl
 
 /*!
  * \class Optional
- * \brief An object that can be in an defined or undefined state
+ * \brief An object that can be in a defined or undefined state
  *
  * %Optional stores an instance of the template argument T along with a
  * <em>defined state</em> Boolean flag. %Optional objects update their defined
@@ -61,6 +61,8 @@ public:
    Optional( const T& value ) :
       m_value( value ),
       m_defined( true )
+   {
+   }
 
    /*!
     * Copy assignment operator. Returns a reference to this object.

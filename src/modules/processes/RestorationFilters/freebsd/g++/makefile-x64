@@ -1,0 +1,71 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
+######################################################################
+# Generated on .... 2017-06-07T15:43:00.515Z
+# Project id ...... RestorationFilters
+# Project type .... Module
+# Platform ........ FreeBSD/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/RestorationFilters/freebsd/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/RestorationFilters-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../RestorationFilterInstance.cpp \
+../../RestorationFilterInterface.cpp \
+../../RestorationFilterModule.cpp \
+../../RestorationFilterParameters.cpp \
+../../RestorationFilterProcess.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/RestorationFilterInstance.o \
+./x64/Release/RestorationFilterInterface.o \
+./x64/Release/RestorationFilterModule.o \
+./x64/Release/RestorationFilterParameters.o \
+./x64/Release/RestorationFilterProcess.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/RestorationFilterInstance.d \
+./x64/Release/RestorationFilterInterface.d \
+./x64/Release/RestorationFilterModule.d \
+./x64/Release/RestorationFilterParameters.d \
+./x64/Release/RestorationFilterProcess.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/RestorationFilters-pxm.so: $(OBJ_FILES)
+	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/RestorationFilters-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi -llz4-pxi -lzlib-pxi -lRFC6234-pxi -llcms-pxi -lcminpack-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/RestorationFilters-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/RestorationFilters-pxm.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

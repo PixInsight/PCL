@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0837
 // ----------------------------------------------------------------------------
-// pcl/File.cpp - Released 2017-05-28T08:29:05Z
+// pcl/File.cpp - Released 2017-06-09T08:12:54Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -2044,13 +2044,19 @@ String File::FullPath( const String& filePath )
 
 IsoString File::FileURI( const String& path )
 {
-   IsoString fullPath = WindowsPathToUnix( FullPath( path ) ).ToUTF8();
+   IsoString fullPath = File::WindowsPathToUnix( FullPath( path ) ).ToUTF8();
+   IsoString urlPath;
+   size_type i = 0;
    if ( fullPath.Length() > 1 )
       if ( fullPath[1] == ':' )
          if ( fullPath[0] >= 'a' && fullPath[0] <= 'z' || fullPath[0] >= 'A' && fullPath[0] <= 'Z' )
-            fullPath.Prepend( '/' );
-   IsoString urlPath;
-   for ( char c : fullPath )
+         {
+            urlPath << '/' << IsoCharTraits::ToUppercase( char( fullPath[0] ) ) << ':';
+            i = 2;
+         }
+   for ( IsoString::const_iterator p = fullPath.At( i ); p != fullPath.End(); ++p )
+   {
+      char c = *p;
       if (  c >= 0x7f
          || c <= 0x1f
          || c == ' ' || c == '<' || c == '>' || c == '#' || c == '\"'
@@ -2059,10 +2065,11 @@ IsoString File::FileURI( const String& path )
          || c == ';' || c == '?' || c == ':' || c == '@' || c == '='
          || c == '&' )
       {
-         urlPath.AppendFormat( "%%02x", int( c ) );
+         urlPath.AppendFormat( "%%%02x", int( c ) );
       }
       else
          urlPath << c;
+   }
    return "file://" + urlPath;
 }
 
@@ -2442,4 +2449,4 @@ bool File::IsValidHandle( handle h ) const
 }  // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/File.cpp - Released 2017-05-28T08:29:05Z
+// EOF pcl/File.cpp - Released 2017-06-09T08:12:54Z

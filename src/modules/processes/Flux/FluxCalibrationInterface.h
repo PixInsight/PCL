@@ -92,7 +92,7 @@ public:
 
 private:
 
-   FluxCalibrationInstance instance;
+   FluxCalibrationInstance m_instance;
 
    struct GUIData;
 
@@ -106,7 +106,7 @@ private:
          m_parameter = &parameter;
 
          Value_NumericEdit.SetReal();
-         Value_NumericEdit.SetRange( 1.0e-05, 1.0e+10 );
+         Value_NumericEdit.SetRange( 0.0, 1.0e+10 );
          Value_NumericEdit.SetPrecision( 4 );
          Value_NumericEdit.label.SetMinWidth( m_valueLabelWidth );
          Value_NumericEdit.label.SetText( labelText );
@@ -119,7 +119,7 @@ private:
          Mode_ComboBox.AddItem( "Literal value" );
          Mode_ComboBox.AddItem( "Standard FITS keyword" );
          Mode_ComboBox.AddItem( "Custom FITS keyword" );
-         Mode_ComboBox.SetMaxVisibleItemCount(8);
+         Mode_ComboBox.SetMaxVisibleItemCount( 8 );
          Mode_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&FluxCalibrationInterface::CalibrationParameter::__ItemSelected, *this );
 
          Keyword_Edit.SetMinWidth( m_keywordEditWidth );

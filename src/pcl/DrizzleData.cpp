@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0837
 // ----------------------------------------------------------------------------
-// pcl/DrizzleData.cpp - Released 2017-05-28T08:29:05Z
+// pcl/DrizzleData.cpp - Released 2017-06-09T08:12:54Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -815,9 +815,9 @@ void DrizzleData::PlainTextDecoder::Decode( IsoString& s, size_type start, size_
          }
          break;
       case '}':
-         if ( --block < 0 )
-            throw Error( "At offset=" + String( i ) + ": Unexpected block termination." );
          if ( block == 0 )
+            throw Error( "At offset=" + String( i ) + ": Unexpected block termination." );
+         if ( --block == 0 )
          {
             ProcessBlock( s, itemId, blockStart+1, i );
             itemId.Clear();
@@ -981,4 +981,4 @@ void DrizzleData::PlainTextSplineDecoder::ProcessBlock( IsoString& s, const IsoS
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/DrizzleData.cpp - Released 2017-05-28T08:29:05Z
+// EOF pcl/DrizzleData.cpp - Released 2017-06-09T08:12:54Z

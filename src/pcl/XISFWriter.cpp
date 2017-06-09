@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0837
 // ----------------------------------------------------------------------------
-// pcl/XISFWriter.cpp - Released 2017-05-28T08:29:05Z
+// pcl/XISFWriter.cpp - Released 2017-06-09T08:12:54Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -511,7 +511,7 @@ public:
     */
    const FITSKeywordArray& FITSKeywords() const
    {
-      return m_lastKeywords;
+      return m_keywords.IsEmpty() ? m_lastKeywords : m_keywords;
    }
 
    /*
@@ -549,20 +549,61 @@ public:
       {
          XISFOutputPropertyArray::const_iterator i = m_imageProperties.Search( id );
          if ( i == m_imageProperties.End() )
-            m_imageProperties << XISFOutputProperty( id, value );
+         {
+            if ( value.IsValid() )
+               m_imageProperties << XISFOutputProperty( id, value );
+            else if ( m_xisfOptions.verbosity > 0 )
+               LogLn( "Ignoring attempt to associate an invalid value with the property '" + id + "' of an image.", XISFMessageType::Warning );
+         }
          else
          {
-            m_imageProperties.MutableIterator( i )->value = value;
-            if ( m_xisfOptions.verbosity > 1 )
-               LogLn( "Redefining image property '" + id + "'", XISFMessageType::Warning );
+            XISFOutputPropertyArray::iterator m = m_imageProperties.MutableIterator( i );
+            if ( value.IsValid() )
+            {
+               m->value = value;
+               if ( m_xisfOptions.verbosity > 1 )
+                  LogLn( "Redefining image property '" + id + "'", XISFMessageType::Warning );
+            }
+            else
+            {
+               m_imageProperties.Remove( m );
+               if ( m_xisfOptions.verbosity > 1 )
+                  LogLn( "Removing previously defined image property '" + id + "'", XISFMessageType::Warning );
+            }
          }
-         if ( m_xisfOptions.verbosity > 1 )
-            LogLn( "Property '" + id + "' (" + XISF::PropertyTypeId( value.Type() ) + ") embedded in image." );
+         if ( value.IsValid() )
+            if ( m_xisfOptions.verbosity > 1 )
+               LogLn( "Property '" + id + "' (" + XISF::PropertyTypeId( value.Type() ) + ") embedded in image." );
       }
       else
       {
          if ( m_xisfOptions.verbosity > 0 )
             LogLn( "Ignoring attempt to associate a reserved XISF property '" + id + "' with an image.", XISFMessageType::Warning );
+      }
+   }
+
+   /*
+    * Remove an image propery, if it has been previously defined.
+    */
+   void RemoveImageProperty( const IsoString& id )
+   {
+      if ( !XISF::IsValidPropertyId( id ) )
+         throw Error( String( "XISFWriterEngine::RemoveImageProperty(): " ) + "Invalid XISF property identifier '" + id + "'" );
+
+      if ( !XISF::IsInternalPropertyId( id ) )
+      {
+         XISFOutputPropertyArray::const_iterator i = m_imageProperties.Search( id );
+         if ( i != m_imageProperties.End() )
+         {
+            m_imageProperties.Remove( m_imageProperties.MutableIterator( i ) );
+            if ( m_xisfOptions.verbosity > 1 )
+               LogLn( "Removing previously defined image property '" + id + "'", XISFMessageType::Warning );
+         }
+      }
+      else
+      {
+         if ( m_xisfOptions.verbosity > 0 )
+            LogLn( "Ignoring attempt to remove reserved XISF property '" + id + "'", XISFMessageType::Warning );
       }
    }
 
@@ -598,15 +639,48 @@ public:
 
       XISFOutputPropertyArray::const_iterator i = m_properties.Search( id );
       if ( i == m_properties.End() )
-         m_properties << XISFOutputProperty( id, value );
+      {
+         if ( value.IsValid() )
+            m_properties << XISFOutputProperty( id, value );
+         else if ( m_xisfOptions.verbosity > 0 )
+            LogLn( "Ignoring attempt to associate an invalid value with property '" + id + "'", XISFMessageType::Warning );
+      }
       else
       {
-         m_properties.MutableIterator( i )->value = value;
-         if ( m_xisfOptions.verbosity > 1 )
-            LogLn( "Redefining property '" + id + "'", XISFMessageType::Warning );
+         XISFOutputPropertyArray::iterator m = m_properties.MutableIterator( i );
+         if ( value.IsValid() )
+         {
+            m->value = value;
+            if ( m_xisfOptions.verbosity > 1 )
+               LogLn( "Redefining property '" + id + "'", XISFMessageType::Warning );
+         }
+         else
+         {
+            m_properties.Remove( m );
+            if ( m_xisfOptions.verbosity > 1 )
+               LogLn( "Removing previously defined property '" + id + "'", XISFMessageType::Warning );
+         }
       }
-      if ( m_xisfOptions.verbosity > 1 )
-         LogLn( "Property '" + id + "' (" + XISF::PropertyTypeId( value.Type() ) + ") generated." );
+      if ( value.IsValid() )
+         if ( m_xisfOptions.verbosity > 1 )
+            LogLn( "Property '" + id + "' (" + XISF::PropertyTypeId( value.Type() ) + ") generated." );
+   }
+
+   /*
+    * Remove a propery of the XISF unit, if it has been previously defined.
+    */
+   void RemoveProperty( const IsoString& id )
+   {
+      if ( !XISF::IsValidPropertyId( id ) )
+         throw Error( String( "XISFWriterEngine::RemoveProperty(): " ) + "Invalid XISF property identifier '" + id + "'" );
+
+      XISFOutputPropertyArray::const_iterator i = m_properties.Search( id );
+      if ( i != m_properties.End() )
+      {
+         m_properties.Remove( m_properties.MutableIterator( i ) );
+         if ( m_xisfOptions.verbosity > 1 )
+            LogLn( "Removing previously defined property '" + id + "'", XISFMessageType::Warning );
+      }
    }
 
    /*
@@ -1568,6 +1642,12 @@ void XISFWriter::WriteImageProperties( const PropertyArray& properties )
          m_engine->WriteImageProperty( property.Id(), property.Value() );
 }
 
+void XISFWriter::RemoveImageProperty( const IsoString& identifier )
+{
+   CheckOpenStream( "RemoveImageProperty" );
+   m_engine->RemoveImageProperty( identifier );
+}
+
 // ----------------------------------------------------------------------------
 
 void XISFWriter::WriteProperty( const IsoString& identifier, const Variant& value )
@@ -1582,6 +1662,12 @@ void XISFWriter::WriteProperties( const PropertyArray& properties )
    for ( const Property& property : properties )
       if ( property.IsValid() )
          m_engine->WriteProperty( property.Id(), property.Value() );
+}
+
+void XISFWriter::RemoveProperty( const IsoString& identifier )
+{
+   CheckOpenStream( "RemoveProperty" );
+   m_engine->RemoveProperty( identifier );
 }
 
 // ----------------------------------------------------------------------------
@@ -1731,4 +1817,4 @@ void XISFWriter::CheckClosedStream( const char* memberFunction ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/XISFWriter.cpp - Released 2017-05-28T08:29:05Z
+// EOF pcl/XISFWriter.cpp - Released 2017-06-09T08:12:54Z

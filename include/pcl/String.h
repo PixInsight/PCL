@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0837
 // ----------------------------------------------------------------------------
-// pcl/String.h - Released 2017-05-28T08:28:50Z
+// pcl/String.h - Released 2017-06-09T08:12:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -3149,12 +3149,117 @@ public:
    }
 
    /*!
+    * Ensures that this string is enclosed by a leading and a trailing instance
+    * of the specified character \a c. If this string is already enclosed by
+    * \a c, this function does nothing.
+    * \sa Enclosed()
+    */
+   void EnsureEnclosed( char_type c )
+   {
+      int encloseLeft = 1;
+      int encloseRight = 1;
+      size_type len = Length();
+      if ( len > 0 )
+      {
+         if ( *m_data->string == c )
+            encloseLeft = 0;
+         if ( *(m_data->end-1) == c )
+            if ( len > 1 )
+               encloseRight = 0;
+            else
+               encloseLeft = 0;
+      }
+      size_type n = len + encloseLeft + encloseRight;
+      if ( n > len )
+      {
+         if ( !IsUnique() || m_data->ShouldReallocate( n ) )
+         {
+            Data* newData = Data::New( n );
+            R::Copy( newData->string + encloseLeft, m_data->string, len );
+            DetachFromData();
+            m_data = newData;
+         }
+         else
+         {
+            m_data->SetLength( n );
+            R::CopyOverlapped( m_data->string + encloseLeft, m_data->string, len );
+         }
+
+         if ( encloseLeft )
+            *m_data->string = c;
+         if ( encloseRight )
+            *(m_data->end-1) = c;
+      }
+   }
+
+   /*!
+    * Returns a duplicate of this string enclosed by the specified character.
+    * If this string is already enclosed by \a c, this function returns an
+    * unmodified copy.
+    * \sa EnsureEnclosed()
+    */
+   GenericString Enclosed( char_type c ) const
+   {
+      GenericString s( *this );
+      s.EnsureEnclosed( c );
+      return s;
+   }
+
+   /*!
+    * Ensures that this string is enclosed by a leading and a trailing instance
+    * of the single quote character ('). If this string is already single
+    * quoted, this function does nothing.
+    * \sa SingleQuoted()
+    */
+   void EnsureSingleQuoted()
+   {
+      EnsureEnclosed( R::SingleQuote() );
+   }
+
+   /*!
+    * Returns a duplicate of this string enclosed by single quote characters
+    * ('). If this string is already single quoted, this function returns an
+    * unmodified copy.
+    * \sa EnsureSingleQuoted()
+    */
+   GenericString SingleQuoted() const
+   {
+      GenericString s( *this );
+      s.EnsureSingleQuoted();
+      return s;
+   }
+
+   /*!
+    * Ensures that this string is enclosed by a leading and a trailing instance
+    * of the double quote character ("). If this string is already double
+    * quoted, this function does nothing.
+    * \sa DoubleQuoted()
+    */
+   void EnsureDoubleQuoted()
+   {
+      EnsureEnclosed( R::DoubleQuote() );
+   }
+
+   /*!
+    * Returns a duplicate of this string enclosed by double quote characters
+    * ("). If this string is already double quoted, this function returns an
+    * unmodified copy.
+    * \sa EnsureDoubleQuoted()
+    */
+   GenericString DoubleQuoted() const
+   {
+      GenericString s( *this );
+      s.EnsureDoubleQuoted();
+      return s;
+   }
+
+   /*!
     * Unquotes this string.
     *
-    * If the string starts and ends with single quote
-    * characters, the result is the same string with the quotes removed and its
-    * length decremented by two. The same happens if the string starts and ends
-    * with double quote characters.
+    * If the string starts and ends with single quote characters, the result is
+    * the same string with the quotes removed and its length decremented by
+    * two. The same happens if the string starts and ends with double quote
+    * characters.
     *
     * If the string does not start and end with the same quote character, this
     * function has no effect.
@@ -5091,7 +5196,7 @@ bool operator >=( typename GenericString<T,R,A>::char_type c1, const GenericStri
 
 /*!
  * \class IsoString
- * \brief Eight-bit string (ISO/IEC-8859-1 or UTF-8 string).
+ * \brief Eight-bit string (ISO/IEC-8859-1 or UTF-8 string)
  *
  * %IsoString derives from a template instantiation of GenericString for the
  * \c char type. On the PixInsight platform, %IsoString represents a dynamic
@@ -5693,6 +5798,28 @@ public:
    IsoString CenterJustified( size_type width, char_type fill = IsoCharTraits::Blank() ) const
    {
       return string_base::CenterJustified( width, fill );
+   }
+
+   // -------------------------------------------------------------------------
+
+   IsoString Enclosed( char_type c ) const
+   {
+      return string_base::Enclosed( c );
+   }
+
+   IsoString SingleQuoted() const
+   {
+      return string_base::SingleQuoted();
+   }
+
+   IsoString DoubleQuoted() const
+   {
+      return string_base::DoubleQuoted();
+   }
+
+   IsoString Unquoted() const
+   {
+      return string_base::Unquoted();
    }
 
    // -------------------------------------------------------------------------
@@ -7383,7 +7510,7 @@ inline std::ostream& operator <<( std::ostream& o, const IsoString& s )
 
 /*!
  * \class String
- * \brief Unicode (UTF-16) string.
+ * \brief Unicode (UTF-16) string
  *
  * %String derives from an instantiation of GenericString for \c char16_type.
  * It represents a dynamic string of characters in <em>16-bit Unicode
@@ -9462,6 +9589,12 @@ public:
    }
 
    template <class C>
+   size_type Break( C& list, char_type c, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::Break( list, c, trim, i );
+   }
+
+   template <class C>
    size_type Break( C& list, char8_type c, bool trim = false, size_type i = 0 ) const
    {
       return string_base::Break( list, char_type( c ), trim, i );
@@ -9471,6 +9604,38 @@ public:
    size_type Break( C& list, const Array<S>& ca, bool trim = false, size_type i = 0 ) const
    {
       return string_base::Break( list, ca, trim, i );
+   }
+
+   // -------------------------------------------------------------------------
+
+   template <class C>
+   size_type BreakIC( C& list, const String& s, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::BreakIC( list, s, trim, i );
+   }
+
+   template <class C>
+   size_type BreakIC( C& list, const string8_base& s, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::BreakIC( list, String( s ), trim, i );
+   }
+
+   template <class C>
+   size_type BreakIC( C& list, const_c_string8 s, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::BreakIC( list, String( s ), trim, i );
+   }
+
+   template <class C>
+   size_type BreakIC( C& list, char_type c, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::BreakIC( list, c, trim, i );
+   }
+
+   template <class C>
+   size_type BreakIC( C& list, char8_type c, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::BreakIC( list, char_type( c ), trim, i );
    }
 
    // -------------------------------------------------------------------------
@@ -9505,6 +9670,28 @@ public:
    String CenterJustified( size_type width, char_type fill = CharTraits::Blank() ) const
    {
       return string_base::CenterJustified( width, fill );
+   }
+
+   // -------------------------------------------------------------------------
+
+   String Enclosed( char_type c ) const
+   {
+      return string_base::Enclosed( c );
+   }
+
+   String SingleQuoted() const
+   {
+      return string_base::SingleQuoted();
+   }
+
+   String DoubleQuoted() const
+   {
+      return string_base::DoubleQuoted();
+   }
+
+   String Unquoted() const
+   {
+      return string_base::Unquoted();
    }
 
    // -------------------------------------------------------------------------
@@ -12311,4 +12498,4 @@ inline std::ostream& operator <<( std::ostream& o, const String& s )
 #endif   // __PCL_String_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.h - Released 2017-05-28T08:28:50Z
+// EOF pcl/String.h - Released 2017-06-09T08:12:42Z

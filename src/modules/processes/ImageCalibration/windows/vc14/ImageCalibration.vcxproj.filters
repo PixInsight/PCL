@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-05-02T09:41:03.907Z
+# Generated on .... 2017-06-07T15:42:56.496Z
 # Project id ...... ImageCalibration
 # Project type .... Module
 # Platform ........ Windows/vc14
@@ -53,6 +53,18 @@
     <ClCompile Include="..\..\ImageCalibrationProcess.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\LocalNormalizationInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\LocalNormalizationInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\LocalNormalizationParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\LocalNormalizationProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\SuperbiasInstance.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
@@ -92,6 +104,18 @@
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\ImageCalibrationProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LocalNormalizationInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LocalNormalizationInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LocalNormalizationParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LocalNormalizationProcess.h">
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SuperbiasInstance.h">

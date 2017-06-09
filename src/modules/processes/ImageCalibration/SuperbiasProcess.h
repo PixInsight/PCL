@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0291
+// Standard ImageCalibration Process Module Version 01.04.00.0300
 // ----------------------------------------------------------------------------
-// SuperbiasProcess.h - Released 2017-05-02T09:43:00Z
+// SuperbiasProcess.h - Released 2017-05-17T17:41:56Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -90,4 +90,4 @@ extern SuperbiasProcess* TheSuperbiasProcess;
 #endif   // __SuperbiasProcess_h
 
 // ----------------------------------------------------------------------------
-// EOF SuperbiasProcess.h - Released 2017-05-02T09:43:00Z
+// EOF SuperbiasProcess.h - Released 2017-05-17T17:41:56Z

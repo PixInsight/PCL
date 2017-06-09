@@ -74,10 +74,12 @@ int FluxCalibrationInterface::CalibrationParameter::m_keywordEditWidth;
 // ----------------------------------------------------------------------------
 
 FluxCalibrationInterface::FluxCalibrationInterface() :
-   instance( TheFluxCalibrationProcess )
+   m_instance( TheFluxCalibrationProcess )
 {
    TheFluxCalibrationInterface = this;
 }
+
+// ----------------------------------------------------------------------------
 
 FluxCalibrationInterface::~FluxCalibrationInterface()
 {
@@ -85,31 +87,43 @@ FluxCalibrationInterface::~FluxCalibrationInterface()
       delete GUI, GUI = nullptr;
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString FluxCalibrationInterface::Id() const
 {
    return "FluxCalibration";
 }
+
+// ----------------------------------------------------------------------------
 
 MetaProcess* FluxCalibrationInterface::Process() const
 {
    return TheFluxCalibrationProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 const char** FluxCalibrationInterface::IconImageXPM() const
 {
    return FluxCalibrationIcon_XPM;
 }
 
+// ----------------------------------------------------------------------------
+
 void FluxCalibrationInterface::ApplyInstance() const
 {
-   instance.LaunchOnCurrentView();
+   m_instance.LaunchOnCurrentView();
 }
+
+// ----------------------------------------------------------------------------
 
 void FluxCalibrationInterface::ResetInstance()
 {
    FluxCalibrationInstance defaultInstance( TheFluxCalibrationProcess );
    ImportProcess( defaultInstance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool FluxCalibrationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
@@ -124,10 +138,14 @@ bool FluxCalibrationInterface::Launch( const MetaProcess& P, const ProcessImplem
    return &P == TheFluxCalibrationProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* FluxCalibrationInterface::NewProcess() const
 {
-   return new FluxCalibrationInstance( instance );
+   return new FluxCalibrationInstance( m_instance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool FluxCalibrationInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
@@ -137,18 +155,23 @@ bool FluxCalibrationInterface::ValidateProcess( const ProcessImplementation& p, 
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool FluxCalibrationInterface::RequiresInstanceValidation() const
 {
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool FluxCalibrationInterface::ImportProcess( const ProcessImplementation& p )
 {
-   instance.Assign( p );
+   m_instance.Assign( p );
    UpdateControls();
    return true;
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void FluxCalibrationInterface::UpdateControls()
@@ -165,6 +188,7 @@ void FluxCalibrationInterface::UpdateControls()
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 FluxCalibrationInterface::GUIData::GUIData( FluxCalibrationInterface& w )
 {
@@ -177,31 +201,31 @@ FluxCalibrationInterface::GUIData::GUIData( FluxCalibrationInterface& w )
    FluxCalibrationInterface::CalibrationParameter::m_keywordEditWidth =
          fnt.Width( String( 'M', 10 ) );
 
-   Wavelength_Parameter.Build(            w.instance.p_wavelength,            "Wavelength (nm):",
+   Wavelength_Parameter.Build(            w.m_instance.p_wavelength,            "Wavelength (nm):",
       "<p>Effective filter wavelenth in nm (mandatory parameter).</p>",    true /* required parameter */ );
 
-   Transmissivity_Parameter.Build(        w.instance.p_transmissivity,        "Transmissivity:",
+   Transmissivity_Parameter.Build(        w.m_instance.p_transmissivity,        "Transmissivity:",
       "<p>Filter transmissivity in the range ]0,1].</p>"                                                 );
 
-   FilterWidth_Parameter.Build(           w.instance.p_filterWidth,           "Filter width (nm):",
+   FilterWidth_Parameter.Build(           w.m_instance.p_filterWidth,           "Filter width (nm):",
       "<p>Filter bandwith in nm (mandatory parameter).</p>",               true /* required parameter */ );
 
-   Aperture_Parameter.Build(              w.instance.p_aperture,              "Aperture (mm):",
+   Aperture_Parameter.Build(              w.m_instance.p_aperture,              "Aperture (mm):",
       "<p>Telescope aperture diameter in mm (mandatory parameter).</p>",   true /* required parameter */ );
 
-   CentralObstruction_Parameter.Build(    w.instance.p_centralObstruction,    "Central obstruction (mm):",
+   CentralObstruction_Parameter.Build(    w.m_instance.p_centralObstruction,    "Central obstruction (mm):",
       "<p>Telescope central obstruction diameter in mm.</p>"                                             );
 
-   ExposureTime_Parameter.Build(          w.instance.p_exposureTime,          "Exposure time (s):",
+   ExposureTime_Parameter.Build(          w.m_instance.p_exposureTime,          "Exposure time (s):",
       "<p>Exposure time in seconds (mandatory parameter).</p>",            true /* required parameter */ );
 
-   AtmosphericExtinction_Parameter.Build( w.instance.p_atmosphericExtinction, "Atmospheric extinction:",
+   AtmosphericExtinction_Parameter.Build( w.m_instance.p_atmosphericExtinction, "Atmospheric extinction:",
       "<p>Atmospheric extinction in the range [0,1].</p>"                                                );
 
-   SensorGain_Parameter.Build(            w.instance.p_sensorGain,            "Sensor gain (e-/ADU):",
+   SensorGain_Parameter.Build(            w.m_instance.p_sensorGain,            "Sensor gain (e-/ADU):",
       "<p>Sensor gain (e-/ADU). The gain must be &gt;= 0.</p>"                                           );
 
-   QuantumEfficiency_Parameter.Build(     w.instance.p_quantumEfficiency,     "Quantum efficiency:",
+   QuantumEfficiency_Parameter.Build(     w.m_instance.p_quantumEfficiency,     "Quantum efficiency:",
       "<p>Sensor quantum efficiency in the range [0,1[.</p>"                                             );
 
    Global_Sizer.SetMargin( 8 );

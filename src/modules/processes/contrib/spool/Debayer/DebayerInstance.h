@@ -70,8 +70,8 @@ public:
 
    virtual void Assign( const ProcessImplementation& );
    virtual bool CanExecuteOn( const View&, String& whyNot ) const;
+   virtual bool IsHistoryUpdater( const View& ) const;
    virtual bool ExecuteOn( View& );
-   inline bool IsHistoryUpdater( const View& ) const {return false;};
 
    virtual void* LockParameter( const MetaParameter*, size_type tableRow );
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );

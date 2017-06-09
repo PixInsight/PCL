@@ -86,24 +86,24 @@ public:
 
    int ColorSpace() const
    {
-      return colorSpace;
+      return p_colorSpace;
    }
 
    bool IsChannelEnabled( int c ) const
    {
-      return channelEnabled[c];
+      return p_channelEnabled[c];
    }
 
    const String& ChannelId( int c ) const
    {
-      return channelId[c];
+      return p_channelId[c];
    }
 
 private:
 
-   pcl_enum colorSpace;
-   pcl_bool channelEnabled[ 3 ];
-   String   channelId[ 3 ];
+   pcl_enum p_colorSpace;
+   pcl_bool p_channelEnabled[ 3 ];
+   String   p_channelId[ 3 ];
 
    friend class ChannelCombinationInterface;
    friend class ChannelSourceSelectionDialog;

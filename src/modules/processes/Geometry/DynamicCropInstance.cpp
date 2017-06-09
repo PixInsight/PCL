@@ -90,11 +90,15 @@ DynamicCropInstance::DynamicCropInstance( const MetaProcess* P ) :
 {
 }
 
+// ----------------------------------------------------------------------------
+
 DynamicCropInstance::DynamicCropInstance( const DynamicCropInstance& x ) :
    ProcessImplementation( x )
 {
    Assign( x );
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicCropInstance::Assign( const ProcessImplementation& p )
 {
@@ -119,15 +123,21 @@ void DynamicCropInstance::Assign( const ProcessImplementation& p )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool DynamicCropInstance::IsMaskable( const View&, const ImageWindow& ) const
 {
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 UndoFlags DynamicCropInstance::UndoMode( const View& ) const
 {
    return UndoFlag::PixelData | UndoFlag::Keywords | (p_forceResolution ? UndoFlag::Resolution : 0);
 }
+
+// ----------------------------------------------------------------------------
 
 bool DynamicCropInstance::CanExecuteOn( const View& v, String& whyNot ) const
 {
@@ -139,6 +149,8 @@ bool DynamicCropInstance::CanExecuteOn( const View& v, String& whyNot ) const
 
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool DynamicCropInstance::BeforeExecution( View& view )
 {
@@ -448,6 +460,8 @@ private:
       int                                               m_startRow, m_endRow;
    };
 };
+
+// ----------------------------------------------------------------------------
 
 bool DynamicCropInstance::ExecuteOn( View& view )
 {

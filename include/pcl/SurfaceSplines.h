@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0837
 // ----------------------------------------------------------------------------
-// pcl/SurfaceSplines.h - Released 2017-05-28T08:28:50Z
+// pcl/SurfaceSplines.h - Released 2017-06-09T08:12:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -207,10 +207,10 @@ public:
       if ( P1.Length() < 3 || P2.Length() < 3 )
          return;
 
-      DVector X( P1.Length() ),
-              Y( P1.Length() ),
-              Zx( P1.Length() ),
-              Zy( P1.Length() );
+      DVector X( int( P1.Length() ) ),
+              Y( int( P1.Length() ) ),
+              Zx( int( P1.Length() ) ),
+              Zy( int( P1.Length() ) );
       for ( int i = 0; i < X.Length(); ++i )
       {
           X[i] = P1[i].x;
@@ -250,8 +250,8 @@ public:
       {
          DVector X = m_Sx.X(),
                  Y = m_Sx.Y(),
-                 Zx( X.Length() ),
-                 Zy( X.Length() );
+                 Zx( m_Sx.X().Length() ),
+                 Zy( m_Sx.Y().Length() );
          for ( int i = 0; i < X.Length(); ++i )
          {
             Zx[i] = m_Sx( X[i], Y[i] );
@@ -781,4 +781,4 @@ private:
 #endif   // __PCL_SurfaceSplines_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SurfaceSplines.h - Released 2017-05-28T08:28:50Z
+// EOF pcl/SurfaceSplines.h - Released 2017-06-09T08:12:42Z

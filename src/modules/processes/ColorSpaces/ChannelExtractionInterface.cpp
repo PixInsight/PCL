@@ -77,37 +77,51 @@ ChannelExtractionInterface::ChannelExtractionInterface() :
    TheChannelExtractionInterface = this;
 }
 
+// ----------------------------------------------------------------------------
+
 ChannelExtractionInterface::~ChannelExtractionInterface()
 {
    if ( GUI != nullptr )
       delete GUI, GUI = nullptr;
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString ChannelExtractionInterface::Id() const
 {
    return "ChannelExtraction";
 }
+
+// ----------------------------------------------------------------------------
 
 MetaProcess* ChannelExtractionInterface::Process() const
 {
    return TheChannelExtractionProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 const char** ChannelExtractionInterface::IconImageXPM() const
 {
    return ChannelExtractionIcon_XPM;
 }
+
+// ----------------------------------------------------------------------------
 
 void ChannelExtractionInterface::ApplyInstance() const
 {
    instance.LaunchOnCurrentView();
 }
 
+// ----------------------------------------------------------------------------
+
 void ChannelExtractionInterface::ResetInstance()
 {
    ChannelExtractionInstance defaultInstance( TheChannelExtractionProcess );
    ImportProcess( defaultInstance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool ChannelExtractionInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
@@ -122,10 +136,14 @@ bool ChannelExtractionInterface::Launch( const MetaProcess& P, const ProcessImpl
    return &P == TheChannelExtractionProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* ChannelExtractionInterface::NewProcess() const
 {
    return new ChannelExtractionInstance( instance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool ChannelExtractionInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
@@ -135,10 +153,14 @@ bool ChannelExtractionInterface::ValidateProcess( const ProcessImplementation& p
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool ChannelExtractionInterface::RequiresInstanceValidation() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ChannelExtractionInterface::ImportProcess( const ProcessImplementation& p )
 {
@@ -188,26 +210,29 @@ void ChannelExtractionInterface::UpdateControls()
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 void ChannelExtractionInterface::__ColorSpace_Click( Button& sender, bool /*checked*/ )
 {
    if ( sender == GUI->RGB_RadioButton )
-      instance.colorSpace = ColorSpaceId::RGB;
+      instance.p_colorSpace = ColorSpaceId::RGB;
    else if ( sender == GUI->HSV_RadioButton )
-      instance.colorSpace = ColorSpaceId::HSV;
+      instance.p_colorSpace = ColorSpaceId::HSV;
    else if ( sender == GUI->HSI_RadioButton )
-      instance.colorSpace = ColorSpaceId::HSI;
+      instance.p_colorSpace = ColorSpaceId::HSI;
    else if ( sender == GUI->CIEXYZ_RadioButton )
-      instance.colorSpace = ColorSpaceId::CIEXYZ;
+      instance.p_colorSpace = ColorSpaceId::CIEXYZ;
    else if ( sender == GUI->CIELab_RadioButton )
-      instance.colorSpace = ColorSpaceId::CIELab;
+      instance.p_colorSpace = ColorSpaceId::CIELab;
    else if ( sender == GUI->CIELch_RadioButton )
-      instance.colorSpace = ColorSpaceId::CIELch;
+      instance.p_colorSpace = ColorSpaceId::CIELch;
 
-   instance.channelEnabled[0] = instance.channelEnabled[1] = instance.channelEnabled[2] = true;
+   instance.p_channelEnabled[0] = instance.p_channelEnabled[1] = instance.p_channelEnabled[2] = true;
 
    UpdateControls();
 }
+
+// ----------------------------------------------------------------------------
 
 void ChannelExtractionInterface::__Channel_Click( Button& sender, bool checked )
 {
@@ -225,17 +250,19 @@ void ChannelExtractionInterface::__Channel_Click( Button& sender, bool checked )
    for ( int j = 0; j < 3; ++j )
    {
       if ( j == i )
-         instance.channelEnabled[i] = checked;
-      if ( instance.channelEnabled[j] )
+         instance.p_channelEnabled[i] = checked;
+      if ( instance.p_channelEnabled[j] )
          ++n;
    }
 
    if ( n == 0 )
       for ( int j = 0; j < 3; ++j )
-         instance.channelEnabled[j] = true;
+         instance.p_channelEnabled[j] = true;
 
    UpdateControls();
 }
+
+// ----------------------------------------------------------------------------
 
 void ChannelExtractionInterface::__ChannelId_GetFocus( Control& sender )
 {
@@ -244,6 +271,8 @@ void ChannelExtractionInterface::__ChannelId_GetFocus( Control& sender )
       if ( e->Text() == AUTO_ID )
          e->Clear();
 }
+
+// ----------------------------------------------------------------------------
 
 void ChannelExtractionInterface::__ChannelId_EditCompleted( Edit& sender )
 {
@@ -265,22 +294,25 @@ void ChannelExtractionInterface::__ChannelId_EditCompleted( Edit& sender )
             if ( !id.IsValidIdentifier() )
                throw Error( "Invalid identifier: " + id );
 
-      instance.channelId[i] = (id != AUTO_ID) ? id : String();
-      sender.SetText( instance.channelId[i].IsEmpty() ? AUTO_ID : instance.channelId[i] );
+      instance.p_channelId[i] = (id != AUTO_ID) ? id : String();
+      sender.SetText( instance.p_channelId[i].IsEmpty() ? AUTO_ID : instance.p_channelId[i] );
       return;
    }
    ERROR_CLEANUP(
-      sender.SetText( instance.channelId[i] );
+      sender.SetText( instance.p_channelId[i] );
       sender.SelectAll();
       sender.Focus()
    )
 }
 
+// ----------------------------------------------------------------------------
+
 void ChannelExtractionInterface::__SampleFormat_ItemSelected( ComboBox& /*sender*/, int itemIndex )
 {
-   instance.sampleFormat = itemIndex;
+   instance.p_sampleFormat = itemIndex;
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 ChannelExtractionInterface::GUIData::GUIData( ChannelExtractionInterface& w )

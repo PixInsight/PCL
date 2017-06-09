@@ -66,23 +66,23 @@ namespace pcl
 
 ChannelCombinationInstance::ChannelCombinationInstance( const MetaProcess* P ) :
    ProcessImplementation( P ),
-   colorSpace( TheColorSpaceIdCombinationParameter->ElementValue( TheColorSpaceIdCombinationParameter->Default ) )
+   p_colorSpace( TheColorSpaceIdCombinationParameter->ElementValue( TheColorSpaceIdCombinationParameter->Default ) )
 {
    for ( int i = 0; i < 3; ++i )
    {
-      channelEnabled[i] = true;
-      channelId[i] = String( TheChannelIdCombinationParameter->DefaultValue() );
+      p_channelEnabled[i] = true;
+      p_channelId[i] = String( TheChannelIdCombinationParameter->DefaultValue() );
    }
 }
 
 ChannelCombinationInstance::ChannelCombinationInstance( const ChannelCombinationInstance& x ) :
    ProcessImplementation( x ),
-   colorSpace( x.colorSpace )
+   p_colorSpace( x.p_colorSpace )
 {
    for ( int i = 0; i < 3; ++i )
    {
-      channelEnabled[i] = x.channelEnabled[i];
-      channelId[i] = x.channelId[i];
+      p_channelEnabled[i] = x.p_channelEnabled[i];
+      p_channelId[i] = x.p_channelId[i];
    }
 }
 
@@ -93,13 +93,13 @@ bool ChannelCombinationInstance::Validate( pcl::String& info )
    int n = 0;
    for ( int i = 0; i < 3; ++i )
    {
-      if ( !channelId[i].IsEmpty() && !channelId[i].IsValidIdentifier() )
+      if ( !p_channelId[i].IsEmpty() && !p_channelId[i].IsValidIdentifier() )
       {
-         info = "Invalid image identifier: " + channelId[i];
+         info = "Invalid image identifier: " + p_channelId[i];
          return false;
       }
 
-      if ( channelEnabled[i] )
+      if ( p_channelEnabled[i] )
          ++n;
    }
 
@@ -119,12 +119,12 @@ void ChannelCombinationInstance::Assign( const ProcessImplementation& p )
    const ChannelCombinationInstance* x = dynamic_cast<const ChannelCombinationInstance*>( &p );
    if ( x != 0 )
    {
-      colorSpace = x->colorSpace;
+      p_colorSpace = x->p_colorSpace;
 
       for ( int i = 0; i < 3; ++i )
       {
-         channelEnabled[i] = x->channelEnabled[i];
-         channelId[i] = x->channelId[i];
+         p_channelEnabled[i] = x->p_channelEnabled[i];
+         p_channelId[i] = x->p_channelId[i];
       }
    }
 }
@@ -428,11 +428,11 @@ bool ChannelCombinationInstance::ExecuteOn( View& view )
    int numberOfSources = 0;
 
    for ( int i = 0; i < 3; ++i )
-      if ( channelEnabled[i] )
+      if ( p_channelEnabled[i] )
       {
-         String id = channelId[i];
+         String id = p_channelId[i];
          if ( id.IsEmpty() )
-            id = baseId + '_' + ColorSpaceId::ChannelId( colorSpace, i );
+            id = baseId + '_' + ColorSpaceId::ChannelId( p_colorSpace, i );
 
          sourceWindow[i] = ImageWindow::WindowById( id );
 
@@ -457,7 +457,7 @@ bool ChannelCombinationInstance::ExecuteOn( View& view )
       return false;
 
    const char* what = "";
-   switch ( colorSpace )
+   switch ( p_colorSpace )
    {
    case ColorSpaceId::RGB:
       what = "RGB channels";
@@ -484,11 +484,11 @@ bool ChannelCombinationInstance::ExecuteOn( View& view )
       switch ( image.BitsPerSample() )
       {
       case 32:
-         CombineChannels( static_cast<Image&>( *image ), colorSpace, baseId, r,
+         CombineChannels( static_cast<Image&>( *image ), p_colorSpace, baseId, r,
                           sourceImage[0], sourceImage[1], sourceImage[2] );
          break;
       case 64:
-         CombineChannels( static_cast<DImage&>( *image ), colorSpace, baseId, r,
+         CombineChannels( static_cast<DImage&>( *image ), p_colorSpace, baseId, r,
                           sourceImage[0], sourceImage[1], sourceImage[2] );
          break;
       }
@@ -496,15 +496,15 @@ bool ChannelCombinationInstance::ExecuteOn( View& view )
       switch ( image.BitsPerSample() )
       {
       case  8:
-         CombineChannels( static_cast<UInt8Image&>( *image ), colorSpace, baseId, r,
+         CombineChannels( static_cast<UInt8Image&>( *image ), p_colorSpace, baseId, r,
                           sourceImage[0], sourceImage[1], sourceImage[2] );
          break;
       case 16:
-         CombineChannels( static_cast<UInt16Image&>( *image ), colorSpace, baseId, r,
+         CombineChannels( static_cast<UInt16Image&>( *image ), p_colorSpace, baseId, r,
                           sourceImage[0], sourceImage[1], sourceImage[2] );
          break;
       case 32:
-         CombineChannels( static_cast<UInt32Image&>( *image ), colorSpace, baseId, r,
+         CombineChannels( static_cast<UInt32Image&>( *image ), p_colorSpace, baseId, r,
                           sourceImage[0], sourceImage[1], sourceImage[2] );
          break;
       }
@@ -531,18 +531,18 @@ bool ChannelCombinationInstance::ExecuteGlobal()
    int bitsPerSample = 0;
 
    for ( int i = 0; i < 3; ++i )
-      if ( channelEnabled[i] && !channelId[i].IsEmpty() )
+      if ( p_channelEnabled[i] && !p_channelId[i].IsEmpty() )
       {
-         sourceWindow[i] = ImageWindow::WindowById( channelId[i] );
+         sourceWindow[i] = ImageWindow::WindowById( p_channelId[i] );
          if ( sourceWindow[i].IsNull() )
-            throw Error( "ChannelCombination: Source image not found: " + channelId[i] );
+            throw Error( "ChannelCombination: Source image not found: " + p_channelId[i] );
 
          sourceImage[i] = sourceWindow[i].MainView().Image();
          if ( !sourceImage[i] )
-            throw Error( "ChannelCombination: Invalid source image: " + channelId[i] );
+            throw Error( "ChannelCombination: Invalid source image: " + p_channelId[i] );
 
          if ( sourceImage[i]->IsColor() )
-            throw Error( "ChannelCombination: Invalid source color space: " + channelId[i] );
+            throw Error( "ChannelCombination: Invalid source color space: " + p_channelId[i] );
 
          if ( sourceImage[i].IsFloatSample() )
             floatSample = true;
@@ -558,7 +558,7 @@ bool ChannelCombinationInstance::ExecuteGlobal()
          else
          {
             if ( sourceImage[i]->Width() != width || sourceImage[i]->Height() != height )
-               throw Error( "ChannelCombination: Incompatible source image dimensions: " + channelId[i] );
+               throw Error( "ChannelCombination: Incompatible source image dimensions: " + p_channelId[i] );
          }
 
          ++numberOfSources;
@@ -585,7 +585,7 @@ bool ChannelCombinationInstance::ExecuteGlobal()
       image->SetStatusCallback( &status );
 
       const char* what = "";
-      switch ( colorSpace )
+      switch ( p_colorSpace )
       {
       case ColorSpaceId::RGB:
          what = "RGB channels";
@@ -615,11 +615,11 @@ bool ChannelCombinationInstance::ExecuteGlobal()
          switch ( image.BitsPerSample() )
          {
          case 32:
-            CombineChannels( static_cast<Image&>( *image ), colorSpace, baseId, r,
+            CombineChannels( static_cast<Image&>( *image ), p_colorSpace, baseId, r,
                              sourceImage[0], sourceImage[1], sourceImage[2] );
             break;
          case 64:
-            CombineChannels( static_cast<DImage&>( *image ), colorSpace, baseId, r,
+            CombineChannels( static_cast<DImage&>( *image ), p_colorSpace, baseId, r,
                              sourceImage[0], sourceImage[1], sourceImage[2] );
             break;
          }
@@ -627,15 +627,15 @@ bool ChannelCombinationInstance::ExecuteGlobal()
          switch ( image.BitsPerSample() )
          {
          case  8:
-            CombineChannels( static_cast<UInt8Image&>( *image ), colorSpace, baseId, r,
+            CombineChannels( static_cast<UInt8Image&>( *image ), p_colorSpace, baseId, r,
                              sourceImage[0], sourceImage[1], sourceImage[2] );
             break;
          case 16:
-            CombineChannels( static_cast<UInt16Image&>( *image ), colorSpace, baseId, r,
+            CombineChannels( static_cast<UInt16Image&>( *image ), p_colorSpace, baseId, r,
                              sourceImage[0], sourceImage[1], sourceImage[2] );
             break;
          case 32:
-            CombineChannels( static_cast<UInt32Image&>( *image ), colorSpace, baseId, r,
+            CombineChannels( static_cast<UInt32Image&>( *image ), p_colorSpace, baseId, r,
                              sourceImage[0], sourceImage[1], sourceImage[2] );
             break;
          }
@@ -656,11 +656,11 @@ bool ChannelCombinationInstance::ExecuteGlobal()
 void* ChannelCombinationInstance::LockParameter( const MetaParameter* p, size_type tableRow )
 {
    if ( p == TheColorSpaceIdCombinationParameter )
-      return &colorSpace;
+      return &p_colorSpace;
    if ( p == TheChannelEnabledCombinationParameter )
-      return channelEnabled+tableRow;
+      return p_channelEnabled+tableRow;
    if ( p == TheChannelIdCombinationParameter )
-      return channelId[tableRow].Begin();
+      return p_channelId[tableRow].Begin();
    return 0;
 }
 
@@ -668,9 +668,9 @@ bool ChannelCombinationInstance::AllocateParameter( size_type sizeOrLength, cons
 {
    if ( p == TheChannelIdCombinationParameter )
    {
-      channelId[tableRow].Clear();
+      p_channelId[tableRow].Clear();
       if ( sizeOrLength > 0 )
-         channelId[tableRow].SetLength( sizeOrLength );
+         p_channelId[tableRow].SetLength( sizeOrLength );
       return true;
    }
 
@@ -683,7 +683,7 @@ bool ChannelCombinationInstance::AllocateParameter( size_type sizeOrLength, cons
 size_type ChannelCombinationInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
    if ( p == TheChannelIdCombinationParameter )
-      return channelId[tableRow].Length();
+      return p_channelId[tableRow].Length();
    if ( p == TheChannelTableCombinationParameter )
       return 3;
    return 0;

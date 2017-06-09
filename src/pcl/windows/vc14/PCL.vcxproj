@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-05-27T21:09:45.128Z
+# Generated on .... 2017-06-07T15:42:30.833Z
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ Windows/vc14
@@ -194,6 +194,7 @@
     <ClCompile Include="..\..\AdaptiveLocalFilter.cpp"/>
     <ClCompile Include="..\..\Algebra.cpp"/>
     <ClCompile Include="..\..\Arguments.cpp"/>
+    <ClCompile Include="..\..\AstrometricMetadata.cpp"/>
     <ClCompile Include="..\..\Base64.cpp"/>
     <ClCompile Include="..\..\Bitmap.cpp"/>
     <ClCompile Include="..\..\BitmapBox.cpp"/>
@@ -240,8 +241,10 @@
     <ClCompile Include="..\..\FourierTransform.cpp"/>
     <ClCompile Include="..\..\Frame.cpp"/>
     <ClCompile Include="..\..\GlobalSettings.cpp"/>
+    <ClCompile Include="..\..\GnomonicProjection.cpp"/>
     <ClCompile Include="..\..\Graphics.cpp"/>
     <ClCompile Include="..\..\GroupBox.cpp"/>
+    <ClCompile Include="..\..\HammerAitoffProjection.cpp"/>
     <ClCompile Include="..\..\HexString.cpp"/>
     <ClCompile Include="..\..\Histogram.cpp"/>
     <ClCompile Include="..\..\HistogramTransformation.cpp"/>
@@ -264,6 +267,7 @@
     <ClCompile Include="..\..\LinearFit.cpp"/>
     <ClCompile Include="..\..\MD5.cpp"/>
     <ClCompile Include="..\..\Median.cpp"/>
+    <ClCompile Include="..\..\MercatorProjection.cpp"/>
     <ClCompile Include="..\..\MessageBox.cpp"/>
     <ClCompile Include="..\..\MetaFileFormat.cpp"/>
     <ClCompile Include="..\..\MetaModule.cpp"/>
@@ -276,6 +280,7 @@
     <ClCompile Include="..\..\MuteStatus.cpp"/>
     <ClCompile Include="..\..\NetworkTransfer.cpp"/>
     <ClCompile Include="..\..\NumericControl.cpp"/>
+    <ClCompile Include="..\..\OrthographicProjection.cpp"/>
     <ClCompile Include="..\..\Pen.cpp"/>
     <ClCompile Include="..\..\PolarTransform.cpp"/>
     <ClCompile Include="..\..\PreviewSelectionDialog.cpp"/>
@@ -284,6 +289,8 @@
     <ClCompile Include="..\..\ProcessInstance.cpp"/>
     <ClCompile Include="..\..\ProcessInterface.cpp"/>
     <ClCompile Include="..\..\ProcessParameter.cpp"/>
+    <ClCompile Include="..\..\ProjectionBase.cpp"/>
+    <ClCompile Include="..\..\ProjectionFactory.cpp"/>
     <ClCompile Include="..\..\PushButton.cpp"/>
     <ClCompile Include="..\..\PyramidalWaveletTransform.cpp"/>
     <ClCompile Include="..\..\RGBColorSystem.cpp"/>
@@ -310,6 +317,7 @@
     <ClCompile Include="..\..\SharedPixelData.cpp"/>
     <ClCompile Include="..\..\Sizer.cpp"/>
     <ClCompile Include="..\..\Slider.cpp"/>
+    <ClCompile Include="..\..\SphericalRotation.cpp"/>
     <ClCompile Include="..\..\SpinBox.cpp"/>
     <ClCompile Include="..\..\SpinStatus.cpp"/>
     <ClCompile Include="..\..\StatusMonitor.cpp"/>
@@ -335,8 +343,10 @@
     <ClCompile Include="..\..\View.cpp"/>
     <ClCompile Include="..\..\ViewList.cpp"/>
     <ClCompile Include="..\..\ViewSelectionDialog.cpp"/>
+    <ClCompile Include="..\..\WCSKeywords.cpp"/>
     <ClCompile Include="..\..\WebView.cpp"/>
     <ClCompile Include="..\..\Win32Exception.cpp"/>
+    <ClCompile Include="..\..\WorldTransformation.cpp"/>
     <ClCompile Include="..\..\XISF.cpp"/>
     <ClCompile Include="..\..\XISFReader.cpp"/>
     <ClCompile Include="..\..\XISFWriter.cpp"/>

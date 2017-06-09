@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.14.00.0390
+// Standard ImageIntegration Process Module Version 01.15.00.0398
 // ----------------------------------------------------------------------------
-// ImageIntegrationInstance.cpp - Released 2017-05-02T09:43:00Z
+// ImageIntegrationInstance.cpp - Released 2017-05-05T08:37:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -473,9 +473,315 @@ static DVector EvaluateIKSS( const GenericImage<P>& image, double low = 0, doubl
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
+template <typename T>
+struct Definable
+{
+   T    value;
+   bool defined = false;
+   bool consistent = true;
+
+   Definable() = default;
+   Definable( const Definable& ) = default;
+
+   T& operator =( const T& x )
+   {
+      value = x;
+      defined = consistent = true;
+      return value;
+   }
+
+   Definable& operator =( const Definable& other )
+   {
+      if ( consistent )
+         if ( other.defined )
+         {
+            if ( defined )
+            {
+               if ( value != other.value )
+                  consistent = false;
+            }
+            else
+            {
+               value = other.value;
+               defined = true;
+            }
+         }
+         else
+         {
+            if ( defined )
+               consistent = false;
+         }
+
+      return *this;
+   }
+
+   Definable& operator +=( const Definable& other )
+   {
+      if ( consistent )
+         if ( other.defined )
+         {
+            if ( defined )
+               value += other.value;
+            else
+            {
+               value = other.value;
+               defined = true;
+            }
+         }
+         else
+         {
+            if ( defined )
+               consistent = false;
+         }
+
+      return *this;
+   }
+
+   bool ConsistentlyDefined( const String& what = String() ) const
+   {
+      if ( defined )
+      {
+         if ( consistent )
+            return true;
+         if ( !what.IsEmpty() )
+            Console().WarningLn( "<end><cbr>** Warning: Inconsistent " + what + " value(s) - metadata not generated." );
+      }
+      return false;
+   }
+
+   String ToString() const
+   {
+      return defined ? String( value ) : String();
+   }
+};
+
+// ----------------------------------------------------------------------------
+
 class IntegrationFile
 {
 public:
+
+   constexpr static char16_type ItemSeparator = char16_type( 0x2028 );  // Unicode Line Separator
+   constexpr static char16_type TokenSeparator = char16_type( 0x2029 ); // Unicode Paragraph Separator
+
+   struct FileMetadata
+   {
+      Definable<String>    author;
+      Definable<String>    observer;
+      Definable<String>    instrumentName;
+      Definable<String>    frameType;
+      Definable<String>    filterName;
+      Definable<double>    pedestal;
+      Definable<double>    expTime;
+      Definable<double>    sensorTemp;
+      Definable<double>    xPixSize;
+      Definable<double>    yPixSize;
+      Definable<unsigned>  xBinning;
+      Definable<unsigned>  yBinning;
+      Definable<unsigned>  xOrigin;
+      Definable<unsigned>  yOrigin;
+      Definable<String>    telescopeName;
+      Definable<double>    focalLength;   // mm
+      Definable<double>    aperture;      // mm
+      Definable<double>    apertureArea;  // mm^2
+      Definable<String>    objectName;
+      Definable<TimePoint> observationTime;
+      Definable<double>    ra;            // deg (-180,+180]
+      Definable<double>    dec;           // deg [-90,+90]
+      Definable<double>    equinox;
+
+      FileMetadata() = default;
+      FileMetadata( const FileMetadata& ) = default;
+
+      FileMetadata( const FITSKeywordArray& keywords )
+      {
+         for ( auto k : keywords )
+         {
+            try
+            {
+               IsoString value = k.StripValueDelimiters();
+               if ( k.name == "AUTHOR" )
+                  author = String( value );
+               else if ( k.name == "OBSERVER" )
+                  observer = String( value );
+               else if ( k.name == "INSTRUME" )
+                  instrumentName = String( value );
+               else if ( k.name == "IMAGETYP" || k.name == "FRAME" )
+                  frameType = String( value );
+               else if ( k.name == "FILTER" || k.name == "INSFLNAM" )
+                  filterName = String( value );
+               else if ( k.name == "EXPTIME" || k.name == "EXPOSURE" )
+                  expTime = value.ToDouble();
+               else if ( k.name == "CCD-TEMP" )
+                  sensorTemp = value.ToDouble();
+               else if ( k.name == "PIXSIZE1" )
+                  xPixSize = value.ToDouble();
+               else if ( k.name == "PIXSIZE2" )
+                  yPixSize = value.ToDouble();
+               else if ( k.name == "PIXSIZE" )
+                  xPixSize = yPixSize = value.ToDouble();
+               else if ( k.name == "XBINNING" || k.name == "CCDBINX" )
+                  xBinning = value.ToUInt( 10 );
+               else if ( k.name == "YBINNING" || k.name == "CCDBINY" )
+                  yBinning = value.ToUInt( 10 );
+               else if ( k.name == "BINNING" )
+                  xBinning = yBinning = value.ToUInt( 10 );
+               else if ( k.name == "XORGSUBF" )
+                  xOrigin = value.ToUInt( 10 );
+               else if ( k.name == "YORGSUBF" )
+                  yOrigin = value.ToUInt( 10 );
+               else if ( k.name == "TELESCOP" )
+                  telescopeName = String( value );
+               else if ( k.name == "FOCALLEN" )
+                  focalLength = value.ToDouble();
+               else if ( k.name == "APTDIA" )
+                  aperture = value.ToDouble();
+               else if ( k.name == "APTAREA" )
+                  apertureArea = value.ToDouble();
+               else if ( k.name == "OBJNAME" || k.name == "OBJECT" )
+                  objectName = String( value );
+               else if ( k.name == "DATE-OBS" )
+                  observationTime = TimePoint( value );
+               else if ( k.name == "OBJCTRA" )
+               {
+                  ra = value.SexagesimalToDouble( ' ' )*15;
+                  if ( ra.value > 180 )
+                     ra.value -= 360;
+               }
+               else if ( k.name == "OBJCTDEC" )
+                  dec = value.SexagesimalToDouble( ' ' );
+               else if ( k.name == "EQUINOX" )
+                  equinox = value.ToDouble();
+            }
+            catch ( Exception& x )
+            {
+               Console().CriticalLn( "<end><cbr>*** Error: Parsing " + k.name + " FITS keyword: " + x.Message() );
+            }
+            catch ( ... )
+            {
+               throw;
+            }
+         }
+
+         if ( !equinox.defined )
+            if ( ra.defined )
+               if ( dec.defined )
+                  equinox = 2000.0;
+
+         m_valid = true;
+      }
+
+      FileMetadata( const String& data )
+      {
+         if ( !data.IsEmpty() )
+         {
+            try
+            {
+               StringList items;
+               data.Break( items, ItemSeparator );
+               for ( const String& item : items )
+               {
+                  StringList tokens;
+                  item.Break( tokens, TokenSeparator );
+                  if ( tokens.Length() != 2 )
+                     throw 0;
+                  if ( !tokens[1].IsEmpty() )
+                     if (      tokens[0] == "author" )
+                        author = tokens[1];
+                     else if ( tokens[0] == "observer" )
+                        observer = tokens[1];
+                     else if ( tokens[0] == "instrumentName" )
+                        instrumentName = tokens[1];
+                     else if ( tokens[0] == "frameType" )
+                        frameType = tokens[1];
+                     else if ( tokens[0] == "filterName" )
+                        filterName = tokens[1];
+                     else if ( tokens[0] == "pedestal" )
+                        pedestal = tokens[1].ToDouble();
+                     else if ( tokens[0] == "expTime" )
+                        expTime = tokens[1].ToDouble();
+                     else if ( tokens[0] == "sensorTemp" )
+                        sensorTemp = tokens[1].ToDouble();
+                     else if ( tokens[0] == "xPixSize" )
+                        xPixSize = tokens[1].ToDouble();
+                     else if ( tokens[0] == "yPixSize" )
+                        yPixSize = tokens[1].ToDouble();
+                     else if ( tokens[0] == "xBinning" )
+                        xBinning = tokens[1].ToUInt();
+                     else if ( tokens[0] == "yBinning" )
+                        yBinning = tokens[1].ToUInt();
+                     else if ( tokens[0] == "xOrigin" )
+                        xOrigin = tokens[1].ToUInt();
+                     else if ( tokens[0] == "yOrigin" )
+                        yOrigin = tokens[1].ToUInt();
+                     else if ( tokens[0] == "telescopeName" )
+                        telescopeName = tokens[1];
+                     else if ( tokens[0] == "focalLength" )
+                        focalLength = tokens[1].ToDouble();
+                     else if ( tokens[0] == "aperture" )
+                        aperture = tokens[1].ToDouble();
+                     else if ( tokens[0] == "apertureArea" )
+                        apertureArea = tokens[1].ToDouble();
+                     else if ( tokens[0] == "objectName" )
+                        objectName = tokens[1];
+                     else if ( tokens[0] == "observationTime" )
+                        observationTime = TimePoint( tokens[1] );
+                     else if ( tokens[0] == "ra" )
+                        ra = tokens[1].ToDouble();
+                     else if ( tokens[0] == "dec" )
+                        dec = tokens[1].ToDouble();
+                     else if ( tokens[0] == "equinox" )
+                        equinox = tokens[1].ToDouble();
+               }
+
+               m_valid = true;
+            }
+            catch ( ... )
+            {
+               Console().CriticalLn( "<end><cbr>*** Error: Corrupted integration cache metadata." );
+            }
+         }
+      }
+
+      String ToString() const
+      {
+         if ( !IsValid() )
+            return String();
+
+         return String() <<                  "author"          << TokenSeparator << author.ToString()
+                         << ItemSeparator << "observer"        << TokenSeparator << observer.ToString()
+                         << ItemSeparator << "instrumentName"  << TokenSeparator << instrumentName.ToString()
+                         << ItemSeparator << "frameType"       << TokenSeparator << frameType.ToString()
+                         << ItemSeparator << "filterName"      << TokenSeparator << filterName.ToString()
+                         << ItemSeparator << "pedestal"        << TokenSeparator << pedestal.ToString()
+                         << ItemSeparator << "expTime"         << TokenSeparator << expTime.ToString()
+                         << ItemSeparator << "sensorTemp"      << TokenSeparator << sensorTemp.ToString()
+                         << ItemSeparator << "xPixSize"        << TokenSeparator << xPixSize.ToString()
+                         << ItemSeparator << "yPixSize"        << TokenSeparator << yPixSize.ToString()
+                         << ItemSeparator << "xBinning"        << TokenSeparator << xBinning.ToString()
+                         << ItemSeparator << "yBinning"        << TokenSeparator << yBinning.ToString()
+                         << ItemSeparator << "xOrigin"         << TokenSeparator << xOrigin.ToString()
+                         << ItemSeparator << "yOrigin"         << TokenSeparator << yOrigin.ToString()
+                         << ItemSeparator << "telescopeName"   << TokenSeparator << telescopeName.ToString()
+                         << ItemSeparator << "focalLength"     << TokenSeparator << focalLength.ToString()
+                         << ItemSeparator << "aperture"        << TokenSeparator << aperture.ToString()
+                         << ItemSeparator << "apertureArea"    << TokenSeparator << apertureArea.ToString()
+                         << ItemSeparator << "objectName"      << TokenSeparator << objectName.ToString()
+                         << ItemSeparator << "observationTime" << TokenSeparator << observationTime.ToString()
+                         << ItemSeparator << "ra"              << TokenSeparator << ra.ToString()
+                         << ItemSeparator << "dec"             << TokenSeparator << dec.ToString()
+                         << ItemSeparator << "equinox"         << TokenSeparator << equinox.ToString();
+      }
+
+      bool IsValid() const
+      {
+         return m_valid;
+      }
+
+   private:
+
+      bool m_valid = false;
+   };
 
    static void OpenFiles( const ImageIntegrationInstance& );
 
@@ -616,10 +922,12 @@ public:
       return m_median[c];
    }
 
-   float Pedestal() const
+   const FileMetadata& Metadata() const
    {
-      return m_pedestal;
+      return m_metadata;
    }
+
+   static FileMetadata SummaryMetadata();
 
    const UInt8Image& RejectionMap() const
    {
@@ -721,7 +1029,7 @@ private:
    DVector                         m_dispersion;
    DVector                         m_noise;
    DVector                         m_weight;
-   float                           m_pedestal;
+   FileMetadata                    m_metadata;
 
    static file_list                s_files;
    static Rect                     s_roi;
@@ -837,7 +1145,7 @@ private:
 
    void InitializeRejectionMap()
    {
-      m_rejectionMap.AllocateData( s_width, s_height, s_numberOfChannels ).Zero();
+      m_rejectionMap.AllocateData( Width(), Height(), s_numberOfChannels ).Zero();
    }
 
    void ResetCacheableData();
@@ -1080,7 +1388,7 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
    m_location     = DVector();
    m_dispersion   = DVector();
    m_noise        = DVector();
-   m_pedestal     = 0;
+   m_metadata     = FileMetadata();
 
    bool generateOutput = instance.p_generateIntegratedImage || instance.p_generateDrizzleData;
 
@@ -1115,8 +1423,9 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
    bool needMean =                generateOutput &&
                                   instance.p_weightMode == IIWeightMode::AverageWeight;
 
-   if ( instance.p_useCache && GetFromCache( path ) )
-      console.NoteLn( "<end><cbr>* Retrieved data from file cache." );
+   if ( instance.p_useCache )
+      if ( GetFromCache( path ) )
+         console.NoteLn( "<end><cbr>* Retrieved data from file cache." );
 
    bool doMean   = m_mean.IsEmpty()   && needMean;
    bool doMedian = m_median.IsEmpty() && needMedian;
@@ -1263,13 +1572,14 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
    else
       m_image->ResetSelections();
 
-   if ( m_pedestal <= 0 )
-   {
+   if ( !m_metadata.IsValid() )
       if ( format.CanStoreKeywords() )
-         m_pedestal = KeywordValue( "PEDESTAL" );
-      if ( m_pedestal < 0 )
-         m_pedestal = 0;
-   }
+      {
+         FITSKeywordArray keywords;
+         if ( !m_file->ReadFITSKeywords( keywords ) )
+            throw CatchedException();
+         m_metadata = FileMetadata( keywords );
+      }
 
    if ( instance.p_useCache )
       AddToCache( path );
@@ -1429,6 +1739,66 @@ void IntegrationFile::ToDrizzleData( DrizzleData& drz ) const
 
 // ----------------------------------------------------------------------------
 
+IntegrationFile::FileMetadata IntegrationFile::SummaryMetadata()
+{
+   FileMetadata summary;
+   for ( const IntegrationFile* file : s_files )
+   {
+      const FileMetadata& metadata = file->Metadata();
+      if ( metadata.IsValid() )
+      {
+         if ( summary.IsValid() )
+         {
+            summary.author           = metadata.author;
+            summary.observer         = metadata.observer;
+            summary.instrumentName   = metadata.instrumentName;
+            summary.frameType        = metadata.frameType;
+            summary.filterName       = metadata.filterName;
+            summary.pedestal         = metadata.pedestal;
+            summary.expTime         += metadata.expTime;
+            summary.sensorTemp       = metadata.sensorTemp;
+            summary.xPixSize         = metadata.xPixSize;
+            summary.yPixSize         = metadata.yPixSize;
+            summary.xBinning         = metadata.xBinning;
+            summary.yBinning         = metadata.yBinning;
+            summary.xOrigin          = metadata.xOrigin;
+            summary.yOrigin          = metadata.yOrigin;
+            summary.telescopeName    = metadata.telescopeName;
+            summary.focalLength      = metadata.focalLength;
+            summary.aperture         = metadata.aperture;
+            summary.apertureArea     = metadata.apertureArea;
+            summary.objectName       = metadata.objectName;
+            summary.observationTime  = metadata.observationTime;
+            summary.ra              += metadata.ra;
+            summary.dec             += metadata.dec;
+            summary.equinox          = metadata.equinox;
+         }
+         else
+            summary = metadata;
+      }
+      else
+      {
+         if ( summary.IsValid() )
+         {
+            Console().WarningLn( "<end><cbr>** Warning: Corrupted or invalid integration metadata item(s)." );
+            return FileMetadata();
+         }
+      }
+   }
+
+   if ( summary.IsValid() )
+   {
+      if ( summary.ra.defined )
+         summary.ra.value /= s_files.Length();
+      if ( summary.dec.defined )
+         summary.dec.value /= s_files.Length();
+   }
+
+   return summary;
+}
+
+// ----------------------------------------------------------------------------
+
 double IntegrationFile::KeywordValue( const IsoString& keyName )
 {
    FITSKeywordArray keywords;
@@ -1466,7 +1836,7 @@ void IntegrationFile::ResetCacheableData()
    m_ikss     = DVector();
    m_iksl     = DVector();
    m_noise    = DVector();
-   m_pedestal = 0;
+   m_metadata = FileMetadata();
 }
 
 // ----------------------------------------------------------------------------
@@ -1485,7 +1855,7 @@ void IntegrationFile::AddToCache( const String& path ) const
    item.ikss     = m_ikss;
    item.iksl     = m_iksl;
    item.noise    = m_noise;
-   item.pedestal = m_pedestal;
+   item.metadata = m_metadata.ToString();
    TheIntegrationCache->Add( item );
 }
 
@@ -1510,7 +1880,7 @@ bool IntegrationFile::GetFromCache( const String& path )
    m_ikss     = item.ikss;
    m_iksl     = item.iksl;
    m_noise    = item.noise;
-   m_pedestal = Max( 0.0F, item.pedestal );
+   m_metadata = FileMetadata( item.metadata );
 
    return
    (m_mean.IsEmpty()   || m_mean.Length()   == s_numberOfChannels) &&
@@ -3505,6 +3875,14 @@ ImageIntegrationInstance::IntegrationDescriptionItems::IntegrationDescriptionIte
       }
    }
 
+   if ( instance.p_largeScaleClipLow || instance.p_largeScaleClipHigh )
+   {
+      largeScaleRejectionClippings = "low=" + YesNo( instance.p_largeScaleClipLow ) + " high=" + YesNo( instance.p_largeScaleClipHigh );
+      largeScaleRejectionParameters.Format( "lsr_layers_low=%d lsr_grow_low=%d lsr_layers_high=%d lsr_grow_high=%d",
+                                            instance.p_largeScaleClipLowProtectedLayers, instance.p_largeScaleClipLowGrowth,
+                                            instance.p_largeScaleClipHighProtectedLayers, instance.p_largeScaleClipHighGrowth );
+   }
+
    if ( instance.p_useROI )
       regionOfInterest.Format( "left=%d, top=%d, width=%d, height=%d",
                                instance.p_roi.x0, instance.p_roi.y0, instance.p_roi.Width(), instance.p_roi.Height() );
@@ -3517,25 +3895,29 @@ String ImageIntegrationInstance::IntegrationDescription() const
    IntegrationDescriptionItems items( *this );
    String description;
    if ( !items.pixelCombination.IsEmpty() )
-      description +=   "Pixel combination ......... " + items.pixelCombination;
+      description +=   "Pixel combination .................. " + items.pixelCombination;
    if ( !items.outputNormalization.IsEmpty() )
-      description += "\nOutput normalization ...... " + items.outputNormalization;
+      description += "\nOutput normalization ............... " + items.outputNormalization;
    if ( !items.weightMode.IsEmpty() )
-      description += "\nWeighting mode ............ " + items.weightMode;
+      description += "\nWeighting mode ..................... " + items.weightMode;
    if ( !items.scaleEstimator.IsEmpty() )
-      description += "\nScale estimator ........... " + items.scaleEstimator;
+      description += "\nScale estimator .................... " + items.scaleEstimator;
    if ( !items.rangeRejection.IsEmpty() )
-      description += "\nRange rejection ........... " + items.rangeRejection;
+      description += "\nRange rejection .................... " + items.rangeRejection;
    if ( !items.pixelRejection.IsEmpty() )
-      description += "\nPixel rejection ........... " + items.pixelRejection;
+      description += "\nPixel rejection .................... " + items.pixelRejection;
    if ( !items.rejectionNormalization.IsEmpty() )
-      description += "\nRejection normalization ... " + items.rejectionNormalization;
+      description += "\nRejection normalization ............ " + items.rejectionNormalization;
    if ( !items.rejectionClippings.IsEmpty() )
-      description += "\nRejection clippings ....... " + items.rejectionClippings;
+      description += "\nRejection clippings ................ " + items.rejectionClippings;
    if ( !items.rejectionParameters.IsEmpty() )
-      description += "\nRejection parameters ...... " + items.rejectionParameters;
+      description += "\nRejection parameters ............... " + items.rejectionParameters;
+   if ( !items.largeScaleRejectionClippings.IsEmpty() )
+      description += "\nLarge-scale rejection clippings .... " + items.largeScaleRejectionClippings;
+   if ( !items.largeScaleRejectionParameters.IsEmpty() )
+      description += "\nLarge-scale rejection parameters ... " + items.largeScaleRejectionParameters;
    if ( !items.regionOfInterest.IsEmpty() )
-      description += "\nRegion of interest ........ " + items.regionOfInterest;
+      description += "\nRegion of interest ................. " + items.regionOfInterest;
    return description;
 }
 
@@ -3857,7 +4239,7 @@ bool ImageIntegrationInstance::ExecuteGlobal()
                                  ++NRLR[r->index];
                               }
 
-                              if ( doLargeScaleReject || p_generateDrizzleData )
+                              if ( doLargeScaleReject || p_generateDrizzleData && !p_useROI )
                               {
                                  uint8 mask = r->rejectLow ? 0x02 : 0x00;
                                  if ( r->rejectRangeLow )
@@ -3893,7 +4275,7 @@ bool ImageIntegrationInstance::ExecuteGlobal()
                                  ++NRHR[r->index];
                               }
 
-                              if ( doLargeScaleReject || p_generateDrizzleData )
+                              if ( doLargeScaleReject || p_generateDrizzleData && !p_useROI )
                               {
                                  uint8 mask = r->rejectHigh ? 0x01 : 0x00;
                                  if ( r->rejectRangeHigh )
@@ -4146,35 +4528,132 @@ bool ImageIntegrationInstance::ExecuteGlobal()
 
       if ( p_generateIntegratedImage )
       {
-         float pedestal = 0;
-         for ( int i = 0; i < IntegrationFile::NumberOfFiles(); ++i )
-         {
-            float d = IntegrationFile::FileByIndex( i ).Pedestal();
-            if ( d != 0 )
-            {
-               if ( pedestal == 0 )
-                  pedestal = d;
-            }
-            if ( pedestal != d )
-            {
-               pedestal = -1;
-               break;
-            }
-         }
-
          /*
-          * Update HISTORY and PEDESTAL FITS keywords.
+          * Update FITS keywords.
           * ### FIXME: This should be optional and disabled by default.
           * ### TODO: Implement generation of XISF properties ASAP.
           */
-         FITSKeywordArray keywords;
-         resultWindow.GetKeywords( keywords );
+         FITSKeywordArray keywords = resultWindow.Keywords();
 
+         /*
+          * Consistently defined metadata.
+          */
+         IntegrationFile::FileMetadata metadata = IntegrationFile::SummaryMetadata();
+         if ( metadata.IsValid() )
+         {
+            if ( metadata.author.ConsistentlyDefined( "author" ) )
+               keywords << FITSHeaderKeyword( "AUTHOR", metadata.author.value.SingleQuoted(), "Author of the data" );
+
+            if ( metadata.observer.ConsistentlyDefined( "observer" ) )
+               keywords << FITSHeaderKeyword( "OBSERVER", metadata.observer.value.SingleQuoted(), "Observer who acquired the data" );
+
+            if ( metadata.instrumentName.ConsistentlyDefined( "instrument name" ) )
+               keywords << FITSHeaderKeyword( "INSTRUME", metadata.instrumentName.value.SingleQuoted(), "Name of instrument" );
+
+            if ( metadata.frameType.ConsistentlyDefined( "image type" ) )
+               keywords << FITSHeaderKeyword( "IMAGETYP", metadata.frameType.value.SingleQuoted(), "Type of integrated image" );
+
+            if ( metadata.filterName.ConsistentlyDefined( "filter name" ) )
+               keywords << FITSHeaderKeyword( "FILTER", metadata.filterName.value.SingleQuoted(), "Name of filter" );
+
+            if ( metadata.pedestal.ConsistentlyDefined( "pedestal" ) )
+               if ( metadata.pedestal.value > 0 )
+               {
+                  keywords << FITSHeaderKeyword( "HISTORY",
+                                                 IsoString(),
+                                                 IsoString().Format( "ImageIntegration.outputPedestal: %.4g DN", metadata.pedestal.value ) )
+                           << FITSHeaderKeyword( "PEDESTAL",
+                                                 IsoString().Format( "%.4g", metadata.pedestal.value ),
+                                                 "Value in DN added to enforce positivity" );
+                  console.NoteLn( String().Format( "* PEDESTAL keyword created with value: %.4g DN", metadata.pedestal.value ) );
+               }
+
+            if ( metadata.xPixSize.ConsistentlyDefined( "pixel x-size" ) )
+            {
+               if ( metadata.yPixSize.ConsistentlyDefined( "pixel y-size" ) )
+                  if ( metadata.xPixSize.value == metadata.yPixSize.value )
+                  {
+                     keywords << FITSHeaderKeyword( "PIXSIZE", IsoString( metadata.xPixSize.value ), "Pixel size in microns" );
+                     goto __noYPixSize;
+                  }
+
+               keywords << FITSHeaderKeyword( "PIXSIZE1", IsoString( metadata.xPixSize.value ), "Pixel size in microns, X axis" );
+            }
+
+            if ( metadata.yPixSize.ConsistentlyDefined( "pixel y-size" ) )
+               keywords << FITSHeaderKeyword( "PIXSIZE2", IsoString( metadata.yPixSize.value ), "Pixel size in microns, Y axis" );
+__noYPixSize:
+
+            if ( metadata.xBinning.ConsistentlyDefined( "pixel x-binning" ) )
+            {
+               if ( metadata.yBinning.ConsistentlyDefined( "pixel y-binning" ) )
+                  if ( metadata.xBinning.value == metadata.yBinning.value )
+                  {
+                     keywords << FITSHeaderKeyword( "BINNING", IsoString( metadata.xBinning.value ), "Pixel binning factor" );
+                     metadata.yBinning.defined = false;
+                     goto __noYBinning;
+                  }
+
+               keywords << FITSHeaderKeyword( "XBINNING", IsoString( metadata.xBinning.value ), "Pixel binning factor, X axis" );
+            }
+
+            if ( metadata.yBinning.ConsistentlyDefined( "pixel y-binning" ) )
+               keywords << FITSHeaderKeyword( "YBINNING", IsoString( metadata.yBinning.value ), "Pixel binning factor, Y axis" );
+__noYBinning:
+
+            if ( metadata.xOrigin.ConsistentlyDefined( "subframe x-origin" ) )
+               keywords << FITSHeaderKeyword( "XORGSUBF", IsoString( metadata.xOrigin.value ), "Subframe origin, X axis" );
+
+            if ( metadata.yOrigin.ConsistentlyDefined( "subframe y-origin" ) )
+               keywords << FITSHeaderKeyword( "YORGSUBF", IsoString( metadata.yOrigin.value ), "Subframe origin, Y axis" );
+
+            if ( metadata.telescopeName.ConsistentlyDefined( "telescope name" ) )
+               keywords << FITSHeaderKeyword( "TELESCOP", metadata.telescopeName.value.SingleQuoted(), "Name of telescope" );
+
+            if ( metadata.focalLength.ConsistentlyDefined( "focal length" ) )
+               keywords << FITSHeaderKeyword( "FOCALLEN", IsoString( metadata.focalLength.value ), "Effective focal length in mm" );
+
+            if ( metadata.aperture.ConsistentlyDefined( "aperture diameter" ) )
+               keywords << FITSHeaderKeyword( "APTDIA", IsoString( metadata.aperture.value ), "Effective aperture diameter in mm" );
+
+            if ( metadata.apertureArea.ConsistentlyDefined( "aperture area" ) )
+               keywords << FITSHeaderKeyword( "APTAREA", IsoString( metadata.apertureArea.value ), "Effective aperture area in square mm" );
+
+            if ( metadata.objectName.ConsistentlyDefined( "object name" ) )
+               keywords << FITSHeaderKeyword( "OBJECT", metadata.objectName.value.SingleQuoted(), "Name of observed object" );
+
+            if ( metadata.ra.ConsistentlyDefined( "right ascension" ) )
+            {
+               double ra = metadata.ra.value;
+               if ( ra < 0 )
+                  ra += 360;
+               ra /= 15;
+               SexagesimalConversionOptions options( 3/*items*/, 3/*precision*/, false/*sign*/, 0/*width*/, ' '/*separator*/ );
+               keywords << FITSHeaderKeyword( "OBJCTRA",
+                                              IsoString::ToSexagesimal( ra, options ).SingleQuoted(),
+                                              "Approximate right ascension in hours" );
+            }
+
+            if ( metadata.dec.ConsistentlyDefined( "declination" ) )
+            {
+               SexagesimalConversionOptions options( 3/*items*/, 2/*precision*/, true/*sign*/, 0/*width*/, ' '/*separator*/ );
+               keywords << FITSHeaderKeyword( "OBJCTDEC",
+                                              IsoString::ToSexagesimal( metadata.dec.value, options ).SingleQuoted(),
+                                              "Approximate declination in degrees" );
+            }
+
+            if ( metadata.equinox.ConsistentlyDefined( "equinox" ) )
+               keywords << FITSHeaderKeyword( "EQUINOX", IsoString( metadata.equinox.value ), "Equinox of celestial coordinates" );
+         }
+
+         /*
+          * Integration HISTORY keywords.
+          */
          keywords << FITSHeaderKeyword( "COMMENT", IsoString(), "Integration with " + PixInsightVersion::AsString() )
                   << FITSHeaderKeyword( "HISTORY", IsoString(), "Integration with " + Module->ReadableVersion() )
                   << FITSHeaderKeyword( "HISTORY", IsoString(), "Integration with ImageIntegration process" );
 
-         IntegrationDescriptionItems items( *this );
+         const IntegrationDescriptionItems items( *this );
          if ( !items.pixelCombination.IsEmpty() )
             keywords << FITSHeaderKeyword( "HISTORY", IsoString(), "ImageIntegration.pixelCombination: " + items.pixelCombination );
          if ( !items.outputNormalization.IsEmpty() )
@@ -4193,6 +4672,10 @@ bool ImageIntegrationInstance::ExecuteGlobal()
             keywords << FITSHeaderKeyword( "HISTORY", IsoString(), "ImageIntegration.rejectionClippings: " + items.rejectionClippings );
          if ( !items.rejectionParameters.IsEmpty() )
             keywords << FITSHeaderKeyword( "HISTORY", IsoString(), "ImageIntegration.rejectionParameters: " + items.rejectionParameters );
+         if ( !items.largeScaleRejectionClippings.IsEmpty() )
+            keywords << FITSHeaderKeyword( "HISTORY", IsoString(), "ImageIntegration.largeScaleRejectionClippings: " + items.largeScaleRejectionClippings );
+         if ( !items.largeScaleRejectionParameters.IsEmpty() )
+            keywords << FITSHeaderKeyword( "HISTORY", IsoString(), "ImageIntegration.largeScaleRejectionParameters: " + items.largeScaleRejectionParameters );
          if ( !items.regionOfInterest.IsEmpty() )
             keywords << FITSHeaderKeyword( "HISTORY", IsoString(), "ImageIntegration.regionOfInterest: " + items.regionOfInterest );
 
@@ -4247,22 +4730,6 @@ bool ImageIntegrationInstance::ExecuteGlobal()
                keywords << FITSHeaderKeyword( IsoString().Format( "NOISE%02d", i ),
                                               IsoString().Format( "%.4e", o_output.finalNoiseEstimates[i] ),
                                               IsoString().Format( "Gaussian noise estimate for channel #%d", i ) );
-         }
-
-         if ( pedestal != 0 )
-         {
-            if ( pedestal > 0 )
-            {
-               keywords << FITSHeaderKeyword( "HISTORY",
-                                              IsoString(),
-                                              IsoString().Format( "ImageIntegration.outputPedestal: %.4g DN", pedestal ) )
-                        << FITSHeaderKeyword( "PEDESTAL",
-                                              IsoString().Format( "%.4g", pedestal ),
-                                              "Value in DN added to enforce positivity" );
-               console.NoteLn( String().Format( "* PEDESTAL keyword created with value: %.4g DN", pedestal ) );
-            }
-            else
-               console.WarningLn( "** Warning: Inconsistent pedestal values detected - PEDESTAL keyword not created." );
          }
 
          /*
@@ -4344,62 +4811,67 @@ bool ImageIntegrationInstance::ExecuteGlobal()
       }
 
       if ( p_generateDrizzleData )
-      {
-         /*
-          * Generate Drizzle integration data.
-          */
-         console.WriteLn( "* Updating drizzle data files:" );
-
-         int succeeded = 0;
-         for ( int i = 0; i < IntegrationFile::NumberOfFiles(); ++i )
+         if ( p_useROI )
          {
-            const IntegrationFile& F = IntegrationFile::FileByIndex( i );
-            if ( F.DrizzleDataPath().IsEmpty() )
-            {
-               console.WarningLn( "** Warning: Drizzle data file not defined: " + F.Path() );
-               continue;
-            }
-            if ( !File::Exists( F.DrizzleDataPath() ) )
-            {
-               console.WarningLn( "** Warning: Drizzle data file not found: " + F.DrizzleDataPath() );
-               continue;
-            }
+            console.WarningLn( "** Warning: Drizzle data files cannot be updated with an active ROI." );
+         }
+         else
+         {
+            /*
+             * Generate Drizzle integration data.
+             */
+            console.WriteLn( "* Updating drizzle data files:" );
 
-            Exception::DisableGUIOutput( p_noGUIMessages );
+            int succeeded = 0;
+            for ( int i = 0; i < IntegrationFile::NumberOfFiles(); ++i )
+            {
+               const IntegrationFile& F = IntegrationFile::FileByIndex( i );
+               if ( F.DrizzleDataPath().IsEmpty() )
+               {
+                  console.WarningLn( "** Warning: Drizzle data file not defined: " + F.Path() );
+                  continue;
+               }
+               if ( !File::Exists( F.DrizzleDataPath() ) )
+               {
+                  console.WarningLn( "** Warning: Drizzle data file not found: " + F.DrizzleDataPath() );
+                  continue;
+               }
 
-            Module->ProcessEvents();
+               Exception::DisableGUIOutput( p_noGUIMessages );
 
-            try
-            {
-               DrizzleData drz( F.DrizzleDataPath(), true/*ignoreIntegrationData*/ );
-               F.ToDrizzleData( drz );
-               String newDrzDataPath = File::ChangeExtension( F.DrizzleDataPath(), ".xdrz" ); // don't overwrite old .drz files
-               drz.SerializeToFile( newDrzDataPath );
-               console.WriteLn( newDrzDataPath );
-               ++succeeded;
-            }
-            catch ( ProcessAborted& )
-            {
-               throw;
-            }
-            catch ( ... )
-            {
+               Module->ProcessEvents();
+
                try
+               {
+                  DrizzleData drz( F.DrizzleDataPath(), true/*ignoreIntegrationData*/ );
+                  F.ToDrizzleData( drz );
+                  String newDrzDataPath = File::ChangeExtension( F.DrizzleDataPath(), ".xdrz" ); // don't overwrite old .drz files
+                  drz.SerializeToFile( newDrzDataPath );
+                  console.WriteLn( newDrzDataPath );
+                  ++succeeded;
+               }
+               catch ( ProcessAborted& )
                {
                   throw;
                }
-               ERROR_HANDLER
+               catch ( ... )
+               {
+                  try
+                  {
+                     throw;
+                  }
+                  ERROR_HANDLER
+               }
+
+               Module->ProcessEvents();
             }
 
-            Module->ProcessEvents();
+            if ( succeeded < IntegrationFile::NumberOfFiles() )
+               console.WarningLn( String().Format( "<end><cbr>** Warning: Drizzle data file generation: %d succeeded, %d errors.",
+                                                   succeeded, IntegrationFile::NumberOfFiles()-succeeded ) );
+            else
+               console.NoteLn( String().Format( "<end><cbr>* %d drizzle data files have been updated successfully.", succeeded ) );
          }
-
-         if ( succeeded < IntegrationFile::NumberOfFiles() )
-            console.WarningLn( String().Format( "<end><cbr>** Warning: Drizzle data file generation: %d succeeded, %d errors.",
-                                                succeeded, IntegrationFile::NumberOfFiles()-succeeded ) );
-         else
-            console.NoteLn( String().Format( "<end><cbr>* %d drizzle data files have been updated successfully.", succeeded ) );
-      }
 
       IntegrationFile::CloseAll();
 
@@ -4764,4 +5236,4 @@ size_type ImageIntegrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInstance.cpp - Released 2017-05-02T09:43:00Z
+// EOF ImageIntegrationInstance.cpp - Released 2017-05-05T08:37:32Z

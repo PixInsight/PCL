@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0837
 // ----------------------------------------------------------------------------
-// pcl/FastRotation.cpp - Released 2017-05-28T08:29:05Z
+// pcl/FastRotation.cpp - Released 2017-06-09T08:12:54Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -433,4 +433,4 @@ void VerticalMirror::Apply( pcl::UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FastRotation.cpp - Released 2017-05-28T08:29:05Z
+// EOF pcl/FastRotation.cpp - Released 2017-06-09T08:12:54Z

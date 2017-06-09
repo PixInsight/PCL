@@ -55,14 +55,12 @@
 
 #include "FluxCalibrationParameters.h"
 
+#include <pcl/MetaParameter.h>
 #include <pcl/ProcessImplementation.h>
-#include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
 
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// FluxCalibrationInstance
 // ----------------------------------------------------------------------------
 
 class FluxCalibrationInstance : public ProcessImplementation

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0291
+// Standard ImageCalibration Process Module Version 01.04.00.0300
 // ----------------------------------------------------------------------------
-// DefectMapInstance.cpp - Released 2017-05-02T09:43:00Z
+// DefectMapInstance.cpp - Released 2017-05-17T17:41:56Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -67,24 +67,27 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 DefectMapInstance::DefectMapInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-mapId(),
-operation( DMPOperation::Default ),
-structure( DMPStructure::Default ),
-isCFA( TheDMPIsCFAParameter->DefaultValue() )
+   ProcessImplementation( m ),
+   operation( DMPOperation::Default ),
+   structure( DMPStructure::Default ),
+   isCFA( TheDMPIsCFAParameter->DefaultValue() )
 {
 }
 
+// ----------------------------------------------------------------------------
+
 DefectMapInstance::DefectMapInstance( const DefectMapInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
 
+// ----------------------------------------------------------------------------
+
 void DefectMapInstance::Assign( const ProcessImplementation& p )
 {
    const DefectMapInstance* x = dynamic_cast<const DefectMapInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       mapId     = x->mapId;
       operation = x->operation;
@@ -92,6 +95,8 @@ void DefectMapInstance::Assign( const ProcessImplementation& p )
       isCFA     = x->isCFA;
    }
 }
+
+// ----------------------------------------------------------------------------
 
 bool DefectMapInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) const
 {
@@ -483,6 +488,8 @@ bool DefectMapInstance::ExecuteOn( View& view )
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 void* DefectMapInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
 {
    if ( p == TheDMPMapIdParameter )
@@ -493,8 +500,11 @@ void* DefectMapInstance::LockParameter( const MetaParameter* p, size_type /*tabl
       return &structure;
    if ( p == TheDMPIsCFAParameter )
       return &isCFA;
-   return 0;
+
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool DefectMapInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {
@@ -510,10 +520,13 @@ bool DefectMapInstance::AllocateParameter( size_type sizeOrLength, const MetaPar
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 size_type DefectMapInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
    if ( p == TheDMPMapIdParameter )
       return mapId.Length();
+
    return 0;
 }
 
@@ -522,4 +535,4 @@ size_type DefectMapInstance::ParameterLength( const MetaParameter* p, size_type 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DefectMapInstance.cpp - Released 2017-05-02T09:43:00Z
+// EOF DefectMapInstance.cpp - Released 2017-05-17T17:41:56Z

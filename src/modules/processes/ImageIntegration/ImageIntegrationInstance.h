@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.14.00.0390
+// Standard ImageIntegration Process Module Version 01.15.00.0398
 // ----------------------------------------------------------------------------
-// ImageIntegrationInstance.h - Released 2017-05-02T09:43:00Z
+// ImageIntegrationInstance.h - Released 2017-05-05T08:37:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -290,6 +290,8 @@ private:
       String rejectionNormalization;
       String rejectionClippings;
       String rejectionParameters;
+      String largeScaleRejectionClippings;
+      String largeScaleRejectionParameters;
       String regionOfInterest;
 
       IntegrationDescriptionItems( const ImageIntegrationInstance& );
@@ -317,4 +319,4 @@ private:
 #endif   // __ImageIntegrationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInstance.h - Released 2017-05-02T09:43:00Z
+// EOF ImageIntegrationInstance.h - Released 2017-05-05T08:37:32Z

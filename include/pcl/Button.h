@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0837
 // ----------------------------------------------------------------------------
-// pcl/Button.h - Released 2017-05-28T08:28:50Z
+// pcl/Button.h - Released 2017-06-09T08:12:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -427,4 +427,4 @@ protected:
 #endif   // __PCL_Button_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Button.h - Released 2017-05-28T08:28:50Z
+// EOF pcl/Button.h - Released 2017-06-09T08:12:42Z

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.14.00.0390
+// Standard ImageIntegration Process Module Version 01.15.00.0398
 // ----------------------------------------------------------------------------
-// ImageIntegrationParameters.cpp - Released 2017-05-02T09:43:00Z
+// ImageIntegrationParameters.cpp - Released 2017-05-05T08:37:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -656,7 +656,7 @@ int IISigmaHigh::Precision() const
 
 double IISigmaHigh::DefaultValue() const
 {
-   return 2;
+   return 3;
 }
 
 double IISigmaHigh::MinimumValue() const
@@ -1063,7 +1063,7 @@ double IILargeScaleClipLowGrowth::MinimumValue() const
 
 double IILargeScaleClipLowGrowth::MaximumValue() const
 {
-   return 7;
+   return 20;
 }
 
 // ----------------------------------------------------------------------------
@@ -1134,7 +1134,7 @@ double IILargeScaleClipHighGrowth::MinimumValue() const
 
 double IILargeScaleClipHighGrowth::MaximumValue() const
 {
-   return 7;
+   return 20;
 }
 
 // ----------------------------------------------------------------------------
@@ -2455,4 +2455,4 @@ bool IIImageRejectedHighB::IsReadOnly() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationParameters.cpp - Released 2017-05-02T09:43:00Z
+// EOF ImageIntegrationParameters.cpp - Released 2017-05-05T08:37:32Z

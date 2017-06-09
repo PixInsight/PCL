@@ -767,7 +767,7 @@ void PixInsightX11Installer::ShowLogo()
    std::cout <<
    "\n-------------------------------------------------------------------------------"
    "\nPixInsight X11 UNIX/Linux installer version " << VersionString() <<
-   "\nCopyright (C) 2003-2016 Pleiades Astrophoto. All Rights Reserved"
+   "\nCopyright (C) 2003-2017 Pleiades Astrophoto. All Rights Reserved"
    "\n-------------------------------------------------------------------------------"
    "\n";
 }

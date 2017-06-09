@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0837
 // ----------------------------------------------------------------------------
-// pcl/CRC32.cpp - Released 2017-05-28T08:29:05Z
+// pcl/CRC32.cpp - Released 2017-06-09T08:12:54Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -57,6 +57,10 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+#ifdef _MSC_VER
+# pragma warning( disable: 4146 )   // unary minus operator applied to unsigned type, result still unsigned
+#endif
+
 uint32 CRC32( const void* data, size_type length )
 {
    uint32 crc = 0xFFFFFFFF;
@@ -75,4 +79,4 @@ uint32 CRC32( const void* data, size_type length )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/CRC32.cpp - Released 2017-05-28T08:29:05Z
+// EOF pcl/CRC32.cpp - Released 2017-06-09T08:12:54Z

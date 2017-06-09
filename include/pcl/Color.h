@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0837
 // ----------------------------------------------------------------------------
-// pcl/Color.h - Released 2017-05-28T08:28:50Z
+// pcl/Color.h - Released 2017-06-09T08:12:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -65,32 +65,34 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
+ * \defgroup rgba_utility_functions RGBA Color Utility Functions
+ */
+
+/*!
  * Defines a 32-bit RGBA pixel value.
  *
  * A %RGBA pixel value is encoded as follows:
  *
- * AARRGGBB
+ * <tt>AARRGGBB</tt>
  *
  * where each letter represents a 4-bit hexadecimal digit (from 0 to F). Each
  * 8-bit pair represents a pixel component in the range from 0 to 255:
  *
  * <table border="1" cellpadding="4" cellspacing="0">
- * <tr><td>AA</td>    <td>Alpha value, or <em>pixel transparency</em>: 0 means
- *                        completely transparent, 255 corresponds to an opaque
- *                        pixel.</td></tr>
- * <tr><td>RR</td>    <td>Red pixel color component.</td></tr>
- * <tr><td>GG</td>    <td>Green pixel color component.</td></tr>
- * <tr><td>BB</td>    <td>Blue pixel color component.</td></tr>
+ * <tr><td><tt>AA</tt></td> <td>Alpha value, or <em>pixel transparency</em>:
+ *                   0 means completely transparent, 255 corresponds to an
+ *                   opaque pixel.</td></tr>
+ * <tr><td><tt>RR</tt></td> <td>Red pixel color component.</td></tr>
+ * <tr><td><tt>GG</tt></td> <td>Green pixel color component.</td></tr>
+ * <tr><td><tt>BB</tt></td> <td>Blue pixel color component.</td></tr>
  * </table>
+ *
+ * \ingroup rgba_utility_functions
  */
 typedef uint32 RGBA;
 
 /*!
- * \defgroup rgba_utility_functions RGBA Color Utility Functions
- */
-
-/*!
- * Returns the alpha (transparency) component of a RGBA pixel value.
+ * Returns the alpha (transparency) component of an RGBA pixel value.
  *
  * \ingroup rgba_utility_functions
  */
@@ -100,7 +102,7 @@ inline uint8 Alpha( RGBA rgba )
 }
 
 /*!
- * Returns the red color component of a RGBA pixel value.
+ * Returns the red color component of an RGBA pixel value.
  *
  * \ingroup rgba_utility_functions
  */
@@ -110,7 +112,7 @@ inline uint8 Red( RGBA rgba )
 }
 
 /*!
- * Returns the green color component of a RGBA pixel value.
+ * Returns the green color component of an RGBA pixel value.
  *
  * \ingroup rgba_utility_functions
  */
@@ -120,7 +122,7 @@ inline uint8 Green( RGBA rgba )
 }
 
 /*!
- * Returns the blue color component of a RGBA pixel value.
+ * Returns the blue color component of an RGBA pixel value.
  *
  * \ingroup rgba_utility_functions
  */
@@ -130,7 +132,7 @@ inline uint8 Blue( RGBA rgba )
 }
 
 /*!
- * Clears (sets to zero) the alpha (transparency) component of a RGBA pixel
+ * Clears (sets to zero) the alpha (transparency) component of an RGBA pixel
  * value.
  *
  * \ingroup rgba_utility_functions
@@ -141,7 +143,7 @@ inline void ClearAlpha( RGBA& rgba )
 }
 
 /*!
- * Clears (sets to zero) the red color component of a RGBA pixel value.
+ * Clears (sets to zero) the red color component of an RGBA pixel value.
  *
  * \ingroup rgba_utility_functions
  */
@@ -151,7 +153,7 @@ inline void ClearRed( RGBA& rgba )
 }
 
 /*!
- * Clears (sets to zero) the green color component of a RGBA pixel value.
+ * Clears (sets to zero) the green color component of an RGBA pixel value.
  *
  * \ingroup rgba_utility_functions
  */
@@ -161,7 +163,7 @@ inline void ClearGreen( RGBA& rgba )
 }
 
 /*!
- * Clears (sets to zero) the blue color component of a RGBA pixel value.
+ * Clears (sets to zero) the blue color component of an RGBA pixel value.
  *
  * \ingroup rgba_utility_functions
  */
@@ -171,7 +173,7 @@ inline void ClearBlue( RGBA& rgba )
 }
 
 /*!
- * Sets the alpha (transparency) component of a RGBA pixel value.
+ * Sets the alpha (transparency) component of an RGBA pixel value.
  *
  * \ingroup rgba_utility_functions
  */
@@ -181,7 +183,7 @@ inline void SetAlpha( RGBA& rgba, uint8 a )
 }
 
 /*!
- * Sets the red color component of a RGBA pixel value.
+ * Sets the red color component of an RGBA pixel value.
  *
  * \ingroup rgba_utility_functions
  */
@@ -191,7 +193,7 @@ inline void SetRed( RGBA& rgba, uint8 r )
 }
 
 /*!
- * Sets the green color component of a RGBA pixel value.
+ * Sets the green color component of an RGBA pixel value.
  *
  * \ingroup rgba_utility_functions
  */
@@ -201,7 +203,7 @@ inline void SetGreen( RGBA& rgba, uint8 g )
 }
 
 /*!
- * Sets the blue color component of a RGBA pixel value.
+ * Sets the blue color component of an RGBA pixel value.
  *
  * \ingroup rgba_utility_functions
  */
@@ -211,7 +213,7 @@ inline void SetBlue( RGBA& rgba, uint8 b )
 }
 
 /*!
- * Returns a RGBA pixel value for the specified separate alpha and color
+ * Returns an RGBA pixel value for the specified separate alpha and color
  * component integer values.
  *
  * \param r    Red color component
@@ -247,7 +249,7 @@ inline RGBA RGBAColor( int r, int g, int b )
 }
 
 /*!
- * Returns a RGBA pixel value for the specified separate alpha and color
+ * Returns an RGBA pixel value for the specified separate alpha and color
  * component real values.
  *
  * \param r    Red color component
@@ -264,6 +266,19 @@ inline RGBA RGBAColor( double r, double g, double b, double a )
    return RGBAColor( RoundInt( 255*r ), RoundInt( 255*g ), RoundInt( 255*b ), RoundInt( 255*a ) );
 }
 
+/*!
+ * Returns an RGBA pixel value for the specified separate alpha and color
+ * component real values.
+ *
+ * \param r    Red color component
+ * \param g    Green color component
+ * \param b    Blue color component
+ * \param a    Alpha  (transparency)
+ *
+ * All components must be in the normalized range [0,1].
+ *
+ * \ingroup rgba_utility_functions
+ */
 inline RGBA RGBAColor( float r, float g, float b, float a )
 {
    return RGBAColor( double( r ), double( g ), double( b ), double( a ) );
@@ -287,13 +302,26 @@ inline RGBA RGBAColor( double r, double g, double b )
    return RGBAColor( RoundInt( 255*r ), RoundInt( 255*g ), RoundInt( 255*b ) );
 }
 
+/*!
+ * Returns an opaque RGBA pixel value for the specified separate color
+ * component real values.
+ *
+ * \param r    Red color component
+ * \param g    Green color component
+ * \param b    Blue color component
+ *
+ * All components must be in the normalized range [0,1]. The returned RGBA
+ * value has its alpha component equal to 255 (opaque).
+ *
+ * \ingroup rgba_utility_functions
+ */
 inline RGBA RGBAColor( float r, float g, float b )
 {
    return RGBAColor( double( r ), double( g ), double( b ) );
 }
 
 /*!
- * Returns a RGBA pixel value corresponding to a CSS color specification
+ * Returns an RGBA pixel value corresponding to a CSS color specification
  * string.
  *
  * The string can be an hex-encoded color value in one of two valid formats:
@@ -337,8 +365,8 @@ inline RGBA StringToRGBAColor( const S& colorNameOrHex )
 }
 
 /*!
- * Returns an hex-encoded string representation of a RGBA pixel value, ignoring
- * the alpha component.
+ * Returns an hex-encoded string representation of an RGBA pixel value,
+ * ignoring the alpha component.
  *
  * The returned string has the format "#RRGGBB".
  *
@@ -352,7 +380,7 @@ inline IsoString RGBColorToHexString( RGBA c )
 }
 
 /*!
- * Returns an hex-encoded string representation of a RGBA pixel value.
+ * Returns an hex-encoded string representation of an RGBA pixel value.
  *
  * The returned string has the format "#RRGGBBAA".
  *
@@ -366,7 +394,7 @@ inline IsoString RGBAColorToHexString( RGBA c )
 }
 
 /*!
- * Returns the CSS color name corresponding to a RGBA pixel value.
+ * Returns the CSS color name corresponding to an RGBA pixel value.
  *
  * The alpha component is ignored, except for the special value 0x00000000,
  * which is returned as "Transparent". If the value does not have a CSS named
@@ -383,4 +411,4 @@ IsoString PCL_FUNC CSSColorName( RGBA );
 #endif   // __PCL_Color_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Color.h - Released 2017-05-28T08:28:50Z
+// EOF pcl/Color.h - Released 2017-06-09T08:12:42Z

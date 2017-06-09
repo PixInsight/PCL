@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0291
+// Standard ImageCalibration Process Module Version 01.04.00.0300
 // ----------------------------------------------------------------------------
-// ImageCalibrationModule.cpp - Released 2017-05-02T09:43:00Z
+// ImageCalibrationModule.cpp - Released 2017-05-17T17:41:55Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -51,22 +51,24 @@
 // ----------------------------------------------------------------------------
 
 #define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     03
-#define MODULE_VERSION_REVISION  05
-#define MODULE_VERSION_BUILD     0291
+#define MODULE_VERSION_MINOR     04
+#define MODULE_VERSION_REVISION  00
+#define MODULE_VERSION_BUILD     0300
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017
 #define MODULE_RELEASE_MONTH     5
-#define MODULE_RELEASE_DAY       2
+#define MODULE_RELEASE_DAY       17
 
+#include "DefectMapInterface.h"
+#include "DefectMapProcess.h"
+#include "LocalNormalizationInterface.h"
+#include "LocalNormalizationProcess.h"
+#include "ImageCalibrationInterface.h"
 #include "ImageCalibrationModule.h"
 #include "ImageCalibrationProcess.h"
-#include "ImageCalibrationInterface.h"
-#include "DefectMapProcess.h"
-#include "DefectMapInterface.h"
-#include "SuperbiasProcess.h"
 #include "SuperbiasInterface.h"
+#include "SuperbiasProcess.h"
 
 namespace pcl
 {
@@ -77,6 +79,8 @@ ImageCalibrationModule::ImageCalibrationModule() : MetaModule()
 {
 }
 
+// ----------------------------------------------------------------------------
+
 const char* ImageCalibrationModule::Version() const
 {
    return PCL_MODULE_VERSION( MODULE_VERSION_MAJOR,
@@ -86,35 +90,49 @@ const char* ImageCalibrationModule::Version() const
                               MODULE_VERSION_LANGUAGE );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString ImageCalibrationModule::Name() const
 {
    return "ImageCalibration";
 }
+
+// ----------------------------------------------------------------------------
 
 String ImageCalibrationModule::Description() const
 {
    return "PixInsight Standard ImageCalibration Process Module";
 }
 
+// ----------------------------------------------------------------------------
+
 String ImageCalibrationModule::Company() const
 {
    return "Pleiades Astrophoto";
 }
 
+// ----------------------------------------------------------------------------
+
 String ImageCalibrationModule::Author() const
 {
-   return "ImageCalibration/Superbias: Juan Conejero, PTeam / DefectMap/Superbias: Carlos Milovic F., PTeam";
+   return "ImageCalibration/LocalNormalization/Superbias: Juan Conejero, PTeam / DefectMap/Superbias: Carlos Milovic F., PTeam";
 }
+
+// ----------------------------------------------------------------------------
 
 String ImageCalibrationModule::Copyright() const
 {
    return "Copyright (c) 2009-2017, Pleiades Astrophoto";
 }
 
+// ----------------------------------------------------------------------------
+
 String ImageCalibrationModule::TradeMarks() const
 {
    return "PixInsight";
 }
+
+// ----------------------------------------------------------------------------
 
 String ImageCalibrationModule::OriginalFileName() const
 {
@@ -131,6 +149,8 @@ String ImageCalibrationModule::OriginalFileName() const
    return "ImageCalibration-pxm.dll";
 #endif
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationModule::GetReleaseDate( int& year, int& month, int& day ) const
 {
@@ -151,6 +171,8 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
    {
       new pcl::ImageCalibrationProcess;
       new pcl::ImageCalibrationInterface;
+      new pcl::LocalNormalizationProcess;
+      new pcl::LocalNormalizationInterface;
       new pcl::DefectMapProcess;
       new pcl::DefectMapInterface;
       new pcl::SuperbiasProcess;
@@ -161,4 +183,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationModule.cpp - Released 2017-05-02T09:43:00Z
+// EOF ImageCalibrationModule.cpp - Released 2017-05-17T17:41:55Z

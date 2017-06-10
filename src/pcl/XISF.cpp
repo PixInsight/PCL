@@ -61,6 +61,32 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+#ifdef __clang__
+
+const fsize_type XISF::DefaultBlockAlignSize = 4096;
+const fsize_type XISF::DefaultMaxBlockInlineSize = 3072;
+const int XISF::MaxThumbnailSize = 1024;
+const XISF::block_checksum XISF::DefaultChecksum = XISFChecksum::None;
+const XISF::block_compression XISF::DefaultCompression = XISFCompression::None;
+const int XISF::DefaultCompressionLevel = 0;
+const int XISF::MaxCompressionLevel = 100;
+const int XISF::DefaultVerbosity = 1;
+const double XISF::DefaultOutputLowerBound = 0.0;
+const double XISF::DefaultOutputUpperBound = 1.0;
+const bool XISF::DefaultStoreFITSKeywords = true;
+const bool XISF::DefaultIgnoreFITSKeywords = false;
+const bool XISF::DefaultImportFITSKeywords = false;
+const bool XISF::DefaultIgnoreEmbeddedData = false;
+const bool XISF::DefaultIgnoreProperties = false;
+const bool XISF::DefaultAutoMetadata = true;
+const bool XISF::DefaultNoWarnings = false;
+const bool XISF::DefaultWarningsAreErrors = false;
+const char* XISF::InternalNamespacePrefix = "XISF:";
+
+#endif
+
+// ----------------------------------------------------------------------------
+
 void XISFFileSignature::Validate() const
 {
    if ( magic[0] != 'X' || magic[1] != 'I' || magic[2] != 'S' || magic[3] != 'F' )

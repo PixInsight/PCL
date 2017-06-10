@@ -252,6 +252,13 @@ public:
     */
    ~XISF() = delete;
 
+   /*
+    * ### N.B.: As of version 1.8.5.1309: Clang on macOS does not know how to
+    * compile the following constexpr static members, giving buggy 'Undefined
+    * symbols for architecture x86_64' errors on some modules...
+    */
+#ifndef __clang__
+
    /*!
     * Default block size in bytes for optional alignment of %XISF data
     * structures.
@@ -355,6 +362,30 @@ public:
     * The namespace prefix of all %XISF reserved properties.
     */
    constexpr static const char* InternalNamespacePrefix = "XISF:";
+
+#else
+
+   static const fsize_type DefaultBlockAlignSize;
+   static const fsize_type DefaultMaxBlockInlineSize;
+   static const int MaxThumbnailSize;
+   static const block_checksum DefaultChecksum;
+   static const block_compression DefaultCompression;
+   static const int DefaultCompressionLevel;
+   static const int MaxCompressionLevel;
+   static const int DefaultVerbosity;
+   static const double DefaultOutputLowerBound;
+   static const double DefaultOutputUpperBound;
+   static const bool DefaultStoreFITSKeywords;
+   static const bool DefaultIgnoreFITSKeywords;
+   static const bool DefaultImportFITSKeywords;
+   static const bool DefaultIgnoreEmbeddedData;
+   static const bool DefaultIgnoreProperties;
+   static const bool DefaultAutoMetadata;
+   static const bool DefaultNoWarnings;
+   static const bool DefaultWarningsAreErrors;
+   static const char* InternalNamespacePrefix;
+
+#endif // !__clang__
 
    /*!
     * Returns the identifier of a pixel sample data type. Used as %XML element

@@ -340,12 +340,11 @@ inline RGBA RGBAColor( float r, float g, float b )
  *
  * \ingroup rgba_utility_functions
  */
-RGBA PCL_FUNC RGBAColor( const IsoString& );
+RGBA PCL_FUNC RGBAColor( const IsoString& colorNameOrHex );
 
-template <class S>
-inline RGBA PCL_FUNC RGBAColor( const S& s )
+inline RGBA RGBAColor( const IsoString::ustring_base& colorNameOrHex )
 {
-   return RGBAColor( IsoString( s ) );
+   return RGBAColor( IsoString( colorNameOrHex ) );
 }
 
 /*!
@@ -358,8 +357,7 @@ inline RGBA StringToRGBAColor( const IsoString& colorNameOrHex )
    return RGBAColor( colorNameOrHex );
 }
 
-template <class S>
-inline RGBA StringToRGBAColor( const S& colorNameOrHex )
+inline RGBA StringToRGBAColor( const IsoString::ustring_base& colorNameOrHex )
 {
    return StringToRGBAColor( IsoString( colorNameOrHex ) );
 }

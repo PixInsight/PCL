@@ -535,7 +535,7 @@ public:
     * Returns true iff the specified string \a id is a valid XISF property
     * identifier.
     *
-    * A valid XISF property specifier is a sequence:
+    * A valid XISF property identifier is a sequence:
     *
     * <tt>t1[:t2[:...:tn]]</tt>
     *
@@ -549,13 +549,12 @@ public:
     * \li Its second and successive characters, if they exist, are all of them
     * either alphabetic characters, decimal digits, or underscores.
     */
-   template <class S>
-   static bool IsValidPropertyId( const S& id )
+   static bool IsValidPropertyId( const IsoString& id )
    {
       return Property::IsValidIdentifier( id );
    }
 
-   static bool IsValidPropertyId( const char* id )
+   static bool IsValidPropertyId( const IsoString::ustring_base& id )
    {
       return IsValidPropertyId( IsoString( id ) );
    }
@@ -568,13 +567,12 @@ public:
     * reserved by the %XISF format and cannot be defined by external client
     * applications.
     */
-   template <class S>
-   static bool IsInternalPropertyId( const S& id )
+   static bool IsInternalPropertyId( const IsoString& id )
    {
       return id.StartsWith( InternalNamespacePrefix );
    }
 
-   static bool IsInternalPropertyId( const char* id )
+   static bool IsInternalPropertyId( const IsoString::ustring_base& id )
    {
       return IsInternalPropertyId( IsoString( id ) );
    }
@@ -582,15 +580,14 @@ public:
    /*!
     * Returns a property identifier 'internalized' with the XISF: prefix.
     */
-   template <class S>
-   static S InternalPropertyId( const S& id )
+   static IsoString InternalPropertyId( const IsoString& id )
    {
       if ( !IsInternalPropertyId( id ) )
          return InternalNamespacePrefix + id;
       return id;
    }
 
-   static IsoString InternalPropertyId( const char* id )
+   static IsoString InternalPropertyId( const IsoString::ustring_base& id )
    {
       return InternalPropertyId( IsoString( id ) );
    }

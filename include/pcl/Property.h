@@ -211,20 +211,19 @@ public:
     * identifier. Refer to XISF::IsValidPropertyId() for property identifier
     * syntax rules.
     */
-   template <class S>
-   static bool IsValidIdentifier( const S& id )
+   static bool IsValidIdentifier( const IsoString& id )
    {
       if ( id.IsEmpty() )
          return false;
-      Array<S> tokens;
+      IsoStringList tokens;
       id.Break( tokens, ':' );
-      for ( const S& token : tokens )
+      for ( const IsoString& token : tokens )
          if ( !token.IsValidIdentifier() )
             return false;
       return true;
    }
 
-   static bool IsValidIdentifier( const char* id )
+   static bool IsValidIdentifier( const IsoString::ustring_base& id )
    {
       return IsValidIdentifier( IsoString( id ) );
    }

@@ -284,8 +284,7 @@ public:
     */
    void Rename( const IsoString& newId );
 
-   template <class S>
-   void Rename( const S& newId )
+   void Rename( const IsoString::ustring_base& newId )
    {
       Rename( IsoString( newId ) );
    }
@@ -651,8 +650,7 @@ public:
     */
    Variant PropertyValue( const IsoString& property ) const;
 
-   template <class S>
-   Variant PropertyValue( const S& property ) const
+   Variant PropertyValue( const IsoString::ustring_base& property ) const
    {
       return PropertyValue( IsoString( property ) );
    }
@@ -683,8 +681,7 @@ public:
     */
    Variant ComputeProperty( const IsoString& property, bool notify = true );
 
-   template <class S>
-   Variant ComputeProperty( const S& property, bool notify = true )
+   Variant ComputeProperty( const IsoString::ustring_base& property, bool notify = true )
    {
       return ComputeProperty( IsoString( property ), notify );
    }
@@ -742,8 +739,7 @@ public:
    void SetPropertyValue( const IsoString& property, const Variant& value, bool notify = true,
                           ViewPropertyAttributes attributes = ViewPropertyAttribute::NoChange );
 
-   template <class S>
-   void SetPropertyValue( const S& property, const Variant& value, bool notify = true,
+   void SetPropertyValue( const IsoString::ustring_base& property, const Variant& value, bool notify = true,
                           ViewPropertyAttributes attributes = ViewPropertyAttribute::NoChange )
    {
       SetPropertyValue( IsoString( property ), value, notify, attributes );
@@ -766,8 +762,7 @@ public:
     */
    Variant::data_type PropertyType( const IsoString& property ) const;
 
-   template <class S>
-   Variant::data_type PropertyType( const S& property ) const
+   Variant::data_type PropertyType( const IsoString::ustring_base& property ) const
    {
       return PropertyType( IsoString( property ) );
    }
@@ -786,8 +781,7 @@ public:
     */
    ViewPropertyAttributes PropertyAttributes( const IsoString& property ) const;
 
-   template <class S>
-   ViewPropertyAttributes PropertyAttributes( const S& property ) const
+   ViewPropertyAttributes PropertyAttributes( const IsoString::ustring_base& property ) const
    {
       return PropertyAttributes( IsoString( property ) );
    }
@@ -809,8 +803,7 @@ public:
     */
    void SetPropertyAttributes( const IsoString& property, ViewPropertyAttributes attributes, bool notify = true );
 
-   template <class S>
-   void SetPropertyAttributes( const S& property, ViewPropertyAttributes attributes, bool notify = true )
+   void SetPropertyAttributes( const IsoString::ustring_base& property, ViewPropertyAttributes attributes, bool notify = true )
    {
       SetPropertyAttributes( IsoString( property ), attributes, notify );
    }
@@ -822,8 +815,7 @@ public:
     */
    bool HasProperty( const IsoString& property ) const;
 
-   template <class S>
-   bool HasProperty( const S& property ) const
+   bool HasProperty( const IsoString::ustring_base& property ) const
    {
       return HasProperty( IsoString( property ) );
    }
@@ -840,8 +832,7 @@ public:
     */
    void DeleteProperty( const IsoString& property, bool notify = true );
 
-   template <class S>
-   void DeleteProperty( const S& property, bool notify = true )
+   void DeleteProperty( const IsoString::ustring_base& property, bool notify = true )
    {
       DeleteProperty( IsoString( property ), notify );
    }
@@ -868,8 +859,7 @@ public:
     */
    static View ViewById( const IsoString& fullId );
 
-   template <class S>
-   static View ViewById( const S& fullId )
+   static View ViewById( const IsoString::ustring_base& fullId )
    {
       return ViewById( IsoString( fullId ) );
    }

@@ -100,8 +100,7 @@ public:
     */
    static ProjectionBase* CreateByWCSCode( const IsoString& code, double ra, double dec );
 
-   template <class S>
-   static ProjectionBase* CreateByWCSCode( const S& code, double ra, double dec )
+   static ProjectionBase* CreateByWCSCode( const IsoString::ustring_base& code, double ra, double dec )
    {
       return CreateByWCSCode( IsoString( code ), ra, dec );
    }
@@ -125,8 +124,7 @@ public:
     */
    static ProjectionBase* CreateByName( const IsoString& name, double ra, double dec );
 
-   template <class S>
-   static ProjectionBase* CreateByName( const S& name, double ra, double dec )
+   static ProjectionBase* CreateByName( const IsoString::ustring_base& name, double ra, double dec )
    {
       return CreateByName( IsoString( name ), ra, dec );
    }

@@ -90,8 +90,7 @@ public:
     */
    ViewSelectionDialog( const IsoString& id = IsoString(), bool allowPreviews = true );
 
-   template <class S>
-   ViewSelectionDialog( const S& id, bool allowPreviews = true ) :
+   ViewSelectionDialog( const IsoString::ustring_base& id, bool allowPreviews = true ) :
       ViewSelectionDialog( IsoString( id ), allowPreviews )
    {
    }

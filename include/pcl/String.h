@@ -6785,8 +6785,7 @@ public:
       return sign*(s1 + (s2 + s3/60)/60);
    }
 
-   template <class S>
-   double SexagesimalToDouble( const S& separator ) const
+   double SexagesimalToDouble( const ustring_base& separator ) const
    {
       return SexagesimalToDouble( IsoString( separator ) );
    }
@@ -6837,8 +6836,7 @@ public:
       return false;
    }
 
-   template <class S>
-   bool TrySexagesimalToDouble( double& value, const S& separator ) const
+   bool TrySexagesimalToDouble( double& value, const ustring_base& separator ) const
    {
       return TrySexagesimalToDouble( value, IsoString( separator ) );
    }
@@ -6892,8 +6890,7 @@ public:
     */
    void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator = ':' ) const;
 
-   template <class S>
-   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator ) const
+   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const ustring_base& separator ) const
    {
       ParseSexagesimal( sign, s1, s2, s3, IsoString( separator ) );
    }
@@ -6928,8 +6925,7 @@ public:
     */
    bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator = ':' ) const;
 
-   template <class S>
-   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator ) const
+   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const ustring_base& separator ) const
    {
       return TryParseSexagesimal( sign, s1, s2, s3, IsoString( separator ) );
    }
@@ -10897,12 +10893,6 @@ public:
       return sign*(s1 + (s2 + s3/60)/60);
    }
 
-   template <class S>
-   double SexagesimalToDouble( const S& separator ) const
-   {
-      return SexagesimalToDouble( String( separator ) );
-   }
-
    /*!
     * Evaluates this string as a sexagesimal numeric literal representation
     * with the specified set of \a separators, and returns the result as a
@@ -10947,12 +10937,6 @@ public:
          return true;
       }
       return false;
-   }
-
-   template <class S>
-   bool TrySexagesimalToDouble( double& value, const S& separator ) const
-   {
-      return TrySexagesimalToDouble( value, String( separator ) );
    }
 
    /*!
@@ -11004,12 +10988,6 @@ public:
     */
    void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const String& separator = ':' ) const;
 
-   template <class S>
-   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator ) const
-   {
-      ParseSexagesimal( sign, s1, s2, s3, String( separator ) );
-   }
-
    /*!
     * Evaluates this string as a sexagesimal numeric literal representation,
     * using the specified set of \a separators, and stores the resulting
@@ -11039,12 +11017,6 @@ public:
     * \sa ParseSexagesimal(), SexagesimalToDouble(), TrySexagesimalToDouble()
     */
    bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const String& separator = ':' ) const;
-
-   template <class S>
-   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator ) const
-   {
-      return TryParseSexagesimal( sign, s1, s2, s3, String( separator ) );
-   }
 
    /*!
     * Attempts to evaluate this string as a sexagesimal numeric literal

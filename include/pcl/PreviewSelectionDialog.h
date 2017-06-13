@@ -85,8 +85,7 @@ public:
     */
    PreviewSelectionDialog( const IsoString& id = IsoString() );
 
-   template <class S>
-   PreviewSelectionDialog( const S& id ) :
+   PreviewSelectionDialog( const IsoString::ustring_base& id ) :
       PreviewSelectionDialog( IsoString( id ) )
    {
    }

@@ -697,8 +697,8 @@ public:
       }
    }
 
-   template <class S>
-   CryptographicHashFactory( S algorithmName ) : CryptographicHashFactory( IsoString( algorithmName ) )
+   CryptographicHashFactory( const IsoString::ustring_base& algorithmName ) :
+      CryptographicHashFactory( IsoString( algorithmName ) )
    {
    }
 

@@ -248,8 +248,7 @@ public:
     */
    ProcessParameter( const Process& process, const IsoString& paramId );
 
-   template <class S>
-   ProcessParameter( const Process& process, const S& paramId ) :
+   ProcessParameter( const Process& process, const IsoString::ustring_base& paramId ) :
       ProcessParameter( process, IsoString( paramId ) )
    {
    }
@@ -279,8 +278,7 @@ public:
     */
    ProcessParameter( const ProcessParameter& table, const IsoString& colId );
 
-   template <class S>
-   ProcessParameter( const ProcessParameter& table, const S& colId ) :
+   ProcessParameter( const ProcessParameter& table, const IsoString::ustring_base& colId ) :
       ProcessParameter( table, IsoString( colId ) )
    {
    }

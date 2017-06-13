@@ -124,8 +124,7 @@ public:
     */
    Process( const IsoString& classId );
 
-   template <class S>
-   Process( const S& classId ) : Process( IsoString( classId ) )
+   Process( const IsoString::ustring_base& classId ) : Process( IsoString( classId ) )
    {
    }
 
@@ -334,8 +333,7 @@ public:
     */
    static Array<Process> ProcessesByCategory( const IsoString& category );
 
-   template <class S>
-   static Array<Process> ProcessesByCategory( const S& category )
+   static Array<Process> ProcessesByCategory( const IsoString::ustring_base& category )
    {
       return ProcessesByCategory( IsoString( category ) );
    }

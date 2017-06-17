@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0837
+// /_/     \____//_____/   PCL 02.01.05.0841
 // ----------------------------------------------------------------------------
-// pcl/FileDialog.cpp - Released 2017-06-09T08:12:54Z
+// pcl/FileDialog.cpp - Released 2017-06-17T10:55:56Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -141,38 +141,38 @@ void FileFilter::AddExtension( const String& ext )
       if ( !x.StartsWith( '*' ) )
          x.Prepend( '*' );
    x.ToLowercase(); // case-insensitive file extensions
-   if ( !extensions.Contains( x ) )
-      extensions.Add( x );
+   if ( !m_extensions.Contains( x ) )
+      m_extensions.Add( x );
 }
 
 void FileFilter::Clear()
 {
-   description.Clear();
-   extensions.Clear();
+   m_description.Clear();
+   m_extensions.Clear();
 }
 
 String FileFilter::MakeAPIFilter() const
 {
    String filter;
 
-   if ( !extensions.IsEmpty() )
+   if ( !m_extensions.IsEmpty() )
    {
-      if ( !description.IsEmpty() )
+      if ( !m_description.IsEmpty() )
       {
-         filter += description;
+         filter += m_description;
          filter += " (";
       }
 
-      for ( StringList::const_iterator i = extensions.Begin(); i != extensions.End(); ++i )
+      for ( StringList::const_iterator i = m_extensions.Begin(); i != m_extensions.End(); ++i )
       {
-         if ( i != extensions.Begin() )
+         if ( i != m_extensions.Begin() )
             filter += ' '; // also legal are ';' and ','
          if ( i->StartsWith( '.' ) )
             filter += '*';
          filter += *i;
       }
 
-      if ( !description.IsEmpty() )
+      if ( !m_description.IsEmpty() )
          filter += ')';
    }
 
@@ -215,7 +215,12 @@ const FileDialog::filter_list& FileDialog::Filters() const
    return p->filters;
 }
 
-FileDialog::filter_list& FileDialog::Filters()
+void FileDialog::SetFilters( const filter_list& filters )
+{
+   p->filters = filters;
+}
+
+FileDialog::filter_list& FileDialog::Filters() // ### DEPRECATED
 {
    return p->filters;
 }
@@ -432,4 +437,4 @@ String GetDirectoryDialog::Directory() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileDialog.cpp - Released 2017-06-09T08:12:54Z
+// EOF pcl/FileDialog.cpp - Released 2017-06-17T10:55:56Z

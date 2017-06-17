@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0837
+// /_/     \____//_____/   PCL 02.01.05.0841
 // ----------------------------------------------------------------------------
-// pcl/String.h - Released 2017-06-09T08:12:42Z
+// pcl/String.h - Released 2017-06-17T10:55:43Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -6785,6 +6785,11 @@ public:
       return sign*(s1 + (s2 + s3/60)/60);
    }
 
+   double SexagesimalToDouble( char separator ) const
+   {
+      return SexagesimalToDouble( IsoString( separator ) );
+   }
+
    double SexagesimalToDouble( const ustring_base& separator ) const
    {
       return SexagesimalToDouble( IsoString( separator ) );
@@ -6834,6 +6839,11 @@ public:
          return true;
       }
       return false;
+   }
+
+   bool TrySexagesimalToDouble( double& value, char separator ) const
+   {
+      return TrySexagesimalToDouble( value, IsoString( separator ) );
    }
 
    bool TrySexagesimalToDouble( double& value, const ustring_base& separator ) const
@@ -6890,6 +6900,11 @@ public:
     */
    void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator = ':' ) const;
 
+   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, char separator ) const
+   {
+      ParseSexagesimal( sign, s1, s2, s3, IsoString( separator ) );
+   }
+
    void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const ustring_base& separator ) const
    {
       ParseSexagesimal( sign, s1, s2, s3, IsoString( separator ) );
@@ -6924,6 +6939,11 @@ public:
     * \sa ParseSexagesimal(), SexagesimalToDouble(), TrySexagesimalToDouble()
     */
    bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator = ':' ) const;
+
+   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, char separator ) const
+   {
+      return TryParseSexagesimal( sign, s1, s2, s3, IsoString( separator ) );
+   }
 
    bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const ustring_base& separator ) const
    {
@@ -12470,4 +12490,4 @@ inline std::ostream& operator <<( std::ostream& o, const String& s )
 #endif   // __PCL_String_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.h - Released 2017-06-09T08:12:42Z
+// EOF pcl/String.h - Released 2017-06-17T10:55:43Z

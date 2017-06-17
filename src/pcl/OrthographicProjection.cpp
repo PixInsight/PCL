@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0837
+// /_/     \____//_____/   PCL 02.01.05.0841
 // ----------------------------------------------------------------------------
-// pcl/OrthographicProjection.cpp - Released 2017-06-09T08:12:54Z
+// pcl/OrthographicProjection.cpp - Released 2017-06-17T10:55:56Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -92,4 +92,4 @@ bool OrthographicProjection::Unproject( DPoint& pN, const DPoint& pW ) const noe
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/OrthographicProjection.cpp - Released 2017-06-09T08:12:54Z
+// EOF pcl/OrthographicProjection.cpp - Released 2017-06-17T10:55:56Z

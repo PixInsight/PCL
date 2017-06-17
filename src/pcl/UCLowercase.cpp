@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0837
+// /_/     \____//_____/   PCL 02.01.05.0841
 // ----------------------------------------------------------------------------
-// pcl/UCLowercase.cpp - Released 2017-06-09T08:12:54Z
+// pcl/UCLowercase.cpp - Released 2017-06-17T10:55:56Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -711,4 +711,4 @@ char16_type PCL_FUNC PCL_ToLowercase( char16_type c )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/UCLowercase.cpp - Released 2017-06-09T08:12:54Z
+// EOF pcl/UCLowercase.cpp - Released 2017-06-17T10:55:56Z

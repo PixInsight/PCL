@@ -2,7 +2,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-05-27T21:09:45.053Z
+# Generated on .... 2017-06-17T11:44:50.408Z
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ MacOSX/g++
@@ -27,6 +27,7 @@ SRC_FILES= \
 ../../AdaptiveLocalFilter.cpp \
 ../../Algebra.cpp \
 ../../Arguments.cpp \
+../../AstrometricMetadata.cpp \
 ../../Base64.cpp \
 ../../Bitmap.cpp \
 ../../BitmapBox.cpp \
@@ -73,8 +74,10 @@ SRC_FILES= \
 ../../FourierTransform.cpp \
 ../../Frame.cpp \
 ../../GlobalSettings.cpp \
+../../GnomonicProjection.cpp \
 ../../Graphics.cpp \
 ../../GroupBox.cpp \
+../../HammerAitoffProjection.cpp \
 ../../HexString.cpp \
 ../../Histogram.cpp \
 ../../HistogramTransformation.cpp \
@@ -97,6 +100,7 @@ SRC_FILES= \
 ../../LinearFit.cpp \
 ../../MD5.cpp \
 ../../Median.cpp \
+../../MercatorProjection.cpp \
 ../../MessageBox.cpp \
 ../../MetaFileFormat.cpp \
 ../../MetaModule.cpp \
@@ -109,6 +113,7 @@ SRC_FILES= \
 ../../MuteStatus.cpp \
 ../../NetworkTransfer.cpp \
 ../../NumericControl.cpp \
+../../OrthographicProjection.cpp \
 ../../Pen.cpp \
 ../../PolarTransform.cpp \
 ../../PreviewSelectionDialog.cpp \
@@ -117,6 +122,8 @@ SRC_FILES= \
 ../../ProcessInstance.cpp \
 ../../ProcessInterface.cpp \
 ../../ProcessParameter.cpp \
+../../ProjectionBase.cpp \
+../../ProjectionFactory.cpp \
 ../../PushButton.cpp \
 ../../PyramidalWaveletTransform.cpp \
 ../../RGBColorSystem.cpp \
@@ -143,6 +150,7 @@ SRC_FILES= \
 ../../SharedPixelData.cpp \
 ../../Sizer.cpp \
 ../../Slider.cpp \
+../../SphericalRotation.cpp \
 ../../SpinBox.cpp \
 ../../SpinStatus.cpp \
 ../../StatusMonitor.cpp \
@@ -168,8 +176,10 @@ SRC_FILES= \
 ../../View.cpp \
 ../../ViewList.cpp \
 ../../ViewSelectionDialog.cpp \
+../../WCSKeywords.cpp \
 ../../WebView.cpp \
 ../../Win32Exception.cpp \
+../../WorldTransformation.cpp \
 ../../XISF.cpp \
 ../../XISFReader.cpp \
 ../../XISFWriter.cpp \
@@ -189,6 +199,7 @@ OBJ_FILES= \
 ./x64/Release/AdaptiveLocalFilter.o \
 ./x64/Release/Algebra.o \
 ./x64/Release/Arguments.o \
+./x64/Release/AstrometricMetadata.o \
 ./x64/Release/Base64.o \
 ./x64/Release/Bitmap.o \
 ./x64/Release/BitmapBox.o \
@@ -235,8 +246,10 @@ OBJ_FILES= \
 ./x64/Release/FourierTransform.o \
 ./x64/Release/Frame.o \
 ./x64/Release/GlobalSettings.o \
+./x64/Release/GnomonicProjection.o \
 ./x64/Release/Graphics.o \
 ./x64/Release/GroupBox.o \
+./x64/Release/HammerAitoffProjection.o \
 ./x64/Release/HexString.o \
 ./x64/Release/Histogram.o \
 ./x64/Release/HistogramTransformation.o \
@@ -259,6 +272,7 @@ OBJ_FILES= \
 ./x64/Release/LinearFit.o \
 ./x64/Release/MD5.o \
 ./x64/Release/Median.o \
+./x64/Release/MercatorProjection.o \
 ./x64/Release/MessageBox.o \
 ./x64/Release/MetaFileFormat.o \
 ./x64/Release/MetaModule.o \
@@ -271,6 +285,7 @@ OBJ_FILES= \
 ./x64/Release/MuteStatus.o \
 ./x64/Release/NetworkTransfer.o \
 ./x64/Release/NumericControl.o \
+./x64/Release/OrthographicProjection.o \
 ./x64/Release/Pen.o \
 ./x64/Release/PolarTransform.o \
 ./x64/Release/PreviewSelectionDialog.o \
@@ -279,6 +294,8 @@ OBJ_FILES= \
 ./x64/Release/ProcessInstance.o \
 ./x64/Release/ProcessInterface.o \
 ./x64/Release/ProcessParameter.o \
+./x64/Release/ProjectionBase.o \
+./x64/Release/ProjectionFactory.o \
 ./x64/Release/PushButton.o \
 ./x64/Release/PyramidalWaveletTransform.o \
 ./x64/Release/RGBColorSystem.o \
@@ -305,6 +322,7 @@ OBJ_FILES= \
 ./x64/Release/SharedPixelData.o \
 ./x64/Release/Sizer.o \
 ./x64/Release/Slider.o \
+./x64/Release/SphericalRotation.o \
 ./x64/Release/SpinBox.o \
 ./x64/Release/SpinStatus.o \
 ./x64/Release/StatusMonitor.o \
@@ -330,8 +348,10 @@ OBJ_FILES= \
 ./x64/Release/View.o \
 ./x64/Release/ViewList.o \
 ./x64/Release/ViewSelectionDialog.o \
+./x64/Release/WCSKeywords.o \
 ./x64/Release/WebView.o \
 ./x64/Release/Win32Exception.o \
+./x64/Release/WorldTransformation.o \
 ./x64/Release/XISF.o \
 ./x64/Release/XISFReader.o \
 ./x64/Release/XISFWriter.o \
@@ -351,6 +371,7 @@ DEP_FILES= \
 ./x64/Release/AdaptiveLocalFilter.d \
 ./x64/Release/Algebra.d \
 ./x64/Release/Arguments.d \
+./x64/Release/AstrometricMetadata.d \
 ./x64/Release/Base64.d \
 ./x64/Release/Bitmap.d \
 ./x64/Release/BitmapBox.d \
@@ -397,8 +418,10 @@ DEP_FILES= \
 ./x64/Release/FourierTransform.d \
 ./x64/Release/Frame.d \
 ./x64/Release/GlobalSettings.d \
+./x64/Release/GnomonicProjection.d \
 ./x64/Release/Graphics.d \
 ./x64/Release/GroupBox.d \
+./x64/Release/HammerAitoffProjection.d \
 ./x64/Release/HexString.d \
 ./x64/Release/Histogram.d \
 ./x64/Release/HistogramTransformation.d \
@@ -421,6 +444,7 @@ DEP_FILES= \
 ./x64/Release/LinearFit.d \
 ./x64/Release/MD5.d \
 ./x64/Release/Median.d \
+./x64/Release/MercatorProjection.d \
 ./x64/Release/MessageBox.d \
 ./x64/Release/MetaFileFormat.d \
 ./x64/Release/MetaModule.d \
@@ -433,6 +457,7 @@ DEP_FILES= \
 ./x64/Release/MuteStatus.d \
 ./x64/Release/NetworkTransfer.d \
 ./x64/Release/NumericControl.d \
+./x64/Release/OrthographicProjection.d \
 ./x64/Release/Pen.d \
 ./x64/Release/PolarTransform.d \
 ./x64/Release/PreviewSelectionDialog.d \
@@ -441,6 +466,8 @@ DEP_FILES= \
 ./x64/Release/ProcessInstance.d \
 ./x64/Release/ProcessInterface.d \
 ./x64/Release/ProcessParameter.d \
+./x64/Release/ProjectionBase.d \
+./x64/Release/ProjectionFactory.d \
 ./x64/Release/PushButton.d \
 ./x64/Release/PyramidalWaveletTransform.d \
 ./x64/Release/RGBColorSystem.d \
@@ -467,6 +494,7 @@ DEP_FILES= \
 ./x64/Release/SharedPixelData.d \
 ./x64/Release/Sizer.d \
 ./x64/Release/Slider.d \
+./x64/Release/SphericalRotation.d \
 ./x64/Release/SpinBox.d \
 ./x64/Release/SpinStatus.d \
 ./x64/Release/StatusMonitor.d \
@@ -492,8 +520,10 @@ DEP_FILES= \
 ./x64/Release/View.d \
 ./x64/Release/ViewList.d \
 ./x64/Release/ViewSelectionDialog.d \
+./x64/Release/WCSKeywords.d \
 ./x64/Release/WebView.d \
 ./x64/Release/Win32Exception.d \
+./x64/Release/WorldTransformation.d \
 ./x64/Release/XISF.d \
 ./x64/Release/XISFReader.d \
 ./x64/Release/XISFWriter.d \

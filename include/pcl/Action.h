@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0841
 // ----------------------------------------------------------------------------
-// pcl/Action.h - Released 2017-05-28T08:28:50Z
+// pcl/Action.h - Released 2017-06-17T10:55:43Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -441,7 +441,10 @@ public:
 
 private:
 
-   Action( void* );
+   Action( void* h ) : UIObject( h )
+   {
+   }
+
    virtual void* CloneHandle() const;
 };
 
@@ -454,4 +457,4 @@ private:
 #endif   // __PCL_Action_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Action.h - Released 2017-05-28T08:28:50Z
+// EOF pcl/Action.h - Released 2017-06-17T10:55:43Z

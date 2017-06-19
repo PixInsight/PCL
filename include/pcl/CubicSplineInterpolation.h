@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0841
 // ----------------------------------------------------------------------------
-// pcl/CubicSplineInterpolation.h - Released 2017-05-28T08:28:50Z
+// pcl/CubicSplineInterpolation.h - Released 2017-06-17T10:55:43Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -262,4 +262,4 @@ private:
 #endif  // __PCL_CubicSplineInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/CubicSplineInterpolation.h - Released 2017-05-28T08:28:50Z
+// EOF pcl/CubicSplineInterpolation.h - Released 2017-06-17T10:55:43Z

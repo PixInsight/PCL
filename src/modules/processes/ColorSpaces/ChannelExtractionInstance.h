@@ -53,14 +53,12 @@
 #ifndef __ChannelExtractionInstance_h
 #define __ChannelExtractionInstance_h
 
-#include <pcl/ProcessImplementation.h>
 #include <pcl/MetaParameter.h>
+#include <pcl/ProcessImplementation.h>
 
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// ChannelExtractionInstance
 // ----------------------------------------------------------------------------
 
 class ChannelExtractionInstance : public ProcessImplementation
@@ -85,36 +83,32 @@ public:
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
 
-   // -------------------------------------------------------------------------
-
    int ColorSpace() const
    {
-      return colorSpace;
+      return p_colorSpace;
    }
 
    bool IsChannelEnabled( int c ) const
    {
-      return channelEnabled[c];
+      return p_channelEnabled[c];
    }
 
    const String& ChannelId( int c ) const
    {
-      return channelId[c];
+      return p_channelId[c];
    }
 
    int SampleFormat() const
    {
-      return sampleFormat;
+      return p_sampleFormat;
    }
-
-   // -------------------------------------------------------------------------
 
 private:
 
-   pcl_enum colorSpace;
-   pcl_bool channelEnabled[ 3 ]; // PCL MetaBoolean maps to uint32
-   String   channelId[ 3 ];
-   pcl_enum sampleFormat;
+   pcl_enum p_colorSpace;
+   pcl_bool p_channelEnabled[ 3 ];
+   String   p_channelId[ 3 ];
+   pcl_enum p_sampleFormat;
 
    friend class ChannelExtractionInterface;
    friend class ExtractCIELAction;

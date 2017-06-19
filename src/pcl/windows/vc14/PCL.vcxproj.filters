@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-05-27T21:09:45.129Z
+# Generated on .... 2017-06-17T11:44:50.495Z
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ Windows/vc14
@@ -13,7 +13,7 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>falsefalsefalsefalsefalsefalsefalsefalse-falsefalsefalsefalse-4falsefalsefalse-falsefalsefalsefalse-falsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalse</UniqueIdentifier>
+      <UniqueIdentifier>e6247807-3b03-4811-a453-ca2ff902b795</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -39,6 +39,9 @@
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Arguments.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\AstrometricMetadata.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Base64.cpp">
@@ -179,10 +182,16 @@
     <ClCompile Include="..\..\GlobalSettings.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\GnomonicProjection.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Graphics.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\GroupBox.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\HammerAitoffProjection.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\HexString.cpp">
@@ -251,6 +260,9 @@
     <ClCompile Include="..\..\Median.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\MercatorProjection.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\MessageBox.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
@@ -287,6 +299,9 @@
     <ClCompile Include="..\..\NumericControl.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\OrthographicProjection.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Pen.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
@@ -309,6 +324,12 @@
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ProcessParameter.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ProjectionBase.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ProjectionFactory.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\PushButton.cpp">
@@ -389,6 +410,9 @@
     <ClCompile Include="..\..\Slider.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\SphericalRotation.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\SpinBox.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
@@ -464,10 +488,16 @@
     <ClCompile Include="..\..\ViewSelectionDialog.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\WCSKeywords.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\WebView.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Win32Exception.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WorldTransformation.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\XISF.cpp">

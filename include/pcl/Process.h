@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0841
 // ----------------------------------------------------------------------------
-// pcl/Process.h - Released 2017-05-28T08:28:50Z
+// pcl/Process.h - Released 2017-06-17T10:55:43Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -124,8 +124,7 @@ public:
     */
    Process( const IsoString& classId );
 
-   template <class S>
-   Process( const S& classId ) : Process( IsoString( classId ) )
+   Process( const IsoString::ustring_base& classId ) : Process( IsoString( classId ) )
    {
    }
 
@@ -334,8 +333,7 @@ public:
     */
    static Array<Process> ProcessesByCategory( const IsoString& category );
 
-   template <class S>
-   static Array<Process> ProcessesByCategory( const S& category )
+   static Array<Process> ProcessesByCategory( const IsoString::ustring_base& category )
    {
       return ProcessesByCategory( IsoString( category ) );
    }
@@ -363,4 +361,4 @@ private:
 #endif   // __PCL_Process_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Process.h - Released 2017-05-28T08:28:50Z
+// EOF pcl/Process.h - Released 2017-06-17T10:55:43Z

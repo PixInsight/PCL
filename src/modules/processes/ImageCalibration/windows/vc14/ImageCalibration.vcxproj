@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-05-02T09:41:03.906Z
+# Generated on .... 2017-06-07T15:42:56.494Z
 # Project id ...... ImageCalibration
 # Project type .... Module
 # Platform ........ Windows/vc14
@@ -248,6 +248,10 @@
     <ClCompile Include="..\..\ImageCalibrationModule.cpp"/>
     <ClCompile Include="..\..\ImageCalibrationParameters.cpp"/>
     <ClCompile Include="..\..\ImageCalibrationProcess.cpp"/>
+    <ClCompile Include="..\..\LocalNormalizationInstance.cpp"/>
+    <ClCompile Include="..\..\LocalNormalizationInterface.cpp"/>
+    <ClCompile Include="..\..\LocalNormalizationParameters.cpp"/>
+    <ClCompile Include="..\..\LocalNormalizationProcess.cpp"/>
     <ClCompile Include="..\..\SuperbiasInstance.cpp"/>
     <ClCompile Include="..\..\SuperbiasInterface.cpp"/>
     <ClCompile Include="..\..\SuperbiasParameters.cpp"/>
@@ -263,6 +267,10 @@
     <ClInclude Include="..\..\ImageCalibrationModule.h"/>
     <ClInclude Include="..\..\ImageCalibrationParameters.h"/>
     <ClInclude Include="..\..\ImageCalibrationProcess.h"/>
+    <ClInclude Include="..\..\LocalNormalizationInstance.h"/>
+    <ClInclude Include="..\..\LocalNormalizationInterface.h"/>
+    <ClInclude Include="..\..\LocalNormalizationParameters.h"/>
+    <ClInclude Include="..\..\LocalNormalizationProcess.h"/>
     <ClInclude Include="..\..\SuperbiasInstance.h"/>
     <ClInclude Include="..\..\SuperbiasInterface.h"/>
     <ClInclude Include="..\..\SuperbiasParameters.h"/>

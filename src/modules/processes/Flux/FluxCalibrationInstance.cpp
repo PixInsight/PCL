@@ -68,50 +68,54 @@ const double inv_ch = 1/1.986e-9;
 // ----------------------------------------------------------------------------
 
 FluxCalibrationInstance::FluxCalibrationInstance( const MetaProcess* m ) :
-ProcessImplementation( m )
+   ProcessImplementation( m )
 {
-   p_wavelength.value = 0;
+   p_wavelength.value = TheFCWavelengthValueParameter->DefaultValue();
    p_wavelength.mode = FCParameterMode::Literal;
    p_wavelength.stdKeyword = "FLTWAVE";
 
-   p_transmissivity.value = 1;
+   p_transmissivity.value = TheFCTransmissivityValueParameter->DefaultValue();
    p_transmissivity.mode = FCParameterMode::Literal;
    p_transmissivity.stdKeyword = "FLTTRANS";
 
-   p_filterWidth.value = 0;
+   p_filterWidth.value = TheFCFilterWidthValueParameter->DefaultValue();
    p_filterWidth.mode = FCParameterMode::Literal;
    p_filterWidth.stdKeyword = "FLTWIDTH";
 
-   p_aperture.value = 0;
+   p_aperture.value = TheFCApertureValueParameter->DefaultValue();
    p_aperture.mode = FCParameterMode::StandardKeyword;
    p_aperture.stdKeyword = "APTDIA";
 
-   p_centralObstruction.value = 0;
+   p_centralObstruction.value = TheFCCentralObstructionValueParameter->DefaultValue();
    p_centralObstruction.mode = FCParameterMode::StandardKeyword;
    p_centralObstruction.stdKeyword = "OBSTDIA";
 
-   p_exposureTime.value = 0;
+   p_exposureTime.value = TheFCExposureTimeValueParameter->DefaultValue();
    p_exposureTime.mode = FCParameterMode::StandardKeyword;
    p_exposureTime.stdKeyword = "EXPTIME";
 
-   p_atmosphericExtinction.value = 0;
+   p_atmosphericExtinction.value = TheFCAtmosphericExtinctionValueParameter->DefaultValue();
    p_atmosphericExtinction.mode = FCParameterMode::Literal;
    p_atmosphericExtinction.stdKeyword = "ATMEXTIN";
 
-   p_sensorGain.value = 1;
+   p_sensorGain.value = TheFCSensorGainValueParameter->DefaultValue();
    p_sensorGain.mode = FCParameterMode::Literal;
    p_sensorGain.stdKeyword = "CCDSENS";
 
-   p_quantumEfficiency.value = 1;
+   p_quantumEfficiency.value = TheFCQuantumEfficiencyValueParameter->DefaultValue();
    p_quantumEfficiency.mode = FCParameterMode::Literal;
    p_quantumEfficiency.stdKeyword = "CCDQE";
 }
 
+// ----------------------------------------------------------------------------
+
 FluxCalibrationInstance::FluxCalibrationInstance( const FluxCalibrationInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
+
+// ----------------------------------------------------------------------------
 
 void FluxCalibrationInstance::Assign( const ProcessImplementation& p )
 {
@@ -130,10 +134,14 @@ void FluxCalibrationInstance::Assign( const ProcessImplementation& p )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 UndoFlags FluxCalibrationInstance::UndoMode( const View& ) const
 {
    return UndoFlag::Keywords | UndoFlag::PixelData;
 }
+
+// ----------------------------------------------------------------------------
 
 class FluxCalibrationEngine
 {
@@ -142,8 +150,7 @@ public:
    template <class P>
    static void Apply( GenericImage<P>& img, const View& view, const FluxCalibrationInstance& instance )
    {
-      FITSKeywordArray inputKeywords;
-      view.Window().GetKeywords( inputKeywords );
+      FITSKeywordArray inputKeywords = view.Window().Keywords();
 
       if ( KeywordExists( inputKeywords, "FLXMIN" ) ||
            KeywordExists( inputKeywords, "FLXRANGE" ) ||
@@ -252,6 +259,8 @@ public:
    }
 };
 
+// ----------------------------------------------------------------------------
+
 bool FluxCalibrationInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) const
 {
    if ( view.Image().IsComplexSample() )
@@ -279,6 +288,8 @@ bool FluxCalibrationInstance::CanExecuteOn( const View& view, pcl::String& whyNo
 
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool FluxCalibrationInstance::ExecuteOn( View& view )
 {
@@ -331,6 +342,8 @@ bool FluxCalibrationInstance::ExecuteOn( View& view )
 
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void* FluxCalibrationInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
 {
@@ -397,8 +410,10 @@ void* FluxCalibrationInstance::LockParameter( const MetaParameter* p, size_type 
    if ( p == TheFCQuantumEfficiencyKeywordParameter )
       return p_quantumEfficiency.keyword.Begin();
 
-   return 0;
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool FluxCalibrationInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {
@@ -458,8 +473,11 @@ bool FluxCalibrationInstance::AllocateParameter( size_type sizeOrLength, const M
    }
    else
       return false;
+
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 size_type FluxCalibrationInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
@@ -481,6 +499,7 @@ size_type FluxCalibrationInstance::ParameterLength( const MetaParameter* p, size
       return p_sensorGain.keyword.Length();
    if ( p == TheFCQuantumEfficiencyKeywordParameter )
       return p_quantumEfficiency.keyword.Length();
+
    return 0;
 }
 

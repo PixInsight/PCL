@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0841
 // ----------------------------------------------------------------------------
-// pcl/String.h - Released 2017-05-28T08:28:50Z
+// pcl/String.h - Released 2017-06-17T10:55:43Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -2329,6 +2329,75 @@ public:
    }
 
    /*!
+    * Gets a sequence of \e tokens (substrings) extracted from this string.
+    *
+    * \param[out] list  The list of extracted tokens. Must be a reference to a
+    *                container, such as Array or List, or a derived class.
+    *                Typically, this parameter is a reference to a StringList.
+    *
+    * \param ca      An array of token separator characters. Tokens will be
+    *                separated by instances of any character included in this
+    *                array. The template argument S must have type conversion
+    *                semantics to the character type of this string class
+    *                (char_type). If this array is empty, calling this function
+    *                has no effect and zero is returned.
+    *
+    * \param trim    True to \e trim the extracted tokens. If this parameter is
+    *                true, existing leading and trailing whitespace characters
+    *                will be removed from each extracted token.
+    *
+    * \param i       Starting character index.
+    *
+    * Returns the number of tokens extracted and added to the list.
+    */
+   template <class C, typename S>
+   size_type Break( C& list, const Array<S>& ca, bool trim = false, size_type i = 0 ) const
+   {
+      size_type count = 0;
+      if ( !ca.IsEmpty() )
+      {
+         size_type len = Length();
+         if ( i < len )
+         {
+            for ( ;; )
+            {
+               size_type j = i;
+               for ( const_iterator p = m_data->string + i; j < len; ++j, ++p )
+                  for ( auto c : ca )
+                     if ( *p == char_type( c ) )
+                        break;
+
+               GenericString t;
+               if ( i < j )
+               {
+                  const_iterator l = m_data->string + i;
+                  size_type m = j - i;
+                  if ( trim )
+                  {
+                     const_iterator r = l + m;
+                     l = R::SearchTrimLeft( l, r );
+                     m = R::SearchTrimRight( l, r ) - l;
+                  }
+                  if ( m > 0 )
+                  {
+                     t.m_data->Allocate( m );
+                     R::Copy( t.m_data->string, l, m );
+                  }
+               }
+               list.Add( t );
+               ++count;
+
+               if ( j == len )
+                  break;
+
+               i = j + 1;
+            }
+         }
+      }
+      return count;
+   }
+
+   /*!
     * Gets a sequence of \e tokens (substrings) extracted from this string by
     * performing case-insensitive comparisons with a token separation string.
     *
@@ -3080,12 +3149,117 @@ public:
    }
 
    /*!
+    * Ensures that this string is enclosed by a leading and a trailing instance
+    * of the specified character \a c. If this string is already enclosed by
+    * \a c, this function does nothing.
+    * \sa Enclosed()
+    */
+   void EnsureEnclosed( char_type c )
+   {
+      int encloseLeft = 1;
+      int encloseRight = 1;
+      size_type len = Length();
+      if ( len > 0 )
+      {
+         if ( *m_data->string == c )
+            encloseLeft = 0;
+         if ( *(m_data->end-1) == c )
+            if ( len > 1 )
+               encloseRight = 0;
+            else
+               encloseLeft = 0;
+      }
+      size_type n = len + encloseLeft + encloseRight;
+      if ( n > len )
+      {
+         if ( !IsUnique() || m_data->ShouldReallocate( n ) )
+         {
+            Data* newData = Data::New( n );
+            R::Copy( newData->string + encloseLeft, m_data->string, len );
+            DetachFromData();
+            m_data = newData;
+         }
+         else
+         {
+            m_data->SetLength( n );
+            R::CopyOverlapped( m_data->string + encloseLeft, m_data->string, len );
+         }
+
+         if ( encloseLeft )
+            *m_data->string = c;
+         if ( encloseRight )
+            *(m_data->end-1) = c;
+      }
+   }
+
+   /*!
+    * Returns a duplicate of this string enclosed by the specified character.
+    * If this string is already enclosed by \a c, this function returns an
+    * unmodified copy.
+    * \sa EnsureEnclosed()
+    */
+   GenericString Enclosed( char_type c ) const
+   {
+      GenericString s( *this );
+      s.EnsureEnclosed( c );
+      return s;
+   }
+
+   /*!
+    * Ensures that this string is enclosed by a leading and a trailing instance
+    * of the single quote character ('). If this string is already single
+    * quoted, this function does nothing.
+    * \sa SingleQuoted()
+    */
+   void EnsureSingleQuoted()
+   {
+      EnsureEnclosed( R::SingleQuote() );
+   }
+
+   /*!
+    * Returns a duplicate of this string enclosed by single quote characters
+    * ('). If this string is already single quoted, this function returns an
+    * unmodified copy.
+    * \sa EnsureSingleQuoted()
+    */
+   GenericString SingleQuoted() const
+   {
+      GenericString s( *this );
+      s.EnsureSingleQuoted();
+      return s;
+   }
+
+   /*!
+    * Ensures that this string is enclosed by a leading and a trailing instance
+    * of the double quote character ("). If this string is already double
+    * quoted, this function does nothing.
+    * \sa DoubleQuoted()
+    */
+   void EnsureDoubleQuoted()
+   {
+      EnsureEnclosed( R::DoubleQuote() );
+   }
+
+   /*!
+    * Returns a duplicate of this string enclosed by double quote characters
+    * ("). If this string is already double quoted, this function returns an
+    * unmodified copy.
+    * \sa EnsureDoubleQuoted()
+    */
+   GenericString DoubleQuoted() const
+   {
+      GenericString s( *this );
+      s.EnsureDoubleQuoted();
+      return s;
+   }
+
+   /*!
     * Unquotes this string.
     *
-    * If the string starts and ends with single quote
-    * characters, the result is the same string with the quotes removed and its
-    * length decremented by two. The same happens if the string starts and ends
-    * with double quote characters.
+    * If the string starts and ends with single quote characters, the result is
+    * the same string with the quotes removed and its length decremented by
+    * two. The same happens if the string starts and ends with double quote
+    * characters.
     *
     * If the string does not start and end with the same quote character, this
     * function has no effect.
@@ -5022,7 +5196,7 @@ bool operator >=( typename GenericString<T,R,A>::char_type c1, const GenericStri
 
 /*!
  * \class IsoString
- * \brief Eight-bit string (ISO/IEC-8859-1 or UTF-8 string).
+ * \brief Eight-bit string (ISO/IEC-8859-1 or UTF-8 string)
  *
  * %IsoString derives from a template instantiation of GenericString for the
  * \c char type. On the PixInsight platform, %IsoString represents a dynamic
@@ -5624,6 +5798,28 @@ public:
    IsoString CenterJustified( size_type width, char_type fill = IsoCharTraits::Blank() ) const
    {
       return string_base::CenterJustified( width, fill );
+   }
+
+   // -------------------------------------------------------------------------
+
+   IsoString Enclosed( char_type c ) const
+   {
+      return string_base::Enclosed( c );
+   }
+
+   IsoString SingleQuoted() const
+   {
+      return string_base::SingleQuoted();
+   }
+
+   IsoString DoubleQuoted() const
+   {
+      return string_base::DoubleQuoted();
+   }
+
+   IsoString Unquoted() const
+   {
+      return string_base::Unquoted();
    }
 
    // -------------------------------------------------------------------------
@@ -6589,10 +6785,33 @@ public:
       return sign*(s1 + (s2 + s3/60)/60);
    }
 
-   template <class S>
-   double SexagesimalToDouble( const S& separator ) const
+   double SexagesimalToDouble( char separator ) const
    {
       return SexagesimalToDouble( IsoString( separator ) );
+   }
+
+   double SexagesimalToDouble( const ustring_base& separator ) const
+   {
+      return SexagesimalToDouble( IsoString( separator ) );
+   }
+
+   /*!
+    * Evaluates this string as a sexagesimal numeric literal representation
+    * with the specified set of \a separators, and returns the result as a
+    * \c double value.
+    *
+    * This function is identical to SexagesimalToDouble( const IsoString& ),
+    * but a set of separator characters is specified as a dynamic array. Any
+    * occurrence of a character contained by \a separators will be valid as a
+    * token separator.
+    *
+    * \sa TrySexagesimalToDouble( double&, const Array<>& )
+    */
+   double SexagesimalToDouble( const Array<char_type>& separators ) const
+   {
+      int sign, s1, s2; double s3;
+      ParseSexagesimal( sign, s1, s2, s3, separators );
+      return sign*(s1 + (s2 + s3/60)/60);
    }
 
    /*!
@@ -6622,10 +6841,36 @@ public:
       return false;
    }
 
-   template <class S>
-   bool TrySexagesimalToDouble( double& value, const S& separator ) const
+   bool TrySexagesimalToDouble( double& value, char separator ) const
    {
       return TrySexagesimalToDouble( value, IsoString( separator ) );
+   }
+
+   bool TrySexagesimalToDouble( double& value, const ustring_base& separator ) const
+   {
+      return TrySexagesimalToDouble( value, IsoString( separator ) );
+   }
+
+   /*!
+    * Attempts to evaluate this string as a sexagesimal numeric literal with
+    * the specified set of \a separators.
+    *
+    * This function is identical to
+    * TrySexagesimalToDouble( double&, const IsoString& ), but a set of
+    * separator characters is specified as a dynamic array. Any occurrence of a
+    * character contained by \a separators will be valid as a token separator.
+    *
+    * \sa SexagesimalToDouble( const Array<>& )
+    */
+   bool TrySexagesimalToDouble( double& value, const Array<char_type>& separators ) const
+   {
+      int sign, s1, s2; double s3;
+      if ( TryParseSexagesimal( sign, s1, s2, s3, separators ) )
+      {
+         value = sign*(s1 + (s2 + s3/60)/60);
+         return true;
+      }
+      return false;
    }
 
    /*!
@@ -6655,11 +6900,30 @@ public:
     */
    void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator = ':' ) const;
 
-   template <class S>
-   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator ) const
+   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, char separator ) const
    {
       ParseSexagesimal( sign, s1, s2, s3, IsoString( separator ) );
    }
+
+   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const ustring_base& separator ) const
+   {
+      ParseSexagesimal( sign, s1, s2, s3, IsoString( separator ) );
+   }
+
+   /*!
+    * Evaluates this string as a sexagesimal numeric literal representation,
+    * using the specified set of \a separators, and stores the resulting
+    * components in the specified \a sign, \a s1, \a s2 and \a s3 variables.
+    *
+    * This function is identical to
+    * ParseSexagesimal( int&, int&, int&, double&, const IsoString& ), but a
+    * set of separator characters is specified as a dynamic array. Any
+    * occurrence of a character contained by \a separators will be valid as a
+    * token separator.
+    *
+    * \sa TryParseSexagesimal( int&, int&, int&, double&, const Array<>& )
+    */
+   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
 
    /*!
     * Attempts to evaluate this string as a sexagesimal numeric literal
@@ -6676,11 +6940,29 @@ public:
     */
    bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator = ':' ) const;
 
-   template <class S>
-   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator ) const
+   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, char separator ) const
    {
       return TryParseSexagesimal( sign, s1, s2, s3, IsoString( separator ) );
    }
+
+   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const ustring_base& separator ) const
+   {
+      return TryParseSexagesimal( sign, s1, s2, s3, IsoString( separator ) );
+   }
+
+   /*!
+    * Attempts to evaluate this string as a sexagesimal numeric literal
+    * representation, using the specified set of \a separators.
+    *
+    * This function is identical to
+    * TryParseSexagesimal( int&, int&, int&, double&, const IsoString& ), but a
+    * set of separator characters is specified as a dynamic array. Any
+    * occurrence of a character contained by \a separators will be valid as a
+    * token separator.
+    *
+    * \sa ParseSexagesimal( int&, int&, int&, double&, const Array<>& )
+    */
+   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
 
    /*!
     * Returns a sexagesimal ASCII representation of the specified components
@@ -7244,7 +7526,7 @@ inline std::ostream& operator <<( std::ostream& o, const IsoString& s )
 
 /*!
  * \class String
- * \brief Unicode (UTF-16) string.
+ * \brief Unicode (UTF-16) string
  *
  * %String derives from an instantiation of GenericString for \c char16_type.
  * It represents a dynamic string of characters in <em>16-bit Unicode
@@ -9323,9 +9605,53 @@ public:
    }
 
    template <class C>
-   size_type Break( C& list, char8_type s, bool trim = false, size_type i = 0 ) const
+   size_type Break( C& list, char_type c, bool trim = false, size_type i = 0 ) const
    {
-      return string_base::Break( list, char_type( s ), trim, i );
+      return string_base::Break( list, c, trim, i );
+   }
+
+   template <class C>
+   size_type Break( C& list, char8_type c, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::Break( list, char_type( c ), trim, i );
+   }
+
+   template <class C, typename S>
+   size_type Break( C& list, const Array<S>& ca, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::Break( list, ca, trim, i );
+   }
+
+   // -------------------------------------------------------------------------
+
+   template <class C>
+   size_type BreakIC( C& list, const String& s, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::BreakIC( list, s, trim, i );
+   }
+
+   template <class C>
+   size_type BreakIC( C& list, const string8_base& s, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::BreakIC( list, String( s ), trim, i );
+   }
+
+   template <class C>
+   size_type BreakIC( C& list, const_c_string8 s, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::BreakIC( list, String( s ), trim, i );
+   }
+
+   template <class C>
+   size_type BreakIC( C& list, char_type c, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::BreakIC( list, c, trim, i );
+   }
+
+   template <class C>
+   size_type BreakIC( C& list, char8_type c, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::BreakIC( list, char_type( c ), trim, i );
    }
 
    // -------------------------------------------------------------------------
@@ -9360,6 +9686,28 @@ public:
    String CenterJustified( size_type width, char_type fill = CharTraits::Blank() ) const
    {
       return string_base::CenterJustified( width, fill );
+   }
+
+   // -------------------------------------------------------------------------
+
+   String Enclosed( char_type c ) const
+   {
+      return string_base::Enclosed( c );
+   }
+
+   String SingleQuoted() const
+   {
+      return string_base::SingleQuoted();
+   }
+
+   String DoubleQuoted() const
+   {
+      return string_base::DoubleQuoted();
+   }
+
+   String Unquoted() const
+   {
+      return string_base::Unquoted();
    }
 
    // -------------------------------------------------------------------------
@@ -10565,10 +10913,23 @@ public:
       return sign*(s1 + (s2 + s3/60)/60);
    }
 
-   template <class S>
-   double SexagesimalToDouble( const S& separator ) const
+   /*!
+    * Evaluates this string as a sexagesimal numeric literal representation
+    * with the specified set of \a separators, and returns the result as a
+    * \c double value.
+    *
+    * This function is identical to SexagesimalToDouble( const String& ), but a
+    * set of separator characters is specified as a dynamic array. Any
+    * occurrence of a character contained by \a separators will be valid as a
+    * token separator.
+    *
+    * \sa TrySexagesimalToDouble( double&, const Array<>& )
+    */
+   double SexagesimalToDouble( const Array<char_type>& separators ) const
    {
-      return SexagesimalToDouble( String( separator ) );
+      int sign, s1, s2; double s3;
+      ParseSexagesimal( sign, s1, s2, s3, separators );
+      return sign*(s1 + (s2 + s3/60)/60);
    }
 
    /*!
@@ -10598,10 +10959,26 @@ public:
       return false;
    }
 
-   template <class S>
-   bool TrySexagesimalToDouble( double& value, const S& separator ) const
+   /*!
+    * Attempts to evaluate this string as a sexagesimal numeric literal with
+    * the specified set of \a separators.
+    *
+    * This function is identical to
+    * TrySexagesimalToDouble( double&, const String& ), but a set of separator
+    * characters is specified as a dynamic array. Any occurrence of a character
+    * contained by \a separators will be valid as a token separator.
+    *
+    * \sa SexagesimalToDouble( const Array<>& )
+    */
+   bool TrySexagesimalToDouble( double& value, const Array<char_type>& separators ) const
    {
-      return TrySexagesimalToDouble( value, String( separator ) );
+      int sign, s1, s2; double s3;
+      if ( TryParseSexagesimal( sign, s1, s2, s3, separators ) )
+      {
+         value = sign*(s1 + (s2 + s3/60)/60);
+         return true;
+      }
+      return false;
    }
 
    /*!
@@ -10631,11 +11008,20 @@ public:
     */
    void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const String& separator = ':' ) const;
 
-   template <class S>
-   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator ) const
-   {
-      ParseSexagesimal( sign, s1, s2, s3, String( separator ) );
-   }
+   /*!
+    * Evaluates this string as a sexagesimal numeric literal representation,
+    * using the specified set of \a separators, and stores the resulting
+    * components in the specified \a sign, \a s1, \a s2 and \a s3 variables.
+    *
+    * This function is identical to
+    * ParseSexagesimal( int&, int&, int&, double&, const String& ), but a set
+    * of separator characters is specified as a dynamic array. Any occurrence
+    * of a character contained by \a separators will be valid as a token
+    * separator.
+    *
+    * \sa TryParseSexagesimal( int&, int&, int&, double&, const Array<>& )
+    */
+   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
 
    /*!
     * Attempts to evaluate this string as a sexagesimal numeric literal
@@ -10652,11 +11038,19 @@ public:
     */
    bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const String& separator = ':' ) const;
 
-   template <class S>
-   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator ) const
-   {
-      return TryParseSexagesimal( sign, s1, s2, s3, String( separator ) );
-   }
+   /*!
+    * Attempts to evaluate this string as a sexagesimal numeric literal
+    * representation, using the specified set of \a separators.
+    *
+    * This function is identical to
+    * TryParseSexagesimal( int&, int&, int&, double&, const String& ), but a
+    * set of separator characters is specified as a dynamic array. Any
+    * occurrence of a character contained by \a separators will be valid as a
+    * token separator.
+    *
+    * \sa ParseSexagesimal( int&, int&, int&, double&, const Array<>& )
+    */
+   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
 
    /*!
     * Returns a sexagesimal ASCII representation of the specified components
@@ -12096,4 +12490,4 @@ inline std::ostream& operator <<( std::ostream& o, const String& s )
 #endif   // __PCL_String_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.h - Released 2017-05-28T08:28:50Z
+// EOF pcl/String.h - Released 2017-06-17T10:55:43Z

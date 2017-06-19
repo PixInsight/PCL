@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0841
 // ----------------------------------------------------------------------------
-// pcl/Cryptography.h - Released 2017-05-28T08:28:50Z
+// pcl/Cryptography.h - Released 2017-06-17T10:55:43Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -697,8 +697,8 @@ public:
       }
    }
 
-   template <class S>
-   CryptographicHashFactory( S algorithmName ) : CryptographicHashFactory( IsoString( algorithmName ) )
+   CryptographicHashFactory( const IsoString::ustring_base& algorithmName ) :
+      CryptographicHashFactory( IsoString( algorithmName ) )
    {
    }
 
@@ -1113,4 +1113,4 @@ private:
 #endif   // __PCL_Cryptography_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Cryptography.h - Released 2017-05-28T08:28:50Z
+// EOF pcl/Cryptography.h - Released 2017-06-17T10:55:43Z

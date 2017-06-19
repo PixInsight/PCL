@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0291
+// Standard ImageCalibration Process Module Version 01.04.00.0300
 // ----------------------------------------------------------------------------
-// SuperbiasInstance.cpp - Released 2017-05-02T09:43:00Z
+// SuperbiasInstance.cpp - Released 2017-05-17T17:41:56Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -69,28 +69,30 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 SuperbiasInstance::SuperbiasInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-p_columns( TheSBColumnsParameter->DefaultValue() ),
-p_rows( TheSBRowsParameter->DefaultValue() ),
-p_medianTransform( TheSBMedianTransformParameter->DefaultValue() ),
-p_excludeLargeScale( TheSBExcludeLargeScaleParameter->DefaultValue() ),
-p_multiscaleLayers( TheSBMultiscaleLayersParameter->DefaultValue() ),
-p_trimmingFactor( TheSBTrimmingFactorParameter->DefaultValue() ),
-o_superbiasViewId(),
-o_superbiasViewId1()
+   ProcessImplementation( m ),
+   p_columns( TheSBColumnsParameter->DefaultValue() ),
+   p_rows( TheSBRowsParameter->DefaultValue() ),
+   p_medianTransform( TheSBMedianTransformParameter->DefaultValue() ),
+   p_excludeLargeScale( TheSBExcludeLargeScaleParameter->DefaultValue() ),
+   p_multiscaleLayers( TheSBMultiscaleLayersParameter->DefaultValue() ),
+   p_trimmingFactor( TheSBTrimmingFactorParameter->DefaultValue() )
 {
 }
 
+// ----------------------------------------------------------------------------
+
 SuperbiasInstance::SuperbiasInstance( const SuperbiasInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
 
+// ----------------------------------------------------------------------------
+
 void SuperbiasInstance::Assign( const ProcessImplementation& p )
 {
    const SuperbiasInstance* x = dynamic_cast<const SuperbiasInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       p_columns = x->p_columns;
       p_rows = x->p_rows;
@@ -103,10 +105,14 @@ void SuperbiasInstance::Assign( const ProcessImplementation& p )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool SuperbiasInstance::IsHistoryUpdater( const View& v ) const
 {
    return false;
 }
+
+// ----------------------------------------------------------------------------
 
 bool SuperbiasInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) const
 {
@@ -115,9 +121,10 @@ bool SuperbiasInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) co
       whyNot = "Superbias cannot be executed on complex images.";
       return false;
    }
-
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool SuperbiasInstance::ExecuteOn( View& view )
 {
@@ -277,6 +284,8 @@ bool SuperbiasInstance::ExecuteOn( View& view )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void SuperbiasInstance::CreateKeywords( ImageWindow& resultWindow, const ImageWindow& sourceWindow, bool columns )
 {
    FITSKeywordArray keywords;
@@ -304,6 +313,8 @@ void SuperbiasInstance::CreateKeywords( ImageWindow& resultWindow, const ImageWi
    resultWindow.SetKeywords( keywords );
 }
 
+// ----------------------------------------------------------------------------
+
 void* SuperbiasInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
 {
    if ( p == TheSBColumnsParameter )
@@ -322,8 +333,11 @@ void* SuperbiasInstance::LockParameter( const MetaParameter* p, size_type /*tabl
       return o_superbiasViewId.Begin();
    if ( p == TheSBSuperbiasViewId1Parameter )
       return o_superbiasViewId1.Begin();
-   return 0;
+
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool SuperbiasInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type/*tableRow*/ )
 {
@@ -345,12 +359,15 @@ bool SuperbiasInstance::AllocateParameter( size_type sizeOrLength, const MetaPar
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 size_type SuperbiasInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
    if ( p == TheSBSuperbiasViewIdParameter )
       return o_superbiasViewId.Length();
    if ( p == TheSBSuperbiasViewId1Parameter )
       return o_superbiasViewId1.Length();
+
    return 0;
 }
 
@@ -359,4 +376,4 @@ size_type SuperbiasInstance::ParameterLength( const MetaParameter* p, size_type 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SuperbiasInstance.cpp - Released 2017-05-02T09:43:00Z
+// EOF SuperbiasInstance.cpp - Released 2017-05-17T17:41:56Z

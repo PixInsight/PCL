@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0841
 // ----------------------------------------------------------------------------
-// pcl/String.cpp - Released 2017-05-28T08:29:05Z
+// pcl/String.cpp - Released 2017-06-17T10:55:56Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -1694,8 +1694,8 @@ IsoString& IsoString::ToDecodedHTMLSpecialChars()
 
 // ----------------------------------------------------------------------------
 
-template <class T> static
-void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const T& separator, const T& str )
+template <class T, class S> static
+void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator, const T& str )
 {
    try
    {
@@ -1757,15 +1757,25 @@ void String::ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const St
    pcl::ParseSexagesimal( sign, s1, s2, s3, separator, *this );
 }
 
+void String::ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const
+{
+   pcl::ParseSexagesimal( sign, s1, s2, s3, separators, *this );
+}
+
 void IsoString::ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator ) const
 {
    pcl::ParseSexagesimal( sign, s1, s2, s3, separator, *this );
 }
 
+void IsoString::ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const
+{
+   pcl::ParseSexagesimal( sign, s1, s2, s3, separators, *this );
+}
+
 // ----------------------------------------------------------------------------
 
-template <class T> static
-bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const T& separator, const T& str )
+template <class T, class S> static
+bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator, const T& str )
 {
    Array<T> tokens;
    str.Break( tokens, separator, true/*trim*/ );
@@ -1827,9 +1837,19 @@ bool String::TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const
    return pcl::TryParseSexagesimal( sign, s1, s2, s3, separator, *this );
 }
 
+bool String::TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const
+{
+   return pcl::TryParseSexagesimal( sign, s1, s2, s3, separators, *this );
+}
+
 bool IsoString::TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator ) const
 {
    return pcl::TryParseSexagesimal( sign, s1, s2, s3, separator, *this );
+}
+
+bool IsoString::TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const
+{
+   return pcl::TryParseSexagesimal( sign, s1, s2, s3, separators, *this );
 }
 
 // ----------------------------------------------------------------------------
@@ -2345,4 +2365,4 @@ IsoString IsoString::CurrentLocalISO8601DateTime( const ISO8601ConversionOptions
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.cpp - Released 2017-05-28T08:29:05Z
+// EOF pcl/String.cpp - Released 2017-06-17T10:55:56Z

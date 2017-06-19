@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0291
+// Standard ImageCalibration Process Module Version 01.04.00.0300
 // ----------------------------------------------------------------------------
-// ImageCalibrationProcess.cpp - Released 2017-05-02T09:43:00Z
+// ImageCalibrationProcess.cpp - Released 2017-05-17T17:41:56Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -60,7 +60,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ImageCalibrationProcess* TheImageCalibrationProcess = 0;
+ImageCalibrationProcess* TheImageCalibrationProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -164,7 +164,6 @@ uint32 ImageCalibrationProcess::Version() const
 String ImageCalibrationProcess::Description() const
 {
    return
-
    "";
 }
 
@@ -194,7 +193,7 @@ ProcessImplementation* ImageCalibrationProcess::Create() const
 ProcessImplementation* ImageCalibrationProcess::Clone( const ProcessImplementation& p ) const
 {
    const ImageCalibrationInstance* instPtr = dynamic_cast<const ImageCalibrationInstance*>( &p );
-   return (instPtr != 0) ? new ImageCalibrationInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new ImageCalibrationInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -202,4 +201,4 @@ ProcessImplementation* ImageCalibrationProcess::Clone( const ProcessImplementati
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationProcess.cpp - Released 2017-05-02T09:43:00Z
+// EOF ImageCalibrationProcess.cpp - Released 2017-05-17T17:41:56Z

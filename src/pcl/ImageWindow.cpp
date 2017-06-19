@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0841
 // ----------------------------------------------------------------------------
-// pcl/ImageWindow.cpp - Released 2017-05-28T08:29:05Z
+// pcl/ImageWindow.cpp - Released 2017-06-17T10:55:56Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -1159,4 +1159,4 @@ Array<ImageWindow> ImageWindow::AllWindows( bool includeIconicWindows )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageWindow.cpp - Released 2017-05-28T08:29:05Z
+// EOF pcl/ImageWindow.cpp - Released 2017-06-17T10:55:56Z

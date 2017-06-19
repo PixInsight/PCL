@@ -2,7 +2,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-05-02T09:41:03.753Z
+# Generated on .... 2017-06-07T15:42:56.332Z
 # Project id ...... ImageCalibration
 # Project type .... Module
 # Platform ........ FreeBSD/g++
@@ -28,6 +28,10 @@ SRC_FILES= \
 ../../ImageCalibrationModule.cpp \
 ../../ImageCalibrationParameters.cpp \
 ../../ImageCalibrationProcess.cpp \
+../../LocalNormalizationInstance.cpp \
+../../LocalNormalizationInterface.cpp \
+../../LocalNormalizationParameters.cpp \
+../../LocalNormalizationProcess.cpp \
 ../../SuperbiasInstance.cpp \
 ../../SuperbiasInterface.cpp \
 ../../SuperbiasParameters.cpp \
@@ -47,6 +51,10 @@ OBJ_FILES= \
 ./x64/Release/ImageCalibrationModule.o \
 ./x64/Release/ImageCalibrationParameters.o \
 ./x64/Release/ImageCalibrationProcess.o \
+./x64/Release/LocalNormalizationInstance.o \
+./x64/Release/LocalNormalizationInterface.o \
+./x64/Release/LocalNormalizationParameters.o \
+./x64/Release/LocalNormalizationProcess.o \
 ./x64/Release/SuperbiasInstance.o \
 ./x64/Release/SuperbiasInterface.o \
 ./x64/Release/SuperbiasParameters.o \
@@ -66,6 +74,10 @@ DEP_FILES= \
 ./x64/Release/ImageCalibrationModule.d \
 ./x64/Release/ImageCalibrationParameters.d \
 ./x64/Release/ImageCalibrationProcess.d \
+./x64/Release/LocalNormalizationInstance.d \
+./x64/Release/LocalNormalizationInterface.d \
+./x64/Release/LocalNormalizationParameters.d \
+./x64/Release/LocalNormalizationProcess.d \
 ./x64/Release/SuperbiasInstance.d \
 ./x64/Release/SuperbiasInterface.d \
 ./x64/Release/SuperbiasParameters.d \

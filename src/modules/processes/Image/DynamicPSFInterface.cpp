@@ -2365,8 +2365,7 @@ void DynamicPSFInterface::PSFCollection::UpdateImageScale( pcl_enum scaleMode, f
 
       case DPScaleMode::StandardKeywords:
          {
-            FITSKeywordArray keywords;
-            view.Window().GetKeywords( keywords );
+            FITSKeywordArray keywords = view.Window().Keywords();
             double focalLength = KeywordValue( keywords, "FOCALLEN" ); // mm
             double xPixSize = KeywordValue( keywords, "XPIXSZ" ); // um
             double yPixSize = KeywordValue( keywords, "YPIXSZ" ); // um

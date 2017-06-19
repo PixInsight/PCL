@@ -132,7 +132,7 @@ CoordinateSearchDialog::CoordinateSearchDialog() :
          "}"
       ) );
    SearchInfo_TextBox.Restyle();
-   SearchInfo_TextBox.SetScaledMinSize( SearchInfo_TextBox.Font().Width( 'm' )*81, SearchInfo_TextBox.Font().Height()*22 );
+   SearchInfo_TextBox.SetMinSize( SearchInfo_TextBox.Font().Width( 'm' )*81, SearchInfo_TextBox.Font().Height()*22 );
 
    Get_Button.SetText( "Get" );
    Get_Button.SetIcon( ScaledResource( ":/icons/window-import.png" ) );

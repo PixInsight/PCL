@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0841
 // ----------------------------------------------------------------------------
-// pcl/GlobalSettings.h - Released 2017-05-28T08:28:50Z
+// pcl/GlobalSettings.h - Released 2017-06-17T10:55:43Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -164,7 +164,9 @@ namespace GlobalVariableType
  * <tr><td>MainWindow/ConfirmProgramTermination</td><td></td></tr>
  * <tr><td>MainWindow/DesktopSettingsAware</td><td></td></tr>
  * <tr><td>MainWindow/DoubleClickLaunchesOpenDialog</td><td></td></tr>
- * <tr><td>MainWindow/ExpandUsageItemsAtStartup</td><td></td></tr>
+ * <tr><td>MainWindow/ExpandFavoritesAtStartup</td><td></td></tr>
+ * <tr><td>MainWindow/ExpandMostUsedAtStartup</td><td></td></tr>
+ * <tr><td>MainWindow/ExpandRecentlyUsedAtStartup</td><td></td></tr>
  * <tr><td>MainWindow/ExplodeIcons</td><td></td></tr>
  * <tr><td>MainWindow/FadeAutoHideWindows</td><td></td></tr>
  * <tr><td>MainWindow/FadeMenu</td><td></td></tr>
@@ -177,6 +179,7 @@ namespace GlobalVariableType
  * <tr><td>MainWindow/MaximizeAtStartup</td><td></td></tr>
  * <tr><td>MainWindow/NativeMenuBar</td><td></td></tr>
  * <tr><td>MainWindow/OpenURLsWithInternalBrowser</td><td></td></tr>
+ * <tr><td>MainWindow/ShowFavorites</td><td></td></tr>
  * <tr><td>MainWindow/ShowMostUsed</td><td></td></tr>
  * <tr><td>MainWindow/ShowRecentlyUsed</td><td></td></tr>
  * <tr><td>MainWindow/ShowSplashAtStartup</td><td></td></tr>
@@ -185,6 +188,7 @@ namespace GlobalVariableType
  * <tr><td>MainWindow/TranslucentAutoHideWindows</td><td></td></tr>
  * <tr><td>MainWindow/TranslucentChildWindows</td><td></td></tr>
  * <tr><td>MainWindow/TranslucentWindows</td><td></td></tr>
+ * <tr><td>MainWindow/UseWallpapers</td><td></td></tr>
  * <tr><td>MainWindow/WindowButtonsOnTheLeft</td><td></td></tr>
  * <tr><td>Process/AlertOnProcessCompleted</td><td></td></tr>
  * <tr><td>Process/BackupFiles</td><td></td></tr>
@@ -212,7 +216,8 @@ namespace GlobalVariableType
  * <tr><td>ImageWindow/FastScreenRenditionThreshold</td><td>In MiB.</td></tr>
  * <tr><td>ImageWindow/ImageThumbnailSize</td><td>In image pixels.</td></tr>
  * <tr><td>ImageWindow/ProjectThumbnailSize</td><td>In image pixels.</td></tr>
- * <tr><td>ImageWindow/WheelStepAngle</td><td>In degrees.</td></tr>
+ * <tr><td>ImageWindow/WheelStepAngle</td><td>In degrees, unsigned.</td></tr>
+ * <tr><td>ImageWindow/WheelDirection</td><td>When >= 0, rotating forward zooms out. When < 0, rotating forward zooms in.</td></tr>
  * <tr><td>MainWindow/MaxRecentFiles</td><td>Maximum length of recent file menu lists.</td></tr>
  * <tr><td>Process/AutoSavePSMPeriod</td><td>In seconds.</td></tr>
  * <tr><td>Process/ConsoleDelay</td><td>In milliseconds.</td></tr>
@@ -306,6 +311,16 @@ namespace GlobalVariableType
  * <tr><td>ImageWindow/DownloadsDirectory</td><td>Full path to the core downloads directory.</td></tr>
  * <tr><td>ImageWindow/NewImageCaption</td><td>Window title token for signaling newly created images.</td></tr>
  * <tr><td>ImageWindow/Prefix</td><td>Prefix used for automatically generated image identifiers.</td></tr>
+ * <tr><td>MainWindow/WallpaperFile01</td><td>Core workspace wallpaper file #1.</td></tr>
+ * <tr><td>MainWindow/WallpaperFile02</td><td>Core workspace wallpaper file #2.</td></tr>
+ * <tr><td>MainWindow/WallpaperFile03</td><td>Core workspace wallpaper file #3.</td></tr>
+ * <tr><td>MainWindow/WallpaperFile04</td><td>Core workspace wallpaper file #4.</td></tr>
+ * <tr><td>MainWindow/WallpaperFile05</td><td>Core workspace wallpaper file #5.</td></tr>
+ * <tr><td>MainWindow/WallpaperFile06</td><td>Core workspace wallpaper file #6.</td></tr>
+ * <tr><td>MainWindow/WallpaperFile07</td><td>Core workspace wallpaper file #7.</td></tr>
+ * <tr><td>MainWindow/WallpaperFile08</td><td>Core workspace wallpaper file #8.</td></tr>
+ * <tr><td>MainWindow/WallpaperFile09</td><td>Core workspace wallpaper file #9.</td></tr>
+ * <tr><td>MainWindow/WallpaperFile10</td><td>Core workspace wallpaper file #10.</td></tr>
  * <tr><td>Preview/Prefix</td><td>Prefix used for automatically generated preview identifiers.</td></tr>
  * <tr><td>ProcessIcon/Prefix</td><td>Prefix used for automatically generated process icon identifiers.</td></tr>
  * <tr><td>View/BrokenLinkText</td><td>Text fragment used to signal broken image and/or process relations, such as missing masks.</td></tr>
@@ -470,4 +485,4 @@ public:
 #endif   // __PCL_GlobalSettings_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/GlobalSettings.h - Released 2017-05-28T08:28:50Z
+// EOF pcl/GlobalSettings.h - Released 2017-06-17T10:55:43Z

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0841
 // ----------------------------------------------------------------------------
-// pcl/ProcessParameter.h - Released 2017-05-28T08:28:50Z
+// pcl/ProcessParameter.h - Released 2017-06-17T10:55:43Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -248,8 +248,7 @@ public:
     */
    ProcessParameter( const Process& process, const IsoString& paramId );
 
-   template <class S>
-   ProcessParameter( const Process& process, const S& paramId ) :
+   ProcessParameter( const Process& process, const IsoString::ustring_base& paramId ) :
       ProcessParameter( process, IsoString( paramId ) )
    {
    }
@@ -279,8 +278,7 @@ public:
     */
    ProcessParameter( const ProcessParameter& table, const IsoString& colId );
 
-   template <class S>
-   ProcessParameter( const ProcessParameter& table, const S& colId ) :
+   ProcessParameter( const ProcessParameter& table, const IsoString::ustring_base& colId ) :
       ProcessParameter( table, IsoString( colId ) )
    {
    }
@@ -694,4 +692,4 @@ private:
 #endif   // __PCL_ProcessParameter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessParameter.h - Released 2017-05-28T08:28:50Z
+// EOF pcl/ProcessParameter.h - Released 2017-06-17T10:55:43Z

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0841
 // ----------------------------------------------------------------------------
-// pcl/ImageWindow.h - Released 2017-05-28T08:28:50Z
+// pcl/ImageWindow.h - Released 2017-06-17T10:55:43Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -369,11 +369,10 @@ public:
                 bool initialProcessing = true,
                 const IsoString& id = IsoString() );
 
-   template <class S>
    ImageWindow( int width, int height, int numberOfChannels,
                 int bitsPerSample, bool floatSample, bool color,
                 bool initialProcessing,
-                const S& id ) :
+                const IsoString::ustring_base& id ) :
       ImageWindow( width, height, numberOfChannels, bitsPerSample, floatSample, color, initialProcessing, IsoString( id ) )
    {
    }
@@ -695,8 +694,7 @@ public:
     */
    View PreviewById( const IsoString& previewId ) const;
 
-   template <class S>
-   View PreviewById( const S& previewId ) const
+   View PreviewById( const IsoString::ustring_base& previewId ) const
    {
       return PreviewById( IsoString( previewId ) );
    }
@@ -711,8 +709,7 @@ public:
       return !IsNull() && !PreviewById( previewId ).IsNull();
    }
 
-   template <class S>
-   bool PreviewExists( const S& previewId ) const
+   bool PreviewExists( const IsoString::ustring_base& previewId ) const
    {
       return PreviewExists( IsoString( previewId ) );
    }
@@ -747,8 +744,7 @@ public:
       View v( PreviewById( previewId ) ), SelectPreview( v );
    }
 
-   template <class S>
-   void SelectPreview( const S& previewId )
+   void SelectPreview( const IsoString::ustring_base& previewId )
    {
       SelectPreview( IsoString( previewId ) );
    }
@@ -766,8 +762,7 @@ public:
       return CreatePreview( r.x0, r.y0, r.x1, r.y1, previewId );
    }
 
-   template <class S>
-   View CreatePreview( const Rect& r, const S& previewId )
+   View CreatePreview( const Rect& r, const IsoString::ustring_base& previewId )
    {
       return CreatePreview( r, IsoString( previewId ) );
    }
@@ -793,8 +788,7 @@ public:
     */
    View CreatePreview( int x0, int y0, int x1, int y1, const IsoString& previewId = IsoString() );
 
-   template <class S>
-   View CreatePreview( int x0, int y0, int x1, int y1, const S& previewId )
+   View CreatePreview( int x0, int y0, int x1, int y1, const IsoString::ustring_base& previewId )
    {
       return CreatePreview( x0, y0, x1, y1, IsoString( previewId ) );
    }
@@ -812,14 +806,12 @@ public:
       ModifyPreview( previewId, r.x0, r.y0, r.x1, r.y1, newId );
    }
 
-   template <class S>
-   void ModifyPreview( const S& previewId, const Rect& r )
+   void ModifyPreview( const IsoString::ustring_base& previewId, const Rect& r )
    {
       ModifyPreview( IsoString( previewId ), r );
    }
 
-   template <class S1, class S2>
-   void ModifyPreview( const S1& previewId, const Rect& r, const S2& newId )
+   void ModifyPreview( const IsoString::ustring_base& previewId, const Rect& r, const IsoString::ustring_base& newId )
    {
       ModifyPreview( IsoString( previewId ), r, IsoString( newId ) );
    }
@@ -846,17 +838,16 @@ public:
     * The preview rectangle must define a rectangular area of at least one
     * pixel, completely included in the boundaries of the image in this window.
     */
-   void ModifyPreview( const IsoString& previewId,
-                       int x0, int y0, int x1, int y1, const IsoString& newId = IsoString() );
+   void ModifyPreview( const IsoString& previewId, int x0, int y0, int x1, int y1,
+                       const IsoString& newId = IsoString() );
 
-   template <class S>
-   void ModifyPreview( const S& previewId, int x0, int y0, int x1, int y1 )
+   void ModifyPreview( const IsoString::ustring_base& previewId, int x0, int y0, int x1, int y1 )
    {
       ModifyPreview( IsoString( previewId ), x0, y0, x1, y1 );
    }
 
-   template <class S1, class S2>
-   void ModifyPreview( const S1& previewId, int x0, int y0, int x1, int y1, const S2& newId )
+   void ModifyPreview( const IsoString::ustring_base& previewId, int x0, int y0, int x1, int y1,
+                       const IsoString::ustring_base& newId )
    {
       ModifyPreview( IsoString( previewId ), x0, y0, x1, y1, IsoString( newId ) );
    }
@@ -870,8 +861,7 @@ public:
     */
    Rect PreviewRect( const IsoString& previewId ) const;
 
-   template <class S>
-   Rect PreviewRect( const S& previewId ) const
+   Rect PreviewRect( const IsoString::ustring_base& previewId ) const
    {
       return PreviewRect( IsoString( previewId ) );
    }
@@ -887,8 +877,7 @@ public:
     */
    void DeletePreview( const IsoString& previewId );
 
-   template <class S>
-   void DeletePreview( const S& previewId )
+   void DeletePreview( const IsoString::ustring_base& previewId )
    {
       DeletePreview( IsoString( previewId ) );
    }
@@ -2755,8 +2744,7 @@ public:
     */
    static ImageWindow WindowById( const IsoString& id );
 
-   template <class S>
-   static ImageWindow WindowById( const S& id )
+   static ImageWindow WindowById( const IsoString::ustring_base& id )
    {
       return WindowById( IsoString( id ) );
    }
@@ -2810,4 +2798,4 @@ private:
 #endif   // __PCL_ImageWindow_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageWindow.h - Released 2017-05-28T08:28:50Z
+// EOF pcl/ImageWindow.h - Released 2017-06-17T10:55:43Z

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0841
 // ----------------------------------------------------------------------------
-// pcl/FileFormatInstance.h - Released 2017-05-28T08:28:50Z
+// pcl/FileFormatInstance.h - Released 2017-06-17T10:55:43Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -208,8 +208,7 @@ public:
    bool Open( ImageDescriptionArray& images,
               const String& filePath, const IsoString& hints = IsoString() );
 
-   template <class S>
-   bool Open( ImageDescriptionArray& images, const String& filePath, const S& hints )
+   bool Open( ImageDescriptionArray& images, const String& filePath, const IsoString::ustring_base& hints )
    {
       return Open( images, filePath, IsoString( hints ) );
    }
@@ -390,8 +389,7 @@ public:
       return Properties().Contains( property );
    }
 
-   template <class S>
-   bool HasProperty( const S& property )
+   bool HasProperty( const IsoString::ustring_base& property )
    {
       return HasProperty( IsoString( property ) );
    }
@@ -420,8 +418,7 @@ public:
       return *i;
    }
 
-   template <class S>
-   pcl::PropertyDescription PropertyDescription( const S& property )
+   pcl::PropertyDescription PropertyDescription( const IsoString::ustring_base& property )
    {
       return PropertyDescription( IsoString( property ) );
    }
@@ -444,8 +441,7 @@ public:
     */
    Variant ReadProperty( const IsoString& property );
 
-   template <class S>
-   Variant ReadProperty( const S& property )
+   Variant ReadProperty( const IsoString::ustring_base& property )
    {
       return ReadProperty( IsoString( property ) );
    }
@@ -498,8 +494,7 @@ public:
       return ImageProperties().Contains( property );
    }
 
-   template <class S>
-   bool HasImageProperty( const S& property )
+   bool HasImageProperty( const IsoString::ustring_base& property )
    {
       return HasImageProperty( IsoString( property ) );
    }
@@ -523,8 +518,7 @@ public:
       return *i;
    }
 
-   template <class S>
-   pcl::PropertyDescription ImagePropertyDescription( const S& property )
+   pcl::PropertyDescription ImagePropertyDescription( const IsoString::ustring_base& property )
    {
       return ImagePropertyDescription( IsoString( property ) );
    }
@@ -542,8 +536,7 @@ public:
     */
    Variant ReadImageProperty( const IsoString& property );
 
-   template <class S>
-   Variant ReadImageProperty( const S& property )
+   Variant ReadImageProperty( const IsoString::ustring_base& property )
    {
       return ReadImageProperty( IsoString( property ) );
    }
@@ -752,8 +745,7 @@ public:
     */
    bool Create( const String& filePath, const IsoString& hints = IsoString(), int numberOfImages = 1 );
 
-   template <class S>
-   bool Create( const String& filePath, const S& hints, int numberOfImages = 1 )
+   bool Create( const String& filePath, const IsoString::ustring_base& hints, int numberOfImages = 1 )
    {
       return Create( filePath, IsoString( hints ), numberOfImages );
    }
@@ -770,8 +762,7 @@ public:
     */
    bool SetId( const IsoString& id );
 
-   template <class S>
-   bool SetId( const S& id )
+   bool SetId( const IsoString::ustring_base& id )
    {
       return SetId( IsoString( id ) );
    }
@@ -891,8 +882,7 @@ public:
     */
    bool WriteProperty( const IsoString& property, const Variant& value );
 
-   template <class S>
-   bool WriteProperty( const S& property, const Variant& value )
+   bool WriteProperty( const IsoString::ustring_base& property, const Variant& value )
    {
       return WriteProperty( IsoString( property ), value );
    }
@@ -941,8 +931,7 @@ public:
     */
    bool WriteImageProperty( const IsoString& property, const Variant& value );
 
-   template <class S>
-   bool WriteImageProperty( const S& property, const Variant& value )
+   bool WriteImageProperty( const IsoString::ustring_base& property, const Variant& value )
    {
       return WriteImageProperty( IsoString( property ), value );
    }
@@ -1156,4 +1145,4 @@ private:
 #endif   // __PCL_FileFormatInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormatInstance.h - Released 2017-05-28T08:28:50Z
+// EOF pcl/FileFormatInstance.h - Released 2017-06-17T10:55:43Z

@@ -117,11 +117,15 @@ DebayerInstance::DebayerInstance( const MetaProcess* m ) :
 {
 }
 
+// ----------------------------------------------------------------------------
+
 DebayerInstance::DebayerInstance( const DebayerInstance& x ) :
    ProcessImplementation( x )
 {
    Assign( x );
 }
+
+// ----------------------------------------------------------------------------
 
 void DebayerInstance::Assign( const ProcessImplementation& p )
 {
@@ -141,6 +145,8 @@ void DebayerInstance::Assign( const ProcessImplementation& p )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool DebayerInstance::CanExecuteOn( const View& view, String& whyNot ) const
 {
    if ( view.Image().IsComplexSample() )
@@ -150,6 +156,13 @@ bool DebayerInstance::CanExecuteOn( const View& view, String& whyNot ) const
    else
       return true;
 
+   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+bool DebayerInstance::IsHistoryUpdater( const View& ) const
+{
    return false;
 }
 

@@ -77,10 +77,10 @@ void ExtractCIELAction::Execute()
 {
    ChannelExtractionInstance instance( TheChannelExtractionProcess );
 
-   instance.colorSpace = ColorSpaceId::CIELab;
-   instance.channelEnabled[0] = true;
-   instance.channelEnabled[1] = false;
-   instance.channelEnabled[2] = false;
+   instance.p_colorSpace = ColorSpaceId::CIELab;
+   instance.p_channelEnabled[0] = true;
+   instance.p_channelEnabled[1] = false;
+   instance.p_channelEnabled[2] = false;
 
    instance.LaunchOnCurrentView();
 }

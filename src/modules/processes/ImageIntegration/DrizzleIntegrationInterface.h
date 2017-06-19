@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.14.00.0390
+// Standard ImageIntegration Process Module Version 01.15.00.0398
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInterface.h - Released 2017-05-02T09:43:00Z
+// DrizzleIntegrationInterface.h - Released 2017-05-05T08:37:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -217,4 +217,4 @@ PCL_END_LOCAL
 #endif   // __DrizzleIntegrationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInterface.h - Released 2017-05-02T09:43:00Z
+// EOF DrizzleIntegrationInterface.h - Released 2017-05-05T08:37:32Z

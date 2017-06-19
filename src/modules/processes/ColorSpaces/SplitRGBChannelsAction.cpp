@@ -80,10 +80,10 @@ void SplitRGBChannelsAction::Execute()
 {
    ChannelExtractionInstance instance( TheChannelExtractionProcess );
 
-   instance.colorSpace = ColorSpaceId::RGB;
-   instance.channelEnabled[0] = true;
-   instance.channelEnabled[1] = true;
-   instance.channelEnabled[2] = true;
+   instance.p_colorSpace = ColorSpaceId::RGB;
+   instance.p_channelEnabled[0] = true;
+   instance.p_channelEnabled[1] = true;
+   instance.p_channelEnabled[2] = true;
 
    instance.LaunchOnCurrentView();
 }
@@ -105,10 +105,10 @@ void ExtractRedChannelAction::Execute()
 {
    ChannelExtractionInstance instance( TheChannelExtractionProcess );
 
-   instance.colorSpace = ColorSpaceId::RGB;
-   instance.channelEnabled[0] = true;
-   instance.channelEnabled[1] = false;
-   instance.channelEnabled[2] = false;
+   instance.p_colorSpace = ColorSpaceId::RGB;
+   instance.p_channelEnabled[0] = true;
+   instance.p_channelEnabled[1] = false;
+   instance.p_channelEnabled[2] = false;
 
    instance.LaunchOnCurrentView();
 }
@@ -130,10 +130,10 @@ void ExtractGreenChannelAction::Execute()
 {
    ChannelExtractionInstance instance( TheChannelExtractionProcess );
 
-   instance.colorSpace = ColorSpaceId::RGB;
-   instance.channelEnabled[0] = false;
-   instance.channelEnabled[1] = true;
-   instance.channelEnabled[2] = false;
+   instance.p_colorSpace = ColorSpaceId::RGB;
+   instance.p_channelEnabled[0] = false;
+   instance.p_channelEnabled[1] = true;
+   instance.p_channelEnabled[2] = false;
 
    instance.LaunchOnCurrentView();
 }
@@ -155,10 +155,10 @@ void ExtractBlueChannelAction::Execute()
 {
    ChannelExtractionInstance instance( TheChannelExtractionProcess );
 
-   instance.colorSpace = ColorSpaceId::RGB;
-   instance.channelEnabled[0] = false;
-   instance.channelEnabled[1] = false;
-   instance.channelEnabled[2] = true;
+   instance.p_colorSpace = ColorSpaceId::RGB;
+   instance.p_channelEnabled[0] = false;
+   instance.p_channelEnabled[1] = false;
+   instance.p_channelEnabled[2] = true;
 
    instance.LaunchOnCurrentView();
 }

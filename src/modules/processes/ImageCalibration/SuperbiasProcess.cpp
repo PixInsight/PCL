@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0291
+// Standard ImageCalibration Process Module Version 01.04.00.0300
 // ----------------------------------------------------------------------------
-// SuperbiasProcess.cpp - Released 2017-05-02T09:43:00Z
+// SuperbiasProcess.cpp - Released 2017-05-17T17:41:56Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -64,11 +64,11 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-SuperbiasProcess* TheSuperbiasProcess = 0;
+SuperbiasProcess* TheSuperbiasProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
-SuperbiasProcess::SuperbiasProcess() : MetaProcess()
+SuperbiasProcess::SuperbiasProcess()
 {
    TheSuperbiasProcess = this;
 
@@ -83,45 +83,61 @@ SuperbiasProcess::SuperbiasProcess() : MetaProcess()
    new SBSuperbiasViewId1( this );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString SuperbiasProcess::Id() const
 {
    return "Superbias";
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString SuperbiasProcess::Category() const
 {
    return "ImageCalibration,Preprocessing";
 }
 
+// ----------------------------------------------------------------------------
+
 uint32 SuperbiasProcess::Version() const
 {
    return 0x100;
 }
+
+// ----------------------------------------------------------------------------
 
 String SuperbiasProcess::Description() const
 {
    return "";
 }
 
+// ----------------------------------------------------------------------------
+
 const char** SuperbiasProcess::IconImageXPM() const
 {
    return SuperbiasIcon_XPM;
 }
+
+// ----------------------------------------------------------------------------
 
 ProcessInterface* SuperbiasProcess::DefaultInterface() const
 {
    return TheSuperbiasInterface;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* SuperbiasProcess::Create() const
 {
    return new SuperbiasInstance( this );
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* SuperbiasProcess::Clone( const ProcessImplementation& p ) const
 {
    const SuperbiasInstance* instPtr = dynamic_cast<const SuperbiasInstance*>( &p );
-   return (instPtr != 0) ? new SuperbiasInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new SuperbiasInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -129,4 +145,4 @@ ProcessImplementation* SuperbiasProcess::Clone( const ProcessImplementation& p )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SuperbiasProcess.cpp - Released 2017-05-02T09:43:00Z
+// EOF SuperbiasProcess.cpp - Released 2017-05-17T17:41:56Z

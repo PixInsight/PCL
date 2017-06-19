@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.04.0827
+// /_/     \____//_____/   PCL 02.01.05.0841
 // ----------------------------------------------------------------------------
-// pcl/XISF.cpp - Released 2017-05-28T08:29:05Z
+// pcl/XISF.cpp - Released 2017-06-17T10:55:56Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -58,6 +58,32 @@
 
 namespace pcl
 {
+
+// ----------------------------------------------------------------------------
+
+#ifdef __clang__
+
+const fsize_type XISF::DefaultBlockAlignSize = 4096;
+const fsize_type XISF::DefaultMaxBlockInlineSize = 3072;
+const int XISF::MaxThumbnailSize = 1024;
+const XISF::block_checksum XISF::DefaultChecksum = XISFChecksum::None;
+const XISF::block_compression XISF::DefaultCompression = XISFCompression::None;
+const int XISF::DefaultCompressionLevel = 0;
+const int XISF::MaxCompressionLevel = 100;
+const int XISF::DefaultVerbosity = 1;
+const double XISF::DefaultOutputLowerBound = 0.0;
+const double XISF::DefaultOutputUpperBound = 1.0;
+const bool XISF::DefaultStoreFITSKeywords = true;
+const bool XISF::DefaultIgnoreFITSKeywords = false;
+const bool XISF::DefaultImportFITSKeywords = false;
+const bool XISF::DefaultIgnoreEmbeddedData = false;
+const bool XISF::DefaultIgnoreProperties = false;
+const bool XISF::DefaultAutoMetadata = true;
+const bool XISF::DefaultNoWarnings = false;
+const bool XISF::DefaultWarningsAreErrors = false;
+const char* XISF::InternalNamespacePrefix = "XISF:";
+
+#endif
 
 // ----------------------------------------------------------------------------
 
@@ -666,4 +692,4 @@ void XISF::EnsurePTLUTInitialized()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/XISF.cpp - Released 2017-05-28T08:29:05Z
+// EOF pcl/XISF.cpp - Released 2017-06-17T10:55:56Z

@@ -91,6 +91,8 @@ GeometryModule::GeometryModule() : MetaModule()
 {
 }
 
+// ----------------------------------------------------------------------------
+
 const char* GeometryModule::Version() const
 {
    return PCL_MODULE_VERSION( MODULE_VERSION_MAJOR,
@@ -100,35 +102,49 @@ const char* GeometryModule::Version() const
                               MODULE_VERSION_LANGUAGE );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString GeometryModule::Name() const
 {
    return "Geometry";
 }
+
+// ----------------------------------------------------------------------------
 
 String GeometryModule::Description() const
 {
    return "PixInsight Standard Geometry Process Module";
 }
 
+// ----------------------------------------------------------------------------
+
 String GeometryModule::Company() const
 {
    return "Pleiades Astrophoto";
 }
+
+// ----------------------------------------------------------------------------
 
 String GeometryModule::Author() const
 {
    return "Juan Conejero, PTeam";
 }
 
+// ----------------------------------------------------------------------------
+
 String GeometryModule::Copyright() const
 {
    return "Copyright (c) 2005-2017, Pleiades Astrophoto";
 }
 
+// ----------------------------------------------------------------------------
+
 String GeometryModule::TradeMarks() const
 {
    return "PixInsight";
 }
+
+// ----------------------------------------------------------------------------
 
 String GeometryModule::OriginalFileName() const
 {
@@ -146,12 +162,16 @@ String GeometryModule::OriginalFileName() const
 #endif
 }
 
+// ----------------------------------------------------------------------------
+
 void GeometryModule::GetReleaseDate( int& year, int& month, int& day ) const
 {
    year  = MODULE_RELEASE_YEAR;
    month = MODULE_RELEASE_MONTH;
    day   = MODULE_RELEASE_DAY;
 }
+
+// ----------------------------------------------------------------------------
 
 void GeometryModule::OnLoad()
 {
@@ -224,12 +244,16 @@ bool WarnOnAstrometryMetadataOrPreviewsOrMask( const ImageWindow& window, const 
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 void DeleteAstrometryMetadataAndPreviewsAndMask( ImageWindow& window )
 {
    window.RemoveMaskReferences();
    window.RemoveMask();
    DeleteAstrometryMetadataAndPreviews( window );
 }
+
+// ----------------------------------------------------------------------------
 
 void DeleteAstrometryMetadataAndPreviews( ImageWindow& window )
 {

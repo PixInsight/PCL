@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0291
+// Standard ImageCalibration Process Module Version 01.04.00.0300
 // ----------------------------------------------------------------------------
-// ImageCalibrationInterface.cpp - Released 2017-05-02T09:43:00Z
+// ImageCalibrationInterface.cpp - Released 2017-05-17T17:41:56Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -86,37 +86,51 @@ ImageCalibrationInterface::ImageCalibrationInterface() :
    DisableAutoSaveGeometry();
 }
 
+// ----------------------------------------------------------------------------
+
 ImageCalibrationInterface::~ImageCalibrationInterface()
 {
    if ( GUI != nullptr )
       delete GUI, GUI = nullptr;
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString ImageCalibrationInterface::Id() const
 {
    return "ImageCalibration";
 }
+
+// ----------------------------------------------------------------------------
 
 MetaProcess* ImageCalibrationInterface::Process() const
 {
    return TheImageCalibrationProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 const char** ImageCalibrationInterface::IconImageXPM() const
 {
    return ImageCalibrationIcon_XPM;
 }
+
+// ----------------------------------------------------------------------------
 
 InterfaceFeatures ImageCalibrationInterface::Features() const
 {
    return InterfaceFeature::DefaultGlobal;
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInterface::ResetInstance()
 {
    ImageCalibrationInstance defaultInstance( TheImageCalibrationProcess );
    ImportProcess( defaultInstance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool ImageCalibrationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
@@ -136,10 +150,14 @@ bool ImageCalibrationInterface::Launch( const MetaProcess& P, const ProcessImple
    return &P == TheImageCalibrationProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* ImageCalibrationInterface::NewProcess() const
 {
    return new ImageCalibrationInstance( instance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool ImageCalibrationInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
@@ -149,10 +167,14 @@ bool ImageCalibrationInterface::ValidateProcess( const ProcessImplementation& p,
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool ImageCalibrationInterface::RequiresInstanceValidation() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ImageCalibrationInterface::ImportProcess( const ProcessImplementation& p )
 {
@@ -160,6 +182,8 @@ bool ImageCalibrationInterface::ImportProcess( const ProcessImplementation& p )
    UpdateControls();
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInterface::SaveSettings() const
 {
@@ -179,6 +203,8 @@ void ImageCalibrationInterface::UpdateControls()
    UpdateMasterFrameControls();
    UpdateOverscanControls();
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInterface::UpdateTargetImageItem( size_type i )
 {
@@ -202,6 +228,8 @@ void ImageCalibrationInterface::UpdateTargetImageItem( size_type i )
    node->SetToolTip( 2, item.path );
    node->SetAlignment( 2, TextAlign::Left );
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInterface::UpdateTargetImagesList()
 {
@@ -227,6 +255,8 @@ void ImageCalibrationInterface::UpdateTargetImagesList()
    GUI->TargetImages_TreeBox.EnableUpdates();
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInterface::UpdateImageSelectionButtons()
 {
    bool hasItems = GUI->TargetImages_TreeBox.NumberOfChildren() > 0;
@@ -240,11 +270,15 @@ void ImageCalibrationInterface::UpdateImageSelectionButtons()
    //GUI->FullPaths_CheckBox.Enable( hasItems );   // always enabled
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInterface::UpdateFormatHintsControls()
 {
    GUI->InputHints_Edit.SetText( instance.inputHints );
    GUI->OutputHints_Edit.SetText( instance.outputHints );
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInterface::UpdateOutputFilesControls()
 {
@@ -272,6 +306,8 @@ void ImageCalibrationInterface::UpdateOutputFilesControls()
    GUI->OnError_ComboBox.SetCurrentItem( instance.onError );
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInterface::UpdatePedestalControls()
 {
    GUI->PedestalMode_ComboBox.SetCurrentItem( instance.pedestalMode );
@@ -286,6 +322,8 @@ void ImageCalibrationInterface::UpdatePedestalControls()
    GUI->PedestalKeyword_Edit.SetText( instance.pedestalKeyword );
    GUI->PedestalKeyword_Edit.Enable( instance.pedestalMode == ICPedestalMode::CustomKeyword );
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInterface::UpdateMasterFrameControls()
 {
@@ -322,6 +360,8 @@ void ImageCalibrationInterface::UpdateMasterFrameControls()
 
    GUI->CalibrateMasterFlat_CheckBox.SetChecked( instance.calibrateFlat );
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInterface::UpdateOverscanControls()
 {
@@ -442,9 +482,9 @@ void ImageCalibrationInterface::__TargetImages_CurrentNodeUpdated( TreeBox& send
    int index = sender.ChildIndex( &current );
    if ( index < 0 || size_type( index ) >= instance.targetFrames.Length() )
       throw Error( "ImageCalibrationInterface: *Warning* Corrupted interface structures" );
-
-   // ### If there's something else that depends on which image is selected in the list, do it here.
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInterface::__TargetImages_NodeActivated( TreeBox& sender, TreeBox::Node& node, int col )
 {
@@ -475,16 +515,22 @@ void ImageCalibrationInterface::__TargetImages_NodeActivated( TreeBox& sender, T
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInterface::__TargetImages_NodeSelectionUpdated( TreeBox& sender )
 {
    UpdateImageSelectionButtons();
 }
+
+// ----------------------------------------------------------------------------
 
 static size_type TreeInsertionIndex( const TreeBox& tree )
 {
    const TreeBox::Node* n = tree.CurrentNode();
    return (n != nullptr) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInterface::__TargetImages_Click( Button& sender, bool checked )
 {
@@ -546,6 +592,8 @@ void ImageCalibrationInterface::__TargetImages_Click( Button& sender, bool check
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInterface::__FormatHints_EditCompleted( Edit& sender )
 {
    String hints = sender.Text().Trimmed();
@@ -557,6 +605,8 @@ void ImageCalibrationInterface::__FormatHints_EditCompleted( Edit& sender )
 
    sender.SetText( hints );
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInterface::__OutputFiles_EditCompleted( Edit& sender )
 {
@@ -578,6 +628,8 @@ void ImageCalibrationInterface::__OutputFiles_EditCompleted( Edit& sender )
    sender.SetText( text );
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInterface::__OutputFiles_Click( Button& sender, bool checked )
 {
    if ( sender == GUI->OutputDirectory_ToolButton )
@@ -596,6 +648,8 @@ void ImageCalibrationInterface::__OutputFiles_Click( Button& sender, bool checke
       instance.overwriteExistingFiles = checked;
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInterface::__OutputFiles_ItemSelected( ComboBox& sender, int itemIndex )
 {
    if ( sender == GUI->OutputSampleFormat_ComboBox )
@@ -606,17 +660,23 @@ void ImageCalibrationInterface::__OutputFiles_ItemSelected( ComboBox& sender, in
       instance.onError = itemIndex;
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInterface::__OutputFiles_SpinValueUpdated( SpinBox& sender, int value )
 {
    if ( sender == GUI->OutputPedestal_SpinBox )
       instance.outputPedestal = value;
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInterface::__Pedestal_SpinValueUpdated( SpinBox& sender, int value )
 {
    if ( sender == GUI->PedestalValue_SpinBox )
       instance.pedestal = value;
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInterface::__Pedestal_ItemSelected( ComboBox& sender, int itemIndex )
 {
@@ -627,11 +687,15 @@ void ImageCalibrationInterface::__Pedestal_ItemSelected( ComboBox& sender, int i
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInterface::__Pedestal_EditCompleted( Edit& sender )
 {
    if ( sender == GUI->PedestalKeyword_Edit )
       sender.SetText( instance.pedestalKeyword = sender.Text().Trimmed() );
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInterface::__MasterFrame_EditCompleted( Edit& sender )
 {
@@ -652,6 +716,8 @@ void ImageCalibrationInterface::__MasterFrame_EditCompleted( Edit& sender )
 
    sender.SetText( path );
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInterface::__MasterFrame_Click( Button& sender, bool checked )
 {
@@ -694,17 +760,23 @@ void ImageCalibrationInterface::__MasterFrame_Click( Button& sender, bool checke
    UpdateMasterFrameControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInterface::__MasterFrame_SpinValueUpdated( SpinBox& sender, int value )
 {
    if ( sender == GUI->DarkOptimizationWindow_SpinBox )
       instance.darkOptimizationWindow = value;
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInterface::__MasterFrame_ItemSelected( ComboBox& sender, int itemIndex )
 {
    if ( sender == GUI->DarkCFADetectionMode_ComboBox )
       instance.darkCFADetectionMode = itemIndex;
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInterface::__MasterFrame_ValueUpdated( NumericEdit& sender, double value )
 {
@@ -714,6 +786,8 @@ void ImageCalibrationInterface::__MasterFrame_ValueUpdated( NumericEdit& sender,
       instance.darkOptimizationThreshold = 0; // deprecated parameter, for compatibility with old versions.
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInterface::__Overscan_ValueUpdated( NumericEdit& sender, double value_ )
 {
@@ -807,6 +881,8 @@ void ImageCalibrationInterface::__Overscan_ValueUpdated( NumericEdit& sender, do
 #undef SETY0
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInterface::__Overscan_Click( Button& sender, bool checked )
 {
    if ( sender == GUI->Overscan1_CheckBox )
@@ -821,6 +897,8 @@ void ImageCalibrationInterface::__Overscan_Click( Button& sender, bool checked )
    UpdateOverscanControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInterface::__CheckSection( SectionBar& sender, bool checked )
 {
    if ( sender == GUI->MasterBias_SectionBar )
@@ -832,6 +910,8 @@ void ImageCalibrationInterface::__CheckSection( SectionBar& sender, bool checked
    else if ( sender == GUI->Overscan_SectionBar )
       instance.overscan.enabled = checked;
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInterface::__ToggleSection( SectionBar& sender, Control& section, bool start )
 {
@@ -849,6 +929,8 @@ void ImageCalibrationInterface::__ToggleSection( SectionBar& sender, Control& se
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInterface::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
 {
    if ( sender == GUI->TargetImages_TreeBox.Viewport() )
@@ -858,6 +940,8 @@ void ImageCalibrationInterface::__FileDrag( Control& sender, const Point& pos, c
    else if ( sender == GUI->MasterBiasPath_Edit || sender == GUI->MasterDarkPath_Edit || sender == GUI->MasterFlatPath_Edit )
       wantsFiles = files.Length() == 1 && File::Exists( files[0] );
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInterface::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
 {
@@ -2016,4 +2100,4 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationInterface.cpp - Released 2017-05-02T09:43:00Z
+// EOF ImageCalibrationInterface.cpp - Released 2017-05-17T17:41:56Z

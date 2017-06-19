@@ -169,15 +169,15 @@ static double InitialBackground( const ImageVariant& image, double low, double h
    if ( image.IsFloatSample() )
       switch ( image.BitsPerSample() )
       {
-      case 32 : return InitialBackground( static_cast<const Image&>( *image ), low, high, clip );
-      case 64 : return InitialBackground( static_cast<const DImage&>( *image ), low, high, clip );
+      case 32: return InitialBackground( static_cast<const Image&>( *image ), low, high, clip );
+      case 64: return InitialBackground( static_cast<const DImage&>( *image ), low, high, clip );
       }
    else
       switch ( image.BitsPerSample() )
       {
-      case  8 : return InitialBackground( static_cast<const UInt8Image&>( *image ), low, high, clip );
-      case 16 : return InitialBackground( static_cast<const UInt16Image&>( *image ), low, high, clip );
-      case 32 : return InitialBackground( static_cast<const UInt32Image&>( *image ), low, high, clip );
+      case  8: return InitialBackground( static_cast<const UInt8Image&>( *image ), low, high, clip );
+      case 16: return InitialBackground( static_cast<const UInt16Image&>( *image ), low, high, clip );
+      case 32: return InitialBackground( static_cast<const UInt32Image&>( *image ), low, high, clip );
       }
 
    return 0;

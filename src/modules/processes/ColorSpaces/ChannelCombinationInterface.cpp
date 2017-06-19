@@ -204,19 +204,19 @@ void ChannelCombinationInterface::UpdateControls()
 void ChannelCombinationInterface::__ColorSpace_Click( Button& sender, bool checked )
 {
    if ( sender == GUI->RGB_RadioButton )
-      instance.colorSpace = ColorSpaceId::RGB;
+      instance.p_colorSpace = ColorSpaceId::RGB;
    else if ( sender == GUI->HSV_RadioButton )
-      instance.colorSpace = ColorSpaceId::HSV;
+      instance.p_colorSpace = ColorSpaceId::HSV;
    else if ( sender == GUI->HSI_RadioButton )
-      instance.colorSpace = ColorSpaceId::HSI;
+      instance.p_colorSpace = ColorSpaceId::HSI;
    else if ( sender == GUI->CIEXYZ_RadioButton )
-      instance.colorSpace = ColorSpaceId::CIEXYZ;
+      instance.p_colorSpace = ColorSpaceId::CIEXYZ;
    else if ( sender == GUI->CIELab_RadioButton )
-      instance.colorSpace = ColorSpaceId::CIELab;
+      instance.p_colorSpace = ColorSpaceId::CIELab;
    else if ( sender == GUI->CIELch_RadioButton )
-      instance.colorSpace = ColorSpaceId::CIELch;
+      instance.p_colorSpace = ColorSpaceId::CIELch;
 
-   instance.channelEnabled[0] = instance.channelEnabled[1] = instance.channelEnabled[2] = true;
+   instance.p_channelEnabled[0] = instance.p_channelEnabled[1] = instance.p_channelEnabled[2] = true;
 
    UpdateControls();
 }
@@ -237,14 +237,14 @@ void ChannelCombinationInterface::__Channel_Click( Button& sender, bool checked 
    for ( int j = 0; j < 3; ++j )
    {
       if ( j == i )
-         instance.channelEnabled[i] = checked;
-      if ( instance.channelEnabled[j] )
+         instance.p_channelEnabled[i] = checked;
+      if ( instance.p_channelEnabled[j] )
          ++n;
    }
 
    if ( n == 0 )
       for ( int j = 0; j < 3; ++j )
-         instance.channelEnabled[j] = true;
+         instance.p_channelEnabled[j] = true;
 
    UpdateControls();
 }
@@ -277,12 +277,12 @@ void ChannelCombinationInterface::__ChannelId_EditCompleted( Edit& sender )
             if ( !id.IsValidIdentifier() )
                throw Error( "Invalid identifier: " + id );
 
-      instance.channelId[i] = (id != AUTO_ID) ? id : String();
-      sender.SetText( instance.channelId[i].IsEmpty() ? AUTO_ID : instance.channelId[i] );
+      instance.p_channelId[i] = (id != AUTO_ID) ? id : String();
+      sender.SetText( instance.p_channelId[i].IsEmpty() ? AUTO_ID : instance.p_channelId[i] );
       return;
    }
    ERROR_CLEANUP(
-      sender.SetText( instance.channelId[i] );
+      sender.SetText( instance.p_channelId[i] );
       sender.SelectAll();
       sender.Focus()
    )
@@ -300,13 +300,13 @@ void ChannelCombinationInterface::__Channel_SelectSource_Click( Button& sender, 
    else
       return;
 
-   String suffix = String( '_' ) + ColorSpaceId::ChannelId( instance.colorSpace, i );
-   String description = ColorSpaceId::SpaceId( instance.colorSpace ) + String().Format( " Channel #%d", i );
+   String suffix = String( '_' ) + ColorSpaceId::ChannelId( instance.p_colorSpace, i );
+   String description = ColorSpaceId::SpaceId( instance.p_colorSpace ) + String().Format( " Channel #%d", i );
 
    ChannelSourceSelectionDialog dlg( suffix, description );
    if ( dlg.Execute() == StdDialogCode::Ok )
    {
-      instance.channelId[i] = dlg.SourceId();
+      instance.p_channelId[i] = dlg.SourceId();
       UpdateControls();
    }
 }
@@ -332,7 +332,7 @@ void ChannelCombinationInterface::__ViewDrop( Control& sender, const Point& pos,
          else
             return;
 
-         instance.channelId[i] = view.Id();
+         instance.p_channelId[i] = view.Id();
          UpdateControls();
       }
 }

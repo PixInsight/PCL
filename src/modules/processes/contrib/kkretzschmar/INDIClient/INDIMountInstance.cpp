@@ -83,7 +83,6 @@ INDIMountInstance::INDIMountInstance( const MetaProcess* m ) :
    p_computeApparentPosition( TheIMCComputeApparentPositionParameter->DefaultValue() ),
    p_enableAlignmentCorrection(TheIMCEnableAlignmentCorrectionParameter->DefaultValue()),
    p_alignmentFile(TheIMCAlignmentFileParameter->DefaultValue()),
-   p_syncDataFile(TheIMCSyncDataFileParameter->DefaultValue()),
    p_alignmentConfig(TheIMCAlignmentConfigParameter->DefaultValue()),
    o_currentLST( TheIMCCurrentLSTParameter->DefaultValue() ),
    o_currentRA( TheIMCCurrentRAParameter->DefaultValue() ),
@@ -120,7 +119,6 @@ void INDIMountInstance::Assign( const ProcessImplementation& p )
       p_enableAlignmentCorrection = x->p_computeApparentPosition;
       p_alignmentMethod           = x->p_alignmentMethod;
       p_alignmentFile             = x->p_alignmentFile;
-      p_syncDataFile              = x->p_syncDataFile;
       p_alignmentConfig           = x->p_alignmentConfig;
       o_currentLST                = x->o_currentLST;
       o_currentRA                 = x->o_currentRA;
@@ -498,8 +496,6 @@ void* INDIMountInstance::LockParameter( const MetaParameter* p, size_type tableR
       return &p_computeApparentPosition;
    if ( p == TheIMCAlignmentFileParameter )
 	   return p_alignmentFile.Begin();
-   if ( p == TheIMCSyncDataFileParameter )
-   	   return p_syncDataFile.Begin();
    if ( p == TheIMCAlignmentConfigParameter )
 	   return &p_alignmentConfig;
    if (p == TheIMCCurrentLSTParameter )
@@ -542,11 +538,6 @@ bool INDIMountInstance::AllocateParameter( size_type sizeOrLength, const MetaPar
 	   p_alignmentFile.Clear();
 	   if ( sizeOrLength > 0 )
 		   p_alignmentFile.SetLength( sizeOrLength );
-   } else if ( p == TheIMCSyncDataFileParameter )
-   {
-	   p_syncDataFile.Clear();
-	   if ( sizeOrLength > 0 )
-		   p_syncDataFile.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -561,9 +552,6 @@ size_type INDIMountInstance::ParameterLength( const MetaParameter* p, size_type 
 
    if ( p == TheIMCAlignmentFileParameter )
          return p_alignmentFile.Length();
-
-   if ( p == TheIMCSyncDataFileParameter )
-            return p_syncDataFile.Length();
 
    return 0;
 }
@@ -664,9 +652,6 @@ void INDIMountInstance::AddSyncDataPoint(const SyncDataPoint& syncDataPoint){
 	this->syncDataArray.Add(syncDataPoint);
 }
 
-void INDIMountInstance::loadSyncData() {
-	loadSyncData(syncDataArray,p_syncDataFile);
-}
 
 void INDIMountInstance::loadSyncData(Array<SyncDataPoint>& syncDataList, String syncDataFile) {
 	IsoStringList syncDataRows = File::ReadLines(syncDataFile);
@@ -691,28 +676,6 @@ void AbstractINDIMountExecution::ApplyPointingModelCorrection(AlignmentModel* aM
 	targetDec=newDec;
 }
 
-void AbstractINDIMountExecution::WriteSyncDataPointToFile(const SyncDataPoint& syncPoint) {
-
-	// set instance sync point parameters
-	m_instance.o_syncCelestialRA   = syncPoint.celestialRA ;
-	m_instance.o_syncCelestialDEC  = syncPoint.celestialDEC;
-	m_instance.o_syncTelescopeRA   = syncPoint.telecopeRA;
-	m_instance.o_apparentTargetDec = syncPoint.telecopeDEC;
-	m_instance.p_pierSide          = syncPoint.pierSide;
-
-	IsoString fileContent;
-	fileContent.Append(IsoString().Format("%f,%f,%f,%f,%f,%s,%s\n",syncPoint.localSiderialTime,syncPoint.celestialRA,syncPoint.celestialDEC,syncPoint.telecopeRA,syncPoint.telecopeDEC, syncPoint.pierSide == IMCPierSide::West ? "West" : "East", "true" ));
-
-	if (File::Exists(m_instance.p_syncDataFile)){
-		IsoStringList syncPointDataList = File::ReadLines(m_instance.p_syncDataFile);
-		for (auto line : syncPointDataList){
-			fileContent.Append(line);
-			fileContent.Append("\n");
-		}
-		File::Remove(m_instance.p_syncDataFile);
-	}
-	File::WriteTextFile(m_instance.p_syncDataFile,fileContent);
-}
 
 void AbstractINDIMountExecution::Perform()
 {
@@ -902,13 +865,16 @@ void AbstractINDIMountExecution::Perform()
            case IMCAlignmentMethod::AnalyticalModel:
            {
         	   SyncDataPoint syncPoint;
+        	   syncPoint.creationTime      = TimePoint::Now();
         	   syncPoint.localSiderialTime = m_instance.o_currentLST;
         	   syncPoint.celestialRA       = AlignmentModel::rangeShiftHourAngle(targetRA);
         	   syncPoint.celestialDEC      = targetDec;
         	   syncPoint.telecopeRA        = trueTargetRa;
         	   syncPoint.telecopeDEC       = trueTargetDec;
         	   syncPoint.pierSide          = aModel->getPierSide(syncPoint.localSiderialTime - syncPoint.celestialRA);
-        	   WriteSyncDataPointToFile(syncPoint);
+        	   aModel->addSyncDataPoint(syncPoint);
+        	   aModel->writeObject(m_instance.p_alignmentFile);
+        	   //WriteSyncDataPointToFile(syncPoint);
         	   break;
            }
 
@@ -927,9 +893,8 @@ void AbstractINDIMountExecution::Perform()
 
             // if alignment correction is enabled, the original target coordinates
             // before alignment correction have to be determined
+            AutoPointer<AlignmentModel> aModel = nullptr;
             if (this->m_instance.p_enableAlignmentCorrection){
-
-            	AutoPointer<AlignmentModel> aModel = nullptr;
 
             	switch (m_instance.p_alignmentMethod){
             	case IMCAlignmentMethod::AnalyticalModel:
@@ -957,13 +922,16 @@ void AbstractINDIMountExecution::Perform()
             case IMCAlignmentMethod::AnalyticalModel:
             {
             	SyncDataPoint syncPoint;
+            	syncPoint.creationTime      = TimePoint::Now();
             	syncPoint.localSiderialTime = m_instance.o_currentLST;
             	syncPoint.celestialRA       = targetRA;
             	syncPoint.celestialDEC      = targetDec;
             	syncPoint.telecopeRA        = m_instance.o_currentRA;
             	syncPoint.telecopeDEC       = m_instance.o_currentDec;
             	syncPoint.pierSide          = m_instance.p_pierSide;
-            	WriteSyncDataPointToFile(syncPoint);
+            	aModel->addSyncDataPoint(syncPoint);
+            	aModel->writeObject(m_instance.p_alignmentFile);
+            	//WriteSyncDataPointToFile(syncPoint);
             	break;
             }
             break;
@@ -1013,13 +981,15 @@ void AbstractINDIMountExecution::Perform()
     	 AutoPointer<AlignmentModel> aModel = nullptr;
     	 switch (m_instance.p_alignmentMethod){
     	 case IMCAlignmentMethod::AnalyticalModel:
-    		 aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, true);
+    		 aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 31));
+    		 break;
+    	 default:
+    		 throw Error( "Internal error: AbstractINDIMountExecution::Perform(): Unknown Pointing Model." );
     	 }
-    	 Array<SyncDataPoint> syncDataList;
-    	 INDIMountInstance::loadSyncData(syncDataList, m_instance.p_syncDataFile);
 
+    	 aModel->readObject(m_instance.p_alignmentFile);
     	 // fit model
-    	 aModel->fitModel(syncDataList);
+    	 aModel->fitModel();
     	 aModel->writeObject(m_instance.p_alignmentFile);
     	 aModel->printParameters();
     	 break;

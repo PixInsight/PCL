@@ -373,20 +373,21 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
    }
 }
 
-SyncDataListDialog::SyncDataListDialog(Array<SyncDataPoint>& syncDataArray,String syncDataListFile) :
-   Dialog(), m_syncDataList(syncDataArray), m_syncDataListFile(syncDataListFile), m_firstTimeShown(true)
+SyncDataListDialog::SyncDataListDialog(Array<SyncDataPoint>& syncDataArray) :
+   Dialog(), m_syncDataList(syncDataArray), m_firstTimeShown(true)
 {
 
-	SnycData_TreeBox.SetMinHeight( Font().Width( 'm' )*20 );
+	SnycData_TreeBox.SetMinHeight( Font().Width( 'm' )*60 );
 	SnycData_TreeBox.SetScaledMinWidth(  Font().Height()  * 50 );
-	SnycData_TreeBox.SetNumberOfColumns( 7 );
+	SnycData_TreeBox.SetNumberOfColumns( 8 );
 	SnycData_TreeBox.SetHeaderText( 2, "HA" );
 	SnycData_TreeBox.SetHeaderText( 3, "Dec" );
 	SnycData_TreeBox.SetHeaderText( 4, "Delta HA" );
 	SnycData_TreeBox.SetHeaderText( 5, "Delta Dec" );
 	SnycData_TreeBox.SetHeaderText( 6, "Pier side");
+	SnycData_TreeBox.SetHeaderText( 7, "Created on");
 	SnycData_TreeBox.EnableAlternateRowColor();
-	//SnycData_TreeBox.DisableMultipleSelections();
+	SnycData_TreeBox.EnableMultipleSelections(true);
 
 
 	for (size_t index = 0;  index < syncDataArray.Length(); ++index) {
@@ -400,6 +401,7 @@ SyncDataListDialog::SyncDataListDialog(Array<SyncDataPoint>& syncDataArray,Strin
 		node->SetText(4,String().Format("%2.5f",syncDataPoint.telecopeRA-syncDataPoint.celestialRA));
 		node->SetText(5,String().Format("%2.5f",syncDataPoint.celestialDEC-syncDataPoint.telecopeDEC));
 		node->SetText(6,String(syncDataPoint.pierSide == IMCPierSide::West ? "West" :  syncDataPoint.pierSide == IMCPierSide::East ? "East" : "" ));
+		node->SetText(7,syncDataPoint.creationTime.ToString());
 		SnycData_TreeBox.Add(node);
 	}
 
@@ -422,11 +424,21 @@ SyncDataListDialog::SyncDataListDialog(Array<SyncDataPoint>& syncDataArray,Strin
 	//Delete_Button.SetIcon( ScaledResource( ":/icons/window-import.png" ) );
 	Disable_Button.OnClick( (Button::click_event_handler)&SyncDataListDialog::e_Click, *this );
 
+	Ok_Button.SetText( "Ok" );
+	Ok_Button.SetIcon( ScaledResource( ":/icons/ok.png" ) );
+	Ok_Button.OnClick( (Button::click_event_handler)&SyncDataListDialog::e_Click, *this );
+
+	Cancel_Button.SetText( "Cancel" );
+	Cancel_Button.SetIcon( ScaledResource( ":/icons/cancel.png" ) );
+	Cancel_Button.OnClick( (Button::click_event_handler)&SyncDataListDialog::e_Click, *this );
+
 	SyncDataListButton_Sizer.SetSpacing(8);
-	SyncDataListButton_Sizer.AddStretch();
 	SyncDataListButton_Sizer.Add(Enable_Button);
 	SyncDataListButton_Sizer.Add(Disable_Button);
 	SyncDataListButton_Sizer.Add(Delete_Button);
+	SyncDataListButton_Sizer.AddStretch();
+	SyncDataListButton_Sizer.Add(Ok_Button);
+	SyncDataListButton_Sizer.Add(Cancel_Button);
 
 	Global_Sizer.SetSpacing( 8 );
 	Global_Sizer.SetMargin( 8 );
@@ -434,7 +446,7 @@ SyncDataListDialog::SyncDataListDialog(Array<SyncDataPoint>& syncDataArray,Strin
 	Global_Sizer.Add(SyncDataListButton_Sizer);
 	SetSizer( Global_Sizer );
 
-	SetWindowTitle( "List of syncdata points" );
+	SetWindowTitle( "List of Sync Data Points" );
 
 	OnShow( (Control::event_handler)&SyncDataListDialog::e_Show, *this );
 	OnClose( (Control::close_event_handler)&SyncDataListDialog::e_Close, *this );
@@ -453,15 +465,6 @@ void SyncDataListDialog::e_Show( Control& )
 
 void SyncDataListDialog::e_Close( Control& sender , bool& allowClose){
 
-	IsoString fileContent;
-	if (File::Exists(m_syncDataListFile)) {
-		for (auto syncPoint : m_syncDataList) {
-			fileContent.Append(IsoString().Format("%f,%f,%f,%f,%f,%s,%s\n",syncPoint.localSiderialTime,syncPoint.celestialRA,syncPoint.celestialDEC,syncPoint.telecopeRA,syncPoint.telecopeDEC, syncPoint.pierSide == IMCPierSide::West ? "West" : "East",syncPoint.enabled ? "true" : "false" ));
-		}
-		File::Remove(m_syncDataListFile);
-	}
-	File::WriteTextFile(m_syncDataListFile, fileContent);
-	allowClose = true;
 }
 
 void SyncDataListDialog::e_Click( Button& sender, bool checked ){
@@ -487,6 +490,12 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
 			SnycData_TreeBox.Remove(index);
 		}
 	}
+	if (sender == Ok_Button){
+		Ok();
+	}
+	if (sender == Cancel_Button){
+		Cancel();
+	}
 
 }
 
@@ -505,9 +514,12 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
 	MountAlignmentConfig_Sizer.SetMargin( 8 );
 
 	const char* pierSideToolTipText =
-				"<p>Create a model for each side of the pier. This is useful for German Equatorial Mounts"
-			    "which perform a meridian flip when objects pass the meridian. However it requires more"
-			    "data points to create an accurate model";
+				"<p>Create a model for each side of the pier. This is useful for mounts"
+			    "which perform a meridian flip when objects pass the meridian.</p>";
+				"<p>Creating models for each pier side can dramatically improve the accuracy of pointing model,"
+				"since some pointing error sources depend on the position and balance of the mounted devices.</p>"
+				"<p>Note that two pointing model need twice as many sync points.</p>";
+
 
 	ModelPierSide_Label.SetText("Model each pier side :");
 	ModelPierSide_Label.SetToolTip(pierSideToolTipText);
@@ -928,6 +940,9 @@ void INDIMountInterface::GUIData::getAlignmentConfigParamter(int32& configParam)
 	if (m_alignmentQuadratic){
 		configParam |= 1 << 10; // quadratic terms
 	}
+	if (m_modelBothPierSides) {
+		configParam |= 1 << 31; // set if modeling for each pier side is requested
+	}
 
 }
 
@@ -957,7 +972,6 @@ ProcessImplementation* INDIMountInterface::NewProcess() const
 
    instance->p_alignmentFile = GUI->AlignmentFile_Edit.Text();
 
-   instance->p_syncDataFile = GUI->SyncDataFile_Edit.Text();
 
    instance->GetCurrentCoordinates();
 
@@ -1179,40 +1193,13 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    const char* syncdatafileToolTipText =
          		   "<p>File which store the sync data. </p>";
 
-   SyncDataFile_Label.SetText("Sync data:");
-   SyncDataFile_Label.SetToolTip(syncdatafileToolTipText);
-   SyncDataFile_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-   SyncDataFile_Label.SetFixedWidth(labelWidth1);
-
-   SyncDataFile_Edit.SetToolTip(syncdatafileToolTipText);
-   SyncDataFile_Edit.SetReadOnly();
-
-   SyncDataFile_ToolButton.SetIcon(w.ScaledResource(":/icons/select-file.png"));
-   SyncDataFile_ToolButton.SetScaledFixedSize(22, 22);
-   SyncDataFile_ToolButton.SetToolTip(syncdatafileToolTipText);
-   SyncDataFile_ToolButton.OnClick((Button::click_event_handler) &INDIMountInterface::e_Click, w);
 
    SyncDataList_Button.SetText("Syncdata List");
    SyncDataList_Button.SetIcon( w.ScaledResource( ":/icons/list.png" ) );
    SyncDataList_Button.SetStyleSheet("QPushButton { text-align: left; }");
    SyncDataList_Button.OnClick((Button::click_event_handler) &INDIMountInterface::e_Click, w);
 
-   SyncDataFile_Sizer.SetSpacing(8);
-   SyncDataFile_Sizer.Add(SyncDataFile_Label);
-   SyncDataFile_Sizer.Add(SyncDataFile_Edit, 100);
-   SyncDataFile_Sizer.AddSpacing(4);
-   SyncDataFile_Sizer.Add(SyncDataFile_ToolButton);
-   SyncDataFile_Sizer.AddSpacing(4);
-   SyncDataFile_Sizer.Add(SyncDataList_Button);
-
-
-
    const char* alignmentConfigToolTipText = "<p>Configure and create a new pointing model.</p>";
-
-   MountAlignmentConfig_Label.SetText("Pointing model:");
-   MountAlignmentConfig_Label.SetToolTip(alignmentConfigToolTipText);
-   MountAlignmentConfig_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-   MountAlignmentConfig_Label.SetFixedWidth(labelWidth1);
 
    MountAligmentModelConfig_Button.SetText("Configure");
    MountAligmentModelConfig_Button.SetIcon(w.ScaledResource(":/icons/wrench.png"));
@@ -1229,22 +1216,22 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
 
    MountAlignmentCorrection_CheckBox.SetText( "Apply Pointing correction" );
    MountAlignmentCorrection_CheckBox.SetToolTip( "<p>Compute and apply telescope pointing correction to target coordinates.</p>" );
+   MountAlignmentCorrection_Sizer.SetSpacing(8);
    MountAlignmentCorrection_Sizer.AddSpacing( labelWidth1 + 4 );
    MountAlignmentCorrection_Sizer.Add( MountAlignmentCorrection_CheckBox );
+   MountAlignmentCorrection_Sizer.Add( MountAlignmentPlotResiduals_CheckBox );
    MountAlignmentCorrection_Sizer.AddStretch();
 
 
-   MountAlignmentConfig_Sizer.AddSpacing(4);
    MountAlignmentConfig_Sizer.SetSpacing(8);
-   MountAlignmentConfig_Sizer.Add(MountAlignmentConfig_Label);
+   MountAlignmentConfig_Sizer.AddSpacing( labelWidth1 + 4 );
    MountAlignmentConfig_Sizer.Add(MountAligmentModelConfig_Button);
    MountAlignmentConfig_Sizer.Add(MountAligmentModelFit_Button);
-   MountAlignmentConfig_Sizer.Add(MountAlignmentPlotResiduals_CheckBox);
+   MountAlignmentConfig_Sizer.Add(SyncDataList_Button);
    MountAlignmentConfig_Sizer.AddStretch();
 
    MountAlignment_Sizer.SetSpacing( 8 );
    MountAlignment_Sizer.Add( MountAlignmentFile_Sizer );
-   MountAlignment_Sizer.Add( SyncDataFile_Sizer );
    MountAlignment_Sizer.Add( MountAlignmentConfig_Sizer );
    MountAlignment_Sizer.Add( MountAlignmentCorrection_Sizer );
 
@@ -1679,7 +1666,6 @@ private:
       m_iface->GUI->AlignmentFile_Label.Disable();
       m_iface->GUI->AlignmentFile_Edit.Disable();
       m_iface->GUI->AlignmentFile_ToolButton.Disable();
-      m_iface->GUI->MountAlignmentConfig_Label.Disable();
       m_iface->GUI->MountAligmentModelConfig_Button.Disable();
       m_iface->GUI->MountAligmentModelFit_Button.Disable();
       m_iface->GUI->MountAligmentModelConfig_Button.Disable();
@@ -1739,7 +1725,6 @@ private:
       m_iface->GUI->AlignmentFile_Label.Enable();
       m_iface->GUI->AlignmentFile_Edit.Enable();
       m_iface->GUI->AlignmentFile_ToolButton.Enable();
-      m_iface->GUI->MountAlignmentConfig_Label.Enable();
       m_iface->GUI->MountAligmentModelConfig_Button.Enable();
       m_iface->GUI->MountAligmentModelFit_Button.Enable();
       m_iface->GUI->MountAligmentModelConfig_Button.Enable();
@@ -1825,14 +1810,27 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
 	   if ( f.Execute() )
 		   GUI->AlignmentFile_Edit.SetText( f.FileName() );
 
-   } else if ( sender == GUI->SyncDataFile_ToolButton)
-   {
-	   OpenFileDialog f;
-	   f.SetCaption( "INDIMount: Select Sync Data File" );
-	   if ( f.Execute() )
-		   GUI->SyncDataFile_Edit.SetText( f.FileName() );
-
    } else if ( sender == GUI->MountAligmentModelFit_Button)
+   {
+	   INDIMountInterfaceExecution( this ).Perform( IMCCommand::FitPointingModel );
+
+	   if (GUI->MountAlignmentPlotResiduals_CheckBox.IsChecked()){
+		   AutoPointer<AlignmentModel> aModel = nullptr;
+		   int32 alignmentConfig = 0;
+		   GUI->getAlignmentConfigParamter(alignmentConfig);
+		   switch (GUI->m_aignmentModelIndex){
+		   case IMCAlignmentMethod::AnalyticalModel:
+			   aModel = GeneralAnalyticalPointingModel::create(m_geoLatitude, alignmentConfig, GUI->m_modelBothPierSides);
+			   break;
+		   default:
+			   throw Error( "Internal error: AbstractINDIMountInterface: Unknown Pointing Model.");
+		   }
+
+		   aModel->readObject(GUI->AlignmentFile_Edit.Text());
+		   plotAlignemtResiduals(aModel.Ptr());
+	   }
+   }
+   else if ( sender == GUI->SyncDataList_Button)
    {
 	   AutoPointer<AlignmentModel> aModel = nullptr;
 	   int32 alignmentConfig = 0;
@@ -1840,27 +1838,16 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
 	   switch (GUI->m_aignmentModelIndex){
 	   case IMCAlignmentMethod::AnalyticalModel:
 		   aModel = GeneralAnalyticalPointingModel::create(m_geoLatitude, alignmentConfig, GUI->m_modelBothPierSides);
+		   break;
+	   default:
+		   throw Error( "Internal error: AbstractINDIMountInterface: Unknown Pointing Model.");
 	   }
-	   Array<SyncDataPoint> syncDataList;
-	   INDIMountInstance::loadSyncData(syncDataList, GUI->SyncDataFile_Edit.Text());
+	   aModel->readObject(GUI->AlignmentFile_Edit.Text());
+	   Array<SyncDataPoint>& syncDataList = aModel->getSyncDataPoints();
+	   AutoPointer<SyncDataListDialog> syncDataListDialog = new SyncDataListDialog(syncDataList);
 
-	   // fit model
-	   aModel->fitModel(syncDataList);
-	   aModel->writeObject(GUI->AlignmentFile_Edit.Text());
-	   aModel->printParameters();
-
-	   if (GUI->MountAlignmentPlotResiduals_CheckBox.IsChecked()){
-		   plotAlignemtResiduals(aModel.Ptr(), syncDataList);
-	   }
-   }
-   else if ( sender == GUI->SyncDataList_Button)
-   {
-	   Array<SyncDataPoint> syncDataList;
-	   INDIMountInstance::loadSyncData(syncDataList, GUI->SyncDataFile_Edit.Text());
-	   if ( m_syncDataListDialog == nullptr ){
-		   m_syncDataListDialog = new SyncDataListDialog(syncDataList, GUI->SyncDataFile_Edit.Text());
-	   }
-	   if ( m_syncDataListDialog->Execute() ){
+	   if ( syncDataListDialog->Execute() ){
+		   aModel->writeObject(GUI->AlignmentFile_Edit.Text());
 	   }
 
    }
@@ -2061,8 +2048,9 @@ set object 12 circle size 0.1 fs transparent border 3
 plot '%s' index 0 using 3:4 title "west" with points pointtype 5, '%s' index 1 using 3:4 title "east" with points pointtype 7
 )";
 
-void INDIMountInterface::plotAlignemtResiduals(AlignmentModel* model, const Array<SyncDataPoint>& syncDatapointList){
+void INDIMountInterface::plotAlignemtResiduals(AlignmentModel* model){
 
+	Array<SyncDataPoint>& syncDatapointList = model->getSyncDataPoints();
 	Array<double> delHAs;
 	Array<double> delDecs;
 	// create residual data file

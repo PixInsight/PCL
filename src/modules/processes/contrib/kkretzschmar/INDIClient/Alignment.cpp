@@ -57,11 +57,13 @@
 #include <pcl/Math.h>
 #include <pcl/Algebra.h>
 #include <pcl/Console.h>
+#include <pcl/AutoPointer.h>
+#include <pcl/TimePoint.h>
+#include <pcl/XML.h>
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------------
 
@@ -114,8 +116,6 @@ pcl_enum AlignmentModel::getPierSide(double hourAngle) {
 static const double scaleArcmin = 60.0;
 static const double factorHaToDeg = 15.0;
 
-
-#define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 
 void GeneralAnalyticalPointingModel::evaluateBasis(Matrix& basisVectors, double hourAngle, double dec)
 {
@@ -277,7 +277,12 @@ void GeneralAnalyticalPointingModel::ApplyInverse(double& hourAngleCor, double& 
 	decCor        = dec + alignCorrection[1];
 }
 
+void GeneralAnalyticalPointingModel::fitModel() {
+	fitModel(m_syncData);
+}
+
 void GeneralAnalyticalPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArray) {
+	m_modelCreationTime = TimePoint::Now();
 	double residual=0;
 	if (!m_modelEachPierSide){
 		fitModelForPierSide(syncPointArray, IMCPierSide::None, residual);
@@ -362,79 +367,146 @@ void GeneralAnalyticalPointingModel::fitModelForPierSide(const Array<SyncDataPoi
 }
 
 
+XMLDocument* GeneralAnalyticalPointingModel::Serialize() const {
+
+	AutoPointer<XMLDocument> xml = new XMLDocument;
+	xml->SetXML( "1.0", "UTF-8" );
+	*xml << new XMLComment( "\nPixInsight XML Telescope Pointing Model Format - XTPM version 1.0"
+			                "\nCreated with PixInsight software - http://pixinsight.com/"
+			                "\n" );
+
+	XMLElement* root = new XMLElement( "xtpm", XMLAttributeList()
+			<< XMLAttribute( "version", "1.0"));
+
+	xml->SetRootElement( root );
+
+	*(new XMLElement( *root, "CreationTime" )) << new XMLText( m_modelCreationTime.ToString() );
+
+	*(new XMLElement( *root, "GeographicLatitude" )) << new XMLText( String(m_siteLatitude) );
+
+	*(new XMLElement( *root, "Configuration" )) << new XMLText( String(m_modelConfig) );
+
+	*(new XMLElement( *root, "ModelParameters", XMLAttributeList() << XMLAttribute("PierSide", m_modelEachPierSide ? "West" : "None" ) ))  << new XMLText( String().ToCommaSeparated( *m_pointingModelWest ) );
+
+	if (m_modelEachPierSide) {
+		*(new XMLElement( *root, "ModelParameters", XMLAttributeList() << XMLAttribute("PierSide", "East" )  ))  << new XMLText( String().ToCommaSeparated( *m_pointingModelEast ) );
+	}
+
+	if (m_syncData.Length()!=0) {
+		XMLElement* list = new XMLElement(*root, String("SyncDataList"));
+		for (auto syncDataPoint : m_syncData) {
+			XMLElement* listElement =  new XMLElement(*list, String("SyncDataPoint"), XMLAttributeList() << XMLAttribute( "CreationTime", String(syncDataPoint.creationTime.ToString())));
+			*(new XMLElement( *listElement, "LocalSiderialTime" )) << new XMLText( String(syncDataPoint.localSiderialTime) );
+			*(new XMLElement( *listElement, "CelestialRA" )) << new XMLText( String(syncDataPoint.celestialRA) );
+			*(new XMLElement( *listElement, "CelestialDEC" )) << new XMLText( String(syncDataPoint.celestialDEC) );
+			*(new XMLElement( *listElement, "TelescopeRA" )) << new XMLText( String(syncDataPoint.telecopeRA) );
+			*(new XMLElement( *listElement, "TelescopeDEC" )) << new XMLText( String(syncDataPoint.telecopeDEC) );
+			*(new XMLElement( *listElement, "Pierside" )) << new XMLText( String(syncDataPoint.pierSide) );
+			*(new XMLElement( *listElement, "Enabled" )) << new XMLText( String(syncDataPoint.enabled) );
+		}
+	}
+
+	return xml.Release();
+}
+
+void GeneralAnalyticalPointingModel::ParseSyncDataPoint(SyncDataPoint& syncPoint, const XMLElement& element) {
+	for (const XMLNode& node : element) {
+		const XMLElement& element = static_cast<const XMLElement&>(node);
+		try {
+			if (element.Name() == "LocalSiderialTime") {
+				syncPoint.localSiderialTime = element.Text().Trimmed().ToDouble();
+			} else if (element.Name() == "CelestialRA") {
+				syncPoint.celestialRA = element.Text().Trimmed().ToDouble();
+			} else if (element.Name() == "CelestialDEC") {
+				syncPoint.celestialDEC = element.Text().Trimmed().ToDouble();
+			} else if (element.Name() == "TelescopeRA") {
+				syncPoint.telecopeRA = element.Text().Trimmed().ToDouble();
+			} else if (element.Name() == "TelescopeDEC") {
+				syncPoint.telecopeDEC = element.Text().Trimmed().ToDouble();
+			} else if (element.Name() == "Pierside") {
+				syncPoint.pierSide = element.Text().Trimmed().ToInt();
+			} else if (element.Name() == "Enabled") {
+				syncPoint.enabled = element.Text().Trimmed().ToBool();
+			}
+		} catch (...) {
+			throw;
+		}
+	}
+
+}
+
+void  GeneralAnalyticalPointingModel::ParseSyncData(const XMLElement& syncDataList) {
+	for (const XMLNode& node : syncDataList) {
+		const XMLElement& element = static_cast<const XMLElement&>(node);
+		SyncDataPoint syncDataPoint;
+		try {
+			if (element.Name() == "SyncDataPoint") {
+				syncDataPoint.creationTime = TimePoint(element.AttributeValue("CreationTime"));
+				ParseSyncDataPoint(syncDataPoint, element);
+			}
+			m_syncData.Append(syncDataPoint);
+		} catch (...) {
+			throw;
+		}
+	}
+}
+
+
+void GeneralAnalyticalPointingModel::Parse( const XMLDocument& xml) {
+
+	if ( xml.RootElement() == nullptr )
+		throw Error( "The XML document has no root element." );
+	if ( xml.RootElement()->Name() != "xtpm" || xml.RootElement()->AttributeValue( "version" ) != "1.0" )
+		throw Error( "Not an XTPM version 1.0 document." );
+
+
+	const XMLElement& root = *xml.RootElement();
+	for (const XMLNode& node : root) {
+		const XMLElement& element = static_cast<const XMLElement&>(node);
+
+		try {
+			if (element.Name() == "GeographicLatitude") {
+				m_siteLatitude = element.Text().Trimmed().ToDouble();
+			} else if (element.Name() == "Configuration") {
+				m_modelConfig = element.Text().Trimmed().ToInt();
+			} else if (element.Name() == "ModelParameters") {
+				m_modelEachPierSide = element.AttributeValue("PierSide") != "None";
+				if (element.AttributeValue("PierSide") == "West" || element.AttributeValue("PierSide") == "None") {
+					*m_pointingModelWest = ParseListOfRealValues(element);
+				} else {
+					*m_pointingModelEast = ParseListOfRealValues(element);
+				}
+			} else if (element.Name() == "SyncDataList") {
+				ParseSyncData(element);
+			}
+		} catch (...) {
+			throw;
+		}
+	}
+}
+
 void GeneralAnalyticalPointingModel::writeObject(const String& fileName)
 {
 	// save model parameters to disk
-	IsoString fileContent;
-
-	// west (or pierSide == None)
-	fileContent.Append(IsoString().Format("%d,", m_modelEachPierSide ? IMCPierSide::West : IMCPierSide::None));
-	for (size_t i=0; i < m_numOfModelParameters + 1; ++i){
-		if (i < m_numOfModelParameters)
-			fileContent.Append(IsoString().Format("%f,",(*m_pointingModelWest)[i]));
-		else
-			fileContent.Append(IsoString().Format("%f",m_residuals[IMCPierSide::West]));
-	}
-	fileContent.Append("\n");
-
-	// east
-	if (m_modelEachPierSide) {
-		fileContent.Append(IsoString().Format("%d,",IMCPierSide::East));
-		for (size_t i=0; i < this->m_numOfModelParameters + 1; ++i){
-			if (i < m_numOfModelParameters)
-				fileContent.Append(IsoString().Format("%f,",(*m_pointingModelEast)[i]));
-			else
-				fileContent.Append(IsoString().Format("%f",m_residuals[IMCPierSide::East]));
-		}
-		fileContent.Append("\n");
-	}
-	// model config
-	fileContent.Append(IsoString().Format("%d\n", m_modelConfig));
-	// geographic site latitude
-	fileContent.Append(IsoString().Format("%f\n", m_siteLatitude));
-
 	if (File::Exists(fileName)){
 		File::Remove(fileName);
 	}
-	File::WriteTextFile(fileName,fileContent);
 
-
+	// write xtpm file
+	XMLDocument* xml = Serialize();
+	xml->EnableAutoFormatting();
+	String xmlFileName = fileName;
+	xml->SerializeToFile( xmlFileName );
 }
 
 void GeneralAnalyticalPointingModel::readObject(const String& fileName)
 {
-	IsoStringList modelParameterList = File::ReadLines(fileName);
-
-
-	size_t lastIndex = 0;
-	for (size_t i = 0 ; i < modelParameterList.Length(); ++i) {
-		lastIndex=i;
-		IsoStringList tokens;
-		modelParameterList[i].Break(tokens, ",", true);
-
-		if (tokens.Length() != m_numOfModelParameters + 2)
-			break;
-
-		if ((pcl_enum) tokens[0].ToInt() == IMCPierSide::None || (pcl_enum) tokens[0].ToInt() == IMCPierSide::West){
-			// west
-			for (size_t j = 0; j < m_numOfModelParameters; ++j){
-				(*m_pointingModelWest)[j] = tokens[j+1].ToDouble();
-			}
-		}
-		if ((pcl_enum) tokens[0].ToInt() == IMCPierSide::East){
-			// east
-			for (size_t j = 0; j < m_numOfModelParameters; ++j){
-				(*m_pointingModelEast)[j] = tokens[j+1].ToDouble();
-			}
-		}
-
-	}
-
-	// read model config
-	m_modelConfig = modelParameterList[lastIndex].ToInt();
-
-	// read site latitude
-	m_siteLatitude = modelParameterList[++lastIndex].ToDouble();
+	IsoString text = File::ReadTextFile( fileName );
+	XMLDocument xml;
+	xml.SetParserOption( XMLParserOption::IgnoreComments );
+	xml.SetParserOption( XMLParserOption::IgnoreUnknownElements );
+	xml.Parse( text.UTF8ToUTF16() );
+	Parse( xml );
 }
 
 

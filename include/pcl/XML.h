@@ -60,6 +60,8 @@
 #include <pcl/ReferenceArray.h>
 #include <pcl/String.h>
 
+#include <errno.h>
+
 namespace pcl
 {
 
@@ -2924,6 +2926,126 @@ private:
 };
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+static void WarnOnUnexpectedChildNode( const XMLNode& node, const String& parsingWhatElement )
+{
+   if ( !node.IsComment() )
+   {
+      XMLParseError e( node,
+            "Parsing " + parsingWhatElement + " element",
+            "Ignoring unexpected XML child node of " + XMLNodeType::AsString( node.NodeType() ) + " type." );
+      Console().WarningLn( "<end><cbr>** Warning: " + e.Message() );
+   }
+}
+
+static void WarnOnUnknownChildElement( const XMLElement& element, const String& parsingWhatElement )
+{
+   XMLParseError e( element,
+         "Parsing " + parsingWhatElement + " element",
+         "Skipping unknown \'" + element.Name() + "\' child element." );
+   Console().WarningLn( "<end><cbr>** Warning: " + e.Message() );
+}
+
+// ----------------------------------------------------------------------------
+
+static bool TryToInt( int& value, IsoString::const_iterator p )
+{
+   IsoString::iterator endptr = nullptr;
+   errno = 0;
+   long val = ::strtol( p, &endptr, 0 );
+   if ( errno == 0 && (endptr == nullptr || *endptr == '\0') )
+   {
+      value = int( val );
+      return true;
+   }
+   return false;
+}
+
+static bool TryToDouble( double& value, IsoString::const_iterator p )
+{
+   IsoString::iterator endptr = nullptr;
+   errno = 0;
+   double val = ::strtod( p, &endptr );
+   if ( errno == 0 && (endptr == nullptr || *endptr == '\0') )
+   {
+      value = val;
+      return true;
+   }
+   return false;
+}
+
+static Vector ParseListOfRealValues( IsoString& text, size_type start, size_type end, size_type minCount = 0, size_type maxCount = ~size_type( 0 ) )
+{
+   Array<double> v;
+   for ( size_type i = start, j; i < end; ++i )
+   {
+      for ( j = i; j < end; ++j )
+         if ( text[j] == ',' )
+            break;
+      text[j] = '\0';
+      double x;
+      if ( !TryToDouble( x, text.At( i ) ) )
+         throw Error( "Parsing real numeric list: Invalid floating point numeric literal \'" + IsoString( text.At( i ) ) + "\'" );
+      if ( v.Length() == maxCount )
+         throw Error( "Parsing real numeric list: Too many items." );
+      v << x;
+      i = j;
+   }
+   if ( v.Length() < minCount )
+      throw Error( "Parsing real numeric list: Too few items." );
+   return Vector( v.Begin(), int( v.Length() ) );
+}
+
+static Vector ParseListOfRealValues( const XMLElement& element, size_type minCount = 0, size_type maxCount = ~size_type( 0 ) )
+{
+   IsoString text = IsoString( element.Text().Trimmed() );
+   return ParseListOfRealValues( text, 0, text.Length(), minCount, maxCount );
+}
+
+static IVector ParseListOfIntegerValues( IsoString& text, size_type start, size_type end, size_type minCount = 0, size_type maxCount = ~size_type( 0 ) )
+{
+   Array<int> v;
+   for ( size_type i = start, j; i < end; ++i )
+   {
+      for ( j = i; j < end; ++j )
+         if ( text[j] == ',' )
+            break;
+      text[j] = '\0';
+      int x;
+      if ( !TryToInt( x, text.At( i ) ) )
+         throw Error( "Parsing integer numeric list: Invalid integer numeric literal \'" + IsoString( text.At( i ) ) + "\' at offset " + IsoString( start ) );
+      if ( v.Length() == maxCount )
+         throw Error( "Parsing integer numeric list: Too many items." );
+      v << x;
+      i = j;
+   }
+   if ( v.Length() < minCount )
+      throw Error( "Parsing integer numeric list: Too few items." );
+   return IVector( v.Begin(), int( v.Length() ) );
+}
+
+static double ParseRealValue( const IsoString& s, size_type start, size_type end )
+{
+   double x;
+   if ( !s.Substring( start, end-start ).TryToDouble( x ) )
+      throw Error( "Invalid floating point numeric literal \'" + s + "\' at offset " + String( start ) );
+   return x;
+}
+
+static int ParseIntegerValue( const IsoString& s, size_type start, size_type end )
+{
+   int x;
+   if ( !s.Substring( start, end-start ).TryToInt( x ) )
+      throw Error( "Invalid integer numeric literal \'" + s + "\' at offset " + IsoString( start ) );
+   return x;
+}
+
+// ----------------------------------------------------------------------------
+
+
+
+
 
 } // pcl
 

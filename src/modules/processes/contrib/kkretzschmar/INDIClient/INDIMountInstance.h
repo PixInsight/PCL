@@ -96,7 +96,6 @@ public:
 
    void AddSyncDataPoint(const SyncDataPoint& syncDataPoint);
 
-   void loadSyncData();
    static void loadSyncData(Array<SyncDataPoint>& syncDataList, String syncDataFile);
 
 private:
@@ -111,7 +110,6 @@ private:
            pcl_bool p_computeApparentPosition;
            pcl_bool p_enableAlignmentCorrection;
            String   p_alignmentFile;
-           String   p_syncDataFile;
            int32    p_alignmentConfig;
 
            double   o_currentLST;
@@ -194,7 +192,6 @@ private:
    bool m_running, m_aborted;
 
    void ApplyPointingModelCorrection(AlignmentModel* aModel, double& targetRA, double& targetDec);
-   void WriteSyncDataPointToFile(const SyncDataPoint& syncPoint);
 };
 
 // ----------------------------------------------------------------------------

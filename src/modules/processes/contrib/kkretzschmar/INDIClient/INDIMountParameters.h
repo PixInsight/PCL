@@ -151,7 +151,6 @@ DECLARE_INT32_PARAMETER_CLASS(IMCAlignmentConfig);
 // ----------------------------------------------------------------------------
 
 DECLARE_STRING_PARAMETER_CLASS(IMCAlignmentFile);
-DECLARE_STRING_PARAMETER_CLASS(IMCSyncDataFile);
 
 // ----------------------------------------------------------------------------
 

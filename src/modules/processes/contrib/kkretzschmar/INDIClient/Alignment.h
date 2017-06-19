@@ -58,13 +58,21 @@
 #include <pcl/Array.h>
 #include <pcl/MetaParameter.h>
 #include <pcl/Console.h>
+#include <pcl/TimePoint.h>
+
+namespace pcl {
+	class XMLDocument;
+	class XMLElement;
+}
+
+
+#define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 
 namespace pcl
 {
 
-
-
 struct SyncDataPoint {
+	TimePoint creationTime;
 	double    localSiderialTime;
 	double    celestialRA; // true position of the telescope on the sky
 	double    celestialDEC;
@@ -89,9 +97,10 @@ struct SyncDataPoint {
  */
 class AlignmentModel {
 protected:
-	Console       m_console;
-	bool          m_modelEachPierSide = false;
-	Array<double> m_residuals;
+	Console       		 m_console;
+	bool        		 m_modelEachPierSide = false;
+	Array<double>      	 m_residuals;
+	Array<SyncDataPoint> m_syncData;
 public:
 	AlignmentModel(){}
 	AlignmentModel(bool modelEachPierSide):m_modelEachPierSide(modelEachPierSide){}
@@ -102,6 +111,7 @@ public:
 	virtual void ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) = 0;
 
 	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray) = 0;
+	virtual void fitModel() = 0;
 
 	virtual void writeObject(const String& fileName) = 0;
 
@@ -110,6 +120,14 @@ public:
 	virtual void printParameters() = 0;
 
 	pcl_enum getPierSide(double hourAngle);
+
+	Array<SyncDataPoint>& getSyncDataPoints() {
+		return m_syncData;
+	}
+
+	void addSyncDataPoint(const SyncDataPoint& point) {
+		m_syncData.Append(point);
+	}
 
 	// static methods
 	static void getPseudoInverse(Matrix& pseudoInverse, const Matrix& matrix);
@@ -177,6 +195,7 @@ public:
  	virtual void ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec);
 
  	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray);
+ 	virtual void fitModel();
 
  	// siteLatidude given in degrees
  	static AlignmentModel* create( double siteLatitude, uint32_t modelConfig){
@@ -185,6 +204,12 @@ public:
  	static AlignmentModel* create( double siteLatitude, uint32_t modelConfig, bool modelEachPierSide){
  		return new GeneralAnalyticalPointingModel(siteLatitude, modelConfig, modelEachPierSide);
  	}
+
+ 	XMLDocument* Serialize() const;
+
+ 	void Parse(const XMLDocument& xml);
+ 	void ParseSyncData(const XMLElement& element);
+ 	void ParseSyncDataPoint(SyncDataPoint& syncPoint, const XMLElement& element);
 
  	virtual void writeObject(const String& fileName);
 
@@ -198,9 +223,9 @@ public:
  	void printParameterVector(Vector* parameters, double residual);
  	void fitModelForPierSide(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide, double& residual);
 
- 	size_t m_numOfModelParameters;
- 	double m_siteLatitude; // in radians
-
+ 	size_t    m_numOfModelParameters;
+ 	double    m_siteLatitude; // in radians
+ 	TimePoint m_modelCreationTime;
  	Vector*  m_pointingModelWest;
  	Vector*  m_pointingModelEast;
  	uint32_t m_modelConfig;

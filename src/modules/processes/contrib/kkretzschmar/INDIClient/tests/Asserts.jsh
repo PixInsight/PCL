@@ -122,6 +122,22 @@ function expectNotEqualsWithPrecision( expected, actual, precision )
                "Expected: |" + expected + " - " +  actual + "|  larger than  " + precision );
 }
 
+function parseXTPMFile(fileName) {
+   let result = {};
+   parser = new DOMParser();
+
+   let fileContent = File.read(fileName);
+   let xmlDoc = parser.parseFromString(fileContent,"text/xml");
+
+   let root = xmlDoc.documentElement.childNodes;
+   let txt = "";
+   for (i = 0; i < root.length ;i++) {
+      txt += x[i].nodeName + ": " + x[i].childNodes[0].nodeValue + "<br>";
+   }
+   return txt;
+}
+
+
 #endif // _Asserts_jsh
 
 // ----------------------------------------------------------------------------

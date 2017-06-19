@@ -206,9 +206,9 @@ function INDIMountTestSuite()
 };
 
 // run CCD tests
-INDICCDTestSuite.prototype = new Test;
+//INDICCDTestSuite.prototype = new Test;
 
-(new INDICCDTestSuite).run();
+//(new INDICCDTestSuite).run();
 
 // run Mount tests
 INDIMountTestSuite.prototype = new Test;

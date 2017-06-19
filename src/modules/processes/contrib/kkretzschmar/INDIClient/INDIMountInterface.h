@@ -198,7 +198,7 @@ private:
 
 class SyncDataListDialog : public Dialog {
 public:
-	SyncDataListDialog(Array<SyncDataPoint>& syncDataArray, String syncDataListFile);
+	SyncDataListDialog(Array<SyncDataPoint>& syncDataArray);
 
 private:
 	VerticalSizer       Global_Sizer;
@@ -208,6 +208,8 @@ private:
 	    PushButton           Enable_Button;
 	    PushButton           Disable_Button;
 	    PushButton           Delete_Button;
+	    PushButton           Ok_Button;
+	    PushButton           Cancel_Button;
 
 
 	  void e_Click( Button& sender, bool checked );
@@ -215,7 +217,6 @@ private:
 	  void e_Close( Control& sender , bool& allowClose);
 
 	  Array<SyncDataPoint>&  m_syncDataList;
-	  String                 m_syncDataListFile;
 	  bool                   m_firstTimeShown;
 };
 
@@ -336,7 +337,6 @@ public:
 
    INDIMountInterfaceExecution* m_execution              = nullptr;
    CoordinateSearchDialog*      m_searchDialog           = nullptr;
-   SyncDataListDialog*          m_syncDataListDialog     = nullptr;
    AlignmentConfigDialog*       m_alignmentConfigDialog  = nullptr;
 
 
@@ -380,17 +380,11 @@ public:
               Label             AlignmentFile_Label;
               Edit              AlignmentFile_Edit;
               ToolButton        AlignmentFile_ToolButton;
-          HorizontalSizer   SyncDataFile_Sizer;
-          	  Label             SyncDataFile_Label;
-          	  Edit              SyncDataFile_Edit;
-          	  ToolButton        SyncDataFile_ToolButton;
-          	   PushButton       SyncDataList_Button;
           HorizontalSizer   MountAlignmentConfig_Sizer;
-          	  Label            MountAlignmentConfig_Label;
           	  PushButton       MountAligmentModelConfig_Button;
-          HorizontalSizer   MountAligmentModelFit_Sizer;
           	  PushButton       MountAligmentModelFit_Button;
           	  CheckBox         MountAlignmentPlotResiduals_CheckBox;
+          	  PushButton       SyncDataList_Button;
       SectionBar        MountGoTo_SectionBar;
       Control           MountGoTo_Control;
       VerticalSizer     MountGoTo_Sizer;
@@ -466,7 +460,8 @@ public:
 
    void UpdateControls();
 
-   void plotAlignemtResiduals(AlignmentModel* model, const Array<SyncDataPoint>& syncDatapointList);
+   void plotAlignemtResiduals(AlignmentModel* model);
+
 
    void e_Timer( Timer& sender );
    void e_Edit( Edit& sender );

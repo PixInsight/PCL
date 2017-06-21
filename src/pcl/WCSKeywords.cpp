@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0841
+// /_/     \____//_____/   PCL 02.01.05.0842
 // ----------------------------------------------------------------------------
-// pcl/WCSKeywords.cpp - Released 2017-06-17T10:55:56Z
+// pcl/WCSKeywords.cpp - Released 2017-06-21T11:36:44Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -243,4 +243,4 @@ bool WCSKeywords::ExtractWorldTransformation(LinearTransformation& transIW, int 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/WCSKeywords.cpp - Released 2017-06-17T10:55:56Z
+// EOF pcl/WCSKeywords.cpp - Released 2017-06-21T11:36:44Z

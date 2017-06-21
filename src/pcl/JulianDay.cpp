@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0841
+// /_/     \____//_____/   PCL 02.01.05.0842
 // ----------------------------------------------------------------------------
-// pcl/JulianDay.cpp - Released 2017-06-17T10:55:56Z
+// pcl/JulianDay.cpp - Released 2017-06-21T11:36:44Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -134,4 +134,4 @@ void PCL_FUNC JDToComplexTime( int& year, int& month, int& day, double& dayf, in
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/JulianDay.cpp - Released 2017-06-17T10:55:56Z
+// EOF pcl/JulianDay.cpp - Released 2017-06-21T11:36:44Z

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0841
+// /_/     \____//_____/   PCL 02.01.05.0842
 // ----------------------------------------------------------------------------
-// pcl/Mutex.h - Released 2017-06-17T10:55:43Z
+// pcl/Mutex.h - Released 2017-06-21T11:36:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -433,4 +433,4 @@ private:
 #endif   // __PCL_Mutex_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Mutex.h - Released 2017-06-17T10:55:43Z
+// EOF pcl/Mutex.h - Released 2017-06-21T11:36:33Z

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0841
+// /_/     \____//_____/   PCL 02.01.05.0842
 // ----------------------------------------------------------------------------
-// pcl/Container.h - Released 2017-06-17T10:55:43Z
+// pcl/Container.h - Released 2017-06-21T11:36:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -129,4 +129,4 @@ class PCL_CLASS IndirectSortedContainer : public IndirectContainer<T>
 #endif  // __PCL_Container_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Container.h - Released 2017-06-17T10:55:43Z
+// EOF pcl/Container.h - Released 2017-06-21T11:36:33Z

@@ -104,6 +104,20 @@ protected:
  * %SurfaceSpline implements interpolating or smoothing surface splines (also
  * known as <em>thin plates</em>) for arbitrarily distributed input nodes in
  * two dimensions.
+ *
+ * The most distinctive property of surface splines is their high adaptability
+ * to local variations, which makes them ideal to model complex two dimensional
+ * functions with high accuracy. An important advantage of our implementation
+ * is the possibility to control adaptability with approximating (or smoothing)
+ * surface splines, as opposed to interpolating splines, and the possibility to
+ * control adaptability both as a global property of the modeling device, or on
+ * a point per point basis. The main drawback of surface splines is that they
+ * are computationally expensive, especially for large data sets. See the
+ * GridInterpolation and PointGridInterpolation classes for discretized
+ * implementations with much higher efficiency.
+ *
+ * \sa PointSurfaceSpline, GridInterpolation, PointGridInterpolation,
+ * SurfacePolynomial
  */
 template <typename T>
 class PCL_CLASS SurfaceSpline : private SurfaceSplineBase
@@ -138,6 +152,19 @@ public:
     */
 #ifndef _MSC_VER
    SurfaceSpline( SurfaceSpline&& ) = default;
+#else
+   SurfaceSpline( SurfaceSpline&& x ) :
+      m_x( std::move( x.m_x ) ),
+      m_y( std::move( x.m_y ) ),
+      m_r0( x.m_r0 ),
+      m_x0( x.m_x0 ),
+      m_y0( x.m_y0 ),
+      m_order( x.m_order ),
+      m_smoothing( x.m_smoothing ),
+      m_weights( std::move( x.m_weights ) ),
+      m_spline( std::move( x.m_spline ) )
+   {
+   }
 #endif
 
    /*!
@@ -157,6 +184,20 @@ public:
     */
 #ifndef _MSC_VER
    SurfaceSpline& operator =( SurfaceSpline&& ) = default;
+#else
+   SurfaceSpline& operator =( SurfaceSpline&& x )
+   {
+      m_x = std::move( x.m_x );
+      m_y = std::move( x.m_y );
+      m_r0 = x.m_r0;
+      m_x0 = x.m_x0;
+      m_y0 = x.m_y0;
+      m_order = x.m_order;
+      m_smoothing = x.m_smoothing;
+      m_weights = std::move( x.m_weights );
+      m_spline = std::move( x.m_spline );
+      return *this;
+   }
 #endif
 
    /*!

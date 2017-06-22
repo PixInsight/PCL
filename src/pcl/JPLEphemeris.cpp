@@ -387,7 +387,7 @@ bool JPLEphemeris::Test( const String& filePath, bool verbose ) const
 
             bool ok = Abs( eps ) < 1e-13;
             if ( verbose )
-               std::cout << IsoString().Format( "%c %.1lf %2d %2d %d %+.15lf\n", ok ? ' ' : 'E', jd, targetNo, centerNo, component, eps );
+               std::cout << IsoString().Format( "%c %.1f %2d %2d %d %+.15f\n", ok ? ' ' : 'E', jd, targetNo, centerNo, component, eps );
             if ( !ok )
                ++failed;
          }
@@ -408,8 +408,8 @@ IsoString JPLEphemeris::Summary() const
    //                  1234567890
    text.AppendFormat( "DE Number  : %d\n", DENumber() );
    text.AppendFormat( "LE Number  : %d\n", LENumber() );
-   text.AppendFormat( "Start JD   : %.2lf\n", m_ephStartJD );
-   text.AppendFormat( "End JD     : %.2lf\n", m_ephEndJD );
+   text.AppendFormat( "Start JD   : %.2f\n", m_ephStartJD );
+   text.AppendFormat( "End JD     : %.2f\n", m_ephEndJD );
    text.AppendFormat( "BlkDelta   : %d\n", m_blockDelta );
    text.AppendFormat( "Constants  : %u\n", m_constants.Length() );
    for ( auto c : m_constants )

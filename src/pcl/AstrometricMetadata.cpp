@@ -255,10 +255,10 @@ static String FieldString( double field )
    int sign, s1, s2; double s3;
    IsoString::ToSexagesimal( field ).ParseSexagesimal( sign, s1, s2, s3 );
    if ( s1 > 0 )
-      return String().Format( "%dd %d' %.1lf\"", s1, s2, s3 );
+      return String().Format( "%dd %d' %.1f\"", s1, s2, s3 );
    if ( s2 > 0 )
-      return String().Format( "%d' %.1lf\"", s2, s3 );
-   return String().Format( "%.2lf\"", s3 );
+      return String().Format( "%d' %.1f\"", s2, s3 );
+   return String().Format( "%.2f\"", s3 );
 }
 
 static String CelestialToString( const DPoint& pRD )
@@ -298,18 +298,18 @@ String AstrometricMetadata::Summary() const
    summary  << "Referentiation Matrix (World = Matrix * Coords[x,y]):" << '\n'
             << linearTransIW.ToString( 3 ) << '\n'
             << "Projection .......... " << m_projection->Name() << '\n'
-            << "Projection origin ... " << String().Format( "[%.6lf %.6lf]px", projOrgPx.x, projOrgPx.y )
+            << "Projection origin ... " << String().Format( "[%.6f %.6f]px", projOrgPx.x, projOrgPx.y )
                                         << " -> [" << CelestialToString( projOrgRD ) << ']' << '\n'
-            << "Resolution .......... " << String().Format( "%.3lf arcsec/px", m_resolution*3600 ) << '\n'
-            << "Rotation ............ " << String().Format( "%.3lf deg", rotation ) << (flipped ? " (flipped)" : "") << '\n';
+            << "Resolution .......... " << String().Format( "%.3f arcsec/px", m_resolution*3600 ) << '\n'
+            << "Rotation ............ " << String().Format( "%.3f deg", rotation ) << (flipped ? " (flipped)" : "") << '\n';
 
    if ( m_xpixsz.IsDefined() )
       if ( m_xpixsz() > 0 )
          if ( m_focal.IsDefined() )
          {
             summary
-            << "Focal ............... " << String().Format( "%.2lf mm", m_focal() ) << '\n'
-            << "Pixel size .......... " << String().Format( "%.2lf um", m_xpixsz() ) << '\n';
+            << "Focal ............... " << String().Format( "%.2f mm", m_focal() ) << '\n'
+            << "Pixel size .......... " << String().Format( "%.2f um", m_xpixsz() ) << '\n';
          }
 
    summary  << "Field of view ....... " << FieldString( m_width*m_resolution ) << " x " << FieldString( m_height*m_resolution ) << '\n'
@@ -349,15 +349,15 @@ static void RemoveKeyword( FITSKeywordArray& keywords, IsoString name )
 void AstrometricMetadata::UpdateBasicKeywords( FITSKeywordArray& keywords ) const
 {
    if ( m_focal.IsDefined() && m_focal() > 0 )
-      ModifyKeyword( keywords, "FOCALLEN", IsoString().Format( "%.2lf", m_focal() ), "Focal length (mm)" );
+      ModifyKeyword( keywords, "FOCALLEN", IsoString().Format( "%.2f", m_focal() ), "Focal length (mm)" );
    else
       RemoveKeyword( keywords, "FOCALLEN" );
 
    if ( m_xpixsz.IsDefined() )
       if ( m_xpixsz() > 0 )
       {
-         ModifyKeyword( keywords, "XPIXSZ", IsoString().Format( "%.3lf", m_xpixsz() ), "Pixel size, X-axis (um)" );
-         ModifyKeyword( keywords, "YPIXSZ", IsoString().Format( "%.3lf", m_xpixsz() ), "Pixel size, Y-axis (um)" );
+         ModifyKeyword( keywords, "XPIXSZ", IsoString().Format( "%.3f", m_xpixsz() ), "Pixel size, X-axis (um)" );
+         ModifyKeyword( keywords, "YPIXSZ", IsoString().Format( "%.3f", m_xpixsz() ), "Pixel size, Y-axis (um)" );
       }
 
    /*
@@ -411,26 +411,26 @@ void AstrometricMetadata::UpdateWCSKeywords( FITSKeywordArray& keywords ) const
       keywords << FITSHeaderKeyword( "EQUINOX", "2000.0", "Equinox of the celestial coordinate system" )
                << FITSHeaderKeyword( "CTYPE1", wcs.ctype1, "Axis1 projection: " + m_projection->Name() )
                << FITSHeaderKeyword( "CTYPE2", wcs.ctype2, "Axis2 projection: " + m_projection->Name() )
-               << FITSHeaderKeyword( "CRPIX1", IsoString().Format( "%.6lf", wcs.crpix1() ), "Axis1 reference pixel" )
-               << FITSHeaderKeyword( "CRPIX2", IsoString().Format( "%.6lf", wcs.crpix2() ), "Axis2 reference pixel" );
+               << FITSHeaderKeyword( "CRPIX1", IsoString().Format( "%.6f", wcs.crpix1() ), "Axis1 reference pixel" )
+               << FITSHeaderKeyword( "CRPIX2", IsoString().Format( "%.6f", wcs.crpix2() ), "Axis2 reference pixel" );
 
       if ( wcs.crval1.IsDefined() )
-         keywords << FITSHeaderKeyword( "CRVAL1", IsoString().Format( "%.12lg", wcs.crval1() ), "Axis1 reference value" );
+         keywords << FITSHeaderKeyword( "CRVAL1", IsoString().Format( "%.12g", wcs.crval1() ), "Axis1 reference value" );
       if ( wcs.crval2.IsDefined() )
-         keywords << FITSHeaderKeyword( "CRVAL2", IsoString().Format( "%.12lg", wcs.crval2() ), "Axis2 reference value" );
+         keywords << FITSHeaderKeyword( "CRVAL2", IsoString().Format( "%.12g", wcs.crval2() ), "Axis2 reference value" );
       if ( wcs.pv1_1.IsDefined() )
-         keywords << FITSHeaderKeyword( "PV1_1", IsoString().Format( "%.12lg", wcs.pv1_1() ), "Native longitude of the reference point" );
+         keywords << FITSHeaderKeyword( "PV1_1", IsoString().Format( "%.12g", wcs.pv1_1() ), "Native longitude of the reference point" );
       if ( wcs.pv1_2.IsDefined() )
-         keywords << FITSHeaderKeyword( "PV1_2", IsoString().Format( "%.12lg", wcs.pv1_2() ), "Native latitude of the reference point" );
+         keywords << FITSHeaderKeyword( "PV1_2", IsoString().Format( "%.12g", wcs.pv1_2() ), "Native latitude of the reference point" );
       if ( wcs.lonpole.IsDefined() )
-         keywords << FITSHeaderKeyword( "LONPOLE", IsoString().Format( "%.12lg", wcs.lonpole() ), "Longitude of the celestial pole" );
+         keywords << FITSHeaderKeyword( "LONPOLE", IsoString().Format( "%.12g", wcs.lonpole() ), "Longitude of the celestial pole" );
       if ( wcs.latpole.IsDefined() )
-         keywords << FITSHeaderKeyword( "LATPOLE", IsoString().Format( "%.12lg", wcs.latpole() ), "Latitude of the celestial pole" );
+         keywords << FITSHeaderKeyword( "LATPOLE", IsoString().Format( "%.12g", wcs.latpole() ), "Latitude of the celestial pole" );
 
-      keywords << FITSHeaderKeyword( "CD1_1", IsoString().Format( "%.12lg", wcs.cd1_1() ), "Scale matrix (1,1)" )
-               << FITSHeaderKeyword( "CD1_2", IsoString().Format( "%.12lg", wcs.cd1_2() ), "Scale matrix (1,2)" )
-               << FITSHeaderKeyword( "CD2_1", IsoString().Format( "%.12lg", wcs.cd2_1() ), "Scale matrix (2,1)" )
-               << FITSHeaderKeyword( "CD2_2", IsoString().Format( "%.12lg", wcs.cd2_2() ), "Scale matrix (2,2)" );
+      keywords << FITSHeaderKeyword( "CD1_1", IsoString().Format( "%.12g", wcs.cd1_1() ), "Scale matrix (1,1)" )
+               << FITSHeaderKeyword( "CD1_2", IsoString().Format( "%.12g", wcs.cd1_2() ), "Scale matrix (1,2)" )
+               << FITSHeaderKeyword( "CD2_1", IsoString().Format( "%.12g", wcs.cd2_1() ), "Scale matrix (2,1)" )
+               << FITSHeaderKeyword( "CD2_2", IsoString().Format( "%.12g", wcs.cd2_2() ), "Scale matrix (2,2)" );
 
       if ( HasSplineWorldTransformation() )
          keywords << FITSHeaderKeyword( "REFSPLINE", "T", "Coordinates stored in properties as splines" );

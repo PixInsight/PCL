@@ -5518,7 +5518,7 @@ public:
    explicit
    IsoString( double x ) : string_base()
    {
-      (void)Format( "%.16lg", x );
+      (void)Format( "%.16g", x );
    }
 
    /*!
@@ -5554,7 +5554,7 @@ public:
    explicit
    IsoString( Complex<double>& x ) : string_base()
    {
-      (void)Format( "{%.16lg,%.16lg}", x.Real(), x.Imag() );
+      (void)Format( "{%.16g,%.16g}", x.Real(), x.Imag() );
    }
 
    /*!
@@ -7880,7 +7880,7 @@ public:
    explicit
    String( double x ) : string_base()
    {
-      (void)Format( L"%.16lg", x );
+      (void)Format( L"%.16g", x );
    }
 
    /*!
@@ -7914,7 +7914,7 @@ public:
    explicit
    String( Complex<double>& x ) : string_base()
    {
-      (void)Format( L"{%.16lg,%.16lg}", x.Real(), x.Imag() );
+      (void)Format( L"{%.16g,%.16g}", x.Real(), x.Imag() );
    }
 
    /*!

@@ -90,7 +90,7 @@ public:
       {
          size_type N = size_type( width )*size_type( height );
          if ( status.IsInitializationEnabled() )
-            status.Initialize( String().Format( "Translate dx=%.3lf, dy=%.3lf, ",
+            status.Initialize( String().Format( "Translate dx=%.3f, dy=%.3f, ",
                         translation.Delta().x, translation.Delta().y ) + translation.Interpolation().Description(),
                         size_type( n )*N );
 

@@ -1192,7 +1192,7 @@ private:
          {
             if ( m_xisfOptions.outputUpperBound < m_xisfOptions.outputLowerBound )
                Swap( m_xisfOptions.outputLowerBound, m_xisfOptions.outputUpperBound );
-            element->SetAttribute( "bounds", String().Format( "%.16lg:%.16lg", m_xisfOptions.outputLowerBound, m_xisfOptions.outputUpperBound ) );
+            element->SetAttribute( "bounds", String().Format( "%.16g:%.16g", m_xisfOptions.outputLowerBound, m_xisfOptions.outputUpperBound ) );
          }
 
       element->SetAttribute( "colorSpace", XISF::ColorSpaceId( m_info.colorSpace ) );
@@ -1260,11 +1260,11 @@ private:
             DVector m, s, h, l, r;
             m_df.GetDisplayFunctionParameters( m, s, h, l, r );
             XMLElement* dfElement = NewElement( element, "DisplayFunction" );
-            dfElement->SetAttribute( "m", String().Format( "%.16lg:%.16lg:%.16lg:%.16lg", m[0], m[1], m[2], m[3] ) );
-            dfElement->SetAttribute( "s", String().Format( "%.16lg:%.16lg:%.16lg:%.16lg", s[0], s[1], s[2], s[3] ) );
-            dfElement->SetAttribute( "h", String().Format( "%.16lg:%.16lg:%.16lg:%.16lg", h[0], h[1], h[2], h[3] ) );
-            dfElement->SetAttribute( "l", String().Format( "%.16lg:%.16lg:%.16lg:%.16lg", l[0], l[1], l[2], l[3] ) );
-            dfElement->SetAttribute( "r", String().Format( "%.16lg:%.16lg:%.16lg:%.16lg", r[0], r[1], r[2], r[3] ) );
+            dfElement->SetAttribute( "m", String().Format( "%.16g:%.16g:%.16g:%.16g", m[0], m[1], m[2], m[3] ) );
+            dfElement->SetAttribute( "s", String().Format( "%.16g:%.16g:%.16g:%.16g", s[0], s[1], s[2], s[3] ) );
+            dfElement->SetAttribute( "h", String().Format( "%.16g:%.16g:%.16g:%.16g", h[0], h[1], h[2], h[3] ) );
+            dfElement->SetAttribute( "l", String().Format( "%.16g:%.16g:%.16g:%.16g", l[0], l[1], l[2], l[3] ) );
+            dfElement->SetAttribute( "r", String().Format( "%.16g:%.16g:%.16g:%.16g", r[0], r[1], r[2], r[3] ) );
             if ( m_xisfOptions.verbosity > 0 )
                LogLn( "Display function parameters embedded." );
          }

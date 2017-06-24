@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0841
+// /_/     \____//_____/   PCL 02.01.05.0842
 // ----------------------------------------------------------------------------
-// pcl/FileDialog.h - Released 2017-06-17T10:55:43Z
+// pcl/FileDialog.h - Released 2017-06-21T11:36:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -99,6 +99,16 @@ public:
    {
       SetDescription( description );
       AddExtensions( extensions );
+   }
+
+   /*!
+    * Constructs a %FileFilter with the specified \a description and a single
+    * file \a extension.
+    */
+   FileFilter( const String& description, const String& extension )
+   {
+      SetDescription( description );
+      AddExtension( extension );
    }
 
    /*!
@@ -244,6 +254,20 @@ public:
    void SetFilter( const FileFilter& filter )
    {
       SetFilters( filter_list() << filter );
+   }
+
+   /*!
+    * Adds a set of file \a filters to the list of filters used by this file
+    * dialog.
+    */
+   void AddFilters( const filter_list& filters );
+
+   /*!
+    * Adds a file \a filter to the list of filters used by this file dialog.
+    */
+   void AddFilter( const FileFilter& filter )
+   {
+      AddFilters( filter_list() << filter );
    }
 
    /*!
@@ -508,4 +532,4 @@ private:
 #endif   // __PCL_FileDialog_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileDialog.h - Released 2017-06-17T10:55:43Z
+// EOF pcl/FileDialog.h - Released 2017-06-21T11:36:33Z

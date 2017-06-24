@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0841
+// /_/     \____//_____/   PCL 02.01.05.0842
 // ----------------------------------------------------------------------------
-// pcl/Search.h - Released 2017-06-17T10:55:43Z
+// pcl/Search.h - Released 2017-06-21T11:36:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -507,4 +507,4 @@ BI1 SearchLast( BI1 i1, BI1 j1, FI2 i2, FI2 j2, BP p )
 #endif  // __PCL_Search_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Search.h - Released 2017-06-17T10:55:43Z
+// EOF pcl/Search.h - Released 2017-06-21T11:36:33Z

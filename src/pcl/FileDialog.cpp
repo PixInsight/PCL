@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0841
+// /_/     \____//_____/   PCL 02.01.05.0842
 // ----------------------------------------------------------------------------
-// pcl/FileDialog.cpp - Released 2017-06-17T10:55:56Z
+// pcl/FileDialog.cpp - Released 2017-06-21T11:36:44Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -58,6 +58,58 @@
 namespace pcl
 {
 
+// ----------------------------------------------------------------------------
+
+void FileFilter::AddExtension( const String& ext )
+{
+   String x = ext.Trimmed();
+   if ( !x.StartsWith( '.' ) )
+      if ( !x.StartsWith( '*' ) )
+         x.Prepend( '*' );
+   x.ToLowercase(); // case-insensitive file extensions
+   if ( !m_extensions.Contains( x ) )
+      m_extensions.Add( x );
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFilter::Clear()
+{
+   m_description.Clear();
+   m_extensions.Clear();
+}
+
+// ----------------------------------------------------------------------------
+
+String FileFilter::MakeAPIFilter() const
+{
+   String filter;
+
+   if ( !m_extensions.IsEmpty() )
+   {
+      if ( !m_description.IsEmpty() )
+      {
+         filter += m_description;
+         filter += " (";
+      }
+
+      for ( StringList::const_iterator i = m_extensions.Begin(); i != m_extensions.End(); ++i )
+      {
+         if ( i != m_extensions.Begin() )
+            filter += ' '; // also legal are ';' and ','
+         if ( i->StartsWith( '.' ) )
+            filter += '*';
+         filter += *i;
+      }
+
+      if ( !m_description.IsEmpty() )
+         filter += ')';
+   }
+
+   return filter;
+}
+
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 class FileDialogPrivate
@@ -134,107 +186,88 @@ public:
 
 // ----------------------------------------------------------------------------
 
-void FileFilter::AddExtension( const String& ext )
-{
-   String x = ext.Trimmed();
-   if ( !x.StartsWith( '.' ) )
-      if ( !x.StartsWith( '*' ) )
-         x.Prepend( '*' );
-   x.ToLowercase(); // case-insensitive file extensions
-   if ( !m_extensions.Contains( x ) )
-      m_extensions.Add( x );
-}
-
-void FileFilter::Clear()
-{
-   m_description.Clear();
-   m_extensions.Clear();
-}
-
-String FileFilter::MakeAPIFilter() const
-{
-   String filter;
-
-   if ( !m_extensions.IsEmpty() )
-   {
-      if ( !m_description.IsEmpty() )
-      {
-         filter += m_description;
-         filter += " (";
-      }
-
-      for ( StringList::const_iterator i = m_extensions.Begin(); i != m_extensions.End(); ++i )
-      {
-         if ( i != m_extensions.Begin() )
-            filter += ' '; // also legal are ';' and ','
-         if ( i->StartsWith( '.' ) )
-            filter += '*';
-         filter += *i;
-      }
-
-      if ( !m_description.IsEmpty() )
-         filter += ')';
-   }
-
-   return filter;
-}
-
-// ----------------------------------------------------------------------------
-
 FileDialog::FileDialog()
 {
    p = new FileDialogPrivate();
 }
 
+// ----------------------------------------------------------------------------
+
 FileDialog::~FileDialog()
 {
 }
+
+// ----------------------------------------------------------------------------
 
 String FileDialog::Caption() const
 {
    return p->caption;
 }
 
+// ----------------------------------------------------------------------------
+
 void FileDialog::SetCaption( const String& caption )
 {
    p->caption = caption;
 }
+
+// ----------------------------------------------------------------------------
 
 String FileDialog::InitialPath() const
 {
    return p->initialPath;
 }
 
+// ----------------------------------------------------------------------------
+
 void FileDialog::SetInitialPath( const String& path )
 {
    p->initialPath = path;
 }
+
+// ----------------------------------------------------------------------------
 
 const FileDialog::filter_list& FileDialog::Filters() const
 {
    return p->filters;
 }
 
+// ----------------------------------------------------------------------------
+
 void FileDialog::SetFilters( const filter_list& filters )
 {
    p->filters = filters;
 }
+
+// ----------------------------------------------------------------------------
+
+void FileDialog::AddFilters( const filter_list& filters )
+{
+   p->filters << filters;
+}
+
+// ----------------------------------------------------------------------------
 
 FileDialog::filter_list& FileDialog::Filters() // ### DEPRECATED
 {
    return p->filters;
 }
 
+// ----------------------------------------------------------------------------
+
 String FileDialog::SelectedFileExtension() const
 {
    return p->fileExtension;
 }
+
+// ----------------------------------------------------------------------------
 
 void FileDialog::SetSelectedFileExtension( const String& ext )
 {
    p->fileExtension = File::ExtractExtension( ext );
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 class OpenFileDialogPrivate
@@ -245,30 +278,42 @@ public:
    StringList fileNames;
 };
 
+// ----------------------------------------------------------------------------
+
 OpenFileDialog::OpenFileDialog() : FileDialog()
 {
    q = new OpenFileDialogPrivate();
    p->caption = "Open File";
 }
 
+// ----------------------------------------------------------------------------
+
 OpenFileDialog::~OpenFileDialog()
 {
 }
+
+// ----------------------------------------------------------------------------
 
 void OpenFileDialog::LoadImageFilters()
 {
    p->LoadFiltersFromGlobalString( "FileFormat/ReadFilters" );
 }
 
+// ----------------------------------------------------------------------------
+
 bool OpenFileDialog::AllowsMultipleSelections() const
 {
    return q->multipleSelections;
 }
 
+// ----------------------------------------------------------------------------
+
 void OpenFileDialog::EnableMultipleSelections( bool enable )
 {
    q->multipleSelections = enable;
 }
+
+// ----------------------------------------------------------------------------
 
 // This is a file_enumeration_callback function as per APIDefs.h
 static uint32 AddFileNameToList( const char16_type* fileName, void* list )
@@ -320,16 +365,21 @@ bool OpenFileDialog::Execute()
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 const StringList& OpenFileDialog::FileNames() const
 {
    return q->fileNames;
 }
+
+// ----------------------------------------------------------------------------
 
 String OpenFileDialog::FileName() const
 {
    return q->fileNames.IsEmpty() ? String() : *q->fileNames;
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 class SaveFileDialogPrivate
@@ -340,30 +390,42 @@ public:
    String fileName;
 };
 
+// ----------------------------------------------------------------------------
+
 SaveFileDialog::SaveFileDialog() : FileDialog()
 {
    q = new SaveFileDialogPrivate();
    p->caption = "Save File As";
 }
 
+// ----------------------------------------------------------------------------
+
 SaveFileDialog::~SaveFileDialog()
 {
 }
+
+// ----------------------------------------------------------------------------
 
 void SaveFileDialog::LoadImageFilters()
 {
    p->LoadFiltersFromGlobalString( "FileFormat/WriteFilters" );
 }
 
+// ----------------------------------------------------------------------------
+
 bool SaveFileDialog::IsOverwritePromptEnabled() const
 {
    return q->overwritePrompt;
 }
 
+// ----------------------------------------------------------------------------
+
 void SaveFileDialog::EnableOverwritePrompt( bool enable )
 {
    q->overwritePrompt = enable;
 }
+
+// ----------------------------------------------------------------------------
 
 bool SaveFileDialog::Execute()
 {
@@ -388,11 +450,14 @@ bool SaveFileDialog::Execute()
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 String SaveFileDialog::FileName() const
 {
    return q->fileName;
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 class GetDirectoryDialogPrivate
@@ -402,15 +467,21 @@ public:
    String directory;
 };
 
+// ----------------------------------------------------------------------------
+
 GetDirectoryDialog::GetDirectoryDialog() : FileDialog()
 {
    q = new GetDirectoryDialogPrivate();
    p->caption = "Select Directory";
 }
 
+// ----------------------------------------------------------------------------
+
 GetDirectoryDialog::~GetDirectoryDialog()
 {
 }
+
+// ----------------------------------------------------------------------------
 
 bool GetDirectoryDialog::Execute()
 {
@@ -427,6 +498,8 @@ bool GetDirectoryDialog::Execute()
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 String GetDirectoryDialog::Directory() const
 {
    return q->directory;
@@ -437,4 +510,4 @@ String GetDirectoryDialog::Directory() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileDialog.cpp - Released 2017-06-17T10:55:56Z
+// EOF pcl/FileDialog.cpp - Released 2017-06-21T11:36:44Z

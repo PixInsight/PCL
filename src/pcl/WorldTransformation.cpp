@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0841
+// /_/     \____//_____/   PCL 02.01.05.0842
 // ----------------------------------------------------------------------------
-// pcl/WorldTransformation.cpp - Released 2017-06-17T10:55:56Z
+// pcl/WorldTransformation.cpp - Released 2017-06-21T11:36:44Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -71,12 +71,12 @@ void SplineWorldTransformation::Serialize( ByteArray& data ) const
 
    if ( m_weights.IsEmpty() )
       for ( size_type i = 0; i < m_controlPointsW.Length(); ++i )
-         text << IsoString().Format( "%.16lg;%.16lg;%.16lg;%.16lg",
+         text << IsoString().Format( "%.16g;%.16g;%.16g;%.16g",
                                      m_controlPointsI[i].x, m_controlPointsI[i].y,
                                      m_controlPointsW[i].x, m_controlPointsW[i].y ) << '\n';
    else
       for ( size_type i = 0; i < m_controlPointsW.Length(); ++i )
-         text << IsoString().Format( "%.16lg;%.16lg;%.16lg;%.16lg;%.6g",
+         text << IsoString().Format( "%.16g;%.16g;%.16g;%.16g;%.6g",
                                      m_controlPointsI[i].x, m_controlPointsI[i].y,
                                      m_controlPointsW[i].x, m_controlPointsW[i].y, m_weights[int( i )] ) << '\n';
    text << ']';
@@ -242,4 +242,4 @@ void SplineWorldTransformation::CalculateLinearApproximation()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/WorldTransformation.cpp - Released 2017-06-17T10:55:56Z
+// EOF pcl/WorldTransformation.cpp - Released 2017-06-21T11:36:44Z

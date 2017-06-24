@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0841
+// /_/     \____//_____/   PCL 02.01.05.0842
 // ----------------------------------------------------------------------------
-// pcl/Translation.cpp - Released 2017-06-17T10:55:56Z
+// pcl/Translation.cpp - Released 2017-06-21T11:36:44Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -90,7 +90,7 @@ public:
       {
          size_type N = size_type( width )*size_type( height );
          if ( status.IsInitializationEnabled() )
-            status.Initialize( String().Format( "Translate dx=%.3lf, dy=%.3lf, ",
+            status.Initialize( String().Format( "Translate dx=%.3f, dy=%.3f, ",
                         translation.Delta().x, translation.Delta().y ) + translation.Interpolation().Description(),
                         size_type( n )*N );
 
@@ -231,4 +231,4 @@ void Translation::Apply( UInt32Image& img ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Translation.cpp - Released 2017-06-17T10:55:56Z
+// EOF pcl/Translation.cpp - Released 2017-06-21T11:36:44Z

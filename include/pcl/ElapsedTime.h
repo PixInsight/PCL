@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0841
+// /_/     \____//_____/   PCL 02.01.05.0842
 // ----------------------------------------------------------------------------
-// pcl/ElapsedTime.h - Released 2017-06-17T10:55:43Z
+// pcl/ElapsedTime.h - Released 2017-06-21T11:36:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -348,13 +348,13 @@ private:
    static S ToString( double s, S* )
    {
       if ( s < 0.001 )
-         return S().Format( "%.3lf us", s*1000000 );
+         return S().Format( "%.3f us", s*1000000 );
 
       if ( s < 1 )
-         return S().Format( "%.3lf ms", s*1000 );
+         return S().Format( "%.3f ms", s*1000 );
 
       if ( s < 60 )
-         return S().Format( "%.3lf s", s );
+         return S().Format( "%.3f s", s );
 
       int sign = (s < 0) ? -1 : +1;
       s = Abs( s );
@@ -363,7 +363,7 @@ private:
       {
          int m = TruncInt( s/60 );
          s -= m*60;
-         return S().Format( "%02d:%05.2lf", m*sign, s );
+         return S().Format( "%02d:%05.2f", m*sign, s );
       }
 
       if ( s < 86400 )
@@ -372,7 +372,7 @@ private:
          s -= h*3600;
          int m = TruncInt( s/60 );
          s -= m*60;
-         return S().Format( "%02d:%02d:%04.1lf", h*sign, m, s );
+         return S().Format( "%02d:%02d:%04.1f", h*sign, m, s );
       }
 
       int d = TruncInt( s/86400 );
@@ -392,4 +392,4 @@ private:
 #endif   // __PCL_ElapsedTime_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ElapsedTime.h - Released 2017-06-17T10:55:43Z
+// EOF pcl/ElapsedTime.h - Released 2017-06-21T11:36:33Z

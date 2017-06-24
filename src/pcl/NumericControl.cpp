@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0841
+// /_/     \____//_____/   PCL 02.01.05.0842
 // ----------------------------------------------------------------------------
-// pcl/NumericControl.cpp - Released 2017-06-17T10:55:56Z
+// pcl/NumericControl.cpp - Released 2017-06-21T11:36:44Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -111,12 +111,12 @@ String NumericEdit::ValueAsString( double v ) const
       if ( m_scientific )
          if ( m_sciTriggerExp < 0 || v != 0 && (Abs( v ) > Pow10I<double>()( +m_sciTriggerExp ) ||
                                                 Abs( v ) < Pow10I<double>()( -m_sciTriggerExp )) )
-            return String().Format( "%.*le", int( m_precision ), v );
+            return String().Format( "%.*e", int( m_precision ), v );
 
-      return String().Format( "%.*lf", PrecisionForValue( v ), v );
+      return String().Format( "%.*f", PrecisionForValue( v ), v );
    }
 
-   return String().Format( "%.0lf", v );
+   return String().Format( "%.0f", v );
 }
 
 // ----------------------------------------------------------------------------
@@ -267,8 +267,8 @@ void NumericEdit::EditCompleted( Edit& sender )
 
       if ( m_lowerBound < m_upperBound )
          if ( newValue < m_lowerBound || newValue > m_upperBound )
-            throw ParseError( String().Format( "Numeric value out of range: %.16lg - "
-                                               "valid range is [%.16lg,%.16lg]", newValue, m_lowerBound, m_upperBound ) );
+            throw ParseError( String().Format( "Numeric value out of range: %.16g - "
+                                               "valid range is [%.16g,%.16g]", newValue, m_lowerBound, m_upperBound ) );
       bool changed = newValue != m_value;
       if ( changed )
          m_value = newValue;
@@ -440,4 +440,4 @@ void NumericControl::KeyPressed( Control& sender, int key, unsigned modifiers, b
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/NumericControl.cpp - Released 2017-06-17T10:55:56Z
+// EOF pcl/NumericControl.cpp - Released 2017-06-21T11:36:44Z

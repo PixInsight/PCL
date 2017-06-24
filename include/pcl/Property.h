@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0841
+// /_/     \____//_____/   PCL 02.01.05.0842
 // ----------------------------------------------------------------------------
-// pcl/Property.h - Released 2017-06-17T10:55:43Z
+// pcl/Property.h - Released 2017-06-21T11:36:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -283,4 +283,4 @@ typedef Array<Property> PropertyArray;
 #endif   // __PCL_Property_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Property.h - Released 2017-06-17T10:55:43Z
+// EOF pcl/Property.h - Released 2017-06-21T11:36:33Z

@@ -650,6 +650,7 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
 	AnalyticalAlignment_ConfigControl.SetSizer(MountAlignmentConfig_Sizer);
 
 	AlignmentConfig_TabBox.AddPage( AnalyticalAlignment_ConfigControl, "Analytical Pointing Model" );
+	AlignmentConfig_TabBox.OnPageSelected((TabBox::page_event_handler)&AlignmentConfigDialog::e_PageSelected, *this );
 	//AlignmentConfig_TabBox.AddPage( SurfaceSplineAlignment_ConfigControl, "Surface Splines Pointing Model" );
 
 	Ok_Button.SetText( "Ok" );
@@ -700,7 +701,7 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
  		m_interface.GUI->m_alignmentConfigForkFlexure = ForkFlexure_CheckBox.IsChecked();
  		m_interface.GUI->m_alignmentLinear = Linear_CheckBox.IsChecked();
  		m_interface.GUI->m_alignmentQuadratic = Quadratic_CheckBox.IsChecked();
- 		m_interface.GUI->m_aignmentModelIndex = AlignmentConfig_TabBox.CurrentPageIndex();
+ 		m_interface.GUI->m_aignmentModelIndex = AlignmentConfig_TabBox.CurrentPageIndex() + 1;
  		Ok();
  	}
  	if (sender == Cancel_Button){
@@ -708,6 +709,13 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
  	}
  }
 
+ void AlignmentConfigDialog::e_PageSelected(TabBox& sender, int tabIndex) {
+
+	 if (sender == AlignmentConfig_TabBox) {
+
+	 }
+
+ }
 
  MountConfigDialog::MountConfigDialog(const String& deviceName, double geoLat, double geoLong, double telescopeAperture, double telescopeFocalLength):ConfigDialogBase(deviceName),m_device(deviceName){
 
@@ -960,8 +968,11 @@ ProcessImplementation* INDIMountInterface::NewProcess() const
 
    instance->p_computeApparentPosition = GUI->MountComputeApparentPosition_CheckBox.IsChecked();
 
+   instance->p_alignmentMethod = GUI->m_aignmentModelIndex;
 
    instance->p_enableAlignmentCorrection =  GUI->MountAlignmentCorrection_CheckBox.IsChecked();
+
+
 
    switch(instance->p_alignmentMethod){
    	case IMCAlignmentMethod::AnalyticalModel:
@@ -1805,7 +1816,7 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
    }
    else if ( sender == GUI->AlignmentFile_ToolButton)
    {
-	   OpenFileDialog f;
+	   SaveFileDialog f;
 	   f.SetCaption( "INDIMount: Select Alignment File" );
 	   if ( f.Execute() )
 		   GUI->AlignmentFile_Edit.SetText( f.FileName() );

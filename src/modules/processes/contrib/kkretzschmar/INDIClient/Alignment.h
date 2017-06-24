@@ -59,6 +59,7 @@
 #include <pcl/MetaParameter.h>
 #include <pcl/Console.h>
 #include <pcl/TimePoint.h>
+#include <pcl/AutoPointer.h>
 
 namespace pcl {
 	class XMLDocument;
@@ -101,23 +102,44 @@ protected:
 	bool        		 m_modelEachPierSide = false;
 	Array<double>      	 m_residuals;
 	Array<SyncDataPoint> m_syncData;
+
+	void Serialize(XMLElement* root) const;
+	AutoPointer<XMLDocument> createXTPMDocument() const;
+	void ParseSyncData(const XMLElement& element);
+	void ParseSyncDataPoint(SyncDataPoint& syncPoint, const XMLElement& element);
+
 public:
 	AlignmentModel(){}
 	AlignmentModel(bool modelEachPierSide):m_modelEachPierSide(modelEachPierSide){}
 	virtual ~AlignmentModel(){}
 
-	virtual void Apply(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) = 0;
+	virtual void Apply(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) {
+		throw Error("Internal Error: AlignmentModel::Apply: No implementation provided.");
+	}
 
-	virtual void ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) = 0;
+	virtual void ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) {
+		throw Error("Internal Error: AlignmentModel::Apply: No implementation provided.");
+	}
 
-	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray) = 0;
-	virtual void fitModel() = 0;
+	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray){
+		throw Error("Internal Error: AlignmentModel::Apply: No implementation provided.");
+	}
+	virtual void fitModel() {
+		throw Error("Internal Error: AlignmentModel::Apply: No implementation provided.");
+	}
 
-	virtual void writeObject(const String& fileName) = 0;
+	virtual void printParameters(){
+		throw Error("Internal Error: AlignmentModel::Apply: No implementation provided.");
+	}
 
-	virtual void readObject(const String& fileName) = 0;
 
-	virtual void printParameters() = 0;
+	virtual XMLDocument* Serialize() const;
+	virtual void Parse(const XMLDocument& xml);
+
+	virtual void writeObject(const String& fileName) final;
+	virtual void readObject(const String& fileName) final;
+
+
 
 	pcl_enum getPierSide(double hourAngle);
 
@@ -198,22 +220,12 @@ public:
  	virtual void fitModel();
 
  	// siteLatidude given in degrees
- 	static AlignmentModel* create( double siteLatitude, uint32_t modelConfig){
- 		return new GeneralAnalyticalPointingModel(siteLatitude, modelConfig, false);
- 	}
  	static AlignmentModel* create( double siteLatitude, uint32_t modelConfig, bool modelEachPierSide){
  		return new GeneralAnalyticalPointingModel(siteLatitude, modelConfig, modelEachPierSide);
  	}
 
- 	XMLDocument* Serialize() const;
-
- 	void Parse(const XMLDocument& xml);
- 	void ParseSyncData(const XMLElement& element);
- 	void ParseSyncDataPoint(SyncDataPoint& syncPoint, const XMLElement& element);
-
- 	virtual void writeObject(const String& fileName);
-
- 	virtual void readObject(const String& fileName);
+ 	virtual XMLDocument* Serialize() const;
+ 	virtual void Parse(const XMLDocument& xml);
 
  	virtual void printParameters();
 
@@ -223,12 +235,12 @@ public:
  	void printParameterVector(Vector* parameters, double residual);
  	void fitModelForPierSide(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide, double& residual);
 
- 	size_t    m_numOfModelParameters;
- 	double    m_siteLatitude; // in radians
- 	TimePoint m_modelCreationTime;
- 	Vector*  m_pointingModelWest;
- 	Vector*  m_pointingModelEast;
- 	uint32_t m_modelConfig;
+ 	size_t    m_numOfModelParameters = 0;
+ 	double    m_siteLatitude = 0; // in radians
+ 	TimePoint m_modelCreationTime = TimePoint::Now();
+ 	Vector*  m_pointingModelWest = nullptr;
+ 	Vector*  m_pointingModelEast = nullptr;
+ 	uint32_t m_modelConfig = 0;
  };
 
 

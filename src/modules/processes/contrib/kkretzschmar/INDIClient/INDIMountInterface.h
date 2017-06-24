@@ -256,6 +256,7 @@ private:
 
      void e_Show( Control& sender );
      void e_Click( Button& sender, bool checked );
+     void e_PageSelected(TabBox& sender, int tabIndex);
 };
 
 

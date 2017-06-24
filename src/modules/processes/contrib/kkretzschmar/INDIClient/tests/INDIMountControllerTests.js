@@ -174,7 +174,7 @@ function INDIMountControllerTests( parent )
          mountController.deviceName=MOUNT_DEVICE_NAME;
          mountController.alignmentModelFile=pointingModelFile;
          assertTrue(File.exists(mountController.alignmentModelFile));
-         mountController.AlignmentMethod=0;
+         mountController.AlignmentMethod=1; // Analytical Model
 
          if (File.exists(pointingModelFile)){
             File.remove(pointingModelFile);

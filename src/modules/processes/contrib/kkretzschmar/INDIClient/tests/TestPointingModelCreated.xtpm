@@ -4,13 +4,13 @@ PixInsight XML Telescope Pointing Model Format - XTPM version 1.0
 Created with PixInsight software - http://pixinsight.com/
 -->
 <xtpm version="1.0">
-   <CreationTime>2017-06-15T20:33:59.825Z</CreationTime>
+   <CreationTime>2017-06-23T18:34:06.937Z</CreationTime>
    <GeographicLatitude>0.8552113334772214</GeographicLatitude>
    <Configuration>1918</Configuration>
    <ModelParameters PierSide="West">-0.3821630000002431,0.138095000000008,0.2592250000000439,0.1314189999999395,0.2071969999999891,-0.05709800000001398,0.08927899999999982,5.326097627359759e-17,0.0841330000000613,0.002291999999997654,-4.999999999925166e-06</ModelParameters>
    <ModelParameters PierSide="East">0.3033179999998377,0.1455880000000407,-0.1612999999999628,0.1253859999998232,-0.1440770000000523,0.06553300000000258,0.01850500000006579,-2.587288810219746e-17,-0.3104699999997576,0.00483299999999713,6.300000000001015e-05</ModelParameters>
    <SyncDataList>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:34.806Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:44.250Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.2</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -19,7 +19,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:34.906Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:44.337Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.2</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -28,7 +28,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:35.008Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:44.430Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.2</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -37,7 +37,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:35.112Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:44.523Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.2</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -46,7 +46,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:35.229Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:44.619Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.2</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -55,7 +55,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:35.367Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:44.725Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.866666666667</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -64,7 +64,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:35.490Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:44.840Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.866666666667</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -73,7 +73,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:35.607Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:44.944Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.866666666667</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -82,7 +82,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:35.731Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:45.046Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.866666666667</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -91,7 +91,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:35.848Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:45.145Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.866666666667</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -100,7 +100,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:35.967Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:45.247Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>1.533333333334</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -109,7 +109,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:36.087Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:45.347Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>1.533333333334</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -118,7 +118,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:36.199Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:45.459Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>1.533333333334</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -127,7 +127,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:36.326Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:45.567Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>1.533333333334</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -136,7 +136,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:36.467Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:45.667Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>1.533333333334</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -145,7 +145,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:36.580Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:45.788Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.200000000001</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -154,7 +154,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:36.695Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:45.901Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.200000000001</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -163,7 +163,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:36.807Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:46.019Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.200000000001</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -172,7 +172,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:36.933Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:46.127Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.200000000001</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -181,7 +181,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:37.055Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:46.230Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.200000000001</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -190,7 +190,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:37.171Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:46.336Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.866666666668</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -199,7 +199,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:37.287Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:46.449Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.866666666668</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -208,7 +208,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:37.405Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:46.559Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.866666666668</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -217,7 +217,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:37.523Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:46.679Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.866666666668</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -226,7 +226,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:37.653Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:46.789Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.866666666668</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -235,7 +235,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:37.776Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:46.894Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>3.533333333335</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -244,7 +244,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:37.895Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:47.000Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>3.533333333335</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -253,7 +253,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:38.022Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:47.100Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>3.533333333335</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -262,7 +262,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:38.139Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:47.207Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>3.533333333335</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -271,7 +271,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:38.255Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:47.314Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>3.533333333335</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -280,7 +280,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:38.375Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:47.417Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.200000000002</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -289,7 +289,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:38.497Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:47.532Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.200000000002</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -298,7 +298,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:38.627Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:47.647Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.200000000002</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -307,7 +307,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:38.754Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:47.759Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.200000000002</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -316,7 +316,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:38.887Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:47.894Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.200000000002</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -325,7 +325,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:39.015Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:48.007Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.866666666669</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -334,7 +334,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:39.139Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:48.122Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.866666666669</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -343,7 +343,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:39.275Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:48.242Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.866666666669</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -352,7 +352,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:39.396Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:48.347Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.866666666669</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -361,7 +361,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:39.535Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:48.455Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.866666666669</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -370,7 +370,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:39.659Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:48.572Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>5.533333333336</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -379,7 +379,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:39.799Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:48.675Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>5.533333333336</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -388,7 +388,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:39.916Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:48.784Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>5.533333333336</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -397,7 +397,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:40.046Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:48.887Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>5.533333333336</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -406,7 +406,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:40.185Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:49.008Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>5.533333333336</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -415,7 +415,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:40.315Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:49.121Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.200000000003</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -424,7 +424,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:40.445Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:49.244Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.200000000003</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -433,7 +433,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:40.571Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:49.358Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.200000000003</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -442,7 +442,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:40.688Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:49.480Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.200000000003</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -451,7 +451,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:40.821Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:49.589Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.200000000003</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -460,7 +460,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:40.948Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:49.709Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.86666666667</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -469,7 +469,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:41.090Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:49.843Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.86666666667</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -478,7 +478,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:41.224Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:49.951Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.86666666667</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -487,7 +487,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:41.357Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:50.068Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.86666666667</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -496,7 +496,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:41.479Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:50.188Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.86666666667</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -505,7 +505,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:41.607Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:50.309Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>7.533333333337001</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -514,7 +514,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:41.735Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:50.431Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>7.533333333337001</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -523,7 +523,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:41.859Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:50.548Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>7.533333333337001</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -532,7 +532,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:41.987Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:50.654Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>7.533333333337001</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -541,7 +541,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:42.107Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:50.771Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>7.533333333337001</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -550,7 +550,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:42.248Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:50.898Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.200000000004</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -559,7 +559,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:42.395Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:51.015Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.200000000004</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -568,7 +568,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:42.529Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:51.130Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.200000000004</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -577,7 +577,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:42.673Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:51.251Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.200000000004</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -586,7 +586,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:42.797Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:51.383Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.200000000004</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -595,7 +595,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:42.917Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:51.496Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.866666666671</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -604,7 +604,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:43.051Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:51.613Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.866666666671</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -613,7 +613,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:43.187Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:51.730Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.866666666671</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -622,7 +622,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:43.321Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:51.842Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.866666666671</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -631,7 +631,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:43.451Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:51.961Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.866666666671</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -640,7 +640,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:43.584Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:52.076Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>9.533333333338</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -649,7 +649,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:43.715Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:52.203Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>9.533333333338</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -658,7 +658,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:43.839Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:52.319Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>9.533333333338</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -667,7 +667,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:43.979Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:52.441Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>9.533333333338</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -676,7 +676,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:44.103Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:52.559Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>9.533333333338</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -685,7 +685,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:44.239Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:52.673Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.200000000005</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -694,7 +694,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:44.367Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:52.789Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.200000000005</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -703,7 +703,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:44.500Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:52.909Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.200000000005</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -712,7 +712,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:44.639Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:53.023Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.200000000005</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -721,7 +721,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:44.788Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:53.146Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.200000000005</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -730,7 +730,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:44.919Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:53.283Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.866666666672</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -739,7 +739,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:45.049Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:53.403Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.866666666672</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -748,7 +748,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:45.189Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:53.531Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.866666666672</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -757,7 +757,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:45.313Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:53.647Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.866666666672</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -766,7 +766,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:45.447Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:53.771Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.866666666672</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -775,7 +775,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:45.584Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:53.897Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>11.533333333339</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -784,7 +784,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:45.735Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:54.012Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>11.533333333339</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -793,7 +793,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:45.869Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:54.135Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>11.533333333339</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -802,7 +802,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:45.999Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:54.259Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>11.533333333339</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -811,7 +811,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:46.139Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:54.396Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>11.533333333339</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -820,7 +820,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:46.272Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:54.528Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.799999999994</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -829,7 +829,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:46.411Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:54.651Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.799999999994</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -838,7 +838,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:46.550Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:54.771Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.799999999994</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -847,7 +847,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:46.683Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:54.903Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.799999999994</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -856,7 +856,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:46.839Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:55.042Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.799999999994</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -865,7 +865,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:47.079Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:55.184Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.133333333327</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -874,7 +874,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:47.301Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:55.318Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.133333333327</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -883,7 +883,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:47.431Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:55.442Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.133333333327</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -892,7 +892,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:47.567Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:55.574Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.133333333327</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -901,7 +901,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:47.709Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:55.702Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.133333333327</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -910,7 +910,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:47.835Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:55.827Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-10.46666666666</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -919,7 +919,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:47.974Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:55.960Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-10.46666666666</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -928,7 +928,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:48.114Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:56.088Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-10.46666666666</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -937,7 +937,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:48.259Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:56.222Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-10.46666666666</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -946,7 +946,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:48.411Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:56.364Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-10.46666666666</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -955,7 +955,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:48.559Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:56.499Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.799999999993</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -964,7 +964,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:48.699Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:56.626Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.799999999993</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -973,7 +973,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:48.852Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:56.759Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.799999999993</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -982,7 +982,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:48.996Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:56.887Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.799999999993</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -991,7 +991,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:49.135Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:57.006Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.799999999993</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -1000,7 +1000,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:49.268Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:57.135Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.133333333326</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -1009,7 +1009,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:49.400Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:57.270Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.133333333326</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -1018,7 +1018,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:49.551Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:57.392Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.133333333326</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -1027,7 +1027,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:49.701Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:57.516Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.133333333326</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -1036,7 +1036,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:49.841Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:57.646Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.133333333326</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -1045,7 +1045,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:49.987Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:57.787Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-8.466666666659</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -1054,7 +1054,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:50.135Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:57.917Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-8.466666666659</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -1063,7 +1063,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:50.283Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:58.057Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-8.466666666659</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -1072,7 +1072,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:50.435Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:58.194Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-8.466666666659</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -1081,7 +1081,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:50.575Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:58.323Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-8.466666666659</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -1090,7 +1090,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:50.718Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:58.459Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.799999999992</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -1099,7 +1099,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:50.863Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:58.595Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.799999999992</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -1108,7 +1108,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:51.003Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:58.719Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.799999999992</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -1117,7 +1117,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:51.155Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:58.848Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.799999999992</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -1126,7 +1126,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:51.298Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:58.978Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.799999999992</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -1135,7 +1135,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:51.429Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:59.120Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.133333333324998</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -1144,7 +1144,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:51.585Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:59.257Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.133333333324998</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -1153,7 +1153,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:51.728Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:59.405Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.133333333324998</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -1162,7 +1162,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:51.886Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:59.539Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.133333333324998</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -1171,7 +1171,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:52.025Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:59.675Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.133333333324998</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -1180,7 +1180,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:52.175Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:59.805Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-6.466666666658</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -1189,7 +1189,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:52.323Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:33:59.949Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-6.466666666658</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -1198,7 +1198,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:52.471Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:00.087Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-6.466666666658</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -1207,7 +1207,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:52.617Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:00.231Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-6.466666666658</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -1216,7 +1216,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:52.763Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:00.377Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-6.466666666658</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -1225,7 +1225,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:52.907Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:00.516Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.799999999991002</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -1234,7 +1234,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:53.059Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:00.651Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.799999999991002</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -1243,7 +1243,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:53.214Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:00.796Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.799999999991002</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -1252,7 +1252,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:53.359Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:00.930Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.799999999991002</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -1261,7 +1261,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:53.513Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:01.071Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.799999999991002</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -1270,7 +1270,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:53.675Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:01.206Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.133333333324003</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -1279,7 +1279,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:53.839Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:01.328Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.133333333324003</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -1288,7 +1288,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:53.988Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:01.467Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.133333333324003</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -1297,7 +1297,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:54.136Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:01.603Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.133333333324003</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -1306,7 +1306,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:54.291Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:01.736Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.133333333324003</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -1315,7 +1315,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:54.435Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:01.881Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-4.466666666657005</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -1324,7 +1324,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:54.577Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:02.020Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-4.466666666657005</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -1333,7 +1333,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:54.722Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:02.158Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-4.466666666657005</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -1342,7 +1342,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:54.867Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:02.290Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-4.466666666657005</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -1351,7 +1351,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:55.027Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:02.427Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-4.466666666657005</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -1360,7 +1360,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:55.184Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:02.562Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.799999999990007</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -1369,7 +1369,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:55.339Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:02.697Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.799999999990007</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -1378,7 +1378,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:55.499Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:02.844Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.799999999990007</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -1387,7 +1387,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:55.653Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:02.991Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.799999999990007</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -1396,7 +1396,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:55.809Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:03.139Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.799999999990007</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -1405,7 +1405,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:55.957Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:03.291Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.133333333323009</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -1414,7 +1414,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:56.117Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:03.435Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.133333333323009</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -1423,7 +1423,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:56.283Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:03.573Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.133333333323009</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -1432,7 +1432,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:56.441Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:03.716Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.133333333323009</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -1441,7 +1441,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:56.598Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:03.851Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.133333333323009</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -1450,7 +1450,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:56.747Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:03.997Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-2.46666666665601</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -1459,7 +1459,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:56.898Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:04.130Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-2.46666666665601</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -1468,7 +1468,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:57.055Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:04.270Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-2.46666666665601</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -1477,7 +1477,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:57.210Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:04.421Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-2.46666666665601</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -1486,7 +1486,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:57.369Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:04.567Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-2.46666666665601</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -1495,7 +1495,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:57.530Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:04.710Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.799999999989012</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -1504,7 +1504,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:57.674Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:04.851Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.799999999989012</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -1513,7 +1513,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:57.827Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:05.000Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.799999999989012</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -1522,7 +1522,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:57.988Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:05.143Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.799999999989012</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -1531,7 +1531,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:58.151Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:05.286Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.799999999989012</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -1540,7 +1540,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:58.303Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:05.436Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.133333333322014</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -1549,7 +1549,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:58.455Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:05.585Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.133333333322014</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -1558,7 +1558,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:58.611Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:05.731Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.133333333322014</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -1567,7 +1567,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:58.767Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:05.884Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.133333333322014</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -1576,7 +1576,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:58.923Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:06.037Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.133333333322014</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
@@ -1585,7 +1585,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:59.080Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:06.188Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-0.4666666666550157</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
@@ -1594,7 +1594,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:59.236Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:06.329Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-0.4666666666550157</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
@@ -1603,7 +1603,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:59.391Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:06.476Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-0.4666666666550157</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
@@ -1612,7 +1612,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:59.553Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:06.622Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-0.4666666666550157</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
@@ -1621,7 +1621,7 @@ Created with PixInsight software - http://pixinsight.com/
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2017-06-15T20:33:59.715Z">
+      <SyncDataPoint CreationTime="2017-06-23T18:34:06.783Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-0.4666666666550157</CelestialRA>
          <CelestialDEC>70</CelestialDEC>

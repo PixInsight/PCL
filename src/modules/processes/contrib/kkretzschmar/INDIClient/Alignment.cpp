@@ -57,13 +57,59 @@
 #include <pcl/Math.h>
 #include <pcl/Algebra.h>
 #include <pcl/Console.h>
-#include <pcl/AutoPointer.h>
 #include <pcl/TimePoint.h>
 #include <pcl/XML.h>
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------
+
+static bool TryToDouble( double& value, IsoString::const_iterator p )
+{
+   IsoString::iterator endptr = nullptr;
+   errno = 0;
+   double val = ::strtod( p, &endptr );
+   if ( errno == 0 && (endptr == nullptr || *endptr == '\0') )
+   {
+      value = val;
+      return true;
+   }
+   return false;
+}
+
+static Vector ParseListOfRealValues( IsoString& text, size_type start, size_type end, size_type minCount = 0, size_type maxCount = ~size_type( 0 ) )
+{
+   Array<double> v;
+   for ( size_type i = start, j; i < end; ++i )
+   {
+      for ( j = i; j < end; ++j )
+         if ( text[j] == ',' )
+            break;
+      text[j] = '\0';
+      double x;
+      if ( !TryToDouble( x, text.At( i ) ) )
+         throw Error( "Parsing real numeric list: Invalid floating point numeric literal \'" + IsoString( text.At( i ) ) + "\'" );
+      if ( v.Length() == maxCount )
+         throw Error( "Parsing real numeric list: Too many items." );
+      v << x;
+      i = j;
+   }
+   if ( v.Length() < minCount )
+      throw Error( "Parsing real numeric list: Too few items." );
+   return Vector( v.Begin(), int( v.Length() ) );
+}
+
+static Vector ParseListOfRealValues( const XMLElement& element, size_type minCount = 0, size_type maxCount = ~size_type( 0 ) )
+{
+   IsoString text = IsoString( element.Text().Trimmed() );
+   return ParseListOfRealValues( text, 0, text.Length(), minCount, maxCount );
+}
+
+
+// ----------------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------------
 
@@ -112,6 +158,137 @@ void AlignmentModel::getPseudoInverse(Matrix& pseudoInverse, const Matrix& matri
 pcl_enum AlignmentModel::getPierSide(double hourAngle) {
 	return (!m_modelEachPierSide || hourAngle >= 0 ) ? IMCPierSide::West : IMCPierSide::East;
 }
+
+AutoPointer<XMLDocument> AlignmentModel::createXTPMDocument() const {
+	AutoPointer<XMLDocument> xml = new XMLDocument;
+	xml->SetXML( "1.0", "UTF-8" );
+	*xml << new XMLComment( "\nPixInsight XML Telescope Pointing Model Format - XTPM version 1.0"
+				            "\nCreated with PixInsight software - http://pixinsight.com/"
+				             "\n" );
+
+	XMLElement* root = new XMLElement( "xtpm", XMLAttributeList()
+			<< XMLAttribute( "version", "1.0"));
+
+	xml->SetRootElement( root );
+
+	return xml;
+
+}
+
+void AlignmentModel::Serialize(XMLElement* root) const {
+	if (root == nullptr) {
+		throw Error("Internal Error: AlignmentModel::Serialize: Invalid root pointer");
+	}
+
+	if (m_syncData.Length()!=0) {
+		XMLElement* list = new XMLElement(*root, String("SyncDataList"));
+		for (auto syncDataPoint : m_syncData) {
+			XMLElement* listElement =  new XMLElement(*list, String("SyncDataPoint"), XMLAttributeList() << XMLAttribute( "CreationTime", String(syncDataPoint.creationTime.ToString())));
+			*(new XMLElement( *listElement, "LocalSiderialTime" )) << new XMLText( String(syncDataPoint.localSiderialTime) );
+			*(new XMLElement( *listElement, "CelestialRA" )) << new XMLText( String(syncDataPoint.celestialRA) );
+			*(new XMLElement( *listElement, "CelestialDEC" )) << new XMLText( String(syncDataPoint.celestialDEC) );
+			*(new XMLElement( *listElement, "TelescopeRA" )) << new XMLText( String(syncDataPoint.telecopeRA) );
+			*(new XMLElement( *listElement, "TelescopeDEC" )) << new XMLText( String(syncDataPoint.telecopeDEC) );
+			*(new XMLElement( *listElement, "Pierside" )) << new XMLText( String(syncDataPoint.pierSide) );
+			*(new XMLElement( *listElement, "Enabled" )) << new XMLText( String(syncDataPoint.enabled) );
+		}
+	}
+}
+
+XMLDocument* AlignmentModel::Serialize() const {
+	AutoPointer<XMLDocument> xml = createXTPMDocument();
+	XMLElement* mutableRoot = const_cast<XMLElement*>(xml->RootElement());
+	Serialize(mutableRoot);
+	return xml.Release();
+}
+
+void AlignmentModel::ParseSyncDataPoint(SyncDataPoint& syncPoint, const XMLElement& element) {
+	for (const XMLNode& node : element) {
+		const XMLElement& element = static_cast<const XMLElement&>(node);
+		try {
+			if (element.Name() == "LocalSiderialTime") {
+				syncPoint.localSiderialTime = element.Text().Trimmed().ToDouble();
+			} else if (element.Name() == "CelestialRA") {
+				syncPoint.celestialRA = element.Text().Trimmed().ToDouble();
+			} else if (element.Name() == "CelestialDEC") {
+				syncPoint.celestialDEC = element.Text().Trimmed().ToDouble();
+			} else if (element.Name() == "TelescopeRA") {
+				syncPoint.telecopeRA = element.Text().Trimmed().ToDouble();
+			} else if (element.Name() == "TelescopeDEC") {
+				syncPoint.telecopeDEC = element.Text().Trimmed().ToDouble();
+			} else if (element.Name() == "Pierside") {
+				syncPoint.pierSide = element.Text().Trimmed().ToInt();
+			} else if (element.Name() == "Enabled") {
+				syncPoint.enabled = element.Text().Trimmed().ToBool();
+			}
+		} catch (...) {
+			throw;
+		}
+	}
+
+}
+
+void  AlignmentModel::ParseSyncData(const XMLElement& syncDataList) {
+	for (const XMLNode& node : syncDataList) {
+		const XMLElement& element = static_cast<const XMLElement&>(node);
+		SyncDataPoint syncDataPoint;
+		try {
+			if (element.Name() == "SyncDataPoint") {
+				syncDataPoint.creationTime = TimePoint(element.AttributeValue("CreationTime"));
+				ParseSyncDataPoint(syncDataPoint, element);
+			}
+			m_syncData.Append(syncDataPoint);
+		} catch (...) {
+			throw;
+		}
+	}
+}
+
+
+void AlignmentModel::Parse(const XMLDocument& xml){
+	if ( xml.RootElement() == nullptr )
+		throw Error( "The XML document has no root element." );
+	if ( xml.RootElement()->Name() != "xtpm" || xml.RootElement()->AttributeValue( "version" ) != "1.0" )
+		throw Error( "Not an XTPM version 1.0 document." );
+
+
+	const XMLElement& root = *xml.RootElement();
+	for (const XMLNode& node : root) {
+		const XMLElement& element = static_cast<const XMLElement&>(node);
+		try {
+			if (element.Name() == "SyncDataList") {
+				ParseSyncData(element);
+			}
+		} catch (...) {
+			throw;
+		}
+	}
+}
+
+void AlignmentModel::writeObject(const String& fileName){
+	// save model parameters to disk
+	if (File::Exists(fileName)){
+		File::Remove(fileName);
+	} else {
+		// file does not exists
+		File::CreateFileForWriting(fileName);
+	}
+	// write xtpm file
+	XMLDocument* xml = Serialize();
+	xml->EnableAutoFormatting();
+	String xmlFileName = fileName;
+	xml->SerializeToFile( xmlFileName );
+}
+
+void AlignmentModel::readObject(const String& fileName){
+	IsoString text = File::ReadTextFile( fileName );
+	XMLDocument xml;
+	xml.SetParserOption( XMLParserOption::IgnoreComments );
+	xml.SetParserOption( XMLParserOption::IgnoreUnknownElements );
+	xml.Parse( text.UTF8ToUTF16() );
+	Parse( xml );
+}
+
 
 static const double scaleArcmin = 60.0;
 static const double factorHaToDeg = 15.0;
@@ -369,16 +546,9 @@ void GeneralAnalyticalPointingModel::fitModelForPierSide(const Array<SyncDataPoi
 
 XMLDocument* GeneralAnalyticalPointingModel::Serialize() const {
 
-	AutoPointer<XMLDocument> xml = new XMLDocument;
-	xml->SetXML( "1.0", "UTF-8" );
-	*xml << new XMLComment( "\nPixInsight XML Telescope Pointing Model Format - XTPM version 1.0"
-			                "\nCreated with PixInsight software - http://pixinsight.com/"
-			                "\n" );
+	AutoPointer<XMLDocument> xml = createXTPMDocument();
 
-	XMLElement* root = new XMLElement( "xtpm", XMLAttributeList()
-			<< XMLAttribute( "version", "1.0"));
-
-	xml->SetRootElement( root );
+	XMLElement* root = const_cast<XMLElement*>(xml->RootElement());
 
 	*(new XMLElement( *root, "CreationTime" )) << new XMLText( m_modelCreationTime.ToString() );
 
@@ -392,64 +562,11 @@ XMLDocument* GeneralAnalyticalPointingModel::Serialize() const {
 		*(new XMLElement( *root, "ModelParameters", XMLAttributeList() << XMLAttribute("PierSide", "East" )  ))  << new XMLText( String().ToCommaSeparated( *m_pointingModelEast ) );
 	}
 
-	if (m_syncData.Length()!=0) {
-		XMLElement* list = new XMLElement(*root, String("SyncDataList"));
-		for (auto syncDataPoint : m_syncData) {
-			XMLElement* listElement =  new XMLElement(*list, String("SyncDataPoint"), XMLAttributeList() << XMLAttribute( "CreationTime", String(syncDataPoint.creationTime.ToString())));
-			*(new XMLElement( *listElement, "LocalSiderialTime" )) << new XMLText( String(syncDataPoint.localSiderialTime) );
-			*(new XMLElement( *listElement, "CelestialRA" )) << new XMLText( String(syncDataPoint.celestialRA) );
-			*(new XMLElement( *listElement, "CelestialDEC" )) << new XMLText( String(syncDataPoint.celestialDEC) );
-			*(new XMLElement( *listElement, "TelescopeRA" )) << new XMLText( String(syncDataPoint.telecopeRA) );
-			*(new XMLElement( *listElement, "TelescopeDEC" )) << new XMLText( String(syncDataPoint.telecopeDEC) );
-			*(new XMLElement( *listElement, "Pierside" )) << new XMLText( String(syncDataPoint.pierSide) );
-			*(new XMLElement( *listElement, "Enabled" )) << new XMLText( String(syncDataPoint.enabled) );
-		}
-	}
+	AlignmentModel::Serialize(root);
 
 	return xml.Release();
 }
 
-void GeneralAnalyticalPointingModel::ParseSyncDataPoint(SyncDataPoint& syncPoint, const XMLElement& element) {
-	for (const XMLNode& node : element) {
-		const XMLElement& element = static_cast<const XMLElement&>(node);
-		try {
-			if (element.Name() == "LocalSiderialTime") {
-				syncPoint.localSiderialTime = element.Text().Trimmed().ToDouble();
-			} else if (element.Name() == "CelestialRA") {
-				syncPoint.celestialRA = element.Text().Trimmed().ToDouble();
-			} else if (element.Name() == "CelestialDEC") {
-				syncPoint.celestialDEC = element.Text().Trimmed().ToDouble();
-			} else if (element.Name() == "TelescopeRA") {
-				syncPoint.telecopeRA = element.Text().Trimmed().ToDouble();
-			} else if (element.Name() == "TelescopeDEC") {
-				syncPoint.telecopeDEC = element.Text().Trimmed().ToDouble();
-			} else if (element.Name() == "Pierside") {
-				syncPoint.pierSide = element.Text().Trimmed().ToInt();
-			} else if (element.Name() == "Enabled") {
-				syncPoint.enabled = element.Text().Trimmed().ToBool();
-			}
-		} catch (...) {
-			throw;
-		}
-	}
-
-}
-
-void  GeneralAnalyticalPointingModel::ParseSyncData(const XMLElement& syncDataList) {
-	for (const XMLNode& node : syncDataList) {
-		const XMLElement& element = static_cast<const XMLElement&>(node);
-		SyncDataPoint syncDataPoint;
-		try {
-			if (element.Name() == "SyncDataPoint") {
-				syncDataPoint.creationTime = TimePoint(element.AttributeValue("CreationTime"));
-				ParseSyncDataPoint(syncDataPoint, element);
-			}
-			m_syncData.Append(syncDataPoint);
-		} catch (...) {
-			throw;
-		}
-	}
-}
 
 
 void GeneralAnalyticalPointingModel::Parse( const XMLDocument& xml) {
@@ -477,36 +594,13 @@ void GeneralAnalyticalPointingModel::Parse( const XMLDocument& xml) {
 					*m_pointingModelEast = ParseListOfRealValues(element);
 				}
 			} else if (element.Name() == "SyncDataList") {
-				ParseSyncData(element);
+				Console().WriteLn("I am here");
+				AlignmentModel::ParseSyncData(element);
 			}
 		} catch (...) {
 			throw;
 		}
 	}
-}
-
-void GeneralAnalyticalPointingModel::writeObject(const String& fileName)
-{
-	// save model parameters to disk
-	if (File::Exists(fileName)){
-		File::Remove(fileName);
-	}
-
-	// write xtpm file
-	XMLDocument* xml = Serialize();
-	xml->EnableAutoFormatting();
-	String xmlFileName = fileName;
-	xml->SerializeToFile( xmlFileName );
-}
-
-void GeneralAnalyticalPointingModel::readObject(const String& fileName)
-{
-	IsoString text = File::ReadTextFile( fileName );
-	XMLDocument xml;
-	xml.SetParserOption( XMLParserOption::IgnoreComments );
-	xml.SetParserOption( XMLParserOption::IgnoreUnknownElements );
-	xml.Parse( text.UTF8ToUTF16() );
-	Parse( xml );
 }
 
 

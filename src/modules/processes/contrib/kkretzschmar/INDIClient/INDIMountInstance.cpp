@@ -850,7 +850,7 @@ void AbstractINDIMountExecution::Perform()
 
     	  switch (m_instance.p_alignmentMethod){
     	  case IMCAlignmentMethod::AnalyticalModel:
-    		  aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig,true);
+    		  aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 31));
     		  break;
     	  default:
     		  throw Error( "Internal error: AbstractINDIMountExecution::Perform(): Unknown Pointing Model." );
@@ -874,7 +874,6 @@ void AbstractINDIMountExecution::Perform()
         	   syncPoint.pierSide          = aModel->getPierSide(syncPoint.localSiderialTime - syncPoint.celestialRA);
         	   aModel->addSyncDataPoint(syncPoint);
         	   aModel->writeObject(m_instance.p_alignmentFile);
-        	   //WriteSyncDataPointToFile(syncPoint);
         	   break;
            }
 
@@ -891,14 +890,13 @@ void AbstractINDIMountExecution::Perform()
             m_instance.GetTargetCoordinates( targetRA, targetDec );
             m_instance.GetCurrentCoordinates();
 
-            // if alignment correction is enabled, the original target coordinates
-            // before alignment correction have to be determined
-            AutoPointer<AlignmentModel> aModel = nullptr;
             if (this->m_instance.p_enableAlignmentCorrection){
-
+                // if alignment correction is enabled, the original target coordinates
+                // before alignment correction have to be determined
+                AutoPointer<AlignmentModel> aModel = nullptr;
             	switch (m_instance.p_alignmentMethod){
             	case IMCAlignmentMethod::AnalyticalModel:
-            		aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig);
+            		aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 31));
             		break;
             	default:
             		throw Error( "Internal error: AbstractINDIMountExecution::Perform(): Unknown Pointing Model." );
@@ -920,7 +918,9 @@ void AbstractINDIMountExecution::Perform()
             }
             break;
             case IMCAlignmentMethod::AnalyticalModel:
+            case IMCAlignmentMethod::None:
             {
+            	AutoPointer<AlignmentModel> aModel = new AlignmentModel();
             	SyncDataPoint syncPoint;
             	syncPoint.creationTime      = TimePoint::Now();
             	syncPoint.localSiderialTime = m_instance.o_currentLST;
@@ -929,12 +929,16 @@ void AbstractINDIMountExecution::Perform()
             	syncPoint.telecopeRA        = m_instance.o_currentRA;
             	syncPoint.telecopeDEC       = m_instance.o_currentDec;
             	syncPoint.pierSide          = m_instance.p_pierSide;
+            	if (File::Exists(m_instance.p_alignmentFile)) {
+            		aModel->readObject(m_instance.p_alignmentFile);
+            	}
             	aModel->addSyncDataPoint(syncPoint);
             	aModel->writeObject(m_instance.p_alignmentFile);
-            	//WriteSyncDataPointToFile(syncPoint);
             	break;
             }
             break;
+            default:
+            	throw Error( "Internal error: AbstractINDIMountExecution::Perform(): Unknown Alignment Method." );
             }
             m_instance.GetCurrentCoordinates();
 

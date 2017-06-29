@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0842
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/AutoPointer.h - Released 2017-06-21T11:36:33Z
+// pcl/AutoPointer.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -281,7 +281,9 @@ public:
     * deleter template argument class.
     */
    AutoPointer( bool autoDelete = true, const deleter& d = deleter() ) :
-      m_pointer( nullptr ), m_deleter( d ), m_autoDelete( autoDelete )
+      m_pointer( nullptr ),
+      m_deleter( d ),
+      m_autoDelete( autoDelete )
    {
    }
 
@@ -303,7 +305,9 @@ public:
     * deleter template argument class.
     */
    AutoPointer( pointer p, bool autoDelete = true, const deleter& d = deleter() ) :
-      m_pointer( nullptr ), m_deleter( d ), m_autoDelete( autoDelete )
+      m_pointer( nullptr ),
+      m_deleter( d ),
+      m_autoDelete( autoDelete )
    {
       m_pointer = p;
    }
@@ -323,7 +327,9 @@ public:
     * and hence multiple deletions are not possible.
     */
    AutoPointer( AutoPointer& x ) :
-      m_pointer( x.Release() ), m_deleter( x.m_deleter ), m_autoDelete( x.m_autoDelete )
+      m_pointer( x.Release() ),
+      m_deleter( x.m_deleter ),
+      m_autoDelete( x.m_autoDelete )
    {
    }
 
@@ -331,7 +337,9 @@ public:
     * Move constructor.
     */
    AutoPointer( AutoPointer&& x ) :
-      m_pointer( x.Release() ), m_deleter( std::move( x.m_deleter ) ), m_autoDelete( x.m_autoDelete )
+      m_pointer( x.Release() ),
+      m_deleter( std::move( x.m_deleter ) ),
+      m_autoDelete( x.m_autoDelete )
    {
    }
 
@@ -674,4 +682,4 @@ private:
 #endif  // __PCL_AutoPointer_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AutoPointer.h - Released 2017-06-21T11:36:33Z
+// EOF pcl/AutoPointer.h - Released 2017-06-28T11:58:36Z

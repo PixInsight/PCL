@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0842
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/DrizzleData.cpp - Released 2017-06-21T11:36:44Z
+// pcl/DrizzleData.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -532,24 +532,24 @@ void DrizzleData::ParseRejectionMap( const XMLElement& root )
 {
    String s = root.AttributeValue( "width" );
    if ( s.IsEmpty() )
-      throw Error( "Missing rejection m_rejectionMap width attribute." );
+      throw Error( "Missing rejection map width attribute." );
    int width = s.ToInt();
    if ( width < 1 )
-      throw Error( "Invalid rejection m_rejectionMap width attribute value '" + s + '\'' );
+      throw Error( "Invalid rejection map width attribute value '" + s + '\'' );
 
    s = root.AttributeValue( "height" );
    if ( s.IsEmpty() )
-      throw Error( "Missing rejection m_rejectionMap height attribute." );
+      throw Error( "Missing rejection map height attribute." );
    int height = s.ToInt();
    if ( height < 1 )
-      throw Error( "Invalid rejection m_rejectionMap height attribute value '" + s + '\'' );
+      throw Error( "Invalid rejection map height attribute value '" + s + '\'' );
 
    s = root.AttributeValue( "numberOfChannels" );
    if ( s.IsEmpty() )
-      throw Error( "Missing rejection m_rejectionMap numberOfChannels attribute." );
+      throw Error( "Missing rejection map numberOfChannels attribute." );
    int numberOfChannels = s.ToInt();
    if ( numberOfChannels < 1 )
-      throw Error( "Invalid rejection m_rejectionMap numberOfChannels attribute value '" + s + '\'' );
+      throw Error( "Invalid rejection map numberOfChannels attribute value '" + s + '\'' );
 
    m_rejectionMap.AllocateData( width, height, numberOfChannels );
 
@@ -568,7 +568,7 @@ void DrizzleData::ParseRejectionMap( const XMLElement& root )
       if ( element.Name() == "ChannelData" )
       {
          if ( channel == numberOfChannels )
-            throw Error( "Unexpected ChannelData child element - all rejection m_rejectionMap channels are already defined." );
+            throw Error( "Unexpected ChannelData child element - all rejection map channels are already defined." );
 
          ByteArray channelData;
 
@@ -639,7 +639,7 @@ void DrizzleData::ParseRejectionMap( const XMLElement& root )
    }
 
    if ( channel < numberOfChannels )
-      throw Error( "Missing rejection m_rejectionMap channel data." );
+      throw Error( "Missing rejection map channel data." );
 }
 
 // ----------------------------------------------------------------------------
@@ -981,4 +981,4 @@ void DrizzleData::PlainTextSplineDecoder::ProcessBlock( IsoString& s, const IsoS
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/DrizzleData.cpp - Released 2017-06-21T11:36:44Z
+// EOF pcl/DrizzleData.cpp - Released 2017-06-28T11:58:42Z

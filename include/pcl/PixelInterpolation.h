@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0842
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/PixelInterpolation.h - Released 2017-06-21T11:36:33Z
+// pcl/PixelInterpolation.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -128,8 +128,17 @@ public:
       }
 
       /*!
-       * Destroys an %Interpolator object and all associated working
-       * structures.
+       * Disabled copy constructor.
+       */
+      Interpolator( const Interpolator& ) = delete;
+
+      /*!
+       * Move constructor.
+       */
+      Interpolator( Interpolator&& ) = default;
+
+      /*!
+       * Destroys an %Interpolator object and all internal working structures.
        */
       virtual ~Interpolator()
       {
@@ -190,6 +199,11 @@ public:
     * Constructs a %PixelInterpolation object.
     */
    PixelInterpolation() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   PixelInterpolation( const PixelInterpolation& ) = default;
 
    /*!
     * Destroys a %PixelInterpolation object.
@@ -302,10 +316,12 @@ public:
    /*!
     * Constructs a %NearestNeighborPixelInterpolation object.
     */
-   NearestNeighborPixelInterpolation() :
-      PixelInterpolation()
-   {
-   }
+   NearestNeighborPixelInterpolation() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   NearestNeighborPixelInterpolation( const NearestNeighborPixelInterpolation& ) = default;
 
    /*!
     */
@@ -368,10 +384,12 @@ public:
    /*!
     * Constructs a %BilinearPixelInterpolation object.
     */
-   BilinearPixelInterpolation() :
-      PixelInterpolation()
-   {
-   }
+   BilinearPixelInterpolation() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   BilinearPixelInterpolation( const BilinearPixelInterpolation& ) = default;
 
    /*!
     */
@@ -440,10 +458,14 @@ public:
     * linear clamping feature.
     */
    BicubicSplinePixelInterpolation( double clamp = __PCL_BICUBIC_SPLINE_CLAMPING_THRESHOLD ) :
-      PixelInterpolation(),
       m_clamp( clamp )
    {
    }
+
+   /*!
+    * Copy constructor.
+    */
+   BicubicSplinePixelInterpolation( const BicubicSplinePixelInterpolation& ) = default;
 
    /*!
     */
@@ -512,6 +534,11 @@ public:
       BicubicSplinePixelInterpolation( c )
    {
    }
+
+   /*!
+    * Copy constructor.
+    */
+   BicubicPixelInterpolation( const BicubicPixelInterpolation& ) = default;
 };
 
 // ----------------------------------------------------------------------------
@@ -535,10 +562,12 @@ public:
    /*!
     * Constructs a %BicubicBSplinePixelInterpolation object.
     */
-   BicubicBSplinePixelInterpolation() :
-      PixelInterpolation()
-   {
-   }
+   BicubicBSplinePixelInterpolation() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   BicubicBSplinePixelInterpolation( const BicubicBSplinePixelInterpolation& ) = default;
 
    /*!
     */
@@ -612,13 +641,28 @@ public:
     *
     */
    BicubicFilterPixelInterpolation( int rh, int rv, const CubicFilter& filter ) :
-      PixelInterpolation(),
-      m_rh( Max( 1, rh ) ), m_rv( Max( 1, rv ) )
+      m_rh( Max( 1, rh ) ),
+      m_rv( Max( 1, rv ) )
    {
       PCL_PRECONDITION( rh >= 1 )
       PCL_PRECONDITION( rv >= 1 )
       m_filter = filter.Clone();
    }
+
+   /*!
+    * Copy constructor.
+    */
+   BicubicFilterPixelInterpolation( const BicubicFilterPixelInterpolation& x ) :
+      m_rh( x.m_rh ),
+      m_rv( x.m_rv )
+   {
+      m_filter = x.m_filter->Clone();
+   }
+
+   /*!
+    * Move constructor.
+    */
+   BicubicFilterPixelInterpolation( BicubicFilterPixelInterpolation&& ) = default;
 
    /*!
     * Virtual destructor.
@@ -716,12 +760,17 @@ public:
     *                interpolation clamping feature. The default value is 0.3.
     */
    LanczosPixelInterpolation( int n = 3, float clamp = 0.3 ) :
-      PixelInterpolation(),
-      m_n( Max( 1, n ) ), m_clamp( clamp )
+      m_n( Max( 1, n ) ),
+      m_clamp( clamp )
    {
       PCL_PRECONDITION( n >= 1 )
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
    }
+
+   /*!
+    * Copy constructor.
+    */
+   LanczosPixelInterpolation( const LanczosPixelInterpolation& ) = default;
 
    /*!
     */
@@ -801,11 +850,15 @@ public:
     *                interpolation clamping feature. The default value is 0.3.
     */
    Lanczos3LUTPixelInterpolation( float clamp = 0.3 ) :
-      PixelInterpolation(),
       m_clamp( clamp )
    {
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
    }
+
+   /*!
+    * Copy constructor.
+    */
+   Lanczos3LUTPixelInterpolation( const Lanczos3LUTPixelInterpolation& ) = default;
 
    /*!
     */
@@ -884,11 +937,15 @@ public:
     *                interpolation clamping feature. The default value is 0.3.
     */
    Lanczos4LUTPixelInterpolation( float clamp = 0.3 ) :
-      PixelInterpolation(),
       m_clamp( Range( clamp, 0.0F, 1.0F ) )
    {
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
    }
+
+   /*!
+    * Copy constructor.
+    */
+   Lanczos4LUTPixelInterpolation( const Lanczos4LUTPixelInterpolation& ) = default;
 
    /*!
     */
@@ -967,11 +1024,15 @@ public:
     *                interpolation clamping feature. The default value is 0.3.
     */
    Lanczos5LUTPixelInterpolation( float clamp = 0.3 ) :
-      PixelInterpolation(),
       m_clamp( Range( clamp, 0.0F, 1.0F ) )
    {
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
    }
+
+   /*!
+    * Copy constructor.
+    */
+   Lanczos5LUTPixelInterpolation( const Lanczos5LUTPixelInterpolation& ) = default;
 
    /*!
     */
@@ -1029,4 +1090,4 @@ private:
 #endif   // __PCL_PixelInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/PixelInterpolation.h - Released 2017-06-21T11:36:33Z
+// EOF pcl/PixelInterpolation.h - Released 2017-06-28T11:58:36Z

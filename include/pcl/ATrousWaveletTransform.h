@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0842
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ATrousWaveletTransform.h - Released 2017-06-21T11:36:33Z
+// pcl/ATrousWaveletTransform.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -418,14 +418,14 @@ public:
    /*!
     * Move constructor.
     */
-#ifdef _MSC_VER
+#ifndef _MSC_VER
+   ATrousWaveletTransform( ATrousWaveletTransform&& ) = default;
+#else
    ATrousWaveletTransform( ATrousWaveletTransform&& x ) :
       RedundantMultiscaleTransform( std::move( x ) ),
       m_scalingFunction( std::move( x.m_scalingFunction ) )
    {
    }
-#else
-   ATrousWaveletTransform( ATrousWaveletTransform&& ) = default;
 #endif
 
    /*!
@@ -701,4 +701,4 @@ typedef ATrousWaveletTransform   StarletTransform;
 #endif   // __PCL_ATrousWaveletTransform_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ATrousWaveletTransform.h - Released 2017-06-21T11:36:33Z
+// EOF pcl/ATrousWaveletTransform.h - Released 2017-06-28T11:58:36Z

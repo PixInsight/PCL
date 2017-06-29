@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0842
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/UnidimensionalInterpolation.h - Released 2017-06-21T11:36:33Z
+// pcl/UnidimensionalInterpolation.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -76,14 +76,20 @@ class PCL_CLASS UnidimensionalInterpolation
 {
 public:
 
+   /*!
+    * Represents a vector of independent and dependent variable values.
+    */
    typedef GenericVector<T>   vector_type;
 
    /*!
     * Constructs a %UnidimensionalInterpolation object.
     */
-   UnidimensionalInterpolation() : m_x(), m_y()
-   {
-   }
+   UnidimensionalInterpolation() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   UnidimensionalInterpolation( const UnidimensionalInterpolation& ) = default;
 
    /*!
     * Destroys a %UnidimensionalInterpolation object.
@@ -200,4 +206,4 @@ protected:
 #endif  // __PCL_UnidimensionalInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/UnidimensionalInterpolation.h - Released 2017-06-21T11:36:33Z
+// EOF pcl/UnidimensionalInterpolation.h - Released 2017-06-28T11:58:36Z

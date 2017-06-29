@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0842
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/AdaptiveLocalFilter.h - Released 2017-06-21T11:36:33Z
+// pcl/AdaptiveLocalFilter.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -104,21 +104,18 @@ public:
     *                is used by default).
     */
    AdaptiveLocalFilter( double sigma, int size = 5, bool useMAD = false ) :
-      ImageTransformation(),
-      m_size( Max( 3, size|1 ) ), m_sigma( Max( 0.0, sigma ) ), m_useMAD( useMAD ),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      m_size( Max( 3, size|1 ) ),
+      m_sigma( Max( 0.0, sigma ) ),
+      m_useMAD( useMAD ),
+      m_parallel( true ),
+      m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   AdaptiveLocalFilter( const AdaptiveLocalFilter& x ) :
-      ImageTransformation( x ),
-      m_size( x.m_size ), m_sigma( x.m_sigma ), m_useMAD( x.m_useMAD ),
-      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
-   {
-   }
+   AdaptiveLocalFilter( const AdaptiveLocalFilter& ) = default;
 
    /*!
     * Destroys this %AdaptiveLocalFilter object.
@@ -290,4 +287,4 @@ protected:
 #endif   // __PCL_AdaptiveLocalFilter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AdaptiveLocalFilter.h - Released 2017-06-21T11:36:33Z
+// EOF pcl/AdaptiveLocalFilter.h - Released 2017-06-28T11:58:36Z

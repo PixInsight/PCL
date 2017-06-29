@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0842
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/BicubicInterpolation.h - Released 2017-06-21T11:36:33Z
+// pcl/BicubicInterpolation.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -90,6 +90,11 @@ public:
     * Constructs a new %BicubicInterpolationBase instance.
     */
    BicubicInterpolationBase() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   BicubicInterpolationBase( const BicubicInterpolationBase& ) = default;
 
 protected:
 
@@ -383,10 +388,15 @@ public:
     * is appropriate for most linear images.
     */
    BicubicSplineInterpolation( float clamp = __PCL_BICUBIC_SPLINE_CLAMPING_THRESHOLD ) :
-      BicubicInterpolationBase<T>(), m_clamp( Range( clamp, 0.0F, 1.0F ) )
+      m_clamp( Range( clamp, 0.0F, 1.0F ) )
    {
       PCL_PRECONDITION( 0 <= clamp && clamp <= 1 )
    }
+
+   /*!
+    * Copy constructor.
+    */
+   BicubicSplineInterpolation( const BicubicSplineInterpolation& ) = default;
 
    /*!
     * Virtual destructor.
@@ -633,6 +643,11 @@ public:
    BicubicInterpolation() = default;
 
    /*!
+    * Copy constructor.
+    */
+   BicubicInterpolation( const BicubicInterpolation& ) = default;
+
+   /*!
     * Virtual destructor.
     */
    virtual ~BicubicInterpolation()
@@ -667,6 +682,11 @@ public:
     * Constructs a %BicubicBSplineInterpolation instance.
     */
    BicubicBSplineInterpolation() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   BicubicBSplineInterpolation( const BicubicBSplineInterpolation& ) = default;
 
    /*!
     * Virtual destructor.
@@ -768,4 +788,4 @@ private:
 #endif   // __PCL_BicubicInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/BicubicInterpolation.h - Released 2017-06-21T11:36:33Z
+// EOF pcl/BicubicInterpolation.h - Released 2017-06-28T11:58:36Z

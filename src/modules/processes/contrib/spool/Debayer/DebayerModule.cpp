@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.05.00.0236
+// Standard Debayer Process Module Version 01.06.00.0267
 // ----------------------------------------------------------------------------
-// DebayerModule.cpp - Released 2017-05-02T09:43:01Z
+// DebayerModule.cpp - Released 2017-07-06T19:14:49Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
@@ -51,14 +51,14 @@
 // ----------------------------------------------------------------------------
 
 #define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     05
+#define MODULE_VERSION_MINOR     06
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0236
+#define MODULE_VERSION_BUILD     0267
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     5
-#define MODULE_RELEASE_DAY       2
+#define MODULE_RELEASE_MONTH     7
+#define MODULE_RELEASE_DAY       6
 
 #include "DebayerModule.h"
 #include "DebayerProcess.h"
@@ -73,6 +73,8 @@ DebayerModule::DebayerModule() : MetaModule()
 {
 }
 
+// ----------------------------------------------------------------------------
+
 const char* DebayerModule::Version() const
 {
    return PCL_MODULE_VERSION( MODULE_VERSION_MAJOR,
@@ -82,35 +84,49 @@ const char* DebayerModule::Version() const
                               MODULE_VERSION_LANGUAGE );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString DebayerModule::Name() const
 {
    return "Debayer";
 }
+
+// ----------------------------------------------------------------------------
 
 String DebayerModule::Description() const
 {
    return "Debayer Module";
 }
 
+// ----------------------------------------------------------------------------
+
 String DebayerModule::Company() const
 {
    return "Tungsten Technologies / Pleiades Astrophoto";
 }
+
+// ----------------------------------------------------------------------------
 
 String DebayerModule::Author() const
 {
    return "Sander Pool / Zbynek Vrastil / Juan Conejero";
 }
 
+// ----------------------------------------------------------------------------
+
 String DebayerModule::Copyright() const
 {
    return "Copyright (c) Sander Pool, 2009 / (c) Zbynek Vrastil, 2011 / (c) Pleiades Astrophoto, 2009-2017";
 }
 
+// ----------------------------------------------------------------------------
+
 String DebayerModule::TradeMarks() const
 {
    return "PixInsight";
 }
+
+// ----------------------------------------------------------------------------
 
 String DebayerModule::OriginalFileName() const
 {
@@ -127,6 +143,8 @@ String DebayerModule::OriginalFileName() const
    return "Debayer-pxm.dll";
 #endif
 }
+
+// ----------------------------------------------------------------------------
 
 void DebayerModule::GetReleaseDate( int& year, int& month, int& day ) const
 {
@@ -153,4 +171,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF DebayerModule.cpp - Released 2017-05-02T09:43:01Z
+// EOF DebayerModule.cpp - Released 2017-07-06T19:14:49Z

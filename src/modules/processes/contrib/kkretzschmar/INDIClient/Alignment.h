@@ -100,8 +100,11 @@ class AlignmentModel {
 protected:
 	Console       		 m_console;
 	bool        		 m_modelEachPierSide = false;
+	String               m_modelName;
 	Array<double>      	 m_residuals;
 	Array<SyncDataPoint> m_syncData;
+	TimePoint 			 m_modelCreationTime = TimePoint::Now();
+	TimePoint 			 m_syncDataMaxCreationTime = TimePoint::Now();
 
 	void Serialize(XMLElement* root) const;
 	AutoPointer<XMLDocument> createXTPMDocument() const;
@@ -110,8 +113,11 @@ protected:
 
 public:
 	AlignmentModel(){}
-	AlignmentModel(bool modelEachPierSide):m_modelEachPierSide(modelEachPierSide){}
+	AlignmentModel(bool modelEachPierSide, const char* modelName):m_modelEachPierSide(modelEachPierSide), m_modelName(modelName){}
 	virtual ~AlignmentModel(){}
+
+	// factory method
+	static AlignmentModel* create(const String& fileName);
 
 	virtual void Apply(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) {
 		throw Error("Internal Error: AlignmentModel::Apply: No implementation provided.");
@@ -198,12 +204,17 @@ public:
 	static const size_t modelParameters   = 11;
 	static const size_t maxNumOfPierSides = 2;
   public:
+	static constexpr const char* const modelName = "GeneralAnalytical";
 
+	GeneralAnalyticalPointingModel(): AlignmentModel(),m_numOfModelParameters(modelParameters){
+		m_pointingModelWest = new Vector(0, m_numOfModelParameters);
+		m_pointingModelEast = new Vector(0, m_numOfModelParameters);
+	}
 
-	GeneralAnalyticalPointingModel(double siteLatitude, uint32_t modelConfig, bool modelEachPierSide) : AlignmentModel(modelEachPierSide), m_numOfModelParameters(modelParameters), m_siteLatitude(siteLatitude * Const<double>::rad()), m_pointingModelWest(nullptr), m_pointingModelEast(nullptr),m_modelConfig(modelConfig)
+	GeneralAnalyticalPointingModel(double siteLatitude, uint32_t modelConfig, bool modelEachPierSide) : AlignmentModel(modelEachPierSide, modelName), m_numOfModelParameters(modelParameters), m_siteLatitude(siteLatitude * Const<double>::rad()), m_pointingModelWest(nullptr), m_pointingModelEast(nullptr),m_modelConfig(modelConfig)
   	{
-		m_pointingModelWest = new Vector(m_numOfModelParameters);
-		m_pointingModelEast = new Vector(m_numOfModelParameters);
+		m_pointingModelWest = new Vector(0, m_numOfModelParameters);
+		m_pointingModelEast = new Vector(0, m_numOfModelParameters);
   	}
 
  	virtual ~GeneralAnalyticalPointingModel()
@@ -237,10 +248,9 @@ public:
 
  	size_t    m_numOfModelParameters = 0;
  	double    m_siteLatitude = 0; // in radians
- 	TimePoint m_modelCreationTime = TimePoint::Now();
- 	Vector*  m_pointingModelWest = nullptr;
- 	Vector*  m_pointingModelEast = nullptr;
- 	uint32_t m_modelConfig = 0;
+ 	Vector*   m_pointingModelWest = nullptr;
+ 	Vector*   m_pointingModelEast = nullptr;
+ 	uint32_t  m_modelConfig = 0;
  };
 
 

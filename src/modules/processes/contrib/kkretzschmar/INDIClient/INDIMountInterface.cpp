@@ -701,7 +701,7 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
  		m_interface.GUI->m_alignmentConfigForkFlexure = ForkFlexure_CheckBox.IsChecked();
  		m_interface.GUI->m_alignmentLinear = Linear_CheckBox.IsChecked();
  		m_interface.GUI->m_alignmentQuadratic = Quadratic_CheckBox.IsChecked();
- 		m_interface.GUI->m_aignmentModelIndex = AlignmentConfig_TabBox.CurrentPageIndex() + 1;
+ 		m_interface.GUI->m_alignmentModelIndex = AlignmentConfig_TabBox.CurrentPageIndex() + 1;
  		Ok();
  	}
  	if (sender == Cancel_Button){
@@ -968,7 +968,7 @@ ProcessImplementation* INDIMountInterface::NewProcess() const
 
    instance->p_computeApparentPosition = GUI->MountComputeApparentPosition_CheckBox.IsChecked();
 
-   instance->p_alignmentMethod = GUI->m_aignmentModelIndex;
+   instance->p_alignmentMethod = GUI->m_alignmentModelIndex;
 
    instance->p_enableAlignmentCorrection =  GUI->MountAlignmentCorrection_CheckBox.IsChecked();
 
@@ -1202,11 +1202,12 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    MountAlignmentFile_Sizer.Add(AlignmentFile_ToolButton);
 
    const char* syncdatafileToolTipText =
-         		   "<p>File which store the sync data. </p>";
+         		   "<p>Shows the table of sync data points.</p>";
 
 
    SyncDataList_Button.SetText("Syncdata List");
    SyncDataList_Button.SetIcon( w.ScaledResource( ":/icons/list.png" ) );
+   SyncDataList_Button.SetToolTip(syncdatafileToolTipText);
    SyncDataList_Button.SetStyleSheet("QPushButton { text-align: left; }");
    SyncDataList_Button.OnClick((Button::click_event_handler) &INDIMountInterface::e_Click, w);
 
@@ -1214,12 +1215,15 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
 
    MountAligmentModelConfig_Button.SetText("Configure");
    MountAligmentModelConfig_Button.SetIcon(w.ScaledResource(":/icons/wrench.png"));
+   MountAligmentModelConfig_Button.SetToolTip(alignmentConfigToolTipText);
    MountAligmentModelConfig_Button.SetStyleSheet("QPushButton { text-align: left; }");
    MountAligmentModelConfig_Button.OnClick((Button::click_event_handler) &INDIMountInterface::e_Click, w);
 
    MountAligmentModelFit_Button.SetText("Create Model");
    MountAligmentModelFit_Button.SetIcon( w.ScaledResource( ":/icons/gear.png" ) );
+   MountAligmentModelFit_Button.SetToolTip(alignmentConfigToolTipText);
    MountAligmentModelFit_Button.SetStyleSheet("QPushButton { text-align: left; }");
+   MountAligmentModelFit_Button.Disable();
    MountAligmentModelFit_Button.OnClick((Button::click_event_handler) &INDIMountInterface::e_Click, w);
 
    MountAlignmentPlotResiduals_CheckBox.SetText("plot residuals");
@@ -1817,6 +1821,9 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
    else if ( sender == GUI->AlignmentFile_ToolButton)
    {
 	   SaveFileDialog f;
+	   FileFilter filter;
+	   filter.AddExtension("xtpm");
+	   f.SetFilter(filter);
 	   f.SetCaption( "INDIMount: Select Alignment File" );
 	   if ( f.Execute() )
 		   GUI->AlignmentFile_Edit.SetText( f.FileName() );
@@ -1829,7 +1836,7 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
 		   AutoPointer<AlignmentModel> aModel = nullptr;
 		   int32 alignmentConfig = 0;
 		   GUI->getAlignmentConfigParamter(alignmentConfig);
-		   switch (GUI->m_aignmentModelIndex){
+		   switch (GUI->m_alignmentModelIndex){
 		   case IMCAlignmentMethod::AnalyticalModel:
 			   aModel = GeneralAnalyticalPointingModel::create(m_geoLatitude, alignmentConfig, GUI->m_modelBothPierSides);
 			   break;
@@ -1843,31 +1850,23 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
    }
    else if ( sender == GUI->SyncDataList_Button)
    {
-	   AutoPointer<AlignmentModel> aModel = nullptr;
-	   int32 alignmentConfig = 0;
-	   GUI->getAlignmentConfigParamter(alignmentConfig);
-	   switch (GUI->m_aignmentModelIndex){
-	   case IMCAlignmentMethod::AnalyticalModel:
-		   aModel = GeneralAnalyticalPointingModel::create(m_geoLatitude, alignmentConfig, GUI->m_modelBothPierSides);
-		   break;
-	   default:
-		   throw Error( "Internal error: AbstractINDIMountInterface: Unknown Pointing Model.");
-	   }
-	   aModel->readObject(GUI->AlignmentFile_Edit.Text());
+	   AutoPointer<AlignmentModel> aModel =  AlignmentModel::create(GUI->AlignmentFile_Edit.Text());
+
 	   Array<SyncDataPoint>& syncDataList = aModel->getSyncDataPoints();
 	   AutoPointer<SyncDataListDialog> syncDataListDialog = new SyncDataListDialog(syncDataList);
 
 	   if ( syncDataListDialog->Execute() ){
 		   aModel->writeObject(GUI->AlignmentFile_Edit.Text());
 	   }
-
    }
    else if ( sender == GUI->MountAligmentModelConfig_Button){
 	   // FIXME - memory leak?
 	   if ( m_alignmentConfigDialog == nullptr )
 		   m_alignmentConfigDialog = new AlignmentConfigDialog(*this);
 
-	   m_alignmentConfigDialog->Execute();
+	   if (m_alignmentConfigDialog->Execute()){
+		   GUI->MountAligmentModelFit_Button.Enable();
+	   }
    }
    else if (sender == GUI->MountDeviceConfig_ToolButton) {
 
@@ -2013,36 +2012,39 @@ void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
 
 }
 
+//set multiplot layout 2,2 title "Hourangle residuals in [arcmin]"
+//set multiplot layout 2,2 title "Declination residuals in [arcmin]"
+//unset multiplot
 
 const char* RESIDUAL_GNUPLOT_TEMPLATE = R"(
 
-set terminal svg enhanced size 1600,1200 enhanced background rgb 'white' font 'helvetica,12'
+set terminal svg enhanced size 800,600 enhanced background rgb 'white' font 'helvetica,12'
 set ticslevel 0
 set xzeroaxis
-set output '%s'
-set multiplot layout 2,2 title "Hourangle residuals in [arcmin]"
 set ylabel "residual hourangle [arcmin]"
 set xlabel "Hourangle [deg]"
+set output '%s'
 plot '%s' index 0 using 1:3 title "west" with points pointtype 5, '%s' index 1 using 1:3 title "east" with points pointtype 7
 set xlabel "Declination [deg]"
+set output '%s'
 plot '%s' index 0 using 2:3 title "west" with points pointtype 5, '%s' index 1 using 2:3 title "east" with points pointtype 7
 set xlabel "Hourangle [deg]"
 set ylabel "Declination [deg]"
 set zlabel "residual hourangle [arcmin]"
-splot '%s' index 0 using 1:2:3 title "west" with points pointtype 5, '%s' index 1 using 1:2:3 title "east" with points pointtype 7,0 notitle
-unset multiplot
 set output '%s'
-set multiplot layout 2,2 title "Declination residuals in [arcmin]"
+splot '%s' index 0 using 1:2:3 title "west" with points pointtype 5, '%s' index 1 using 1:2:3 title "east" with points pointtype 7,0 notitle
 set ylabel "residual declination [arcmin]"
 set xlabel "Hourangle [deg]"
+set output '%s'
 plot '%s' index 0 using 1:4 title "west" with points pointtype 5, '%s' index 1 using 1:4 title "east" with points pointtype 7
 set xlabel "Declination [arcmin]"
+set output '%s'
 plot '%s' index 0 using 2:4 title "west" with points pointtype 5, '%s' index 1 using 2:4 title "east" with points pointtype 7
 set xlabel "Hourangle [deg]"
 set ylabel "Declination [deg]"
 set zlabel "residual hourangle [arcmin]"
+set output '%s'
 splot '%s' index 0 using 1:2:4 title "west" with points pointtype 5, '%s' index 1 using 1:2:4 title "east" with points pointtype 7,0 notitle
-unset multiplot
 set terminal svg size 800,600 enhanced background rgb 'white' font 'helvetica,12'
 set xrange[ %f:%f]
 set yrange[ %f:%f]
@@ -2132,19 +2134,23 @@ void INDIMountInterface::plotAlignemtResiduals(AlignmentModel* model){
 
 	// output file names
 	Array<String> outputFiles;
+	outputFiles.Add(tmpFilePath +  "residuals_ha_ha.svg");
+	outputFiles.Add(tmpFilePath +  "residuals_dec_ha.svg");
 	outputFiles.Add(tmpFilePath +  "residuals_ha_3d.svg");
+	outputFiles.Add(tmpFilePath +  "residuals_ha_dec.svg");
+	outputFiles.Add(tmpFilePath +  "residuals_dec_dec.svg");
 	outputFiles.Add(tmpFilePath +  "residuals_dec_3d.svg");
 	outputFiles.Add(tmpFilePath +  "residuals_delha_deldec.svg");
 	double maxDev=std::max(*delHAs.MaxItem(),*delDecs.MaxItem());
 
-	gnufileContent = IsoString().Format(RESIDUAL_GNUPLOT_TEMPLATE, outputFiles[0].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
-			 modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
-			 modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
-			 outputFiles[1].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
-			 modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
-			 modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
+	gnufileContent = IsoString().Format(RESIDUAL_GNUPLOT_TEMPLATE, outputFiles[0].ToIsoString().c_str(),  modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
+			outputFiles[1].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
+			outputFiles[2].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
+			outputFiles[3].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
+			outputFiles[4].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
+			outputFiles[5].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
 			-maxDev,maxDev,-maxDev,maxDev,
-			outputFiles[2].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str());
+			outputFiles[6].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str());
 
 	if (File::Exists(gnuFilePath)) {
 		File::Remove(gnuFilePath);

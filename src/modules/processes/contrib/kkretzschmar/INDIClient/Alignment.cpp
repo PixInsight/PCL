@@ -107,6 +107,14 @@ static Vector ParseListOfRealValues( const XMLElement& element, size_type minCou
    return ParseListOfRealValues( text, 0, text.Length(), minCount, maxCount );
 }
 
+static void WarnOnUnknownChildElement( const XMLElement& element, const String& parsingWhatElement )
+{
+   XMLParseError e( element,
+         "Parsing " + parsingWhatElement + " element",
+         "Skipping unknown \'" + element.Name() + "\' child element." );
+   Console().WarningLn( "<end><cbr>** Warning: " + e.Message() );
+}
+
 
 // ----------------------------------------------------------------------------
 
@@ -220,11 +228,25 @@ void AlignmentModel::ParseSyncDataPoint(SyncDataPoint& syncPoint, const XMLEleme
 				syncPoint.pierSide = element.Text().Trimmed().ToInt();
 			} else if (element.Name() == "Enabled") {
 				syncPoint.enabled = element.Text().Trimmed().ToBool();
+			} else {
+				WarnOnUnknownChildElement( element, "xtpm root" );
+			}
+
+		} catch ( Exception& x )
+		{
+			try
+			{
+				throw XMLParseError( element, "Parsing " + element.Name() + " element", x.Message() );
+			}
+			catch ( Exception& x )
+			{
+				x.Show();
 			}
 		} catch (...) {
 			throw;
 		}
 	}
+
 
 }
 
@@ -235,12 +257,33 @@ void  AlignmentModel::ParseSyncData(const XMLElement& syncDataList) {
 		try {
 			if (element.Name() == "SyncDataPoint") {
 				syncDataPoint.creationTime = TimePoint(element.AttributeValue("CreationTime"));
+				if ( syncDataPoint.creationTime > m_syncDataMaxCreationTime ){
+					m_syncDataMaxCreationTime = syncDataPoint.creationTime;
+				}
 				ParseSyncDataPoint(syncDataPoint, element);
+				m_syncData.Append(syncDataPoint);
+			} else {
+				WarnOnUnknownChildElement( element, "xtpm root" );
 			}
-			m_syncData.Append(syncDataPoint);
+		} catch ( Exception& x )
+		{
+			try
+			{
+				throw XMLParseError( element, "Parsing " + element.Name() + " element", x.Message() );
+			}
+			catch ( Exception& x )
+			{
+				x.Show();
+			}
 		} catch (...) {
 			throw;
 		}
+	}
+	if (m_syncData.IsEmpty()) {
+		throw Error("Missing required sync data point.");
+	}
+	if (m_syncDataMaxCreationTime > m_modelCreationTime) {
+		Console().WarningLn("<end><cbr>** Warning: Telescope pointing model is outdated. There are new sync data points, consider re-fitting the model.");
 	}
 }
 
@@ -258,10 +301,28 @@ void AlignmentModel::Parse(const XMLDocument& xml){
 		try {
 			if (element.Name() == "SyncDataList") {
 				ParseSyncData(element);
+			} else if (element.Name() == "ModelName"){
+				m_modelName = element.Text().Trimmed();
+			}
+			else {
+				WarnOnUnknownChildElement( element, "xtpm root" );
+			}
+		} catch ( Exception& x )
+		{
+			try
+			{
+				throw XMLParseError( element, "Parsing " + element.Name() + " element", x.Message() );
+			}
+			catch ( Exception& x )
+			{
+				x.Show();
 			}
 		} catch (...) {
 			throw;
 		}
+	}
+	if (m_syncData.IsEmpty()) {
+		throw Error("Missing required sync data list.");
 	}
 }
 
@@ -287,6 +348,54 @@ void AlignmentModel::readObject(const String& fileName){
 	xml.SetParserOption( XMLParserOption::IgnoreUnknownElements );
 	xml.Parse( text.UTF8ToUTF16() );
 	Parse( xml );
+}
+
+AlignmentModel* AlignmentModel::create(const String& fileName) {
+	if (!File::Exists(fileName)){
+		throw Error("AlignmentModel::create: xtpm file does not exist.");
+	}
+
+	IsoString text = File::ReadTextFile( fileName );
+	XMLDocument xml;
+	xml.SetParserOption( XMLParserOption::IgnoreComments );
+	xml.SetParserOption( XMLParserOption::IgnoreUnknownElements );
+	xml.Parse( text.UTF8ToUTF16() );
+
+	if ( xml.RootElement() == nullptr )
+		throw Error( "The XML document has no root element." );
+	if ( xml.RootElement()->Name() != "xtpm" || xml.RootElement()->AttributeValue( "version" ) != "1.0" )
+		throw Error( "Not an XTPM version 1.0 document." );
+
+	AlignmentModel* result;
+	String modelName;
+	const XMLElement& root = *xml.RootElement();
+	for (const XMLNode& node : root) {
+		const XMLElement& element = static_cast<const XMLElement&>(node);
+		try {
+			if (element.Name() == "ModelName"){
+				modelName = element.Text().Trimmed();
+			}
+			} catch ( Exception& x )
+			{
+				try
+				{
+					throw XMLParseError( element, "Parsing " + element.Name() + " element", x.Message() );
+				}
+				catch ( Exception& x )
+				{
+					x.Show();
+				}
+			} catch (...) {
+				throw;
+			}
+		}
+	if (modelName == GeneralAnalyticalPointingModel::modelName) {
+		result = new GeneralAnalyticalPointingModel();
+	} else {
+		result = new AlignmentModel();
+	}
+	result->Parse(xml);
+	return result;
 }
 
 
@@ -483,6 +592,10 @@ void GeneralAnalyticalPointingModel::fitModelForPierSide(const Array<SyncDataPoi
 		numOfPoints++;
 	}
 
+	if (numOfPoints == 0) {
+		throw Error("GeneralAnalyticalPointingModel::fitModelForPierSide: Missing required sync data.");
+	}
+
 	// fill a design matrix and an displacement vector
 	Matrix* designMatrices        = nullptr;
 	Vector* measuredDisplacements  = nullptr;
@@ -530,7 +643,6 @@ void GeneralAnalyticalPointingModel::fitModelForPierSide(const Array<SyncDataPoi
 		// compute residual
 		Vector residualVector = (*designMatrices) * *m_pointingModelWest - *measuredDisplacements;
 		residual = residualVector.Norm() / m_pointingModelWest->Norm();
-
 	}
 	if (pierSide == IMCPierSide::East) {
 		*m_pointingModelEast = pseudoInverse * *measuredDisplacements;
@@ -549,6 +661,8 @@ XMLDocument* GeneralAnalyticalPointingModel::Serialize() const {
 	AutoPointer<XMLDocument> xml = createXTPMDocument();
 
 	XMLElement* root = const_cast<XMLElement*>(xml->RootElement());
+
+	*(new XMLElement( *root, "ModelName" )) << new XMLText( m_modelName );
 
 	*(new XMLElement( *root, "CreationTime" )) << new XMLText( m_modelCreationTime.ToString() );
 
@@ -582,10 +696,16 @@ void GeneralAnalyticalPointingModel::Parse( const XMLDocument& xml) {
 		const XMLElement& element = static_cast<const XMLElement&>(node);
 
 		try {
-			if (element.Name() == "GeographicLatitude") {
+			if (element.Name() == "ModelName") {
+				m_modelName = element.Text().Trimmed();
+			} else if (element.Name() == "GeographicLatitude") {
 				m_siteLatitude = element.Text().Trimmed().ToDouble();
 			} else if (element.Name() == "Configuration") {
 				m_modelConfig = element.Text().Trimmed().ToInt();
+			} else if (element.Name() == "CreationTime") {
+				m_modelCreationTime = TimePoint(element.Text().Trimmed());
+				// initialize m_syncDataMaxCreationTime
+				m_syncDataMaxCreationTime = m_modelCreationTime;
 			} else if (element.Name() == "ModelParameters") {
 				m_modelEachPierSide = element.AttributeValue("PierSide") != "None";
 				if (element.AttributeValue("PierSide") == "West" || element.AttributeValue("PierSide") == "None") {
@@ -594,13 +714,25 @@ void GeneralAnalyticalPointingModel::Parse( const XMLDocument& xml) {
 					*m_pointingModelEast = ParseListOfRealValues(element);
 				}
 			} else if (element.Name() == "SyncDataList") {
-				Console().WriteLn("I am here");
 				AlignmentModel::ParseSyncData(element);
+			} else {
+				WarnOnUnknownChildElement( element, "xtpm root" );
+			}
+		} catch ( Exception& x )
+		{
+			try
+			{
+				throw XMLParseError( element, "Parsing " + element.Name() + " element", x.Message() );
+			}
+			catch ( Exception& x )
+			{
+				x.Show();
 			}
 		} catch (...) {
 			throw;
 		}
 	}
+
 }
 
 

@@ -57,7 +57,7 @@ function INDIMountControllerTests( parent )
    this.__base__ = Test;
    this.__base__( "INDIMountControllerTests", parent );
 
-   this.add(
+  /* this.add(
       function testUnpark()
       {
          let mountController = new INDIMount;
@@ -158,7 +158,7 @@ function INDIMountControllerTests( parent )
          expectEqualsWithPrecision( 1.0, mountController.currentRA, 0.1 );
          expectEqualsWithPrecision( 15.0, mountController.currentDec, 0.1 );
       }
-   );
+   );*/
 
 
 
@@ -217,6 +217,8 @@ function INDIMountControllerTests( parent )
          mountController.Command = 13; // FitPointingModel
          assertTrue( mountController.executeGlobal());
 
+         parseXTPMFile(pointingModelFileCreated);
+
          // read
         /* var lines = File.readLines(pointingModelFileCreated);
          var linesExpected = File.readLines(pointingModelFile);
@@ -240,7 +242,7 @@ function INDIMountControllerTests( parent )
       }
    );
 
-   this.add(
+   /*this.add(
       function testParking()
       {
          let mountController = new INDIMount;
@@ -255,7 +257,7 @@ function INDIMountControllerTests( parent )
          expectEqualsWithPrecision( 0.0, mountController.currentRA, 0.1 );
          expectEqualsWithPrecision( +90.0, mountController.currentDec, 0.1 );
       }
-   );
+   );*/
 }
 
 INDIMountControllerTests.prototype = new Test;

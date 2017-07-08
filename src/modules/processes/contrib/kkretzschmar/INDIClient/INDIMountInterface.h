@@ -447,7 +447,7 @@ public:
       bool m_alignmentLinear                  = true;
       bool m_alignmentQuadratic               = true;
 
-      int m_aignmentModelIndex                = 0;
+      int  m_alignmentModelIndex              = 0;
 
       void getAlignmentConfigParamter(int32& configParam);
    };

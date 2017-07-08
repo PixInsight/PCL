@@ -356,16 +356,7 @@ bool INDIMountInstance::ExecuteOn( View& view )
 
       if (p_enableAlignmentCorrection){
 
-    	  AutoPointer<AlignmentModel> aModel = nullptr;
-
-    	  switch (p_alignmentMethod){
-    	  case IMCAlignmentMethod::AnalyticalModel:
-    		  Variant geoLat = view.PropertyValue( "Instrument:Telescope:Geograhic:Latitude" );
-    		  if (!geoLat.IsValid() )
-    			  throw Error( "The view does not define valid geographic latitude coordinates." );
-    		  aModel = GeneralAnalyticalPointingModel::create(geoLat.ToDouble(), p_alignmentConfig, true);
-    	  }
-
+    	  AutoPointer<AlignmentModel> aModel = AlignmentModel::create(p_alignmentFile);
 
           Variant eodRa = view.PropertyValue( "Observation:Center:EOD_RA" );
           Variant eodDec = view.PropertyValue( "Observation:Center:EOD_Dec" );
@@ -374,8 +365,8 @@ bool INDIMountInstance::ExecuteOn( View& view )
         	  Variant lst = view.PropertyValue( "Observation:LocalSiderealTime" );
         	  localSiderialTime = lst.ToDouble();
           }
-    	  aModel->readObject(p_alignmentFile);
-    	  double newHourAngle=-1;
+
+          double newHourAngle=-1;
     	  double newDec=-1;
     	  double observationCenterEodRA = eodRa.ToDouble()/15;
     	  double observationCenterEodDec = eodDec.ToDouble();
@@ -716,12 +707,16 @@ void AbstractINDIMountExecution::Perform()
 
           	  switch (m_instance.p_alignmentMethod){
           	  case IMCAlignmentMethod::AnalyticalModel:
+          		  // FIXME modelEachPierside
           		  aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig,true );
+              	  aModel->readObject(m_instance.p_alignmentFile);
+          		  break;
+          	  default:
+          		  aModel = AlignmentModel::create(m_instance.p_alignmentFile);
           	  }
           	  if (aModel==nullptr){
           		throw Error( "Alignment model could not be loaded" );
           	  }
-          	  aModel->readObject(m_instance.p_alignmentFile);
 
           	  aModel->Apply(hourAngle,targetDec,AlignmentModel::rangeShiftHourAngle(m_instance.o_currentLST - targetRARaw),targetDecRaw);
           	  targetRA=AlignmentModel::rangeShiftRighascension(m_instance.o_currentLST-hourAngle);
@@ -890,17 +885,10 @@ void AbstractINDIMountExecution::Perform()
             m_instance.GetTargetCoordinates( targetRA, targetDec );
             m_instance.GetCurrentCoordinates();
 
-            if (this->m_instance.p_enableAlignmentCorrection){
+            if (m_instance.p_enableAlignmentCorrection){
                 // if alignment correction is enabled, the original target coordinates
                 // before alignment correction have to be determined
-                AutoPointer<AlignmentModel> aModel = nullptr;
-            	switch (m_instance.p_alignmentMethod){
-            	case IMCAlignmentMethod::AnalyticalModel:
-            		aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 31));
-            		break;
-            	default:
-            		throw Error( "Internal error: AbstractINDIMountExecution::Perform(): Unknown Pointing Model." );
-            	}
+            	AutoPointer<AlignmentModel> aModel =  AlignmentModel::create(m_instance.p_alignmentFile);
             	ApplyPointingModelCorrection(aModel.Ptr(), targetRA, targetDec);
             }
 
@@ -920,7 +908,7 @@ void AbstractINDIMountExecution::Perform()
             case IMCAlignmentMethod::AnalyticalModel:
             case IMCAlignmentMethod::None:
             {
-            	AutoPointer<AlignmentModel> aModel = new AlignmentModel();
+            	AutoPointer<AlignmentModel> aModel = AlignmentModel::create(m_instance.p_alignmentFile);
             	SyncDataPoint syncPoint;
             	syncPoint.creationTime      = TimePoint::Now();
             	syncPoint.localSiderialTime = m_instance.o_currentLST;
@@ -928,10 +916,8 @@ void AbstractINDIMountExecution::Perform()
             	syncPoint.celestialDEC      = targetDec;
             	syncPoint.telecopeRA        = m_instance.o_currentRA;
             	syncPoint.telecopeDEC       = m_instance.o_currentDec;
-            	syncPoint.pierSide          = m_instance.p_pierSide;
-            	if (File::Exists(m_instance.p_alignmentFile)) {
-            		aModel->readObject(m_instance.p_alignmentFile);
-            	}
+            	syncPoint.pierSide          = aModel->getPierSide(syncPoint.localSiderialTime - syncPoint.celestialRA);
+
             	aModel->addSyncDataPoint(syncPoint);
             	aModel->writeObject(m_instance.p_alignmentFile);
             	break;

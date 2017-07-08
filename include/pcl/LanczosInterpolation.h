@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0842
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/LanczosInterpolation.h - Released 2017-06-21T11:36:33Z
+// pcl/LanczosInterpolation.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -195,15 +195,20 @@ public:
     *                types.
     */
    LanczosInterpolation( int n = 3, float clamp = __PCL_LANCZOS_CLAMPING_THRESHOLD, bool useLUT = Default::UseLUT( (T*)0 ) ) :
-      BidimensionalInterpolation<T>(),
       m_n( Max( 1, n ) ),
       m_lut( useLUT ? PCL_InitializeLanczosRealLUT( m_n ) : nullptr ),
-      m_clamp( clamp >= 0 ), m_clampTh( Range( clamp, 0.0F, 1.0F ) ), m_clampThInv( 1 - m_clampTh ),
+      m_clamp( clamp >= 0 ), m_clampTh( Range( clamp, 0.0F, 1.0F ) ),
+      m_clampThInv( 1 - m_clampTh ),
       m_Lx( 2*m_n )
    {
       PCL_PRECONDITION( n >= 1 )
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
    }
+
+   /*!
+    * Copy constructor.
+    */
+   LanczosInterpolation( const LanczosInterpolation& ) = default;
 
    /*!
     * Virtual destructor.
@@ -541,13 +546,19 @@ public:
    LanczosLUTInterpolationBase( float clamp ) :
       BidimensionalInterpolation<T>(),
       m_lut( PCL_InitializeLanczosIntLUT( m_n ) ),
-      m_clamp( clamp >= 0 ), m_clampTh( Range( clamp, 0.0F, 1.0F ) ), m_clampThInv( 1 - m_clampTh ),
+      m_clamp( clamp >= 0 ), m_clampTh( Range( clamp, 0.0F, 1.0F ) ),
+      m_clampThInv( 1 - m_clampTh ),
       m_Lx( 2*m_n ), m_Ly( 2*m_n )
    {
       PCL_PRECONDITION( m_n >= 1 )
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
       PCL_CHECK( m_lut != nullptr )
    }
+
+   /*!
+    * Copy constructor.
+    */
+   LanczosLUTInterpolationBase( const LanczosLUTInterpolationBase& ) = default;
 
    /*!
     * Virtual destructor.
@@ -798,7 +809,7 @@ private:
  * Lanczos4LUTInterpolation, Lanczos5LUTInterpolation
  */
 template <typename T>
-class PCL_CLASS Lanczos3LUTInterpolation : public LanczosLUTInterpolationBase<T, 3>
+class PCL_CLASS Lanczos3LUTInterpolation : public LanczosLUTInterpolationBase<T,3>
 {
 public:
 
@@ -815,10 +826,15 @@ public:
     *                SetClampingThreshold( float ) member function.
     */
    Lanczos3LUTInterpolation( float clamp = __PCL_LANCZOS_CLAMPING_THRESHOLD ) :
-      LanczosLUTInterpolationBase<T, 3>( clamp )
+      LanczosLUTInterpolationBase<T,3>( clamp )
    {
       PCL_PRECONDITION( 0 <= clamp && clamp <= 1 )
    }
+
+   /*!
+    * Copy constructor.
+    */
+   Lanczos3LUTInterpolation( const Lanczos3LUTInterpolation& ) = default;
 
    /*!
     * Virtual destructor.
@@ -848,7 +864,7 @@ public:
  * Lanczos3LUTInterpolation, Lanczos5LUTInterpolation
  */
 template <typename T>
-class PCL_CLASS Lanczos4LUTInterpolation : public LanczosLUTInterpolationBase<T, 4>
+class PCL_CLASS Lanczos4LUTInterpolation : public LanczosLUTInterpolationBase<T,4>
 {
 public:
 
@@ -865,10 +881,15 @@ public:
     *                SetClampingThreshold( float ) member function.
     */
    Lanczos4LUTInterpolation( float clamp = __PCL_LANCZOS_CLAMPING_THRESHOLD ) :
-      LanczosLUTInterpolationBase<T, 4>( clamp )
+      LanczosLUTInterpolationBase<T,4>( clamp )
    {
       PCL_PRECONDITION( 0 <= clamp && clamp <= 1 )
    }
+
+   /*!
+    * Copy constructor.
+    */
+   Lanczos4LUTInterpolation( const Lanczos4LUTInterpolation& ) = default;
 
    /*!
     * Virtual destructor.
@@ -898,7 +919,7 @@ public:
  * Lanczos3LUTInterpolation, Lanczos4LUTInterpolation
  */
 template <typename T>
-class PCL_CLASS Lanczos5LUTInterpolation : public LanczosLUTInterpolationBase<T, 5>
+class PCL_CLASS Lanczos5LUTInterpolation : public LanczosLUTInterpolationBase<T,5>
 {
 public:
 
@@ -915,10 +936,15 @@ public:
     *                SetClampingThreshold( float ) member function.
     */
    Lanczos5LUTInterpolation( float clamp = __PCL_LANCZOS_CLAMPING_THRESHOLD ) :
-      LanczosLUTInterpolationBase<T, 5>( clamp )
+      LanczosLUTInterpolationBase<T,5>( clamp )
    {
       PCL_PRECONDITION( 0 <= clamp && clamp <= 1 )
    }
+
+   /*!
+    * Copy constructor.
+    */
+   Lanczos5LUTInterpolation( const Lanczos5LUTInterpolation& ) = default;
 
    /*!
     * Virtual destructor.
@@ -945,4 +971,4 @@ public:
 #endif   // __PCL_LanczosInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/LanczosInterpolation.h - Released 2017-06-21T11:36:33Z
+// EOF pcl/LanczosInterpolation.h - Released 2017-06-28T11:58:36Z

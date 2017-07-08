@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0842
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/DrizzleData.h - Released 2017-06-21T11:36:33Z
+// pcl/DrizzleData.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -104,6 +104,8 @@ class PCL_CLASS XMLElement;
  * of PixInsight before the 1.8.5 standard distribution. By using the class
  * constructor or the Parse() member function to load and parse an existing
  * file, the correct file format is detected automatically.
+ *
+ * \sa NormalizationData
  */
 class PCL_CLASS DrizzleData
 {
@@ -825,7 +827,7 @@ public:
     * This function validates the data retrieved from the specified %XML
     * element. It throws an Error exception in the event of invalid data.
     */
-   void Parse( const XMLElement&, bool ignoreIntegrationData = false );
+   void Parse( const XMLElement& element, bool ignoreIntegrationData = false );
 
    /*!
     * Returns true if drizzle data compression is enabled for serializations
@@ -979,4 +981,4 @@ private:
 #endif   // __PCL_DrizzleData_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/DrizzleData.h - Released 2017-06-21T11:36:33Z
+// EOF pcl/DrizzleData.h - Released 2017-06-28T11:58:36Z

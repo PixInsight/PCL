@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.05.00.0236
+// Standard Debayer Process Module Version 01.06.00.0267
 // ----------------------------------------------------------------------------
-// DebayerProcess.h - Released 2017-05-02T09:43:01Z
+// DebayerProcess.h - Released 2017-07-06T19:14:49Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
@@ -68,18 +68,12 @@ public:
 
    virtual IsoString Id() const;
    virtual IsoString Category() const;
-
    virtual uint32 Version() const;
-
    virtual String Description() const;
-
    virtual const char** IconImageXPM() const;
-
    virtual ProcessInterface* DefaultInterface() const;
-
    virtual ProcessImplementation* Create() const;
    virtual ProcessImplementation* Clone( const ProcessImplementation& ) const;
-
    virtual bool CanProcessCommandLines() const;
    virtual int ProcessCommandLine( const StringList& ) const;
 };
@@ -97,4 +91,4 @@ PCL_END_LOCAL
 #endif   // __DebayerProcess_h
 
 // ----------------------------------------------------------------------------
-// EOF DebayerProcess.h - Released 2017-05-02T09:43:01Z
+// EOF DebayerProcess.h - Released 2017-07-06T19:14:49Z

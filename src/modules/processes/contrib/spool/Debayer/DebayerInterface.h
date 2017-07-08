@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.05.00.0236
+// Standard Debayer Process Module Version 01.06.00.0267
 // ----------------------------------------------------------------------------
-// DebayerInterface.h - Released 2017-05-02T09:43:01Z
+// DebayerInterface.h - Released 2017-07-06T19:14:49Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
@@ -55,15 +55,13 @@
 
 #include <pcl/CheckBox.h>
 #include <pcl/ComboBox.h>
-#include <pcl/Dialog.h>
 #include <pcl/Edit.h>
-#include <pcl/Label.h>
-#include <pcl/NumericControl.h>
 #include <pcl/ProcessInterface.h>
 #include <pcl/PushButton.h>
+#include <pcl/SectionBar.h>
 #include <pcl/Sizer.h>
-#include <pcl/SpinBox.h>
 #include <pcl/ToolButton.h>
+#include <pcl/TreeBox.h>
 
 #include "DebayerInstance.h"
 
@@ -83,6 +81,7 @@ public:
    virtual MetaProcess* Process() const;
    virtual const char** IconImageXPM() const;
 
+   virtual InterfaceFeatures Features() const;
    virtual void ApplyInstance() const;
    virtual void ResetInstance();
 
@@ -97,38 +96,94 @@ public:
 
 private:
 
-   DebayerInstance instance;
+   DebayerInstance m_instance;
 
    struct GUIData
    {
       GUIData( DebayerInterface& );
 
       VerticalSizer     Global_Sizer;
-         HorizontalSizer   PatternSizer;
-            Label             PatternLabel;
-            ComboBox          BayerPatternCombo;
-         HorizontalSizer   DebayerMethodSizer;
-            Label             DebayerMethodLabel;
-            ComboBox          DebayerMethodCombo;
-         HorizontalSizer   EvaluateNoiseSizer;
-            CheckBox          EvaluateNoiseCheckBox;
-         HorizontalSizer   NoiseEvaluation_Sizer;
-            Label             NoiseEvaluation_Label;
-            ComboBox          NoiseEvaluation_ComboBox;
-         HorizontalSizer   ButtonSizer;
-            PushButton        Save_PushButton;
-            PushButton        Restore_PushButton;
+
+         VerticalSizer     GeneralParameters_Sizer;
+            HorizontalSizer   Pattern_Sizer;
+               Label             Pattern_Label;
+               ComboBox          Pattern_ComboBox;
+            HorizontalSizer   DebayerMethod_Sizer;
+               Label             DebayerMethod_Label;
+               ComboBox          DebayerMethod_ComboBox;
+            HorizontalSizer   EvaluateNoise_Sizer;
+               CheckBox          EvaluateNoise_CheckBox;
+            HorizontalSizer   NoiseEvaluation_Sizer;
+               Label             NoiseEvaluation_Label;
+               ComboBox          NoiseEvaluation_ComboBox;
+            HorizontalSizer   Button_Sizer;
+               PushButton        Save_PushButton;
+               PushButton        Restore_PushButton;
+
+         SectionBar        TargetImages_SectionBar;
+         Control           TargetImages_Control;
+         HorizontalSizer   TargetImages_Sizer;
+            TreeBox           TargetImages_TreeBox;
+            VerticalSizer     TargetButtons_Sizer;
+               PushButton        AddFiles_PushButton;
+               PushButton        SelectAll_PushButton;
+               PushButton        InvertSelection_PushButton;
+               PushButton        ToggleSelected_PushButton;
+               PushButton        RemoveSelected_PushButton;
+               PushButton        Clear_PushButton;
+               CheckBox          FullPaths_CheckBox;
+
+         SectionBar        FormatHints_SectionBar;
+         Control           FormatHints_Control;
+         VerticalSizer     FormatHints_Sizer;
+            HorizontalSizer   InputHints_Sizer;
+               Label             InputHints_Label;
+               Edit              InputHints_Edit;
+            HorizontalSizer   OutputHints_Sizer;
+               Label             OutputHints_Label;
+               Edit              OutputHints_Edit;
+
+         SectionBar        OutputFiles_SectionBar;
+         Control           OutputFiles_Control;
+         VerticalSizer     OutputFiles_Sizer;
+            HorizontalSizer   OutputDirectory_Sizer;
+               Label             OutputDirectory_Label;
+               Edit              OutputDirectory_Edit;
+               ToolButton        OutputDirectory_ToolButton;
+            HorizontalSizer   OutputChunks_Sizer;
+               Label             OutputPrefix_Label;
+               Edit              OutputPrefix_Edit;
+               Label             OutputPostfix_Label;
+               Edit              OutputPostfix_Edit;
+            HorizontalSizer   OutputOptions_Sizer;
+               CheckBox          OverwriteExistingFiles_CheckBox;
+               Label             OnError_Label;
+               ComboBox          OnError_ComboBox;
    };
 
    GUIData* GUI = nullptr;
 
    void UpdateControls();
+   void UpdateGeneralParameterControls();
+   void UpdateTargetImageItem( size_type );
+   void UpdateTargetImagesList();
+   void UpdateImageSelectionButtons();
+   void UpdateFormatHintsControls();
+   void UpdateOutputFilesControls();
+
    void SaveSettings();
    void LoadSettings();
 
    // Event Handlers
-   void __ItemSelected( ComboBox& sender, int itemIndex );
-   void __ButtonClicked( Button& sender, bool checked );
+   void e_EditCompleted( Edit& sender );
+   void e_ItemSelected( ComboBox& sender, int itemIndex );
+   void e_Click( Button& sender, bool checked );
+   void e_CurrentNodeUpdated( TreeBox& sender, TreeBox::Node& current, TreeBox::Node& oldCurrent );
+   void e_NodeActivated( TreeBox& sender, TreeBox::Node& node, int col );
+   void e_NodeSelectionUpdated( TreeBox& sender );
+   void e_ToggleSection( SectionBar& sender, Control& section, bool start );
+   void e_FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
+   void e_FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
 
    friend struct GUIData;
 };
@@ -146,4 +201,4 @@ PCL_END_LOCAL
 #endif   // __DebayerInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF DebayerInterface.h - Released 2017-05-02T09:43:01Z
+// EOF DebayerInterface.h - Released 2017-07-06T19:14:49Z

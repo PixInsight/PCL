@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0842
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/AkimaInterpolation.h - Released 2017-06-21T11:36:33Z
+// pcl/AkimaInterpolation.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -92,13 +92,40 @@ class PCL_CLASS AkimaInterpolation : public UnidimensionalInterpolation<T>
 {
 public:
 
-   typedef typename UnidimensionalInterpolation<T>::vector_type vector_type;
-   typedef vector_type coefficient_vector;
+   /*!
+    * Represents a vector of independent and dependent variable values.
+    */
+   typedef typename UnidimensionalInterpolation<T>::vector_type
+                        vector_type;
+
+   /*!
+    * Represents a vector of interpolation coefficients.
+    */
+   typedef vector_type  coefficient_vector;
 
    /*!
     * Constructs an %AkimaInterpolation object.
     */
    AkimaInterpolation() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   AkimaInterpolation( const AkimaInterpolation& ) = default;
+
+   /*!
+    * Move constructor.
+    */
+#ifndef _MSC_VER
+   AkimaInterpolation( AkimaInterpolation&& ) = default;
+#else
+   AkimaInterpolation( AkimaInterpolation&& x ) :
+      m_b( std::move( x.m_b ) ),
+      m_c( std::move( x.m_c ) ),
+      m_d( std::move( x.m_d ) )
+   {
+   }
+#endif
 
    /*!
     * Destroys an %AkimaInterpolation object.
@@ -277,4 +304,4 @@ protected:
 #endif  // __PCL_AkimaInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AkimaInterpolation.h - Released 2017-06-21T11:36:33Z
+// EOF pcl/AkimaInterpolation.h - Released 2017-06-28T11:58:36Z

@@ -2,7 +2,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-06-17T11:44:50.408Z
+# Generated on .... 2017-06-28T11:40:09.165Z
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ MacOSX/g++
@@ -98,6 +98,7 @@ SRC_FILES= \
 ../../Label.cpp \
 ../../LanczosInterpolation.cpp \
 ../../LinearFit.cpp \
+../../LocalNormalizationData.cpp \
 ../../MD5.cpp \
 ../../Median.cpp \
 ../../MercatorProjection.cpp \
@@ -270,6 +271,7 @@ OBJ_FILES= \
 ./x64/Release/Label.o \
 ./x64/Release/LanczosInterpolation.o \
 ./x64/Release/LinearFit.o \
+./x64/Release/LocalNormalizationData.o \
 ./x64/Release/MD5.o \
 ./x64/Release/Median.o \
 ./x64/Release/MercatorProjection.o \
@@ -442,6 +444,7 @@ DEP_FILES= \
 ./x64/Release/Label.d \
 ./x64/Release/LanczosInterpolation.d \
 ./x64/Release/LinearFit.d \
+./x64/Release/LocalNormalizationData.d \
 ./x64/Release/MD5.d \
 ./x64/Release/Median.d \
 ./x64/Release/MercatorProjection.d \

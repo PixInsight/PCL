@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0842
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ChebyshevFit.h - Released 2017-06-21T11:36:33Z
+// pcl/ChebyshevFit.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -219,17 +219,38 @@ public:
    /*!
     * Move constructor.
     */
+#ifndef _MSC_VER
    GenericChebyshevFit( GenericChebyshevFit&& ) = default;
+#else
+   GenericChebyshevFit( GenericChebyshevFit&& x ) :
+      dx( x.dx ),
+      x0( x.x0 ),
+      c( std::move( x.c ) ),
+      m( std::move( x.m ) )
+   {
+   }
+#endif
 
    /*!
-    * Copy assignment operator.
+    * Copy assignment operator. Returns a reference to this object.
     */
    GenericChebyshevFit& operator =( const GenericChebyshevFit& ) = default;
 
    /*!
-    * Move assignment operator.
+    * Move assignment operator. Returns a reference to this object.
     */
+#ifndef _MSC_VER
    GenericChebyshevFit& operator =( GenericChebyshevFit&& ) = default;
+#else
+   GenericChebyshevFit& operator =( GenericChebyshevFit&& x )
+   {
+      dx = x.dx;
+      x0 = x.x0;
+      c = std::move( x.c );
+      m = std::move( x.m );
+      return *this;
+   }
+#endif
 
    /*!
     * Returns the lower bound of this Chebyshev fit. This is the smallest value
@@ -871,4 +892,4 @@ typedef F80ScalarChebyshevFit                         LDScalarChebyshevFit;
 #endif  // __PCL_ChebyshevFit_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ChebyshevFit.h - Released 2017-06-21T11:36:33Z
+// EOF pcl/ChebyshevFit.h - Released 2017-06-28T11:58:36Z

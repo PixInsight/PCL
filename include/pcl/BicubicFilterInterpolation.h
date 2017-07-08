@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.05.0842
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/BicubicFilterInterpolation.h - Released 2017-06-21T11:36:33Z
+// pcl/BicubicFilterInterpolation.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -359,13 +359,19 @@ public:
     *                the interpolation filter.
     */
    BicubicFilterInterpolation( int rx, int ry, const CubicFilter& filter ) :
-      BidimensionalInterpolation<T>(),
-      m_rx( Max( 1, rx ) ), m_ry( Max( 1, ry ) ), m_filter( filter )
+      m_rx( Max( 1, rx ) ),
+      m_ry( Max( 1, ry ) ),
+      m_filter( filter )
    {
       PCL_PRECONDITION( rx >= 1 )
       PCL_PRECONDITION( ry >= 1 )
       Initialize();
    }
+
+   /*!
+    * Copy constructor.
+    */
+   BicubicFilterInterpolation( const BicubicFilterInterpolation& ) = default;
 
    /*!
     * Virtual destructor.
@@ -656,4 +662,4 @@ protected:
 #endif   // __PCL_BicubicFilterInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/BicubicFilterInterpolation.h - Released 2017-06-21T11:36:33Z
+// EOF pcl/BicubicFilterInterpolation.h - Released 2017-06-28T11:58:36Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.05.00.0236
+// Standard Debayer Process Module Version 01.06.00.0267
 // ----------------------------------------------------------------------------
-// DebayerProcess.cpp - Released 2017-05-02T09:43:01Z
+// DebayerProcess.cpp - Released 2017-07-06T19:14:49Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
@@ -84,6 +84,23 @@ DebayerProcess::DebayerProcess() : MetaProcess()
    new DebayerNoiseEvaluationAlgorithm( this );
    new DebayerShowImages( this );
    new DebayerCFASourceFilePath( this );
+   new DebayerTargetItems( this );
+   new DebayerTargetEnabled( TheDebayerTargetItemsParameter );
+   new DebayerTargetImage( TheDebayerTargetItemsParameter );
+   new DebayerNoGUIMessages( this );
+   new DebayerInputHints( this );
+   new DebayerOutputHints( this );
+   new DebayerOutputDirectory( this );
+   new DebayerOutputExtension( this );
+   new DebayerOutputPrefix( this );
+   new DebayerOutputPostfix( this );
+   new DebayerOverwriteExistingFiles( this );
+   new DebayerOnError( this );
+   new DebayerUseFileThreads( this );
+   new DebayerFileThreadOverload( this );
+   new DebayerMaxFileReadThreads( this );
+   new DebayerMaxFileWriteThreads( this );
+
    new DebayerOutputImage( this );
    new DebayerNoiseEstimateR( this );
    new DebayerNoiseEstimateG( this );
@@ -94,6 +111,18 @@ DebayerProcess::DebayerProcess() : MetaProcess()
    new DebayerNoiseAlgorithmR( this );
    new DebayerNoiseAlgorithmG( this );
    new DebayerNoiseAlgorithmB( this );
+
+   new DebayerOutputFileData( this );
+   new DebayerOutputFilePath( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseEstimateR( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseEstimateG( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseEstimateB( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseFractionR( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseFractionG( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseFractionB( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseAlgorithmR( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseAlgorithmG( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseAlgorithmB( TheDebayerOutputFileDataParameter );
 }
 
 // ----------------------------------------------------------------------------
@@ -182,8 +211,7 @@ static void ShowHelp()
 
 int DebayerProcess::ProcessCommandLine( const StringList& argv ) const
 {
-   ArgumentList arguments =
-   ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
+   ArgumentList arguments = ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
 
    DebayerInstance instance( this );
 
@@ -256,4 +284,4 @@ int DebayerProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DebayerProcess.cpp - Released 2017-05-02T09:43:01Z
+// EOF DebayerProcess.cpp - Released 2017-07-06T19:14:49Z

@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-06-17T11:44:50.493Z
+# Generated on .... 2017-06-28T11:40:09.250Z
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ Windows/vc14
@@ -30,7 +30,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{6724D062-F275-4C9B-8018-434313CB0361}</ProjectGuid>
+    <ProjectGuid>{38CDC2CC-B43A-4547-8CC5-86895003D2B9}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -265,6 +265,7 @@
     <ClCompile Include="..\..\Label.cpp"/>
     <ClCompile Include="..\..\LanczosInterpolation.cpp"/>
     <ClCompile Include="..\..\LinearFit.cpp"/>
+    <ClCompile Include="..\..\LocalNormalizationData.cpp"/>
     <ClCompile Include="..\..\MD5.cpp"/>
     <ClCompile Include="..\..\Median.cpp"/>
     <ClCompile Include="..\..\MercatorProjection.cpp"/>

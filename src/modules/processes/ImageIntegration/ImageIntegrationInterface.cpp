@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.15.00.0398
+// Standard ImageIntegration Process Module Version 01.16.00.0429
 // ----------------------------------------------------------------------------
-// ImageIntegrationInterface.cpp - Released 2017-05-05T08:37:32Z
+// ImageIntegrationInterface.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -58,6 +58,7 @@
 #include <pcl/DrizzleData.h>
 #include <pcl/FileDialog.h>
 #include <pcl/FileFormat.h>
+#include <pcl/LocalNormalizationData.h>
 #include <pcl/MessageBox.h>
 #include <pcl/PreviewSelectionDialog.h>
 
@@ -233,22 +234,23 @@ void ImageIntegrationInterface::UpdateInputImagesItem( size_type i )
    node->SetAlignment( 1, TextAlign::Left );
 
    String fileText;
+   if ( !item.nmlPath.IsEmpty() )
+      fileText << "<n> ";
    if ( !item.drzPath.IsEmpty() )
-      fileText = "<d> ";
+      fileText << "<d> ";
    if ( GUI->FullPaths_CheckBox.IsChecked() )
-      fileText.Append( item.path );
+      fileText << item.path;
    else
-      fileText.Append( File::ExtractNameAndSuffix( item.path ) );
+      fileText << File::ExtractNameAndSuffix( item.path );
 
    node->SetText( 2, fileText );
    node->SetAlignment( 2, TextAlign::Left );
 
    String toolTip = item.path;
+   if ( !item.nmlPath.IsEmpty() )
+      toolTip << '\n' << item.nmlPath;
    if ( !item.drzPath.IsEmpty() )
-   {
-      toolTip.Append( '\n' );
-      toolTip.Append( item.drzPath );
-   }
+      toolTip << '\n' << item.drzPath;
    node->SetToolTip( 2, toolTip );
 }
 
@@ -287,6 +289,8 @@ void ImageIntegrationInterface::UpdateImageSelectionButtons()
 
    GUI->AddDrizzleFiles_PushButton.Enable( hasItems );
    GUI->ClearDrizzleFiles_PushButton.Enable( hasItems );
+   GUI->AddLocalNormalizationFiles_PushButton.Enable( hasItems );
+   GUI->ClearLocalNormalizationFiles_PushButton.Enable( hasItems );
    GUI->SetReference_PushButton.Enable( GUI->InputImages_TreeBox.CurrentNode() != 0 );
    GUI->SelectAll_PushButton.Enable( hasItems );
    GUI->InvertSelection_PushButton.Enable( hasItems );
@@ -522,19 +526,38 @@ void ImageIntegrationInterface::__InputImages_NodeSelectionUpdated( TreeBox& sen
 
 // ----------------------------------------------------------------------------
 
+String ImageIntegrationInterface::LocalNormalizationTargetName( const String& filePath )
+{
+   LocalNormalizationData nml( filePath, true/*ignoreNormalizationData*/ );
+
+   /*
+    * If the XNML file includes a target normalization path, use it. Otherwise
+    * the target should have the same name as the .xnml file.
+    */
+   String targetfilePath = nml.TargetFilePath();
+   if ( targetfilePath.IsEmpty() )
+      targetfilePath = filePath;
+
+   if ( GUI->StaticDataTargets_CheckBox.IsChecked() )
+      return File::ChangeExtension( targetfilePath, String() );
+   return File::ExtractName( targetfilePath );
+}
+
+// ----------------------------------------------------------------------------
+
 String ImageIntegrationInterface::DrizzleTargetName( const String& filePath )
 {
    DrizzleData drz( filePath, true/*ignoreIntegrationData*/ );
 
    /*
-    * If the drizzle file includes a target alignment path, use it. Otherwise
-    * the target should have the same name as the drizzle data file.
+    * If the XDRZ file includes a target alignment path, use it. Otherwise
+    * the target should have the same name as the .xdrz file.
     */
    String targetfilePath = drz.AlignmentTargetFilePath();
    if ( targetfilePath.IsEmpty() )
       targetfilePath = filePath;
 
-   if ( GUI->StaticDrizzleTargets_CheckBox.IsChecked() )
+   if ( GUI->StaticDataTargets_CheckBox.IsChecked() )
       return File::ChangeExtension( targetfilePath, String() );
    return File::ExtractName( targetfilePath );
 }
@@ -552,37 +575,24 @@ void ImageIntegrationInterface::__InputImages_Click( Button& sender, bool checke
    if ( sender == GUI->AddFiles_PushButton )
    {
       OpenFileDialog d;
-      d.EnableMultipleSelections();
-
-      d.LoadImageFilters();
-
-      /*
-      FileDialog::filter_list filters;
-      for ( FileDialog::filter_list::const_iterator i = d.Filters().Begin(); i != d.Filters().End(); ++i )
-      {
-         FileFormat format( i->Extensions()[0], true, false );
-         if ( format.CanReadIncrementally() )
-            filters.Add( *i );
-      }
-
-      if ( filters.IsEmpty() )
-      {
-         MessageBox( "No installed file format supports incremental reading",
-                     "ImageIntegration",
-                     StdIcon::Error,
-                     StdButton::Ok ).Execute();
-         return;
-      }
-
-      d.Filters() = filters;
-      */
       d.SetCaption( "ImageIntegration: Select Input Images" );
+      d.LoadImageFilters();
+      d.EnableMultipleSelections();
 
       if ( d.Execute() )
       {
          size_type i0 = TreeInsertionIndex( GUI->InputImages_TreeBox );
-         for ( StringList::const_iterator i = d.FileNames().Begin(); i != d.FileNames().End(); ++i )
-            instance.p_images.Insert( instance.p_images.At( i0++ ), ImageIntegrationInstance::ImageItem( *i ) );
+         ImageIntegrationInstance::image_list newImages;
+         for ( size_type i = 0; i < i0; ++i )
+            newImages << instance.p_images[i];
+         for ( const String& path : d.FileNames() )
+            newImages << ImageIntegrationInstance::ImageItem( path );
+         for ( size_type i = i0; i < instance.p_images.Length(); ++i )
+            newImages << instance.p_images[i];
+         instance.p_images = newImages;
+
+//          for ( const String& path : d.FileNames() )
+//             instance.p_images.Insert( instance.p_images.At( i0++ ), ImageIntegrationInstance::ImageItem( path ) );
 
          UpdateInputImagesList();
          UpdateImageSelectionButtons();
@@ -590,33 +600,28 @@ void ImageIntegrationInterface::__InputImages_Click( Button& sender, bool checke
    }
    else if ( sender == GUI->AddDrizzleFiles_PushButton )
    {
-      FileFilter drzFiles;
-      drzFiles.SetDescription( "Drizzle Data Files" );
-      drzFiles.AddExtension( ".xdrz" );
-      drzFiles.AddExtension( ".drz" );
-
       OpenFileDialog d;
-      d.EnableMultipleSelections();
-      d.Filters().Clear();
-      d.Filters().Add( drzFiles );
       d.SetCaption( "ImageIntegration: Select Drizzle Data Files" );
+      d.SetFilter( FileFilter( "Drizzle Data Files", StringList() << ".xdrz" << ".drz" ) );
+      d.EnableMultipleSelections();
       if ( d.Execute() )
       {
          IVector assigned( 0, int( instance.p_images.Length() ) );
-         for ( StringList::const_iterator i = d.FileNames().Begin(); i != d.FileNames().End(); ++i )
+         for ( const String& path : d.FileNames() )
          {
-            String targetName = DrizzleTargetName( *i );
+            String targetName = DrizzleTargetName( path );
             IVector::iterator n = assigned.Begin();
-            for ( ImageIntegrationInstance::image_list::iterator j = instance.p_images.Begin(); j != instance.p_images.End(); ++j, ++n )
+            for ( ImageIntegrationInstance::ImageItem& item : instance.p_images )
             {
-               String name = GUI->StaticDrizzleTargets_CheckBox.IsChecked() ?
-                                 File::ChangeExtension( j->path, String() ) : File::ExtractName( j->path );
+               String name = GUI->StaticDataTargets_CheckBox.IsChecked() ?
+                                 File::ChangeExtension( item.path, String() ) : File::ExtractName( item.path );
                if ( name == targetName )
                {
-                  j->drzPath = *i;
+                  item.drzPath = path;
                   ++*n;
                   break;
                }
+               ++n;
             }
          }
 
@@ -658,8 +663,8 @@ void ImageIntegrationInterface::__InputImages_Click( Button& sender, bool checke
    }
    else if ( sender == GUI->ClearDrizzleFiles_PushButton )
    {
-      for ( ImageIntegrationInstance::image_list::iterator j = instance.p_images.Begin(); j != instance.p_images.End(); ++j )
-         j->drzPath.Clear();
+      for ( ImageIntegrationInstance::ImageItem& item : instance.p_images )
+         item.drzPath.Clear();
       UpdateInputImagesList();
 
       if ( instance.p_generateDrizzleData )
@@ -667,6 +672,69 @@ void ImageIntegrationInterface::__InputImages_Click( Button& sender, bool checke
          instance.p_generateDrizzleData = false;
          UpdateIntegrationControls();
       }
+   }
+   else if ( sender == GUI->AddLocalNormalizationFiles_PushButton )
+   {
+      OpenFileDialog d;
+      d.SetCaption( "ImageIntegration: Select Local Normalization Data Files" );
+      d.SetFilter( FileFilter( "Local Normalization Data Files", ".xnml" ) );
+      d.EnableMultipleSelections();
+      if ( d.Execute() )
+      {
+         IVector assigned( 0, int( instance.p_images.Length() ) );
+         for ( const String& path : d.FileNames() )
+         {
+            String targetName = LocalNormalizationTargetName( path );
+            IVector::iterator n = assigned.Begin();
+            for ( ImageIntegrationInstance::ImageItem& item : instance.p_images )
+            {
+               String name = GUI->StaticDataTargets_CheckBox.IsChecked() ?
+                                 File::ChangeExtension( item.path, String() ) : File::ExtractName( item.path );
+               if ( name == targetName )
+               {
+                  item.nmlPath = path;
+                  ++*n;
+                  break;
+               }
+               ++n;
+            }
+         }
+
+         UpdateInputImagesList();
+
+         int total = 0;
+         int duplicates = 0;
+         for ( int i = 0; i < assigned.Length(); ++i )
+            if ( assigned[i] > 0 )
+            {
+               ++total;
+               if ( assigned[i] > 1 )
+                  ++duplicates;
+            }
+
+         if ( total == 0 )
+         {
+            MessageBox( "<p>No local normalization data files have been assigned to integration source images.</p>",
+                        "ImageIntegration",
+                        StdIcon::Error,
+                        StdButton::Ok ).Execute();
+         }
+         else
+         {
+            if ( total < assigned.Length() || duplicates )
+               MessageBox( String().Format( "<p>%d of %d local normalization data files have been assigned.<br/>"
+                                            "%d duplicate assignment(s)</p>", total, assigned.Length(), duplicates ),
+                           "ImageIntegration",
+                           StdIcon::Warning,
+                           StdButton::Ok ).Execute();
+         }
+      }
+   }
+   else if ( sender == GUI->ClearLocalNormalizationFiles_PushButton )
+   {
+      for ( ImageIntegrationInstance::ImageItem& item : instance.p_images )
+         item.nmlPath.Clear();
+      UpdateInputImagesList();
    }
    else if ( sender == GUI->SelectAll_PushButton )
    {
@@ -710,7 +778,7 @@ void ImageIntegrationInterface::__InputImages_Click( Button& sender, bool checke
       ImageIntegrationInstance::image_list newImages;
       for ( int i = 0, n = GUI->InputImages_TreeBox.NumberOfChildren(); i < n; ++i )
          if ( !GUI->InputImages_TreeBox[i]->IsSelected() )
-            newImages.Add( instance.p_images[i] );
+            newImages << instance.p_images[i];
       instance.p_images = newImages;
       UpdateInputImagesList();
       UpdateImageSelectionButtons();
@@ -993,7 +1061,7 @@ void ImageIntegrationInterface::__FileDrop( Control& sender, const Point& pos, c
 {
    if ( sender == GUI->InputImages_TreeBox.Viewport() )
    {
-      StringList drizzleFiles;
+      StringList localNormalizationFiles, drizzleFiles;
       bool recursive = IsControlOrCmdPressed();
       size_type i0 = TreeInsertionIndex( GUI->InputImages_TreeBox );
       for ( const String& item : files )
@@ -1002,7 +1070,9 @@ void ImageIntegrationInterface::__FileDrop( Control& sender, const Point& pos, c
          if ( File::Exists( item ) )
          {
             String ext = File::ExtractSuffix( item ).CaseFolded();
-            if ( ext == ".xdrz" || ext == ".drz" )
+            if ( ext == ".xnml" )
+               localNormalizationFiles << item;
+            else if ( ext == ".xdrz" || ext == ".drz" )
                drizzleFiles << item;
             else
                inputFiles << item;
@@ -1010,6 +1080,7 @@ void ImageIntegrationInterface::__FileDrop( Control& sender, const Point& pos, c
          else if ( File::DirectoryExists( item ) )
          {
             inputFiles << FileFormat::SupportedImageFiles( item, true/*toRead*/, false/*toWrite*/, recursive );
+            localNormalizationFiles << FileFormat::LocalNormalizationFiles( item, recursive );
             drizzleFiles << FileFormat::DrizzleFiles( item, recursive );
          }
 
@@ -1017,10 +1088,27 @@ void ImageIntegrationInterface::__FileDrop( Control& sender, const Point& pos, c
          for ( const String& file : inputFiles )
          {
             String ext = File::ExtractSuffix( file ).CaseFolded();
-            if ( ext == ".xdrz" || ext == ".drz" )
+            if ( ext == ".xnml" )
+               localNormalizationFiles << file;
+            else if ( ext == ".xdrz" || ext == ".drz" )
                drizzleFiles << file;
             else
                instance.p_images.Insert( instance.p_images.At( i0++ ), ImageIntegrationInstance::ImageItem( file ) );
+         }
+      }
+
+      for ( const String& file : localNormalizationFiles )
+      {
+         String targetName = LocalNormalizationTargetName( file );
+         for ( ImageIntegrationInstance::ImageItem& item : instance.p_images )
+         {
+            String name = GUI->StaticDataTargets_CheckBox.IsChecked() ?
+                              File::ChangeExtension( item.path, String() ) : File::ExtractName( item.path );
+            if ( name == targetName )
+            {
+               item.nmlPath = file;
+               break;
+            }
          }
       }
 
@@ -1029,7 +1117,7 @@ void ImageIntegrationInterface::__FileDrop( Control& sender, const Point& pos, c
          String targetName = DrizzleTargetName( file );
          for ( ImageIntegrationInstance::ImageItem& item : instance.p_images )
          {
-            String name = GUI->StaticDrizzleTargets_CheckBox.IsChecked() ?
+            String name = GUI->StaticDataTargets_CheckBox.IsChecked() ?
                               File::ChangeExtension( item.path, String() ) : File::ExtractName( item.path );
             if ( name == targetName )
             {
@@ -1107,6 +1195,18 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    AddFiles_PushButton.SetToolTip( "<p>Add existing image files to the list of input images.</p>" );
    AddFiles_PushButton.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__InputImages_Click, w );
 
+   AddLocalNormalizationFiles_PushButton.SetText( "Add L.Norm. Files" );
+   AddLocalNormalizationFiles_PushButton.SetToolTip( "<p>Associate existing local normalization data files with input images.</p>"
+      "<p>Local normalization data files carry the .xnml suffix. Normally you should select .xnml files generated by "
+      "the LocalNormalization tool for the same files that you are integrating.</p>" );
+   AddLocalNormalizationFiles_PushButton.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__InputImages_Click, w );
+
+   ClearLocalNormalizationFiles_PushButton.SetText( "Clear L.Norm. Files" );
+   ClearLocalNormalizationFiles_PushButton.SetToolTip( "<p>Remove all local normalization data files currently associated with "
+      "input images.</p>"
+      "<p>This removes just file associations, not the actual local normalization data files.</p>" );
+   ClearLocalNormalizationFiles_PushButton.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__InputImages_Click, w );
+
    AddDrizzleFiles_PushButton.SetText( "Add Drizzle Files" );
    AddDrizzleFiles_PushButton.SetToolTip( "<p>Associate existing drizzle data files with input images.</p>"
       "<p>Drizzle data files carry the .xdrz suffix. Normally you should select .xdrz files generated by "
@@ -1146,16 +1246,16 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    Clear_PushButton.SetToolTip( "<p>Clear the list of input images.</p>" );
    Clear_PushButton.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__InputImages_Click, w );
 
-   StaticDrizzleTargets_CheckBox.SetText( "Static drizzle targets" );
-   StaticDrizzleTargets_CheckBox.SetToolTip( "<p>When assigning drizzle data files to target images, take into account "
-      "full file paths stored in .xdrz files. This allows you to integrate drizzle target images with duplicate file "
-      "names on different directories. However, by enabling this option your data set gets tied to specific locations "
-      "on the local filesystem. When this option is disabled (the default state), only file names are used to associate "
-      "target images with .xdrz files, which allows you to move your images freely throughout the filesystem, including "
-      "the possibility to migrate them to different machines.</p>"
-      "<p>Changes to this option will come into play the next time you use Add Drizzle Files to associate .xdrz files "
-      "with target images. Existing file associations are not affected.</p>");
-   //StaticDrizzleTargets_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__InputImages_Click, w );
+   StaticDataTargets_CheckBox.SetText( "Static data targets" );
+   StaticDataTargets_CheckBox.SetToolTip( "<p>When assigning drizzle and/or local normalization data files to target "
+      "images, take into account full file paths stored in .xdrz and .xnml files. This allows you to integrate images "
+      "with duplicate file names on different directories. However, by enabling this option your data set gets tied to "
+      "specific locations on the local filesystem. When this option is disabled (the default state), only file names are "
+      "used to associate target images with .xdrz and .xnml files, which allows you to move your images freely throughout "
+      "the filesystem, including the possibility to migrate them to different machines.</p>"
+      "<p>Changes to this option will come into play the next time you associate .xdrz and/or .xnml files with target "
+      "images. Existing file associations are not affected.</p>");
+   //StaticDataTargets_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__InputImages_Click, w );
 
    FullPaths_CheckBox.SetText( "Full paths" );
    FullPaths_CheckBox.SetToolTip( "<p>Show full paths for input image files.</p>" );
@@ -1163,6 +1263,8 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
 
    InputButtons_Sizer.SetSpacing( 4 );
    InputButtons_Sizer.Add( AddFiles_PushButton );
+   InputButtons_Sizer.Add( AddLocalNormalizationFiles_PushButton );
+   InputButtons_Sizer.Add( ClearLocalNormalizationFiles_PushButton );
    InputButtons_Sizer.Add( AddDrizzleFiles_PushButton );
    InputButtons_Sizer.Add( ClearDrizzleFiles_PushButton );
    InputButtons_Sizer.Add( SetReference_PushButton );
@@ -1171,7 +1273,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    InputButtons_Sizer.Add( ToggleSelected_PushButton );
    InputButtons_Sizer.Add( RemoveSelected_PushButton );
    InputButtons_Sizer.Add( Clear_PushButton );
-   InputButtons_Sizer.Add( StaticDrizzleTargets_CheckBox );
+   InputButtons_Sizer.Add( StaticDataTargets_CheckBox );
    InputButtons_Sizer.Add( FullPaths_CheckBox );
    InputButtons_Sizer.AddStretch();
 
@@ -1257,6 +1359,10 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "<p>Scaling matches dispersion. This works as a sort of <i>automatic weighting</i> to combine the input "
       "images, and tends to improve the SNR of the result, especially for images with different overall illumination.</p>"
 
+      "<p>Local normalization applies per-pixel linear normalization functions previously calculated and stored "
+      "in XNML files (.xnml file name suffix) by the LocalNormalization process. To apply this option, existing XNML "
+      "files must be associated with input integration files.</p>"
+
       "<p>Additive normalization with scaling is the default option.</p>";
 
    Normalization_Label.SetText( "Normalization:" );
@@ -1269,6 +1375,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    Normalization_ComboBox.AddItem( "Multiplicative" );
    Normalization_ComboBox.AddItem( "Additive with scaling" );
    Normalization_ComboBox.AddItem( "Multiplicative with scaling" );
+   Normalization_ComboBox.AddItem( "Local normalization" );
    Normalization_ComboBox.SetToolTip( normalizationToolTip );
    Normalization_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&ImageIntegrationInterface::__Integration_ItemSelected, w );
 
@@ -1480,6 +1587,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    const char* stackSizeToolTip =
       "<p>This is the size of the working integration stack structure. In general, the larger this "
       "parameter, the better the performance, especially on multiprocessor/multicore systems.</p>"
+
       "<p>The best performance is achieved when the whole set of integrated pixels can be loaded at "
       "once in the integration stack. For this to happen, the following conditions must be true: (1) "
       "<i>buffer size</i> must be large enough as to allow loading an input file (in 32-bit floating "
@@ -1513,9 +1621,11 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "working image parameters, including pixel statistics and normalization data. This cache greatly "
       "improves performance when the same images are being integrated several times, for example to find "
       "optimal pixel rejection parameters.</p>"
+
       "<p>Disable this option if for some reason you don't want to use the cache. This will force "
       "recalculation of all statistical data required for normalization, which involves loading all "
       "integrated image files from disk.</p>"
+
       "<p>The file cache can also be <i>persistent</i> across PixInsight Core executions. The persistent "
       "cache and its options can be controlled with the ImageIntegration Preferences dialog.</p>");
    UseCache_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Integration_Click, w );
@@ -1610,15 +1720,26 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "<p>Normalization is essential to perform a correct pixel rejection, since it ensures that the data "
       "from all integrated images are compatible in terms of their statistical distribution (mean background "
       "values and dispersion).</p>"
+
       "<p><i>Scale + zero offset</i> matches mean background values and dispersion. This involves "
       "multiplicative and additive transformations. This is the default rejection normalization method that "
       "should be used to integrate calibrated images.</p>"
+
       "<p><i>Equalize fluxes</i> simply matches the main histogram peaks of all images prior to pixel rejection. "
       "This is done by multiplication with the ratio of the reference median to the median of each integrated image. "
       "This is the method of choice to integrate sky flat fields, since in this case trying to match dispersion "
       "does not make sense, due to the irregular illumination distribution. For the same reason, this type of "
       "rejection normalization can also be useful to integrate uncalibrated images, or images suffering from "
-      "strong gradients.</p>";
+      "strong gradients.</p>"
+
+      "<p><i>Local normalization</i> applies per-pixel linear normalization functions previously calculated and stored "
+      "in XNML files (.xnml file name suffix) by the LocalNormalization process. To apply this option, existing XNML "
+      "files must be associated with input integration files. Local normalization can be the most accurate and robust "
+      "option for rejection normalization of data sets with large variations, such as those caused by varying "
+      "acquisition conditions, strong gradients with different orientations and intensities, or data acquired with "
+      "different instruments. In such cases, global normalization techniques based on statistical properties of the "
+      "whole image may be unable to make the data statistically compatible with the required locality, leading to "
+      "inaccurate pixel rejection.</p>";
 
    RejectionNormalization_Label.SetText( "Normalization:" );
    RejectionNormalization_Label.SetFixedWidth( labelWidth1 );
@@ -1628,6 +1749,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    RejectionNormalization_ComboBox.AddItem( "No normalization" );
    RejectionNormalization_ComboBox.AddItem( "Scale + zero offset" );
    RejectionNormalization_ComboBox.AddItem( "Equalize fluxes" );
+   RejectionNormalization_ComboBox.AddItem( "Local normalization" );
    RejectionNormalization_ComboBox.SetToolTip( rejectionNormalizationToolTip );
    RejectionNormalization_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&ImageIntegrationInterface::__Rejection_ItemSelected, w );
 
@@ -1997,7 +2119,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    SmallScaleLayersHigh_Label.SetToolTip( smallScaleLayersHighToolTip );
 
    SmallScaleLayersHigh_SpinBox.SetRange( int( TheIILargeScaleClipHighProtectedLayersParameter->MinimumValue() ),
-                                         int( TheIILargeScaleClipHighProtectedLayersParameter->MaximumValue() ) );
+                                          int( TheIILargeScaleClipHighProtectedLayersParameter->MaximumValue() ) );
    SmallScaleLayersHigh_SpinBox.SetToolTip( smallScaleLayersHighToolTip );
    SmallScaleLayersHigh_SpinBox.SetFixedWidth( editWidth2 );
    SmallScaleLayersHigh_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&ImageIntegrationInterface::__Rejection_SpinValueUpdated, w );
@@ -2018,7 +2140,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    GrowthHigh_Label.SetToolTip( growthHighToolTip );
 
    GrowthHigh_SpinBox.SetRange( int( TheIILargeScaleClipHighGrowthParameter->MinimumValue() ),
-                               int( TheIILargeScaleClipHighGrowthParameter->MaximumValue() ) );
+                                int( TheIILargeScaleClipHighGrowthParameter->MaximumValue() ) );
    GrowthHigh_SpinBox.SetToolTip( growthHighToolTip );
    GrowthHigh_SpinBox.SetFixedWidth( editWidth2 );
    GrowthHigh_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&ImageIntegrationInterface::__Rejection_SpinValueUpdated, w );
@@ -2174,4 +2296,4 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInterface.cpp - Released 2017-05-05T08:37:32Z
+// EOF ImageIntegrationInterface.cpp - Released 2017-07-09T18:07:33Z

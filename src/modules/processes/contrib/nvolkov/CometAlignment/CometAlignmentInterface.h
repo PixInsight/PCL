@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard CometAlignment Process Module Version 01.02.06.0158
+// Standard CometAlignment Process Module Version 01.02.06.0177
 // ----------------------------------------------------------------------------
-// CometAlignmentInterface.h - Released 2017-05-02T09:43:01Z
+// CometAlignmentInterface.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -152,13 +152,11 @@ private:
                Edit              OutputDir_Edit;
                ToolButton        OutputDir_SelectButton;
             HorizontalSizer   OutputChunks_Sizer;
-               Label             OutputExtension_Label;
-               Edit              OutputExtension_Edit;
-               CheckBox          Overwrite_CheckBox;
                Label             Prefix_Label;
                Edit              Prefix_Edit;
                Label             Postfix_Label;
                Edit              Postfix_Edit;
+               CheckBox          Overwrite_CheckBox;
 
    SectionBar		Parameter_SectionBar;
    Control			Parameter_Control;
@@ -279,4 +277,4 @@ PCL_END_LOCAL
 #endif   // __CometAlignmentInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF CometAlignmentInterface.h - Released 2017-05-02T09:43:01Z
+// EOF CometAlignmentInterface.h - Released 2017-07-09T18:07:33Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.00.0300
+// Standard ImageCalibration Process Module Version 01.04.00.0319
 // ----------------------------------------------------------------------------
-// ImageCalibrationInterface.cpp - Released 2017-05-17T17:41:56Z
+// ImageCalibrationInterface.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -283,8 +283,6 @@ void ImageCalibrationInterface::UpdateFormatHintsControls()
 void ImageCalibrationInterface::UpdateOutputFilesControls()
 {
    GUI->OutputDirectory_Edit.SetText( instance.outputDirectory );
-
-   GUI->OutputExtension_Edit.SetText( instance.outputExtension );
 
    GUI->OutputPrefix_Edit.SetText( instance.outputPrefix );
 
@@ -614,12 +612,6 @@ void ImageCalibrationInterface::__OutputFiles_EditCompleted( Edit& sender )
 
    if ( sender == GUI->OutputDirectory_Edit )
       instance.outputDirectory = text;
-   else if ( sender == GUI->OutputExtension_Edit )
-   {
-      if ( !text.IsEmpty() && !text.StartsWith( '.' ) )
-         text.Prepend( '.' );
-      instance.outputExtension = text;
-   }
    else if ( sender == GUI->OutputPrefix_Edit )
       instance.outputPrefix = text;
    else if ( sender == GUI->OutputPostfix_Edit )
@@ -1139,26 +1131,11 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
    OutputDirectory_Sizer.Add( OutputDirectory_Edit, 100 );
    OutputDirectory_Sizer.Add( OutputDirectory_ToolButton );
 
-   const char* outputExtensionToolTip = "<p>The output file extension determines the file format used to "
-      "generate output (calibrated) image files. If this field is left blank, output files will be written in "
-      "the same format as their corresponding target frames.</p>"
-      "<p>Take into account that the selected output format must be a <i>writable</i> one, i.e. a format "
-      "able to generate image files, or the calibration process will fail upon trying to write the first "
-      "calibrated image.</p>";
-
-   OutputExtension_Label.SetText( "Output extension:" );
-   OutputExtension_Label.SetFixedWidth( labelWidth1 );
-   OutputExtension_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-   OutputExtension_Label.SetToolTip( outputExtensionToolTip );
-
-   OutputExtension_Edit.SetFixedWidth( editWidth1 );
-   OutputExtension_Edit.SetToolTip( outputExtensionToolTip );
-   OutputExtension_Edit.OnEditCompleted( (Edit::edit_event_handler)&ImageCalibrationInterface::__OutputFiles_EditCompleted, w );
-
    const char* outputPrefixToolTip =
       "<p>This is a prefix that will be prepended to all output file names.</p>";
 
    OutputPrefix_Label.SetText( "Prefix:" );
+   OutputPrefix_Label.SetFixedWidth( labelWidth1 );
    OutputPrefix_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    OutputPrefix_Label.SetToolTip( outputPrefixToolTip );
 
@@ -1178,12 +1155,9 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
    OutputPostfix_Edit.OnEditCompleted( (Edit::edit_event_handler)&ImageCalibrationInterface::__OutputFiles_EditCompleted, w );
 
    OutputChunks_Sizer.SetSpacing( 4 );
-   OutputChunks_Sizer.Add( OutputExtension_Label );
-   OutputChunks_Sizer.Add( OutputExtension_Edit );
-   OutputChunks_Sizer.AddSpacing( 6 );
    OutputChunks_Sizer.Add( OutputPrefix_Label );
    OutputChunks_Sizer.Add( OutputPrefix_Edit );
-   OutputChunks_Sizer.AddSpacing( 6 );
+   OutputChunks_Sizer.AddSpacing( 12 );
    OutputChunks_Sizer.Add( OutputPostfix_Label );
    OutputChunks_Sizer.Add( OutputPostfix_Edit );
    OutputChunks_Sizer.AddStretch();
@@ -2100,4 +2074,4 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationInterface.cpp - Released 2017-05-17T17:41:56Z
+// EOF ImageCalibrationInterface.cpp - Released 2017-07-09T18:07:33Z

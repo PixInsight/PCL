@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.14.0193
+// Standard INDIClient Process Module Version 01.00.15.0205
 // ----------------------------------------------------------------------------
-// ModuleParameterRegistration.h - Released 2016/06/17 12:50:37 UTC
+// ModuleParameterRegistration.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2016 Klaus Kretzschmar
+// Copyright (c) 2014-2017 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,8 +54,7 @@
 #define __ModuleParameterRegistration_h
 
 #define REGISTER_MODULE_PARAMETER(PARAMETER) \
-	PARAMETER*           The##PARAMETER##Parameter  = nullptr
-
+   PARAMETER* The##PARAMETER##Parameter = nullptr
 
 #define DEFINE_INT32_PARAMETER_CLASS(PARAMETER,PARAMETER_NAME,DEFAULT,MIN,MAX)\
 PARAMETER::PARAMETER( MetaProcess* P ) : MetaInt32( P )\
@@ -79,16 +78,15 @@ double PARAMETER::MaximumValue() const\
    return MAX;\
 }
 
-
 #define DEFINE_STRING_PARAMETER_CLASS(PARAMETER,PARAMETER_NAME)\
-  PARAMETER::PARAMETER (MetaProcess* P) : MetaString( P )\
-  {\
-	  The##PARAMETER##Parameter = this;\
-  }\
-  IsoString PARAMETER::Id() const\
-  {\
-	  return PARAMETER_NAME;\
-  }
+PARAMETER::PARAMETER (MetaProcess* P) : MetaString( P )\
+{\
+   The##PARAMETER##Parameter = this;\
+}\
+IsoString PARAMETER::Id() const\
+{\
+   return PARAMETER_NAME;\
+}
 
 #define DEFINE_DOUBLE_PARAMETER_CLASS(PARAMETER,PARAMETER_NAME,PRECISION,DEFAULT,MIN,MAX)\
 PARAMETER::PARAMETER( MetaProcess* P ) : MetaDouble( P )\
@@ -146,11 +144,10 @@ bool PARAMETER::IsReadOnly() const\
    return true;\
 }
 
-#
 #define DEFINE_BOOLEAN_PARAMETER_CLASS(PARAMETER,PARAMETER_NAME,DEFAULT)\
 PARAMETER::PARAMETER( MetaProcess* P ) : MetaBoolean( P )\
 {\
-	The##PARAMETER##Parameter = this;\
+   The##PARAMETER##Parameter = this;\
 }\
 IsoString PARAMETER::Id() const\
 {\
@@ -161,11 +158,10 @@ bool PARAMETER::DefaultValue() const\
    return DEFAULT;\
 }
 
-
 #define DEFINE_ENUM_PARAMETER_CLASS(PARAMETER,PARAMETER_NAME,ENUM_LIST,DEFAULT_ITEM)\
 PARAMETER::PARAMETER( MetaProcess* P ) : MetaEnumeration( P )\
 {\
-	The##PARAMETER##Parameter = this;\
+   The##PARAMETER##Parameter = this;\
 }\
 IsoString PARAMETER::ElementId( size_type i ) const\
 {\
@@ -193,7 +189,7 @@ size_type PARAMETER::DefaultValueIndex() const\
    return size_type( Default );\
 }
 
-// ============================================================================================================================================
+// ============================================================================
 
 #define DECLARE_INT32_PARAMETER_CLASS(PARAMETER)\
 class PARAMETER : public MetaInt32\
@@ -253,10 +249,6 @@ public:\
 };\
 extern PARAMETER* The##PARAMETER##Parameter
 
-
-
-
-
 #define ENUM_ITEM(X) X,
 
 # define DECLARE_ENUM_PARAMETER(PARAMETER,ENUM_LIST,DEFAULT_ITEM)\
@@ -265,8 +257,8 @@ class PARAMETER : public MetaEnumeration\
 public:\
    enum\
    {\
-     ENUM_LIST\
-	  NumberOfEnumElements,\
+   ENUM_LIST\
+   NumberOfEnumElements,\
       Default = DEFAULT_ITEM\
    };\
    PARAMETER( MetaProcess* );\
@@ -284,8 +276,8 @@ class PARAMETER : public MetaEnumeration\
 public:\
    enum\
    {\
-     ENUM_LIST\
-	  NumberOfEnumElements,\
+   ENUM_LIST\
+   NumberOfEnumElements,\
       Default = DEFAULT_ITEM\
    };\
    PARAMETER( MetaProcess* );\
@@ -298,8 +290,7 @@ public:\
 };\
 extern PARAMETER* The##PARAMETER##Parameter
 
-
 #endif   // __ModuleParameterRegistration_h
 
 // ----------------------------------------------------------------------------
-// EOF Alignment.h - Released 2016/06/17 12:50:37 UTC
+// EOF ModuleParameterRegistration.h - Released 2017-07-09T18:07:33Z

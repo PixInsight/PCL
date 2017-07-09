@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0347
+// Standard Global Process Module Version 01.02.07.0366
 // ----------------------------------------------------------------------------
-// PreferencesProcess.cpp - Released 2017-05-02T09:43:00Z
+// PreferencesProcess.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -128,9 +128,23 @@ PreferencesProcess::PreferencesProcess() : MetaProcess()
    new METAPARAMETER_ID( MainWindow,  maxRecentFiles )( this );
    new METAPARAMETER_ID( MainWindow,  showRecentlyUsed )( this );
    new METAPARAMETER_ID( MainWindow,  showMostUsed )( this );
+   new METAPARAMETER_ID( MainWindow,  showFavorites )( this );
    new METAPARAMETER_ID( MainWindow,  maxUsageListLength )( this );
-   new METAPARAMETER_ID( MainWindow,  expandUsageItemsAtStartup )( this );
+   new METAPARAMETER_ID( MainWindow,  expandRecentlyUsedAtStartup )( this );
+   new METAPARAMETER_ID( MainWindow,  expandMostUsedAtStartup )( this );
+   new METAPARAMETER_ID( MainWindow,  expandFavoritesAtStartup )( this );
    new METAPARAMETER_ID( MainWindow,  openURLsWithInternalBrowser )( this );
+   new METAPARAMETER_ID( MainWindow,  wallpaperFile01 )( this );
+   new METAPARAMETER_ID( MainWindow,  wallpaperFile02 )( this );
+   new METAPARAMETER_ID( MainWindow,  wallpaperFile03 )( this );
+   new METAPARAMETER_ID( MainWindow,  wallpaperFile04 )( this );
+   new METAPARAMETER_ID( MainWindow,  wallpaperFile05 )( this );
+   new METAPARAMETER_ID( MainWindow,  wallpaperFile06 )( this );
+   new METAPARAMETER_ID( MainWindow,  wallpaperFile07 )( this );
+   new METAPARAMETER_ID( MainWindow,  wallpaperFile08 )( this );
+   new METAPARAMETER_ID( MainWindow,  wallpaperFile09 )( this );
+   new METAPARAMETER_ID( MainWindow,  wallpaperFile10 )( this );
+   new METAPARAMETER_ID( MainWindow,  useWallpapers )( this );
 
    // -------------------------------------------------------------------------
 
@@ -151,6 +165,8 @@ PreferencesProcess::PreferencesProcess() : MetaProcess()
    new METAPARAMETER_ID( ImageWindow, fileFormatWarnings )( this );
    new METAPARAMETER_ID( ImageWindow, useFileNamesAsImageIdentifiers )( this );
    new METAPARAMETER_ID( ImageWindow, cursorTolerance )( this );
+   new METAPARAMETER_ID( ImageWindow, wheelStepAngle )( this );
+   new METAPARAMETER_ID( ImageWindow, wheelDirection )( this );
    new METAPARAMETER_ID( ImageWindow, touchEvents )( this );
    new METAPARAMETER_ID( ImageWindow, pinchSensitivity )( this );
    new METAPARAMETER_ID( ImageWindow, fastScreenRenditions )( this );
@@ -349,4 +365,4 @@ int PreferencesProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesProcess.cpp - Released 2017-05-02T09:43:00Z
+// EOF PreferencesProcess.cpp - Released 2017-07-09T18:07:33Z

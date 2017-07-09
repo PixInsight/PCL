@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard CosmeticCorrection Process Module Version 01.02.05.0168
+// Standard CosmeticCorrection Process Module Version 01.02.05.0187
 // ----------------------------------------------------------------------------
-// CosmeticCorrectionInterface.cpp - Released 2017-05-02T09:43:01Z
+// CosmeticCorrectionInterface.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
@@ -1146,17 +1146,15 @@ void CosmeticCorrectionInterface::LoadMasterDark( const String& filePath)
    FileFormatInstance file( format );
    ImageDescriptionArray images;
    if ( !file.Open( images, filePath ) )
-      throw CatchedException();
+      throw CaughtException();
    if ( images.IsEmpty() )
       throw Error( filePath + ": Empty MasterDark image." );
    //if ( images.Length() > 1 ) throw Error( filePath + ": Multiple images cannot be used as MasterDark." );
    if ( !file.SelectImage( 0 ) )
-      throw CatchedException();
+      throw CaughtException();
    m_md = new DarkImg( (void*)0, 0, 0 );
-   if ( !file.ReadImage( *m_md ) )
-      throw CatchedException();
-
-   file.Close();
+   if ( !file.ReadImage( *m_md ) || !file.Close() )
+      throw CaughtException();
 
    m_channels = m_md->NumberOfNominalChannels();
 
@@ -1358,7 +1356,6 @@ void CosmeticCorrectionInterface::ColdSigmaUpdated( const float sigma ) // calcu
 void CosmeticCorrectionInterface::UpdateControls()
 {
    GUI->OutputDir_Edit.SetText( instance.p_outputDir );
-   GUI->OutputExtension_Edit.SetText( instance.p_outputExtension );
    GUI->Postfix_Edit.SetText( instance.p_postfix );
    GUI->Prefix_Edit.SetText( instance.p_prefix );
    GUI->Overwrite_CheckBox.SetChecked( instance.p_overwrite );
@@ -1735,8 +1732,6 @@ void CosmeticCorrectionInterface::__EditCompleted( Edit& sender )
       instance.p_postfix = text;
    else if ( sender == GUI->OutputDir_Edit )
       instance.p_outputDir = text;
-   else if ( sender == GUI->OutputExtension_Edit )
-      instance.p_outputExtension = text.IsEmpty() ? ".xisf" : text;
    else if ( sender == GUI->MasterDarkPath_Edit )
    {
       if ( text.IsEmpty() )
@@ -1893,13 +1888,10 @@ void CosmeticCorrectionInterface::__Button_Click( Button& sender, bool checked )
    else if ( sender == GUI->LoadList_PushButton )
    {
       OpenFileDialog d;
-
-      FileFilter txtFiles;
-      txtFiles.SetDescription( "text Files" );
-      txtFiles.AddExtension( ".txt" );
-      d.Filters().Add( txtFiles );
-      d.SetCaption( "CosmeticCorrection: Select Defect Map file" );
-      if ( !d.Execute() ) return;
+      d.SetCaption( "CosmeticCorrection: Load Defect Map List" );
+      d.SetFilter( FileFilter( "Text Files", ".txt" ) );
+      if ( !d.Execute() )
+         return;
 
       IsoStringList list( File::ReadLines( d.FileName(), ReadTextOption::RemoveEmptyLines|ReadTextOption::TrimTrailingSpaces|ReadTextOption::TrimLeadingSpaces ) );
       instance.p_defects.Clear();
@@ -1920,12 +1912,9 @@ void CosmeticCorrectionInterface::__Button_Click( Button& sender, bool checked )
       const int n = int( instance.p_defects.Length() );
       if ( n == 0 ) return;
       SaveFileDialog d;
-      FileFilter txtFiles;
-      txtFiles.SetDescription( "text Files" );
-      txtFiles.AddExtension( ".txt" );
-      d.Filters().Add( txtFiles );
+      d.SetCaption( "CosmeticCorrection: Save Defect Map List" );
+      d.SetFilter( FileFilter( "Text Files", ".txt" ) );
       d.EnableOverwritePrompt();
-      d.SetCaption( "CosmeticCorrection: Select folder and file name to save Defect Map file" );
       if ( !d.Execute() ) return;
 
       File f( d.FileName(), FileMode::Write|FileMode::Create );
@@ -2162,25 +2151,10 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
    OutputDir_Sizer.Add( OutputDir_SelectButton );
    OutputDir_Sizer.Add( OutputDir_ClearButton );
 
-   const char* ToolTipOutputExtension = "<p>The output file extension determines the file format used to "
-      "generate output (cosmetic-corrected) image files. If this field is left blank, output files will be "
-      "written in the same format as their corresponding input frames.</p>"
-      "<p>Take into account that the selected output format must be a <i>writable</i> one, i.e. a format "
-      "able to generate image files, or the cosmetic correction process will fail upon trying to write the "
-      "first output image.</p>";
-
-   OutputExtension_Label.SetText( "Output extension:" );
-   OutputExtension_Label.SetFixedWidth( labelWidth2 );
-   OutputExtension_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-   OutputExtension_Label.SetToolTip( ToolTipOutputExtension );
-
-   OutputExtension_Edit.SetFixedWidth( fnt.Width( String( 'M', 6 ) ) );
-   OutputExtension_Edit.SetToolTip( ToolTipOutputExtension );
-   OutputExtension_Edit.OnEditCompleted( (Edit::edit_event_handler)&CosmeticCorrectionInterface::__EditCompleted, w );
-
    const char* ToolTipPrefix =
       "<p>This is a prefix that will be appended to the file name of each corrected image.</p>";
-   Prefix_Label.SetText( "Prefix: " );
+   Prefix_Label.SetText( "Prefix:" );
+   Prefix_Label.SetFixedWidth( labelWidth2 );
    Prefix_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    Prefix_Label.SetToolTip( ToolTipPrefix );
    Prefix_Edit.SetFixedWidth( fnt.Width( String( 'M', 6 ) ) );
@@ -2189,7 +2163,7 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
 
    const char* ToolTipPostfix =
       "<p>This is a postfix that will be appended to the file name of each corrected image.</p>";
-   Postfix_Label.SetText( "Postfix: " );
+   Postfix_Label.SetText( "Postfix:" );
    Postfix_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    Postfix_Label.SetToolTip( ToolTipPostfix );
    Postfix_Edit.SetFixedWidth( fnt.Width( String( 'M', 6 ) ) );
@@ -2197,9 +2171,6 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
    Postfix_Edit.OnEditCompleted( (Edit::edit_event_handler)&CosmeticCorrectionInterface::__EditCompleted, w );
 
    OutputChunks_Sizer.SetSpacing( 4 );
-   OutputChunks_Sizer.Add( OutputExtension_Label );
-   OutputChunks_Sizer.Add( OutputExtension_Edit );
-   OutputChunks_Sizer.AddSpacing( 12 );
    OutputChunks_Sizer.Add( Prefix_Label );
    OutputChunks_Sizer.Add( Prefix_Edit );
    OutputChunks_Sizer.AddSpacing( 12 );
@@ -2700,4 +2671,4 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CosmeticCorrectionInterface.cpp - Released 2017-05-02T09:43:01Z
+// EOF CosmeticCorrectionInterface.cpp - Released 2017-07-09T18:07:33Z

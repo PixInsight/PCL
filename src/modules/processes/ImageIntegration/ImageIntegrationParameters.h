@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.15.00.0398
+// Standard ImageIntegration Process Module Version 01.16.00.0429
 // ----------------------------------------------------------------------------
-// ImageIntegrationParameters.h - Released 2017-05-05T08:37:32Z
+// ImageIntegrationParameters.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -112,6 +112,19 @@ public:
 };
 
 extern IIDrizzlePath* TheIIDrizzlePathParameter;
+
+// ----------------------------------------------------------------------------
+
+class IILocalNormalizationDataPath : public MetaString
+{
+public:
+
+   IILocalNormalizationDataPath( MetaTable* );
+
+   virtual IsoString Id() const;
+};
+
+extern IILocalNormalizationDataPath* TheIILocalNormalizationDataPathParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -242,6 +255,7 @@ public:
           Multiplicative,
           AdditiveWithScaling,
           MultiplicativeWithScaling,
+          LocalNormalization,
           NumberOfNormalizationAlgorithms,
           Default = AdditiveWithScaling };
 
@@ -293,6 +307,7 @@ public:
    enum { NoRejectionNormalization,
           Scale,
           EqualizeFluxes,
+          LocalRejectionNormalization,
           NumberOfRejectionNormalizationAlgorithms,
           Default = Scale };
 
@@ -1633,4 +1648,4 @@ PCL_END_LOCAL
 #endif   // __ImageIntegrationParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationParameters.h - Released 2017-05-05T08:37:32Z
+// EOF ImageIntegrationParameters.h - Released 2017-07-09T18:07:33Z

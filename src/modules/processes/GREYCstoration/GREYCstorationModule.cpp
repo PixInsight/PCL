@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard GREYCstoration Process Module Version 01.00.02.0291
+// Standard GREYCstoration Process Module Version 01.00.02.0310
 // ----------------------------------------------------------------------------
-// GREYCstorationModule.cpp - Released 2017-05-02T09:43:00Z
+// GREYCstorationModule.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard GREYCstoration PixInsight module.
 //
@@ -68,12 +68,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  02
-#define MODULE_VERSION_BUILD     0291
+#define MODULE_VERSION_BUILD     0310
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     5
-#define MODULE_RELEASE_DAY       2
+#define MODULE_RELEASE_MONTH     7
+#define MODULE_RELEASE_DAY       9
 
 #include "GREYCstorationModule.h"
 #include "GREYCstorationProcess.h"
@@ -168,4 +168,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF GREYCstorationModule.cpp - Released 2017-05-02T09:43:00Z
+// EOF GREYCstorationModule.cpp - Released 2017-07-09T18:07:33Z

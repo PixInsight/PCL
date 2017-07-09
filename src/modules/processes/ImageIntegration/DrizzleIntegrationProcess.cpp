@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.15.00.0398
+// Standard ImageIntegration Process Module Version 01.16.00.0429
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationProcess.cpp - Released 2017-05-05T08:37:32Z
+// DrizzleIntegrationProcess.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -75,6 +75,7 @@ DrizzleIntegrationProcess::DrizzleIntegrationProcess() : MetaProcess()
    new DZInputData( this );
    new DZItemEnabled( TheDZInputDataParameter );
    new DZItemPath( TheDZInputDataParameter );
+   new DZLocalNormalizationDataPath( TheDZInputDataParameter );
    new DZInputHints( this );
    new DZInputDirectory( this );
    new DZScale( this );
@@ -88,6 +89,7 @@ DrizzleIntegrationProcess::DrizzleIntegrationProcess() : MetaProcess()
    new DZEnableRejection( this );
    new DZEnableImageWeighting( this );
    new DZEnableSurfaceSplines( this );
+   new DZEnableLocalNormalization( this );
    new DZUseROI( this );
    new DZROIX0( this );
    new DZROIY0( this );
@@ -196,4 +198,4 @@ ProcessImplementation* DrizzleIntegrationProcess::Clone( const ProcessImplementa
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationProcess.cpp - Released 2017-05-05T08:37:32Z
+// EOF DrizzleIntegrationProcess.cpp - Released 2017-07-09T18:07:33Z

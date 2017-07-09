@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0374
+// Standard IntensityTransformations Process Module Version 01.07.01.0393
 // ----------------------------------------------------------------------------
-// HistogramTransformationProcess.cpp - Released 2017-05-02T09:43:00Z
+// HistogramTransformationProcess.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -189,4 +189,4 @@ ProcessImplementation* HistogramTransformationProcess::Clone( const ProcessImple
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HistogramTransformationProcess.cpp - Released 2017-05-02T09:43:00Z
+// EOF HistogramTransformationProcess.cpp - Released 2017-07-09T18:07:33Z

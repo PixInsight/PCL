@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.15.00.0398
+// Standard ImageIntegration Process Module Version 01.16.00.0429
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInstance.h - Released 2017-05-05T08:37:32Z
+// DrizzleIntegrationInstance.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -88,7 +88,8 @@ private:
    struct DataItem
    {
       pcl_bool enabled = true;
-      String   path; // drizzle data file
+      String   path;    // drizzle data file
+      String   nmlPath; // local normalization data file
 
       DataItem() = default;
       DataItem( const DataItem& ) = default;
@@ -105,24 +106,25 @@ private:
 
    typedef Array<DataItem>  input_data_list;
 
-   input_data_list p_inputData;            // input .drz files
-   String          p_inputHints;           // input format hints
-   String          p_inputDirectory;       // if nonempty, replace dirs in .drz files
-   float           p_scale;                // input_pixel_size/output_pixel_size
-   float           p_dropShrink;           // pixel shrink factor
-   pcl_enum        p_kernelFunction;       // drop kernel function (square, circular, Gaussian, VariableShape...)
-   int32           p_kernelGridSize;       // grid size for double integration of kernel functions
-   FPoint          p_origin;               // origin of image registration coordinates in reference image pixels
-   pcl_bool        p_enableCFA;            // work with monochrome input CFA frames to integrate an RGB color image
-   String          p_cfaPattern;           // the CFA pattern, such as "RGGB", "GRBG", etc.
-   pcl_bool        p_enableRejection;      // enable pixel rejection
-   pcl_bool        p_enableImageWeighting; // enable image weights
-   pcl_bool        p_enableSurfaceSplines; // enable registration surface splines
-   pcl_bool        p_useROI;               // use a region of interest
-   Rect            p_roi;                  // region of interest
-   pcl_bool        p_closePreviousImages;  // close existing integration and weight images before running
-   pcl_bool        p_noGUIMessages;        // only show errors on the console
-   pcl_enum        p_onError;              // error policy
+   input_data_list p_inputData;                // input .drz files
+   String          p_inputHints;               // input format hints
+   String          p_inputDirectory;           // if nonempty, replace dirs in .drz files
+   float           p_scale;                    // input_pixel_size/output_pixel_size
+   float           p_dropShrink;               // pixel shrink factor
+   pcl_enum        p_kernelFunction;           // drop kernel function (square, circular, Gaussian, VariableShape...)
+   int32           p_kernelGridSize;           // grid size for double integration of kernel functions
+   FPoint          p_origin;                   // origin of image registration coordinates in reference image pixels
+   pcl_bool        p_enableCFA;                // work with monochrome input CFA frames to integrate an RGB color image
+   String          p_cfaPattern;               // the CFA pattern, such as "RGGB", "GRBG", etc.
+   pcl_bool        p_enableRejection;          // enable pixel rejection
+   pcl_bool        p_enableImageWeighting;     // enable image weights
+   pcl_bool        p_enableSurfaceSplines;     // enable registration surface splines
+   pcl_bool        p_enableLocalNormalization; // enable local normalization for output
+   pcl_bool        p_useROI;                   // use a region of interest
+   Rect            p_roi;                      // region of interest
+   pcl_bool        p_closePreviousImages;      // close existing integration and weight images before running
+   pcl_bool        p_noGUIMessages;            // only show errors on the console
+   pcl_enum        p_onError;                  // error policy
 
    /*
     * Read-only output properties.
@@ -180,4 +182,4 @@ private:
 #endif   // __DrizzleIntegrationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInstance.h - Released 2017-05-05T08:37:32Z
+// EOF DrizzleIntegrationInstance.h - Released 2017-07-09T18:07:33Z

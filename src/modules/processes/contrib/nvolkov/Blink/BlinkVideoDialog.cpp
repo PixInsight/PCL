@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.02.0244
+// Standard Blink Process Module Version 01.02.02.0263
 // ----------------------------------------------------------------------------
-// BlinkVideoDialog.cpp - Released 2017-05-02T09:43:01Z
+// BlinkVideoDialog.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
@@ -127,7 +127,7 @@ inline void BlinkVideoDialog::DeleteFrames()
          catch(...)
          {
             Console().CriticalLn( "<end><cbr><raw>*** Couldn't delete file: " + f + "</raw>" );
-            throw CatchedException();
+            throw CaughtException();
          }
       }
 
@@ -192,7 +192,7 @@ void BlinkVideoDialog::CreateFrames()
       Console().WriteLn( "<end><cbr><raw>" + i->filePath + "</raw>" );
       FileFormatInstance outputFile( outputFormat );
       if ( !outputFile.Create( i->filePath ) )
-         throw CatchedException();
+         throw CaughtException();
 
       blink_image image( *m_parent->m_blink.m_filesData[i->fileNumber].m_image ); // create temp image
       image.SelectRectangle( r ); // crop it
@@ -206,10 +206,8 @@ void BlinkVideoDialog::CreateFrames()
          image.ResetChannelRange();
       }
 
-      if ( !outputFile.WriteImage( image ) )
-         throw CatchedException();
-
-      outputFile.Close();
+      if ( !outputFile.WriteImage( image ) || !outputFile.Close() )
+         throw CaughtException();
 
       ++m_frameCount;
 
@@ -635,4 +633,4 @@ BlinkVideoDialog::BlinkVideoDialog( BlinkInterface* parent ) :
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BlinkVideoDialog.cpp - Released 2017-05-02T09:43:01Z
+// EOF BlinkVideoDialog.cpp - Released 2017-07-09T18:07:33Z

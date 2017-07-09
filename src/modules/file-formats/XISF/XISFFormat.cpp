@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.09.0135
+// Standard XISF File Format Module Version 01.00.09.0153
 // ----------------------------------------------------------------------------
-// XISFFormat.cpp - Released 2017-05-02T09:42:51Z
+// XISFFormat.cpp - Released 2017-07-09T18:07:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -94,7 +94,7 @@ String XISFFormat::Description() const
    "<p>XISF - Extensible Image Serialization Format Version 1.0</p>"
 
    "<p>This implementation supports a large subset of the XISF Version 1.0 "
-   "Specification DRAFT 9.4 for monolithic XISF units.</p>"
+   "Specification for monolithic XISF units.</p>"
 
    "<p>For the latest XISF specification document, please visit:</p>"
 
@@ -480,4 +480,4 @@ XISFFormat::FormatOptions* XISFFormat::FormatOptions::FromGenericDataBlock( cons
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFFormat.cpp - Released 2017-05-02T09:42:51Z
+// EOF XISFFormat.cpp - Released 2017-07-09T18:07:25Z

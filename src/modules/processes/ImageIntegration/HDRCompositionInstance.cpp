@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.15.00.0398
+// Standard ImageIntegration Process Module Version 01.16.00.0429
 // ----------------------------------------------------------------------------
-// HDRCompositionInstance.cpp - Released 2017-05-05T08:37:32Z
+// HDRCompositionInstance.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -173,7 +173,7 @@ public:
    void ReadImage( GenericImage<P>& image )
    {
       if ( !file->ReadImage( image ) )
-         throw CatchedException();
+         throw CaughtException();
    }
 
    void ReadImage( ImageVariant& image )
@@ -312,7 +312,7 @@ void HDRCompositionFile::DoOpen( const String& path, const HDRCompositionInstanc
    ImageDescriptionArray images;
 
    if ( !file->Open( images, path, instance->p_inputHints ) )
-      throw CatchedException();
+      throw CaughtException();
 
    if ( images.IsEmpty() )
       throw Error( file->FilePath() + ": Empty image file." );
@@ -353,7 +353,7 @@ void HDRCompositionFile::DoOpen( const String& path, const HDRCompositionInstanc
    {
       Image image( (void*)0, 0, 0 ); // shared image
       if ( !file->ReadImage( image ) )
-         throw CatchedException();
+         throw CaughtException();
 
       if ( isColor )
       {
@@ -382,7 +382,7 @@ void HDRCompositionFile::ComputeExposure( const HDRCompositionInstance* instance
 
    Image image( (void*)0, 0, 0 ); // shared image
    if ( !file->ReadImage( image ) )
-      throw CatchedException();
+      throw CaughtException();
 
    image.Rescale();
 
@@ -983,4 +983,4 @@ size_type HDRCompositionInstance::ParameterLength( const MetaParameter* p, size_
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HDRCompositionInstance.cpp - Released 2017-05-05T08:37:32Z
+// EOF HDRCompositionInstance.cpp - Released 2017-07-09T18:07:33Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0346
+// Standard Geometry Process Module Version 01.02.01.0365
 // ----------------------------------------------------------------------------
-// CommonParameters.h - Released 2017-05-02T09:43:00Z
+// CommonParameters.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -430,4 +430,4 @@ public:
 #endif   // __CommonParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF CommonParameters.h - Released 2017-05-02T09:43:00Z
+// EOF CommonParameters.h - Released 2017-07-09T18:07:33Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0346
+// Standard Geometry Process Module Version 01.02.01.0365
 // ----------------------------------------------------------------------------
-// CropInterface.cpp - Released 2017-05-02T09:43:00Z
+// CropInterface.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -491,7 +491,7 @@ void CropInterface::UpdateNumericControls()
    if ( area == 0 )
       info = "<* Invalid target dimensions *>";
    else if ( currentView.IsNull() )
-      info.Format( "32-bit channel size: %.3lf MB, was %.3lf MB", (area*4)/1048576.0, (wasArea*4)/1048576.0 );
+      info.Format( "32-bit channel size: %.3f MB, was %.3f MB", (area*4)/1048576.0, (wasArea*4)/1048576.0 );
    else
    {
       ImageVariant image = currentView.Window().MainView().Image();
@@ -499,7 +499,7 @@ void CropInterface::UpdateNumericControls()
       size_type wasBytes = wasArea * image.NumberOfChannels() * image.BytesPerSample();
       size_type bytes = area * image.NumberOfChannels() * image.BytesPerSample();
 
-      info.Format( "%d-bit total size: %.3lf MB, was %.3lf MB", image.BitsPerSample(), bytes/1048576.0, wasBytes/1048576.0 );
+      info.Format( "%d-bit total size: %.3f MB, was %.3f MB", image.BitsPerSample(), bytes/1048576.0, wasBytes/1048576.0 );
    }
 
    GUI->SizeInfo_Label.SetText( info );
@@ -1363,4 +1363,4 @@ CropInterface::GUIData::GUIData( CropInterface& w ) :
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CropInterface.cpp - Released 2017-05-02T09:43:00Z
+// EOF CropInterface.cpp - Released 2017-07-09T18:07:33Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard CosmeticCorrection Process Module Version 01.02.05.0168
+// Standard CosmeticCorrection Process Module Version 01.02.05.0187
 // ----------------------------------------------------------------------------
-// CosmeticCorrectionInstance.cpp - Released 2017-05-02T09:43:01Z
+// CosmeticCorrectionInstance.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
@@ -367,9 +367,9 @@ namespace pcl
 
     inline Image* LoadImageFile(FileFormatInstance& file, int index = 0)
     {
-        if (!file.SelectImage(index)) throw CatchedException();
+        if (!file.SelectImage(index)) throw CaughtException();
         Image* image = new Image((void*) 0, 0, 0);
-        if (!file.ReadImage(*image)) throw CatchedException();
+        if (!file.ReadImage(*image)) throw CaughtException();
         return image;
     }
 
@@ -729,15 +729,15 @@ namespace pcl
       FileFormat format(File::ExtractExtension(filePath), true, false);
       FileFormatInstance file(format);
       ImageDescriptionArray images;
-      if (!file.Open(images, filePath)) throw CatchedException();
+      if (!file.Open(images, filePath)) throw CaughtException();
       if (images.IsEmpty()) throw Error(filePath + ": Empty MasterDark image.");
       //if ( images.Length() > 1 ) throw Error( filePath + ": Multiple images cannot be used as MasterDark." );
       if (!file.SelectImage(0)) // which one of Multiple images is masterDark ? I think is #0. I am right?
-         throw CatchedException();
+         throw CaughtException();
       DarkImg img;
-      if (!file.ReadImage(img)) throw CatchedException();
+      if ( !file.ReadImage( img ) || !file.Close() )
+         throw CaughtException();
       m_geometry = img.Bounds(); //set geometry from MasterDark.
-      file.Close();
       return img;
    }
 
@@ -832,7 +832,7 @@ namespace pcl
 
         try
         {
-            if (!file.Open(images, filePath)) throw CatchedException();
+            if (!file.Open(images, filePath)) throw CaughtException();
             if (images.IsEmpty()) throw Error(filePath + ": Empty image file.");
 
             for (unsigned int index = 0; index < images.Length(); ++index)
@@ -850,7 +850,8 @@ namespace pcl
                 target = 0;
             }
             console.WriteLn("Close " + filePath);
-            file.Close();
+            if ( !file.Close() )
+               throw CaughtException();
         }
         catch (...)
         {
@@ -912,7 +913,7 @@ namespace pcl
 
         FileFormat outputFormat( File::ExtractExtension( outputFilePath ), false, true);
         FileFormatInstance outputFile(outputFormat);
-        if (!outputFile.Create(outputFilePath)) throw CatchedException();
+        if (!outputFile.Create(outputFilePath)) throw CaughtException();
         const FileData& inputData = t->GetFileData();
         outputFile.SetOptions(inputData.options);
         if (inputData.fsData != 0)
@@ -927,11 +928,11 @@ namespace pcl
 
         if (inputData.profile.IsProfile()) outputFile.WriteICCProfile( inputData.profile );
 
-        if (!outputFile.WriteImage(*t->TargetImage())) throw CatchedException();
+        if (!outputFile.WriteImage(*t->TargetImage())) throw CaughtException();
 
         console.WriteLn("Close file.");
-        outputFile.Close();
-
+        if ( !outputFile.Close() )
+           throw CaughtException();
 
 #if debug
 //        ShowImage(*t->TargetImage());
@@ -1259,4 +1260,4 @@ namespace pcl
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CosmeticCorrectionInstance.cpp - Released 2017-05-02T09:43:01Z
+// EOF CosmeticCorrectionInstance.cpp - Released 2017-07-09T18:07:33Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard GradientDomain Process Module Version 00.06.04.0184
+// Standard GradientDomain Process Module Version 00.06.04.0203
 // ----------------------------------------------------------------------------
-// GradientsBase.cpp - Released 2017-05-02T09:43:01Z
+// GradientsBase.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -74,7 +74,7 @@ bool GradientsBase::loadFile(const String& rsFilePath_p, std::size_t index_p, im
   FileFormatInstance file(format);
   ImageDescriptionArray images;
   if ( !file.Open( images, rsFilePath_p)) //, inputHints ) )
-    throw CatchedException();
+    throw CaughtException();
   if(images.Length()<=index_p) {
     //image with this index does not exist
     return false;
@@ -82,7 +82,7 @@ bool GradientsBase::loadFile(const String& rsFilePath_p, std::size_t index_p, im
   TimeMessage startLoad("Loading image "+rsFilePath_p+" "+String(index_p));
   file.SelectImage(index_p);
   if (!file.ReadImage(rImage_p))
-    throw CatchedException();
+    throw CaughtException();
   return true;
 }
 
@@ -415,4 +415,4 @@ GradientsBase::TimeMessage::~TimeMessage()
 };
 
 // ----------------------------------------------------------------------------
-// EOF GradientsBase.cpp - Released 2017-05-02T09:43:01Z
+// EOF GradientsBase.cpp - Released 2017-07-09T18:07:33Z

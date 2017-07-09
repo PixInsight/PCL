@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.06.0853
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.06.00.0267
+// Standard Debayer Process Module Version 01.06.00.0269
 // ----------------------------------------------------------------------------
-// DebayerParameters.h - Released 2017-07-06T19:14:49Z
+// DebayerParameters.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
@@ -738,4 +738,4 @@ PCL_END_LOCAL
 #endif   // __DebayerParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF DebayerParameters.h - Released 2017-07-06T19:14:49Z
+// EOF DebayerParameters.h - Released 2017-07-09T18:07:33Z

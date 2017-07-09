@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0371
+// Standard Image Process Module Version 01.02.09.0390
 // ----------------------------------------------------------------------------
-// SampleFormatConversionInterface.cpp - Released 2017-05-02T09:43:00Z
+// SampleFormatConversionInterface.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -319,7 +319,7 @@ void SampleFormatConversionInterface::UpdateCurrentViewInfoControls()
       View v = w.MainView();
       size_type N = v.Image()->NumberOfSamples();
       GUI->CurrentViewInfo_Label.SetText( v.Id().AppendFormat(
-                        ":\n%d-bit %s, %.3lf MB, new size: %.3lf MB",
+                        ":\n%d-bit %s, %.3f MB, new size: %.3f MB",
                         bitsPerSample,
                         isFloatSample ? "floating-point" : "integer",
                         (N*(bitsPerSample >> 3))/1048576.0,
@@ -465,4 +465,4 @@ void SampleFormatConversionInterface::GUIData::SetupTrackViewControls( SampleFor
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SampleFormatConversionInterface.cpp - Released 2017-05-02T09:43:00Z
+// EOF SampleFormatConversionInterface.cpp - Released 2017-07-09T18:07:33Z

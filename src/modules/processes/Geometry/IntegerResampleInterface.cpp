@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0346
+// Standard Geometry Process Module Version 01.02.01.0365
 // ----------------------------------------------------------------------------
-// IntegerResampleInterface.cpp - Released 2017-05-02T09:43:00Z
+// IntegerResampleInterface.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -262,13 +262,13 @@ void IntegerResampleInterface::UpdateControls()
    size_type wasArea = size_type( sourceWidth )*size_type( sourceHeight );
    size_type area = size_type( w )*size_type( h );
    if ( currentView.IsNull() )
-      info.Format( "32-bit channel size: %.3lf MiB, was %.3lf MiB", (area*4)/1048576.0, (wasArea*4)/1048576.0 );
+      info.Format( "32-bit channel size: %.3f MiB, was %.3f MiB", (area*4)/1048576.0, (wasArea*4)/1048576.0 );
    else
    {
       ImageVariant image = currentView.Window().MainView().Image();
       size_type wasBytes = wasArea * image.NumberOfChannels() * image.BytesPerSample();
       size_type bytes = area * image.NumberOfChannels() * image.BytesPerSample();
-      info.Format( "%d-bit total size: %.3lf MiB, was %.3lf MiB", image.BitsPerSample(), bytes/1048576.0, wasBytes/1048576.0 );
+      info.Format( "%d-bit total size: %.3f MiB, was %.3f MiB", image.BitsPerSample(), bytes/1048576.0, wasBytes/1048576.0 );
    }
 
    GUI->SizeInfo_Label.SetText( info );
@@ -634,4 +634,4 @@ IntegerResampleInterface::GUIData::GUIData( IntegerResampleInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IntegerResampleInterface.cpp - Released 2017-05-02T09:43:00Z
+// EOF IntegerResampleInterface.cpp - Released 2017-07-09T18:07:33Z

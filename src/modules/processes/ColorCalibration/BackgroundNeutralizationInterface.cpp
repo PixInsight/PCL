@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.02.00.0257
+// Standard ColorCalibration Process Module Version 01.03.02.0297
 // ----------------------------------------------------------------------------
-// BackgroundNeutralizationInterface.cpp - Released 2017-05-02T09:43:00Z
+// BackgroundNeutralizationInterface.cpp - Released 2017-07-09T18:07:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
@@ -155,9 +155,7 @@ bool BackgroundNeutralizationInterface::ImportProcess( const ProcessImplementati
 // ----------------------------------------------------------------------------
 
 #define TARGET_IMAGE             String( "<target image>" )
-
 #define REFERENCE_ID( x )        (x.IsEmpty() ? TARGET_IMAGE : x)
-
 #define BACKGROUND_REFERENCE_ID  REFERENCE_ID( instance.backgroundReferenceViewId )
 
 void BackgroundNeutralizationInterface::UpdateControls()
@@ -192,44 +190,30 @@ void BackgroundNeutralizationInterface::__GetFocus( Control& sender )
 
 void BackgroundNeutralizationInterface::__EditCompleted( Edit& sender )
 {
-   try
+   if ( sender == GUI->BackgroundReferenceView_Edit )
    {
-      String id = sender.Text().Trimmed();
-      if ( id == TARGET_IMAGE )
-         id.Clear();
-      if ( !id.IsEmpty() )
+      try
       {
-         bool valid;
-         size_type p = id.Find( "->" );
-         if ( p == String::notFound )
-            valid = id.IsValidIdentifier();
-         else
-            valid = id.Left( p ).IsValidIdentifier() && id.Substring( p+2 ).IsValidIdentifier();
-         if ( !valid )
-            throw Error( "Invalid identifier: " + id );
-      }
-
-      if ( sender == GUI->BackgroundReferenceView_Edit )
-      {
+         String id = sender.Text().Trimmed();
+         if ( id == TARGET_IMAGE )
+            id.Clear();
+         if ( !id.IsEmpty() )
+            if ( !View::IsValidViewId( id ) )
+               throw Error( "Invalid view identifier: " + id );
          instance.backgroundReferenceViewId = id;
          sender.SetText( BACKGROUND_REFERENCE_ID );
       }
-
-      return;
-   }
-   catch ( ... )
-   {
-      if ( sender == GUI->BackgroundReferenceView_Edit )
-         sender.SetText( BACKGROUND_REFERENCE_ID );
-
-      try
+      catch ( ... )
       {
-         throw;
+         sender.SetText( BACKGROUND_REFERENCE_ID );
+         try
+         {
+            throw;
+         }
+         ERROR_HANDLER
+         sender.SelectAll();
+         sender.Focus();
       }
-      ERROR_HANDLER
-
-      sender.SelectAll();
-      sender.Focus();
    }
 }
 
@@ -547,4 +531,4 @@ BackgroundNeutralizationInterface::GUIData::GUIData( BackgroundNeutralizationInt
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BackgroundNeutralizationInterface.cpp - Released 2017-05-02T09:43:00Z
+// EOF BackgroundNeutralizationInterface.cpp - Released 2017-07-09T18:07:32Z

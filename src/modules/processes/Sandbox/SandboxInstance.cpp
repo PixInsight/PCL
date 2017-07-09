@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Sandbox Process Module Version 01.00.02.0230
+// Standard Sandbox Process Module Version 01.00.02.0249
 // ----------------------------------------------------------------------------
-// SandboxInstance.cpp - Released 2017-05-02T09:43:01Z
+// SandboxInstance.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Sandbox PixInsight module.
 //
@@ -189,4 +189,4 @@ size_type SandboxInstance::ParameterLength( const MetaParameter* p, size_type ta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SandboxInstance.cpp - Released 2017-05-02T09:43:01Z
+// EOF SandboxInstance.cpp - Released 2017-07-09T18:07:33Z

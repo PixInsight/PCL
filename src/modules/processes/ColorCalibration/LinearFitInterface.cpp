@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.02.00.0257
+// Standard ColorCalibration Process Module Version 01.03.02.0297
 // ----------------------------------------------------------------------------
-// LinearFitInterface.cpp - Released 2017-05-02T09:43:00Z
+// LinearFitInterface.cpp - Released 2017-07-09T18:07:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
@@ -71,10 +71,12 @@ LinearFitInterface* TheLinearFitInterface = nullptr;
 // ----------------------------------------------------------------------------
 
 LinearFitInterface::LinearFitInterface() :
-   instance( TheLinearFitProcess )
+   m_instance( TheLinearFitProcess )
 {
    TheLinearFitInterface = this;
 }
+
+// ----------------------------------------------------------------------------
 
 LinearFitInterface::~LinearFitInterface()
 {
@@ -82,36 +84,50 @@ LinearFitInterface::~LinearFitInterface()
       delete GUI, GUI = nullptr;
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString LinearFitInterface::Id() const
 {
    return "LinearFit";
 }
+
+// ----------------------------------------------------------------------------
 
 MetaProcess* LinearFitInterface::Process() const
 {
    return TheLinearFitProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 const char** LinearFitInterface::IconImageXPM() const
 {
    return LinearFitIcon_XPM;
 }
+
+// ----------------------------------------------------------------------------
 
 InterfaceFeatures LinearFitInterface::Features() const
 {
    return InterfaceFeature::Default;
 }
 
+// ----------------------------------------------------------------------------
+
 void LinearFitInterface::ApplyInstance() const
 {
-   instance.LaunchOnCurrentView();
+   m_instance.LaunchOnCurrentView();
 }
+
+// ----------------------------------------------------------------------------
 
 void LinearFitInterface::ResetInstance()
 {
    LinearFitInstance defaultInstance( TheLinearFitProcess );
    ImportProcess( defaultInstance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool LinearFitInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
@@ -126,10 +142,14 @@ bool LinearFitInterface::Launch( const MetaProcess& P, const ProcessImplementati
    return &P == TheLinearFitProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* LinearFitInterface::NewProcess() const
 {
-   return new LinearFitInstance( instance );
+   return new LinearFitInstance( m_instance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool LinearFitInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
@@ -139,14 +159,18 @@ bool LinearFitInterface::ValidateProcess( const ProcessImplementation& p, String
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool LinearFitInterface::RequiresInstanceValidation() const
 {
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool LinearFitInterface::ImportProcess( const ProcessImplementation& p )
 {
-   instance.Assign( p );
+   m_instance.Assign( p );
    UpdateControls();
    return true;
 }
@@ -155,11 +179,12 @@ bool LinearFitInterface::ImportProcess( const ProcessImplementation& p )
 
 void LinearFitInterface::UpdateControls()
 {
-   GUI->ReferenceView_Edit.SetText( instance.referenceViewId );
-   GUI->RejectLow_NumericControl.SetValue( instance.rejectLow );
-   GUI->RejectHigh_NumericControl.SetValue( instance.rejectHigh );
+   GUI->ReferenceView_Edit.SetText( m_instance.p_referenceViewId );
+   GUI->RejectLow_NumericControl.SetValue( m_instance.p_rejectLow );
+   GUI->RejectHigh_NumericControl.SetValue( m_instance.p_rejectHigh );
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void LinearFitInterface::__EditCompleted( Edit& sender )
@@ -180,14 +205,14 @@ void LinearFitInterface::__EditCompleted( Edit& sender )
       }
 
       if ( sender == GUI->ReferenceView_Edit )
-         sender.SetText( instance.referenceViewId = id );
+         sender.SetText( m_instance.p_referenceViewId = id );
 
       return;
    }
    catch ( ... )
    {
       if ( sender == GUI->ReferenceView_Edit )
-         sender.SetText( instance.referenceViewId );
+         sender.SetText( m_instance.p_referenceViewId );
 
       try
       {
@@ -200,47 +225,53 @@ void LinearFitInterface::__EditCompleted( Edit& sender )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void LinearFitInterface::__EditValueUpdated( NumericEdit& sender, double value )
 {
    if ( sender == GUI->RejectLow_NumericControl )
    {
-      instance.rejectLow = value;
-      if ( instance.rejectLow >= instance.rejectHigh )
+      m_instance.p_rejectLow = value;
+      if ( m_instance.p_rejectLow >= m_instance.p_rejectHigh )
       {
-         instance.rejectHigh = instance.rejectLow + 0.05;
-         if ( instance.rejectHigh > 1 )
+         m_instance.p_rejectHigh = m_instance.p_rejectLow + 0.05;
+         if ( m_instance.p_rejectHigh > 1 )
          {
-            instance.rejectLow = 0.95;
-            instance.rejectHigh = 1;
+            m_instance.p_rejectLow = 0.95;
+            m_instance.p_rejectHigh = 1;
          }
          UpdateControls();
       }
    }
    else if ( sender == GUI->RejectHigh_NumericControl )
    {
-      instance.rejectHigh = value;
-      if ( instance.rejectHigh <= instance.rejectLow )
+      m_instance.p_rejectHigh = value;
+      if ( m_instance.p_rejectHigh <= m_instance.p_rejectLow )
       {
-         instance.rejectLow = instance.rejectHigh - 0.05;
-         if ( instance.rejectLow < 0 )
+         m_instance.p_rejectLow = m_instance.p_rejectHigh - 0.05;
+         if ( m_instance.p_rejectLow < 0 )
          {
-            instance.rejectLow = 0;
-            instance.rejectHigh = 0.05;
+            m_instance.p_rejectLow = 0;
+            m_instance.p_rejectHigh = 0.05;
          }
          UpdateControls();
       }
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void LinearFitInterface::__Click( Button& sender, bool checked )
 {
    if ( sender == GUI->ReferenceView_ToolButton )
    {
-      ViewSelectionDialog d( instance.referenceViewId );
+      ViewSelectionDialog d( m_instance.p_referenceViewId );
       if ( d.Execute() == StdDialogCode::Ok )
-         GUI->ReferenceView_Edit.SetText( instance.referenceViewId = d.Id() );
+         GUI->ReferenceView_Edit.SetText( m_instance.p_referenceViewId = d.Id() );
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void LinearFitInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
 {
@@ -248,12 +279,15 @@ void LinearFitInterface::__ViewDrag( Control& sender, const Point& pos, const Vi
       wantsView = true;
 }
 
+// ----------------------------------------------------------------------------
+
 void LinearFitInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
 {
    if ( sender == GUI->ReferenceView_Edit )
-      GUI->ReferenceView_Edit.SetText( instance.referenceViewId = view.FullId() );
+      GUI->ReferenceView_Edit.SetText( m_instance.p_referenceViewId = view.FullId() );
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 LinearFitInterface::GUIData::GUIData( LinearFitInterface& w )
@@ -339,4 +373,4 @@ LinearFitInterface::GUIData::GUIData( LinearFitInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LinearFitInterface.cpp - Released 2017-05-02T09:43:00Z
+// EOF LinearFitInterface.cpp - Released 2017-07-09T18:07:32Z

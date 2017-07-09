@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0371
+// Standard Image Process Module Version 01.02.09.0390
 // ----------------------------------------------------------------------------
-// DynamicPSFInterface.cpp - Released 2017-05-02T09:43:00Z
+// DynamicPSFInterface.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -1531,22 +1531,12 @@ void DynamicPSFInterface::__Click( Button& sender, bool checked )
    }
    else if ( sender == GUI->ExportCSV_ToolButton )
    {
-      FileFilter csvFiles;
-      csvFiles.SetDescription( "CSV Files" );
-      csvFiles.AddExtension( ".csv" );
-      FileFilter txtFiles;
-      txtFiles.SetDescription( "Plain Text Files" );
-      txtFiles.AddExtension( ".txt" );
-      FileFilter anyFiles;
-      anyFiles.SetDescription( "All Files" );
-      anyFiles.AddExtension( "*" );
-
       SaveFileDialog d;
-      d.EnableOverwritePrompt();
-      d.Filters().Add( csvFiles );
-      d.Filters().Add( txtFiles );
-      d.Filters().Add( anyFiles );
       d.SetCaption( "DynamicPSF: Export As CSV File" );
+      d.SetFilters( FileDialog::filter_list() << FileFilter( "CSV Files", ".csv" )
+                                              << FileFilter( "Plain Text Files", ".txt" )
+                                              << FileFilter( "Any Files", "*" ) );
+      d.EnableOverwritePrompt();
       if ( d.Execute() )
          ExportCSV( d.FileName() );
    }
@@ -1748,8 +1738,7 @@ void DynamicPSFInterface::TrackStar( const Star* star )
 
 void DynamicPSFInterface::ExportCSV( const String& filePath )
 {
-   File f;
-   f.CreateForWriting( filePath );
+   File f = File::CreateFileForWriting( filePath );
 
    f.OutTextLn( "ViewId,StarId,Channel,Function,B,A,cx,cy,sx,sy,FWHMx,FWHMy,unit,r,theta,beta,MAD" );
 
@@ -1790,7 +1779,6 @@ void DynamicPSFInterface::ExportCSV( const String& filePath )
       }
    }
 
-   f.Flush();
    f.Close();
 }
 
@@ -2865,4 +2853,4 @@ DynamicPSFInterface::GUIData::GUIData( DynamicPSFInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicPSFInterface.cpp - Released 2017-05-02T09:43:00Z
+// EOF DynamicPSFInterface.cpp - Released 2017-07-09T18:07:33Z

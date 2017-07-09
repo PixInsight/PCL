@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0347
+// Standard Global Process Module Version 01.02.07.0366
 // ----------------------------------------------------------------------------
-// PreferencesInstance.h - Released 2017-05-02T09:43:00Z
+// PreferencesInstance.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -115,9 +115,23 @@ struct MainWindowPreferences
    int32       maxRecentFiles;
    pcl_bool    showRecentlyUsed;
    pcl_bool    showMostUsed;
+   pcl_bool    showFavorites;
    int32       maxUsageListLength;
-   pcl_bool    expandUsageItemsAtStartup;
+   pcl_bool    expandRecentlyUsedAtStartup;
+   pcl_bool    expandMostUsedAtStartup;
+   pcl_bool    expandFavoritesAtStartup;
    pcl_bool    openURLsWithInternalBrowser;
+   String      wallpaperFile01;
+   String      wallpaperFile02;
+   String      wallpaperFile03;
+   String      wallpaperFile04;
+   String      wallpaperFile05;
+   String      wallpaperFile06;
+   String      wallpaperFile07;
+   String      wallpaperFile08;
+   String      wallpaperFile09;
+   String      wallpaperFile10;
+   pcl_bool    useWallpapers;
 };
 
 struct ImageWindowPreferences
@@ -139,6 +153,8 @@ struct ImageWindowPreferences
    pcl_bool    fileFormatWarnings;
    pcl_bool    useFileNamesAsImageIdentifiers;
    int32       cursorTolerance;
+   uint32      wheelStepAngle; // in degrees
+   int         wheelDirection; // >= 0 forward is zoom out | < 0 forward is zoom in
    pcl_bool    touchEvents;
    double      pinchSensitivity;
    pcl_bool    fastScreenRenditions;
@@ -238,6 +254,7 @@ private:
 
    friend class MainWindowPreferencesPage;
    friend class ResourcesPreferencesPage;
+   friend class WallpapersPreferencesPage;
    friend class GUIEffectsPreferencesPage;
    friend class FileIOPreferencesPage;
    friend class DirectoriesAndNetworkPreferencesPage;
@@ -259,4 +276,4 @@ private:
 #endif   // __PreferencesInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInstance.h - Released 2017-05-02T09:43:00Z
+// EOF PreferencesInstance.h - Released 2017-07-09T18:07:33Z

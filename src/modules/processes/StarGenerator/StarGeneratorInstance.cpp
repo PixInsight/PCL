@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0266
+// Standard StarGenerator Process Module Version 01.01.00.0285
 // ----------------------------------------------------------------------------
-// StarGeneratorInstance.cpp - Released 2017-05-02T09:43:01Z
+// StarGeneratorInstance.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
@@ -198,21 +198,10 @@ public:
 
       if ( instance.outputMode == SGOutputMode::CSVFile )
       {
-         File f;
-         f.CreateForWriting( instance.outputFilePath.Trimmed() );
-
+         File f = File::CreateFileForWriting( instance.outputFilePath.Trimmed() );
          console.WriteLn( "Generating output CSV file: " + instance.outputFilePath );
-
-         try
-         {
-            WriteCSVStars( f, stars );
-            f.Close();
-         }
-         catch( ... )
-         {
-            f.Close();
-            throw;
-         }
+         WriteCSVStars( f, stars );
+         f.Close();
       }
       else // SGOutputMode::Image
       {
@@ -573,4 +562,4 @@ size_type StarGeneratorInstance::ParameterLength( const MetaParameter* p, size_t
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF StarGeneratorInstance.cpp - Released 2017-05-02T09:43:01Z
+// EOF StarGeneratorInstance.cpp - Released 2017-07-09T18:07:33Z

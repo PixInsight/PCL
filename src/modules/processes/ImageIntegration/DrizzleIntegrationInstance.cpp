@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.15.00.0398
+// Standard ImageIntegration Process Module Version 01.16.00.0429
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInstance.cpp - Released 2017-05-05T08:37:32Z
+// DrizzleIntegrationInstance.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -58,6 +58,7 @@
 #include <pcl/FileFormat.h>
 #include <pcl/FileFormatInstance.h>
 #include <pcl/ImageWindow.h>
+#include <pcl/LocalNormalizationData.h>
 #include <pcl/MessageBox.h>
 #include <pcl/MetaModule.h>
 #include <pcl/ProcessInterface.h>
@@ -439,6 +440,7 @@ DrizzleIntegrationInstance::DrizzleIntegrationInstance( const MetaProcess* m ) :
    p_enableRejection( TheDZEnableRejectionParameter->DefaultValue() ),
    p_enableImageWeighting( TheDZEnableImageWeightingParameter->DefaultValue() ),
    p_enableSurfaceSplines( TheDZEnableSurfaceSplinesParameter->DefaultValue() ),
+   p_enableLocalNormalization( TheDZEnableLocalNormalizationParameter->DefaultValue() ),
    p_useROI( TheDZUseROIParameter->DefaultValue() ),
    p_roi( 0 ),
    p_closePreviousImages( TheDZClosePreviousImagesParameter->DefaultValue() ),
@@ -463,25 +465,26 @@ void DrizzleIntegrationInstance::Assign( const ProcessImplementation& p )
    const DrizzleIntegrationInstance* x = dynamic_cast<const DrizzleIntegrationInstance*>( &p );
    if ( x != nullptr )
    {
-      p_inputData            = x->p_inputData;
-      p_inputHints           = x->p_inputHints;
-      p_inputDirectory       = x->p_inputDirectory;
-      p_scale                = x->p_scale;
-      p_dropShrink           = x->p_dropShrink;
-      p_kernelFunction       = x->p_kernelFunction;
-      p_kernelGridSize       = x->p_kernelGridSize;
-      p_origin               = x->p_origin;
-      p_enableCFA            = x->p_enableCFA;
-      p_cfaPattern           = x->p_cfaPattern;
-      p_enableRejection      = x->p_enableRejection;
-      p_enableImageWeighting = x->p_enableImageWeighting;
-      p_enableSurfaceSplines = x->p_enableSurfaceSplines;
-      p_useROI               = x->p_useROI;
-      p_roi                  = x->p_roi;
-      p_closePreviousImages  = x->p_closePreviousImages;
-      p_noGUIMessages        = x->p_noGUIMessages;
-      p_onError              = x->p_onError;
-      o_output               = x->o_output;
+      p_inputData                = x->p_inputData;
+      p_inputHints               = x->p_inputHints;
+      p_inputDirectory           = x->p_inputDirectory;
+      p_scale                    = x->p_scale;
+      p_dropShrink               = x->p_dropShrink;
+      p_kernelFunction           = x->p_kernelFunction;
+      p_kernelGridSize           = x->p_kernelGridSize;
+      p_origin                   = x->p_origin;
+      p_enableCFA                = x->p_enableCFA;
+      p_cfaPattern               = x->p_cfaPattern;
+      p_enableRejection          = x->p_enableRejection;
+      p_enableImageWeighting     = x->p_enableImageWeighting;
+      p_enableSurfaceSplines     = x->p_enableSurfaceSplines;
+      p_enableLocalNormalization = x->p_enableLocalNormalization;
+      p_useROI                   = x->p_useROI;
+      p_roi                      = x->p_roi;
+      p_closePreviousImages      = x->p_closePreviousImages;
+      p_noGUIMessages            = x->p_noGUIMessages;
+      p_onError                  = x->p_onError;
+      o_output                   = x->o_output;
    }
 }
 
@@ -529,6 +532,8 @@ public:
    void Clear()
    {
       m_decoder.Clear();
+      m_localNormalization.Clear();
+      m_hasLocalNormalization = false;
       m_referenceWidth = m_referenceHeight = m_width = m_height = m_numberOfChannels = 0;
       m_pixelSize = 0;
    }
@@ -539,13 +544,15 @@ private:
 
    DrizzleIntegrationInstance& m_instance;
    DrizzleData                 m_decoder;              // current drizzle data
-   int                         m_referenceWidth   = 0;
-   int                         m_referenceHeight  = 0;
-   Point                       m_origin           = Point( 0 ); // output ROI origin
-   int                         m_width            = 0; // output ROI dimensions in pixels
-   int                         m_height           = 0;
-   int                         m_numberOfChannels = 0;
-   double                      m_pixelSize        = 0; // in reference pixel units
+   LocalNormalizationData      m_localNormalization;   // optional local normalization data
+   bool                        m_hasLocalNormalization = false;
+   int                         m_referenceWidth        = 0;
+   int                         m_referenceHeight       = 0;
+   Point                       m_origin                = Point( 0 ); // output ROI origin
+   int                         m_width                 = 0; // output ROI dimensions in pixels
+   int                         m_height                = 0;
+   int                         m_numberOfChannels      = 0;
+   double                      m_pixelSize             = 0; // in reference pixel units
 
    struct ThreadData : public AbstractImage::ThreadData
    {
@@ -698,7 +705,7 @@ private:
                           : GetAreaOfIntersectionOfQuadAndRect( area, dropRect, sourceP0, sourceP1, sourceP2, sourceP3, m_kernel ) )
                      {
                         Point q;
-                        if ( m_data.rejection )
+                        if ( m_data.rejection || m_data.engine.m_instance.p_enableLocalNormalization )
                            q = (m_data.splines ? m_data.Ginv( p ) : m_data.Hinv( p )).RoundedToInt();
 
                         for ( int c = 0; c < m_data.engine.m_numberOfChannels; ++c )
@@ -710,16 +717,10 @@ private:
                            if ( !m_data.rejection || !m_data.engine.Reject( q, c ) )
                            {
                               double value = m_data.source( p, m_data.cfaIndex ? 0 : c );
-
                               if ( 1 + value != 1 )
                               {
-                                 double normalizedValue = (value - m_data.engine.Location( c ))
-                                                         * m_data.engine.Scale( c )
-                                                         + m_data.engine.ReferenceLocation( c );
-
                                  double weightedArea = area * m_data.engine.Weight( c );
-
-                                 r[c] += weightedArea * normalizedValue;
+                                 r[c] += weightedArea * m_data.engine.Normalize( value, q, c );
                                  w[c] += weightedArea;
                               }
                            }
@@ -1229,7 +1230,7 @@ private:
     * Returns the location estimate for the specified channel of the current
     * source image.
     */
-   const double Location( int c ) const
+   double Location( int c ) const
    {
       return m_decoder.Location()[c];
    }
@@ -1238,7 +1239,7 @@ private:
     * Returns the location estimate for the specified channel of the reference
     * source image.
     */
-   const double ReferenceLocation( int c ) const
+   double ReferenceLocation( int c ) const
    {
       return m_decoder.ReferenceLocation()[c];
    }
@@ -1247,7 +1248,7 @@ private:
     * Returns the scale estimate for the specified channel of the current
     * source image.
     */
-   const double Scale( int c ) const
+   double Scale( int c ) const
    {
       return m_decoder.Scale()[c];
    }
@@ -1256,11 +1257,21 @@ private:
     * Returns the statistical weight for the specified channel of the current
     * source image.
     */
-   const double Weight( int c ) const
+   double Weight( int c ) const
    {
       if ( m_instance.p_enableImageWeighting )
          return m_decoder.Weight()[c];
       return 1.0;
+   }
+
+   /*!
+    * Returns a normalized pixel sample value for the specified pixel
+    * coordinates and channel of the current source image.
+    */
+   double Normalize( double z, const Point& p, int c ) const
+   {
+      return m_hasLocalNormalization ? m_localNormalization( z, p.x, p.y, c ) :
+                                       (z - Location( c ))*Scale( c ) + ReferenceLocation( c );
    }
 
    ImageWindow CreateImageWindow( const IsoString& id ) const
@@ -1286,7 +1297,7 @@ private:
       {
          FITSKeywordArray keywords;
          if ( !file.ReadFITSKeywords( keywords ) )
-            throw CatchedException();
+            throw CaughtException();
          for ( auto k : keywords )
             if ( !k.name.CompareIC( keyName ) )
             {
@@ -1429,8 +1440,32 @@ void DrizzleIntegrationEngine::Perform()
                if ( m_decoder.ReferenceWidth() != m_referenceWidth ||
                     m_decoder.ReferenceHeight() != m_referenceHeight ||
                     m_decoder.NumberOfChannels() != m_numberOfChannels )
-                  throw Error( "Inconsistent image geometry" );
+                  throw Error( "Inconsistent image geometry." );
             }
+
+            if ( !item.nmlPath.IsEmpty() )
+            {
+               console.WriteLn( "<end><cbr><raw>" + item.nmlPath + "</raw>" );
+               if ( m_instance.p_enableLocalNormalization )
+               {
+                  if ( !File::Exists( item.nmlPath ) )
+                     throw Error( "No such file: " + item.nmlPath );
+
+                  m_localNormalization.Parse( item.nmlPath );
+
+                  if ( m_localNormalization.ReferenceWidth() != m_referenceWidth ||
+                       m_localNormalization.ReferenceHeight() != m_referenceHeight ||
+                       m_localNormalization.NumberOfChannels() != m_numberOfChannels )
+                     throw Error( "Inconsistent image geometry: " + item.nmlPath );
+               }
+               else
+                  console.NoteLn( "* Local normalization data will not be used." );
+            }
+
+            m_hasLocalNormalization = m_localNormalization.HasInterpolations();
+            if ( m_instance.p_enableLocalNormalization )
+               if ( !m_hasLocalNormalization )
+                  console.WarningLn( "** Warning: Local normalization data not available." );
 
             String filePath;
             CFAIndex cfaIndex;
@@ -1490,7 +1525,7 @@ void DrizzleIntegrationEngine::Perform()
                ImageDescriptionArray images;
 
                if ( !file.Open( images, filePath, m_instance.p_inputHints ) )
-                  throw CatchedException();
+                  throw CaughtException();
 
                if ( images.IsEmpty() )
                   throw Error( file.FilePath() + ": Empty image file." );
@@ -1541,20 +1576,20 @@ void DrizzleIntegrationEngine::Perform()
 
                sourceImage = Image( (void*)0, 0, 0 ); // shared image
                if ( !file.ReadImage( sourceImage ) )
-                  throw CatchedException();
+                  throw CaughtException();
             }
 
             console.Write( "<end><cbr>Scale factors : " );
             for ( int c = 0; c < m_numberOfChannels; ++c )
-               console.Write( String().Format( " %8.5lf", m_decoder.Scale()[c] ) );
+               console.Write( String().Format( " %8.5f", m_decoder.Scale()[c] ) );
             console.Write(       "<br>Zero offset   : " );
             for ( int c = 0; c < m_numberOfChannels; ++c )
-               console.Write( String().Format( " %+.6le", m_decoder.ReferenceLocation()[c] - m_decoder.Location()[c] ) );
+               console.Write( String().Format( " %+.6e", m_decoder.ReferenceLocation()[c] - m_decoder.Location()[c] ) );
             if ( m_instance.p_enableImageWeighting )
             {
                console.Write(    "<br>Weight        : " );
                for ( int c = 0; c < m_numberOfChannels; ++c )
-                  console.Write( String().Format( " %10.5lf", m_decoder.Weight()[c] ) );
+                  console.Write( String().Format( " %10.5f", m_decoder.Weight()[c] ) );
                console.WriteLn();
             }
 
@@ -1615,8 +1650,8 @@ void DrizzleIntegrationEngine::Perform()
 
             sourceImage.FreeData();
 
-            console.WriteLn( String().Format( "<end><cbr>Input data    : %.3lf", inputData ) );
-            console.WriteLn( String().Format( "<end><cbr>Output data   : %.3lf", outputData ) );
+            console.WriteLn( String().Format( "<end><cbr>Input data    : %.3f", inputData ) );
+            console.WriteLn( String().Format( "<end><cbr>Output data   : %.3f", outputData ) );
 
             for ( int i = 0; i < m_numberOfChannels && i < 3; ++i )
             {
@@ -1707,7 +1742,7 @@ void DrizzleIntegrationEngine::Perform()
 
       Normalize( resultImage, weightImage );
 
-      console.WriteLn( String().Format( "<end><cbr><br>Total output data : %.3lf", totalOutputData ) );
+      console.WriteLn( String().Format( "<end><cbr><br>Total output data : %.3f", totalOutputData ) );
 
       m_instance.o_output.integrationImageId = resultWindow.MainView().Id();
       m_instance.o_output.weightImageId = weightWindow.MainView().Id();
@@ -1722,9 +1757,9 @@ void DrizzleIntegrationEngine::Perform()
       keywords << FITSHeaderKeyword( "COMMENT", IsoString(), "Integration with " + PixInsightVersion::AsString() )
                << FITSHeaderKeyword( "HISTORY", IsoString(), "Integration with " + Module->ReadableVersion() )
                << FITSHeaderKeyword( "HISTORY", IsoString(), "Integration with DrizzleIntegration process" )
-               << FITSHeaderKeyword( "HISTORY", IsoString(), IsoString().Format( "DrizzleIntegration.scale: %.2lf", m_instance.p_scale ) )
+               << FITSHeaderKeyword( "HISTORY", IsoString(), IsoString().Format( "DrizzleIntegration.scale: %.2f", m_instance.p_scale ) )
                << FITSHeaderKeyword( "HISTORY", IsoString(),
-                                      IsoString().Format( "DrizzleIntegration.dropShrink: %.2lf", m_instance.p_dropShrink ) )
+                                      IsoString().Format( "DrizzleIntegration.dropShrink: %.2f", m_instance.p_dropShrink ) )
                << FITSHeaderKeyword( "HISTORY", IsoString(),
                                      "DrizzleIntegration.kernelFunction: " + TheDZKernelFunctionParameter->ElementId( m_instance.p_kernelFunction ) )
                << FITSHeaderKeyword( "HISTORY", IsoString(),
@@ -1744,6 +1779,8 @@ void DrizzleIntegrationEngine::Perform()
                << FITSHeaderKeyword( "HISTORY", IsoString(),
                                      "DrizzleIntegration.enableSurfaceSplines: " + IsoString( bool( m_instance.p_enableSurfaceSplines ) ) )
                << FITSHeaderKeyword( "HISTORY", IsoString(),
+                                     "DrizzleIntegration.enableLocalNormalization: " + IsoString( bool( m_instance.p_enableLocalNormalization ) ) )
+               << FITSHeaderKeyword( "HISTORY", IsoString(),
                                      IsoString().Format( "DrizzleIntegration.referenceDimensions: width=%d, height=%d", m_referenceWidth, m_referenceHeight ) )
                << FITSHeaderKeyword( "HISTORY", IsoString(),
                                      IsoString().Format( "DrizzleIntegration.drizzleGeometry: left=%d, top=%d, width=%d, height=%d",
@@ -1754,7 +1791,7 @@ void DrizzleIntegrationEngine::Perform()
                                                          roi.x0, roi.y0, roi.Width(), roi.Height() ) );
 
       keywords << FITSHeaderKeyword( "HISTORY", IsoString(),
-                                     IsoString().Format( "DrizzleIntegration.pixelSize: %.3lf", m_pixelSize ) )
+                                     IsoString().Format( "DrizzleIntegration.pixelSize: %.3f", m_pixelSize ) )
                << FITSHeaderKeyword( "HISTORY", IsoString(),
                                      IsoString().Format( "DrizzleIntegration.numberOfImages: %d", succeeded ) )
                << FITSHeaderKeyword( "HISTORY", IsoString(),
@@ -1762,18 +1799,18 @@ void DrizzleIntegrationEngine::Perform()
                << FITSHeaderKeyword( "HISTORY", IsoString(),
                                      IsoString().Format( "DrizzleIntegration.integratedPixels: %lu", m_instance.o_output.integratedPixels ) )
                << FITSHeaderKeyword( "HISTORY", IsoString(),
-                                     IsoString().Format( "DrizzleIntegration.outputData: %.3lf", totalOutputData ) );
+                                     IsoString().Format( "DrizzleIntegration.outputData: %.3f", totalOutputData ) );
 
       if ( !ignoringPedestal )
          if ( havePedestal )
             if ( pedestal > 0 )
             {
                keywords << FITSHeaderKeyword( "HISTORY", IsoString(),
-                                    IsoString().Format( "DrizzleIntegration.outputPedestal: %.4lg DN", pedestal ) )
+                                    IsoString().Format( "DrizzleIntegration.outputPedestal: %.4g DN", pedestal ) )
                         << FITSHeaderKeyword( "PEDESTAL",
-                                    IsoString().Format( "%.4lg", pedestal ), "Value in DN added to enforce positivity" );
+                                    IsoString().Format( "%.4g", pedestal ), "Value in DN added to enforce positivity" );
 
-               console.NoteLn( String().Format( "* PEDESTAL keyword created with value: %.4lg DN", pedestal ) );
+               console.NoteLn( String().Format( "* PEDESTAL keyword created with value: %.4g DN", pedestal ) );
             }
 
       resultWindow.SetKeywords( keywords );
@@ -1828,6 +1865,8 @@ void* DrizzleIntegrationInstance::LockParameter( const MetaParameter* p, size_ty
       return &p_inputData[tableRow].enabled;
    if ( p == TheDZItemPathParameter )
       return p_inputData[tableRow].path.Begin();
+   if ( p == TheDZLocalNormalizationDataPathParameter )
+      return p_inputData[tableRow].nmlPath.Begin();
    if ( p == TheDZInputHintsParameter )
       return p_inputHints.Begin();
    if ( p == TheDZInputDirectoryParameter )
@@ -1854,6 +1893,8 @@ void* DrizzleIntegrationInstance::LockParameter( const MetaParameter* p, size_ty
       return &p_enableImageWeighting;
    if ( p == TheDZEnableSurfaceSplinesParameter )
       return &p_enableSurfaceSplines;
+   if ( p == TheDZEnableLocalNormalizationParameter )
+      return &p_enableLocalNormalization;
    if ( p == TheDZUseROIParameter )
       return &p_useROI;
    if ( p == TheDZROIX0Parameter )
@@ -1956,6 +1997,12 @@ bool DrizzleIntegrationInstance::AllocateParameter( size_type sizeOrLength, cons
       if ( sizeOrLength > 0 )
          p_inputData[tableRow].path.SetLength( sizeOrLength );
    }
+   else if ( p == TheDZLocalNormalizationDataPathParameter )
+   {
+      p_inputData[tableRow].nmlPath.Clear();
+      if ( sizeOrLength > 0 )
+         p_inputData[tableRow].nmlPath.SetLength( sizeOrLength );
+   }
    else if ( p == TheDZInputHintsParameter )
    {
       p_inputHints.Clear();
@@ -2012,6 +2059,8 @@ size_type DrizzleIntegrationInstance::ParameterLength( const MetaParameter* p, s
       return p_inputData.Length();
    if ( p == TheDZItemPathParameter )
       return p_inputData[tableRow].path.Length();
+   if ( p == TheDZLocalNormalizationDataPathParameter )
+      return p_inputData[tableRow].nmlPath.Length();
    if ( p == TheDZInputHintsParameter )
       return p_inputHints.Length();
    if ( p == TheDZInputDirectoryParameter )
@@ -2036,4 +2085,4 @@ size_type DrizzleIntegrationInstance::ParameterLength( const MetaParameter* p, s
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInstance.cpp - Released 2017-05-05T08:37:32Z
+// EOF DrizzleIntegrationInstance.cpp - Released 2017-07-09T18:07:33Z

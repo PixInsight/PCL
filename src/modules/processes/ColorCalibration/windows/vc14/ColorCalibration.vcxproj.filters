@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-05-02T09:40:59.768Z
+# Generated on .... 2017-07-09T17:55:56.254Z
 # Project id ...... ColorCalibration
 # Project type .... Module
 # Platform ........ Windows/vc14
@@ -16,13 +16,13 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>falsefalsefalsefalsefalsefalsefalsefalse-falsefalsefalsefalse-4falsefalsefalse-falsefalsefalsefalse-falsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalse</UniqueIdentifier>
+      <UniqueIdentifier>00adc610-d446-449f-8ecb-632567906bed</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>falsefalsefalsefalsefalsefalsefalsefalse-falsefalsefalsefalse-4falsefalsefalse-falsefalsefalsefalse-falsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalse</UniqueIdentifier>
+      <UniqueIdentifier>579ca44f-873d-4ef9-968e-31ca299a6f6e</UniqueIdentifier>
     </Filter>
     <Filter Include="Image Files">
-      <UniqueIdentifier>falsefalsefalsefalsefalsefalsefalsefalse-falsefalsefalsefalse-4falsefalsefalse-falsefalsefalsefalse-falsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalse</UniqueIdentifier>
+      <UniqueIdentifier>b261d0ac-05cb-4928-b84e-1864972a213d</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -63,6 +63,21 @@
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\LinearFitProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PhotometricColorCalibrationGraphInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PhotometricColorCalibrationInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PhotometricColorCalibrationInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PhotometricColorCalibrationParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PhotometricColorCalibrationProcess.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -106,6 +121,21 @@
     <ClInclude Include="..\..\LinearFitProcess.h">
         <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\PhotometricColorCalibrationGraphInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PhotometricColorCalibrationInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PhotometricColorCalibrationInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PhotometricColorCalibrationParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PhotometricColorCalibrationProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\BackgroundNeutralizationIcon.png">
@@ -115,6 +145,9 @@
         <Filter>Image Files</Filter>
     </None>
     <None Include="..\..\LinearFitIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\PhotometricColorCalibrationIcon.png">
         <Filter>Image Files</Filter>
     </None>
     <None Include="..\..\__private\BackgroundNeutralizationIcon.svg">

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.15.00.0398
+// Standard ImageIntegration Process Module Version 01.16.00.0429
 // ----------------------------------------------------------------------------
-// FileDataCache.cpp - Released 2017-05-05T08:37:32Z
+// FileDataCache.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -332,7 +332,7 @@ bool FileDataCacheItem::Load( const IsoString& keyPrefix, int index )
    if ( !Settings::Read( keyPrefix + IsoString().Format( "%08d", index+1 ), s ) )
       return false;
    if ( s.IsEmpty() || !FromString( s ) )
-      throw CatchedException();
+      throw CaughtException();
    return true;
 }
 
@@ -348,4 +348,4 @@ void FileDataCacheItem::Save( const IsoString& keyPrefix, int index ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FileDataCache.cpp - Released 2017-05-05T08:37:32Z
+// EOF FileDataCache.cpp - Released 2017-07-09T18:07:33Z

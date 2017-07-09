@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0347
+// Standard Global Process Module Version 01.02.07.0366
 // ----------------------------------------------------------------------------
-// PreferencesParameters.cpp - Released 2017-05-02T09:43:00Z
+// PreferencesParameters.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -111,9 +111,23 @@ IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  animateToolBox )
 IMPLEMENT_INT32_METAPARAMETER   ( MainWindow,  maxRecentFiles )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  showRecentlyUsed )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  showMostUsed )
+IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  showFavorites )
 IMPLEMENT_INT32_METAPARAMETER   ( MainWindow,  maxUsageListLength )
-IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  expandUsageItemsAtStartup )
+IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  expandRecentlyUsedAtStartup )
+IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  expandMostUsedAtStartup )
+IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  expandFavoritesAtStartup )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  openURLsWithInternalBrowser )
+IMPLEMENT_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile01 )
+IMPLEMENT_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile02 )
+IMPLEMENT_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile03 )
+IMPLEMENT_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile04 )
+IMPLEMENT_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile05 )
+IMPLEMENT_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile06 )
+IMPLEMENT_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile07 )
+IMPLEMENT_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile08 )
+IMPLEMENT_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile09 )
+IMPLEMENT_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile10 )
+IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  useWallpapers )
 
 // ----------------------------------------------------------------------------
 
@@ -134,6 +148,8 @@ IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, strictFileSaveMode )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, fileFormatWarnings )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, useFileNamesAsImageIdentifiers )
 IMPLEMENT_INT32_METAPARAMETER   ( ImageWindow, cursorTolerance )
+IMPLEMENT_UINT32_METAPARAMETER  ( ImageWindow, wheelStepAngle )
+IMPLEMENT_INT32_METAPARAMETER   ( ImageWindow, wheelDirection )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, touchEvents )
 IMPLEMENT_DOUBLE_METAPARAMETER  ( ImageWindow, pinchSensitivity )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, fastScreenRenditions )
@@ -195,4 +211,4 @@ IMPLEMENT_BOOLEAN_METAPARAMETER ( Process, enableLaunchStatistics )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesParameters.cpp - Released 2017-05-02T09:43:00Z
+// EOF PreferencesParameters.cpp - Released 2017-07-09T18:07:33Z

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.06.0853
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// pcl/Bitmap.h - Released 2017-06-28T11:58:36Z
+// pcl/Bitmap.h - Released 2017-07-09T18:07:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -216,6 +216,9 @@ public:
     *
     * For more information on embedded resources, see
     * Bitmap::Bitmap( const char* ).
+    *
+    * In the even of file I/O error, or if the specified file cannot be decoded
+    * and read correctly, this constructor throws an Error exception.
     */
    Bitmap( const String& filePath );
 
@@ -238,6 +241,10 @@ public:
     * A module can also use the standard ":/@module_root/" prefix to load
     * module-defined resources. See MetaModule::LoadResource() for a detailed
     * description.
+    *
+    * In the even of stream I/O error, or if the specified resource or file
+    * cannot be decoded and read correctly, this constructor throws an Error
+    * exception.
     *
     * \b References
     *
@@ -283,6 +290,9 @@ public:
     *
     * \param flags   Currently not used. This parameter is reserved for future
     *                extension and its value must be zero (the default value).
+    *
+    * If the \a data address is invalid, or if the data are not valid in the
+    * specified \a format, this constructor throws an Error exception.
     */
    Bitmap( const void* data, size_type size, const char* format = "SVG", uint32 flags = 0 );
 
@@ -705,8 +715,7 @@ public:
     */
 
    /*!
-    * Loads a disk image file in this bitmap. Returns true if the file was
-    * successfully loaded; false in the event of error.
+    * Loads a disk image file in this bitmap.
     *
     * \param filePath   %File path to the input image file.
     *
@@ -730,13 +739,15 @@ public:
     * <tr><td>%XPM</td>   <td>X PixMap (.xpm)</td></tr>
     * </table>
     *
+    * In the even of file I/O error, or if the specified file cannot be decoded
+    * and loaded correctly, this member function throws an Error exception.
+    *
     * \ingroup bitmap_file_io
     */
-   bool Load( const String& filePath );
+   void Load( const String& filePath );
 
    /*!
-    * Saves this bitmap to a disk image file. Returns true if the file was
-    * successfully written; false in the event of error.
+    * Saves this bitmap to a disk image file.
     *
     * \param filePath   %File path to the output image file.
     *
@@ -761,9 +772,12 @@ public:
     * <tr><td>%XPM</td>   <td>X PixMap (.xpm)</td></tr>
     * </table>
     *
+    * In the even of file I/O error, or if the specified file cannot be encoded
+    * and written correctly, this member function throws an Error exception.
+    *
     * \ingroup bitmap_file_io
     */
-   bool Save( const String& filePath, int quality = -1 ) const;
+   void Save( const String& filePath, int quality = -1 ) const;
 
    /*!
     * Loads this bitmap from data stored in memory.
@@ -779,8 +793,11 @@ public:
     *
     * \param flags   Currently not used. This parameter is reserved for future
     *                extension and its value must be zero (the default value).
+    *
+    * If the \a data address is invalid, or if the data are not valid in the
+    * specified \a format, this member function throws an Error exception.
     */
-   bool Load( const void* data, size_type size, const char* format = "SVG", uint32 flags = 0 );
+   void Load( const void* data, size_type size, const char* format = "SVG", uint32 flags = 0 );
 
    /*!
     * Returns a subimage of this bitmap.
@@ -1397,4 +1414,4 @@ private:
 #endif   // __PCL_Bitmap_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Bitmap.h - Released 2017-06-28T11:58:36Z
+// EOF pcl/Bitmap.h - Released 2017-07-09T18:07:07Z

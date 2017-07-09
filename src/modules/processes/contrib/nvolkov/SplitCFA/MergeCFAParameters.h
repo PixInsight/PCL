@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard SplitCFA Process Module Version 01.00.06.0135
+// Standard SplitCFA Process Module Version 01.00.06.0154
 // ----------------------------------------------------------------------------
-// MergeCFAParameters.h - Released 2017-05-02T09:43:01Z
+// MergeCFAParameters.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
@@ -130,4 +130,4 @@ PCL_END_LOCAL
 #endif   // __MergeCFAParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF MergeCFAParameters.h - Released 2017-05-02T09:43:01Z
+// EOF MergeCFAParameters.h - Released 2017-07-09T18:07:33Z

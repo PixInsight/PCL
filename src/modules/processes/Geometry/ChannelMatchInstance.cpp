@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0346
+// Standard Geometry Process Module Version 01.02.01.0365
 // ----------------------------------------------------------------------------
-// ChannelMatchInstance.cpp - Released 2017-05-02T09:43:00Z
+// ChannelMatchInstance.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -185,7 +185,7 @@ public:
 
                if ( k != 1 )
                {
-                  status.Initialize( String().Format( "Applying linear color correction, channel #%d, k=%.8lf", c, k ), N );
+                  status.Initialize( String().Format( "Applying linear color correction, channel #%d, k=%.8f", c, k ), N );
 
                   for ( typename P::sample* f = f0[c], * fN = f + N; f != fN; ++f, ++status )
                   {
@@ -286,4 +286,4 @@ size_type ChannelMatchInstance::ParameterLength( const MetaParameter* p, size_ty
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ChannelMatchInstance.cpp - Released 2017-05-02T09:43:00Z
+// EOF ChannelMatchInstance.cpp - Released 2017-07-09T18:07:33Z

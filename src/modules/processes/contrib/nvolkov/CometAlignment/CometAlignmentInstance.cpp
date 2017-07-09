@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard CometAlignment Process Module Version 01.02.06.0158
+// Standard CometAlignment Process Module Version 01.02.06.0177
 // ----------------------------------------------------------------------------
-// CometAlignmentInstance.cpp - Released 2017-05-02T09:43:01Z
+// CometAlignmentInstance.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -860,13 +860,13 @@ template <class P>
 static void LoadImageFile (GenericImage<P>& image, FileFormatInstance& file)
 {
    if (!file.ReadImage (image))
-      throw CatchedException ();
+      throw CaughtException ();
 }
 
 static void LoadImageFile (ImageVariant& image, FileFormatInstance& file, ImageOptions options)
 {
    if (!file.SelectImage (0))
-      throw CatchedException ();
+      throw CaughtException ();
 	image.CreateSharedImage (options.ieeefpSampleFormat, false, options.bitsPerSample);
 
    if (image.IsFloatSample ()) switch (image.BitsPerSample ())
@@ -913,7 +913,7 @@ inline thread_list CometAlignmentInstance::LoadTargetFrame (const size_t fileInd
    FileFormatInstance file (format);
 
    ImageDescriptionArray images;
-   if ( !file.Open( images, filePath, p_inputHints ) ) throw CatchedException ();
+   if ( !file.Open( images, filePath, p_inputHints ) ) throw CaughtException ();
    if (images.IsEmpty ()) throw Error (filePath + ": Empty image file.");
 
    thread_list threads;
@@ -938,7 +938,8 @@ inline thread_list CometAlignmentInstance::LoadTargetFrame (const size_t fileInd
                                  m_OperandImage, this ) );
 
       console.WriteLn ("Close " + filePath);
-      file.Close ();
+      if ( !file.Close() )
+         throw CaughtException();
       console.WriteLn (String ().Format ("Delta x:%f, y:%f", delta.x, delta.y));
 
       return threads;
@@ -985,7 +986,7 @@ template <class P>
 static void SaveImageFile (const GenericImage<P>& image, FileFormatInstance& file)
 {
    if (!file.WriteImage (image))
-      throw CatchedException ();
+      throw CaughtException ();
 }
 
 static void SaveImageFile (const ImageVariant& image, FileFormatInstance& file)
@@ -1092,7 +1093,7 @@ void CometAlignmentInstance::Save(const ImageVariant* img, CAThread* t, const in
 
    FileFormat outputFormat (p_outputExtension, false, true);
    FileFormatInstance outputFile (outputFormat);
-   if ( !outputFile.Create( outputImgPath, p_outputHints ) ) throw CatchedException ();
+   if ( !outputFile.Create( outputImgPath, p_outputHints ) ) throw CaughtException ();
 
    const FileData& data = t->GetFileData ();
 
@@ -1238,12 +1239,12 @@ inline DImage CometAlignmentInstance::GetCometImage (const String& filePath)
    FileFormat format (File::ExtractExtension (filePath), true, false);
    FileFormatInstance file (format);
    ImageDescriptionArray images;
-   if ( !file.Open( images, filePath, p_inputHints ) ) throw CatchedException ();
+   if ( !file.Open( images, filePath, p_inputHints ) ) throw CaughtException ();
    if (images.IsEmpty ()) throw Error (filePath + ": Empty MathImage.");
    if (!file.SelectImage (0))
-      throw CatchedException ();
+      throw CaughtException ();
    DImage img;
-   if (!file.ReadImage (img)) throw CatchedException ();
+   if (!file.ReadImage (img)) throw CaughtException ();
    m_geometry = img.Bounds (); //set geometry from
    file.Close ();
    return img;
@@ -1258,7 +1259,7 @@ inline ImageVariant* CometAlignmentInstance::LoadOperandImage (const String& fil
    FileFormat format (File::ExtractExtension (filePath), true, false);
    FileFormatInstance file (format);
    ImageDescriptionArray images;
-   if ( !file.Open( images, filePath, p_inputHints ) ) throw CatchedException ();
+   if ( !file.Open( images, filePath, p_inputHints ) ) throw CaughtException ();
    if (images.IsEmpty ()) throw Error (filePath + ": Empty image file.");
    ImageVariant* img = new ImageVariant ();
 	LoadImageFile (*img, file, images[0].options);
@@ -1678,4 +1679,4 @@ size_type CometAlignmentInstance::ParameterLength (const MetaParameter* p, size_
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CometAlignmentInstance.cpp - Released 2017-05-02T09:43:01Z
+// EOF CometAlignmentInstance.cpp - Released 2017-07-09T18:07:33Z

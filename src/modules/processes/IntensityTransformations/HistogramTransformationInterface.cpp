@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0374
+// Standard IntensityTransformations Process Module Version 01.07.01.0393
 // ----------------------------------------------------------------------------
-// HistogramTransformationInterface.cpp - Released 2017-05-02T09:43:00Z
+// HistogramTransformationInterface.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -1176,8 +1176,8 @@ void HistogramTransformationInterface::UpdateClippingCountControls()
       count_type N  = m_currentView.Image()->NumberOfPixels();
       count_type n0 = m_shadowsCount[m_channel];
       count_type n1 = m_highlightsCount[m_channel];
-      GUI->ShadowsClippingCount_Label.SetText( String().Format( "%llu, %%%.4lf", n0, (100.0*n0)/N ) );
-      GUI->HighlightsClippingCount_Label.SetText( String().Format( "%llu, %%%.4lf", n1, (100.0*n1)/N ) );
+      GUI->ShadowsClippingCount_Label.SetText( String().Format( "%llu, %%%.4f", n0, (100.0*n0)/N ) );
+      GUI->HighlightsClippingCount_Label.SetText( String().Format( "%llu, %%%.4f", n1, (100.0*n1)/N ) );
    }
 }
 
@@ -1276,7 +1276,7 @@ void HistogramTransformationInterface::UpdateHistogramInfo()
                total += H[c].Count();
             }
 
-         s.AppendFormat( " x=%.4f(%d-%d) %llu, %%%.4f | y=%.4lf",
+         s.AppendFormat( " x=%.4f(%d-%d) %llu, %%%.4f | y=%.4f",
                            m_histogramPos.x, i, j-1, count, 100.0*count/total, m_histogramPos.y );
       }
    }
@@ -3106,4 +3106,4 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HistogramTransformationInterface.cpp - Released 2017-05-02T09:43:00Z
+// EOF HistogramTransformationInterface.cpp - Released 2017-07-09T18:07:33Z

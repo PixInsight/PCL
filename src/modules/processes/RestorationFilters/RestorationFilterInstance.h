@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard RestorationFilters Process Module Version 01.00.05.0290
+// Standard RestorationFilters Process Module Version 01.00.05.0309
 // ----------------------------------------------------------------------------
-// RestorationFilterInstance.h - Released 2017-05-02T09:43:01Z
+// RestorationFilterInstance.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RestorationFilters PixInsight module.
 //
@@ -53,8 +53,8 @@
 #ifndef __RestorationFilterInstance_h
 #define __RestorationFilterInstance_h
 
-#include <pcl/ProcessImplementation.h>
 #include <pcl/MetaParameter.h>
+#include <pcl/ProcessImplementation.h>
 
 #include "RestorationFilterParameters.h"
 
@@ -80,8 +80,6 @@ public:
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
 
    bool CreatePSF( Image& ) const;
-
-   // -------------------------------------------------------------------------
 
 private:
 
@@ -126,4 +124,4 @@ private:
 #endif   // __RestorationFilterInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF RestorationFilterInstance.h - Released 2017-05-02T09:43:01Z
+// EOF RestorationFilterInstance.h - Released 2017-07-09T18:07:33Z

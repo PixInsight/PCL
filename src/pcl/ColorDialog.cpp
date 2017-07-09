@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.06.0853
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// pcl/ColorDialog.cpp - Released 2017-06-28T11:58:42Z
+// pcl/ColorDialog.cpp - Released 2017-07-09T18:07:16Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -243,4 +243,4 @@ void SimpleColorDialog::Dialog_Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ColorDialog.cpp - Released 2017-06-28T11:58:42Z
+// EOF pcl/ColorDialog.cpp - Released 2017-07-09T18:07:16Z

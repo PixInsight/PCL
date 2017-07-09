@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.02.00.0257
+// Standard ColorCalibration Process Module Version 01.03.02.0297
 // ----------------------------------------------------------------------------
-// LinearFitProcess.h - Released 2017-05-02T09:43:00Z
+// LinearFitProcess.h - Released 2017-07-09T18:07:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
@@ -80,8 +80,6 @@ public:
    virtual ProcessImplementation* Create() const;
    virtual ProcessImplementation* Clone( const ProcessImplementation& ) const;
 
-   virtual bool NeedsValidation() const;
-
    virtual bool CanProcessCommandLines() const;
    virtual int ProcessCommandLine( const StringList& ) const;
 };
@@ -99,4 +97,4 @@ PCL_END_LOCAL
 #endif   // __LinearFitProcess_h
 
 // ----------------------------------------------------------------------------
-// EOF LinearFitProcess.h - Released 2017-05-02T09:43:00Z
+// EOF LinearFitProcess.h - Released 2017-07-09T18:07:32Z

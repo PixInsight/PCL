@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Convolution Process Module Version 01.01.03.0226
+// Standard Convolution Process Module Version 01.01.03.0245
 // ----------------------------------------------------------------------------
-// LarsonSekaninaProcess.cpp - Released 2017-05-02T09:43:00Z
+// LarsonSekaninaProcess.cpp - Released 2017-07-09T18:07:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
@@ -394,4 +394,4 @@ int LarsonSekaninaProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LarsonSekaninaProcess.cpp - Released 2017-05-02T09:43:00Z
+// EOF LarsonSekaninaProcess.cpp - Released 2017-07-09T18:07:32Z

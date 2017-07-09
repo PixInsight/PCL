@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.02.00.0257
+// Standard ColorCalibration Process Module Version 01.03.02.0297
 // ----------------------------------------------------------------------------
-// LinearFitInstance.h - Released 2017-05-02T09:43:00Z
+// LinearFitInstance.h - Released 2017-07-09T18:07:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
@@ -54,7 +54,6 @@
 #define __LinearFitInstance_h
 
 #include <pcl/ProcessImplementation.h>
-#include <pcl/MetaParameter.h> // for pcl_enum
 
 namespace pcl
 {
@@ -79,9 +78,9 @@ public:
 
 private:
 
-   String   referenceViewId;
-   float    rejectLow;
-   float    rejectHigh;
+   String p_referenceViewId;
+   float  p_rejectLow;
+   float  p_rejectHigh;
 
    friend class LinearFitEngine;
    friend class LinearFitInterface;
@@ -95,4 +94,4 @@ private:
 #endif   // __LinearFitInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF LinearFitInstance.h - Released 2017-05-02T09:43:00Z
+// EOF LinearFitInstance.h - Released 2017-07-09T18:07:32Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.15.00.0398
+// Standard ImageIntegration Process Module Version 01.16.00.0429
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationParameters.h - Released 2017-05-05T08:37:32Z
+// DrizzleIntegrationParameters.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -99,6 +99,19 @@ public:
 };
 
 extern DZItemPath* TheDZItemPathParameter;
+
+// ----------------------------------------------------------------------------
+
+class DZLocalNormalizationDataPath : public MetaString
+{
+public:
+
+   DZLocalNormalizationDataPath( MetaTable* );
+
+   virtual IsoString Id() const;
+};
+
+extern DZLocalNormalizationDataPath* TheDZLocalNormalizationDataPathParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -312,6 +325,20 @@ public:
 };
 
 extern DZEnableSurfaceSplines* TheDZEnableSurfaceSplinesParameter;
+
+// ----------------------------------------------------------------------------
+
+class DZEnableLocalNormalization : public MetaBoolean
+{
+public:
+
+   DZEnableLocalNormalization( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern DZEnableLocalNormalization* TheDZEnableLocalNormalizationParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -908,4 +935,4 @@ PCL_END_LOCAL
 #endif   // __DrizzleIntegrationParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationParameters.h - Released 2017-05-05T08:37:32Z
+// EOF DrizzleIntegrationParameters.h - Released 2017-07-09T18:07:33Z

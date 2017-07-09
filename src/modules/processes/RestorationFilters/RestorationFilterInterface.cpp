@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard RestorationFilters Process Module Version 01.00.05.0290
+// Standard RestorationFilters Process Module Version 01.00.05.0309
 // ----------------------------------------------------------------------------
-// RestorationFilterInterface.cpp - Released 2017-05-02T09:43:01Z
+// RestorationFilterInterface.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RestorationFilters PixInsight module.
 //
@@ -62,7 +62,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-RestorationFilterInterface* TheRestorationFilterInterface = 0;
+RestorationFilterInterface* TheRestorationFilterInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -76,36 +76,48 @@ enum { ToCIEL, ToCIEY, ToRGB };
 // ----------------------------------------------------------------------------
 
 RestorationFilterInterface::RestorationFilterInterface() :
-ProcessInterface(), instance( TheRestorationFilterProcess ), GUI( 0 )
+   instance( TheRestorationFilterProcess )
 {
    TheRestorationFilterInterface = this;
 }
 
+// ----------------------------------------------------------------------------
+
 RestorationFilterInterface::~RestorationFilterInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString RestorationFilterInterface::Id() const
 {
    return "RestorationFilter";
 }
 
+// ----------------------------------------------------------------------------
+
 MetaProcess* RestorationFilterInterface::Process() const
 {
    return TheRestorationFilterProcess;
 }
+
+// ----------------------------------------------------------------------------
 
 const char** RestorationFilterInterface::IconImageXPM() const
 {
    return RestorationFilterIcon_XPM;
 }
 
+// ----------------------------------------------------------------------------
+
 void RestorationFilterInterface::ApplyInstance() const
 {
    instance.LaunchOnCurrentView();
 }
+
+// ----------------------------------------------------------------------------
 
 void RestorationFilterInterface::ResetInstance()
 {
@@ -113,9 +125,11 @@ void RestorationFilterInterface::ResetInstance()
    ImportProcess( defaultInstance );
 }
 
+// ----------------------------------------------------------------------------
+
 bool RestorationFilterInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "RestorationFilter" );
@@ -126,10 +140,14 @@ bool RestorationFilterInterface::Launch( const MetaProcess& P, const ProcessImpl
    return &P == TheRestorationFilterProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* RestorationFilterInterface::NewProcess() const
 {
    return new RestorationFilterInstance( instance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool RestorationFilterInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
@@ -139,10 +157,14 @@ bool RestorationFilterInterface::ValidateProcess( const ProcessImplementation& p
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool RestorationFilterInterface::RequiresInstanceValidation() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool RestorationFilterInterface::ImportProcess( const ProcessImplementation& p )
 {
@@ -163,6 +185,8 @@ void RestorationFilterInterface::UpdateControls()
    UpdateRangeControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void RestorationFilterInterface::UpdatePSFControls()
 {
    GUI->PSFMode_TabBox.SelectPage( int( instance.psfMode ) );
@@ -180,6 +204,8 @@ void RestorationFilterInterface::UpdatePSFControls()
 
    GUI->PSFDraw_Control.Update();
 }
+
+// ----------------------------------------------------------------------------
 
 void RestorationFilterInterface::UpdateNoiseControls()
 {
@@ -204,6 +230,8 @@ void RestorationFilterInterface::UpdateNoiseControls()
    GUI->NoiseFine_SpinBox.SetValue( RoundI( noise * Pow10I<double>()( -d ) ) );
 }
 
+// ----------------------------------------------------------------------------
+
 void RestorationFilterInterface::UpdateFilterControls()
 {
    GUI->Algorithm_ComboBox.SetCurrentItem( instance.algorithm );
@@ -212,6 +240,8 @@ void RestorationFilterInterface::UpdateFilterControls()
 
    GUI->Target_ComboBox.SetCurrentItem( instance.toLuminance ? (instance.linear ? ToCIEY : ToCIEL) : ToRGB );
 }
+
+// ----------------------------------------------------------------------------
 
 void RestorationFilterInterface::UpdateDeringingControls()
 {
@@ -222,6 +252,8 @@ void RestorationFilterInterface::UpdateDeringingControls()
 
    GUI->OutputDeringingMaps_CheckBox.SetChecked( instance.outputDeringingMaps );
 }
+
+// ----------------------------------------------------------------------------
 
 void RestorationFilterInterface::UpdateRangeControls()
 {
@@ -237,6 +269,8 @@ void RestorationFilterInterface::__PSF_PageSelected( TabBox& sender, int pageInd
    instance.psfMode = pageIndex;
    UpdateControls();
 }
+
+// ----------------------------------------------------------------------------
 
 void RestorationFilterInterface::__PSF_ValueUpdated( NumericEdit& sender, double value )
 {
@@ -256,6 +290,8 @@ void RestorationFilterInterface::__PSF_ValueUpdated( NumericEdit& sender, double
    UpdateControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void RestorationFilterInterface::__PSF_EditCompleted( Edit& sender )
 {
    try
@@ -274,6 +310,8 @@ void RestorationFilterInterface::__PSF_EditCompleted( Edit& sender )
    )
 }
 
+// ----------------------------------------------------------------------------
+
 void RestorationFilterInterface::__PSF_Click( Button& sender, bool checked )
 {
    if ( sender == GUI->PSFImage_Button )
@@ -285,6 +323,8 @@ void RestorationFilterInterface::__PSF_Click( Button& sender, bool checked )
       UpdateControls();
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void RestorationFilterInterface::__PSF_Paint( Control& sender, const Rect& updateRect )
 {
@@ -304,6 +344,8 @@ void RestorationFilterInterface::__PSF_Paint( Control& sender, const Rect& updat
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void RestorationFilterInterface::__Noise_ValueUpdated( NumericEdit& sender, double value )
 {
    if ( sender == GUI->Noise_NumericControl )
@@ -322,6 +364,8 @@ void RestorationFilterInterface::__Noise_ValueUpdated( NumericEdit& sender, doub
       UpdateNoiseControls();
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void RestorationFilterInterface::__Noise_SpinValueUpdated( SpinBox& sender, int value )
 {
@@ -350,6 +394,8 @@ void RestorationFilterInterface::__Noise_SpinValueUpdated( SpinBox& sender, int 
    UpdateNoiseControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void RestorationFilterInterface::__Filter_ItemSelected( ComboBox& sender, int itemIndex )
 {
    if ( sender == GUI->Algorithm_ComboBox )
@@ -359,11 +405,15 @@ void RestorationFilterInterface::__Filter_ItemSelected( ComboBox& sender, int it
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void RestorationFilterInterface::__Filter_ValueUpdated( NumericEdit& sender, double value )
 {
    if ( sender == GUI->Amount_NumericControl )
       instance.amount = value;
 }
+
+// ----------------------------------------------------------------------------
 
 void RestorationFilterInterface::__Target_ItemSelected( ComboBox& sender, int itemIndex )
 {
@@ -389,12 +439,16 @@ void RestorationFilterInterface::__Target_ItemSelected( ComboBox& sender, int it
    UpdateFilterControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void RestorationFilterInterface::__Deringing_Check( SectionBar& sender, bool checked )
 {
    if ( sender == GUI->Deringing_SectionBar )
       instance.deringing = checked;
    UpdateDeringingControls();
 }
+
+// ----------------------------------------------------------------------------
 
 void RestorationFilterInterface::__Deringing_ValueUpdated( NumericEdit& sender, double value )
 {
@@ -405,6 +459,8 @@ void RestorationFilterInterface::__Deringing_ValueUpdated( NumericEdit& sender, 
    UpdateDeringingControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void RestorationFilterInterface::__Deringing_Click( Button& sender, bool checked )
 {
    if ( sender == GUI->OutputDeringingMaps_CheckBox )
@@ -412,12 +468,34 @@ void RestorationFilterInterface::__Deringing_Click( Button& sender, bool checked
    UpdateDeringingControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void RestorationFilterInterface::__Range_ValueUpdated( NumericEdit& sender, double value )
 {
    if ( sender == GUI->RangeLow_NumericControl )
       instance.rangeLow = value;
    else if ( sender == GUI->RangeHigh_NumericControl )
       instance.rangeHigh = value;
+}
+
+// ----------------------------------------------------------------------------
+
+void RestorationFilterInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->PSFImage_Edit || sender == GUI->PSFMode_TabBox )
+      wantsView = true;
+}
+
+// ----------------------------------------------------------------------------
+
+void RestorationFilterInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->PSFImage_Edit || sender == GUI->PSFMode_TabBox )
+   {
+      instance.psfMode = RFPSFMode::External;
+      instance.psfViewId = view.FullId();
+      UpdateControls();
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -534,6 +612,8 @@ RestorationFilterInterface::GUIData::GUIData( RestorationFilterInterface& w )
 
    PSFImage_Edit.SetToolTip( "<p>Identifier of the external PSF view.</p>" );
    PSFImage_Edit.OnEditCompleted( (Edit::edit_event_handler)&RestorationFilterInterface::__PSF_EditCompleted, w );
+   PSFImage_Edit.OnViewDrag( (Control::view_drag_event_handler)&RestorationFilterInterface::__ViewDrag, w );
+   PSFImage_Edit.OnViewDrop( (Control::view_drop_event_handler)&RestorationFilterInterface::__ViewDrop, w );
 
    PSFImage_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    PSFImage_Button.SetScaledFixedSize( 20, 20 );
@@ -558,6 +638,8 @@ RestorationFilterInterface::GUIData::GUIData( RestorationFilterInterface& w )
    PSFMode_TabBox.AddPage( PSFImage_Control, "External PSF" );
    PSFMode_TabBox.SetScaledMinWidth( 350 );
    PSFMode_TabBox.OnPageSelected( (TabBox::page_event_handler)&RestorationFilterInterface::__PSF_PageSelected, w );
+   PSFMode_TabBox.OnViewDrag( (Control::view_drag_event_handler)&RestorationFilterInterface::__ViewDrag, w );
+   PSFMode_TabBox.OnViewDrop( (Control::view_drop_event_handler)&RestorationFilterInterface::__ViewDrop, w );
 
    PSFDraw_Control.SetScaledFixedSize( 100, 100 );
    PSFDraw_Control.OnPaint( (Control::paint_event_handler)&RestorationFilterInterface::__PSF_Paint, w );
@@ -770,4 +852,4 @@ RestorationFilterInterface::GUIData::GUIData( RestorationFilterInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RestorationFilterInterface.cpp - Released 2017-05-02T09:43:01Z
+// EOF RestorationFilterInterface.cpp - Released 2017-07-09T18:07:33Z

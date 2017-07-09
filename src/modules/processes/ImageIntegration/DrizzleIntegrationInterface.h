@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.15.00.0398
+// Standard ImageIntegration Process Module Version 01.16.00.0429
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInterface.h - Released 2017-05-05T08:37:32Z
+// DrizzleIntegrationInterface.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -113,11 +113,14 @@ private:
          TreeBox           InputData_TreeBox;
          VerticalSizer     InputButtons_Sizer;
             PushButton        AddFiles_PushButton;
+            PushButton        AddLocalNormalizationFiles_PushButton;
+            PushButton        ClearLocalNormalizationFiles_PushButton;
             PushButton        SelectAll_PushButton;
             PushButton        InvertSelection_PushButton;
             PushButton        ToggleSelected_PushButton;
             PushButton        RemoveSelected_PushButton;
             PushButton        Clear_PushButton;
+            CheckBox          StaticDataTargets_CheckBox;
             CheckBox          FullPaths_CheckBox;
 
       SectionBar        FormatHints_SectionBar;
@@ -155,6 +158,8 @@ private:
             CheckBox          EnableImageWeighting_CheckBox;
          HorizontalSizer   EnableSurfaceSplines_Sizer;
             CheckBox          EnableSurfaceSplines_CheckBox;
+         HorizontalSizer   EnableLocalNormalization_Sizer;
+            CheckBox          EnableLocalNormalization_CheckBox;
          HorizontalSizer   ClosePreviousImages_Sizer;
             CheckBox          ClosePreviousImages_CheckBox;
 
@@ -201,6 +206,9 @@ private:
    void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
    void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
 
+   String LocalNormalizationTargetName( const String& filePath );
+   String DrizzleTargetName( const String& filePath );
+
    friend struct GUIData;
 };
 
@@ -217,4 +225,4 @@ PCL_END_LOCAL
 #endif   // __DrizzleIntegrationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInterface.h - Released 2017-05-05T08:37:32Z
+// EOF DrizzleIntegrationInterface.h - Released 2017-07-09T18:07:33Z

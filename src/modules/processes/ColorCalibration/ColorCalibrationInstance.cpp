@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.02.00.0257
+// Standard ColorCalibration Process Module Version 01.03.02.0297
 // ----------------------------------------------------------------------------
-// ColorCalibrationInstance.cpp - Released 2017-05-02T09:43:00Z
+// ColorCalibrationInstance.cpp - Released 2017-07-09T18:07:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
@@ -474,10 +474,10 @@ bool ColorCalibrationInstance::ExecuteOn( View& view )
 
          bg = BackgroundReferenceVector( v, m, backgroundLow, backgroundHigh );
 
-         console.WriteLn( String().Format( "<end><cbr>* Background reference:\n"
-                                           "Br : %.5e\n"
-                                           "Bg : %.5e\n"
-                                           "Bb : %.5e", bg[0], bg[1], bg[2] ) );
+         console.NoteLn( String().Format( "<end><cbr>* Background reference:\n"
+                                          "B_R : %.5e\n"
+                                          "B_G : %.5e\n"
+                                          "B_B : %.5e", bg[0], bg[1], bg[2] ) );
       }
 
       /*
@@ -555,10 +555,10 @@ bool ColorCalibrationInstance::ExecuteOn( View& view )
             white[c] = Abs( white[c] - bg[c] );
          }
 
-         console.WriteLn( String().Format( "<end><cbr>* White reference:\n"
-                                           "Wr : %.5e\n"
-                                           "Wg : %.5e\n"
-                                           "Wb : %.5e", white[0], white[1], white[2] ) );
+         console.NoteLn( String().Format( "<end><cbr>* White reference:\n"
+                                          "W0_R : %.5e\n"
+                                          "W0_G : %.5e\n"
+                                          "W0_B : %.5e", white[0], white[1], white[2] ) );
          int rc = (white[0] > white[1]) ? ((white[0] > white[2]) ? 0 : 2) : ((white[1] > white[2]) ? 1 : 2);
          for ( int c = 0; c < 3; ++c )
          {
@@ -567,10 +567,11 @@ bool ColorCalibrationInstance::ExecuteOn( View& view )
             else
                kw[c] = white[rc]/white[c];
          }
-         console.WriteLn( String().Format( "<end><cbr>* Color calibration factors:\n"
-                                           "Kr : %7.3f\n"
-                                           "Kg : %7.3f\n"
-                                           "Kb : %7.3f", kw[0], kw[1], kw[2] ) );
+
+         console.NoteLn( String().Format( "<end><cbr>* White balance factors:\n"
+                                          "W_R : %.4e\n"
+                                          "W_G : %.4e\n"
+                                          "W_B : %.4e", kw[0], kw[1], kw[2] ) );
       }
 
       /*
@@ -705,4 +706,4 @@ size_type ColorCalibrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ColorCalibrationInstance.cpp - Released 2017-05-02T09:43:00Z
+// EOF ColorCalibrationInstance.cpp - Released 2017-07-09T18:07:32Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard CometAlignment Process Module Version 01.02.06.0158
+// Standard CometAlignment Process Module Version 01.02.06.0177
 // ----------------------------------------------------------------------------
-// CometAlignmentInterface.cpp - Released 2017-05-02T09:43:01Z
+// CometAlignmentInterface.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -429,7 +429,6 @@ void CometAlignmentInterface::UpdateControls ()
    GUI->InputHints_Edit.SetText( m_instance.p_inputHints );
    GUI->OutputHints_Edit.SetText( m_instance.p_outputHints );
    GUI->OutputDir_Edit.SetText (m_instance.p_outputDir);
-   GUI->OutputExtension_Edit.SetText( m_instance.p_outputExtension );
    GUI->Postfix_Edit.SetText (m_instance.p_postfix);
    GUI->Prefix_Edit.SetText (m_instance.p_prefix);
 
@@ -671,15 +670,16 @@ inline bool OperandIsDrizzleIntegration(const String& filePath)//true == Drizzle
 	FileFormatInstance file (format);
 	ImageDescriptionArray images;
 	if ( !file.Open( images, filePath ) )
-		throw CatchedException ();
+		throw CaughtException ();
 	FITSKeywordArray keywords; // FITS keywords
 	if (format.CanStoreKeywords ())
-		if(!file.ReadFITSKeywords( keywords )) throw CatchedException ();
+		if(!file.ReadFITSKeywords( keywords )) throw CaughtException ();
 		else
 			for ( int k = 0; k < int( keywords.Length() ); k++ )
 				if ( String( keywords[k].comment ) == "Integration with DrizzleIntegration process" )
                   ret = true;
-	file.Close();
+   if ( !file.Close() )
+      throw CaughtException();
 	return ret;
 }
 void CometAlignmentInterface::SelectSubtractFile ()
@@ -713,7 +713,7 @@ inline bool GetDate (String& date, const String& filePath)
    {
       FileFormatInstance file (format);
       ImageDescriptionArray images;
-      if (!file.Open (images, filePath)) throw CatchedException ();
+      if (!file.Open (images, filePath)) throw CaughtException ();
       if (images.IsEmpty ()) throw Error (filePath + ": Empty image.");
       FITSKeywordArray keywords;
       file.ReadFITSKeywords( keywords );
@@ -866,16 +866,10 @@ void CometAlignmentInterface::__TargetImages_BottonClick (Button& sender, bool c
 
    else if ( sender == GUI->AddDrizzleFiles_PushButton )
    {
-      FileFilter drzFiles;
-      drzFiles.SetDescription( "Drizzle Data Files" );
-      drzFiles.AddExtension( ".xdrz" );
-      drzFiles.AddExtension( ".drz" );
-
       OpenFileDialog d;
-      d.EnableMultipleSelections();
-      d.Filters().Clear();
-      d.Filters().Add( drzFiles );
       d.SetCaption( "CometAlignment: Select Drizzle Data Files" );
+      d.SetFilter( FileFilter( "Drizzle Data Files", StringList() << ".xdrz" << ".drz" ) );
+      d.EnableMultipleSelections();
       if ( d.Execute() )
       {
          IVector assigned( 0, int( m_instance.p_targetFrames.Length() ) );
@@ -1029,13 +1023,7 @@ void CometAlignmentInterface::__EditCompleted (Edit& sender)
 
    String text = sender.Text ().Trimmed ();
 
-   if ( sender == GUI->OutputExtension_Edit )
-   {
-      if ( !text.IsEmpty() && !text.StartsWith( '.' ) )
-         text.Prepend( '.' );
-      m_instance.p_outputExtension = text;
-   }
-   else if (sender == GUI->Prefix_Edit)
+   if (sender == GUI->Prefix_Edit)
       m_instance.p_prefix = text;
    else if (sender == GUI->Postfix_Edit)
       m_instance.p_postfix = text;
@@ -1212,7 +1200,6 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    int xFixLabelWidth = fnt.Width (String ('M', 5));
    int xyLabelWidth = fnt.Width (String ('X', 3));
    int labelWidth1 = fnt.Width (String ("Clamping threshold:") + 'T');
-   int editWidth2 = fnt.Width( String( 'M', 5  ) );
    int ui4 = w.LogicalPixelsToPhysical( 4 );
 
    //
@@ -1393,25 +1380,10 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    OutputDir_Sizer.Add (OutputDir_Edit, 100);
    OutputDir_Sizer.Add (OutputDir_SelectButton);
 
-   const char* outputExtensionToolTip = "<p>The output file extension determines the file format used to "
-      "generate output (registered) image files. If this field is left blank, output files will be written in "
-      "the same format as their corresponding target images.</p>"
-      "<p>Take into account that the selected output format must be a <i>writable</i> one, that is, a format "
-      "able to generate image files, or the CometAlignment process will fail upon trying to write the first "
-      "registered image.</p>";
-
-   OutputExtension_Label.SetText( "Output extension:" );
-   OutputExtension_Label.SetFixedWidth( labelWidth1 );
-   OutputExtension_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-   OutputExtension_Label.SetToolTip( outputExtensionToolTip );
-
-   OutputExtension_Edit.SetFixedWidth( editWidth2 );
-   OutputExtension_Edit.SetToolTip( outputExtensionToolTip );
-   OutputExtension_Edit.OnEditCompleted( (Edit::edit_event_handler)&CometAlignmentInterface::__EditCompleted, w );
-
    const char* ToolTipPrefix =
            "<p>This is a prefix that will be appended to the file name of each registered image.</p>";
    Prefix_Label.SetText ("Prefix:");
+   Prefix_Label.SetFixedWidth( labelWidth1 );
    Prefix_Label.SetTextAlignment (TextAlign::Right | TextAlign::VertCenter);
    Prefix_Label.SetToolTip (ToolTipPrefix);
    Prefix_Edit.SetFixedWidth (xFixLabelWidth);
@@ -1436,18 +1408,14 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
 
    //
 
-   OutputChunks_Sizer.Add( OutputExtension_Label );
-   OutputChunks_Sizer.AddSpacing( 4 );
-   OutputChunks_Sizer.Add( OutputExtension_Edit );
-   OutputChunks_Sizer.AddSpacing( 20 );
    OutputChunks_Sizer.Add (Prefix_Label);
    OutputChunks_Sizer.AddSpacing (4);
    OutputChunks_Sizer.Add (Prefix_Edit);
-   OutputChunks_Sizer.AddSpacing (20);
+   OutputChunks_Sizer.AddSpacing (12);
    OutputChunks_Sizer.Add (Postfix_Label);
    OutputChunks_Sizer.AddSpacing (4);
    OutputChunks_Sizer.Add (Postfix_Edit);
-   OutputChunks_Sizer.AddSpacing (20);
+   OutputChunks_Sizer.AddSpacing (12);
    OutputChunks_Sizer.Add (Overwrite_CheckBox);
    OutputChunks_Sizer.AddStretch ();
 
@@ -1845,4 +1813,4 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CometAlignmentInterface.cpp - Released 2017-05-02T09:43:01Z
+// EOF CometAlignmentInterface.cpp - Released 2017-07-09T18:07:33Z

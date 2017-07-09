@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard JPEG File Format Module Version 01.00.04.0316
+// Standard JPEG File Format Module Version 01.00.04.0334
 // ----------------------------------------------------------------------------
-// JPEG.h - Released 2017-05-02T09:42:51Z
+// JPEG.h - Released 2017-07-09T18:07:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
@@ -214,7 +214,7 @@ public:
    JPEG( const JPEG& ) = delete;
    JPEG& operator =( const JPEG& ) = delete;
 
-   virtual ~JPEG();
+   virtual ~JPEG() noexcept( false );
 
    const JPEGImageOptions& JPEGOptions() const
    {
@@ -254,7 +254,7 @@ public:
    JPEGReader( const JPEGReader& ) = delete;
    JPEGReader& operator =( const JPEGReader& ) = delete;
 
-   virtual ~JPEGReader();
+   virtual ~JPEGReader() noexcept( false );
 
    bool IsOpen() const;
    void Close();
@@ -302,7 +302,7 @@ public:
    JPEGWriter( const JPEGWriter& ) = delete;
    JPEGWriter& operator =( const JPEGWriter& ) = delete;
 
-   virtual ~JPEGWriter();
+   virtual ~JPEGWriter() noexcept( false );
 
    bool IsOpen() const;
    void Close();
@@ -345,4 +345,4 @@ protected:
 #endif   // __PCL_JPEG_h
 
 // ----------------------------------------------------------------------------
-// EOF JPEG.h - Released 2017-05-02T09:42:51Z
+// EOF JPEG.h - Released 2017-07-09T18:07:25Z

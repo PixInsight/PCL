@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard BMP File Format Module Version 01.00.03.0295
+// Standard BMP File Format Module Version 01.00.04.0313
 // ----------------------------------------------------------------------------
-// BMPFormat.cpp - Released 2017-05-02T09:42:51Z
+// BMPFormat.cpp - Released 2017-07-09T18:07:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard BMP PixInsight module.
 //
@@ -60,10 +60,6 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-BMPFormat::BMPFormat() : MetaFileFormat()
-{
-}
-
 IsoString BMPFormat::Name() const
 {
    return "BMP";
@@ -108,10 +104,10 @@ String BMPFormat::Implementation() const
    "<p>Support for the Windows Bitmap format (BMP), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
+   "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -146,10 +142,6 @@ FileFormatImplementation* BMPFormat::Create() const
 }
 
 // ----------------------------------------------------------------------------
-
-GIFFormat::GIFFormat() : MetaFileFormat()
-{
-}
 
 IsoString GIFFormat::Name() const
 {
@@ -187,10 +179,10 @@ String GIFFormat::Implementation() const
    "<p>Read-only support for the Graphics Interchange Format (GIF), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
+   "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -225,10 +217,6 @@ FileFormatImplementation* GIFFormat::Create() const
 }
 
 // ----------------------------------------------------------------------------
-
-ICOFormat::ICOFormat() : MetaFileFormat()
-{
-}
 
 IsoString ICOFormat::Name() const
 {
@@ -265,10 +253,10 @@ String ICOFormat::Implementation() const
    "<p>Support for the Windows Icon format (ICO), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
+   "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -303,10 +291,6 @@ FileFormatImplementation* ICOFormat::Create() const
 }
 
 // ----------------------------------------------------------------------------
-
-MNGFormat::MNGFormat() : MetaFileFormat()
-{
-}
 
 IsoString MNGFormat::Name() const
 {
@@ -343,10 +327,10 @@ String MNGFormat::Implementation() const
    "<p>Read-only support for the Multiple Network Graphics format (MNG), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
+   "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -381,10 +365,6 @@ FileFormatImplementation* MNGFormat::Create() const
 }
 
 // ----------------------------------------------------------------------------
-
-PBMFormat::PBMFormat() : MetaFileFormat()
-{
-}
 
 IsoString PBMFormat::Name() const
 {
@@ -421,10 +401,10 @@ String PBMFormat::Implementation() const
    "<p>Read-only support for the Portable Bitmap format (PBM), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
+   "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -459,10 +439,6 @@ FileFormatImplementation* PBMFormat::Create() const
 }
 
 // ----------------------------------------------------------------------------
-
-PGMFormat::PGMFormat() : MetaFileFormat()
-{
-}
 
 IsoString PGMFormat::Name() const
 {
@@ -499,10 +475,10 @@ String PGMFormat::Implementation() const
    "<p>Read-only support for the Portable Graymap format (PGM), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
+   "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -537,10 +513,6 @@ FileFormatImplementation* PGMFormat::Create() const
 }
 
 // ----------------------------------------------------------------------------
-
-PNGFormat::PNGFormat() : MetaFileFormat()
-{
-}
 
 IsoString PNGFormat::Name() const
 {
@@ -577,10 +549,10 @@ String PNGFormat::Implementation() const
    "<p>Basic support for the Portable Network Graphics format (PNG), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
+   "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -615,10 +587,6 @@ FileFormatImplementation* PNGFormat::Create() const
 }
 
 // ----------------------------------------------------------------------------
-
-PPMFormat::PPMFormat() : MetaFileFormat()
-{
-}
 
 IsoString PPMFormat::Name() const
 {
@@ -660,10 +628,10 @@ String PPMFormat::Implementation() const
    "<p>Support for the Portable Pixmap format (PPM), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
+   "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -698,10 +666,6 @@ FileFormatImplementation* PPMFormat::Create() const
 }
 
 // ----------------------------------------------------------------------------
-
-XBMFormat::XBMFormat() : MetaFileFormat()
-{
-}
 
 IsoString XBMFormat::Name() const
 {
@@ -738,10 +702,10 @@ String XBMFormat::Implementation() const
    "<p>Support for the X11 Bitmap format (XBM), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
+   "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -776,10 +740,6 @@ FileFormatImplementation* XBMFormat::Create() const
 }
 
 // ----------------------------------------------------------------------------
-
-XPMFormat::XPMFormat() : MetaFileFormat()
-{
-}
 
 IsoString XPMFormat::Name() const
 {
@@ -816,10 +776,10 @@ String XPMFormat::Implementation() const
    "<p>Support for the X11 Pixmap format (XPM), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
+   "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -854,10 +814,6 @@ FileFormatImplementation* XPMFormat::Create() const
 }
 
 // ----------------------------------------------------------------------------
-
-TGAFormat::TGAFormat() : MetaFileFormat()
-{
-}
 
 IsoString TGAFormat::Name() const
 {
@@ -901,10 +857,10 @@ String TGAFormat::Implementation() const
    "<p>RLE compressed TGA files are not supported by this reader. Only uncompressed images can be read.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
+   "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -940,9 +896,79 @@ FileFormatImplementation* TGAFormat::Create() const
 
 // ----------------------------------------------------------------------------
 
-SVGFormat::SVGFormat() : MetaFileFormat()
+IsoString WEBPFormat::Name() const
 {
+   return "WEBP";
 }
+
+StringList WEBPFormat::FileExtensions() const
+{
+   return StringList() << ".webp";
+}
+
+IsoStringList WEBPFormat::MimeTypes() const
+{
+   return IsoStringList() << "image/webp";
+}
+
+uint32 WEBPFormat::Version() const
+{
+   return 0x100;
+}
+
+String WEBPFormat::Description() const
+{
+   return "WebP image format.";
+}
+
+String WEBPFormat::Implementation() const
+{
+   return
+
+   "<html>"
+   "<p>PixInsight Standard File Format Support Modules.</p>"
+
+   "<p>Basic support for the WebP image format, based on the Qt5 library.</p>"
+
+   "<p>Qt Library:<br/>"
+   "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
+
+   "<p>PixInsight Class Library (PCL):<br/>"
+   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
+   "</html>";
+}
+
+String WEBPFormat::IconImageFile() const
+{
+   return ":/file-format/webp-format-icon.png";
+}
+
+bool WEBPFormat::CanRead() const
+{
+   return true;
+}
+
+bool WEBPFormat::CanWrite() const
+{
+   return true;
+}
+
+bool WEBPFormat::CanStore8Bit() const
+{
+   return true;
+}
+
+bool WEBPFormat::CanStore16Bit() const
+{
+   return false;
+}
+
+FileFormatImplementation* WEBPFormat::Create() const
+{
+   return new WEBPInstance( this );
+}
+
+// ----------------------------------------------------------------------------
 
 IsoString SVGFormat::Name() const
 {
@@ -979,10 +1005,10 @@ String SVGFormat::Implementation() const
    "<p>Read-only support for the Scalable Vector Graphics format (SVG), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
+   "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -1021,4 +1047,4 @@ FileFormatImplementation* SVGFormat::Create() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BMPFormat.cpp - Released 2017-05-02T09:42:51Z
+// EOF BMPFormat.cpp - Released 2017-07-09T18:07:25Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard JPEG2000 File Format Module Version 01.00.02.0299
+// Standard JPEG2000 File Format Module Version 01.00.02.0317
 // ----------------------------------------------------------------------------
-// JPEG2000Instance.cpp - Released 2017-05-02T09:42:51Z
+// JPEG2000Instance.cpp - Released 2017-07-09T18:07:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG2000 PixInsight module.
 //
@@ -105,7 +105,7 @@ JPCInstance::JPCInstance( const JPCFormat* f ) :
 
 // ----------------------------------------------------------------------------
 
-JPCInstance::~JPCInstance()
+JPCInstance::~JPCInstance() noexcept( false )
 {
    Close();
 }
@@ -794,7 +794,7 @@ JP2Instance::JP2Instance( const JP2Format* f ) : JPCInstance( f )
 
 // ----------------------------------------------------------------------------
 
-JP2Instance::~JP2Instance()
+JP2Instance::~JP2Instance() noexcept( false )
 {
 }
 
@@ -892,4 +892,4 @@ void JP2Instance::WriteICCProfile( const ICCProfile& icc )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF JPEG2000Instance.cpp - Released 2017-05-02T09:42:51Z
+// EOF JPEG2000Instance.cpp - Released 2017-07-09T18:07:25Z

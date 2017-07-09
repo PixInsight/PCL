@@ -7,14 +7,14 @@
 // ----------------------------------------------------------------------------
 // This file is part of PixInsight X11 UNIX/Linux Installer
 // ----------------------------------------------------------------------------
-// 2016/02/21 20:23:49 UTC
+// 2017/06/30 07:57:32 UTC
 // installer.cpp
 // ----------------------------------------------------------------------------
-// Copyright (c) 2013-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2017 Pleiades Astrophoto S.L.
 // ----------------------------------------------------------------------------
 
 #if !defined( __PCL_FREEBSD ) && !defined( __PCL_LINUX )
-#error This source file can only be compiled on FreeBSD and Linux platforms.
+#error This program can only be built on FreeBSD and Linux platforms.
 #endif
 
 #include <unistd.h>
@@ -30,7 +30,7 @@
 #include <pcl/File.h>
 
 /*
- * The installer version numbers identify the PixInsight Core application
+ * The installer version numbers identify the PixInsight core application
  * version being installed.
  */
 #include "../../core/Components/Application/Version.h"
@@ -146,7 +146,7 @@ private:
 
    /*
     * Readable version. Conventionally, the installer adopts the version of the
-    * PixInsight Core application that is being installed.
+    * PixInsight core application that is being installed.
     */
    static String     VersionString();
 
@@ -165,7 +165,7 @@ private:
    /*
     * Clones a source directory tree on a target location.
     */
-   static void       CopyFiles( const String& targetDir, const String& m_sourceDir );
+   static void       CopyFiles( const String& targetDir, const String& sourceDir );
 
    /*
     * Performs a recursive directory search and returns a list of absolute file
@@ -234,7 +234,7 @@ private:
    static String     Unquoted( const String& );
 
    /*
-    * Asks "Are you sure [yes|no]?" and returns true iff the user says yes.
+    * Asks "Are you sure [yes|no]?" and returns true iff the user says "yes".
     */
    static bool       AskForConfirmation();
 
@@ -445,7 +445,7 @@ bool PixInsightX11Installer::DoInstall()
    "\nPixInsight will be installed with the following parameters:"
    "\n"
    "\nSource installation directory ... " << m_sourceDir <<
-   "\nPixInsight Core application ..... " << m_installDir <<
+   "\nPixInsight core application ..... " << m_installDir <<
    "\nApplication desktop entry ....... " << m_desktopEntryFile <<
    "\nApplication icons directory ..... " << m_installIconsDir <<
    "\nMIME type description file ...... " << m_mimeDescriptionFile <<
@@ -461,7 +461,7 @@ bool PixInsightX11Installer::DoInstall()
    // Backup an existing previous installation
    String oldDir = RenameOldInstallationDirectory( m_installDir );
 
-   // Copy the PixInsight Core application
+   // Copy the PixInsight core application
    File::CreateDirectory( m_installDir );
    CopyFiles( m_installDir, m_sourceDir );
 
@@ -740,7 +740,7 @@ bool PixInsightX11Installer::DoShowHelp()
    "\n--version"
    "\n"
    "\n      Prints the installer version and exits. The installer version is"
-   "\n      the version number of the installed PixInsight Core application."
+   "\n      the version number of the installed PixInsight core application."
    "\n"
    "\n--help"
    "\n"
@@ -968,12 +968,16 @@ bool PixInsightX11Installer::IsPixInsightInstallation( const String& dirPath )
       return false;
    if ( !File::DirectoryExists( dirPath + "/bin/lib" ) )
       return false;
+//    if ( !File::DirectoryExists( dirPath + "/color" ) )
+//       return false;
    if ( !File::DirectoryExists( dirPath + "/doc" ) )
       return false;
    if ( !File::DirectoryExists( dirPath + "/etc" ) )
       return false;
    if ( !File::DirectoryExists( dirPath + "/include" ) )
       return false;
+//    if ( !File::DirectoryExists( dirPath + "/lib" ) )
+//       return false;
    if ( !File::DirectoryExists( dirPath + "/library" ) )
       return false;
    if ( !File::DirectoryExists( dirPath + "/rsc" ) )
@@ -1072,5 +1076,5 @@ int main( int argc, const char** argv )
 }
 
 // ----------------------------------------------------------------------------
-// 2016/02/21 20:23:49 UTC
+// 2017/06/30 07:57:32 UTC
 // installer.cpp

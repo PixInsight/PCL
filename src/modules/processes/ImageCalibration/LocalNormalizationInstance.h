@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.00.0300
+// Standard ImageCalibration Process Module Version 01.04.00.0319
 // ----------------------------------------------------------------------------
-// LocalNormalizationInstance.h - Released 2017-05-17T17:41:56Z
+// LocalNormalizationInstance.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -53,6 +53,7 @@
 #ifndef __LocalNormalizationInstance_h
 #define __LocalNormalizationInstance_h
 
+#include <pcl/MetaParameter.h>
 #include <pcl/ProcessImplementation.h>
 
 namespace pcl
@@ -83,39 +84,67 @@ public:
 
 private:
 
-//    struct Item
-//    {
-//       pcl_bool enabled  = true;
-//       pcl_bool isFile   = false;
-//       String   idOrPath;
-//
-//       Item() = default;
-//
-//       Item( bool isFile_, const String& idOrPath_ ) : isFile( isFile_ ), idOrPath( idOrPath_ )
-//       {
-//       }
-//
-//       Item( const Item& x ) = default;
-//
-//       bool IsDefined() const
-//       {
-//          return !idOrPath.IsEmpty();
-//       }
-//    };
-//
-//    typedef Array<Item>     item_list;
+   struct Item
+   {
+      pcl_bool enabled = true;
+      String   path;
 
-   int32       p_scale;
+      Item() = default;
+      Item( const Item& ) = default;
+
+      Item( const String& path_ ) : path( path_ )
+      {
+      }
+
+      bool IsDefined() const
+      {
+         return !path.IsEmpty();
+      }
+   };
+
+   typedef Array<Item>  item_list;
+
+   // Working parameters
+   int32       p_scale;                     // working scale in pixels
+   pcl_bool    p_rejection;
+   float       p_backgroundRejectionLimit;
+   float       p_referenceRejectionThreshold;
+   float       p_targetRejectionThreshold;
 
    // Working images
-   String      p_referenceViewId;
-//    Item        p_reference;
-//    item_list   p_targets;
+   String      p_referencePathOrViewId;
+   pcl_bool    p_referenceIsView;
+   item_list   p_targets;
 
    // Format hints
-//    String      p_inputHints;
-//    String      p_outputHints;
+   String      p_inputHints;
+   String      p_outputHints;
 
+   // Working modes
+   pcl_bool    p_generateNormalizedImages;  // apply to target images
+   pcl_bool    p_generateNormalizationData; // generate .xnml files
+   pcl_bool    p_showBackgroundModels;
+   pcl_bool    p_showRejectionMaps;
+   pcl_bool    p_showNormalizationFunctions;
+   pcl_bool    p_noGUIMessages;
+
+   // Output images
+   String      p_outputDirectory;
+   String      p_outputExtension;
+   String      p_outputPrefix;
+   String      p_outputPostfix;
+   pcl_bool    p_overwriteExistingFiles;
+   pcl_enum    p_onError;
+
+   // High-level parallelism
+   pcl_bool    p_useFileThreads;
+   float       p_fileThreadOverload;
+   int32       p_maxFileReadThreads;
+   int32       p_maxFileWriteThreads;
+
+   void ApplyErrorPolicy();
+
+   friend class LocalNormalizationThread;
    friend class LocalNormalizationInterface;
 };
 
@@ -126,4 +155,4 @@ private:
 #endif   // __LocalNormalizationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF LocalNormalizationInstance.h - Released 2017-05-17T17:41:56Z
+// EOF LocalNormalizationInstance.h - Released 2017-07-09T18:07:33Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0346
+// Standard Geometry Process Module Version 01.02.01.0365
 // ----------------------------------------------------------------------------
-// DynamicCropInstance.cpp - Released 2017-05-02T09:43:00Z
+// DynamicCropInstance.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -499,7 +499,7 @@ bool DynamicCropInstance::ExecuteOn( View& view )
 
    if ( p_forceResolution )
    {
-      Console().WriteLn( String().Format( "Setting resolution: h:%.3lf, v:%.3lf, u:px/%s",
+      Console().WriteLn( String().Format( "Setting resolution: h:%.3f, v:%.3f, u:px/%s",
                                           p_resolution.x, p_resolution.y, p_metric ? "cm" : "inch" ) );
       window.SetResolution( p_resolution.x, p_resolution.y, p_metric );
    }
@@ -559,4 +559,4 @@ void* DynamicCropInstance::LockParameter( const MetaParameter* p, size_type /*ta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropInstance.cpp - Released 2017-05-02T09:43:00Z
+// EOF DynamicCropInstance.cpp - Released 2017-07-09T18:07:33Z

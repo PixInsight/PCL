@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard RestorationFilters Process Module Version 01.00.05.0290
+// Standard RestorationFilters Process Module Version 01.00.05.0309
 // ----------------------------------------------------------------------------
-// RestorationFilterParameters.cpp - Released 2017-05-02T09:43:01Z
+// RestorationFilterParameters.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RestorationFilters PixInsight module.
 //
@@ -57,26 +57,26 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-RFWienerK*                    TheRFWienerKParameter = 0;
-RFLeastSquaresGamma*          TheRFLeastSquaresGammaParameter = 0;
-RFAlgorithm*                  TheRFAlgorithmParameter = 0;
-RFPSFMode*                    TheRFPSFModeParameter = 0;
-RFPSFParametricSigma*         TheRFPSFParametricSigmaParameter = 0;
-RFPSFParametricShape*         TheRFPSFParametricShapeParameter = 0;
-RFPSFParametricAspectRatio*   TheRFPSFParametricAspectRatioParameter = 0;
-RFPSFParametricRotationAngle* TheRFPSFParametricRotationAngleParameter = 0;
-RFPSFMotionLength*            TheRFPSFMotionLengthParameter = 0;
-RFPSFMotionRotationAngle*     TheRFPSFMotionRotationAngleParameter = 0;
-RFPSFViewId*                  TheRFPSFViewIdParameter = 0;
-RFAmount*                     TheRFAmountParameter = 0;
-RFToLuminance*                TheRFToLuminanceParameter = 0;
-RFLinear*                     TheRFLinearParameter = 0;
-RFDeringing*                  TheRFDeringingParameter = 0;
-RFDeringingDark*              TheRFDeringingDarkParameter = 0;
-RFDeringingBright*            TheRFDeringingBrightParameter = 0;
-RFOutputDeringingMaps*        TheRFOutputDeringingMapsParameter = 0;
-RFRangeLow*                   TheRFRangeLowParameter = 0;
-RFRangeHigh*                  TheRFRangeHighParameter = 0;
+RFWienerK*                    TheRFWienerKParameter = nullptr;
+RFLeastSquaresGamma*          TheRFLeastSquaresGammaParameter = nullptr;
+RFAlgorithm*                  TheRFAlgorithmParameter = nullptr;
+RFPSFMode*                    TheRFPSFModeParameter = nullptr;
+RFPSFParametricSigma*         TheRFPSFParametricSigmaParameter = nullptr;
+RFPSFParametricShape*         TheRFPSFParametricShapeParameter = nullptr;
+RFPSFParametricAspectRatio*   TheRFPSFParametricAspectRatioParameter = nullptr;
+RFPSFParametricRotationAngle* TheRFPSFParametricRotationAngleParameter = nullptr;
+RFPSFMotionLength*            TheRFPSFMotionLengthParameter = nullptr;
+RFPSFMotionRotationAngle*     TheRFPSFMotionRotationAngleParameter = nullptr;
+RFPSFViewId*                  TheRFPSFViewIdParameter = nullptr;
+RFAmount*                     TheRFAmountParameter = nullptr;
+RFToLuminance*                TheRFToLuminanceParameter = nullptr;
+RFLinear*                     TheRFLinearParameter = nullptr;
+RFDeringing*                  TheRFDeringingParameter = nullptr;
+RFDeringingDark*              TheRFDeringingDarkParameter = nullptr;
+RFDeringingBright*            TheRFDeringingBrightParameter = nullptr;
+RFOutputDeringingMaps*        TheRFOutputDeringingMapsParameter = nullptr;
+RFRangeLow*                   TheRFRangeLowParameter = nullptr;
+RFRangeHigh*                  TheRFRangeHighParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -684,4 +684,4 @@ double RFRangeHigh::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RestorationFilterParameters.cpp - Released 2017-05-02T09:43:01Z
+// EOF RestorationFilterParameters.cpp - Released 2017-07-09T18:07:33Z

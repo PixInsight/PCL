@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.06.0853
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// pcl/FileFormatImplementation.h - Released 2017-06-28T11:58:36Z
+// pcl/FileFormatImplementation.h - Released 2017-07-09T18:07:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -109,7 +109,7 @@ public:
    /*!
     * Destroys a file format instance.
     */
-   virtual ~FileFormatImplementation();
+   virtual ~FileFormatImplementation() noexcept( false );
 
    /*
     * FileFormatImplementation instances (e.g., image files) are unique.
@@ -866,4 +866,4 @@ private:
 #endif   // __PCL_FileFormat_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormatImplementation.h - Released 2017-06-28T11:58:36Z
+// EOF pcl/FileFormatImplementation.h - Released 2017-07-09T18:07:07Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0374
+// Standard IntensityTransformations Process Module Version 01.07.01.0393
 // ----------------------------------------------------------------------------
-// RescaleActions.h - Released 2017-05-02T09:43:00Z
+// RescaleActions.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -109,4 +109,4 @@ public:
 #endif   // __RescaleActions_h
 
 // ----------------------------------------------------------------------------
-// EOF RescaleActions.h - Released 2017-05-02T09:43:00Z
+// EOF RescaleActions.h - Released 2017-07-09T18:07:33Z

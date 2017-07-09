@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.15.00.0398
+// Standard ImageIntegration Process Module Version 01.16.00.0429
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInterface.cpp - Released 2017-05-05T08:37:32Z
+// DrizzleIntegrationInterface.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -53,8 +53,10 @@
 #include "DrizzleIntegrationInterface.h"
 #include "DrizzleIntegrationProcess.h"
 
+#include <pcl/DrizzleData.h>
 #include <pcl/FileDialog.h>
 #include <pcl/FileFormat.h>
+#include <pcl/LocalNormalizationData.h>
 #include <pcl/MessageBox.h>
 #include <pcl/PreviewSelectionDialog.h>
 
@@ -239,10 +241,12 @@ void DrizzleIntegrationInterface::UpdateInputDataItem( size_type i )
    node->SetAlignment( 1, TextAlign::Left );
 
    String fileText;
+   if ( !item.nmlPath.IsEmpty() )
+      fileText << "<n> ";
    if ( GUI->FullPaths_CheckBox.IsChecked() )
-      fileText.Append( item.path );
+      fileText << item.path;
    else
-      fileText.Append( File::ExtractNameAndSuffix( item.path ) );
+      fileText << File::ExtractNameAndSuffix( item.path );
 
    node->SetText( 2, fileText );
    node->SetAlignment( 2, TextAlign::Left );
@@ -283,6 +287,8 @@ void DrizzleIntegrationInterface::UpdateDataSelectionButtons()
    bool hasItems = GUI->InputData_TreeBox.NumberOfChildren() > 0;
    bool hasSelection = hasItems && GUI->InputData_TreeBox.HasSelectedTopLevelNodes();
 
+   GUI->AddLocalNormalizationFiles_PushButton.Enable( hasItems );
+   GUI->ClearLocalNormalizationFiles_PushButton.Enable( hasItems );
    GUI->SelectAll_PushButton.Enable( hasItems );
    GUI->InvertSelection_PushButton.Enable( hasItems );
    GUI->ToggleSelected_PushButton.Enable( hasSelection );
@@ -311,6 +317,7 @@ void DrizzleIntegrationInterface::UpdateIntegrationControls()
    GUI->EnableRejection_CheckBox.SetChecked( m_instance.p_enableRejection );
    GUI->EnableImageWeighting_CheckBox.SetChecked( m_instance.p_enableImageWeighting );
    GUI->EnableSurfaceSplines_CheckBox.SetChecked( m_instance.p_enableSurfaceSplines );
+   GUI->EnableLocalNormalization_CheckBox.SetChecked( m_instance.p_enableLocalNormalization );
    GUI->ClosePreviousImages_CheckBox.SetChecked( m_instance.p_closePreviousImages );
 
    bool integrated = DZKernelFunction::IsIntegratedKernel( m_instance.p_kernelFunction );
@@ -393,20 +400,54 @@ static size_type TreeInsertionIndex( const TreeBox& tree )
    return (n != nullptr) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
 }
 
+// ----------------------------------------------------------------------------
+
+String DrizzleIntegrationInterface::LocalNormalizationTargetName( const String& filePath )
+{
+   LocalNormalizationData nml( filePath, true/*ignoreNormalizationData*/ );
+
+   /*
+    * If the XNML file includes a target normalization path, use it. Otherwise
+    * the target should have the same name as the .xnml file.
+    */
+   String targetfilePath = nml.TargetFilePath();
+   if ( targetfilePath.IsEmpty() )
+      targetfilePath = filePath;
+
+   if ( GUI->StaticDataTargets_CheckBox.IsChecked() )
+      return File::ChangeExtension( targetfilePath, String() );
+   return File::ExtractName( targetfilePath );
+}
+
+// ----------------------------------------------------------------------------
+
+String DrizzleIntegrationInterface::DrizzleTargetName( const String& filePath )
+{
+   DrizzleData drz( filePath, true/*ignoreIntegrationData*/ );
+
+   /*
+    * If the XDRZ file includes a target alignment path, use it. Otherwise
+    * the target should have the same name as the .xdrz file.
+    */
+   String targetfilePath = drz.AlignmentTargetFilePath();
+   if ( targetfilePath.IsEmpty() )
+      targetfilePath = filePath;
+
+   if ( GUI->StaticDataTargets_CheckBox.IsChecked() )
+      return File::ChangeExtension( targetfilePath, String() );
+   return File::ExtractName( targetfilePath );
+}
+
+// ----------------------------------------------------------------------------
+
 void DrizzleIntegrationInterface::__Click( Button& sender, bool checked )
 {
    if ( sender == GUI->AddFiles_PushButton )
    {
-      FileFilter drzFiles;
-      drzFiles.SetDescription( "Drizzle Data Files" );
-      drzFiles.AddExtension( ".xdrz" );
-      drzFiles.AddExtension( ".drz" );
-
       OpenFileDialog d;
-      d.EnableMultipleSelections();
-      d.Filters().Clear();
-      d.Filters().Add( drzFiles );
       d.SetCaption( "DrizzleIntegration: Select Drizzle Data Files" );
+      d.SetFilter( FileFilter( "Drizzle Data Files", StringList() << ".xdrz" << ".drz" ) );
+      d.EnableMultipleSelections();
       if ( d.Execute() )
       {
          size_type i0 = TreeInsertionIndex( GUI->InputData_TreeBox );
@@ -414,6 +455,80 @@ void DrizzleIntegrationInterface::__Click( Button& sender, bool checked )
             m_instance.p_inputData.Insert( m_instance.p_inputData.At( i0++ ), DrizzleIntegrationInstance::DataItem( *i ) );
          UpdateInputDataList();
          UpdateDataSelectionButtons();
+      }
+   }
+   else if ( sender == GUI->AddLocalNormalizationFiles_PushButton )
+   {
+      OpenFileDialog d;
+      d.SetCaption( "DrizzleIntegration: Select Local Normalization Data Files" );
+      d.SetFilter( FileFilter( "Local Normalization Data Files", ".xnml" ) );
+      d.EnableMultipleSelections();
+      if ( d.Execute() )
+      {
+         StringList drzTargetNames;
+         for ( DrizzleIntegrationInstance::DataItem& item : m_instance.p_inputData )
+            drzTargetNames << DrizzleTargetName( item.path );
+
+         IVector assigned( 0, int( m_instance.p_inputData.Length() ) );
+         for ( const String& path : d.FileNames() )
+         {
+            String nmlTargetName = LocalNormalizationTargetName( path );
+            IVector::iterator n = assigned.Begin();
+            for ( size_type i = 0; i < m_instance.p_inputData.Length(); ++i, ++n )
+               if ( drzTargetNames[i] == nmlTargetName )
+               {
+                  m_instance.p_inputData[i].nmlPath = path;
+                  ++*n;
+                  break;
+               }
+         }
+
+         UpdateInputDataList();
+
+         int total = 0;
+         int duplicates = 0;
+         for ( int i = 0; i < assigned.Length(); ++i )
+            if ( assigned[i] > 0 )
+            {
+               ++total;
+               if ( assigned[i] > 1 )
+                  ++duplicates;
+            }
+
+         if ( total == 0 )
+         {
+            MessageBox( "<p>No local normalization data files have been assigned to drizzle integration source images.</p>",
+                        "DrizzleIntegration",
+                        StdIcon::Error,
+                        StdButton::Ok ).Execute();
+         }
+         else
+         {
+            if ( total < assigned.Length() || duplicates )
+               MessageBox( String().Format( "<p>%d of %d local normalization data files have been assigned.<br/>"
+                                            "%d duplicate assignment(s)</p>", total, assigned.Length(), duplicates ),
+                           "DrizzleIntegration",
+                           StdIcon::Warning,
+                           StdButton::Ok ).Execute();
+
+            if ( !m_instance.p_enableLocalNormalization )
+            {
+               m_instance.p_enableLocalNormalization = true;
+               UpdateIntegrationControls();
+            }
+         }
+      }
+   }
+   else if ( sender == GUI->ClearLocalNormalizationFiles_PushButton )
+   {
+      for ( DrizzleIntegrationInstance::DataItem& item : m_instance.p_inputData )
+         item.nmlPath.Clear();
+      UpdateInputDataList();
+
+      if ( m_instance.p_enableLocalNormalization )
+      {
+         m_instance.p_enableLocalNormalization = false;
+         UpdateIntegrationControls();
       }
    }
    else if ( sender == GUI->SelectAll_PushButton )
@@ -479,6 +594,10 @@ void DrizzleIntegrationInterface::__Click( Button& sender, bool checked )
    else if ( sender == GUI->EnableSurfaceSplines_CheckBox )
    {
       m_instance.p_enableSurfaceSplines = checked;
+   }
+   else if ( sender == GUI->EnableLocalNormalization_CheckBox )
+   {
+      m_instance.p_enableLocalNormalization = checked;
    }
    else if ( sender == GUI->ClosePreviousImages_CheckBox )
    {
@@ -584,7 +703,7 @@ void DrizzleIntegrationInterface::__FileDrop( Control& sender, const Point& pos,
 {
    if ( sender == GUI->InputData_TreeBox.Viewport() )
    {
-      StringList inputFiles;
+      StringList inputFiles, localNormalizationFiles;
       bool recursive = IsControlOrCmdPressed();
       for ( const String& item : files )
          if ( File::Exists( item ) )
@@ -592,17 +711,44 @@ void DrizzleIntegrationInterface::__FileDrop( Control& sender, const Point& pos,
             String ext = File::ExtractSuffix( item ).CaseFolded();
             if ( ext == ".xdrz" || ext == ".drz" )
                inputFiles << item;
+            else if ( ext == ".xnml" )
+               localNormalizationFiles << item;
          }
          else if ( File::DirectoryExists( item ) )
+         {
             inputFiles << FileFormat::DrizzleFiles( item, recursive );
+            localNormalizationFiles << FileFormat::LocalNormalizationFiles( item, recursive );
+         }
 
       inputFiles.Sort();
       size_type i0 = TreeInsertionIndex( GUI->InputData_TreeBox );
       for ( const String& file : inputFiles )
          m_instance.p_inputData.Insert( m_instance.p_inputData.At( i0++ ), DrizzleIntegrationInstance::DataItem( file ) );
 
+      StringList drzTargetNames;
+      for ( DrizzleIntegrationInstance::DataItem& item : m_instance.p_inputData )
+         drzTargetNames << DrizzleTargetName( item.path );
+
+      for ( const String& file : localNormalizationFiles )
+      {
+         String nmlTargetName = LocalNormalizationTargetName( file );
+         for ( size_type i = 0; i < m_instance.p_inputData.Length(); ++i )
+            if ( drzTargetNames[i] == nmlTargetName )
+            {
+               m_instance.p_inputData[i].nmlPath = file;
+               break;
+            }
+      }
+
       UpdateInputDataList();
       UpdateDataSelectionButtons();
+
+      if ( !localNormalizationFiles.IsEmpty() )
+         if ( !m_instance.p_enableLocalNormalization )
+         {
+            m_instance.p_enableLocalNormalization= true;
+            UpdateIntegrationControls();
+         }
    }
    else if ( sender == GUI->InputDirectory_Edit )
    {
@@ -668,6 +814,18 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
       "StarAlignment and ImageIntegration tools for the images that you want to integrate with DrizzleIntegration.</p>" );
    AddFiles_PushButton.OnClick( (Button::click_event_handler)&DrizzleIntegrationInterface::__Click, w );
 
+   AddLocalNormalizationFiles_PushButton.SetText( "Add L.Norm. Files" );
+   AddLocalNormalizationFiles_PushButton.SetToolTip( "<p>Associate existing local normalization data files with drizzle input images.</p>"
+      "<p>Local normalization data files carry the .xnml suffix. Normally you should select .xnml files generated by the "
+      "LocalNormalization tool for the same files that you are integrating.</p>" );
+   AddLocalNormalizationFiles_PushButton.OnClick( (Button::click_event_handler)&DrizzleIntegrationInterface::__Click, w );
+
+   ClearLocalNormalizationFiles_PushButton.SetText( "Clear L.Norm. Files" );
+   ClearLocalNormalizationFiles_PushButton.SetToolTip( "<p>Remove all local normalization data files currently associated with "
+      "drizzle input images.</p>"
+      "<p>This removes just file associations, not the actual local normalization data files.</p>" );
+   ClearLocalNormalizationFiles_PushButton.OnClick( (Button::click_event_handler)&DrizzleIntegrationInterface::__Click, w );
+
    SelectAll_PushButton.SetText( "Select All" );
    SelectAll_PushButton.SetToolTip( "<p>Select all input data files.</p>" );
    SelectAll_PushButton.OnClick( (Button::click_event_handler)&DrizzleIntegrationInterface::__Click, w );
@@ -689,17 +847,31 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
    Clear_PushButton.SetToolTip( "<p>Clear the list of input data files.</p>" );
    Clear_PushButton.OnClick( (Button::click_event_handler)&DrizzleIntegrationInterface::__Click, w );
 
+   StaticDataTargets_CheckBox.SetText( "Static data targets" );
+   StaticDataTargets_CheckBox.SetToolTip( "<p>When assigning local normalization data files to drizzle input images, "
+      "take into account full file paths stored in .xdrz and .xnml files. This allows you to integrate images with "
+      "duplicate file names on different directories. However, by enabling this option your data set gets tied to "
+      "specific locations on the local filesystem. When this option is disabled (the default state), only file names are "
+      "used to associate .xdrz and .xnml files, which allows you to move your images freely throughout the filesystem, "
+      "including the possibility to migrate them to different machines.</p>"
+      "<p>Changes to this option will come into play the next time you associate .xnml files with drizzle input images. "
+      "Existing file associations are not affected.</p>");
+   //StaticDataTargets_CheckBox.OnClick( (Button::click_event_handler)&DrizzleIntegrationInterface::__Click, w );
+
    FullPaths_CheckBox.SetText( "Full paths" );
    FullPaths_CheckBox.SetToolTip( "<p>Show full paths for input data files.</p>" );
    FullPaths_CheckBox.OnClick( (Button::click_event_handler)&DrizzleIntegrationInterface::__Click, w );
 
    InputButtons_Sizer.SetSpacing( 4 );
    InputButtons_Sizer.Add( AddFiles_PushButton );
+   InputButtons_Sizer.Add( AddLocalNormalizationFiles_PushButton );
+   InputButtons_Sizer.Add( ClearLocalNormalizationFiles_PushButton );
    InputButtons_Sizer.Add( SelectAll_PushButton );
    InputButtons_Sizer.Add( InvertSelection_PushButton );
    InputButtons_Sizer.Add( ToggleSelected_PushButton );
    InputButtons_Sizer.Add( RemoveSelected_PushButton );
    InputButtons_Sizer.Add( Clear_PushButton );
+   InputButtons_Sizer.Add( StaticDataTargets_CheckBox );
    InputButtons_Sizer.Add( FullPaths_CheckBox );
    InputButtons_Sizer.AddStretch();
 
@@ -934,6 +1106,16 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
    EnableSurfaceSplines_Sizer.Add( EnableSurfaceSplines_CheckBox );
    EnableSurfaceSplines_Sizer.AddStretch();
 
+   EnableLocalNormalization_CheckBox.SetText( "Enable local normalization" );
+   EnableLocalNormalization_CheckBox.SetToolTip( "<p>For input drizzle files that have been associated with local normalization "
+      "data files (.xnml files), apply local normalization for output instead of the default scale + zero offset global "
+      "normalization.</p>" );
+   EnableLocalNormalization_CheckBox.OnClick( (Button::click_event_handler)&DrizzleIntegrationInterface::__Click, w );
+
+   EnableLocalNormalization_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
+   EnableLocalNormalization_Sizer.Add( EnableLocalNormalization_CheckBox );
+   EnableLocalNormalization_Sizer.AddStretch();
+
    ClosePreviousImages_CheckBox.SetText( "Close previous images" );
    ClosePreviousImages_CheckBox.SetToolTip( "<p>Select this option to close existing drizzle integration and weight images "
       "before running a new integration process. This is useful to avoid accumulation of multiple results on the workspace, "
@@ -954,6 +1136,7 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
    Integration_Sizer.Add( EnableRejection_Sizer );
    Integration_Sizer.Add( EnableImageWeighting_Sizer );
    Integration_Sizer.Add( EnableSurfaceSplines_Sizer );
+   Integration_Sizer.Add( EnableLocalNormalization_Sizer );
    Integration_Sizer.Add( ClosePreviousImages_Sizer );
 
    Integration_Control.SetSizer( Integration_Sizer );
@@ -1090,4 +1273,4 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInterface.cpp - Released 2017-05-05T08:37:32Z
+// EOF DrizzleIntegrationInterface.cpp - Released 2017-07-09T18:07:33Z

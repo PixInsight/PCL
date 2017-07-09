@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.06.0853
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// pcl/Exception.h - Released 2017-06-28T11:58:36Z
+// pcl/Exception.h - Released 2017-07-09T18:07:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -551,29 +551,29 @@ protected:
 // ----------------------------------------------------------------------------
 
 /*!
- * \class CatchedException
+ * \class CaughtException
  * \brief An exception that has already been handled
  *
- * %CatchedException is used to signal exceptions requiring no additional
- * processing. %CatchedException is useful to terminate a process (by branching
+ * %CaughtException is used to signal exceptions requiring no additional
+ * processing. %CaughtException is useful to terminate a process (by branching
  * execution to a catch() block) without causing generation of further error
  * messages.
  *
  * \ingroup standard_exception_classes
  */
-class PCL_CLASS CatchedException : public pcl::Exception
+class PCL_CLASS CaughtException : public pcl::Exception
 {
 public:
 
    /*!
-    * Constructs a %CatchedException object.
+    * Constructs a %CaughtException object.
     */
-   CatchedException() = default;
+   CaughtException() = default;
 
    /*!
     * Copy constructor.
     */
-   CatchedException( const pcl::CatchedException& ) = default;
+   CaughtException( const pcl::CaughtException& ) = default;
 };
 
 }  // pcl
@@ -636,4 +636,4 @@ PCL_DECLARE_EXCEPTION_CLASS( ProcessAborted, "Process aborted", String() );
 #endif   // __PCL_Exception_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Exception.h - Released 2017-06-28T11:58:36Z
+// EOF pcl/Exception.h - Released 2017-07-09T18:07:07Z

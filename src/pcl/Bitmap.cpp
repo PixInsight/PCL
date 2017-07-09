@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.06.0853
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// pcl/Bitmap.cpp - Released 2017-06-28T11:58:42Z
+// pcl/Bitmap.cpp - Released 2017-07-09T18:07:16Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -336,25 +336,28 @@ Bitmap Bitmap::Rotated( double angleRadians, bool precise ) const
 
 // ----------------------------------------------------------------------------
 
-bool Bitmap::Load( const String& fileName )
+void Bitmap::Load( const String& fileName )
 {
    if ( !IsUnique() )
       SetHandle( (*API->Bitmap->CreateEmptyBitmap)( ModuleHandle() ) );
-   return (*API->Bitmap->LoadBitmap)( handle, fileName.c_str() ) != api_false;
+   if ( (*API->Bitmap->LoadBitmap)( handle, fileName.c_str() ) == api_false )
+      throw APIFunctionError( "LoadBitmap" );
 }
 
 // ----------------------------------------------------------------------------
 
-bool Bitmap::Save( const String& fileName, int quality ) const
+void Bitmap::Save( const String& fileName, int quality ) const
 {
-   return (*API->Bitmap->SaveBitmap)( handle, fileName.c_str(), quality ) != api_false;
+   if ( (*API->Bitmap->SaveBitmap)( handle, fileName.c_str(), quality ) == api_false )
+      throw APIFunctionError( "SaveBitmap" );
 }
 
 // ----------------------------------------------------------------------------
 
-bool Bitmap::Load( const void* data, size_type size, const char* format, uint32 flags )
+void Bitmap::Load( const void* data, size_type size, const char* format, uint32 flags )
 {
-   return (*API->Bitmap->LoadBitmapData)( handle, data, size, format, flags ) != api_false;
+   if ( (*API->Bitmap->LoadBitmapData)( handle, data, size, format, flags ) == api_false )
+      throw APIFunctionError( "LoadBitmapData" );
 }
 
 // ----------------------------------------------------------------------------
@@ -481,4 +484,4 @@ void Bitmap::SetPhysicalPixelRatio( double ratio )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Bitmap.cpp - Released 2017-06-28T11:58:42Z
+// EOF pcl/Bitmap.cpp - Released 2017-07-09T18:07:16Z

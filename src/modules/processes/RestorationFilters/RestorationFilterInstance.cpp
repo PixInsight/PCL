@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard RestorationFilters Process Module Version 01.00.05.0290
+// Standard RestorationFilters Process Module Version 01.00.05.0309
 // ----------------------------------------------------------------------------
-// RestorationFilterInstance.cpp - Released 2017-05-02T09:43:01Z
+// RestorationFilterInstance.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RestorationFilters PixInsight module.
 //
@@ -67,27 +67,27 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-RestorationFilterInstance::RestorationFilterInstance( const MetaProcess* m ) : ProcessImplementation( m ),
-psfMode( RFPSFMode::Default ),
-psfSigma( TheRFPSFParametricSigmaParameter->DefaultValue() ),
-psfShape( TheRFPSFParametricShapeParameter->DefaultValue() ),
-psfAspectRatio( TheRFPSFParametricAspectRatioParameter->DefaultValue() ),
-psfRotationAngle( TheRFPSFParametricRotationAngleParameter->DefaultValue() ),
-psfMotionLength( TheRFPSFMotionLengthParameter->DefaultValue() ),
-psfMotionRotationAngle( TheRFPSFMotionRotationAngleParameter->DefaultValue() ),
-psfViewId(),
-K( TheRFWienerKParameter->DefaultValue() ),
-gamma( TheRFLeastSquaresGammaParameter->DefaultValue() ),
-algorithm( RFAlgorithm::Default ),
-amount( TheRFAmountParameter->DefaultValue() ),
-toLuminance( TheRFToLuminanceParameter->DefaultValue() ),
-linear( TheRFLinearParameter->DefaultValue() ),
-deringing( TheRFDeringingParameter->DefaultValue() ),
-deringingDark( TheRFDeringingDarkParameter->DefaultValue() ),
-deringingBright( TheRFDeringingBrightParameter->DefaultValue() ),
-outputDeringingMaps( TheRFOutputDeringingMapsParameter->DefaultValue() ),
-rangeLow( TheRFRangeLowParameter->DefaultValue() ),
-rangeHigh( TheRFRangeHighParameter->DefaultValue() )
+RestorationFilterInstance::RestorationFilterInstance( const MetaProcess* P ) :
+   ProcessImplementation( P ),
+   psfMode( RFPSFMode::Default ),
+   psfSigma( TheRFPSFParametricSigmaParameter->DefaultValue() ),
+   psfShape( TheRFPSFParametricShapeParameter->DefaultValue() ),
+   psfAspectRatio( TheRFPSFParametricAspectRatioParameter->DefaultValue() ),
+   psfRotationAngle( TheRFPSFParametricRotationAngleParameter->DefaultValue() ),
+   psfMotionLength( TheRFPSFMotionLengthParameter->DefaultValue() ),
+   psfMotionRotationAngle( TheRFPSFMotionRotationAngleParameter->DefaultValue() ),
+   K( TheRFWienerKParameter->DefaultValue() ),
+   gamma( TheRFLeastSquaresGammaParameter->DefaultValue() ),
+   algorithm( RFAlgorithm::Default ),
+   amount( TheRFAmountParameter->DefaultValue() ),
+   toLuminance( TheRFToLuminanceParameter->DefaultValue() ),
+   linear( TheRFLinearParameter->DefaultValue() ),
+   deringing( TheRFDeringingParameter->DefaultValue() ),
+   deringingDark( TheRFDeringingDarkParameter->DefaultValue() ),
+   deringingBright( TheRFDeringingBrightParameter->DefaultValue() ),
+   outputDeringingMaps( TheRFOutputDeringingMapsParameter->DefaultValue() ),
+   rangeLow( TheRFRangeLowParameter->DefaultValue() ),
+   rangeHigh( TheRFRangeHighParameter->DefaultValue() )
 {
 }
 
@@ -103,7 +103,7 @@ RestorationFilterInstance::RestorationFilterInstance( const RestorationFilterIns
 void RestorationFilterInstance::Assign( const ProcessImplementation& p )
 {
    const RestorationFilterInstance* x = dynamic_cast<const RestorationFilterInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       psfMode = x->psfMode;
       psfSigma = x->psfSigma;
@@ -677,8 +677,11 @@ void* RestorationFilterInstance::LockParameter( const MetaParameter* p, size_typ
       return &rangeLow;
    if ( p == TheRFRangeHighParameter )
       return &rangeHigh;
-   return 0;
+
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool RestorationFilterInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type /*tableRow*/ )
 {
@@ -689,16 +692,21 @@ bool RestorationFilterInstance::AllocateParameter( size_type sizeOrLength, const
          psfViewId.SetLength( sizeOrLength );
       return true;
    }
+
    return false;
 }
+
+// ----------------------------------------------------------------------------
 
 size_type RestorationFilterInstance::ParameterLength( const MetaParameter* p, size_type /*tableRow*/ ) const
 {
    if ( p == TheRFPSFViewIdParameter )
       return psfViewId.Length();
+
    return 0;
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 bool RestorationFilterInstance::CreatePSF( Image& psf ) const
@@ -734,4 +742,4 @@ bool RestorationFilterInstance::CreatePSF( Image& psf ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RestorationFilterInstance.cpp - Released 2017-05-02T09:43:01Z
+// EOF RestorationFilterInstance.cpp - Released 2017-07-09T18:07:33Z

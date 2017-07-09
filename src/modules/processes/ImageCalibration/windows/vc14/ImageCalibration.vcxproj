@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-06-07T15:42:56.494Z
+# Generated on .... 2017-07-09T17:56:01.521Z
 # Project id ...... ImageCalibration
 # Project type .... Module
 # Platform ........ Windows/vc14
@@ -33,7 +33,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{FALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSE-FALSEFALSEFALSEFALSE-4FALSEFALSEFALSE-FALSEFALSEFALSEFALSE-FALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSE}</ProjectGuid>
+    <ProjectGuid>{4E34CAD8-16F1-4F1E-8A88-19398D960B3C}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -271,6 +271,7 @@
     <ClInclude Include="..\..\LocalNormalizationInterface.h"/>
     <ClInclude Include="..\..\LocalNormalizationParameters.h"/>
     <ClInclude Include="..\..\LocalNormalizationProcess.h"/>
+    <ClInclude Include="..\..\OutputFileData.h"/>
     <ClInclude Include="..\..\SuperbiasInstance.h"/>
     <ClInclude Include="..\..\SuperbiasInterface.h"/>
     <ClInclude Include="..\..\SuperbiasParameters.h"/>

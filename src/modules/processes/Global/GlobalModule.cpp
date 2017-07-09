@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0347
+// Standard Global Process Module Version 01.02.07.0366
 // ----------------------------------------------------------------------------
-// GlobalModule.cpp - Released 2017-05-02T09:43:00Z
+// GlobalModule.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     02
 #define MODULE_VERSION_REVISION  07
-#define MODULE_VERSION_BUILD     0347
+#define MODULE_VERSION_BUILD     0366
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     5
-#define MODULE_RELEASE_DAY       2
+#define MODULE_RELEASE_MONTH     7
+#define MODULE_RELEASE_DAY       9
 
 #include "ColorManagementSetupAction.h"
 #include "ColorManagementSetupInterface.h"
@@ -171,4 +171,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF GlobalModule.cpp - Released 2017-05-02T09:43:00Z
+// EOF GlobalModule.cpp - Released 2017-07-09T18:07:33Z

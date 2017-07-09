@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.06.0853
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.06.00.0267
+// Standard Debayer Process Module Version 01.06.00.0269
 // ----------------------------------------------------------------------------
-// DebayerInstance.cpp - Released 2017-07-06T19:14:49Z
+// DebayerInstance.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
@@ -1348,12 +1348,13 @@ private:
 
       ImageDescriptionArray images;
       if ( !file.Open( images, m_targetFilePath, m_instance.p_inputHints ) )
-         throw CatchedException();
+         throw CaughtException();
 
       if ( images.IsEmpty() )
       {
          console.NoteLn( "* Skipping empty image file." );
-         file.Close();
+         if ( !file.Close() )
+            throw CaughtException();
          return false;
       }
 
@@ -1376,11 +1377,11 @@ private:
          static AtomicInt count;
          volatile AutoLockCounter lock( mutex, count, m_instance.p_maxFileReadThreads );
          if ( !file.ReadImage( m_targetImage ) )
-            throw CatchedException();
+            throw CaughtException();
          m_fileData = OutputFileData( file, images[0].options );
+         if ( !file.Close() )
+            throw CaughtException();
       }
-
-      file.Close();
 
       return true;
    }
@@ -1440,7 +1441,7 @@ private:
       FileFormatInstance outputFile( outputFormat );
 
       if ( !outputFile.Create( m_outputFilePath, m_instance.p_outputHints ) )
-         throw CatchedException();
+         throw CaughtException();
 
       ImageOptions options = m_fileData.options; // get resolution, etc.
       options.bitsPerSample = 32;
@@ -1523,11 +1524,9 @@ private:
          static Mutex mutex;
          static AtomicInt count;
          volatile AutoLockCounter lock( mutex, count, m_instance.p_maxFileWriteThreads );
-         if ( !outputFile.WriteImage( m_outputImage ) )
-            throw CatchedException();
+         if ( !outputFile.WriteImage( m_outputImage ) || !outputFile.Close() )
+            throw CaughtException();
       }
-
-      outputFile.Close();
 
       m_outputImage.FreeData();
    }
@@ -2237,4 +2236,4 @@ size_type DebayerInstance::ParameterLength( const MetaParameter* p, size_type ta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DebayerInstance.cpp - Released 2017-07-06T19:14:49Z
+// EOF DebayerInstance.cpp - Released 2017-07-09T18:07:33Z

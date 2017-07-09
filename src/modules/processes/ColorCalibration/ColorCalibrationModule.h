@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.02.00.0257
+// Standard ColorCalibration Process Module Version 01.03.02.0297
 // ----------------------------------------------------------------------------
-// ColorCalibrationModule.h - Released 2017-05-02T09:43:00Z
+// ColorCalibrationModule.h - Released 2017-07-09T18:07:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
@@ -75,6 +75,7 @@ public:
    virtual String TradeMarks() const;
    virtual String OriginalFileName() const;
    virtual void GetReleaseDate( int& year, int& month, int& day ) const;
+   virtual void OnUnload();
 };
 
 // ----------------------------------------------------------------------------
@@ -84,4 +85,4 @@ public:
 #endif   // __ColorCalibrationModule_h
 
 // ----------------------------------------------------------------------------
-// EOF ColorCalibrationModule.h - Released 2017-05-02T09:43:00Z
+// EOF ColorCalibrationModule.h - Released 2017-07-09T18:07:32Z

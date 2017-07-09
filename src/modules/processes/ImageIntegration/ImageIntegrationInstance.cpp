@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.15.00.0398
+// Standard ImageIntegration Process Module Version 01.16.00.0429
 // ----------------------------------------------------------------------------
-// ImageIntegrationInstance.cpp - Released 2017-05-05T08:37:32Z
+// ImageIntegrationInstance.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -64,6 +64,7 @@
 #include <pcl/ICCProfile.h>
 #include <pcl/ImageWindow.h>
 #include <pcl/LinearFit.h>
+#include <pcl/LocalNormalizationData.h>
 #include <pcl/MetaModule.h>
 #include <pcl/MorphologicalTransformation.h>
 #include <pcl/MultiscaleMedianTransform.h>
@@ -621,15 +622,15 @@ public:
                else if ( k.name == "PIXSIZE" )
                   xPixSize = yPixSize = value.ToDouble();
                else if ( k.name == "XBINNING" || k.name == "CCDBINX" )
-                  xBinning = value.ToUInt( 10 );
+                  xBinning = unsigned( Max( 1.0, value.ToDouble() ) );
                else if ( k.name == "YBINNING" || k.name == "CCDBINY" )
-                  yBinning = value.ToUInt( 10 );
+                  yBinning = unsigned( Max( 1.0, value.ToDouble() ) );
                else if ( k.name == "BINNING" )
-                  xBinning = yBinning = value.ToUInt( 10 );
+                  xBinning = yBinning = unsigned( Max( 1.0, value.ToDouble() ) );
                else if ( k.name == "XORGSUBF" )
-                  xOrigin = value.ToUInt( 10 );
+                  xOrigin = unsigned( Max( 0.0, value.ToDouble() ) );
                else if ( k.name == "YORGSUBF" )
-                  yOrigin = value.ToUInt( 10 );
+                  yOrigin = unsigned( Max( 0.0, value.ToDouble() ) );
                else if ( k.name == "TELESCOP" )
                   telescopeName = String( value );
                else if ( k.name == "FOCALLEN" )
@@ -790,6 +791,11 @@ public:
       return m_file.IsValid() ? m_file->FilePath() : String();
    }
 
+   String LocalNormalizationDataPath() const
+   {
+      return m_nmlPath;
+   }
+
    String DrizzleDataPath() const
    {
       return m_drzPath;
@@ -922,6 +928,16 @@ public:
       return m_median[c];
    }
 
+   bool HasLocalNormalization() const
+   {
+      return m_hasLocalNormalization;
+   }
+
+   double Normalize( double z, int x, int y, int c ) const
+   {
+      return m_hasLocalNormalization ? m_localNormalization( z, x, y, c ) : z;
+   }
+
    const FileMetadata& Metadata() const
    {
       return m_metadata;
@@ -1009,6 +1025,7 @@ private:
    typedef IndirectArray<IntegrationFile> file_list;
 
    AutoPointer<FileFormatInstance> m_file;
+   String                          m_nmlPath;
    String                          m_drzPath;
    AutoPointer<Image>              m_image;  // non-incremental file reading
    int                             m_currentChannel;
@@ -1029,6 +1046,8 @@ private:
    DVector                         m_dispersion;
    DVector                         m_noise;
    DVector                         m_weight;
+   LocalNormalizationData          m_localNormalization;
+   bool                            m_hasLocalNormalization = false;
    FileMetadata                    m_metadata;
 
    static file_list                s_files;
@@ -1066,7 +1085,7 @@ private:
       {
          try
          {
-            m_file->Open( m_item.path, m_item.drzPath, m_instance, m_isReference );
+            m_file->Open( m_item.path, m_item.nmlPath, m_item.drzPath, m_instance, m_isReference );
             m_success = true;
          }
          catch ( ... )
@@ -1090,11 +1109,6 @@ private:
       String FilePath() const
       {
          return m_item.path;
-      }
-
-      String DrizzleFilePath() const
-      {
-         return m_item.drzPath;
       }
 
       bool Succeeded() const
@@ -1121,7 +1135,7 @@ private:
 
    IntegrationFile() = default;
 
-   void Open( const String&, const String&, const ImageIntegrationInstance&, bool isReference );
+   void Open( const String&, const String&, const String&, const ImageIntegrationInstance&, bool isReference );
 
    void Read( int startRow, int channel )
    {
@@ -1129,7 +1143,7 @@ private:
       {
          startRow += s_roi.y0;
          if ( !m_file->ReadSamples( *m_buffer, startRow, Min( s_bufferRows, s_roi.y1 - startRow ), channel ) )
-            throw CatchedException();
+            throw CaughtException();
       }
       else
          m_currentChannel = channel;
@@ -1296,16 +1310,27 @@ void IntegrationFile::OpenFiles( const ImageIntegrationInstance& instance )
 
 // ----------------------------------------------------------------------------
 
-void IntegrationFile::Open( const String& path, const String& drzPath, const ImageIntegrationInstance& instance, bool isReference )
+void IntegrationFile::Open( const String& path, const String& nmlPath, const String& drzPath,
+                            const ImageIntegrationInstance& instance, bool isReference )
 {
    Console console;
 
-   console.WriteLn( "<end><cbr>" + path );
+   console.WriteLn( "<end><cbr><raw>" + path + "</raw>" );
+
+   if ( !nmlPath.IsEmpty() )
+   {
+      console.WriteLn( "<raw>" + nmlPath + "</raw>" );
+      if ( instance.p_normalization != IINormalization::LocalNormalization )
+         if ( instance.p_rejectionNormalization != IIRejectionNormalization::LocalRejectionNormalization )
+            console.NoteLn( "* Local normalization data will not be used." );
+   }
+
    if ( !drzPath.IsEmpty() )
-      if ( instance.p_generateDrizzleData )
-         console.WriteLn( drzPath );
-      else
+   {
+      console.WriteLn( "<raw>" + drzPath + "</raw>" );
+      if ( !instance.p_generateDrizzleData )
          console.WarningLn( "** Warning: No drizzle integration data will be generated." );
+   }
 
    FileFormat format( File::ExtractExtension( path ), true/*read*/, false/*write*/ );
 
@@ -1314,7 +1339,7 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
    ImageDescriptionArray images;
 
    if ( !m_file->Open( images, path, instance.p_inputHints ) )
-      throw CatchedException();
+      throw CaughtException();
 
    if ( images.IsEmpty() )
       throw Error( m_file->FilePath() + ": Empty image file." );
@@ -1369,9 +1394,10 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
    {
       m_image = new Image( (void*)0, 0, 0 ); // shared image
       if ( !m_file->ReadImage( *m_image ) )
-         throw CatchedException();
+         throw CaughtException();
    }
 
+   m_nmlPath      = String();
    m_drzPath      = String();
    m_rejectionMap = UInt8Image();
    m_scale        = DVector();
@@ -1446,7 +1472,7 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
       {
          m_image = new Image( (void*)0, 0, 0 ); // shared image
          if ( !m_file->ReadImage( *m_image ) )
-            throw CatchedException();
+            throw CaughtException();
       }
 
       m_image->SetStatusCallback( &spin );
@@ -1577,7 +1603,7 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
       {
          FITSKeywordArray keywords;
          if ( !m_file->ReadFITSKeywords( keywords ) )
-            throw CatchedException();
+            throw CaughtException();
          m_metadata = FileMetadata( keywords );
       }
 
@@ -1715,6 +1741,30 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
       if ( s_roi != m_image->Bounds() )
          m_image->CropTo( s_roi );
 
+   if ( instance.p_generateIntegratedImage && instance.p_normalization == IINormalization::LocalNormalization ||
+        instance.p_rejection != IIRejection::NoRejection && instance.p_rejectionNormalization == IIRejectionNormalization::LocalRejectionNormalization )
+   {
+      m_nmlPath = nmlPath.Trimmed();
+      if ( !m_nmlPath.IsEmpty() )
+      {
+         if ( !File::Exists( m_nmlPath ) )
+            throw Error( "No such file: " + m_nmlPath );
+
+         m_localNormalization.Parse( m_nmlPath );
+
+         if ( m_localNormalization.ReferenceWidth() != s_width ||
+              m_localNormalization.ReferenceHeight() != s_height ||
+              m_localNormalization.NumberOfChannels() != s_numberOfChannels )
+            throw Error( "Inconsistent image geometry: " + m_nmlPath );
+      }
+   }
+
+   m_hasLocalNormalization = m_localNormalization.HasInterpolations();
+   if ( !m_hasLocalNormalization )
+      if ( instance.p_generateIntegratedImage && instance.p_normalization == IINormalization::LocalNormalization ||
+           instance.p_rejection != IIRejection::NoRejection && instance.p_rejectionNormalization == IIRejectionNormalization::LocalRejectionNormalization )
+         console.WarningLn( "<end><cbr>** Warning: Local normalization data not available - No normalization will be applied!" );
+
    if ( instance.p_generateDrizzleData )
    {
       m_drzPath = drzPath.Trimmed();
@@ -1803,7 +1853,7 @@ double IntegrationFile::KeywordValue( const IsoString& keyName )
 {
    FITSKeywordArray keywords;
    if ( !m_file->ReadFITSKeywords( keywords ) )
-      throw CatchedException();
+      throw CaughtException();
 
    for ( FITSKeywordArray::const_iterator i = keywords.Begin(); i != keywords.End(); ++i )
       if ( !i->name.CompareIC( keyName ) )
@@ -1912,10 +1962,6 @@ public:
 
 protected:
 
-   const ImageIntegrationInstance& instance;
-         StatusMonitor&            monitor;
-         AbstractImage::ThreadData threadData;
-
    class EngineThread : public Thread
    {
    public:
@@ -1938,6 +1984,10 @@ protected:
       const AbstractImage::ThreadData& m_data;
             int                        m_firstStack, m_endStack;
    };
+
+   const ImageIntegrationInstance& instance;
+         StatusMonitor&            monitor;
+         AbstractImage::ThreadData threadData;
 };
 
 // ----------------------------------------------------------------------------
@@ -2005,7 +2055,7 @@ private:
 
    typedef ReferenceArray<DataLoaderThread> thread_list;
 
-   int              r; // starting row
+   int              r; // starting row in the current strip
    RejectionStacks& R; // set of pixel stacks
    RejectionCounts& N; // set of counts
    RejectionSlopes& M; // set of slopes, for linear fit clipping only
@@ -2066,9 +2116,11 @@ public:
 
    RejectionEngine( const ImageIntegrationInstance& instance_, StatusMonitor& monitor_,
                     RejectionStacks& R_, RejectionCounts& N_, RejectionSlopes& M_,
-                    const DVector& m_, const DVector& s_, const DVector& q_ ) :
+                    const DVector& m_, const DVector& s_, const DVector& q_,
+                    int y0, int channel ) :
       ImageIntegrationEngine( instance_, monitor_ ),
-      R( R_ ), N( N_ ), M( M_ ), m( m_ ), s( s_ ), q( q_ )
+      R( R_ ), N( N_ ), M( M_ ), m( m_ ), s( s_ ), q( q_ ),
+      m_y0( y0 ), m_channel( channel )
    {
       int numberOfThreads = Thread::NumberOfThreads( R.Length(), 1 );
       int stacksPerThread = R.Length()/numberOfThreads;
@@ -2425,12 +2477,14 @@ private:
       };
    };
 
-         RejectionStacks& R; // set of pixel stacks
-         RejectionCounts& N; // set of counts
-         RejectionSlopes& M; // set of slopes, for linear fit clipping only
-   const DVector&         m; // rejection normalization: median
-   const DVector&         s; //                        : scaling
-   const DVector&         q; //                        : fluxes
+         RejectionStacks& R;  // set of pixel stacks
+         RejectionCounts& N;  // set of counts
+         RejectionSlopes& M;  // set of slopes, for linear fit clipping only
+   const DVector&         m;  // rejection normalization: median
+   const DVector&         s;  //                        : scaling
+   const DVector&         q;  //                        : fluxes
+         int              m_y0;      // local normalization: starting y coordinate
+         int              m_channel; //                    : current component
 
          thread_list      rangeThreads, normalizeThreads, rejectThreads;
          AutoPointer<RejectionThreadPrivate> threadPrivate;
@@ -2553,6 +2607,39 @@ void RejectionEngine::NormalizationThread::Run()
                   if ( !r->IsRejected() )
                      r->value *= q[i];
             }
+         }
+         break;
+
+      case IIRejectionNormalization::LocalRejectionNormalization:
+         {
+            /*
+             * Local normalization via XNML data.
+             *
+             * ### N.B.: This normalization can yield negative pixel values. If
+             * that happens, we must raise all pixels to remove negative
+             * values, since all rejection routines expect positive data.
+             */
+            float rmin = 0;
+            for ( int x = 0, y = E.m_y0+k; x < R->Rows(); ++x )
+            {
+               RejectionDataItem* r = R->RowPtr( x );
+               for ( int i = 0; i < R->Columns(); ++i, ++r )
+                  if ( !r->IsRejected() )
+                  {
+                     r->value = IntegrationFile::FileByIndex( i ).Normalize( r->value, x, y, E.m_channel );
+                     if ( r->value < rmin )
+                        rmin = r->value;
+                  }
+            }
+
+            if ( rmin < 0 )
+               for ( int x = 0; x < R->Rows(); ++x )
+               {
+                  RejectionDataItem* r = R->RowPtr( x );
+                  for ( int i = 0; i < R->Columns(); ++i, ++r )
+                     if ( !r->IsRejected() )
+                        r->value -= rmin;
+               }
          }
          break;
 
@@ -3105,10 +3192,13 @@ public:
    IntegrationEngine( const ImageIntegrationInstance& instance, StatusMonitor& monitor,
                       RejectionStacks& R, const RejectionCounts& N,
                       const DVector& d, DVector& m, const DVector& s,
-                      int channel, float* result32, double* result64 ) :
+                      int y0, int channel,
+                      float* result32, double* result64 ) :
       ImageIntegrationEngine( instance, monitor ),
-      m_R( R ), m_N( N ), m_d( d ), m_m( m ), m_s( s ),
-      m_channel( channel ), m_result32( result32 ), m_result64( result64 )
+      m_R( R ), m_N( N ),
+      m_d( d ), m_m( m ), m_s( s ),
+      m_y0( y0 ), m_channel( channel ),
+      m_result32( result32 ), m_result64( result64 )
    {
       int numberOfThreads = Thread::NumberOfThreads( m_R.Length(), 1 );
       int stacksPerThread = m_R.Length()/numberOfThreads;
@@ -3163,7 +3253,8 @@ private:
    const DVector&         m_d;       // normalization: zero offset
    const DVector&         m_m;       //              : position
    const DVector&         m_s;       //              : scaling
-         int              m_channel; // current channel
+         int              m_y0;      // starting y coordinate
+         int              m_channel; // current component
          float*           m_result32;
          double*          m_result64;
          thread_list      m_threads;
@@ -3230,6 +3321,10 @@ void IntegrationEngine::IntegrationThread::Run()
          case IINormalization::MultiplicativeWithScaling:
             for ( int i = 0; i < n; ++i )
                r[i].raw = (double( r[i].raw ) / m[r[i].index])*s[r[i].index] * m[0];
+            break;
+         case IINormalization::LocalNormalization:
+            for ( int i = 0, y = E.m_y0+k; i < n; ++i )
+               r[i].raw = IntegrationFile::FileByIndex( r[i].index ).Normalize( r[i].raw, x, y, E.m_channel );
             break;
          }
 
@@ -3304,11 +3399,11 @@ public:
 
    MapIntegrationEngine( const ImageIntegrationInstance& instance, StatusMonitor& monitor,
                          const DVector& d, DVector& m, const DVector& s,
-                         int channel, int firstRow, int numberOfRows,
+                         int channel, int y0, int numberOfRows,
                          float* result32, double* result64 ) :
       ImageIntegrationEngine( instance, monitor ),
       m_d( d ), m_m( m ), m_s( s ),
-      m_channel( channel ), m_firstRow( firstRow ), m_numberOfRows( numberOfRows ),
+      m_channel( channel ), m_y0( y0 ), m_numberOfRows( numberOfRows ),
       m_result32( result32 ), m_result64( result64 )
    {
       int numberOfThreads = Thread::NumberOfThreads( m_numberOfRows, 1 );
@@ -3359,11 +3454,11 @@ private:
 
    typedef ReferenceArray<IntegrationThread> thread_list;
 
-   const DVector&    m_d;   // normalization: zero offset
-   const DVector&    m_m;   //              : position
-   const DVector&    m_s;   //              : scaling
-         int         m_channel;
-         int         m_firstRow;
+   const DVector&    m_d;        // normalization: zero offset
+   const DVector&    m_m;        //              : position
+   const DVector&    m_s;        //              : scaling
+         int         m_channel;  // current component
+         int         m_y0;       // first pixel row in the integrated image
          int         m_numberOfRows;
          float*      m_result32;
          double*     m_result64;
@@ -3385,7 +3480,7 @@ void MapIntegrationEngine::IntegrationThread::Run()
    else
       result32 = E.m_result32 + size_type( m_firstStack )*size_type( IntegrationFile::Width() );
 
-   for ( int k = m_firstStack; k < m_endStack; ++k )
+   for ( int k = m_firstStack, y = E.m_y0+k; k < m_endStack; ++k, ++y )
    {
       for ( int x = 0; x < IntegrationFile::Width(); ++x )
       {
@@ -3393,7 +3488,7 @@ void MapIntegrationEngine::IntegrationThread::Run()
          DVector stack( IntegrationFile::NumberOfFiles() );
          IVector index( IntegrationFile::NumberOfFiles() );
          for ( int i = 0; i < IntegrationFile::NumberOfFiles(); ++i )
-            if ( IntegrationFile::FileByIndex( i ).RejectionMap()( x, E.m_firstRow+k, E.m_channel ) == 0 )
+            if ( IntegrationFile::FileByIndex( i ).RejectionMap()( x, y, E.m_channel ) == 0 )
             {
                stack[n] = IntegrationFile::FileByIndex( i )[k][x];
                index[n] = i;
@@ -3439,6 +3534,10 @@ void MapIntegrationEngine::IntegrationThread::Run()
          case IINormalization::MultiplicativeWithScaling:
             for ( int i = 0; i < n; ++i )
                stack[i] = (stack[i] / m[index[i]])*s[index[i]] * m[0];
+            break;
+         case IINormalization::LocalNormalization:
+            for ( int i = 0; i < n; ++i )
+               stack[i] = IntegrationFile::FileByIndex( index[i] ).Normalize( stack[i], x, y, E.m_channel );
             break;
          }
 
@@ -3781,6 +3880,7 @@ ImageIntegrationInstance::IntegrationDescriptionItems::IntegrationDescriptionIte
       case IINormalization::Multiplicative:            outputNormalization = "multiplicative"; break;
       case IINormalization::AdditiveWithScaling:       outputNormalization = "additive + scaling"; break;
       case IINormalization::MultiplicativeWithScaling: outputNormalization = "multiplicative + scaling"; break;
+      case IINormalization::LocalNormalization:        outputNormalization = "local"; break;
       }
    }
    else
@@ -3843,9 +3943,10 @@ ImageIntegrationInstance::IntegrationDescriptionItems::IntegrationDescriptionIte
       switch ( instance.p_rejectionNormalization )
       {
       default: // ?!
-      case IIRejectionNormalization::NoRejectionNormalization: rejectionNormalization = "none"; break;
-      case IIRejectionNormalization::Scale:                    rejectionNormalization = "scale + zero offset"; break;
-      case IIRejectionNormalization::EqualizeFluxes:           rejectionNormalization = "equalize fluxes"; break;
+      case IIRejectionNormalization::NoRejectionNormalization:    rejectionNormalization = "none"; break;
+      case IIRejectionNormalization::Scale:                       rejectionNormalization = "scale + zero offset"; break;
+      case IIRejectionNormalization::EqualizeFluxes:              rejectionNormalization = "equalize fluxes"; break;
+      case IIRejectionNormalization::LocalRejectionNormalization: rejectionNormalization = "local"; break;
       }
 
       rejectionClippings = "low=" + YesNo( instance.p_clipLow ) + " high=" + YesNo( instance.p_clipHigh );
@@ -4147,7 +4248,7 @@ bool ImageIntegrationInstance::ExecuteGlobal()
                 */
                if ( doReject )
                {
-                  RejectionEngine rejector( *this, monitor, stacks, counts, slopes, m, s, q );
+                  RejectionEngine rejector( *this, monitor, stacks, counts, slopes, m, s, q, y0+r, c );
 
                   /*
                    * Range rejection must be done in first place to exclude all
@@ -4202,7 +4303,7 @@ bool ImageIntegrationInstance::ExecuteGlobal()
                if ( doIntegrateAndReject )
                {
                   IntegrationEngine( *this, monitor, stacks, counts,
-                                     d, m, s, c, resultData32, resultData64 ).Integrate();
+                                     d, m, s, y0+r, c, resultData32, resultData64 ).Integrate();
                   size_type delta = size_type( numberOfStacks )*size_type( IntegrationFile::Width() );
                   if ( resultData32 != nullptr )
                      resultData32 += delta;
@@ -4813,7 +4914,8 @@ __noYBinning:
       if ( p_generateDrizzleData )
          if ( p_useROI )
          {
-            console.WarningLn( "** Warning: Drizzle data files cannot be updated with an active ROI." );
+            console.WarningLn( "** Warning: Drizzle data files cannot be updated with an active ROI. "
+                               "Integrate the entire image to update drizzle data files." );
          }
          else
          {
@@ -4924,6 +5026,8 @@ void* ImageIntegrationInstance::LockParameter( const MetaParameter* p, size_type
       return &p_images[tableRow].enabled;
    if ( p == TheIIImagePathParameter )
       return p_images[tableRow].path.Begin();
+   if ( p == TheIILocalNormalizationDataPathParameter )
+      return p_images[tableRow].nmlPath.Begin();
    if ( p == TheIIDrizzlePathParameter )
       return p_images[tableRow].drzPath.Begin();
    if ( p == TheIIInputHintsParameter )
@@ -5149,6 +5253,12 @@ bool ImageIntegrationInstance::AllocateParameter( size_type sizeOrLength, const 
       if ( sizeOrLength > 0 )
          p_images[tableRow].path.SetLength( sizeOrLength );
    }
+   else if ( p == TheIILocalNormalizationDataPathParameter )
+   {
+      p_images[tableRow].nmlPath.Clear();
+      if ( sizeOrLength > 0 )
+         p_images[tableRow].nmlPath.SetLength( sizeOrLength );
+   }
    else if ( p == TheIIDrizzlePathParameter )
    {
       p_images[tableRow].drzPath.Clear();
@@ -5211,6 +5321,8 @@ size_type ImageIntegrationInstance::ParameterLength( const MetaParameter* p, siz
       return p_images.Length();
    if ( p == TheIIImagePathParameter )
       return p_images[tableRow].path.Length();
+   if ( p == TheIILocalNormalizationDataPathParameter )
+      return p_images[tableRow].nmlPath.Length();
    if ( p == TheIIDrizzlePathParameter )
       return p_images[tableRow].drzPath.Length();
    if ( p == TheIIInputHintsParameter )
@@ -5236,4 +5348,4 @@ size_type ImageIntegrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInstance.cpp - Released 2017-05-05T08:37:32Z
+// EOF ImageIntegrationInstance.cpp - Released 2017-07-09T18:07:33Z

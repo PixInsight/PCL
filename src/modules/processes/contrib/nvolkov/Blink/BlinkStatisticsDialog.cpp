@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.02.0244
+// Standard Blink Process Module Version 01.02.02.0263
 // ----------------------------------------------------------------------------
-// BlinkStatisticsDialog.cpp - Released 2017-05-02T09:43:01Z
+// BlinkStatisticsDialog.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
@@ -581,7 +581,7 @@ void BlinkStatisticsDialog::PrepareData()
       {
          ImageVariant v( &img );
          if ( !BlinkInterface::LoadImage( v, fd.m_filePath ) )
-            throw CatchedException();
+            throw CaughtException();
       }
 
       StandardStatus callback;
@@ -773,4 +773,4 @@ void BlinkStatisticsDialog::__Dialog_Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BlinkStatisticsDialog.cpp - Released 2017-05-02T09:43:01Z
+// EOF BlinkStatisticsDialog.cpp - Released 2017-07-09T18:07:33Z

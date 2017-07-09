@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.06.0853
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// pcl/Flags.h - Released 2017-06-28T11:58:36Z
+// pcl/Flags.h - Released 2017-07-09T18:07:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -406,4 +406,4 @@ private:
 #endif   // __PCL_Flags_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Flags.h - Released 2017-06-28T11:58:36Z
+// EOF pcl/Flags.h - Released 2017-07-09T18:07:07Z

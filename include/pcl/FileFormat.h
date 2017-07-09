@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.06.0853
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// pcl/FileFormat.h - Released 2017-06-28T11:58:36Z
+// pcl/FileFormat.h - Released 2017-07-09T18:07:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -402,6 +402,28 @@ public:
                                           bool recursive = false, bool followLinks = true );
 
    /*!
+    * Returns a list with the full file paths of all local normalization data
+    * files in a given directory of the local filesystem.
+    *
+    * \param dirPath    Path to an existing directory in the local filesystem,
+    *                   where local normalization data files will be looked
+    *                   for.
+    *
+    * \param recursive  True to search for files recursively throughout the
+    *                   entire subtree rooted at \a dirPath. False to restrict
+    *                   the file search operation to existing files on
+    *                   \a dirPath. This parameter is false by default.
+    *
+    * \param followLinks   True to follow symbolic links to directories and
+    *                   files, on platforms supporting symbolic links. This is
+    *                   true by default. This parameter is ignored on Windows.
+    *
+    * Currently this function looks for files with the .xnml suffix (XML local
+    * normalization data format, XNML).
+    */
+   static StringList LocalNormalizationFiles( const String& dirPath, bool recursive = false, bool followLinks = true );
+
+   /*!
     * Returns a list with the full file paths of all drizzle data files in a
     * given directory of the local filesystem.
     *
@@ -418,7 +440,7 @@ public:
     *                   true by default. This parameter is ignored on Windows.
     *
     * Currently this function looks for files with the .drz (compatibility text
-    * drizzle format) and .xdrz (XML drizzle format) suffixes.
+    * drizzle format) and .xdrz (XML drizzle data format, XDRZ) suffixes.
     */
    static StringList DrizzleFiles( const String& dirPath, bool recursive = false, bool followLinks = true );
 
@@ -443,4 +465,4 @@ private:
 #endif   // __PCL_FileFormat_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormat.h - Released 2017-06-28T11:58:36Z
+// EOF pcl/FileFormat.h - Released 2017-07-09T18:07:07Z

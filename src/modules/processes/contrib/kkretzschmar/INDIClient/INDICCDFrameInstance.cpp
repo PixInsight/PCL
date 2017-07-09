@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0203
+// Standard INDIClient Process Module Version 01.00.15.0205
 // ----------------------------------------------------------------------------
-// INDICCDFrameInstance.cpp - Released 2017-05-02T09:43:01Z
+// INDICCDFrameInstance.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -1090,7 +1090,7 @@ void AbstractINDICCDFrameExecution::Perform()
 
             ImageDescriptionArray images;
             if ( !inputFile.Open( images, filePath, "raw cfa verbosity 0 up-bottom signed-is-physical" ) )
-               throw CatchedException();
+               throw CaughtException();
             if ( images.IsEmpty() )
                throw Error( filePath + ": Empty image file." );
             if ( !images[0].info.supported || images[0].info.NumberOfSamples() == 0 )
@@ -1281,7 +1281,7 @@ void AbstractINDICCDFrameExecution::Perform()
                                         false/*isComplex*/,
                                         images[0].options.bitsPerSample );
                if ( !inputFile.ReadImage( image ) )
-                  throw CatchedException();
+                  throw CaughtException();
 
                inputFile.Close();
 
@@ -1308,7 +1308,7 @@ void AbstractINDICCDFrameExecution::Perform()
                outputHints += "image-type " + m_instance.CCDFrameTypePrefix( m_instance.p_frameType ).Lowercase();
 
                if ( !outputFile.Create( outputFilePath, outputHints ) )
-                  throw CatchedException();
+                  throw CaughtException();
 
                for ( auto property : properties )
                   outputFile.WriteProperty( property.key, property.value );
@@ -1344,7 +1344,7 @@ void AbstractINDICCDFrameExecution::Perform()
                outputFile.SetOptions( images[0].options );
 
                if ( !outputFile.WriteImage( image ) )
-                  throw CatchedException();
+                  throw CaughtException();
 
                outputFile.Close();
 
@@ -1388,7 +1388,7 @@ void AbstractINDICCDFrameExecution::Perform()
 
                   ImageVariant image = view.Image();
                   if ( !inputFile.ReadImage( image ) )
-                     throw CatchedException();
+                     throw CaughtException();
 
                   inputFile.Close();
 
@@ -1496,4 +1496,4 @@ int AbstractINDICCDFrameExecution::s_numberOfChannels = 0;
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInstance.cpp - Released 2017-05-02T09:43:01Z
+// EOF INDICCDFrameInstance.cpp - Released 2017-07-09T18:07:33Z

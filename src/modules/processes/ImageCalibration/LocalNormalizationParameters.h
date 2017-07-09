@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.00.0300
+// Standard ImageCalibration Process Module Version 01.04.00.0319
 // ----------------------------------------------------------------------------
-// LocalNormalizationParameters.h - Released 2017-05-17T17:41:56Z
+// LocalNormalizationParameters.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -79,16 +79,400 @@ extern LNScale* TheLNScaleParameter;
 
 // ----------------------------------------------------------------------------
 
-class LNReferenceViewId : public MetaString
+class LNRejection : public MetaBoolean
 {
 public:
 
-   LNReferenceViewId( MetaProcess* );
+   LNRejection( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern LNRejection* TheLNRejectionParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNBackgroundRejectionLimit : public MetaFloat
+{
+public:
+
+   LNBackgroundRejectionLimit( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern LNBackgroundRejectionLimit* TheLNBackgroundRejectionLimitParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNReferenceRejectionThreshold : public MetaFloat
+{
+public:
+
+   LNReferenceRejectionThreshold( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern LNReferenceRejectionThreshold* TheLNReferenceRejectionThresholdParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNTargetRejectionThreshold : public MetaFloat
+{
+public:
+
+   LNTargetRejectionThreshold( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern LNTargetRejectionThreshold* TheLNTargetRejectionThresholdParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNReferencePathOrViewId : public MetaString
+{
+public:
+
+   LNReferencePathOrViewId( MetaProcess* );
 
    virtual IsoString Id() const;
 };
 
-extern LNReferenceViewId* TheLNReferenceViewIdParameter;
+extern LNReferencePathOrViewId* TheLNReferencePathOrViewIdParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNReferenceIsView : public MetaBoolean
+{
+public:
+
+   LNReferenceIsView( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern LNReferenceIsView* TheLNReferenceIsViewParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNTargetItems : public MetaTable
+{
+public:
+
+   LNTargetItems( MetaProcess* );
+
+   virtual IsoString Id() const;
+};
+
+extern LNTargetItems* TheLNTargetItemsParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNTargetEnabled : public MetaBoolean
+{
+public:
+
+   LNTargetEnabled( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern LNTargetEnabled* TheLNTargetEnabledParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNTargetImage : public MetaString
+{
+public:
+
+   LNTargetImage( MetaTable* );
+
+   virtual IsoString Id() const;
+};
+
+extern LNTargetImage* TheLNTargetImageParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNInputHints : public MetaString
+{
+public:
+
+   LNInputHints( MetaProcess* );
+
+   virtual IsoString Id() const;
+};
+
+extern LNInputHints* TheLNInputHintsParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNOutputHints : public MetaString
+{
+public:
+
+   LNOutputHints( MetaProcess* );
+
+   virtual IsoString Id() const;
+};
+
+extern LNOutputHints* TheLNOutputHintsParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNGenerateNormalizedImages : public MetaBoolean
+{
+public:
+
+   LNGenerateNormalizedImages( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern LNGenerateNormalizedImages* TheLNGenerateNormalizedImagesParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNGenerateNormalizationData : public MetaBoolean
+{
+public:
+
+   LNGenerateNormalizationData( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern LNGenerateNormalizationData* TheLNGenerateNormalizationDataParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNShowBackgroundModels : public MetaBoolean
+{
+public:
+
+   LNShowBackgroundModels( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern LNShowBackgroundModels* TheLNShowBackgroundModelsParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNShowRejectionMaps : public MetaBoolean
+{
+public:
+
+   LNShowRejectionMaps( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern LNShowRejectionMaps* TheLNShowRejectionMapsParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNShowNormalizationFunctions : public MetaBoolean
+{
+public:
+
+   LNShowNormalizationFunctions( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern LNShowNormalizationFunctions* TheLNShowNormalizationFunctionsParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNNoGUIMessages : public MetaBoolean
+{
+public:
+
+   LNNoGUIMessages( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern LNNoGUIMessages* TheLNNoGUIMessagesParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNOutputDirectory : public MetaString
+{
+public:
+
+   LNOutputDirectory( MetaProcess* );
+
+   virtual IsoString Id() const;
+};
+
+extern LNOutputDirectory* TheLNOutputDirectoryParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNOutputExtension : public MetaString
+{
+public:
+
+   LNOutputExtension( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual String DefaultValue() const;
+};
+
+extern LNOutputExtension* TheLNOutputExtensionParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNOutputPrefix : public MetaString
+{
+public:
+
+   LNOutputPrefix( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual String DefaultValue() const;
+};
+
+extern LNOutputPrefix* TheLNOutputPrefixParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNOutputPostfix : public MetaString
+{
+public:
+
+   LNOutputPostfix( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual String DefaultValue() const;
+};
+
+extern LNOutputPostfix* TheLNOutputPostfixParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNOverwriteExistingFiles : public MetaBoolean
+{
+public:
+
+   LNOverwriteExistingFiles( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern LNOverwriteExistingFiles* TheLNOverwriteExistingFilesParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNOnError : public MetaEnumeration
+{
+public:
+
+   enum { Continue,
+          Abort,
+          AskUser,
+          NumberOfErrorPolicies,
+          Default = Continue };
+
+   LNOnError( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
+};
+
+extern LNOnError* TheLNOnErrorParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNUseFileThreads : public MetaBoolean
+{
+public:
+
+   LNUseFileThreads( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern LNUseFileThreads* TheLNUseFileThreadsParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNFileThreadOverload : public MetaFloat
+{
+public:
+
+   LNFileThreadOverload( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern LNFileThreadOverload* TheLNFileThreadOverloadParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNMaxFileReadThreads : public MetaInt32
+{
+public:
+
+   LNMaxFileReadThreads( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern LNMaxFileReadThreads* TheLNMaxFileReadThreadsParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNMaxFileWriteThreads : public MetaInt32
+{
+public:
+
+   LNMaxFileWriteThreads( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern LNMaxFileWriteThreads* TheLNMaxFileWriteThreadsParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -99,4 +483,4 @@ PCL_END_LOCAL
 #endif   // __LocalNormalizationParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF LocalNormalizationParameters.h - Released 2017-05-17T17:41:56Z
+// EOF LocalNormalizationParameters.h - Released 2017-07-09T18:07:33Z

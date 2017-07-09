@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard BMP File Format Module Version 01.00.03.0295
+// Standard BMP File Format Module Version 01.00.04.0313
 // ----------------------------------------------------------------------------
-// BMPInstance.h - Released 2017-05-02T09:42:51Z
+// BMPInstance.h - Released 2017-07-09T18:07:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard BMP PixInsight module.
 //
@@ -53,6 +53,7 @@
 #ifndef __BMPInstance_h
 #define __BMPInstance_h
 
+#include <pcl/AutoPointer.h>
 #include <pcl/FileFormatImplementation.h>
 
 #include "BMPFormat.h"
@@ -68,8 +69,15 @@ class BitmapInstance : public FileFormatImplementation
 {
 public:
 
-   BitmapInstance( const MetaFileFormat* );
-   virtual ~BitmapInstance();
+   BitmapInstance( const MetaFileFormat* F ) :
+      FileFormatImplementation( F )
+   {
+   }
+
+   virtual ~BitmapInstance() noexcept( false )
+   {
+      Close();
+   }
 
    virtual ImageDescriptionArray Open( const String& filePath, const IsoString& hints );
    virtual bool IsOpen() const;
@@ -89,11 +97,17 @@ public:
    virtual void WriteImage( const UInt16Image& );
    virtual void WriteImage( const UInt32Image& );
 
+   virtual int DefaultQuality() const
+   {
+      return -1; // format-dependent default
+   }
+
 protected:
 
-   Bitmap*   bitmap;
-   String    path;
-   ImageInfo info;
+   AutoPointer<Bitmap> m_bitmap;
+   String              m_path;
+   ImageInfo           m_info;
+   IsoString           m_hints;
 };
 
 // ----------------------------------------------------------------------------
@@ -105,11 +119,9 @@ public:
    BMPInstance( const BMPFormat* F ) : BitmapInstance( F )
    {
    }
-
-   virtual ~BMPInstance()
-   {
-   }
 };
+
+// ----------------------------------------------------------------------------
 
 class GIFInstance : public BitmapInstance
 {
@@ -118,11 +130,9 @@ public:
    GIFInstance( const GIFFormat* F ) : BitmapInstance( F )
    {
    }
-
-   virtual ~GIFInstance()
-   {
-   }
 };
+
+// ----------------------------------------------------------------------------
 
 class ICOInstance : public BitmapInstance
 {
@@ -131,11 +141,9 @@ public:
    ICOInstance( const ICOFormat* F ) : BitmapInstance( F )
    {
    }
-
-   virtual ~ICOInstance()
-   {
-   }
 };
+
+// ----------------------------------------------------------------------------
 
 class MNGInstance : public BitmapInstance
 {
@@ -144,11 +152,9 @@ public:
    MNGInstance( const MNGFormat* F ) : BitmapInstance( F )
    {
    }
-
-   virtual ~MNGInstance()
-   {
-   }
 };
+
+// ----------------------------------------------------------------------------
 
 class PBMInstance : public BitmapInstance
 {
@@ -157,11 +163,9 @@ public:
    PBMInstance( const PBMFormat* F ) : BitmapInstance( F )
    {
    }
-
-   virtual ~PBMInstance()
-   {
-   }
 };
+
+// ----------------------------------------------------------------------------
 
 class PGMInstance : public BitmapInstance
 {
@@ -170,11 +174,9 @@ public:
    PGMInstance( const PGMFormat* F ) : BitmapInstance( F )
    {
    }
-
-   virtual ~PGMInstance()
-   {
-   }
 };
+
+// ----------------------------------------------------------------------------
 
 class PNGInstance : public BitmapInstance
 {
@@ -183,11 +185,9 @@ public:
    PNGInstance( const PNGFormat* F ) : BitmapInstance( F )
    {
    }
-
-   virtual ~PNGInstance()
-   {
-   }
 };
+
+// ----------------------------------------------------------------------------
 
 class PPMInstance : public BitmapInstance
 {
@@ -196,11 +196,9 @@ public:
    PPMInstance( const PPMFormat* F ) : BitmapInstance( F )
    {
    }
-
-   virtual ~PPMInstance()
-   {
-   }
 };
+
+// ----------------------------------------------------------------------------
 
 class XBMInstance : public BitmapInstance
 {
@@ -209,11 +207,9 @@ public:
    XBMInstance( const XBMFormat* F ) : BitmapInstance( F )
    {
    }
-
-   virtual ~XBMInstance()
-   {
-   }
 };
+
+// ----------------------------------------------------------------------------
 
 class XPMInstance : public BitmapInstance
 {
@@ -222,11 +218,9 @@ public:
    XPMInstance( const XPMFormat* F ) : BitmapInstance( F )
    {
    }
-
-   virtual ~XPMInstance()
-   {
-   }
 };
+
+// ----------------------------------------------------------------------------
 
 class TGAInstance : public BitmapInstance
 {
@@ -235,21 +229,31 @@ public:
    TGAInstance( const TGAFormat* F ) : BitmapInstance( F )
    {
    }
+};
 
-   virtual ~TGAInstance()
+// ----------------------------------------------------------------------------
+
+class WEBPInstance : public BitmapInstance
+{
+public:
+
+   WEBPInstance( const WEBPFormat* F ) : BitmapInstance( F )
    {
    }
+
+   virtual int DefaultQuality() const
+   {
+      return 100; // use WebP lossless compression by default
+   }
 };
+
+// ----------------------------------------------------------------------------
 
 class SVGInstance : public BitmapInstance
 {
 public:
 
    SVGInstance( const SVGFormat* F ) : BitmapInstance( F )
-   {
-   }
-
-   virtual ~SVGInstance()
    {
    }
 };
@@ -261,4 +265,4 @@ public:
 #endif   // __BMPInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF BMPInstance.h - Released 2017-05-02T09:42:51Z
+// EOF BMPInstance.h - Released 2017-07-09T18:07:25Z

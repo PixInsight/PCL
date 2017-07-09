@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.02.0244
+// Standard Blink Process Module Version 01.02.02.0263
 // ----------------------------------------------------------------------------
-// BlinkInterface.cpp - Released 2017-05-02T09:43:01Z
+// BlinkInterface.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
@@ -122,17 +122,17 @@ static bool LoadImage_P( GenericImage<P>& image, const String& filePath )
       ImageDescriptionArray images;
 
       if ( !file.Open( images, filePath ) )
-         throw CatchedException();
+         throw CaughtException();
       if ( images.IsEmpty() )
          throw Error( filePath + ": Empty image file." );
       if ( images.Length() > 1 )
          Console().NoteLn( String().Format( "<end><cbr>* Ignoring %u additional image(s) in input file.", images.Length()-1 ) );
       if ( !file.SelectImage( 0 ) )
-         throw CatchedException();
+         throw CaughtException();
       if ( !file.ReadImage( image ) )
-         throw CatchedException();
+         throw CaughtException();
       if ( !file.Close() )
-         throw CatchedException();
+         throw CaughtException();
 
       ProcessInterface::ProcessEvents();
 
@@ -267,20 +267,20 @@ bool BlinkInterface::BlinkData::Add( const String& filePath )
       ImageDescriptionArray images;
 
       if ( !file.Open( images, filePath ) )
-         throw CatchedException();
+         throw CaughtException();
       if ( images.IsEmpty() )
          throw Error( filePath + ": Empty image file." );
       if ( images.Length() > 1 )
          throw Error( filePath + ": Multiple images cannot be used in the current version (push me if you need them)." );
       if ( !file.SelectImage( 0 ) )
-         throw CatchedException();
+         throw CaughtException();
       if ( !CheckGeomery( images[0] ) )
          throw Error( "Wrong image geometry" );
 
       AutoPointer<blink_image> image( new blink_image );
 
       if ( !file.ReadImage( *image ) )
-         throw CatchedException();
+         throw CaughtException();
 
       bool realPixelData = image->IsFloatSample() != images[0].options.ieeefpSampleFormat &&
                            image->BitsPerSample() != images[0].options.bitsPerSample;
@@ -288,7 +288,7 @@ bool BlinkInterface::BlinkData::Add( const String& filePath )
       m_filesData.Add( new FileData( file, image.Release(), images[0], filePath, realPixelData ) );
 
       if ( !file.Close() )
-         throw CatchedException();
+         throw CaughtException();
 
       return true;
    }
@@ -516,7 +516,7 @@ void BlinkInterface::BlinkData::ResetHT()
 
    for ( int fileNumber = 0; fileNumber < int( m_filesData.Length() ); fileNumber++ )
       if ( !LoadImage_P( *m_filesData[fileNumber].m_image, m_filesData[fileNumber].m_filePath ) )
-         throw CatchedException();
+         throw CaughtException();
 
    DisableSTF();
    UpdateScreen();
@@ -1262,21 +1262,22 @@ void BlinkInterface::FileCropTo()
             {
                fd.m_image->SelectRectangle( r );
                if ( !outputFile.WriteImage( *fd.m_image ) )
-                  throw CatchedException();
+                  throw CaughtException();
                fd.m_image->ResetSelection();
             }
             else
             {
                DImage tmp;
                if ( !LoadImage_P( tmp, fd.m_filePath ) )
-                  throw CatchedException();
+                  throw CaughtException();
 
                tmp.SelectRectangle( r );
                if ( !outputFile.WriteImage( tmp ) )
-                  throw CatchedException();
+                  throw CaughtException();
             }
 
-            outputFile.Close();
+            if ( !outputFile.Close() )
+               throw CaughtException();
             ProcessEvents();
          }
       }
@@ -1913,7 +1914,7 @@ FileFormatInstance BlinkInterface::CreateImageFile( int index, const String& his
    FileFormatInstance outputFile( outputFormat );
    Console().WriteLn( "<end><cbr><raw>* Creating file: " + filePath + "</raw>" );
    if ( !outputFile.Create( filePath ) )
-      throw CatchedException();
+      throw CaughtException();
 
    outputFile.SetOptions( fd.m_options );
 
@@ -2182,4 +2183,4 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BlinkInterface.cpp - Released 2017-05-02T09:43:01Z
+// EOF BlinkInterface.cpp - Released 2017-07-09T18:07:33Z

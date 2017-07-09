@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0203
+// Standard INDIClient Process Module Version 01.00.15.0205
 // ----------------------------------------------------------------------------
-// INDIMountInterface.cpp - Released 2017-05-02T09:43:01Z
+// INDIMountInterface.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -463,219 +463,225 @@ void SyncDataListDialog::e_Show( Control& )
    }
 }
 
-void SyncDataListDialog::e_Close( Control& sender , bool& allowClose){
-
+void SyncDataListDialog::e_Close( Control& sender, bool& allowClose )
+{
 }
 
-void SyncDataListDialog::e_Click( Button& sender, bool checked ){
-
-	if (sender == Disable_Button){
-		for ( auto node: SnycData_TreeBox.SelectedNodes()){
-			int index = SnycData_TreeBox.ChildIndex(node);
-			m_syncDataList[index].enabled = false;
-			node->SetIcon(1, ScaledResource(":/browser/disabled.png") );
-		}
-	}
-	if (sender == Enable_Button){
-		for ( auto node: SnycData_TreeBox.SelectedNodes()){
-			int index = SnycData_TreeBox.ChildIndex(node);
-			m_syncDataList[index].enabled = true;
-			node->SetIcon(1, ScaledResource(":/browser/enabled.png") );
-		}
-	}
-	if (sender == Delete_Button){
-		for ( auto node: SnycData_TreeBox.SelectedNodes()){
-			int index = SnycData_TreeBox.ChildIndex(node);
-			m_syncDataList.Remove(m_syncDataList[index]);
-			SnycData_TreeBox.Remove(index);
-		}
-	}
-	if (sender == Ok_Button){
-		Ok();
-	}
-	if (sender == Cancel_Button){
-		Cancel();
-	}
-
+void SyncDataListDialog::e_Click( Button& sender, bool checked )
+{
+   if ( sender == Disable_Button )
+   {
+      for ( auto node : SnycData_TreeBox.SelectedNodes() )
+      {
+         int index = SnycData_TreeBox.ChildIndex( node );
+         m_syncDataList[index].enabled = false;
+         node->SetIcon( 1, ScaledResource( ":/browser/disabled.png" ) );
+      }
+   }
+   else if ( sender == Enable_Button )
+   {
+      for ( auto node : SnycData_TreeBox.SelectedNodes() )
+      {
+         int index = SnycData_TreeBox.ChildIndex( node );
+         m_syncDataList[index].enabled = true;
+         node->SetIcon(1, ScaledResource( ":/browser/enabled.png" ) );
+      }
+   }
+   else if ( sender == Delete_Button )
+   {
+      for ( auto node : SnycData_TreeBox.SelectedNodes() )
+      {
+         int index = SnycData_TreeBox.ChildIndex(node);
+         m_syncDataList.Remove(m_syncDataList[index]);
+         SnycData_TreeBox.Remove(index);
+      }
+   }
+   else if ( sender == Ok_Button )
+   {
+      Ok();
+   }
+   else if ( sender == Cancel_Button )
+   {
+      Cancel();
+   }
 }
 
-#define ADD_LABLED_CHECKBOXES_TO_SIZER(NAME) \
-   NAME##_Sizer.Add(NAME##_Label);         \
-   NAME##_Sizer.Add(NAME##_CheckBox);      \
-   NAME##_Sizer.AddStretch();              \
-   MountAlignmentConfig_Sizer.Add(NAME##_Sizer)
+#define ADD_LABLED_CHECKBOXES_TO_SIZER( NAME )  \
+   NAME##_Sizer.Add( NAME##_Label );            \
+   NAME##_Sizer.Add( NAME##_CheckBox );         \
+   NAME##_Sizer.AddStretch();                   \
+   MountAlignmentConfig_Sizer.Add( NAME##_Sizer )
 
+AlignmentConfigDialog::AlignmentConfigDialog( INDIMountInterface& w ) :
+   m_interface( w )
+{
+   int labelWidth1 = w.Font().Width("Polar axis displacment :");
 
- AlignmentConfigDialog::AlignmentConfigDialog(INDIMountInterface& w):Dialog(), m_interface(w) {
+   MountAlignmentConfig_Sizer.SetSpacing( 8 );
+   MountAlignmentConfig_Sizer.SetMargin( 8 );
 
-	int labelWidth1 = w.Font().Width("Polar axis displacment :");
+   const char* pierSideToolTipText =
+            "<p>Create a model for each side of the pier. This is useful for mounts"
+            "which perform a meridian flip when objects pass the meridian.</p>"
+            "<p>Creating models for each pier side can dramatically improve the accuracy of pointing model,"
+            "since some pointing error sources depend on the position and balance of the mounted devices.</p>"
+            "<p>Note that two pointing model need twice as many sync points.</p>";
 
-	MountAlignmentConfig_Sizer.SetSpacing( 8 );
-	MountAlignmentConfig_Sizer.SetMargin( 8 );
+   ModelPierSide_Label.SetText("Model each pier side :");
+   ModelPierSide_Label.SetToolTip(pierSideToolTipText);
+   ModelPierSide_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
+   ModelPierSide_Label.SetFixedWidth(labelWidth1);
 
-	const char* pierSideToolTipText =
-				"<p>Create a model for each side of the pier. This is useful for mounts"
-			    "which perform a meridian flip when objects pass the meridian.</p>";
-				"<p>Creating models for each pier side can dramatically improve the accuracy of pointing model,"
-				"since some pointing error sources depend on the position and balance of the mounted devices.</p>"
-				"<p>Note that two pointing model need twice as many sync points.</p>";
+   ModelPierSide_CheckBox.SetToolTip(pierSideToolTipText);
+   ModelPierSide_CheckBox.Check();
 
+   ADD_LABLED_CHECKBOXES_TO_SIZER(ModelPierSide);
 
-	ModelPierSide_Label.SetText("Model each pier side :");
-	ModelPierSide_Label.SetToolTip(pierSideToolTipText);
-	ModelPierSide_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-	ModelPierSide_Label.SetFixedWidth(labelWidth1);
+   const char* offsetToolTipText =
+         "<p>Zero-point offset in rightascension (RA) and declination (DEC) axes.</p>";
 
-	ModelPierSide_CheckBox.SetToolTip(pierSideToolTipText);
-	ModelPierSide_CheckBox.Check();
+   Offset_Label.SetText("Offset:");
+   Offset_Label.SetToolTip(offsetToolTipText);
+   Offset_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
+   Offset_Label.SetFixedWidth(labelWidth1);
 
-	ADD_LABLED_CHECKBOXES_TO_SIZER(ModelPierSide);
+   Offset_CheckBox.SetToolTip(offsetToolTipText);
+   Offset_CheckBox.Check();
 
-	const char* offsetToolTipText =
-			"<p>Zero-point offset in rightascension (RA) and declination (DEC) axes.</p>";
+   ADD_LABLED_CHECKBOXES_TO_SIZER(Offset);
 
-	Offset_Label.SetText("Offset:");
-	Offset_Label.SetToolTip(offsetToolTipText);
-	Offset_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-	Offset_Label.SetFixedWidth(labelWidth1);
+   const char* collimationToolTipText =
+         "<p>Misalignment between optical and mechanical axes</p>";
 
-	Offset_CheckBox.SetToolTip(offsetToolTipText);
-	Offset_CheckBox.Check();
+   Collimation_Label.SetText("Collimation:");
+   Collimation_Label.SetToolTip(collimationToolTipText);
+   Collimation_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
+   Collimation_Label.SetFixedWidth(labelWidth1);
 
-	ADD_LABLED_CHECKBOXES_TO_SIZER(Offset);
+   Collimation_CheckBox.SetToolTip(collimationToolTipText);
+   Collimation_CheckBox.Check();
 
-	const char* collimationToolTipText =
-			"<p>Misalignment between optical and mechanical axes</p>";
+   ADD_LABLED_CHECKBOXES_TO_SIZER(Collimation);
 
-	Collimation_Label.SetText("Collimation:");
-	Collimation_Label.SetToolTip(collimationToolTipText);
-	Collimation_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-	Collimation_Label.SetFixedWidth(labelWidth1);
+   const char* nonPerpendicularToolTipText =
+            "<p>Polar/declination axis non-orthogonality error.</p>";
 
-	Collimation_CheckBox.SetToolTip(collimationToolTipText);
-	Collimation_CheckBox.Check();
+   NonPerpendicular_Label.SetText("Perpendicularity:");
+   NonPerpendicular_Label.SetToolTip(nonPerpendicularToolTipText);
+   NonPerpendicular_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
+   NonPerpendicular_Label.SetFixedWidth(labelWidth1);
 
-	ADD_LABLED_CHECKBOXES_TO_SIZER(Collimation);
+   NonPerpendicular_CheckBox.SetToolTip(nonPerpendicularToolTipText);
+   NonPerpendicular_CheckBox.Check();
 
-	const char* nonPerpendicularToolTipText =
-				"<p>Polar/declination axis non-orthogonality error.</p>";
+   ADD_LABLED_CHECKBOXES_TO_SIZER(NonPerpendicular);
 
-	NonPerpendicular_Label.SetText("Perpendicularity:");
-	NonPerpendicular_Label.SetToolTip(nonPerpendicularToolTipText);
-	NonPerpendicular_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-	NonPerpendicular_Label.SetFixedWidth(labelWidth1);
+   const char* polarAxisDisplacementToolTipText =
+               "<p>Polar axis displacement between instrumental and true poles.</p>";
 
-	NonPerpendicular_CheckBox.SetToolTip(nonPerpendicularToolTipText);
-	NonPerpendicular_CheckBox.Check();
+   PolarAxisDisplacement_Label.SetText("Polar axis displacment:");
+   PolarAxisDisplacement_Label.SetToolTip(polarAxisDisplacementToolTipText);
+   PolarAxisDisplacement_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
+   PolarAxisDisplacement_Label.SetFixedWidth(labelWidth1);
 
-	ADD_LABLED_CHECKBOXES_TO_SIZER(NonPerpendicular);
+   PolarAxisDisplacement_CheckBox.SetToolTip(polarAxisDisplacementToolTipText);
+   PolarAxisDisplacement_CheckBox.Check();
 
-	const char* polarAxisDisplacementToolTipText =
-					"<p>Polar axis displacement between instrumental and true poles.</p>";
+   ADD_LABLED_CHECKBOXES_TO_SIZER(PolarAxisDisplacement);
 
-	PolarAxisDisplacement_Label.SetText("Polar axis displacment:");
-	PolarAxisDisplacement_Label.SetToolTip(polarAxisDisplacementToolTipText);
-	PolarAxisDisplacement_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-	PolarAxisDisplacement_Label.SetFixedWidth(labelWidth1);
+   const char* tubeFlexureToolTipText =
+               "<p>Tube flexure away from zenith.</p>";
 
-	PolarAxisDisplacement_CheckBox.SetToolTip(polarAxisDisplacementToolTipText);
-	PolarAxisDisplacement_CheckBox.Check();
+   TubeFlexure_Label.SetText("Tube flexure:");
+   TubeFlexure_Label.SetToolTip(tubeFlexureToolTipText);
+   TubeFlexure_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
+   TubeFlexure_Label.SetFixedWidth(labelWidth1);
 
-	ADD_LABLED_CHECKBOXES_TO_SIZER(PolarAxisDisplacement);
+   TubeFlexure_CheckBox.SetToolTip(tubeFlexureToolTipText);
+   TubeFlexure_CheckBox.Check();
 
-	const char* tubeFlexureToolTipText =
-					"<p>Tube flexure away from zenith.</p>";
+   ADD_LABLED_CHECKBOXES_TO_SIZER(TubeFlexure);
 
-	TubeFlexure_Label.SetText("Tube flexure:");
-	TubeFlexure_Label.SetToolTip(tubeFlexureToolTipText);
-	TubeFlexure_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-	TubeFlexure_Label.SetFixedWidth(labelWidth1);
+   const char* forkFlexureToolTipText =
+               "<p>Fork flexure away from zenith (only for non German Equatorial Mounts).</p>";
 
-	TubeFlexure_CheckBox.SetToolTip(tubeFlexureToolTipText);
-	TubeFlexure_CheckBox.Check();
+   ForkFlexure_Label.SetText("Fork flexure:");
+   ForkFlexure_Label.SetToolTip(forkFlexureToolTipText);
+   ForkFlexure_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
+   ForkFlexure_Label.SetFixedWidth(labelWidth1);
 
-	ADD_LABLED_CHECKBOXES_TO_SIZER(TubeFlexure);
+   ForkFlexure_CheckBox.SetToolTip(forkFlexureToolTipText);
 
-	const char* forkFlexureToolTipText =
-					"<p>Fork flexure away from zenith (only for non German Equatorial Mounts).</p>";
+   ADD_LABLED_CHECKBOXES_TO_SIZER(ForkFlexure);
 
-	ForkFlexure_Label.SetText("Fork flexure:");
-	ForkFlexure_Label.SetToolTip(forkFlexureToolTipText);
-	ForkFlexure_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-	ForkFlexure_Label.SetFixedWidth(labelWidth1);
+   const char* deltaAxisToolTipText =
+               "<p>Bending of declination axle (only for German Equatorial Mounts).</p>";
 
-	ForkFlexure_CheckBox.SetToolTip(forkFlexureToolTipText);
+   DeltaAxisFlexure_Label.SetText("Dec axis bending:");
+   DeltaAxisFlexure_Label.SetToolTip(deltaAxisToolTipText);
+   DeltaAxisFlexure_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
+   DeltaAxisFlexure_Label.SetFixedWidth(labelWidth1);
 
-	ADD_LABLED_CHECKBOXES_TO_SIZER(ForkFlexure);
+   DeltaAxisFlexure_CheckBox.SetToolTip(deltaAxisToolTipText);
+   DeltaAxisFlexure_CheckBox.Check();
 
-	const char* deltaAxisToolTipText =
-					"<p>Bending of declination axle (only for German Equatorial Mounts).</p>";
+   ADD_LABLED_CHECKBOXES_TO_SIZER(DeltaAxisFlexure);
 
-	DeltaAxisFlexure_Label.SetText("Dec axis bending:");
-	DeltaAxisFlexure_Label.SetToolTip(deltaAxisToolTipText);
-	DeltaAxisFlexure_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-	DeltaAxisFlexure_Label.SetFixedWidth(labelWidth1);
+   const char* linearTermToolTipText =
+               "<p>Linear scale error in hour angle.</p>";
 
-	DeltaAxisFlexure_CheckBox.SetToolTip(deltaAxisToolTipText);
-	DeltaAxisFlexure_CheckBox.Check();
+   Linear_Label.SetText("Linear:");
+   Linear_Label.SetToolTip(linearTermToolTipText);
+   Linear_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
+   Linear_Label.SetFixedWidth(labelWidth1);
 
-	ADD_LABLED_CHECKBOXES_TO_SIZER(DeltaAxisFlexure);
+   Linear_CheckBox.SetToolTip(linearTermToolTipText);
+   Linear_CheckBox.Check();
 
-	const char* linearTermToolTipText =
-					"<p>Linear scale error in hour angle.</p>";
+   ADD_LABLED_CHECKBOXES_TO_SIZER(Linear);
 
-	Linear_Label.SetText("Linear:");
-	Linear_Label.SetToolTip(linearTermToolTipText);
-	Linear_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-	Linear_Label.SetFixedWidth(labelWidth1);
+   const char* quadraticTermToolTipText =
+                  "<p>Quadratic scale error in hour angle.</p>";
 
-	Linear_CheckBox.SetToolTip(linearTermToolTipText);
-	Linear_CheckBox.Check();
+   Quadratic_Label.SetText("Quadratic:");
+   Quadratic_Label.SetToolTip(quadraticTermToolTipText);
+   Quadratic_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
+   Quadratic_Label.SetFixedWidth(labelWidth1);
 
-	ADD_LABLED_CHECKBOXES_TO_SIZER(Linear);
+   Quadratic_CheckBox.SetToolTip(quadraticTermToolTipText);
+   Quadratic_CheckBox.Check();
 
-	const char* quadraticTermToolTipText =
-						"<p>Quadratic scale error in hour angle.</p>";
+   ADD_LABLED_CHECKBOXES_TO_SIZER(Quadratic);
 
-	Quadratic_Label.SetText("Quadratic:");
-	Quadratic_Label.SetToolTip(quadraticTermToolTipText);
-	Quadratic_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-	Quadratic_Label.SetFixedWidth(labelWidth1);
+   AnalyticalAlignment_ConfigControl.SetSizer(MountAlignmentConfig_Sizer);
 
-	Quadratic_CheckBox.SetToolTip(quadraticTermToolTipText);
-	Quadratic_CheckBox.Check();
+   AlignmentConfig_TabBox.AddPage( AnalyticalAlignment_ConfigControl, "Analytical Pointing Model" );
+   AlignmentConfig_TabBox.OnPageSelected((TabBox::page_event_handler)&AlignmentConfigDialog::e_PageSelected, *this );
+   //AlignmentConfig_TabBox.AddPage( SurfaceSplineAlignment_ConfigControl, "Surface Splines Pointing Model" );
 
-	ADD_LABLED_CHECKBOXES_TO_SIZER(Quadratic);
+   Ok_Button.SetText( "Ok" );
+   Ok_Button.SetIcon( ScaledResource( ":/icons/ok.png" ) );
+   Ok_Button.OnClick( (Button::click_event_handler)&AlignmentConfigDialog::e_Click, *this );
 
-	AnalyticalAlignment_ConfigControl.SetSizer(MountAlignmentConfig_Sizer);
+   Cancel_Button.SetText( "Cancel" );
+   Cancel_Button.SetIcon( ScaledResource( ":/icons/cancel.png" ) );
+   Cancel_Button.OnClick( (Button::click_event_handler)&AlignmentConfigDialog::e_Click, *this );
 
-	AlignmentConfig_TabBox.AddPage( AnalyticalAlignment_ConfigControl, "Analytical Pointing Model" );
-	AlignmentConfig_TabBox.OnPageSelected((TabBox::page_event_handler)&AlignmentConfigDialog::e_PageSelected, *this );
-	//AlignmentConfig_TabBox.AddPage( SurfaceSplineAlignment_ConfigControl, "Surface Splines Pointing Model" );
+   AlignmentConfigButton_Sizer.SetSpacing(8);
+   AlignmentConfigButton_Sizer.Add(Ok_Button);
+   AlignmentConfigButton_Sizer.Add(Cancel_Button);
+   AlignmentConfigButton_Sizer.AddStretch();
 
-	Ok_Button.SetText( "Ok" );
-	Ok_Button.SetIcon( ScaledResource( ":/icons/ok.png" ) );
-	Ok_Button.OnClick( (Button::click_event_handler)&AlignmentConfigDialog::e_Click, *this );
+   Global_Sizer.SetSpacing( 8 );
+   Global_Sizer.SetMargin( 8 );
+   Global_Sizer.Add(AlignmentConfig_TabBox);
+   Global_Sizer.Add(AlignmentConfigButton_Sizer);
 
-	Cancel_Button.SetText( "Cancel" );
-	Cancel_Button.SetIcon( ScaledResource( ":/icons/cancel.png" ) );
-	Cancel_Button.OnClick( (Button::click_event_handler)&AlignmentConfigDialog::e_Click, *this );
+   SetSizer( Global_Sizer );
 
-	AlignmentConfigButton_Sizer.SetSpacing(8);
-	AlignmentConfigButton_Sizer.Add(Ok_Button);
-	AlignmentConfigButton_Sizer.Add(Cancel_Button);
-	AlignmentConfigButton_Sizer.AddStretch();
+   SetWindowTitle( "Telescope Pointing Models" );
 
-	Global_Sizer.SetSpacing( 8 );
-	Global_Sizer.SetMargin( 8 );
-	Global_Sizer.Add(AlignmentConfig_TabBox);
-	Global_Sizer.Add(AlignmentConfigButton_Sizer);
-
-	SetSizer( Global_Sizer );
-
-	SetWindowTitle( "Telescope Pointing Models" );
-
-	OnShow( (Control::event_handler)&AlignmentConfigDialog::e_Show, *this );
+   OnShow( (Control::event_handler)&AlignmentConfigDialog::e_Show, *this );
 }
 
  void AlignmentConfigDialog::e_Show( Control& )
@@ -2174,4 +2180,4 @@ void INDIMountInterface::plotAlignemtResiduals(AlignmentModel* model){
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInterface.cpp - Released 2017-05-02T09:43:01Z
+// EOF INDIMountInterface.cpp - Released 2017-07-09T18:07:33Z

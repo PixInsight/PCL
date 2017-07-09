@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Convolution Process Module Version 01.01.03.0226
+// Standard Convolution Process Module Version 01.01.03.0245
 // ----------------------------------------------------------------------------
-// LarsonSekaninaParameters.cpp - Released 2017-05-02T09:43:00Z
+// LarsonSekaninaParameters.cpp - Released 2017-07-09T18:07:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
@@ -454,4 +454,4 @@ bool LSDisableExtension::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LarsonSekaninaParameters.cpp - Released 2017-05-02T09:43:00Z
+// EOF LarsonSekaninaParameters.cpp - Released 2017-07-09T18:07:32Z

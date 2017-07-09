@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard SplitCFA Process Module Version 01.00.06.0135
+// Standard SplitCFA Process Module Version 01.00.06.0154
 // ----------------------------------------------------------------------------
-// SplitCFAInstance.cpp - Released 2017-05-02T09:43:01Z
+// SplitCFAInstance.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
@@ -379,13 +379,13 @@ template <class P>
 static void LoadImageFile( GenericImage<P>& image, FileFormatInstance& file )
 {
    if ( !file.ReadImage( image ) )
-      throw CatchedException();
+      throw CaughtException();
 }
 
 static void LoadImageFile( ImageVariant& image, FileFormatInstance& file, const ImageDescriptionArray& images, int index )
 {
    if ( !file.SelectImage( index ) )
-      throw CatchedException();
+      throw CaughtException();
 
    image.CreateSharedImage( images[index].options.ieeefpSampleFormat, false, images[index].options.bitsPerSample );
    if ( image.IsFloatSample() )
@@ -416,7 +416,7 @@ thread_list SplitCFAInstance::LoadTargetFrame( const size_type fileIndex )
 
    ImageDescriptionArray images;
    if ( !file.Open( images, filePath, "raw cfa" ) ) // ### Use input hints to load raw CFA DSLR images
-      throw CatchedException();
+      throw CaughtException();
    if ( images.IsEmpty() )
       throw Error( filePath + ": Empty image file." );
 
@@ -437,7 +437,7 @@ thread_list SplitCFAInstance::LoadTargetFrame( const size_type fileIndex )
          if ( images.Length() > 1 )
             console.WriteLn( String().Format( "* Subimage %u of %u", index+1, images.Length() ) );
          if ( !file.SelectImage( index ) )
-            throw CatchedException();
+            throw CaughtException();
 
          ImageVariant* source = new ImageVariant();
          LoadImageFile( *source, file, images, index );
@@ -445,7 +445,8 @@ thread_list SplitCFAInstance::LoadTargetFrame( const size_type fileIndex )
       }
 
       console.WriteLn( "Close " + filePath );
-      file.Close();
+      if ( !file.Close() )
+         throw CaughtException();
       return threads;
    }
    catch ( ... )
@@ -461,7 +462,7 @@ template <class P>
 static void SaveImageFile( const GenericImage<P>& image, FileFormatInstance& file )
 {
    if ( !file.WriteImage( image ) )
-      throw CatchedException();
+      throw CaughtException();
 }
 
 static void SaveImageFile( const ImageVariant& image, FileFormatInstance& file )
@@ -561,7 +562,7 @@ void SplitCFAInstance::SaveImage( const SplitCFAThread* t )
       FileFormat outputFormat( outputExtension, false/*read*/, true/*write*/ );
       FileFormatInstance outputFile( outputFormat );
       if ( !outputFile.Create( outputFilePath ) )
-         throw CatchedException();
+         throw CaughtException();
 
       const FileData& data = t->TargetData();
 
@@ -595,7 +596,8 @@ void SplitCFAInstance::SaveImage( const SplitCFAThread* t )
       SaveImageFile( *t->TargetImage(i), outputFile );
 
       console.WriteLn( "Close file." );
-      outputFile.Close();
+      if ( !outputFile.Close() )
+         throw CaughtException();
    }
 }
 
@@ -899,4 +901,4 @@ size_type SplitCFAInstance::ParameterLength( const MetaParameter* p, size_type t
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SplitCFAInstance.cpp - Released 2017-05-02T09:43:01Z
+// EOF SplitCFAInstance.cpp - Released 2017-07-09T18:07:33Z

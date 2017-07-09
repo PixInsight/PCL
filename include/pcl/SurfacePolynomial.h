@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.06.0853
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// pcl/SurfacePolynomial.h - Released 2017-06-28T11:58:36Z
+// pcl/SurfacePolynomial.h - Released 2017-07-09T18:07:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -363,4 +363,4 @@ protected:
 #endif   // __PCL_SurfacePolynomial_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SurfacePolynomial.h - Released 2017-06-28T11:58:36Z
+// EOF pcl/SurfacePolynomial.h - Released 2017-07-09T18:07:07Z

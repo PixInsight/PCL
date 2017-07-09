@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.00.0300
+// Standard ImageCalibration Process Module Version 01.04.00.0319
 // ----------------------------------------------------------------------------
-// LocalNormalizationProcess.cpp - Released 2017-05-17T17:41:56Z
+// LocalNormalizationProcess.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -73,7 +73,33 @@ LocalNormalizationProcess::LocalNormalizationProcess() : MetaProcess()
    TheLocalNormalizationProcess = this;
 
    new LNScale( this );
-   new LNReferenceViewId( this );
+   new LNRejection( this );
+   new LNBackgroundRejectionLimit( this );
+   new LNReferenceRejectionThreshold( this );
+   new LNTargetRejectionThreshold( this );
+   new LNReferencePathOrViewId( this );
+   new LNReferenceIsView( this );
+   new LNTargetItems( this );
+   new LNTargetEnabled( TheLNTargetItemsParameter );
+   new LNTargetImage( TheLNTargetItemsParameter );
+   new LNInputHints( this );
+   new LNOutputHints( this );
+   new LNGenerateNormalizedImages( this );
+   new LNGenerateNormalizationData( this );
+   new LNShowBackgroundModels( this );
+   new LNShowRejectionMaps( this );
+   new LNShowNormalizationFunctions( this );
+   new LNNoGUIMessages( this );
+   new LNOutputDirectory( this );
+   new LNOutputExtension( this );
+   new LNOutputPrefix( this );
+   new LNOutputPostfix( this );
+   new LNOverwriteExistingFiles( this );
+   new LNOnError( this );
+   new LNUseFileThreads( this );
+   new LNFileThreadOverload( this );
+   new LNMaxFileReadThreads( this );
+   new LNMaxFileWriteThreads( this );
 }
 
 // ----------------------------------------------------------------------------
@@ -136,4 +162,4 @@ ProcessImplementation* LocalNormalizationProcess::Clone( const ProcessImplementa
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LocalNormalizationProcess.cpp - Released 2017-05-17T17:41:56Z
+// EOF LocalNormalizationProcess.cpp - Released 2017-07-09T18:07:33Z

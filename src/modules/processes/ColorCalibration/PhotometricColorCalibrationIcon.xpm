@@ -1,0 +1,246 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.07.0861
+// ----------------------------------------------------------------------------
+// Standard ColorCalibration Process Module Version 01.03.02.0297
+// ----------------------------------------------------------------------------
+// PhotometricColorCalibrationIcon.xpm - Released 2017-07-09T18:07:32Z
+// ----------------------------------------------------------------------------
+// This file is part of the standard ColorCalibration PixInsight module.
+//
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
+
+/* XPM */
+static const char *PhotometricColorCalibrationIcon_XPM[]={
+"24 24 164 2",
+"Qt c None",
+".a c #080808",
+"a. c #080809",
+".# c #000000",
+"at c #0000ff",
+".6 c #000ff0",
+"#Z c #0014eb",
+".u c #0020df",
+"#P c #002bd4",
+"al c #0030cf",
+".V c #004fb0",
+"am c #0051ae",
+"#Y c #00619e",
+".C c #00748b",
+"#Q c #007a85",
+".9 c #00827d",
+".W c #008a75",
+"af c #009f60",
+"#l c #00ab54",
+"ag c #00ba45",
+"aa c #00bf40",
+"#. c #00c43b",
+".L c #00c837",
+"#R c #00c936",
+"#J c #00d827",
+"ab c #00eb14",
+"#g c #00f30c",
+"## c #00ff00",
+"#K c #01d828",
+"#X c #02629f",
+".M c #07bb4a",
+".1 c #07f800",
+".B c #09788e",
+"ai c #09c83e",
+"aD c #0a0afc",
+"ax c #0a0bfb",
+"aq c #0b6e9a",
+".l c #0c0cfb",
+"#d c #0c44c4",
+".5 c #0e58b2",
+"#u c #0ff000",
+"#p c #10f001",
+".0 c #12ed00",
+".F c #1717f8",
+"#F c #1ae500",
+"ah c #1cca4c",
+"#A c #1ce502",
+"#W c #1f30e6",
+".Z c #1ff519",
+"#I c #209386",
+"#a c #20df00",
+".X c #22c358",
+"#h c #23dc00",
+".U c #2935e8",
+"#S c #2a4cd3",
+"an c #2f80a4",
+"#v c #2fcd59",
+"#4 c #36ca62",
+"#f c #37b676",
+"#b c #39c600",
+"#q c #3ec100",
+"#V c #4444eb",
+"au c #4445ed",
+".4 c #44a293",
+".7 c #4545eb",
+".D c #458bab",
+"az c #4646e8",
+"#c c #46b900",
+"#O c #4949eb",
+"#i c #49b600",
+"#B c #4cb300",
+"#5 c #4da09c",
+"aA c #5454e5",
+".t c #5467d8",
+"#L c #5ba89f",
+".G c #5e69dc",
+"as c #5f5fe4",
+"#6 c #6483c9",
+"#z c #64d979",
+".R c #6666df",
+"#j c #689700",
+"#r c #6a9500",
+".Y c #6fe479",
+".2 c #72e37c",
+"#U c #7373d8",
+"#3 c #73cf8f",
+".K c #74cb94",
+"#7 c #7777df",
+"ak c #777ade",
+"#k c #7a8500",
+"#m c #7da4bc",
+"#G c #7dda8e",
+"#C c #7e8100",
+".3 c #80cf9a",
+"#0 c #8181d4",
+".g c #8181d6",
+".E c #8282d6",
+"#8 c #8a8ad5",
+".v c #8b92d6",
+"aG c #9090cd",
+"#s c #926d00",
+"ae c #92a8c8",
+".8 c #95a6cb",
+"aC c #9797d2",
+"aF c #9898c6",
+"#H c #9aa8cc",
+"aH c #9b9bc6",
+"#9 c #9c9cc8",
+".Q c #9d9dd3",
+"aw c #9da2d4",
+"aE c #9f9fcb",
+"ap c #a2bdc3",
+"#2 c #a3c1c0",
+".S c #a8a8c5",
+".w c #a8a8c6",
+".k c #a9a9cf",
+".H c #a9b7cb",
+"ay c #ababce",
+"#t c #ac5300",
+"#T c #acaccf",
+"a# c #acc7c2",
+"#o c #acd7b7",
+"#D c #af5000",
+"#N c #afafc6",
+"#e c #b5b5cf",
+"ar c #b6b7cf",
+".b c #bababa",
+".c c #bdbdbd",
+".n c #bebebe",
+".d c #bfbfbf",
+".e c #c0c0c0",
+".m c #c0c0c9",
+".f c #c1c1c1",
+".o c #c2c2c2",
+".x c #c2c2c3",
+"aj c #c2c7ce",
+"ao c #c2ccce",
+".h c #c3c3c3",
+"aB c #c3c3c5",
+".A c #c4cbcf",
+".i c #c5c5c5",
+".T c #c5c5c6",
+"#1 c #c5c8ce",
+".p c #c6c6c6",
+"av c #c6c7ce",
+".j c #c7c7c7",
+".q c #c9c9c9",
+"#M c #c9cace",
+".P c #cacacd",
+".N c #cad3d0",
+".r c #cbcbcb",
+"ad c #cccccc",
+"#y c #ccd1d1",
+".s c #cdcdcd",
+"#x c #cecece",
+".y c #cfcfcf",
+"ac c #cfd3d2",
+".O c #d0d0d0",
+".z c #d1d1d1",
+"#w c #d1d2d2",
+"#n c #d3d3d3",
+".I c #d4d4d4",
+".J c #d7d7d7",
+"#E c #db2400",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt",
+"Qt.#.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.#Qt",
+"Qt.a.b.b.b.b.b.b.c.d.e.f.g.e.d.c.b.b.b.b.b.b.aQt",
+"Qt.a.b.b.b.b.c.e.h.i.j.k.l.m.i.h.e.c.b.b.b.b.aQt",
+"Qt.a.b.b.b.n.o.p.q.r.s.t.u.v.r.q.p.o.n.b.b.b.aQt",
+"Qt.a.b.b.w.x.j.r.y.z.A.B.C.D.z.y.r.j.h.n.b.b.aQt",
+"Qt.a.b.c.E.F.G.H.I.J.K.L.L.M.N.I.O.P.Q.R.S.b.aQt",
+"Qt.a.b.e.T.U.V.W.X.Y.Z.0.0.1.2.3.4.5.6.7.e.b.aQt",
+"Qt.a.c.h.q.8.9#.###a#b#c#c#b#a###..9#d#e.h.c.aQt",
+"Qt.a.d.i.r.z#f#g#h#i#j#k#k#j#i#h#g#l#m.r.i.d.aQt",
+"Qt.a.e.j.s#n#o#p#q#r#s#t#t#s#r#q#u#v#w.s.j.e.aQt",
+"Qt.a.f.j#x#y#z#A#B#C#D#E#E#D#C#B#F#G.I#x.j.f.aQt",
+"Qt.a.f.j#H#I#J#F#B#C#D#E#E#D#C#B#F#K#L#M.j.f.aQt",
+"Qt.a#N#O#P#Q#R#u#q#r#s#t#t#s#r#q#u#R#Q#S#T.e.aQt",
+"Qt.a#U#V#W#X#l#g#h#i#j#k#k#j#i#h#g#l#Y#Z.l#0.aQt",
+"Qt.a.c.h.q#1#2#3###a#b#c#c#b#a###4#5#6#7#8#9a.Qt",
+"Qt.a.b.e.p.r.Oa#aaab.1.0.0.1abaaac.O.r.p.e.b.aQt",
+"Qt.a.b.c.o.jadae#Qafagahaiagaf#Qajad.j.o.c.b.aQt",
+"Qt.a.b.b.n.h.jakalamanaoapaqamalar.j.h.n.b.b.aQt",
+"Qt.a.b.b.b.n.oasatauav#x#xawaxatay.o.n.b.b.b.aQt",
+"Qt.a.b.b.b.b.cazaAaB.j.j.j.jaCaDaE.c.b.b.b.b.aQt",
+"Qt.a.b.b.b.b.baF.c.d.e.f.f.e.daGaH.b.b.b.b.b.aQt",
+"Qt.#.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.#Qt",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt"};
+
+// ----------------------------------------------------------------------------
+// EOF PhotometricColorCalibrationIcon.xpm - Released 2017-07-09T18:07:32Z

@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-05-02T09:40:59.767Z
+# Generated on .... 2017-07-09T17:55:56.252Z
 # Project id ...... ColorCalibration
 # Project type .... Module
 # Platform ........ Windows/vc14
@@ -33,7 +33,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{FALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSE-FALSEFALSEFALSEFALSE-4FALSEFALSEFALSE-FALSEFALSEFALSEFALSE-FALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSE}</ProjectGuid>
+    <ProjectGuid>{9D4BADDD-3B0D-450D-93CD-E28266F1FE95}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -252,6 +252,11 @@
     <ClCompile Include="..\..\LinearFitInterface.cpp"/>
     <ClCompile Include="..\..\LinearFitParameters.cpp"/>
     <ClCompile Include="..\..\LinearFitProcess.cpp"/>
+    <ClCompile Include="..\..\PhotometricColorCalibrationGraphInterface.cpp"/>
+    <ClCompile Include="..\..\PhotometricColorCalibrationInstance.cpp"/>
+    <ClCompile Include="..\..\PhotometricColorCalibrationInterface.cpp"/>
+    <ClCompile Include="..\..\PhotometricColorCalibrationParameters.cpp"/>
+    <ClCompile Include="..\..\PhotometricColorCalibrationProcess.cpp"/>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\BackgroundNeutralizationInstance.h"/>
@@ -267,11 +272,17 @@
     <ClInclude Include="..\..\LinearFitInterface.h"/>
     <ClInclude Include="..\..\LinearFitParameters.h"/>
     <ClInclude Include="..\..\LinearFitProcess.h"/>
+    <ClInclude Include="..\..\PhotometricColorCalibrationGraphInterface.h"/>
+    <ClInclude Include="..\..\PhotometricColorCalibrationInstance.h"/>
+    <ClInclude Include="..\..\PhotometricColorCalibrationInterface.h"/>
+    <ClInclude Include="..\..\PhotometricColorCalibrationParameters.h"/>
+    <ClInclude Include="..\..\PhotometricColorCalibrationProcess.h"/>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\BackgroundNeutralizationIcon.png"/>
     <None Include="..\..\ColorCalibrationIcon.png"/>
     <None Include="..\..\LinearFitIcon.png"/>
+    <None Include="..\..\PhotometricColorCalibrationIcon.png"/>
     <None Include="..\..\__private\BackgroundNeutralizationIcon.svg"/>
     <None Include="..\..\__private\ColorCalibrationIcons.svg"/>
   </ItemGroup>

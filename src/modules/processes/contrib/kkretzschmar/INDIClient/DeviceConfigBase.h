@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0199
+// Standard INDIClient Process Module Version 01.00.15.0205
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerInterface.h - Released 2016/06/20 17:47:31 UTC
+// DeviceConfigBase.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -149,3 +149,6 @@ protected:
 
 
 #endif /* DEVICECONFIGBASE_H_ */
+
+// ----------------------------------------------------------------------------
+// EOF DeviceConfigBase.h - Released 2017-07-09T18:07:33Z

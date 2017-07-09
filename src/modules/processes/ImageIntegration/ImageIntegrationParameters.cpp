@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.15.00.0398
+// Standard ImageIntegration Process Module Version 01.16.00.0429
 // ----------------------------------------------------------------------------
-// ImageIntegrationParameters.cpp - Released 2017-05-05T08:37:32Z
+// ImageIntegrationParameters.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -61,6 +61,7 @@ IIImages*                            TheIIImagesParameter = nullptr;
 IIImageEnabled*                      TheIIImageEnabledParameter = nullptr;
 IIImagePath*                         TheIIImagePathParameter = nullptr;
 IIDrizzlePath*                       TheIIDrizzlePathParameter = nullptr;
+IILocalNormalizationDataPath*        TheIILocalNormalizationDataPathParameter = nullptr;
 IIInputHints*                        TheIIInputHintsParameter = nullptr;
 IICombination*                       TheIICombinationParameter = nullptr;
 IIWeightMode*                        TheIIWeightModeParameter = nullptr;
@@ -214,6 +215,18 @@ IsoString IIDrizzlePath::Id() const
 
 // ----------------------------------------------------------------------------
 
+IILocalNormalizationDataPath::IILocalNormalizationDataPath( MetaTable* T ) : MetaString( T )
+{
+   TheIILocalNormalizationDataPathParameter = this;
+}
+
+IsoString IILocalNormalizationDataPath::Id() const
+{
+   return "localNormalizationDataPath";
+}
+
+// ----------------------------------------------------------------------------
+
 IIInputHints::IIInputHints( MetaProcess* P ) : MetaString( P )
 {
    TheIIInputHintsParameter = this;
@@ -345,7 +358,7 @@ IsoString IIWeightScale::ElementId( size_type i ) const
    case Sn:     return "WeightScale_Sn";
    case Qn:     return "WeightScale_Qn";
    default:
-   case IKSS:    return "WeightScale_IKSS";
+   case IKSS:   return "WeightScale_IKSS";
    }
 }
 
@@ -403,6 +416,7 @@ IsoString IINormalization::ElementId( size_type i ) const
    default:
    case AdditiveWithScaling:       return "AdditiveWithScaling";
    case MultiplicativeWithScaling: return "MultiplicativeWithScaling";
+   case LocalNormalization:        return "LocalNormalization";
    }
 }
 
@@ -480,10 +494,11 @@ IsoString IIRejectionNormalization::ElementId( size_type i ) const
 {
    switch ( i )
    {
-   case NoRejectionNormalization: return "NoRejectionNormalization";
+   case NoRejectionNormalization:    return "NoRejectionNormalization";
    default:
-   case Scale:                    return "Scale";
-   case EqualizeFluxes:           return "EqualizeFluxes";
+   case Scale:                       return "Scale";
+   case EqualizeFluxes:              return "EqualizeFluxes";
+   case LocalRejectionNormalization: return "LocalRejectionNormalization";
    }
 }
 
@@ -2455,4 +2470,4 @@ bool IIImageRejectedHighB::IsReadOnly() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationParameters.cpp - Released 2017-05-05T08:37:32Z
+// EOF ImageIntegrationParameters.cpp - Released 2017-07-09T18:07:33Z

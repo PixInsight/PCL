@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard CosmeticCorrection Process Module Version 01.02.05.0168
+// Standard CosmeticCorrection Process Module Version 01.02.05.0187
 // ----------------------------------------------------------------------------
-// CosmeticCorrectionInterface.h - Released 2017-05-02T09:43:01Z
+// CosmeticCorrectionInterface.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
@@ -140,8 +140,6 @@ private:
             ToolButton        OutputDir_SelectButton;
             ToolButton        OutputDir_ClearButton;
          HorizontalSizer   OutputChunks_Sizer;
-            Label             OutputExtension_Label;
-            Edit              OutputExtension_Edit;
             Label             Prefix_Label;
             Edit              Prefix_Edit;
             Label             Postfix_Label;
@@ -328,4 +326,4 @@ PCL_END_LOCAL
 #endif   // __CosmeticCorrectionInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF CosmeticCorrectionInterface.h - Released 2017-05-02T09:43:01Z
+// EOF CosmeticCorrectionInterface.h - Released 2017-07-09T18:07:33Z

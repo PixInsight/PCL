@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard RestorationFilters Process Module Version 01.00.05.0290
+// Standard RestorationFilters Process Module Version 01.00.05.0309
 // ----------------------------------------------------------------------------
-// RestorationFilterModule.h - Released 2017-05-02T09:43:01Z
+// RestorationFilterModule.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RestorationFilters PixInsight module.
 //
@@ -59,8 +59,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// RestorationFilterModule
-// ----------------------------------------------------------------------------
 
 class RestorationFilterModule : public MetaModule
 {
@@ -86,4 +84,4 @@ public:
 #endif   // __RestorationFilterModule_h
 
 // ----------------------------------------------------------------------------
-// EOF RestorationFilterModule.h - Released 2017-05-02T09:43:01Z
+// EOF RestorationFilterModule.h - Released 2017-07-09T18:07:33Z

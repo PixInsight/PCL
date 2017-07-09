@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.00.0300
+// Standard ImageCalibration Process Module Version 01.04.00.0319
 // ----------------------------------------------------------------------------
-// LocalNormalizationInterface.h - Released 2017-05-17T17:41:56Z
+// LocalNormalizationInterface.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -53,15 +53,16 @@
 #ifndef __LocalNormalizationInterface_h
 #define __LocalNormalizationInterface_h
 
+#include <pcl/CheckBox.h>
 #include <pcl/ComboBox.h>
-#include <pcl/Edit.h>
-#include <pcl/Label.h>
 #include <pcl/NumericControl.h>
 #include <pcl/ProcessInterface.h>
+#include <pcl/PushButton.h>
 #include <pcl/SectionBar.h>
 #include <pcl/Sizer.h>
 #include <pcl/SpinBox.h>
 #include <pcl/ToolButton.h>
+#include <pcl/TreeBox.h>
 
 #include "LocalNormalizationInstance.h"
 
@@ -103,24 +104,96 @@ private:
       GUIData( LocalNormalizationInterface& );
 
       VerticalSizer     Global_Sizer;
-         HorizontalSizer   ReferenceView_Sizer;
-            Label             ReferenceView_Label;
-            Edit              ReferenceView_Edit;
-            ToolButton        ReferenceView_ToolButton;
+
+      VerticalSizer     GeneralParameters_Sizer;
+         HorizontalSizer   ReferenceImage_Sizer;
+            Label             ReferenceImage_Label;
+            Edit              ReferenceImage_Edit;
+            ComboBox          ReferenceImage_ComboBox;
+            ToolButton        ReferenceImage_ToolButton;
          HorizontalSizer   Scale_Sizer;
             Label             Scale_Label;
             SpinBox           Scale_SpinBox;
+         HorizontalSizer   Rejection_Sizer;
+            CheckBox          Rejection_CheckBox;
+         NumericControl    BackgroundRejectionLimit_NumericControl;
+         NumericControl    ReferenceRejectionThreshold_NumericControl;
+         NumericControl    TargetRejectionThreshold_NumericControl;
+         HorizontalSizer   GenerateNormalizedImages_Sizer;
+            CheckBox          GenerateNormalizedImages_CheckBox;
+         HorizontalSizer   GenerateNormalizationData_Sizer;
+            CheckBox          GenerateNormalizationData_CheckBox;
+         HorizontalSizer   ShowBackgroundModels_Sizer;
+            CheckBox          ShowBackgroundModels_CheckBox;
+         HorizontalSizer   ShowRejectionMaps_Sizer;
+            CheckBox          ShowRejectionMaps_CheckBox;
+         HorizontalSizer   ShowNormalizationFunctions_Sizer;
+            CheckBox          ShowNormalizationFunctions_CheckBox;
+
+      SectionBar        TargetImages_SectionBar;
+      Control           TargetImages_Control;
+      HorizontalSizer   TargetImages_Sizer;
+         TreeBox           TargetImages_TreeBox;
+         VerticalSizer     TargetButtons_Sizer;
+            PushButton        AddFiles_PushButton;
+            PushButton        SelectAll_PushButton;
+            PushButton        InvertSelection_PushButton;
+            PushButton        ToggleSelected_PushButton;
+            PushButton        RemoveSelected_PushButton;
+            PushButton        Clear_PushButton;
+            CheckBox          FullPaths_CheckBox;
+
+      SectionBar        FormatHints_SectionBar;
+      Control           FormatHints_Control;
+      VerticalSizer     FormatHints_Sizer;
+         HorizontalSizer   InputHints_Sizer;
+            Label             InputHints_Label;
+            Edit              InputHints_Edit;
+         HorizontalSizer   OutputHints_Sizer;
+            Label             OutputHints_Label;
+            Edit              OutputHints_Edit;
+
+      SectionBar        OutputFiles_SectionBar;
+      Control           OutputFiles_Control;
+      VerticalSizer     OutputFiles_Sizer;
+         HorizontalSizer   OutputDirectory_Sizer;
+            Label             OutputDirectory_Label;
+            Edit              OutputDirectory_Edit;
+            ToolButton        OutputDirectory_ToolButton;
+         HorizontalSizer   OutputChunks_Sizer;
+            Label             OutputPrefix_Label;
+            Edit              OutputPrefix_Edit;
+            Label             OutputPostfix_Label;
+            Edit              OutputPostfix_Edit;
+         HorizontalSizer   OutputOptions_Sizer;
+            CheckBox          OverwriteExistingFiles_CheckBox;
+            Label             OnError_Label;
+            ComboBox          OnError_ComboBox;
    };
 
    GUIData* GUI = nullptr;
 
    void UpdateControls();
+   void UpdateGeneralParameterControls();
+   void UpdateTargetImageItem( size_type );
+   void UpdateTargetImagesList();
+   void UpdateImageSelectionButtons();
+   void UpdateFormatHintsControls();
+   void UpdateOutputFilesControls();
 
-   void __EditCompleted( Edit& sender );
-   void __SpinValueUpdated( SpinBox& sender, int value );
-   void __Click( Button& sender, bool checked );
-   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
-   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
+   void e_EditCompleted( Edit& sender );
+   void e_ItemSelected( ComboBox& sender, int itemIndex );
+   void e_Click( Button& sender, bool checked );
+   void e_EditValueUpdated( NumericEdit& sender, double value );
+   void e_CurrentNodeUpdated( TreeBox& sender, TreeBox::Node& current, TreeBox::Node& oldCurrent );
+   void e_NodeActivated( TreeBox& sender, TreeBox::Node& node, int col );
+   void e_NodeSelectionUpdated( TreeBox& sender );
+   void e_SpinValueUpdated( SpinBox& sender, int value );
+   void e_ToggleSection( SectionBar& sender, Control& section, bool start );
+   void e_FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
+   void e_FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
+   void e_ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void e_ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
 
    friend struct GUIData;
 };
@@ -138,4 +211,4 @@ PCL_END_LOCAL
 #endif   // __LocalNormalizationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF LocalNormalizationInterface.h - Released 2017-05-17T17:41:56Z
+// EOF LocalNormalizationInterface.h - Released 2017-07-09T18:07:33Z

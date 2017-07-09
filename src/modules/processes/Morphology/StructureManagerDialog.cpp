@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Morphology Process Module Version 01.00.00.0300
+// Standard Morphology Process Module Version 01.00.00.0319
 // ----------------------------------------------------------------------------
-// StructureManagerDialog.cpp - Released 2017-05-02T09:43:00Z
+// StructureManagerDialog.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Morphology PixInsight module.
 //
@@ -227,12 +227,8 @@ void StructureManagerDialog::ModuleClick( Button& sender, bool /*checked*/ )
    {
       OpenFileDialog d;
       d.SetCaption( "Load Structure Set Module" );
+      d.SetFilter( FileFilter( "Structure Set Modules", ".ssm" ) );
       d.DisableMultipleSelections();
-
-      FileFilter f;
-      f.SetDescription( "Structure Set Modules" );
-      f.AddExtension( ".ssm" );
-      d.Filters().Add( f );
 
       if ( !iface.collection.Path().IsEmpty() )
       {
@@ -263,14 +259,9 @@ void StructureManagerDialog::ModuleClick( Button& sender, bool /*checked*/ )
    {
       SaveFileDialog d;
       d.SetCaption( "Save Structure Set Module" );
-      d.EnableOverwritePrompt();
-
-      FileFilter f;
-      f.SetDescription( "Structure Set Modules" );
-      f.AddExtension( ".ssm" );
-      d.Filters().Add( f );
-
+      d.SetFilter( FileFilter( "Structure Set Modules", ".ssm" ) );
       d.SetInitialPath( iface.collection.Path() );
+      d.EnableOverwritePrompt();
 
       if ( d.Execute() )
       {
@@ -412,4 +403,4 @@ void StructureManagerDialog::ControlShow( Control& sender )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF StructureManagerDialog.cpp - Released 2017-05-02T09:43:00Z
+// EOF StructureManagerDialog.cpp - Released 2017-07-09T18:07:33Z

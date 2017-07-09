@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0347
+// Standard Global Process Module Version 01.02.07.0366
 // ----------------------------------------------------------------------------
-// PreferencesParameters.h - Released 2017-05-02T09:43:00Z
+// PreferencesParameters.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -280,9 +280,23 @@ DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  animateToolBox,                   t
 DECLARE_INT32_METAPARAMETER   ( MainWindow,  maxRecentFiles,                   32, 2, 128 )
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  showRecentlyUsed,                 true )
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  showMostUsed,                     true )
+DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  showFavorites,                    true )
 DECLARE_INT32_METAPARAMETER   ( MainWindow,  maxUsageListLength,               12, 0, 64 )
-DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  expandUsageItemsAtStartup,        true )
+DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  expandRecentlyUsedAtStartup,      true )
+DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  expandMostUsedAtStartup,          true )
+DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  expandFavoritesAtStartup,         false )
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  openURLsWithInternalBrowser,      true )
+DECLARE_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile01,                  "ripley-default-01.svg" )
+DECLARE_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile02,                  "ripley-default-02.svg" )
+DECLARE_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile03,                  "ripley-default-03.svg" )
+DECLARE_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile04,                  "ripley-default-04.svg" )
+DECLARE_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile05,                  "ripley-default-05.svg" )
+DECLARE_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile06,                  "ripley-default-06.svg" )
+DECLARE_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile07,                  "ripley-default-07.svg" )
+DECLARE_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile08,                  "ripley-default-08.svg" )
+DECLARE_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile09,                  "ripley-default-09.svg" )
+DECLARE_STRING_METAPARAMETER  ( MainWindow,  wallpaperFile10,                  "ripley-default-10.svg" )
+DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  useWallpapers,                    true )
 
 // ----------------------------------------------------------------------------
 
@@ -303,6 +317,8 @@ DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, strictFileSaveMode,               t
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, fileFormatWarnings,               true )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, useFileNamesAsImageIdentifiers,   true )
 DECLARE_INT32_METAPARAMETER   ( ImageWindow, cursorTolerance,                  3, 1, 16 )
+DECLARE_UINT32_METAPARAMETER  ( ImageWindow, wheelStepAngle,                   15, 1, 90 )
+DECLARE_INT32_METAPARAMETER   ( ImageWindow, wheelDirection,                   0, -1, 0 )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, touchEvents,                      true )
 DECLARE_DOUBLE_METAPARAMETER  ( ImageWindow, pinchSensitivity,                 0.050, 0.0, 1.0 )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, fastScreenRenditions,             true )
@@ -368,4 +384,4 @@ PCL_END_LOCAL
 #endif   // __PreferencesParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesParameters.h - Released 2017-05-02T09:43:00Z
+// EOF PreferencesParameters.h - Released 2017-07-09T18:07:33Z

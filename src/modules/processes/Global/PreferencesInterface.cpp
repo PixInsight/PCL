@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0347
+// Standard Global Process Module Version 01.02.07.0366
 // ----------------------------------------------------------------------------
-// PreferencesInterface.cpp - Released 2017-05-02T09:43:00Z
+// PreferencesInterface.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -155,6 +155,30 @@ void GlobalIntegerControl::__ValueUpdated( SpinBox& /*sender*/, int value )
 {
    if ( item != nullptr )
       *item = int32( value );
+}
+
+// ----------------------------------------------------------------------------
+
+GlobalUnsignedControl::GlobalUnsignedControl()
+{
+   spinBox.OnValueUpdated( (SpinBox::value_event_handler)&GlobalUnsignedControl::__ValueUpdated, *this );
+   spinSizer.Add( spinBox );
+   spinSizer.AddStretch();
+
+   sizer.Add( label );
+   sizer.Add( spinSizer );
+}
+
+void GlobalUnsignedControl::Synchronize()
+{
+   if ( item != nullptr )
+      spinBox.SetValue( int( *item ) );
+}
+
+void GlobalUnsignedControl::__ValueUpdated( SpinBox& /*sender*/, int value )
+{
+   if ( item != nullptr )
+      *item = uint32( value );
 }
 
 // ----------------------------------------------------------------------------
@@ -333,8 +357,10 @@ void GlobalFileControl::__SelectFile( Button& /*sender*/, bool /*checked*/ )
    if ( item != nullptr )
    {
       OpenFileDialog dlg;
-      dlg.SetCaption( "Select File" );
+      dlg.SetCaption( dialogTitle );
       dlg.SetInitialPath( *item );
+      if ( !fileExtensions.IsEmpty() )
+         dlg.SetFilter( FileFilter( String(), fileExtensions ) );
       if ( dlg.Execute() )
       {
          *item = dlg.FileName();
@@ -692,6 +718,8 @@ GlobalFileSetControl::GlobalFileSetControl()
    filesTreeBox.EnableAlternateRowColor();
    filesTreeBox.SetScaledMinHeight( 80 );
    filesTreeBox.OnNodeActivated( (TreeBox::node_event_handler)&GlobalFileSetControl::__NodeActivated, *this );
+   filesTreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler)&GlobalFileSetControl::__FileDrag, *this );
+   filesTreeBox.Viewport().OnFileDrop( (Control::file_drop_event_handler)&GlobalFileSetControl::__FileDrop, *this );
 
    addPushButton.SetText( "Add" );
    addPushButton.SetToolTip( "<p>Add a file to the list.</p>" );
@@ -746,10 +774,11 @@ void GlobalFileSetControl::Synchronize()
 
 void GlobalFileSetControl::__NodeActivated( TreeBox& sender, TreeBox::Node& node, int col )
 {
-   SaveFileDialog d;
+   OpenFileDialog d;
    d.SetCaption( dialogTitle );
-   d.SetInitialPath( *items[sender.ChildIndex( &node )] );
-   d.DisableOverwritePrompt();
+   d.DisableMultipleSelections();
+   if ( !fileExtensions.IsEmpty() )
+      d.SetFilter( FileFilter( String(), fileExtensions ) );
    if ( d.Execute() )
    {
       *items[sender.ChildIndex( &node )] = d.FileName();
@@ -761,12 +790,17 @@ void GlobalFileSetControl::__Click( Button& sender, bool checked )
 {
    if ( sender == addPushButton )
    {
-      SaveFileDialog d;
+      OpenFileDialog d;
       d.SetCaption( dialogTitle );
-      d.DisableOverwritePrompt();
+      d.EnableMultipleSelections();
+      if ( !fileExtensions.IsEmpty() )
+         d.SetFilter( FileFilter( String(), fileExtensions ) );
       if ( d.Execute() )
       {
-         *items[filesTreeBox.NumberOfChildren()] = d.FileName();
+         for ( size_type i = size_type( filesTreeBox.NumberOfChildren() ), j = 0;
+               i < items.Length() && j < d.FileNames().Length();
+               ++i, ++j )
+            *items[i] = d.FileNames()[j];
          Synchronize();
       }
    }
@@ -783,6 +817,44 @@ void GlobalFileSetControl::__Click( Button& sender, bool checked )
    {
       for ( size_type i = 0; i < items.Length(); ++i )
          items[i]->Clear();
+      Synchronize();
+   }
+}
+
+void GlobalFileSetControl::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+{
+   if ( sender == filesTreeBox.Viewport() )
+      if ( filesTreeBox.NumberOfChildren() < int( items.Length() ) )
+      {
+         for ( const String& file : files )
+         {
+            if ( !File::Exists( file ) )
+               return;
+            if ( !fileExtensions.IsEmpty() )
+               if ( !fileExtensions.Contains( File::ExtractExtension( file ).CaseFolded() ) )
+                  return;
+         }
+         wantsFiles = true;
+      }
+}
+
+void GlobalFileSetControl::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+{
+   if ( sender == filesTreeBox.Viewport() )
+   {
+      StringList inputFiles;
+      for ( const String& file : files )
+         if ( File::Exists( file ) )
+         {
+            if ( !fileExtensions.IsEmpty() )
+               if ( !fileExtensions.Contains( File::ExtractExtension( file ).CaseFolded() ) )
+                  continue;
+            inputFiles << file;
+         }
+      for ( size_type i = size_type( filesTreeBox.NumberOfChildren() ), j = 0;
+            i < items.Length() && j < inputFiles.Length();
+            ++i, ++j )
+         *items[i] = inputFiles[j];
       Synchronize();
    }
 }
@@ -1037,17 +1109,23 @@ MainWindowPreferencesPage::MainWindowPreferencesPage( PreferencesInstance& insta
       "<p>This is the maximum number of recently opened files that PixInsight can remember "
       "for quick access from the File > Open Recent menu.</p>" );
 
-   ShowRecentlyUsed_Flag.checkBox.SetText( "Show recently used processes" );
+   ShowRecentlyUsed_Flag.checkBox.SetText( "Show recently used items" );
    ShowRecentlyUsed_Flag.item = &instance.mainWindow.showRecentlyUsed;
    ShowRecentlyUsed_Flag.SetToolTip(
       "<p>Show the Recently Used tree item on Process Explorer, where the most recently launched processes and "
       "executed scripts are gathered as a list sorted chronologically.</p>" );
 
-   ShowMostUsed_Flag.checkBox.SetText( "Show most used processes" );
+   ShowMostUsed_Flag.checkBox.SetText( "Show most used items" );
    ShowMostUsed_Flag.item = &instance.mainWindow.showMostUsed;
    ShowMostUsed_Flag.SetToolTip(
       "<p>Show the Most Used tree item on Process Explorer, where the most frequently launched processes and "
       "executed scripts are gathered as a sorted list.</p>" );
+
+   ShowFavorites_Flag.checkBox.SetText( "Show favorite items" );
+   ShowFavorites_Flag.item = &instance.mainWindow.showFavorites;
+   ShowFavorites_Flag.SetToolTip(
+      "<p>Show the Favorites tree item on Process Explorer, where the favorite processes and scripts are shown "
+      "as a sorted list.</p>" );
 
    MaxUsageListLength_Integer.label.SetText( "Maximum length of usage lists" );
    MaxUsageListLength_Integer.item = &instance.mainWindow.maxUsageListLength;
@@ -1055,10 +1133,20 @@ MainWindowPreferencesPage::MainWindowPreferencesPage( PreferencesInstance& insta
    MaxUsageListLength_Integer.SetToolTip(
       "<p>The maximum number of items shown on the Recently Used and Most Used tree items on Process Explorer.</p>" );
 
-   ExpandUsageItemsAtStartup_Flag.checkBox.SetText( "Expand usage list items at startup" );
-   ExpandUsageItemsAtStartup_Flag.item = &instance.mainWindow.expandUsageItemsAtStartup;
-   ExpandUsageItemsAtStartup_Flag.SetToolTip(
-      "<p>Show the Recently Used and Most Used tree items expanded on Process Explorer upon application startup.</p>" );
+   ExpandRecentlyUsedAtStartup_Flag.checkBox.SetText( "Expand recently used item at startup" );
+   ExpandRecentlyUsedAtStartup_Flag.item = &instance.mainWindow.expandRecentlyUsedAtStartup;
+   ExpandRecentlyUsedAtStartup_Flag.SetToolTip(
+      "<p>Show the Recently Used tree item expanded on Process Explorer upon application startup.</p>" );
+
+   ExpandMostUsedAtStartup_Flag.checkBox.SetText( "Expand most used item at startup" );
+   ExpandMostUsedAtStartup_Flag.item = &instance.mainWindow.expandMostUsedAtStartup;
+   ExpandMostUsedAtStartup_Flag.SetToolTip(
+      "<p>Show the Most Used tree item expanded on Process Explorer upon application startup.</p>" );
+
+   ExpandFavoritesAtStartup_Flag.checkBox.SetText( "Expand favorites item at startup" );
+   ExpandFavoritesAtStartup_Flag.item = &instance.mainWindow.expandFavoritesAtStartup;
+   ExpandFavoritesAtStartup_Flag.SetToolTip(
+      "<p>Show the Favorites tree item expanded on Process Explorer upon application startup.</p>" );
 
    OpenURLsWithInternalBrowser_Flag.checkBox.SetText( "Open URLs with the internal browser" );
    OpenURLsWithInternalBrowser_Flag.item = &instance.mainWindow.openURLsWithInternalBrowser;
@@ -1080,8 +1168,11 @@ MainWindowPreferencesPage::MainWindowPreferencesPage( PreferencesInstance& insta
    Page_Sizer.Add( MaxRecentFiles_Integer );
    Page_Sizer.Add( ShowRecentlyUsed_Flag );
    Page_Sizer.Add( ShowMostUsed_Flag );
+   Page_Sizer.Add( ShowFavorites_Flag );
    Page_Sizer.Add( MaxUsageListLength_Integer );
-   Page_Sizer.Add( ExpandUsageItemsAtStartup_Flag );
+   Page_Sizer.Add( ExpandRecentlyUsedAtStartup_Flag );
+   Page_Sizer.Add( ExpandMostUsedAtStartup_Flag );
+   Page_Sizer.Add( ExpandFavoritesAtStartup_Flag );
    Page_Sizer.Add( OpenURLsWithInternalBrowser_Flag );
 
    Page_Sizer.AddStretch();
@@ -1104,8 +1195,11 @@ void MainWindowPreferencesPage::TransferSettings( PreferencesInstance& to, const
    to.mainWindow.maxRecentFiles                = from.mainWindow.maxRecentFiles;
    to.mainWindow.showRecentlyUsed              = from.mainWindow.showRecentlyUsed;
    to.mainWindow.showMostUsed                  = from.mainWindow.showMostUsed;
+   to.mainWindow.showFavorites                 = from.mainWindow.showFavorites;
    to.mainWindow.maxUsageListLength            = from.mainWindow.maxUsageListLength;
-   to.mainWindow.expandUsageItemsAtStartup     = from.mainWindow.expandUsageItemsAtStartup;
+   to.mainWindow.expandRecentlyUsedAtStartup   = from.mainWindow.expandRecentlyUsedAtStartup;
+   to.mainWindow.expandMostUsedAtStartup       = from.mainWindow.expandMostUsedAtStartup;
+   to.mainWindow.expandFavoritesAtStartup      = from.mainWindow.expandFavoritesAtStartup;
    to.mainWindow.openURLsWithInternalBrowser   = from.mainWindow.openURLsWithInternalBrowser;
 }
 
@@ -1115,6 +1209,8 @@ ResourcesPreferencesPage::ResourcesPreferencesPage( PreferencesInstance& instanc
 {
    StyleSheet_File.label.SetText( "Core Style Sheet File" );
    StyleSheet_File.item = &instance.application.styleSheetFile;
+   StyleSheet_File.dialogTitle = "Select Core Style Sheet File";
+   StyleSheet_File.fileExtensions << ".qss";
    StyleSheet_File.SetToolTip(
       "<p>This is the path to a local <i>Qt style sheet</i> file (.qss) that controls the appearance of the "
       "entire PixInsight platform.</p>"
@@ -1140,8 +1236,9 @@ ResourcesPreferencesPage::ResourcesPreferencesPage( PreferencesInstance& instanc
    Resources_FileSet.items.Add( &instance.application.resourceFile08 );
    Resources_FileSet.items.Add( &instance.application.resourceFile09 );
    Resources_FileSet.items.Add( &instance.application.resourceFile10 );
+   Resources_FileSet.fileExtensions << ".rcc";
+   Resources_FileSet.dialogTitle = "Select Core Resource Files";
    Resources_FileSet.label.SetText( "Core Resource Files" );
-   Resources_FileSet.dialogTitle = "Select Resource File";
    Resources_FileSet.SetToolTip(
       "<p>This is a list of up to 10 local Qt resource files (.rcc) that will be loaded by the PixInsight core "
       "application. The 'core-icons.rcc' file is the default resource that defines all the icons and images used by "
@@ -1278,6 +1375,63 @@ void ResourcesPreferencesPage::TransferSettings( PreferencesInstance& to, const 
    to.application.highResFont = from.application.highResFont;
    to.application.lowResMonoFont = from.application.lowResMonoFont;
    to.application.highResMonoFont = from.application.highResMonoFont;
+}
+
+// ----------------------------------------------------------------------------
+
+WallpapersPreferencesPage::WallpapersPreferencesPage( PreferencesInstance& instance )
+{
+   Wallpapers_FileSet.items.Add( &instance.mainWindow.wallpaperFile01 );
+   Wallpapers_FileSet.items.Add( &instance.mainWindow.wallpaperFile02 );
+   Wallpapers_FileSet.items.Add( &instance.mainWindow.wallpaperFile03 );
+   Wallpapers_FileSet.items.Add( &instance.mainWindow.wallpaperFile04 );
+   Wallpapers_FileSet.items.Add( &instance.mainWindow.wallpaperFile05 );
+   Wallpapers_FileSet.items.Add( &instance.mainWindow.wallpaperFile06 );
+   Wallpapers_FileSet.items.Add( &instance.mainWindow.wallpaperFile07 );
+   Wallpapers_FileSet.items.Add( &instance.mainWindow.wallpaperFile08 );
+   Wallpapers_FileSet.items.Add( &instance.mainWindow.wallpaperFile09 );
+   Wallpapers_FileSet.items.Add( &instance.mainWindow.wallpaperFile10 );
+   Wallpapers_FileSet.fileExtensions << ".svg" << ".png" << ".jpg" << ".jpeg" << ".tif" << ".tiff" << ".bmp";
+   Wallpapers_FileSet.label.SetText( "Core Wallpaper Files" );
+   Wallpapers_FileSet.dialogTitle = "Select Wallpaper Files";
+   Wallpapers_FileSet.SetToolTip(
+      "<p>This is a list of up to 10 local image files that will be used by the PixInsight core application as "
+      "workspace wallpaper images. The SVG, PNG, JPEG, TIFF and BMP formats are supported. SVG is recommended because, "
+      "being a scalable image format, the quality of wallpaper renditions is resolution-independent. Bitmap images "
+      "will be rescaled as necessary to fill the largest screen available. The existing aspect ratio of each wallpaper "
+      "image is always preserved, so you should select images of the appropriate dimensions for your monitor.</p>"
+      "<p>Workspace wallpaper images are only loaded upon application startup, so if you change any items in this "
+      "list, changes will not take effect until the next time PixInsight is started.</p>" );
+
+   UseWallpapers_Flag.checkBox.SetText( "Use workspace wallpapers" );
+   UseWallpapers_Flag.item = &instance.mainWindow.useWallpapers;
+   UseWallpapers_Flag.SetToolTip(
+      "<p>Show workspace wallpapers. True by default because they are very nice, and useful to identify the current "
+      "workspace visually.</p>"
+      "<p>Trick: Disable this option, apply Preferences, then enable it back and reapply. This will force a reload "
+      "of all wallpaper images defined in the list above.</p>"   );
+
+   Page_Sizer.SetSpacing( 4 );
+   Page_Sizer.Add( Wallpapers_FileSet );
+   Page_Sizer.Add( UseWallpapers_Flag );
+   Page_Sizer.AddStretch();
+
+   SetSizer( Page_Sizer );
+}
+
+void WallpapersPreferencesPage::TransferSettings( PreferencesInstance& to, const PreferencesInstance& from )
+{
+   to.mainWindow.wallpaperFile01 = from.mainWindow.wallpaperFile01;
+   to.mainWindow.wallpaperFile02 = from.mainWindow.wallpaperFile02;
+   to.mainWindow.wallpaperFile03 = from.mainWindow.wallpaperFile03;
+   to.mainWindow.wallpaperFile04 = from.mainWindow.wallpaperFile04;
+   to.mainWindow.wallpaperFile05 = from.mainWindow.wallpaperFile05;
+   to.mainWindow.wallpaperFile06 = from.mainWindow.wallpaperFile06;
+   to.mainWindow.wallpaperFile07 = from.mainWindow.wallpaperFile07;
+   to.mainWindow.wallpaperFile08 = from.mainWindow.wallpaperFile08;
+   to.mainWindow.wallpaperFile09 = from.mainWindow.wallpaperFile09;
+   to.mainWindow.wallpaperFile10 = from.mainWindow.wallpaperFile10;
+   to.mainWindow.useWallpapers = from.mainWindow.useWallpapers;
 }
 
 // ----------------------------------------------------------------------------
@@ -1751,6 +1905,22 @@ MiscImageWindowSettingsPreferencesPage::MiscImageWindowSettingsPreferencesPage( 
       "close to a sensitive point. For example, this is used to change cursor shapes when you place "
       "the mouse near preview rectangle edges.</p>" );
 
+   WheelStepAngle_Unsigned.label.SetText( "Wheel step angle (deg)" );
+   WheelStepAngle_Unsigned.spinBox.SetRange( 1, 90 );
+   WheelStepAngle_Unsigned.item = &instance.imageWindow.wheelStepAngle;
+   WheelStepAngle_Unsigned.SetToolTip(
+      "<p>This is the minimum rotation angle in degrees for the mouse wheel to trigger a zoom in/out action. "
+      "The default value is 15 degrees.</p>" );
+
+   WheelDirection_Set.label.SetText( "Wheel direction" );
+   WheelDirection_Set.minValue = -1; // ### Warning: DO NOT change these numbers
+   WheelDirection_Set.comboBox.AddItem( "Forward" );
+   WheelDirection_Set.comboBox.AddItem( "Backward" );
+   WheelDirection_Set.item = &instance.imageWindow.wheelDirection;
+   WheelDirection_Set.SetToolTip(
+      "<p>This is the direction of mouse wheel rotation to zoom in images. The default option is backward, "
+      "that is, rotating forward the mouse wheel zooms out by default.</p>" );
+
    TouchEvents_Flag.checkBox.SetText( "Touch events" );
    TouchEvents_Flag.item = &instance.imageWindow.touchEvents;
    TouchEvents_Flag.SetToolTip(
@@ -1823,6 +1993,8 @@ MiscImageWindowSettingsPreferencesPage::MiscImageWindowSettingsPreferencesPage( 
    Page_Sizer.Add( ShowCaptionFullPaths_Flag );
    Page_Sizer.Add( ShowActiveSTFIndicators_Flag );
    Page_Sizer.Add( CursorTolerance_Integer );
+   Page_Sizer.Add( WheelStepAngle_Unsigned );
+   Page_Sizer.Add( WheelDirection_Set );
    Page_Sizer.Add( TouchEvents_Flag );
    Page_Sizer.Add( PinchSensitivity_Real );
    Page_Sizer.Add( FastScreenRenditions_Flag );
@@ -1843,6 +2015,8 @@ void MiscImageWindowSettingsPreferencesPage::TransferSettings( PreferencesInstan
    to.imageWindow.showCaptionFullPaths             = from.imageWindow.showCaptionFullPaths;
    to.imageWindow.showActiveSTFIndicators          = from.imageWindow.showActiveSTFIndicators;
    to.imageWindow.cursorTolerance                  = from.imageWindow.cursorTolerance;
+   to.imageWindow.wheelStepAngle                   = from.imageWindow.wheelStepAngle;
+   to.imageWindow.wheelDirection                   = from.imageWindow.wheelDirection;
    to.imageWindow.touchEvents                      = from.imageWindow.touchEvents;
    to.imageWindow.pinchSensitivity                 = from.imageWindow.pinchSensitivity;
    to.imageWindow.fastScreenRenditions             = from.imageWindow.fastScreenRenditions;
@@ -2266,7 +2440,7 @@ PreferencesInterface::GUIData::GUIData( PreferencesInterface& w ) : window( w )
    CategoryStack_Sizer.AddStretch();
 
    CategoryStack_Control.SetSizer( CategoryStack_Sizer );
-   CategoryStack_Control.SetScaledMinHeight( 500 );
+   CategoryStack_Control.SetScaledMinHeight( 600 );
 
    TopRow_Sizer.SetSpacing( 12 );
    TopRow_Sizer.Add( CategorySelection_TreeBox );
@@ -2351,6 +2525,7 @@ void PreferencesInterface::GUIData::InitializeCategories()
    categories.Destroy();
    categories.Add( new MainWindowPreferencesCategory );
    categories.Add( new ResourcesPreferencesCategory );
+   categories.Add( new WallpapersPreferencesCategory );
    categories.Add( new GUIEffectsPreferencesCategory );
    categories.Add( new FileIOPreferencesCategory );
    categories.Add( new DirectoriesAndNetworkPreferencesCategory );
@@ -2370,4 +2545,4 @@ void PreferencesInterface::GUIData::InitializeCategories()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInterface.cpp - Released 2017-05-02T09:43:00Z
+// EOF PreferencesInterface.cpp - Released 2017-07-09T18:07:33Z

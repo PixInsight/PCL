@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.06.0853
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// pcl/MetaFileFormat.cpp - Released 2017-06-28T11:58:42Z
+// pcl/MetaFileFormat.cpp - Released 2017-07-09T18:07:16Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -294,10 +294,14 @@ public:
       return api_false;
    }
 
+   // -------------------------------------------------------------------------
+
    static uint32 api_func GetImageCount( const_file_format_handle hf )
    {
       return uint32( constInstance->m_description.Length() );
    }
+
+   // -------------------------------------------------------------------------
 
    static api_bool api_func GetImageId( const_file_format_handle hf, char* id, uint32 n, uint32 index )
    {
@@ -316,6 +320,8 @@ public:
       *id = '\0';
       return api_false;
    }
+
+   // -------------------------------------------------------------------------
 
    static api_bool api_func GetImageDescription( const_file_format_handle hf, api_image_info* info, api_image_options* options, uint32 index )
    {
@@ -1825,4 +1831,4 @@ void MetaFileFormat::PerformAPIDefinitions() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaFileFormat.cpp - Released 2017-06-28T11:58:42Z
+// EOF pcl/MetaFileFormat.cpp - Released 2017-07-09T18:07:16Z

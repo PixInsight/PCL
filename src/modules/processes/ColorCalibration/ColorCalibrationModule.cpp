@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.02.00.0257
+// Standard ColorCalibration Process Module Version 01.03.02.0297
 // ----------------------------------------------------------------------------
-// ColorCalibrationModule.cpp - Released 2017-05-02T09:43:00Z
+// ColorCalibrationModule.cpp - Released 2017-07-09T18:07:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
@@ -51,14 +51,14 @@
 // ----------------------------------------------------------------------------
 
 #define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     02
-#define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0257
+#define MODULE_VERSION_MINOR     03
+#define MODULE_VERSION_REVISION  02
+#define MODULE_VERSION_BUILD     0297
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     5
-#define MODULE_RELEASE_DAY       2
+#define MODULE_RELEASE_MONTH     7
+#define MODULE_RELEASE_DAY       9
 
 #include "ColorCalibrationModule.h"
 #include "BackgroundNeutralizationProcess.h"
@@ -67,6 +67,9 @@
 #include "ColorCalibrationInterface.h"
 #include "LinearFitProcess.h"
 #include "LinearFitInterface.h"
+#include "PhotometricColorCalibrationProcess.h"
+#include "PhotometricColorCalibrationInterface.h"
+#include "PhotometricColorCalibrationGraphInterface.h"
 
 namespace pcl
 {
@@ -77,6 +80,8 @@ ColorCalibrationModule::ColorCalibrationModule() : MetaModule()
 {
 }
 
+// ----------------------------------------------------------------------------
+
 const char* ColorCalibrationModule::Version() const
 {
    return PCL_MODULE_VERSION( MODULE_VERSION_MAJOR,
@@ -86,35 +91,49 @@ const char* ColorCalibrationModule::Version() const
                               MODULE_VERSION_LANGUAGE );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString ColorCalibrationModule::Name() const
 {
    return "ColorCalibration";
 }
+
+// ----------------------------------------------------------------------------
 
 String ColorCalibrationModule::Description() const
 {
    return "PixInsight Standard ColorCalibration Process Module";
 }
 
+// ----------------------------------------------------------------------------
+
 String ColorCalibrationModule::Company() const
 {
    return "Pleiades Astrophoto";
 }
 
+// ----------------------------------------------------------------------------
+
 String ColorCalibrationModule::Author() const
 {
-   return "Juan Conejero, PTeam";
+   return "Juan Conejero, PTeam / Vicent Peris, PTeam";
 }
+
+// ----------------------------------------------------------------------------
 
 String ColorCalibrationModule::Copyright() const
 {
    return "Copyright (c) 2006-2017, Pleiades Astrophoto";
 }
 
+// ----------------------------------------------------------------------------
+
 String ColorCalibrationModule::TradeMarks() const
 {
    return "PixInsight";
 }
+
+// ----------------------------------------------------------------------------
 
 String ColorCalibrationModule::OriginalFileName() const
 {
@@ -132,11 +151,20 @@ String ColorCalibrationModule::OriginalFileName() const
 #endif
 }
 
+// ----------------------------------------------------------------------------
+
 void ColorCalibrationModule::GetReleaseDate( int& year, int& month, int& day ) const
 {
    year  = MODULE_RELEASE_YEAR;
    month = MODULE_RELEASE_MONTH;
    day   = MODULE_RELEASE_DAY;
+}
+
+// ----------------------------------------------------------------------------
+
+void ColorCalibrationModule::OnUnload()
+{
+   ThePhotometricColorCalibrationGraphInterface->CleanUp();
 }
 
 // ----------------------------------------------------------------------------
@@ -155,10 +183,13 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
       new pcl::ColorCalibrationInterface;
       new pcl::LinearFitProcess;
       new pcl::LinearFitInterface;
+      new pcl::PhotometricColorCalibrationProcess;
+      new pcl::PhotometricColorCalibrationInterface;
+      new pcl::PhotometricColorCalibrationGraphInterface;
    }
 
    return 0;
 }
 
 // ----------------------------------------------------------------------------
-// EOF ColorCalibrationModule.cpp - Released 2017-05-02T09:43:00Z
+// EOF ColorCalibrationModule.cpp - Released 2017-07-09T18:07:32Z

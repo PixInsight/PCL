@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0347
+// Standard Global Process Module Version 01.02.07.0366
 // ----------------------------------------------------------------------------
-// PreferencesInterface.h - Released 2017-05-02T09:43:00Z
+// PreferencesInterface.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -125,6 +125,26 @@ private:
 
 // ----------------------------------------------------------------------------
 
+class GlobalUnsignedControl : public GlobalItemControl
+{
+public:
+
+   GlobalUnsignedControl();
+
+   virtual void Synchronize();
+
+   uint32*         item = nullptr;
+   Label           label;
+   HorizontalSizer spinSizer;
+      SpinBox         spinBox;
+
+private:
+
+   void __ValueUpdated( SpinBox& sender, int value );
+};
+
+// ----------------------------------------------------------------------------
+
 class GlobalSetControl : public GlobalItemControl
 {
 public:
@@ -214,6 +234,8 @@ public:
 
    GlobalFileControl();
 
+   StringList fileExtensions;
+   String     dialogTitle;
    PushButton selectFileButton;
 
 private:
@@ -313,8 +335,8 @@ public:
    virtual void Synchronize();
 
    StringList*     item = nullptr;
-   Label           label;
    String          dialogTitle;
+   Label           label;
    TreeBox         directoriesTreeBox;
    HorizontalSizer buttonsSizer;
       PushButton     addPushButton;
@@ -340,8 +362,9 @@ public:
    virtual void Synchronize();
 
    Array<String*>  items;
-   Label           label;
+   StringList      fileExtensions;
    String          dialogTitle;
+   Label           label;
    TreeBox         filesTreeBox;
    HorizontalSizer buttonsSizer;
       PushButton     addPushButton;
@@ -352,6 +375,8 @@ private:
 
    void __NodeActivated( TreeBox& sender, TreeBox::Node& node, int col );
    void __Click( Button& sender, bool checked );
+   void __FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
+   void __FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
 };
 
 // ----------------------------------------------------------------------------
@@ -474,8 +499,11 @@ public:
    GlobalIntegerControl       MaxRecentFiles_Integer;
    GlobalFlagControl          ShowRecentlyUsed_Flag;
    GlobalFlagControl          ShowMostUsed_Flag;
+   GlobalFlagControl          ShowFavorites_Flag;
    GlobalIntegerControl       MaxUsageListLength_Integer;
-   GlobalFlagControl          ExpandUsageItemsAtStartup_Flag;
+   GlobalFlagControl          ExpandRecentlyUsedAtStartup_Flag;
+   GlobalFlagControl          ExpandMostUsedAtStartup_Flag;
+   GlobalFlagControl          ExpandFavoritesAtStartup_Flag;
    GlobalFlagControl          OpenURLsWithInternalBrowser_Flag;
 };
 
@@ -506,6 +534,22 @@ public:
 };
 
 DEFINE_PREFERENCES_CATEGORY( Resources, "Core UI Resources" )
+
+// ----------------------------------------------------------------------------
+
+class WallpapersPreferencesPage : public PreferencesCategoryPage
+{
+public:
+
+   WallpapersPreferencesPage( PreferencesInstance& );
+
+   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
+
+   GlobalFileSetControl       Wallpapers_FileSet;
+   GlobalFlagControl          UseWallpapers_Flag;
+};
+
+DEFINE_PREFERENCES_CATEGORY( Wallpapers, "Core Wallpapers" )
 
 // ----------------------------------------------------------------------------
 
@@ -645,6 +689,8 @@ public:
    GlobalFlagControl          ShowCaptionFullPaths_Flag;
    GlobalFlagControl          ShowActiveSTFIndicators_Flag;
    GlobalIntegerControl       CursorTolerance_Integer;
+   GlobalUnsignedControl      WheelStepAngle_Unsigned;
+   GlobalSetControl           WheelDirection_Set;
    GlobalFlagControl          TouchEvents_Flag;
    GlobalRealControl          PinchSensitivity_Real;
    GlobalFlagControl          FastScreenRenditions_Flag;
@@ -873,4 +919,4 @@ PCL_END_LOCAL
 #endif   // __PreferencesInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInterface.h - Released 2017-05-02T09:43:00Z
+// EOF PreferencesInterface.h - Released 2017-07-09T18:07:33Z

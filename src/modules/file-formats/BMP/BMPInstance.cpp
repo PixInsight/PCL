@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard BMP File Format Module Version 01.00.03.0295
+// Standard BMP File Format Module Version 01.00.04.0313
 // ----------------------------------------------------------------------------
-// BMPInstance.cpp - Released 2017-05-02T09:42:51Z
+// BMPInstance.cpp - Released 2017-07-09T18:07:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard BMP PixInsight module.
 //
@@ -60,16 +60,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-BitmapInstance::BitmapInstance( const MetaFileFormat* F ) : FileFormatImplementation( F ), bitmap( 0 ), path(), info()
-{
-}
-
-BitmapInstance::~BitmapInstance()
-{
-   Close();
-}
-
-static void __GetBitmapInfo( int& width, int& height, bool& grayscale, bool& alpha, const Bitmap* bmp )
+static void GetBitmapInfo( int& width, int& height, bool& grayscale, bool& alpha, const Bitmap* bmp )
 {
    bmp->GetDimensions( width, height );
    grayscale = true;
@@ -114,24 +105,24 @@ ImageDescriptionArray BitmapInstance::Open( const String& filePath, const IsoStr
 {
    Close();
 
-   bitmap = new Bitmap( path = filePath );
+   m_bitmap = new Bitmap( m_path = filePath );
 
-   if ( bitmap->IsNull() || bitmap->IsEmpty() )
+   if ( m_bitmap->IsNull() || m_bitmap->IsEmpty() )
    {
       Close();
       throw Error( "Error reading bitmap" );
    }
 
    bool grayscale, alpha;
-   __GetBitmapInfo( info.width, info.height, grayscale, alpha, bitmap );
+   GetBitmapInfo( m_info.width, m_info.height, grayscale, alpha, m_bitmap.Ptr() );
 
-   info.numberOfChannels = (grayscale ? 1 : 3) + (alpha ? 1 : 0);
-   info.colorSpace = grayscale ? ColorSpace::Gray : ColorSpace::RGB;
-   info.supported = true;
+   m_info.numberOfChannels = (grayscale ? 1 : 3) + (alpha ? 1 : 0);
+   m_info.colorSpace = grayscale ? ColorSpace::Gray : ColorSpace::RGB;
+   m_info.supported = true;
 
    ImageDescription d;
 
-   d.info = info;
+   d.info = m_info;
 
    d.options.bitsPerSample = 8;
    d.options.embedICCProfile= false;
@@ -142,42 +133,50 @@ ImageDescriptionArray BitmapInstance::Open( const String& filePath, const IsoStr
    return a;
 }
 
+// ----------------------------------------------------------------------------
+
 bool BitmapInstance::IsOpen() const
 {
-   return bitmap != 0;
+   return !m_bitmap.IsNull();
 }
+
+// ----------------------------------------------------------------------------
 
 String BitmapInstance::FilePath() const
 {
-   return path;
+   return m_path;
 }
 
-void BitmapInstance::Create( const String& filePath, int /*numberOfImages*/, const IsoString& /*hints*/ )
+// ----------------------------------------------------------------------------
+
+void BitmapInstance::Create( const String& filePath, int /*numberOfImages*/, const IsoString& hints )
 {
    Close();
 
-   path = filePath;
+   m_path = filePath;
+   m_hints = hints;
 
-   bitmap = new Bitmap; // this is just to "seem open"; we'll create a true bitmap upon image write
-   if ( bitmap->IsNull() )
+   m_bitmap = new Bitmap; // this is just to "look like open"; we'll create a true bitmap upon image write
+   if ( m_bitmap->IsNull() )
    {
       Close();
       throw Error( "Unable to create bitmap" );
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void BitmapInstance::Close()
 {
-   if ( bitmap != 0 )
-      delete bitmap, bitmap = 0;
+   m_bitmap.Destroy();
 }
 
 // ----------------------------------------------------------------------------
 
 template <class P>
-static void ReadImageImp( GenericImage<P>& image, const Bitmap* bmp, const ImageInfo& info )
+static void ReadImageImp( GenericImage<P>& image, const AutoPointer<Bitmap>& bitmap, const ImageInfo& info )
 {
-   if ( bmp == 0 || bmp->IsNull() )
+   if ( bitmap.IsNull() || bitmap->IsNull() )
       throw Error( "Attempt to read bitmap before opening a file" );
 
    image.AllocateData( info.width, info.height, info.numberOfChannels, ColorSpace::value_type( info.colorSpace ) );
@@ -185,7 +184,7 @@ static void ReadImageImp( GenericImage<P>& image, const Bitmap* bmp, const Image
 
    for ( int y = 0; y < image.Height(); ++y )
    {
-      const RGBA* b = bmp->ScanLine( y );
+      const RGBA* b = bitmap->ScanLine( y );
 
       typename P::sample* p[ 4 ];
       for ( int c = 0; c < image.NumberOfChannels(); ++c )
@@ -201,69 +200,83 @@ static void ReadImageImp( GenericImage<P>& image, const Bitmap* bmp, const Image
    }
 }
 
-void BitmapInstance::ReadImage( Image& img )
+void BitmapInstance::ReadImage( Image& image )
 {
-   ReadImageImp( img, bitmap, info );
+   ReadImageImp( image, m_bitmap, m_info );
 }
 
-void BitmapInstance::ReadImage( DImage& img )
+void BitmapInstance::ReadImage( DImage& image )
 {
-   ReadImageImp( img, bitmap, info );
+   ReadImageImp( image, m_bitmap, m_info );
 }
 
-void BitmapInstance::ReadImage( UInt8Image& img )
+void BitmapInstance::ReadImage( UInt8Image& image )
 {
-   ReadImageImp( img, bitmap, info );
+   ReadImageImp( image, m_bitmap, m_info );
 }
 
-void BitmapInstance::ReadImage( UInt16Image& img )
+void BitmapInstance::ReadImage( UInt16Image& image )
 {
-   ReadImageImp( img, bitmap, info );
+   ReadImageImp( image, m_bitmap, m_info );
 }
 
-void BitmapInstance::ReadImage( UInt32Image& img )
+void BitmapInstance::ReadImage( UInt32Image& image )
 {
-   ReadImageImp( img, bitmap, info );
+   ReadImageImp( image, m_bitmap, m_info );
 }
 
 // ----------------------------------------------------------------------------
 
 template <class P>
-static void WriteImageImp( const String& path, Bitmap*& bmp, const GenericImage<P>& img )
+static void WriteImageImp( const String& path, AutoPointer<Bitmap>& bitmap, const GenericImage<P>& image, int quality, const IsoString& hints )
 {
-   if ( path.IsEmpty() || bmp == 0 )
+   if ( path.IsEmpty() || bitmap.IsNull() )
       throw Error( "Attempt to write bitmap before creating a file" );
 
-   if ( bmp != 0 )
-      delete bmp, bmp = 0;
-   ImageVariant v( &const_cast<GenericImage<P>&>( img ) );
-   bmp = new Bitmap( Bitmap::Render( v ) );
-   bmp->Save( path );
+   if ( !hints.IsEmpty() )
+   {
+      IsoStringList tokens;
+      hints.Break( tokens, ' ', true/*trim*/ );
+      tokens.Remove( IsoString() );
+      for ( IsoStringList::const_iterator i = tokens.Begin(); i != tokens.End(); ++i )
+         if ( *i == "quality" )
+         {
+            if ( ++i == tokens.End() )
+               break;
+            if ( i->TryToInt( quality ) )
+               quality = Range( quality, 0, 100 );
+         }
+   }
+
+   bitmap.Destroy();
+   ImageVariant v( &const_cast<GenericImage<P>&>( image ) );
+   bitmap = new Bitmap( Bitmap::Render( v ) );
+   bitmap->Save( path, quality );
 }
 
-void BitmapInstance::WriteImage( const Image& img )
+void BitmapInstance::WriteImage( const Image& image )
 {
-   WriteImageImp( path, bitmap, img );
+   WriteImageImp( m_path, m_bitmap, image, DefaultQuality(), m_hints );
 }
 
-void BitmapInstance::WriteImage( const DImage& img )
+void BitmapInstance::WriteImage( const DImage& image )
 {
-   WriteImageImp( path, bitmap, img );
+   WriteImageImp( m_path, m_bitmap, image, DefaultQuality(), m_hints );
 }
 
-void BitmapInstance::WriteImage( const UInt8Image& img )
+void BitmapInstance::WriteImage( const UInt8Image& image )
 {
-   WriteImageImp( path, bitmap, img );
+   WriteImageImp( m_path, m_bitmap, image, DefaultQuality(), m_hints );
 }
 
-void BitmapInstance::WriteImage( const UInt16Image& img )
+void BitmapInstance::WriteImage( const UInt16Image& image )
 {
-   WriteImageImp( path, bitmap, img );
+   WriteImageImp( m_path, m_bitmap, image, DefaultQuality(), m_hints );
 }
 
-void BitmapInstance::WriteImage( const UInt32Image& img )
+void BitmapInstance::WriteImage( const UInt32Image& image )
 {
-   WriteImageImp( path, bitmap, img );
+   WriteImageImp( m_path, m_bitmap, image, DefaultQuality(), m_hints );
 }
 
 // ----------------------------------------------------------------------------
@@ -271,4 +284,4 @@ void BitmapInstance::WriteImage( const UInt32Image& img )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BMPInstance.cpp - Released 2017-05-02T09:42:51Z
+// EOF BMPInstance.cpp - Released 2017-07-09T18:07:25Z

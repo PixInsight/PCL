@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0266
+// Standard StarGenerator Process Module Version 01.01.00.0285
 // ----------------------------------------------------------------------------
-// StarGeneratorInterface.cpp - Released 2017-05-02T09:43:01Z
+// StarGeneratorInterface.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
@@ -366,17 +366,9 @@ void StarGeneratorInterface::__Button_Clicked( Button& sender, bool checked )
    {
       SaveFileDialog d;
       d.SetCaption( "StarGenerator: Select Output CSV File" );
+      d.SetFilters( FileDialog::filter_list() << FileFilter( "CSV Text Files", ".csv" )
+                                              << FileFilter( "Any Files", "*" ) );
       d.EnableOverwritePrompt();
-
-      FileFilter csvFilter;
-      csvFilter.SetDescription( "CSV Text Files" );
-      csvFilter.AddExtension( ".csv" );
-      d.Filters().Add( csvFilter );
-      FileFilter allFilter;
-      allFilter.SetDescription( "Any Files" );
-      allFilter.AddExtension( "*" );
-      d.Filters().Add( allFilter );
-
       if ( d.Execute() )
       {
          instance.outputFilePath = d.FileName();
@@ -723,4 +715,4 @@ StarGeneratorInterface::GUIData::GUIData( StarGeneratorInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF StarGeneratorInterface.cpp - Released 2017-05-02T09:43:01Z
+// EOF StarGeneratorInterface.cpp - Released 2017-07-09T18:07:33Z

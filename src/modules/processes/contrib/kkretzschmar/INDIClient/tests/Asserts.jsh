@@ -1,7 +1,7 @@
 // ----------------------------------------------------------------------------
 // PixInsight JavaScript Runtime API - PJSR Version 1.0
 // ----------------------------------------------------------------------------
-// Asserts.jsh - Released 2017-05-02T09:43:01Z
+// Asserts.jsh - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 //
 //
@@ -134,7 +134,7 @@ function parseXTPMFile(fileName) {
 		 var xmlElement = tokens1[0];
 	     var xmlValue = tokens2[0];
 	     if (xmlElement.indexOf("GeographicLatitude") !== -1) {
-	    	 result.GeoLat = parseFloat(xmlValue); 
+	    	 result.GeoLat = parseFloat(xmlValue);
 	     } else if (xmlElement.indexOf("Configuration") !== -1) {
 	    	 result.ModelConf = parseInt(xmlValue);
 	     } else if (xmlElement.indexOf("ModelParameters PierSide=\"West\"") !== -1) {
@@ -147,7 +147,7 @@ function parseXTPMFile(fileName) {
 	    	 for (var j = 0; j < params.length; ++j){
 	    		 result.ModelParamEast[j] = parseFloat(params[j]);
 	    	 }
-	     }   
+	     }
        }
    }
    return result;
@@ -157,4 +157,4 @@ function parseXTPMFile(fileName) {
 #endif // _Asserts_jsh
 
 // ----------------------------------------------------------------------------
-// EOF Asserts.jsh - Released 2017-05-02T09:43:01Z
+// EOF Asserts.jsh - Released 2017-07-09T18:07:33Z

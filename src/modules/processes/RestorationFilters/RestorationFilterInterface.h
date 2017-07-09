@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard RestorationFilters Process Module Version 01.00.05.0290
+// Standard RestorationFilters Process Module Version 01.00.05.0309
 // ----------------------------------------------------------------------------
-// RestorationFilterInterface.h - Released 2017-05-02T09:43:01Z
+// RestorationFilterInterface.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RestorationFilters PixInsight module.
 //
@@ -163,7 +163,7 @@ private:
          NumericControl    RangeHigh_NumericControl;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
    void UpdatePSFControls();
@@ -194,6 +194,9 @@ private:
 
    void __Range_ValueUpdated( NumericEdit& sender, double value );
 
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
+
    friend struct GUIData;
 };
 
@@ -210,4 +213,4 @@ PCL_END_LOCAL
 #endif   // __RestorationFilterInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF RestorationFilterInterface.h - Released 2017-05-02T09:43:01Z
+// EOF RestorationFilterInterface.h - Released 2017-07-09T18:07:33Z

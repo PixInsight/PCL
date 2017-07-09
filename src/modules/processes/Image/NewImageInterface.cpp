@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0371
+// Standard Image Process Module Version 01.02.09.0390
 // ----------------------------------------------------------------------------
-// NewImageInterface.cpp - Released 2017-05-02T09:43:00Z
+// NewImageInterface.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -257,7 +257,7 @@ void NewImageInterface::UpdateControls()
 
 void NewImageInterface::UpdateInitialValue( Edit& e, Slider& s, double v )
 {
-   e.SetText( String().Format( "%.8lf", v ) );
+   e.SetText( String().Format( "%.8f", v ) );
    s.SetValue( RoundInt( v*s.MaxValue() ) );
 }
 
@@ -277,7 +277,7 @@ void NewImageInterface::UpdateSizeInfo()
 
    double N = (double( instance.width )/1048576)
       * instance.height * instance.numberOfChannels * bytesPerSample;
-   GUI->SizeInfo_Label.SetText( (N < 10000) ? String().Format( "%.3lf MB", N ) : String().Format( "%.3lf GB", N/1024 ) );
+   GUI->SizeInfo_Label.SetText( (N < 10000) ? String().Format( "%.3f MB", N ) : String().Format( "%.3f GB", N/1024 ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -668,4 +668,4 @@ NewImageInterface::GUIData::GUIData( NewImageInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF NewImageInterface.cpp - Released 2017-05-02T09:43:00Z
+// EOF NewImageInterface.cpp - Released 2017-07-09T18:07:33Z

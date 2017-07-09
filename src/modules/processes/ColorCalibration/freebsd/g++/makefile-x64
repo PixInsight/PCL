@@ -2,7 +2,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-05-02T09:40:59.617Z
+# Generated on .... 2017-07-09T17:55:56.057Z
 # Project id ...... ColorCalibration
 # Project type .... Module
 # Platform ........ FreeBSD/g++
@@ -31,7 +31,12 @@ SRC_FILES= \
 ../../LinearFitInstance.cpp \
 ../../LinearFitInterface.cpp \
 ../../LinearFitParameters.cpp \
-../../LinearFitProcess.cpp
+../../LinearFitProcess.cpp \
+../../PhotometricColorCalibrationGraphInterface.cpp \
+../../PhotometricColorCalibrationInstance.cpp \
+../../PhotometricColorCalibrationInterface.cpp \
+../../PhotometricColorCalibrationParameters.cpp \
+../../PhotometricColorCalibrationProcess.cpp
 
 #
 # Object files
@@ -50,7 +55,12 @@ OBJ_FILES= \
 ./x64/Release/LinearFitInstance.o \
 ./x64/Release/LinearFitInterface.o \
 ./x64/Release/LinearFitParameters.o \
-./x64/Release/LinearFitProcess.o
+./x64/Release/LinearFitProcess.o \
+./x64/Release/PhotometricColorCalibrationGraphInterface.o \
+./x64/Release/PhotometricColorCalibrationInstance.o \
+./x64/Release/PhotometricColorCalibrationInterface.o \
+./x64/Release/PhotometricColorCalibrationParameters.o \
+./x64/Release/PhotometricColorCalibrationProcess.o
 
 #
 # Dependency files
@@ -69,7 +79,12 @@ DEP_FILES= \
 ./x64/Release/LinearFitInstance.d \
 ./x64/Release/LinearFitInterface.d \
 ./x64/Release/LinearFitParameters.d \
-./x64/Release/LinearFitProcess.d
+./x64/Release/LinearFitProcess.d \
+./x64/Release/PhotometricColorCalibrationGraphInterface.d \
+./x64/Release/PhotometricColorCalibrationInstance.d \
+./x64/Release/PhotometricColorCalibrationInterface.d \
+./x64/Release/PhotometricColorCalibrationParameters.d \
+./x64/Release/PhotometricColorCalibrationProcess.d
 
 #
 # Rules

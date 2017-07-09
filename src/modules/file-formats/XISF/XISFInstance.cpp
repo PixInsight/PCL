@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.09.0135
+// Standard XISF File Format Module Version 01.00.09.0153
 // ----------------------------------------------------------------------------
-// XISFInstance.cpp - Released 2017-05-02T09:42:51Z
+// XISFInstance.cpp - Released 2017-07-09T18:07:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -515,7 +515,7 @@ XISFInstance::XISFInstance( const XISFFormat* F ) :
 
 // ----------------------------------------------------------------------------
 
-XISFInstance::~XISFInstance()
+XISFInstance::~XISFInstance() noexcept( false )
 {
    Close();
 }
@@ -1126,4 +1126,4 @@ void XISFInstance::CloseImage()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFInstance.cpp - Released 2017-05-02T09:42:51Z
+// EOF XISFInstance.cpp - Released 2017-07-09T18:07:25Z

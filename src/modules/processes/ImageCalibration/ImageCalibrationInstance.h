@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.00.0300
+// Standard ImageCalibration Process Module Version 01.04.00.0319
 // ----------------------------------------------------------------------------
-// ImageCalibrationInstance.h - Released 2017-05-17T17:41:55Z
+// ImageCalibrationInstance.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -231,28 +231,15 @@ private:
    pcl_enum        onError;
    pcl_bool        noGUIMessages;
 
-   /*
-    * Read-only output properties
-    */
-
+   // Read-only output properties
    struct OutputData
    {
       String     outputFilePath;
-      FVector    darkScalingFactors;
-      FVector    noiseEstimates;
-      FVector    noiseFractions;
-      StringList noiseAlgorithms;
-
-      OutputData() :
-         outputFilePath(),
-         darkScalingFactors( 0.0F, 3 ),
-         noiseEstimates( 0.0F, 3 ), noiseFractions( 0.0F, 3 ), noiseAlgorithms( 3 )
-      {
-      }
-
-      OutputData( const OutputData& ) = default;
+      FVector    darkScalingFactors = FVector( 0.0F, 3 );
+      FVector    noiseEstimates = FVector( 0.0F, 3 );
+      FVector    noiseFractions = FVector( 0.0F, 3 );
+      StringList noiseAlgorithms = StringList( size_type( 3 ) );
    };
-
    Array<OutputData> output;
 
    // -------------------------------------------------------------------------
@@ -289,4 +276,4 @@ private:
 #endif   // __ImageCalibrationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationInstance.h - Released 2017-05-17T17:41:55Z
+// EOF ImageCalibrationInstance.h - Released 2017-07-09T18:07:33Z

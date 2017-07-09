@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.02.00.0257
+// Standard ColorCalibration Process Module Version 01.03.02.0297
 // ----------------------------------------------------------------------------
-// BackgroundNeutralizationInstance.cpp - Released 2017-05-02T09:43:00Z
+// BackgroundNeutralizationInstance.cpp - Released 2017-07-09T18:07:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
@@ -64,21 +64,20 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 BackgroundNeutralizationInstance::BackgroundNeutralizationInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-backgroundReferenceViewId(),
-backgroundLow( TheBNBackgroundLowParameter->DefaultValue() ),
-backgroundHigh( TheBNBackgroundHighParameter->DefaultValue() ),
-useROI( TheBNUseROIParameter->DefaultValue() ),
-roi( 0 ),
-mode( BNMode::Default ),
-targetBackground( TheBNTargetBackgroundParameter->DefaultValue() )
+   ProcessImplementation( m ),
+   backgroundLow( TheBNBackgroundLowParameter->DefaultValue() ),
+   backgroundHigh( TheBNBackgroundHighParameter->DefaultValue() ),
+   useROI( TheBNUseROIParameter->DefaultValue() ),
+   roi( 0 ),
+   mode( BNMode::Default ),
+   targetBackground( TheBNTargetBackgroundParameter->DefaultValue() )
 {
 }
 
 // ----------------------------------------------------------------------------
 
 BackgroundNeutralizationInstance::BackgroundNeutralizationInstance( const BackgroundNeutralizationInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -88,8 +87,7 @@ ProcessImplementation( x )
 void BackgroundNeutralizationInstance::Assign( const ProcessImplementation& p )
 {
    const BackgroundNeutralizationInstance* x = dynamic_cast<const BackgroundNeutralizationInstance*>( &p );
-
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       backgroundReferenceViewId = x->backgroundReferenceViewId;
       backgroundLow = x->backgroundLow;
@@ -105,18 +103,16 @@ void BackgroundNeutralizationInstance::Assign( const ProcessImplementation& p )
 
 bool BackgroundNeutralizationInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) const
 {
-   if ( view.Image().IsComplexSample() )
-   {
-      whyNot = "BackgroundNeutralization cannot be executed on complex images.";
-      return false;
-   }
-
    if ( !view.IsColor() )
    {
       whyNot = "BackgroundNeutralization can only be executed on color images.";
       return false;
    }
-
+   if ( view.Image().IsComplexSample() )
+   {
+      whyNot = "BackgroundNeutralization cannot be executed on complex images.";
+      return false;
+   }
    return true;
 }
 
@@ -161,15 +157,15 @@ static DVector BackgroundReferenceVector( const ImageVariant& image, float low, 
    if ( image.IsFloatSample() )
       switch ( image.BitsPerSample() )
       {
-      case 32 : return BackgroundReferenceVector( static_cast<const Image&>( *image ), low, high );
-      case 64 : return BackgroundReferenceVector( static_cast<const DImage&>( *image ), low, high );
+      case 32: return BackgroundReferenceVector( static_cast<const Image&>( *image ), low, high );
+      case 64: return BackgroundReferenceVector( static_cast<const DImage&>( *image ), low, high );
       }
    else
       switch ( image.BitsPerSample() )
       {
-      case  8 : return BackgroundReferenceVector( static_cast<const UInt8Image&>( *image ), low, high );
-      case 16 : return BackgroundReferenceVector( static_cast<const UInt16Image&>( *image ), low, high );
-      case 32 : return BackgroundReferenceVector( static_cast<const UInt32Image&>( *image ), low, high );
+      case  8: return BackgroundReferenceVector( static_cast<const UInt8Image&>( *image ), low, high );
+      case 16: return BackgroundReferenceVector( static_cast<const UInt16Image&>( *image ), low, high );
+      case 32: return BackgroundReferenceVector( static_cast<const UInt32Image&>( *image ), low, high );
       }
 
    return 0;
@@ -232,10 +228,10 @@ bool BackgroundNeutralizationInstance::ExecuteOn( View& view )
 
       bg0 = BackgroundReferenceVector( v, backgroundLow, backgroundHigh );
 
-      console.WriteLn( String().Format( "<end><cbr>* Background reference:\n"
-                                        "B0r : %.5e\n"
-                                        "B0g : %.5e\n"
-                                        "B0b : %.5e", bg0[0], bg0[1], bg0[2] ) );
+      console.NoteLn( String().Format( "<end><cbr>* Background reference:\n"
+                                       "B_R : %.5e\n"
+                                       "B_G : %.5e\n"
+                                       "B_B : %.5e", bg0[0], bg0[1], bg0[2] ) );
    }
 
    ImageVariant v = view.Image();
@@ -269,7 +265,7 @@ bool BackgroundNeutralizationInstance::ExecuteOn( View& view )
    else
    {
       ImageVariant v1;
-      v1.CreateFloatImage( (v.BitsPerSample() > (v.IsFloatSample() ? 32 : 16)) ? 64 : 32 );
+      v1.CreateFloatImage( (v.BitsPerSample() > 16) ? 64 : 32 );
       v1.CopyImage( v );
 
       for ( int c = 0; c < 3; ++c )
@@ -349,4 +345,4 @@ size_type BackgroundNeutralizationInstance::ParameterLength( const MetaParameter
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BackgroundNeutralizationInstance.cpp - Released 2017-05-02T09:43:00Z
+// EOF BackgroundNeutralizationInstance.cpp - Released 2017-07-09T18:07:32Z

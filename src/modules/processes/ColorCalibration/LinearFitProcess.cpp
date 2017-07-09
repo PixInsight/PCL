@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.02.00.0257
+// Standard ColorCalibration Process Module Version 01.03.02.0297
 // ----------------------------------------------------------------------------
-// LinearFitProcess.cpp - Released 2017-05-02T09:43:00Z
+// LinearFitProcess.cpp - Released 2017-07-09T18:07:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
@@ -69,7 +69,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-LinearFitProcess* TheLinearFitProcess = 0;
+LinearFitProcess* TheLinearFitProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -77,7 +77,6 @@ LinearFitProcess::LinearFitProcess() : MetaProcess()
 {
    TheLinearFitProcess = this;
 
-   // Instantiate process parameters
    new LFReferenceViewId( this );
    new LFRejectLow( this );
    new LFRejectHigh( this );
@@ -135,14 +134,7 @@ ProcessImplementation* LinearFitProcess::Create() const
 ProcessImplementation* LinearFitProcess::Clone( const ProcessImplementation& p ) const
 {
    const LinearFitInstance* instPtr = dynamic_cast<const LinearFitInstance*>( &p );
-   return (instPtr != 0) ? new LinearFitInstance( *instPtr ) : 0;
-}
-
-// ----------------------------------------------------------------------------
-
-bool LinearFitProcess::NeedsValidation() const
-{
-   return false;
+   return (instPtr != nullptr) ? new LinearFitInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -209,12 +201,12 @@ int LinearFitProcess::ProcessCommandLine( const StringList& argv ) const
          if ( arg.Id() == "r0" || arg.Id() == "reject-low" )
          {
             CHECK_IN_NORM_RANGE;
-            instance.rejectLow = arg.NumericValue();
+            instance.p_rejectLow = arg.NumericValue();
          }
          else if ( arg.Id() == "r1" || arg.Id() == "reject-high" )
          {
             CHECK_IN_NORM_RANGE;
-            instance.rejectHigh = arg.NumericValue();
+            instance.p_rejectHigh = arg.NumericValue();
          }
          else
             throw Error( "Unknown numeric argument: " + arg.Token() );
@@ -222,7 +214,7 @@ int LinearFitProcess::ProcessCommandLine( const StringList& argv ) const
       else if ( arg.IsString() )
       {
          if ( arg.Id() == "v" || arg.Id() == "reference-view" )
-            instance.referenceViewId = arg.StringValue();
+            instance.p_referenceViewId = arg.StringValue();
          else
             throw Error( "Unknown string argument: " + arg.Token() );
       }
@@ -257,7 +249,7 @@ int LinearFitProcess::ProcessCommandLine( const StringList& argv ) const
             View v = View::ViewById( *j );
             if ( v.IsNull() )
                throw Error( "No such view: " + *j );
-            if ( v.FullId() != IsoString( instance.referenceViewId ).Trimmed() )
+            if ( v.FullId() != IsoString( instance.p_referenceViewId ).Trimmed() )
                instance.LaunchOn( v );
             else
                Console().WarningLn( "<end><cbr>** Skipping reference view: " + v.FullId() );
@@ -282,4 +274,4 @@ int LinearFitProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LinearFitProcess.cpp - Released 2017-05-02T09:43:00Z
+// EOF LinearFitProcess.cpp - Released 2017-07-09T18:07:32Z

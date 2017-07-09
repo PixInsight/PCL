@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.02.00.0257
+// Standard ColorCalibration Process Module Version 01.03.02.0297
 // ----------------------------------------------------------------------------
-// LinearFitInstance.cpp - Released 2017-05-02T09:43:00Z
+// LinearFitInstance.cpp - Released 2017-07-09T18:07:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
@@ -68,17 +68,16 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 LinearFitInstance::LinearFitInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-referenceViewId(),
-rejectLow( TheLFRejectLowParameter->DefaultValue() ),
-rejectHigh( TheLFRejectHighParameter->DefaultValue() )
+   ProcessImplementation( m ),
+   p_rejectLow( TheLFRejectLowParameter->DefaultValue() ),
+   p_rejectHigh( TheLFRejectHighParameter->DefaultValue() )
 {
 }
 
 // ----------------------------------------------------------------------------
 
 LinearFitInstance::LinearFitInstance( const LinearFitInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -88,11 +87,11 @@ ProcessImplementation( x )
 void LinearFitInstance::Assign( const ProcessImplementation& p )
 {
    const LinearFitInstance* x = dynamic_cast<const LinearFitInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
-      referenceViewId = x->referenceViewId;
-      rejectLow = x->rejectLow;
-      rejectHigh = x->rejectHigh;
+      p_referenceViewId = x->p_referenceViewId;
+      p_rejectLow       = x->p_rejectLow;
+      p_rejectHigh      = x->p_rejectHigh;
    }
 }
 
@@ -100,7 +99,7 @@ void LinearFitInstance::Assign( const ProcessImplementation& p )
 
 bool LinearFitInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) const
 {
-   if ( referenceViewId.Trimmed().IsEmpty() )
+   if ( p_referenceViewId.Trimmed().IsEmpty() )
    {
       whyNot = "This instance does not specify a reference view.";
       return false;
@@ -198,8 +197,8 @@ private:
       size_type N = image.NumberOfPixels();
 
       Console console;
-      console.WriteLn( String().Format( "<end><cbr>Sampling interval: ]%.6f,%.6f[",
-                                          instance->rejectLow, instance->rejectHigh ) );
+      console.WriteLn( String().Format( "<end><cbr>Sampling interval: (%.6f,%.6f)",
+                                        instance->p_rejectLow, instance->p_rejectHigh ) );
       SpinStatus spin;
       StatusMonitor monitor;
       monitor.SetCallback( &spin );
@@ -216,13 +215,13 @@ private:
          for ( ; v1 < vN; ++v1, ++v2, ++monitor )
          {
             float f1; P1::FromSample( f1, *v1 );
-            if ( f1 > instance->rejectLow && f1 < instance->rejectHigh )
+            if ( f1 > instance->p_rejectLow && f1 < instance->p_rejectHigh )
             {
                float f2; P2::FromSample( f2, *v2 );
-               if ( f2 > instance->rejectLow && f2 < instance->rejectHigh )
+               if ( f2 > instance->p_rejectLow && f2 < instance->p_rejectHigh )
                {
-                  F1.Add( f1 );
-                  F2.Add( f2 );
+                  F1 << f1;
+                  F2 << f2;
                }
             }
          }
@@ -240,16 +239,18 @@ private:
 
       monitor.Complete();
 
-      console.WriteLn( "<end><cbr>Linear fit functions:" );
+      console.NoteLn( "<end><cbr>* Linear fit functions:" );
       for ( int c = 0; c < image.NumberOfNominalChannels(); ++c )
-      {
-         console.WriteLn( String().Format( "y<sub>%d</sub> = %+.6f %c %.6f&middot;x<sub>%d</sub>",
-                                             c, L[c].a, (L[c].b < 0) ? '-' : '+', Abs( L[c].b ), c ) );
-         console.WriteLn( String().Format( "&sigma;<sub>%d</sub> = %+.6f",
-                                             c, L[c].adev ) );
-         console.WriteLn( String().Format( "N<sub>%d</sub> = %6.2f%% (%u)",
-                                             c, 100.0*count[c]/N, count[c] ) );
-      }
+         console.NoteLn( String().Format( "y_%d = %+.6e %c %.6e*x_%d &plusmn; %.6e n_%d = %6.2f%% (%u)",
+                                          c,
+                                          L[c].a,
+                                          (L[c].b < 0) ? '-' : '+',
+                                          Abs( L[c].b ),
+                                          c,
+                                          L[c].adev,
+                                          c,
+                                          100.0*count[c]/N,
+                                          count[c] ) );
 
       return L;
    }
@@ -301,18 +302,18 @@ private:
 
 bool LinearFitInstance::ExecuteOn( View& view )
 {
-   referenceViewId.Trim();
-   if ( referenceViewId.IsEmpty() )
+   p_referenceViewId.Trim();
+   if ( p_referenceViewId.IsEmpty() )
       throw Error( "No reference view has been specified" );
 
-   if ( rejectLow >= rejectHigh )
+   if ( p_rejectLow >= p_rejectHigh )
       throw Error( "Empty sampling interval" );
 
-   View referenceView = View::ViewById( referenceViewId );
+   View referenceView = View::ViewById( p_referenceViewId );
    if ( referenceView.IsNull() )
-      throw Error( "No such view (reference image): " + referenceViewId );
+      throw Error( "No such view (reference image): " + p_referenceViewId );
    if ( referenceView.IsPreview() && referenceView.Bounds() != referenceView.Window().MainView().Bounds() )
-      throw Error( "Cannot use a partial preview as reference: " + referenceViewId );
+      throw Error( "Cannot use a partial preview as reference: " + p_referenceViewId );
    if ( referenceView == view )
       throw Error( "The reference and target images must be different" );
 
@@ -355,21 +356,24 @@ bool LinearFitInstance::ExecuteOn( View& view )
 void* LinearFitInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
 {
    if ( p == TheLFReferenceViewIdParameter )
-      return referenceViewId.Begin();
+      return p_referenceViewId.Begin();
    if ( p == TheLFRejectLowParameter )
-      return &rejectLow;
+      return &p_rejectLow;
    if ( p == TheLFRejectHighParameter )
-      return &rejectHigh;
-   return 0;
+      return &p_rejectHigh;
+
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool LinearFitInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {
    if ( p == TheLFReferenceViewIdParameter )
    {
-      referenceViewId.Clear();
+      p_referenceViewId.Clear();
       if ( sizeOrLength > 0 )
-         referenceViewId.SetLength( sizeOrLength );
+         p_referenceViewId.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -377,10 +381,13 @@ bool LinearFitInstance::AllocateParameter( size_type sizeOrLength, const MetaPar
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 size_type LinearFitInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
    if ( p == TheLFReferenceViewIdParameter )
-      return referenceViewId.Length();
+      return p_referenceViewId.Length();
+
    return 0;
 }
 
@@ -389,4 +396,4 @@ size_type LinearFitInstance::ParameterLength( const MetaParameter* p, size_type 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LinearFitInstance.cpp - Released 2017-05-02T09:43:00Z
+// EOF LinearFitInstance.cpp - Released 2017-07-09T18:07:32Z

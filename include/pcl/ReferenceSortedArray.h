@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.06.0853
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// pcl/ReferenceSortedArray.h - Released 2017-06-28T11:58:36Z
+// pcl/ReferenceSortedArray.h - Released 2017-07-09T18:07:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -1540,4 +1540,4 @@ ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>&& x1, const Re
 #endif   // __PCL_ReferenceSortedArray_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ReferenceSortedArray.h - Released 2017-06-28T11:58:36Z
+// EOF pcl/ReferenceSortedArray.h - Released 2017-07-09T18:07:07Z

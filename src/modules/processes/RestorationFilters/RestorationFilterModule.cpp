@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard RestorationFilters Process Module Version 01.00.05.0290
+// Standard RestorationFilters Process Module Version 01.00.05.0309
 // ----------------------------------------------------------------------------
-// RestorationFilterModule.cpp - Released 2017-05-02T09:43:01Z
+// RestorationFilterModule.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RestorationFilters PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  05
-#define MODULE_VERSION_BUILD     0290
+#define MODULE_VERSION_BUILD     0309
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     5
-#define MODULE_RELEASE_DAY       2
+#define MODULE_RELEASE_MONTH     7
+#define MODULE_RELEASE_DAY       9
 
 #include "RestorationFilterModule.h"
 #include "RestorationFilterProcess.h"
@@ -73,6 +73,8 @@ RestorationFilterModule::RestorationFilterModule() : MetaModule()
 {
 }
 
+// ----------------------------------------------------------------------------
+
 const char* RestorationFilterModule::Version() const
 {
    return PCL_MODULE_VERSION( MODULE_VERSION_MAJOR,
@@ -82,42 +84,56 @@ const char* RestorationFilterModule::Version() const
                               MODULE_VERSION_LANGUAGE );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString RestorationFilterModule::Name() const
 {
    return "RestorationFilter";
 }
+
+// ----------------------------------------------------------------------------
 
 String RestorationFilterModule::Description() const
 {
    return "PixInsight Standard RestorationFilter Process Module";
 }
 
+// ----------------------------------------------------------------------------
+
 String RestorationFilterModule::Company() const
 {
    return "Pleiades Astrophoto";
 }
+
+// ----------------------------------------------------------------------------
 
 String RestorationFilterModule::Author() const
 {
    return "Juan Conejero, PTeam";
 }
 
+// ----------------------------------------------------------------------------
+
 String RestorationFilterModule::Copyright() const
 {
    return "Copyright (c) 2007-2017, Pleiades Astrophoto";
 }
+
+// ----------------------------------------------------------------------------
 
 String RestorationFilterModule::TradeMarks() const
 {
    return "PixInsight";
 }
 
+// ----------------------------------------------------------------------------
+
 String RestorationFilterModule::OriginalFileName() const
 {
-#ifdef __PCL_LINUX
+#ifdef __PCL_FREEBSD
    return "RestorationFilter-pxm.so";
 #endif
-#ifdef __PCL_FREEBSD
+#ifdef __PCL_LINUX
    return "RestorationFilter-pxm.so";
 #endif
 #ifdef __PCL_MACOSX
@@ -127,6 +143,8 @@ String RestorationFilterModule::OriginalFileName() const
    return "RestorationFilter-pxm.dll";
 #endif
 }
+
+// ----------------------------------------------------------------------------
 
 void RestorationFilterModule::GetReleaseDate( int& year, int& month, int& day ) const
 {
@@ -153,4 +171,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF RestorationFilterModule.cpp - Released 2017-05-02T09:43:01Z
+// EOF RestorationFilterModule.cpp - Released 2017-07-09T18:07:33Z

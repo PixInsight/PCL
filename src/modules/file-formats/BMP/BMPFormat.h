@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard BMP File Format Module Version 01.00.03.0295
+// Standard BMP File Format Module Version 01.00.04.0313
 // ----------------------------------------------------------------------------
-// BMPFormat.h - Released 2017-05-02T09:42:51Z
+// BMPFormat.h - Released 2017-07-09T18:07:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard BMP PixInsight module.
 //
@@ -64,7 +64,7 @@ class BMPFormat : public MetaFileFormat
 {
 public:
 
-   BMPFormat();
+   BMPFormat() = default;
 
    virtual IsoString Name() const;
 
@@ -92,7 +92,7 @@ class GIFFormat : public MetaFileFormat
 {
 public:
 
-   GIFFormat();
+   GIFFormat() = default;
 
    virtual IsoString Name() const;
 
@@ -120,7 +120,7 @@ class ICOFormat : public MetaFileFormat
 {
 public:
 
-   ICOFormat();
+   ICOFormat() = default;
 
    virtual IsoString Name() const;
 
@@ -148,7 +148,7 @@ class MNGFormat : public MetaFileFormat
 {
 public:
 
-   MNGFormat();
+   MNGFormat() = default;
 
    virtual IsoString Name() const;
 
@@ -176,7 +176,7 @@ class PBMFormat : public MetaFileFormat
 {
 public:
 
-   PBMFormat();
+   PBMFormat() = default;
 
    virtual IsoString Name() const;
 
@@ -204,7 +204,7 @@ class PGMFormat : public MetaFileFormat
 {
 public:
 
-   PGMFormat();
+   PGMFormat() = default;
 
    virtual IsoString Name() const;
 
@@ -232,7 +232,7 @@ class PNGFormat : public MetaFileFormat
 {
 public:
 
-   PNGFormat();
+   PNGFormat() = default;
 
    virtual IsoString Name() const;
 
@@ -260,7 +260,7 @@ class PPMFormat : public MetaFileFormat
 {
 public:
 
-   PPMFormat();
+   PPMFormat() = default;
 
    virtual IsoString Name() const;
 
@@ -288,7 +288,7 @@ class XBMFormat : public MetaFileFormat
 {
 public:
 
-   XBMFormat();
+   XBMFormat() = default;
 
    virtual IsoString Name() const;
 
@@ -316,7 +316,7 @@ class XPMFormat : public MetaFileFormat
 {
 public:
 
-   XPMFormat();
+   XPMFormat() = default;
 
    virtual IsoString Name() const;
 
@@ -344,7 +344,35 @@ class TGAFormat : public MetaFileFormat
 {
 public:
 
-   TGAFormat();
+   TGAFormat() = default;
+
+   virtual IsoString Name() const;
+
+   virtual StringList FileExtensions() const;
+   virtual IsoStringList MimeTypes() const;
+
+   virtual uint32 Version() const;
+
+   virtual String Description() const;
+   virtual String Implementation() const;
+
+   virtual String IconImageFile() const;
+
+   virtual bool CanRead() const;
+   virtual bool CanWrite() const;
+   virtual bool CanStore8Bit() const;
+   virtual bool CanStore16Bit() const;
+
+   virtual FileFormatImplementation* Create() const;
+};
+
+// ----------------------------------------------------------------------------
+
+class WEBPFormat : public MetaFileFormat
+{
+public:
+
+   WEBPFormat() = default;
 
    virtual IsoString Name() const;
 
@@ -372,7 +400,7 @@ class SVGFormat : public MetaFileFormat
 {
 public:
 
-   SVGFormat();
+   SVGFormat() = default;
 
    virtual IsoString Name() const;
 
@@ -401,4 +429,4 @@ public:
 #endif   // __BMPFormat_h
 
 // ----------------------------------------------------------------------------
-// EOF BMPFormat.h - Released 2017-05-02T09:42:51Z
+// EOF BMPFormat.h - Released 2017-07-09T18:07:25Z

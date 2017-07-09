@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.06.0853
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// pcl/FileFormat.cpp - Released 2017-06-28T11:58:42Z
+// pcl/FileFormat.cpp - Released 2017-07-09T18:07:16Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -593,7 +593,8 @@ StringList FileFormat::SupportedImageFiles( const String& dirPath, bool toRead, 
 // ----------------------------------------------------------------------------
 
 static void
-FindDrizzleFiles( StringList& list, const String& dirPath, const String& rootPath, bool recursive, bool followLinks )
+FindFilesBySuffix_Recursive( StringList& list, const String& dirPath, const StringList& suffixes,
+                             const String& rootPath, bool recursive, bool followLinks )
 {
    /*
     * Secure search: Block any attempts to escape from the initial subtree
@@ -617,18 +618,16 @@ FindDrizzleFiles( StringList& list, const String& dirPath, const String& rootPat
          }
          else
          {
-            {
-               String ext = File::ExtractSuffix( info.name ).CaseFolded();
-               if ( ext == ".xdrz" || ext == ".drz" )
-                  list << File::FullPath( dirPath + '/' + info.name );
-            }
+            if ( suffixes.Contains( File::ExtractSuffix( info.name ).CaseFolded() ) )
+               list << File::FullPath( dirPath + '/' + info.name );
          }
 
    for ( const String& dir : directories )
-      FindDrizzleFiles( list, File::FullPath( dirPath + '/' + dir ), rootPath, recursive, followLinks );
+      FindFilesBySuffix_Recursive( list, File::FullPath( dirPath + '/' + dir ), suffixes, rootPath, recursive, followLinks );
 }
 
-StringList FileFormat::DrizzleFiles( const String& dirPath, bool recursive, bool followLinks )
+static StringList
+FindFilesBySuffix( const String& dirPath, const StringList& suffixes, bool recursive, bool followLinks )
 {
    StringList list;
 
@@ -649,10 +648,20 @@ StringList FileFormat::DrizzleFiles( const String& dirPath, bool recursive, bool
 
       path = File::FullPath( path );
 
-      FindDrizzleFiles( list, path, path, recursive, followLinks );
+      FindFilesBySuffix_Recursive( list, path, suffixes, path, recursive, followLinks );
    }
 
    return list;
+}
+
+StringList FileFormat::LocalNormalizationFiles( const String& dirPath, bool recursive, bool followLinks )
+{
+   return FindFilesBySuffix( dirPath, StringList() << ".xnml", recursive, followLinks );
+}
+
+StringList FileFormat::DrizzleFiles( const String& dirPath, bool recursive, bool followLinks )
+{
+   return FindFilesBySuffix( dirPath, StringList() << ".xdrz" << ".drz", recursive, followLinks );
 }
 
 // ----------------------------------------------------------------------------
@@ -660,4 +669,4 @@ StringList FileFormat::DrizzleFiles( const String& dirPath, bool recursive, bool
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormat.cpp - Released 2017-06-28T11:58:42Z
+// EOF pcl/FileFormat.cpp - Released 2017-07-09T18:07:16Z

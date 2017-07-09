@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard TIFF File Format Module Version 01.00.07.0317
+// Standard TIFF File Format Module Version 01.00.07.0335
 // ----------------------------------------------------------------------------
-// TIFF.h - Released 2017-05-02T09:42:51Z
+// TIFF.h - Released 2017-07-09T18:07:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
@@ -221,7 +221,7 @@ public:
    TIFF( const TIFF& ) = delete;
    TIFF& operator =( const TIFF& ) = delete;
 
-   virtual ~TIFF();
+   virtual ~TIFF() noexcept( false );
 
    const TIFFImageOptions& TIFFOptions() const
    {
@@ -261,7 +261,7 @@ public:
    TIFFReader( const TIFFReader& ) = delete;
    TIFFReader& operator =( const TIFFReader& ) = delete;
 
-   virtual ~TIFFReader();
+   virtual ~TIFFReader() noexcept( false );
 
    bool IsOpen() const;
    void Close();
@@ -309,7 +309,7 @@ public:
    TIFFWriter( const TIFFWriter& ) = delete;
    TIFFWriter& operator =( const TIFFWriter& ) = delete;
 
-   virtual ~TIFFWriter();
+   virtual ~TIFFWriter() noexcept( false );
 
    bool IsOpen() const;
    void Close();
@@ -352,4 +352,4 @@ private:
 #endif   // __PCL_TIFF_h
 
 // ----------------------------------------------------------------------------
-// EOF TIFF.h - Released 2017-05-02T09:42:51Z
+// EOF TIFF.h - Released 2017-07-09T18:07:25Z

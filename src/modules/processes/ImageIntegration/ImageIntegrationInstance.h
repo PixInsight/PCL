@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.15.00.0398
+// Standard ImageIntegration Process Module Version 01.16.00.0429
 // ----------------------------------------------------------------------------
-// ImageIntegrationInstance.h - Released 2017-05-05T08:37:32Z
+// ImageIntegrationInstance.h - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -87,15 +87,15 @@ private:
 
    struct ImageItem
    {
-      pcl_bool enabled;
+      pcl_bool enabled = true;
       String   path;    // image file
+      String   nmlPath; // local normalization data file
       String   drzPath; // drizzle data file
 
-      ImageItem( const String& p = String() ) : enabled( true ), path( p ), drzPath()
-      {
-      }
+      ImageItem() = default;
+      ImageItem( const ImageItem& ) = default;
 
-      ImageItem( const ImageItem& x ) : enabled( x.enabled ), path( x.path ), drzPath( x.drzPath )
+      ImageItem( const String& path_ ) : path( path_ )
       {
       }
 
@@ -113,7 +113,7 @@ private:
 
    pcl_enum    p_combination;   // combination operation: average, median, minimum, maximum
 
-   pcl_enum    p_normalization; // none | additive | multiplicative | additive+scaling | mult.+scaling
+   pcl_enum    p_normalization; // none | additive | multiplicative | additive+scaling | mult.+scaling | local
 
    pcl_enum    p_weightMode;    // don't care | exposure time | noise | signal | median | mean | keyword
    String      p_weightKeyword;
@@ -319,4 +319,4 @@ private:
 #endif   // __ImageIntegrationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInstance.h - Released 2017-05-05T08:37:32Z
+// EOF ImageIntegrationInstance.h - Released 2017-07-09T18:07:33Z

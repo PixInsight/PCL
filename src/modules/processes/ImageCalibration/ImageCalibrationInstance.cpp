@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.00.0300
+// Standard ImageCalibration Process Module Version 01.04.00.0319
 // ----------------------------------------------------------------------------
-// ImageCalibrationInstance.cpp - Released 2017-05-17T17:41:56Z
+// ImageCalibrationInstance.cpp - Released 2017-07-09T18:07:33Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -51,14 +51,11 @@
 // ----------------------------------------------------------------------------
 
 #include "ImageCalibrationInstance.h"
+#include "OutputFileData.h"
 
 #include <pcl/ATrousWaveletTransform.h>
 #include <pcl/AutoPointer.h>
 #include <pcl/ErrorHandler.h>
-#include <pcl/FITSHeaderKeyword.h>
-#include <pcl/FileFormat.h>
-#include <pcl/FileFormatInstance.h>
-#include <pcl/ICCProfile.h>
 #include <pcl/IntegerResample.h>
 #include <pcl/MessageBox.h>
 #include <pcl/MetaModule.h>
@@ -842,59 +839,18 @@ static void EvaluateNoise( FVector& noiseEstimates, FVector& noiseFractions, Str
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-struct OutputFileData
-{
-   AutoPointer<FileFormat> format;           // the file format of retrieved data
-   const void*             fsData = nullptr; // format-specific data
-   ImageOptions            options;          // currently used for resolution only
-   PropertyArray           properties;       // image properties
-   FITSKeywordArray        keywords;         // FITS keywords
-   ICCProfile              profile;          // ICC profile
-
-   OutputFileData() = default;
-
-   OutputFileData( FileFormatInstance& file, const ImageOptions& o ) : options( o )
-   {
-      format = new FileFormat( file.Format() );
-
-      if ( format->UsesFormatSpecificData() )
-         fsData = file.FormatSpecificData();
-
-      if ( format->CanStoreImageProperties() )
-         properties = file.ReadImageProperties();
-
-      if ( format->CanStoreKeywords() )
-         file.ReadFITSKeywords( keywords );
-
-      if ( format->CanStoreICCProfiles() )
-         file.ReadICCProfile( profile );
-   }
-
-   ~OutputFileData()
-   {
-      if ( format )
-      {
-         if ( fsData != nullptr )
-         {
-            format->DisposeFormatSpecificData( const_cast<void*>( fsData ) );
-            fsData = nullptr;
-         }
-      }
-   }
-};
-
 static Image* LoadImageFile( FileFormatInstance& file, int index = 0 )
 {
    // Select the image at index
    if ( !file.SelectImage( index ) )
-      throw CatchedException();
+      throw CaughtException();
 
    // Create a shared image, 32-bit floating point
    Image* image = new Image( (void*)0, 0, 0 );
 
    // Read the image
    if ( !file.ReadImage( *image ) )
-      throw CatchedException();
+      throw CaughtException();
 
    return image;
 }
@@ -1223,7 +1179,7 @@ Image* ImageCalibrationInstance::LoadCalibrationFrame( const String& filePath, b
     */
    ImageDescriptionArray images;
    if ( !file.Open( images, filePath, inputHints ) )
-      throw CatchedException();
+      throw CaughtException();
 
    /*
     * Check for an empty calibration frame.
@@ -1264,7 +1220,8 @@ Image* ImageCalibrationInstance::LoadCalibrationFrame( const String& filePath, b
    /*
     * Close the input stream.
     */
-   file.Close();
+   if ( !file.Close() )
+      throw CaughtException();
 
    return image;
 }
@@ -1298,7 +1255,7 @@ ImageCalibrationInstance::LoadTargetFrame( const String& filePath, const Calibra
     */
    ImageDescriptionArray images;
    if ( !file.Open( images, filePath, inputHints ) )
-      throw CatchedException();
+      throw CaughtException();
 
    if ( images.IsEmpty() )
       throw Error( filePath + ": Empty image file." );
@@ -1357,7 +1314,8 @@ ImageCalibrationInstance::LoadTargetFrame( const String& filePath, const Calibra
       /*
        * Close the input stream.
        */
-      file.Close();
+      if ( !file.Close() )
+         throw CaughtException();
 
       return threads;
    }
@@ -1469,7 +1427,7 @@ void ImageCalibrationInstance::WriteCalibratedImage( const CalibrationThread* t 
     * ... and create a format instance (usually a disk file).
     */
    if ( !outputFile.Create( outputFilePath, outputHints ) )
-      throw CatchedException();
+      throw CaughtException();
 
    /*
     * Gather relevant image options, including the output sample format (bits
@@ -1720,16 +1678,11 @@ void ImageCalibrationInstance::WriteCalibratedImage( const CalibrationThread* t 
          console.WarningLn( "** Warning: The output format cannot store color profiles - original ICC profile not embedded." );
 
    /*
-    * Write the output image.
+    * Write the output image and close the output stream.
     */
    t->TargetImage()->ResetSelections();
-   if ( !outputFile.WriteImage( *t->TargetImage() ) )
-      throw CatchedException();
-
-   /*
-    * Close the output stream.
-    */
-   outputFile.Close();
+   if ( !outputFile.WriteImage( *t->TargetImage() ) || !outputFile.Close() )
+      throw CaughtException();
 
    /*
     * Store output data
@@ -2068,7 +2021,7 @@ bool ImageCalibrationInstance::ExecuteGlobal()
                         *i = 0;
                         --N;
                      }
-                  console.WriteLn( String().Format( "<end><cbr>Td%d = %.8lf (%llu px = %.3lf%%)",
+                  console.WriteLn( String().Format( "<end><cbr>Td%d = %.8f (%llu px = %.3f%%)",
                                                       c, t, N, 100.0*N/optimizingDark->NumberOfPixels() ) );
                   if ( N < DARK_COUNT_LOW*optimizingDark->NumberOfPixels() )
                      console.WarningLn( String().Format( "** Warning: The dark frame optimization threshold is probably too high (channel %d).", c ) );
@@ -2815,4 +2768,4 @@ size_type ImageCalibrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationInstance.cpp - Released 2017-05-17T17:41:56Z
+// EOF ImageCalibrationInstance.cpp - Released 2017-07-09T18:07:33Z

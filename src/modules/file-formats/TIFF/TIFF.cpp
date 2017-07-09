@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.03.0823
+// /_/     \____//_____/   PCL 02.01.07.0861
 // ----------------------------------------------------------------------------
-// Standard TIFF File Format Module Version 01.00.07.0317
+// Standard TIFF File Format Module Version 01.00.07.0335
 // ----------------------------------------------------------------------------
-// TIFF.cpp - Released 2017-05-02T09:42:51Z
+// TIFF.cpp - Released 2017-07-09T18:07:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
@@ -141,7 +141,7 @@ TIFF::TIFF()
 
 // ----------------------------------------------------------------------------
 
-TIFF::~TIFF()
+TIFF::~TIFF() noexcept( false )
 {
    CloseStream();
 }
@@ -162,7 +162,7 @@ TIFFReader::TIFFReader()
 
 // ----------------------------------------------------------------------------
 
-TIFFReader::~TIFFReader()
+TIFFReader::~TIFFReader() noexcept( false )
 {
 }
 
@@ -922,7 +922,7 @@ TIFFWriter::TIFFWriter()
 
 // ----------------------------------------------------------------------------
 
-TIFFWriter::~TIFFWriter()
+TIFFWriter::~TIFFWriter() noexcept( false )
 {
 }
 
@@ -1550,4 +1550,4 @@ void TIFFWriter::WriteImage( const UInt32Image& image )
 }  // pcl
 
 // ----------------------------------------------------------------------------
-// EOF TIFF.cpp - Released 2017-05-02T09:42:51Z
+// EOF TIFF.cpp - Released 2017-07-09T18:07:25Z

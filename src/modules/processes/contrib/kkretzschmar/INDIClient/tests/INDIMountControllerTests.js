@@ -57,7 +57,7 @@ function INDIMountControllerTests( parent )
    this.__base__ = Test;
    this.__base__( "INDIMountControllerTests", parent );
 
-  /* this.add(
+   this.add(
       function testUnpark()
       {
          let mountController = new INDIMount;
@@ -158,7 +158,7 @@ function INDIMountControllerTests( parent )
          expectEqualsWithPrecision( 1.0, mountController.currentRA, 0.1 );
          expectEqualsWithPrecision( 15.0, mountController.currentDec, 0.1 );
       }
-   );*/
+   );
 
 
 
@@ -181,8 +181,8 @@ function INDIMountControllerTests( parent )
             File.copyFile(pointingModelFile, pointingModelFileOrig);
          }
 
-
-         var  ra_lower    = 0.2;
+         // collect sync points
+          var  ra_lower    = 0.2;
 	      var  ra_upper    = 23.7;
 	      var  dec_lower   = -10;
 	      var  dec_upper   = 80;
@@ -217,32 +217,35 @@ function INDIMountControllerTests( parent )
          mountController.Command = 13; // FitPointingModel
          assertTrue( mountController.executeGlobal());
 
-         parseXTPMFile(pointingModelFileCreated);
 
-         // read
-        /* var lines = File.readLines(pointingModelFileCreated);
-         var linesExpected = File.readLines(pointingModelFile);
+         // Check the paramters
+         let modelValuesExpected = parseXTPMFile(pointingModelFileOrig);
+         let modelValues         = parseXTPMFile(pointingModelFileCreated);
 
-         // line 0
-         var tokens = lines[0].split(",");
-         var tokensExpected = linesExpected[0].split(",");
-         for (var i=0; i < tokens.length; ++i){
-            var param = parseFloat(tokens[i]);
-            var paramExpected = parseFloat(tokens[i]);
-            expectEqualsWithPrecision( param, paramExpected, 0.01 );
+         // model config
+         expectEquals(modelValuesExpected.ModelConf, modelValues.ModelConf,"model configuration not equal");
+
+         // geo latitude
+         expectEqualsWithPrecision( modelValuesExpected.GeoLat, modelValues.GeoLat, 0.0001 );
+
+         // model parameters (west)
+         expectEquals(modelValuesExpected.ModelParamWest.length, modelValues.ModelParamWest.length, "model (west) paramaters not equal" )
+         for (var i=0; i < modelValuesExpected.ModelParamWest.length; ++i){
+        	let paramExpected = modelValuesExpected.ModelParamWest[i];
+        	let param = modelValues.ModelParamWest[i];
+            expectEqualsWithPrecision( paramExpected, param, 0.01 );
          }
-         // line 1
-         tokens = lines[1].split(",");
-         tokensExpected = linesExpected[1].split(",");
-         for (var i=0; i < tokens.length; ++i){
-            var param = parseFloat(tokens[i]);
-            var paramExpected = parseFloat(tokens[i]);
-            expectEqualsWithPrecision( param, paramExpected, 0.01 );
-         }*/
+         // model parameters (east)
+         expectEquals(modelValuesExpected.ModelParamEast.length, modelValues.ModelParamEast.length, "model (east) paramaters not equal" )
+         for (var i=0; i < modelValuesExpected.ModelParamEast.length; ++i){
+        	let paramExpected = modelValuesExpected.ModelParamEast[i];
+         	let param = modelValues.ModelParamEast[i];
+            expectEqualsWithPrecision( paramExpected, param, 0.01 );
+         }
       }
    );
 
-   /*this.add(
+   this.add(
       function testParking()
       {
          let mountController = new INDIMount;
@@ -257,7 +260,7 @@ function INDIMountControllerTests( parent )
          expectEqualsWithPrecision( 0.0, mountController.currentRA, 0.1 );
          expectEqualsWithPrecision( +90.0, mountController.currentDec, 0.1 );
       }
-   );*/
+   );
 }
 
 INDIMountControllerTests.prototype = new Test;

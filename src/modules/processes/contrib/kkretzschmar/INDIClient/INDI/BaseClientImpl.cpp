@@ -272,9 +272,11 @@ bool INDI::BaseClientImpl::disconnectServer()
 
 #if !defined(WIN32)
 	shutdown(sockfd, SHUT_RDWR);
-    if (svrwfp != NULL)
-        fclose(svrwfp);
-   svrwfp = NULL;
+	while (write(m_sendFd,"1",1) <= 0)
+		if (svrwfp != NULL)
+			fclose(svrwfp);
+
+	svrwfp = NULL;
 #else
 	closesocket(sockfd);
 #endif
@@ -292,6 +294,10 @@ void INDI::BaseClientImpl::disconnectDevice(const char *deviceName)
         setDriverConnection(false, deviceName);
 }
 
+
+void INDI::BaseClientImpl::serverDisconnected(int exit_code){
+
+}
 
 void INDI::BaseClientImpl::setDriverConnection(bool status, const char *deviceName)
 {
@@ -475,7 +481,7 @@ void INDI::BaseClientImpl::listenINDI()
 
     delLilXML(lillp);
 
-    serverDisconnected( (sConnected == false) ? 0 : -1);
+    //serverDisconnected( (sConnected == false) ? 0 : -1);
     sConnected = false;
 
     m_listener->Abort();

@@ -55,113 +55,9 @@
 #include <pcl/DrizzleData.h>
 #include <pcl/XML.h>
 
-#include <errno.h>
 
 namespace pcl
 {
-
-// ----------------------------------------------------------------------------
-
-void DrizzleData::Clear()
-{
-   m_sourceFilePath = m_cfaSourceFilePath = m_cfaSourcePattern = m_alignTargetFilePath = String();
-   m_referenceWidth = m_referenceHeight = -1;
-   m_H = Matrix();
-   m_S.Clear();
-   m_Sx = m_Sy = spline();
-   ClearIntegrationData();
-}
-
-void DrizzleData::ClearIntegrationData()
-{
-   m_location = m_referenceLocation = m_scale = m_unitScale = m_weight = m_unitWeight = Vector();
-   m_rejectionLowCount = m_rejectionHighCount = UI64Vector();
-   m_rejectionMap.FreeData();
-   m_rejectLowData = m_rejectHighData = rejection_data();
-}
-
-// ----------------------------------------------------------------------------
-
-XMLDocument* DrizzleData::Serialize() const
-{
-   // Validate image registration data
-   if ( m_sourceFilePath.IsEmpty() ||
-        m_referenceWidth < 1 || m_referenceHeight < 1 ||
-       !m_H.IsEmpty() && (m_H.Rows() != 3 || m_H.Columns() != 3) ||
-        m_H.IsEmpty() && !m_S.IsValid() )
-      throw Error( "Invalid or insufficient image registration data." );
-
-   // Validate image integration data
-   if ( m_location.Length() != m_referenceLocation.Length() ||
-       !m_scale.IsEmpty() && m_location.Length() != m_scale.Length() ||
-       !m_weight.IsEmpty() && m_location.Length() != m_weight.Length() ||
-       !m_rejectionMap.IsEmpty() && m_location.Length() != m_rejectionMap.NumberOfChannels() )
-      throw Error( "Invalid or insufficient image integration data." );
-
-   AutoPointer<XMLDocument> xml = new XMLDocument;
-   xml->SetXML( "1.0", "UTF-8" );
-   *xml << new XMLComment( "\nPixInsight XML Drizzle Data Format - XDRZ version 1.0"
-                           "\nCreated with PixInsight software - http://pixinsight.com/"
-                           "\n" );
-
-   XMLElement* root = new XMLElement( "xdrz", XMLAttributeList()
-      << XMLAttribute( "version", "1.0" )
-      << XMLAttribute( "xmlns", "http://www.pixinsight.com/xdrz" )
-      << XMLAttribute( "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance" )
-      << XMLAttribute( "xsi:schemaLocation", "http://www.pixinsight.com/xdrz http://pixinsight.com/xdrz/xdrz-1.0.xsd" ) );
-
-   xml->SetRootElement( root );
-
-   *(new XMLElement( *root, "CreationTime" )) << new XMLText( TimePoint::Now().ToString() );
-
-   *(new XMLElement( *root, "SourceImage" )) << new XMLText( m_sourceFilePath );
-
-   if ( !m_cfaSourceFilePath.IsEmpty() )
-      *(new XMLElement( *root, "CFASourceImage", XMLAttributeList()
-            << (m_cfaSourcePattern.IsEmpty() ? XMLAttribute() : XMLAttribute( "pattern", m_cfaSourcePattern )) )
-       ) << new XMLText( m_cfaSourceFilePath );
-
-   if ( !m_alignTargetFilePath.IsEmpty() )
-      *(new XMLElement( *root, "AlignmentTargetImage" )) << new XMLText( m_alignTargetFilePath );
-
-   new XMLElement( *root, "ReferenceGeometry", XMLAttributeList()
-      << XMLAttribute( "width", String( m_referenceWidth ) )
-      << XMLAttribute( "height", String( m_referenceHeight ) )
-      << (m_location.IsEmpty() ? XMLAttribute() : XMLAttribute( "numberOfChannels", String( m_location.Length() ) )) );
-
-   if ( !m_H.IsEmpty() )
-      *(new XMLElement( *root, "AlignmentMatrix" )) << new XMLText( String().ToCommaSeparated( m_H ) );
-
-   if ( m_S.IsValid() )
-   {
-      SerializeSpline( new XMLElement( *root, "AlignmentSplineX" ), m_S.m_Sx );
-      SerializeSpline( new XMLElement( *root, "AlignmentSplineY" ), m_S.m_Sy );
-   }
-
-   if ( !m_location.IsEmpty() )
-   {
-      *(new XMLElement( *root, "LocationEstimates" )) << new XMLText( String().ToCommaSeparated( m_location ) );
-      *(new XMLElement( *root, "ReferenceLocation" )) << new XMLText( String().ToCommaSeparated( m_referenceLocation ) );
-      if ( !m_scale.IsEmpty() )
-         *(new XMLElement( *root, "ScaleFactors" )) << new XMLText( String().ToCommaSeparated( m_scale ) );
-      if ( !m_weight.IsEmpty() )
-         *(new XMLElement( *root, "Weights" )) << new XMLText( String().ToCommaSeparated( m_weight ) );
-      if ( !m_rejectionMap.IsEmpty() )
-         SerializeRejectionMap( new XMLElement( *root, "RejectionMap" ) );
-   }
-
-   return xml.Release();
-}
-
-// ----------------------------------------------------------------------------
-
-void DrizzleData::SerializeToFile( const String& path ) const
-{
-   AutoPointer<XMLDocument> xml = Serialize();
-   xml->EnableAutoFormatting();
-   xml->SetIndentSize( 3 );
-   xml->SerializeToFile( path );
-}
 
 // ----------------------------------------------------------------------------
 
@@ -278,7 +174,110 @@ static int ParseIntegerValue( const IsoString& s, size_type start, size_type end
    return x;
 }
 
+
 // ----------------------------------------------------------------------------
+
+void DrizzleData::Clear()
+{
+   m_sourceFilePath = m_cfaSourceFilePath = m_cfaSourcePattern = m_alignTargetFilePath = String();
+   m_referenceWidth = m_referenceHeight = -1;
+   m_H = Matrix();
+   m_S.Clear();
+   m_Sx = m_Sy = spline();
+   ClearIntegrationData();
+}
+
+void DrizzleData::ClearIntegrationData()
+{
+   m_location = m_referenceLocation = m_scale = m_unitScale = m_weight = m_unitWeight = Vector();
+   m_rejectionLowCount = m_rejectionHighCount = UI64Vector();
+   m_rejectionMap.FreeData();
+   m_rejectLowData = m_rejectHighData = rejection_data();
+}
+
+// ----------------------------------------------------------------------------
+
+XMLDocument* DrizzleData::Serialize() const
+{
+   // Validate image registration data
+   if ( m_sourceFilePath.IsEmpty() ||
+        m_referenceWidth < 1 || m_referenceHeight < 1 ||
+       !m_H.IsEmpty() && (m_H.Rows() != 3 || m_H.Columns() != 3) ||
+        m_H.IsEmpty() && !m_S.IsValid() )
+      throw Error( "Invalid or insufficient image registration data." );
+
+   // Validate image integration data
+   if ( m_location.Length() != m_referenceLocation.Length() ||
+       !m_scale.IsEmpty() && m_location.Length() != m_scale.Length() ||
+       !m_weight.IsEmpty() && m_location.Length() != m_weight.Length() ||
+       !m_rejectionMap.IsEmpty() && m_location.Length() != m_rejectionMap.NumberOfChannels() )
+      throw Error( "Invalid or insufficient image integration data." );
+
+   AutoPointer<XMLDocument> xml = new XMLDocument;
+   xml->SetXML( "1.0", "UTF-8" );
+   *xml << new XMLComment( "\nPixInsight XML Drizzle Data Format - XDRZ version 1.0"
+                           "\nCreated with PixInsight software - http://pixinsight.com/"
+                           "\n" );
+
+   XMLElement* root = new XMLElement( "xdrz", XMLAttributeList()
+      << XMLAttribute( "version", "1.0" )
+      << XMLAttribute( "xmlns", "http://www.pixinsight.com/xdrz" )
+      << XMLAttribute( "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance" )
+      << XMLAttribute( "xsi:schemaLocation", "http://www.pixinsight.com/xdrz http://pixinsight.com/xdrz/xdrz-1.0.xsd" ) );
+
+   xml->SetRootElement( root );
+
+   *(new XMLElement( *root, "CreationTime" )) << new XMLText( TimePoint::Now().ToString() );
+
+   *(new XMLElement( *root, "SourceImage" )) << new XMLText( m_sourceFilePath );
+
+   if ( !m_cfaSourceFilePath.IsEmpty() )
+      *(new XMLElement( *root, "CFASourceImage", XMLAttributeList()
+            << (m_cfaSourcePattern.IsEmpty() ? XMLAttribute() : XMLAttribute( "pattern", m_cfaSourcePattern )) )
+       ) << new XMLText( m_cfaSourceFilePath );
+
+   if ( !m_alignTargetFilePath.IsEmpty() )
+      *(new XMLElement( *root, "AlignmentTargetImage" )) << new XMLText( m_alignTargetFilePath );
+
+   new XMLElement( *root, "ReferenceGeometry", XMLAttributeList()
+      << XMLAttribute( "width", String( m_referenceWidth ) )
+      << XMLAttribute( "height", String( m_referenceHeight ) )
+      << (m_location.IsEmpty() ? XMLAttribute() : XMLAttribute( "numberOfChannels", String( m_location.Length() ) )) );
+
+   if ( !m_H.IsEmpty() )
+      *(new XMLElement( *root, "AlignmentMatrix" )) << new XMLText( String().ToCommaSeparated( m_H ) );
+
+   if ( m_S.IsValid() )
+   {
+      SerializeSpline( new XMLElement( *root, "AlignmentSplineX" ), m_S.m_Sx );
+      SerializeSpline( new XMLElement( *root, "AlignmentSplineY" ), m_S.m_Sy );
+   }
+
+   if ( !m_location.IsEmpty() )
+   {
+      *(new XMLElement( *root, "LocationEstimates" )) << new XMLText( String().ToCommaSeparated( m_location ) );
+      *(new XMLElement( *root, "ReferenceLocation" )) << new XMLText( String().ToCommaSeparated( m_referenceLocation ) );
+      if ( !m_scale.IsEmpty() )
+         *(new XMLElement( *root, "ScaleFactors" )) << new XMLText( String().ToCommaSeparated( m_scale ) );
+      if ( !m_weight.IsEmpty() )
+         *(new XMLElement( *root, "Weights" )) << new XMLText( String().ToCommaSeparated( m_weight ) );
+      if ( !m_rejectionMap.IsEmpty() )
+         SerializeRejectionMap( new XMLElement( *root, "RejectionMap" ) );
+   }
+
+   return xml.Release();
+}
+
+// ----------------------------------------------------------------------------
+
+void DrizzleData::SerializeToFile( const String& path ) const
+{
+   AutoPointer<XMLDocument> xml = Serialize();
+   xml->EnableAutoFormatting();
+   xml->SetIndentSize( 3 );
+   xml->SerializeToFile( path );
+}
+
 
 template <typename T>
 static GenericVector<T> ParseBase64EncodedVector( const XMLElement& element, size_type minCount = 0, size_type maxCount = ~size_type( 0 ) )

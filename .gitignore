@@ -39,3 +39,7 @@ CMakeLists.txt
 # Folders
 host
 __private
+Debug
+linux
+.gitignore
+bin

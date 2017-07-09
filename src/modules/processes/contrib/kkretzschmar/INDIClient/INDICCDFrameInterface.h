@@ -63,16 +63,37 @@
 #include <pcl/Sizer.h>
 #include <pcl/SpinBox.h>
 #include <pcl/Timer.h>
-#include <pcl/ToolButton.h>
+#include <pcl/TreeBox.h>
 
 #include "INDIClient.h"
+#include "DeviceConfigBase.h"
 
 namespace pcl
 {
 
+class INDICCDFrameInterfaceExecution;
+
+class FilterConfigDialog : public ConfigDialogBase {
+public:
+	FilterConfigDialog(const String& deviceName);
+
+	void addFilterName(size_t filterSlot, const String& filterName);
+	void adjustTreeColumns();
+private:
+
+	  HorizontalSizer   FilterConfig_Sizer;
+	  	  TreeBox           FilterNames_TreeBox;
+	  	  VerticalSizer     FilterToolBox_Sizer;
+	  	  	  ToolButton      FilterRename_ToolButton;
+
+	virtual void sendUpdatedProperties() override;
+
+	void e_Click( Button& sender, bool checked );
+
+};
+
 // ----------------------------------------------------------------------------
 
-class INDICCDFrameInterfaceExecution;
 
 class INDICCDFrameInterface : public ProcessInterface
 {
@@ -91,6 +112,11 @@ public:
    virtual bool ValidateProcess( const ProcessImplementation&, String& whyNot ) const;
    virtual bool RequiresInstanceValidation() const;
    virtual bool ImportProcess( const ProcessImplementation& );
+
+   const String& CurrentDeviceName() const
+   {
+	   return m_device;
+   }
 
 private:
 
@@ -127,6 +153,7 @@ private:
             HorizontalSizer   CCDFilter_HSizer;
                Label             CCDFilter_Label;
                ComboBox          CCDFilter_Combo;
+               ToolButton        FilterConfig_ToolButton;
             HorizontalSizer   CCDFrameType_HSizer;
                Label             CCDFrameType_Label;
                ComboBox          CCDFrameType_Combo;
@@ -190,6 +217,10 @@ private:
          HorizontalSizer   TelescopeDevice_Sizer;
             Label             TelescopeDevice_Label;
             ComboBox          TelescopeDevice_Combo;
+         HorizontalSizer   ExternalFilterDevice_Sizer;
+            Label             ExternalFilterDevice_Label;
+            ComboBox          ExternalFilterDevice_Combo;
+
    };
 
    GUIData* GUI = nullptr;

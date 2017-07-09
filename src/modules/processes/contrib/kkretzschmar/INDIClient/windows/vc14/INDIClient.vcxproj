@@ -4,13 +4,10 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-06-07T15:43:02.709Z
+# Generated on .... 2017-07-09T10:39:44.119Z
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ Windows/vc14
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Additional preprocessor definitions:
-# _CRT_SECURE_NO_WARNINGS
 ######################################################################
 -->
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -33,7 +30,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{FALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSE-FALSEFALSEFALSEFALSE-4FALSEFALSEFALSE-FALSEFALSEFALSEFALSE-FALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSE}</ProjectGuid>
+    <ProjectGuid>{ECFF6524-CEDA-4F20-8E79-81A5B6277064}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -103,7 +100,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_CRT_SECURE_NO_WARNINGS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -130,9 +127,6 @@
       <TargetMachine>MachineX64</TargetMachine>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
-    <PostBuildEvent>
-      <Command>signtool.exe sign /a /t http://timestamp.verisign.com/scripts/timstamp.dll /v $(TargetDir)$(TargetFileName)</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -143,7 +137,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_CRT_SECURE_NO_WARNINGS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -171,9 +165,6 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
-    <PostBuildEvent>
-      <Command>signtool.exe sign /a /t http://timestamp.verisign.com/scripts/timstamp.dll /v $(TargetDir)$(TargetFileName)</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -182,7 +173,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -204,15 +195,12 @@
       <TargetMachine>MachineX64</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <PostBuildEvent>
-      <Command>signtool.exe sign /a /t http://timestamp.verisign.com/scripts/timstamp.dll /v $(TargetDir)$(TargetFileName)</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -234,11 +222,9 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <PostBuildEvent>
-      <Command>signtool.exe sign /a /t http://timestamp.verisign.com/scripts/timstamp.dll /v $(TargetDir)$(TargetFileName)</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Alignment.cpp"/>
     <ClCompile Include="..\..\ApparentPosition.cpp"/>
     <ClCompile Include="..\..\IINDIProperty.cpp"/>
     <ClCompile Include="..\..\INDICCDFrameInstance.cpp"/>
@@ -263,7 +249,9 @@
     <ClCompile Include="..\..\INDI\lilxml.c"/>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Alignment.h"/>
     <ClInclude Include="..\..\ApparentPosition.h"/>
+    <ClInclude Include="..\..\DeviceConfigBase.h"/>
     <ClInclude Include="..\..\IINDIProperty.h"/>
     <ClInclude Include="..\..\INDICCDFrameInstance.h"/>
     <ClInclude Include="..\..\INDICCDFrameInterface.h"/>
@@ -280,6 +268,7 @@
     <ClInclude Include="..\..\INDIMountParameters.h"/>
     <ClInclude Include="..\..\INDIMountProcess.h"/>
     <ClInclude Include="..\..\INDIParamListTypes.h"/>
+    <ClInclude Include="..\..\ModuleParameterRegistration.h"/>
     <ClInclude Include="..\..\INDI\BaseClient.h"/>
     <ClInclude Include="..\..\INDI\BaseClientImpl.h"/>
     <ClInclude Include="..\..\INDI\base64.h"/>

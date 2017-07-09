@@ -4,25 +4,25 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-06-07T15:43:02.710Z
+# Generated on .... 2017-07-09T10:39:44.123Z
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ Windows/vc14
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Additional preprocessor definitions:
-# _CRT_SECURE_NO_WARNINGS
 ######################################################################
 -->
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>falsefalsefalsefalsefalsefalsefalsefalse-falsefalsefalsefalse-4falsefalsefalse-falsefalsefalsefalse-falsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalse</UniqueIdentifier>
+      <UniqueIdentifier>439c2e8e-06ae-42d2-a287-6c9602a38f85</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>falsefalsefalsefalsefalsefalsefalsefalse-falsefalsefalsefalse-4falsefalsefalse-falsefalsefalsefalse-falsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalse</UniqueIdentifier>
+      <UniqueIdentifier>37e605d6-1329-46c4-8254-cea4aad29960</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Alignment.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\ApparentPosition.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
@@ -91,7 +91,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Alignment.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\ApparentPosition.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DeviceConfigBase.h">
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\IINDIProperty.h">
@@ -140,6 +146,9 @@
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\INDIParamListTypes.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ModuleParameterRegistration.h">
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\INDI\BaseClient.h">

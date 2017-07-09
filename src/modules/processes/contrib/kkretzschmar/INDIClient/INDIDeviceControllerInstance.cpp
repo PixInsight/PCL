@@ -181,14 +181,15 @@ bool INDIDeviceControllerInstance::ExecuteGlobal()
          {
             console.EnableAbort();
 
-            if ( p_serverCommand == "GET" )
+            bool isTryGet = p_serverCommand == "TRY_GET";
+            if ( p_serverCommand == "GET" || isTryGet)
             {
                o_getCommandResult.Clear();
                String device( PropertyUtils::Device( p_getCommandParameters ) );
                String property( PropertyUtils::Property( p_getCommandParameters ) );
                String element( PropertyUtils::Element( p_getCommandParameters ) );
                INDIPropertyListItem item;
-               if ( !indi->GetPropertyItem( device, property, element, item ) )
+               if ( !indi->GetPropertyItem( device, property, element, item ) && !isTryGet)
                   throw Error( "INDIDeviceControllerInstance: Could not get value of property '" + String( p_getCommandParameters ) + "'" );
                o_getCommandResult = item.PropertyValue;
                if ( p_verbosity > 1 )

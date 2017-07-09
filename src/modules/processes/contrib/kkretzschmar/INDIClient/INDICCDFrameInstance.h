@@ -119,6 +119,7 @@ private:
    pcl_enum   p_telescopeSelection;
    pcl_bool   p_requireSelectedTelescope;
    String     p_telescopeDeviceName; // only if p_telescopeSelection = device name
+   String     p_extFilterWheelDeviceName;
 
    StringList o_clientViewIds;
    StringList o_clientFilePaths;

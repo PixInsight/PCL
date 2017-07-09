@@ -55,6 +55,9 @@
 
 #include <pcl/MetaParameter.h>
 
+#include "ModuleParameterRegistration.h"
+
+
 namespace pcl
 {
 
@@ -62,219 +65,96 @@ PCL_BEGIN_LOCAL
 
 // ----------------------------------------------------------------------------
 
-class IMCDeviceName : public MetaString
-{
-public:
-
-   IMCDeviceName( MetaProcess* );
-
-   virtual IsoString Id() const;
-};
-
-extern IMCDeviceName* TheIMCDeviceNameParameter;
+DECLARE_STRING_PARAMETER_CLASS(IMCDeviceName);
 
 // ----------------------------------------------------------------------------
 
-class IMCCommand : public MetaEnumeration
-{
-public:
+#define COMMAND_ENUM ENUM_ITEM(Unpark) ENUM_ITEM(Park)\
+	            ENUM_ITEM(MoveNorthStart) ENUM_ITEM(MoveNorthStop)\
+		        ENUM_ITEM(MoveSouthStart) ENUM_ITEM(MoveSouthStop)\
+				ENUM_ITEM(MoveWestStart) ENUM_ITEM(MoveWestStop)\
+				ENUM_ITEM(MoveEastStart) ENUM_ITEM(MoveEastStop)\
+				ENUM_ITEM(GoTo) ENUM_ITEM(Sync) ENUM_ITEM(ParkDefault)\
+				ENUM_ITEM(FitPointingModel) ENUM_ITEM(TestSync)
 
-   enum
-   {
-      Unpark,
-      Park,
-      MoveNorthStart,
-      MoveNorthStop,
-      MoveSouthStart,
-      MoveSouthStop,
-      MoveWestStart,
-      MoveWestStop,
-      MoveEastStart,
-      MoveEastStop,
-      GoTo,
-      Sync,
-      ParkDefault,
-      NumberOfCommands,
-      Default = Unpark
-   };
 
-   IMCCommand( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual size_type NumberOfElements() const;
-   virtual IsoString ElementId( size_type ) const;
-   virtual int ElementValue( size_type ) const;
-   virtual size_type DefaultValueIndex() const;
-};
-
-extern IMCCommand* TheIMCCommandParameter;
+DECLARE_ENUM_PARAMETER(IMCCommand,COMMAND_ENUM,Unpark);
 
 // ----------------------------------------------------------------------------
 
-class IMCSlewRate : public MetaEnumeration
-{
-public:
+#define SLEW_RATE_ENUM ENUM_ITEM(Guide) ENUM_ITEM(Centering)\
+	            ENUM_ITEM(Find) ENUM_ITEM(Max)
 
-   enum
-   {
-      Guide,
-      Centering,
-      Find,
-      Max,
-      NumberOfCommands,
-      Default = Max
-   };
-
-   IMCSlewRate( MetaProcess* );
-
-   virtual IsoString Id() const;
-   virtual size_type NumberOfElements() const;
-   virtual IsoString ElementId( size_type ) const;
-   virtual int ElementValue( size_type ) const;
-   virtual size_type DefaultValueIndex() const;
-};
-
-extern IMCSlewRate* TheIMCSlewRateParameter;
+DECLARE_ENUM_PARAMETER(IMCSlewRate,SLEW_RATE_ENUM,Max);
 
 // ----------------------------------------------------------------------------
 
-class IMCTargetRA : public MetaDouble
-{
-public:
-
-   IMCTargetRA( MetaProcess* );
-
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
-};
-
-extern IMCTargetRA* TheIMCTargetRAParameter;
+DECLARE_DOUBLE_PARAMETER_CLASS(IMCTargetRA);
 
 // ----------------------------------------------------------------------------
 
-class IMCTargetDec : public MetaDouble
-{
-public:
-
-   IMCTargetDec( MetaProcess* );
-
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
-};
-
-extern IMCTargetDec* TheIMCTargetDecParameter;
+DECLARE_DOUBLE_PARAMETER_CLASS(IMCTargetDec);
 
 // ----------------------------------------------------------------------------
 
-class IMCComputeApparentPosition : public MetaBoolean
-{
-public:
-
-   IMCComputeApparentPosition( MetaProcess* );
-
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
-};
-
-extern IMCComputeApparentPosition* TheIMCComputeApparentPositionParameter;
+DECLARE_BOOLEAN_PARAMETER_CLASS(IMCComputeApparentPosition);
 
 // ----------------------------------------------------------------------------
 
-class IMCCurrentLST : public MetaDouble
-{
-public:
-
-   IMCCurrentLST( MetaProcess* );
-
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
-   virtual bool IsReadOnly() const;
-};
-
-extern IMCCurrentLST* TheIMCCurrentLSTParameter;
+DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCCurrentLST);
 
 // ----------------------------------------------------------------------------
 
-class IMCCurrentRA : public MetaDouble
-{
-public:
-
-   IMCCurrentRA( MetaProcess* );
-
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
-   virtual bool IsReadOnly() const;
-};
-
-extern IMCCurrentRA* TheIMCCurrentRAParameter;
+DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCCurrentRA);
 
 // ----------------------------------------------------------------------------
 
-class IMCCurrentDec : public MetaDouble
-{
-public:
-
-   IMCCurrentDec( MetaProcess* );
-
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
-   virtual bool IsReadOnly() const;
-};
-
-extern IMCCurrentDec* TheIMCCurrentDecParameter;
+DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCCurrentDec);
 
 // ----------------------------------------------------------------------------
 
-class IMCApparentTargetRA : public MetaDouble
-{
-public:
-
-   IMCApparentTargetRA( MetaProcess* );
-
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
-   virtual bool IsReadOnly() const;
-};
-
-extern IMCApparentTargetRA* TheIMCApparentTargetRAParameter;
+DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCApparentTargetRA);
 
 // ----------------------------------------------------------------------------
 
-class IMCApparentTargetDec : public MetaDouble
-{
-public:
-
-   IMCApparentTargetDec( MetaProcess* );
-
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
-   virtual bool IsReadOnly() const;
-};
-
-extern IMCApparentTargetDec* TheIMCApparentTargetDecParameter;
+DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCApparentTargetDec);
 
 // ----------------------------------------------------------------------------
+
+DECLARE_DOUBLE_PARAMETER_CLASS(IMCGeographicLatitude);
+
+// ----------------------------------------------------------------------------
+
+#define PIERSIDE_ENUM  ENUM_ITEM(West) ENUM_ITEM(East) ENUM_ITEM(None)
+DECLARE_ENUM_PARAMETER(IMCPierSide,PIERSIDE_ENUM,None);
+
+DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncLST);
+
+DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncCelestialRA);
+
+DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncCelestialDec);
+
+DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncTelescopeRA);
+
+DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncTelescopeDec);
+
+// ----------------------------------------------------------------------------
+
+DECLARE_BOOLEAN_PARAMETER_CLASS(IMCEnableAlignmentCorrection);
+
+#define ALIGNMENT_ENUM ENUM_ITEM(None) ENUM_ITEM(AnalyticalModel) ENUM_ITEM(ServerModel)
+DECLARE_ENUM_PARAMETER(IMCAlignmentMethod,ALIGNMENT_ENUM, None);
+
+DECLARE_INT32_PARAMETER_CLASS(IMCAlignmentConfig);
+
+// ----------------------------------------------------------------------------
+
+DECLARE_STRING_PARAMETER_CLASS(IMCAlignmentFile);
+
+// ----------------------------------------------------------------------------
+
+
 
 PCL_END_LOCAL
 

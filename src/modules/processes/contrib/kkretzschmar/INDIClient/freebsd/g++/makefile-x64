@@ -2,7 +2,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-06-07T15:43:02.445Z
+# Generated on .... 2017-07-09T10:39:43.442Z
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ FreeBSD/g++
@@ -19,6 +19,7 @@ all: $(OBJ_DIR)/INDIClient-pxm.so
 #
 
 SRC_FILES= \
+../../Alignment.cpp \
 ../../ApparentPosition.cpp \
 ../../IINDIProperty.cpp \
 ../../INDICCDFrameInstance.cpp \
@@ -47,6 +48,7 @@ SRC_FILES= \
 #
 
 OBJ_FILES= \
+./x64/Release/Alignment.o \
 ./x64/Release/ApparentPosition.o \
 ./x64/Release/IINDIProperty.o \
 ./x64/Release/INDICCDFrameInstance.o \
@@ -75,6 +77,7 @@ OBJ_FILES= \
 #
 
 DEP_FILES= \
+./x64/Release/Alignment.d \
 ./x64/Release/ApparentPosition.d \
 ./x64/Release/IINDIProperty.d \
 ./x64/Release/INDICCDFrameInstance.d \

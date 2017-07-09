@@ -60,6 +60,8 @@
 #include <pcl/ReferenceArray.h>
 #include <pcl/String.h>
 
+#include <errno.h>
+
 namespace pcl
 {
 
@@ -2924,6 +2926,9 @@ private:
 };
 
 // ----------------------------------------------------------------------------
+
+
+
 
 } // pcl
 

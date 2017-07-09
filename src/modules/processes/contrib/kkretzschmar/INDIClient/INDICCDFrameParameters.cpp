@@ -79,14 +79,15 @@ ICFClientDownloadDirectory* TheICFClientDownloadDirectoryParameter = nullptr;
 ICFClientFileNameTemplate*  TheICFClientFileNameTemplateParameter = nullptr;
 ICFClientOutputFormatHints* TheICFClientOutputFormatHintsParameter = nullptr;
 ICFObjectName*              TheICFObjectNameParameter = nullptr;
-ICFTelescopeSelection*  TheICFTelescopeSelectionParameter = nullptr;
-ICFRequireSelectedTelescope*        TheICFRequireSelectedTelescopeParameter = nullptr;
+ICFTelescopeSelection*  	TheICFTelescopeSelectionParameter = nullptr;
+ICFRequireSelectedTelescope* TheICFRequireSelectedTelescopeParameter = nullptr;
 ICFTelescopeDeviceName*     TheICFTelescopeDeviceNameParameter = nullptr;
 ICFClientFrames*            TheICFClientFramesParameter = nullptr;
 ICFClientViewId*            TheICFClientViewIdParameter = nullptr;
 ICFClientFilePath*          TheICFClientFilePathParameter = nullptr;
 ICFServerFrames*            TheICFServerFramesParameter = nullptr;
 ICFServerFrame*             TheICFServerFrameParameter = nullptr;
+REGISTER_MODULE_PARAMETER(ICFExternalFilterWheelDeviceName);
 
 // ----------------------------------------------------------------------------
 
@@ -721,6 +722,11 @@ bool ICFServerFrame::IsReadOnly() const
 }
 
 // ----------------------------------------------------------------------------
+
+DEFINE_STRING_PARAMETER_CLASS(ICFExternalFilterWheelDeviceName,"externalFilterWheelDeviceName");
+
+// ----------------------------------------------------------------------------
+
 
 } // pcl
 

@@ -117,15 +117,12 @@ private:
            double   o_currentDec;
    mutable double   o_apparentTargetRA;
    mutable double   o_apparentTargetDec;
-   	   	   double   o_geographicLatitude;
-   	   	   double   o_syncLST;
-   	   	   double   o_syncCelestialRA;
-  	   	   double   o_syncCelestialDEC;
-  	   	   double   o_syncTelescopeRA;
-  	   	   double   o_syncTelescopeDEC;
-
-
-
+           double   o_geographicLatitude;
+           double   o_syncLST;
+           double   o_syncCelestialRA;
+           double   o_syncCelestialDEC;
+           double   o_syncTelescopeRA;
+           double   o_syncTelescopeDEC;
 
    Array<SyncDataPoint>  syncDataArray;
 
@@ -144,7 +141,6 @@ public:
       m_instance( instance ),
       m_running( false ),
       m_aborted( false )
-
    {
    }
 

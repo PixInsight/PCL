@@ -2147,7 +2147,7 @@ void INDIMountInterface::plotAlignemtResiduals(AlignmentModel* model){
 	outputFiles.Add(tmpFilePath +  "residuals_dec_dec.svg");
 	outputFiles.Add(tmpFilePath +  "residuals_dec_3d.svg");
 	outputFiles.Add(tmpFilePath +  "residuals_delha_deldec.svg");
-	double maxDev=std::max(*delHAs.MaxItem(),*delDecs.MaxItem());
+   double maxDev = Max( *delHAs.MaxItem(), *delDecs.MaxItem() );
 
 	gnufileContent = IsoString().Format(RESIDUAL_GNUPLOT_TEMPLATE, outputFiles[0].ToIsoString().c_str(),  modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
 			outputFiles[1].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),

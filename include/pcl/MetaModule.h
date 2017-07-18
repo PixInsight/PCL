@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// pcl/MetaModule.h - Released 2017-07-09T18:07:07Z
+// pcl/MetaModule.h - Released 2017-07-18T16:13:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -593,7 +593,7 @@ public:
     * the whole PixInsight platform without remedy. Also bear in mind that
     * scripts are extremely powerful and potentially dangerous if you don't
     * know well what you are doing. What happens during execution of your
-    * scripts is your entire responsibility. We mean it.
+    * scripts is your entire responsibility.
     */
    Variant EvaluateScript( const String& sourceCode, const IsoString& language = IsoString() );
 
@@ -955,4 +955,4 @@ namespace InstallMode
 #endif   // __PCL_MetaModule_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaModule.h - Released 2017-07-09T18:07:07Z
+// EOF pcl/MetaModule.h - Released 2017-07-18T16:13:52Z

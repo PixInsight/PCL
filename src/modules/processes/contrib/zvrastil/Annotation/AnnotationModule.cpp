@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard Annotation Process Module Version 01.00.00.0202
+// Standard Annotation Process Module Version 01.00.00.0206
 // ----------------------------------------------------------------------------
-// AnnotationModule.cpp - Released 2017-07-09T18:07:33Z
+// AnnotationModule.cpp - Released 2017-07-18T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Annotation PixInsight module.
 //
@@ -54,12 +54,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0202
+#define MODULE_VERSION_BUILD     0206
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017
 #define MODULE_RELEASE_MONTH     7
-#define MODULE_RELEASE_DAY       9
+#define MODULE_RELEASE_DAY       18
 
 #include "AnnotationModule.h"
 #include "AnnotationProcess.h"
@@ -154,4 +154,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF AnnotationModule.cpp - Released 2017-07-09T18:07:33Z
+// EOF AnnotationModule.cpp - Released 2017-07-18T16:14:19Z

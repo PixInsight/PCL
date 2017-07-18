@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// pcl/File.cpp - Released 2017-07-09T18:07:16Z
+// pcl/File.cpp - Released 2017-07-18T16:14:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -53,6 +53,7 @@
 
 #ifdef __PCL_WINDOWS
 #  include <windows.h>
+#  include <userenv.h>
 #  include <sys/stat.h>
 #  include <sys/utime.h>
 #else
@@ -91,7 +92,7 @@
    if ( !CanRead() )                                                                                  \
       throw File::Error( FilePath(), "File::" + String( fp ) + "(): File is open in write-only mode" )
 
-#define COPY_BLOCK_SIZE 4096
+#define COPY_BLOCK_SIZE 1048576 // 1 MiB
 
 namespace pcl
 {
@@ -145,14 +146,31 @@ static inline fpos_type WinMergePos( DWORD loPos, LONG hiPos )
 
 // ----------------------------------------------------------------------------
 
-double FileTime::ToJD() const
+static String TrailingSlashStripped( const String& path )
 {
-   return ComplexTimeToJD( year, month, day, (hour + (minute + (second + milliseconds/1000.0)/60.0)/60.0)/24.0 );
+   if ( path.Length() > 1 )
+#ifdef __PCL_WINDOWS
+      if ( path.EndsWith( '/' ) || path.EndsWith( '\\' ) )
+#else
+      if ( path.EndsWith( '/' ) )
+#endif
+#ifdef __PCL_WINDOWS
+         if ( path.Length() != 3 || path[1] != ':' ) // drives letters
+#endif
+         {
+            String retPath = path;
+            retPath.DeleteRight( retPath.UpperBound() );
+            return retPath;
+         }
+
+   return path;
 }
 
-double FileTime::ToJDUTC() const
+// ----------------------------------------------------------------------------
+
+double FileTime::ToJD() const
 {
-   return ToJD() + TimePoint::SystemTimeZone()/24;
+   return ComplexTimeToJD( year, month, day, (hour + (minute + (second + 0.001*milliseconds)/60)/60)/24 );
 }
 
 // ----------------------------------------------------------------------------
@@ -873,30 +891,32 @@ void File::Move( const String& filePath, const String& newFilePath )
 
 bool File::Exists( const String& filePath )
 {
-   if ( filePath.IsEmpty() )
-      throw File::Error( filePath, "Invalid or empty file name" );
+   String path = filePath.Trimmed();
+   if ( path.IsEmpty() )
+      throw File::Error( path, "Invalid or empty file name" );
 
 #ifdef __PCL_WINDOWS
 
-   String wfn( UnixPathToWindows( filePath ) );
+   String wfn( UnixPathToWindows( path ) );
    DWORD attr = ::GetFileAttributesW( (LPCWSTR)wfn.c_str() );
    return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY) == 0;
 
 #else
 
    errno = 0;
-   IsoString utf8 = FullPath( filePath ).ToUTF8();
+   IsoString utf8 = FullPath( path ).ToUTF8();
    if ( ::access( utf8.c_str(), F_OK ) == 0 ) // check for existence only
    {
       struct stat s;
       if ( ::stat( utf8.c_str(), &s ) == 0 )
          return (s.st_mode & S_IFMT) == S_IFREG; // regular file
    }
-   if ( errno == ENOENT )
-      return false;
-   if ( errno != 0 )
-      throw File::Error( filePath, "File access error: " + String( ::strerror( errno ) ) );
-   throw File::Error( filePath, "File access error" );
+   return false;
+//    if ( errno == ENOENT )
+//       return false;
+//    if ( errno != 0 )
+//       throw File::Error( path, "File access error: " + String( ::strerror( errno ) ) );
+//    throw File::Error( path, "File access error" );
 
 #endif
 }
@@ -905,30 +925,32 @@ bool File::Exists( const String& filePath )
 
 bool File::DirectoryExists( const String& dirPath )
 {
-   if ( dirPath.IsEmpty() )
-      throw File::Error( dirPath, "Invalid or empty directory name" );
+   String path = TrailingSlashStripped( dirPath.Trimmed() );
+   if ( path.IsEmpty() )
+      throw File::Error( path, "Invalid or empty directory name" );
 
 #ifdef __PCL_WINDOWS
 
-   String wdp( UnixPathToWindows( dirPath ) );
+   String wdp = UnixPathToWindows( path );
    DWORD attr = ::GetFileAttributesW( (LPCWSTR)wdp.c_str() );
    return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY) != 0;
 
 #else
 
    errno = 0;
-   IsoString utf8 = FullPath( dirPath ).ToUTF8();
+   IsoString utf8 = FullPath( path ).ToUTF8();
    if ( ::access( utf8.c_str(), F_OK ) == 0 ) // check for existence only
    {
       struct stat s;
       if ( ::stat( utf8.c_str(), &s ) == 0 )
          return (s.st_mode & S_IFMT) == S_IFDIR; // directory
    }
-   if ( errno == ENOENT )
-      return false;
-   if ( errno != 0 )
-      throw File::Error( dirPath, "File access error: " + String( ::strerror( errno ) ) );
-   throw File::Error( dirPath, "File access error" );
+   return false;
+//    if ( errno == ENOENT )
+//       return false;
+//    if ( errno != 0 )
+//       throw File::Error( path, "File access error: " + String( ::strerror( errno ) ) );
+//    throw File::Error( path, "File access error" );
 
 #endif
 }
@@ -1043,17 +1065,16 @@ static void WinAttrToPCL( pcl::FileAttributes& a, DWORD wa )
 
 static void WinFileTimeToPCL( pcl::FileTime& t, FILETIME ft )
 {
-   SYSTEMTIME stUTC, stLocal;
+   SYSTEMTIME stUTC;
    ::FileTimeToSystemTime( &ft, &stUTC );
-   ::SystemTimeToTzSpecificLocalTime( NULL, &stUTC, &stLocal );
-   t.year         = stLocal.wYear;
-   t.month        = stLocal.wMonth;
-   t.day          = stLocal.wDay;
-   t.hour         = stLocal.wHour;
-   t.minute       = stLocal.wMinute;
-   t.second       = stLocal.wSecond;
+   t.year         = stUTC.wYear;
+   t.month        = stUTC.wMonth;
+   t.day          = stUTC.wDay;
+   t.hour         = stUTC.wHour;
+   t.minute       = stUTC.wMinute;
+   t.second       = stUTC.wSecond;
    // Milliseconds are unreliable for file times on Windows
-   t.milliseconds = 0; // stLocal.wMilliseconds;
+   t.milliseconds = 0; // stUTC.wMilliseconds;
 }
 
 static void WinFindDataToPCL( pcl::FindFileInfo& info, const WIN32_FIND_DATAW& data )
@@ -1096,13 +1117,13 @@ static void POSIXAttrToPCL( pcl::FileAttributes& a, unsigned mode )
 
 static void POSIXFileTimeToPCL( pcl::FileTime& t, time_t ft )
 {
-   ::tm* lt = ::localtime( &ft );
-   t.year         = lt->tm_year + 1900;
-   t.month        = lt->tm_mon + 1;
-   t.day          = lt->tm_mday;
-   t.hour         = lt->tm_hour;
-   t.minute       = lt->tm_min;
-   t.second       = lt->tm_sec;
+   ::tm* ut = ::gmtime( &ft );
+   t.year         = ut->tm_year + 1900;
+   t.month        = ut->tm_mon + 1;
+   t.day          = ut->tm_mday;
+   t.hour         = ut->tm_hour;
+   t.minute       = ut->tm_min;
+   t.second       = ut->tm_sec;
    t.milliseconds = 0;
 }
 
@@ -1115,7 +1136,7 @@ static void POSIXFindDataToPCL( pcl::FindFileInfo& info, const ::dirent* data, c
    {
       utf8 = dir.ToUTF8();
       if ( !dir.EndsWith( '/' ) )
-         utf8 += '/';
+         utf8 << '/';
    }
    utf8 += data->d_name;
 
@@ -1136,7 +1157,7 @@ static void POSIXFindDataToPCL( pcl::FindFileInfo& info, const ::dirent* data, c
    info.userId        = s.st_uid;
    info.groupId       = s.st_gid;
 
-   POSIXFileTimeToPCL( info.created,      s.st_ctime );
+   POSIXFileTimeToPCL( info.created,      s.st_ctime ? s.st_ctime : s.st_mtime );
    POSIXFileTimeToPCL( info.lastAccessed, s.st_atime );
    POSIXFileTimeToPCL( info.lastModified, s.st_mtime );
 }
@@ -1479,22 +1500,22 @@ void File::CopyFile( const String& targetFilePath, const String& sourceFilePath,
 
       if ( size > 0 )
       {
-         uint8 block[ COPY_BLOCK_SIZE ];
+         ByteArray block( size_type( COPY_BLOCK_SIZE ) );
          fsize_type numberOfBlocks = size/COPY_BLOCK_SIZE;
          fsize_type remainderBytes = size%COPY_BLOCK_SIZE;
 
          for ( fsize_type i = 0; i < numberOfBlocks; ++i )
          {
-            sourceFile.Read( block, COPY_BLOCK_SIZE );
-            targetFile.Write( block, COPY_BLOCK_SIZE );
+            sourceFile.Read( block.Begin(), COPY_BLOCK_SIZE );
+            targetFile.Write( block.Begin(), COPY_BLOCK_SIZE );
             if ( progress != nullptr )
                progress->Add( COPY_BLOCK_SIZE );
          }
 
          if ( remainderBytes > 0 )
          {
-            sourceFile.Read( block, remainderBytes );
-            targetFile.Write( block, remainderBytes );
+            sourceFile.Read( block.Begin(), remainderBytes );
+            targetFile.Write( block.Begin(), remainderBytes );
             if ( progress != nullptr )
                progress->Add( remainderBytes );
          }
@@ -1597,22 +1618,22 @@ void File::MoveFile( const String& targetFilePath, const String& sourceFilePath,
 
       if ( size > 0 )
       {
-         uint8 block[ COPY_BLOCK_SIZE ];
+         ByteArray block( size_type( COPY_BLOCK_SIZE ) );
          fsize_type numberOfBlocks = size/COPY_BLOCK_SIZE;
          fsize_type remainderBytes = size%COPY_BLOCK_SIZE;
 
          for ( fsize_type i = 0; i < numberOfBlocks; ++i )
          {
-            sourceFile.Read( block, COPY_BLOCK_SIZE );
-            targetFile.Write( block, COPY_BLOCK_SIZE );
+            sourceFile.Read( block.Begin(), COPY_BLOCK_SIZE );
+            targetFile.Write( block.Begin(), COPY_BLOCK_SIZE );
             if ( progress != nullptr )
                progress->Add( COPY_BLOCK_SIZE );
          }
 
          if ( remainderBytes > 0 )
          {
-            sourceFile.Read( block, remainderBytes );
-            targetFile.Write( block, remainderBytes );
+            sourceFile.Read( block.Begin(), remainderBytes );
+            targetFile.Write( block.Begin(), remainderBytes );
             if ( progress != nullptr )
                progress->Add( remainderBytes );
          }
@@ -1979,15 +2000,7 @@ static String CleanPath( const String& path )
    else
       ret = out.Left( used );
 
-   // Strip away last slash except for root directories
-   if ( ret.Length() > 1 && ret.EndsWith( '/' )
-#ifdef __PCL_WINDOWS
-        && !(ret.Length() == 3 && ret[1] == ':')
-#endif
-      )
-      ret.Delete( ret.UpperBound() );
-
-   return ret;
+   return TrailingSlashStripped( ret );
 }
 
 // ----------------------------------------------------------------------------
@@ -2030,7 +2043,7 @@ String File::FullPath( const String& filePath )
       if ( !curDir.IsEmpty() )
       {
          if ( !curDir.EndsWith( '/' ) )
-            curDir += '/';
+            curDir << '/';
          return CleanPath( curDir.UTF8ToUTF16() + path );
       }
    }
@@ -2077,9 +2090,9 @@ IsoString File::FileURI( const String& path )
 
 String File::SystemTempDirectory()
 {
-   String tempDir;
-
 #ifdef __PCL_WINDOWS
+
+   String tempDir;
 
    DWORD n = ::GetTempPathW( 0, 0 );
    if ( n != 0 )
@@ -2094,60 +2107,110 @@ String File::SystemTempDirectory()
       }
    }
 
-#endif
-
-#ifdef __PCL_WINDOWS
-   if ( tempDir.IsEmpty() )
+   if ( tempDir.IsEmpty() || !DirectoryExists( tempDir ) ) // ?!
    {
-#endif
-      tempDir = ::getenv( "TEMP" );
-      if ( tempDir.IsEmpty() )
+      tempDir = File::FullPath( IsoString( ::getenv( "TMP" ) ).MBSToWCS() );
+      if ( tempDir.IsEmpty() || !DirectoryExists( tempDir ) )
       {
-         tempDir = ::getenv( "TMP" );
-         if ( tempDir.IsEmpty() )
+         tempDir = File::FullPath( IsoString( ::getenv( "TEMP" ) ).MBSToWCS() );
+         if ( tempDir.IsEmpty() || !DirectoryExists( tempDir ) )
          {
-#ifdef __PCL_WINDOWS
-            tempDir = ".";
-#else
-            tempDir = ::getenv( "temp" );
-            if ( tempDir.IsEmpty() )
+            tempDir = File::FullPath( IsoString( ::getenv( "USERPROFILE" ) ).MBSToWCS() );
+            if ( tempDir.IsEmpty() || !DirectoryExists( tempDir ) )
             {
-               tempDir = ::getenv( "tmp" );
-               if ( tempDir.IsEmpty() )
-               {
-                  tempDir = "/tmp";
-                  if ( !DirectoryExists( tempDir ) )
-                  {
-                     tempDir = ::getenv( "HOME" );
-                     if ( tempDir.IsEmpty() )
-                     {
-                        tempDir = ::getenv( "home" );
-                        if ( tempDir.IsEmpty() )
-                           return FullPath( "./" );
-                     }
-
-                     String homeTempDir = FullPath( tempDir + "/tmp" );
-                     if ( DirectoryExists( homeTempDir ) )
-                        tempDir = homeTempDir;
-                  }
-               }
+               tempDir = "C:/tmp";
+               return DirectoryExists( tempDir ) ? tempDir : File::FullPath( "." );
             }
-#endif
          }
       }
-#ifdef __PCL_WINDOWS
    }
+
+#else
+
+   String tempDir = File::FullPath( String::UTF8ToUTF16( ::getenv( "TMPDIR" ) ) );
+   if ( tempDir.IsEmpty() || !DirectoryExists( tempDir ) )
+      return "/tmp";
+
 #endif
 
-   // Strip away last slash except for root directories
-   if ( tempDir.Length() > 1 && tempDir.EndsWith( '/' )
+   return TrailingSlashStripped( tempDir );
+}
+
+// ----------------------------------------------------------------------------
+
+String File::SystemCacheDirectory()
+{
+#ifdef __PCL_MACOSX
+
+   String dir = File::FullPath( String::UTF8ToUTF16( ::getenv( "HOME" ) ) );
+   if ( !dir.IsEmpty() )
+   {
+      if ( !dir.EndsWith( '/' ) )
+         dir << '/';
+      dir << "Library/Caches";
+      if ( DirectoryExists( dir ) ) // must be true!
+         return dir;
+   }
+
+#endif
+
+   return SystemTempDirectory();
+}
+
+// ----------------------------------------------------------------------------
+
+String File::HomeDirectory()
+{
 #ifdef __PCL_WINDOWS
-        && !(tempDir.Length() == 3 && tempDir[1] == ':')
-#endif
-      )
-      tempDir.DeleteRight( tempDir.Length()-1 );
 
-   return tempDir;
+   String homeDir;
+   HANDLE hToken = 0;
+   if ( ::OpenProcessToken( ::GetCurrentProcess(), TOKEN_READ, &hToken ) )
+   {
+      DWORD n = 0;
+      if ( ::GetUserProfileDirectoryW( hToken, 0, &n ) )
+      {
+         homeDir.Reserve( n );
+         DWORD n1 = n;
+         if ( ::GetUserProfileDirectoryW( hToken, (LPWSTR)homeDir.Begin(), &n1 ) )
+         if ( n1 != 0 && n1 <= n )
+         {
+            homeDir.SetLength( n1 );
+            homeDir = WindowsPathToUnix( WinLongPathName( homeDir ) );
+         }
+      }
+
+      ::CloseHandle( hToken );
+   }
+
+   homeDir.Trim();
+   if ( homeDir.IsEmpty() || !DirectoryExists( homeDir ) ) // ?!
+   {
+      homeDir = File::FullPath( IsoString( ::getenv( "USERPROFILE" ) ).MBSToWCS() );
+      if ( homeDir.IsEmpty() || !DirectoryExists( homeDir ) )
+      {
+         homeDir = File::FullPath( IsoString( ::getenv( "HOMEDRIVE" ) ).MBSToWCS() + IsoString( ::getenv( "HOMEPATH" ) ).MBSToWCS() );
+         if ( homeDir.IsEmpty() || !DirectoryExists( homeDir ) )
+         {
+            homeDir = File::FullPath( IsoString( ::getenv( "HOME" ) ).MBSToWCS() );
+            if ( homeDir.IsEmpty() || !DirectoryExists( homeDir ) )
+            {
+               homeDir = String( ::getenv( "SYSTEMDRIVE" ) ).Trimmed();
+               return homeDir.IsEmpty() ? String( "C:/" ) : homeDir + '/';
+            }
+         }
+      }
+   }
+
+#else
+
+   String homeDir = File::FullPath( String::UTF8ToUTF16( ::getenv( "HOME" ) ) );
+   if ( homeDir.IsEmpty() || !DirectoryExists( homeDir ) ) // ?!
+      return '/';
+
+#endif
+
+   return TrailingSlashStripped( homeDir );
 }
 
 // ----------------------------------------------------------------------------
@@ -2168,6 +2231,8 @@ String File::WindowsPathToUnix( const String& path )
       }
    return unixPath;
 }
+
+// ----------------------------------------------------------------------------
 
 String File::UnixPathToWindows( const String& path )
 {
@@ -2194,7 +2259,7 @@ String File::UniqueFileName( const String& directory, int n, const String& prefi
    if ( baseDir.IsEmpty() )
       baseDir = "./";
    else if ( !baseDir.EndsWith( '/' ) )
-      baseDir += '/';
+      baseDir << '/';
 
    if ( n < 5 )
       n = 5;
@@ -2221,7 +2286,7 @@ uint64 File::GetAvailableSpace( const String& dirPath, uint64* argTotalBytes, ui
    if ( dir[0] == '\\' && dir[1] == '\\' )
    {
       if ( !dir.EndsWith( '\\' ) )
-         dir.Append( '\\' );  // UNC paths must include a trailing backslash
+         dir << '\\';  // UNC paths must include a trailing backslash
    }
    else
    {
@@ -2246,12 +2311,8 @@ uint64 File::GetAvailableSpace( const String& dirPath, uint64* argTotalBytes, ui
 
 #else
 
-   String dir = dirPath;
-   dir.Trim();
-   if ( dir.Length() > 1 && dir.EndsWith( '/' ) )
-      dir.DeleteRight( dir.Length()-1 );
-
-   IsoString utf8 = File::FullPath( dir ).ToUTF8();
+   String dir = File::FullPath( TrailingSlashStripped( dirPath.Trimmed() ) );
+   IsoString utf8 = dir.ToUTF8();
    errno = 0;
    struct statvfs buf;
    if ( ::statvfs( utf8.c_str(), &buf ) == 0 )
@@ -2266,7 +2327,7 @@ uint64 File::GetAvailableSpace( const String& dirPath, uint64* argTotalBytes, ui
    }
 
    if ( errno != 0 )
-      throw File::Error( dirPath, "Unable to get file system information: " + String( ::strerror( errno ) ) );
+      throw File::Error( dir, "Unable to get file system information: " + String( ::strerror( errno ) ) );
 
    if ( argTotalBytes != 0 )
       *argTotalBytes = 0;
@@ -2449,4 +2510,4 @@ bool File::IsValidHandle( handle h ) const
 }  // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/File.cpp - Released 2017-07-09T18:07:16Z
+// EOF pcl/File.cpp - Released 2017-07-18T16:14:00Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard CometAlignment Process Module Version 01.02.06.0177
+// Standard CometAlignment Process Module Version 01.02.06.0181
 // ----------------------------------------------------------------------------
-// CometAlignmentInterface.cpp - Released 2017-07-09T18:07:33Z
+// CometAlignmentInterface.cpp - Released 2017-07-18T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -1813,4 +1813,4 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CometAlignmentInterface.cpp - Released 2017-07-09T18:07:33Z
+// EOF CometAlignmentInterface.cpp - Released 2017-07-18T16:14:19Z

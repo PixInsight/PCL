@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard Annotation Process Module Version 01.00.00.0202
+// Standard Annotation Process Module Version 01.00.00.0206
 // ----------------------------------------------------------------------------
-// AnnotationParameters.cpp - Released 2017-07-09T18:07:33Z
+// AnnotationParameters.cpp - Released 2017-07-18T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Annotation PixInsight module.
 //
@@ -323,4 +323,4 @@ double AnnotationOpacity::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AnnotationParameters.cpp - Released 2017-07-09T18:07:33Z
+// EOF AnnotationParameters.cpp - Released 2017-07-18T16:14:19Z

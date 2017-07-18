@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0366
+// Standard Global Process Module Version 01.02.07.0370
 // ----------------------------------------------------------------------------
-// ReadoutOptionsAction.cpp - Released 2017-07-09T18:07:33Z
+// ReadoutOptionsAction.cpp - Released 2017-07-18T16:14:18Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -52,8 +52,8 @@
 
 #include "ReadoutOptionsAction.h"
 #include "ReadoutOptionsInstance.h"
-#include "ReadoutOptionsProcess.h"
 #include "ReadoutOptionsInterface.h"
+#include "ReadoutOptionsProcess.h"
 
 namespace pcl
 {
@@ -65,7 +65,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 ReadoutOptionsAction::ReadoutOptionsAction() :
-Action( L"Edit > Readout Options", Bitmap( ReadoutOptionsActionIcon_XPM ), L"Edit" )
+   Action( "Edit > Readout Options", Bitmap( ReadoutOptionsActionIcon_XPM ), "Edit" )
 {
    SetToolTip( "Readout Options" );
 }
@@ -84,4 +84,4 @@ void ReadoutOptionsAction::Execute()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ReadoutOptionsAction.cpp - Released 2017-07-09T18:07:33Z
+// EOF ReadoutOptionsAction.cpp - Released 2017-07-18T16:14:18Z

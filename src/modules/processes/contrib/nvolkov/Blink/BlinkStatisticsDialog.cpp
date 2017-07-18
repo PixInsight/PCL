@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.02.0263
+// Standard Blink Process Module Version 01.02.02.0267
 // ----------------------------------------------------------------------------
-// BlinkStatisticsDialog.cpp - Released 2017-07-09T18:07:33Z
+// BlinkStatisticsDialog.cpp - Released 2017-07-18T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
@@ -773,4 +773,4 @@ void BlinkStatisticsDialog::__Dialog_Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BlinkStatisticsDialog.cpp - Released 2017-07-09T18:07:33Z
+// EOF BlinkStatisticsDialog.cpp - Released 2017-07-18T16:14:19Z

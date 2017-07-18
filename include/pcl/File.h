@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// pcl/File.h - Released 2017-07-09T18:07:07Z
+// pcl/File.h - Released 2017-07-18T16:13:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -279,6 +279,10 @@ typedef Flags<FileAttribute::mask_type>   FileAttributes;
 /*!
  * \struct FileTime
  * \brief File date and time
+ *
+ * %FileTime is used to represent the creation, last access and last
+ * modification times of a file or directory. On most file systems, this object
+ * represents a time point in the Coordinated Universal Time (UTC) time scale.
  * \ingroup file_utilities
  */
 struct FileTime
@@ -320,35 +324,23 @@ struct FileTime
    }
 
    /*!
-    * Returns this file date and time as a Julian day number in local time.
+    * Returns this file date and time as a Julian day number. The returned
+    * value represents a time point in the UTC time scale on most file systems.
     */
    double ToJD() const;
 
    /*!
-    * Returns this file date and time as a Julian day number in the Coordinated
-    * Universal Time (UTC) time scale.
-    *
-    * This function takes into account the difference between local time and
-    * UTC on systems that support time zones.
-    */
-   double ToJDUTC() const;
-
-   /*!
-    * Returns the elapsed time in days since 1970 January 1 00:00:00 UTC.
-    *
-    * This function takes into account the difference between local time and
-    * Coordinated Universal Time (UTC) on systems that support time zones.
+    * Returns the elapsed time in days since the standard UNIX epoch (1970
+    * January 1.0 UTC).
     */
    double DaysSinceEpoch() const
    {
-      return ToJDUTC() - 2440587.5;
+      return ToJD() - 2440587.5;
    }
 
    /*!
-    * Returns the elapsed time in seconds since 1970 January 1 00:00:00 UTC.
-    *
-    * This function takes into account the difference between local time and
-    * Coordinated Universal Time (UTC) on systems that support time zones.
+    * Returns the elapsed time in seconds since the standard UNIX epoch (1970
+    * January 1.0 UTC).
     */
    double SecondsSinceEpoch() const
    {
@@ -1968,8 +1960,48 @@ public:
 
    /*!
     * Returns the system temporary storage directory.
+    *
+    * On FreeBSD, Linux and macOS, this function returns the value of the
+    * TMPDIR environment variable if it is defined, nonempty, and is a valid
+    * path to an existing directory. Otherwise this function returns "/tmp".
+    *
+    * On Windows, this function returns the directory designated for storage of
+    * temporary files. Normally this is the value of the TMP or TEMP
+    * environment variable. If no valid directory can be retrieved this way
+    * (which is extremely weird), this function attempts to return the user's
+    * profile directory, as reported by the USERPROFILE variable. If that also
+    * fails, "C:/tmp" is returned if it exists, or the current working
+    * directory as a last resort.
     */
    static String SystemTempDirectory();
+
+   /*!
+    * Returns the system cache storage directory.
+    *
+    * On FreeBSD, Linux and Windows, this function is equivalent to
+    * SystemTempDirectory().
+    *
+    * On macOS, this function returns the user's local cache folder, namely
+    * "~/Library/Caches" if it exists (it must), or SystemTempDirectory()
+    * otherwise.
+    */
+   static String SystemCacheDirectory();
+
+   /*!
+    * Returns the home directory of the current user.
+    *
+    * On FreeBSD, Linux and macOS, this function returns the value of the HOME
+    * environment variable if it is defined, nonempty, and is a valid path to
+    * an existing directory. In the extremely weird case this does not happen,
+    * the system root directory '/' is returned as a last resort.
+    *
+    * On Windows, this function returns the root directory of the current
+    * user's profile. This is normally the value of the USERPROFILE environment
+    * variable. In case this fails, the HOMEDRIVE, HOMEPATH and HOME variables
+    * are checked for validity. If everything fails, the SYSTEMDRIVE variable
+    * is checked and ultimately "C:/" is returned.
+    */
+   static String HomeDirectory();
 
    /*!
     * Converts a path from Windows to UNIX syntax. Replaces all occurrences of
@@ -2261,4 +2293,4 @@ protected:
 #endif   // __PCL_File_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/File.h - Released 2017-07-09T18:07:07Z
+// EOF pcl/File.h - Released 2017-07-18T16:13:52Z

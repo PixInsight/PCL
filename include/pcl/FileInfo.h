@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// pcl/FileInfo.h - Released 2017-07-09T18:07:07Z
+// pcl/FileInfo.h - Released 2017-07-18T16:13:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -78,34 +78,36 @@ public:
     * Default constructor. Constructs an empty %FileInfo object without any
     * information on existing file or directory items.
     */
-   FileInfo();
+   FileInfo()
+   {
+      Clear();
+   }
 
    /*!
     * Constructs a %FileInfo object with information retrieved for the
     * specified file or directory \a path.
     */
-   FileInfo( const String& path );
+   FileInfo( const String& path )
+   {
+      Refresh( path );
+   }
 
    /*!
     * Copy constructor.
     */
-   FileInfo( const FileInfo& x )
-   {
-      (void)operator =( x );
-   }
+   FileInfo( const FileInfo& ) = default;
 
    /*!
     * Virtual destructor.
     */
    virtual ~FileInfo()
    {
-      Clear();
    }
 
    /*!
     * Assignment operator. Returns a reference to this object.
     */
-   FileInfo& operator =( const FileInfo& x );
+   FileInfo& operator =( const FileInfo& ) = default;
 
    /*!
     * Returns the absolute path of this file or directory.
@@ -437,4 +439,4 @@ private:
 #endif  // __PCL_FileInfo_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileInfo.h - Released 2017-07-09T18:07:07Z
+// EOF pcl/FileInfo.h - Released 2017-07-18T16:13:52Z

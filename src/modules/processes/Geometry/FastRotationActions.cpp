@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0365
+// Standard Geometry Process Module Version 01.02.01.0369
 // ----------------------------------------------------------------------------
-// FastRotationActions.cpp - Released 2017-07-09T18:07:33Z
+// FastRotationActions.cpp - Released 2017-07-18T16:14:18Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -51,8 +51,8 @@
 // ----------------------------------------------------------------------------
 
 #include "FastRotationActions.h"
-#include "FastRotationProcess.h"
 #include "FastRotationInstance.h"
+#include "FastRotationProcess.h"
 
 namespace pcl
 {
@@ -68,7 +68,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 Rotate180Action::Rotate180Action() :
-   Action( L"Image > Geometry > Rotate 180\xb0", Bitmap( Rotate180ActionIcon_XPM ), L"Geometry" )
+   Action( "Image > Geometry > Rotate 180\xb0", Bitmap( Rotate180ActionIcon_XPM ), "Geometry" )
 {
    SetToolTip( "Rotate 180\xb0" );
 }
@@ -86,7 +86,7 @@ bool Rotate180Action::IsEnabled( ActionInfo info ) const
 // ----------------------------------------------------------------------------
 
 Rotate90CWAction::Rotate90CWAction() :
-   Action( L"Image > Geometry > Rotate 90\xb0 Clockwise", Bitmap( Rotate90CWActionIcon_XPM ), L"Geometry" )
+   Action( "Image > Geometry > Rotate 90\xb0 Clockwise", Bitmap( Rotate90CWActionIcon_XPM ), "Geometry" )
 {
    SetToolTip( "Rotate 90\xb0 Clockwise" );
 }
@@ -104,7 +104,7 @@ bool Rotate90CWAction::IsEnabled( ActionInfo info ) const
 // ----------------------------------------------------------------------------
 
 Rotate90CCWAction::Rotate90CCWAction() :
-   Action( L"Image > Geometry > Rotate 90\xb0 Counter-clockwise", Bitmap( Rotate90CCWActionIcon_XPM ), L"Geometry" )
+   Action( "Image > Geometry > Rotate 90\xb0 Counter-clockwise", Bitmap( Rotate90CCWActionIcon_XPM ), "Geometry" )
 {
    SetToolTip( "Rotate 90\xb0 Counter-clockwise" );
 }
@@ -160,4 +160,4 @@ bool VerticalMirrorAction::IsEnabled( ActionInfo info ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FastRotationActions.cpp - Released 2017-07-09T18:07:33Z
+// EOF FastRotationActions.cpp - Released 2017-07-18T16:14:18Z

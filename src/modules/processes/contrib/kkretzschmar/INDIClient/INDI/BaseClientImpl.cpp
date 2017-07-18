@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0205
+// Standard INDIClient Process Module Version 01.00.15.0209
 // ----------------------------------------------------------------------------
-// BaseClientImpl.cpp - Released 2017-07-09T18:07:33Z
+// BaseClientImpl.cpp - Released 2017-07-18T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -961,4 +961,4 @@ void INDI::BaseClientImpl::sendCommand(char *fmt, ...)
 }
 
 // ----------------------------------------------------------------------------
-// EOF BaseClientImpl.cpp - Released 2017-07-09T18:07:33Z
+// EOF BaseClientImpl.cpp - Released 2017-07-18T16:14:19Z

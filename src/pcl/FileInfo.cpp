@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// pcl/FileInfo.cpp - Released 2017-07-09T18:07:16Z
+// pcl/FileInfo.cpp - Released 2017-07-18T16:14:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -67,34 +67,6 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-FileInfo::FileInfo()
-{
-   Clear();
-}
-
-FileInfo::FileInfo( const String& path )
-{
-   Refresh( path );
-}
-
-FileInfo& FileInfo::operator =( const FileInfo& x )
-{
-   m_path              = x.m_path;
-   m_attributes        = x.m_attributes;
-   m_size              = x.m_size;
-   m_numberOfHardLinks = x.m_numberOfHardLinks;
-   m_userId            = x.m_userId;
-   m_groupId           = x.m_groupId;
-   m_created           = x.m_created;
-   m_lastAccessed      = x.m_lastAccessed;
-   m_lastModified      = x.m_lastModified;
-   m_exists            = x.m_exists;
-   m_readable          = x.m_readable;
-   m_writable          = x.m_writable;
-   m_executable        = x.m_executable;
-   return *this;
-}
-
 #ifdef __PCL_WINDOWS
 
 static String WinErrorMessage( DWORD errorCode )
@@ -131,17 +103,16 @@ static void WinAttrToPCL( pcl::FileAttributes& a, DWORD wa )
 
 static void WinFileTimeToPCL( pcl::FileTime& t, FILETIME ft )
 {
-   SYSTEMTIME stUTC, stLocal;
+   SYSTEMTIME stUTC;
    ::FileTimeToSystemTime( &ft, &stUTC );
-   ::SystemTimeToTzSpecificLocalTime( NULL, &stUTC, &stLocal );
-   t.year         = stLocal.wYear;
-   t.month        = stLocal.wMonth;
-   t.day          = stLocal.wDay;
-   t.hour         = stLocal.wHour;
-   t.minute       = stLocal.wMinute;
-   t.second       = stLocal.wSecond;
+   t.year         = stUTC.wYear;
+   t.month        = stUTC.wMonth;
+   t.day          = stUTC.wDay;
+   t.hour         = stUTC.wHour;
+   t.minute       = stUTC.wMinute;
+   t.second       = stUTC.wSecond;
    // Milliseconds are unreliable for file times on Windows
-   t.milliseconds = 0; // stLocal.wMilliseconds;
+   t.milliseconds = 0; // stUTC.wMilliseconds;
 }
 
 #else // !__PCL_WINDOWS
@@ -170,13 +141,13 @@ static void POSIXAttrToPCL( pcl::FileAttributes& a, unsigned mode )
 
 static void POSIXFileTimeToPCL( pcl::FileTime& t, time_t ft )
 {
-   ::tm* lt = ::localtime( &ft );
-   t.year         = lt->tm_year + 1900;
-   t.month        = lt->tm_mon + 1;
-   t.day          = lt->tm_mday;
-   t.hour         = lt->tm_hour;
-   t.minute       = lt->tm_min;
-   t.second       = lt->tm_sec;
+   ::tm* ut = ::gmtime( &ft );
+   t.year         = ut->tm_year + 1900;
+   t.month        = ut->tm_mon + 1;
+   t.day          = ut->tm_mday;
+   t.hour         = ut->tm_hour;
+   t.minute       = ut->tm_min;
+   t.second       = ut->tm_sec;
    t.milliseconds = 0;
 }
 
@@ -260,7 +231,7 @@ void FileInfo::Refresh()
    m_userId            = s.st_uid;
    m_groupId           = s.st_gid;
 
-   POSIXFileTimeToPCL( m_created,      s.st_ctime );
+   POSIXFileTimeToPCL( m_created,      s.st_ctime ? s.st_ctime : s.st_mtime );
    POSIXFileTimeToPCL( m_lastAccessed, s.st_atime );
    POSIXFileTimeToPCL( m_lastModified, s.st_mtime );
 
@@ -322,4 +293,4 @@ void FileInfo::ClearData()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileInfo.cpp - Released 2017-07-09T18:07:16Z
+// EOF pcl/FileInfo.cpp - Released 2017-07-18T16:14:00Z

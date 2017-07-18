@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0390
+// Standard Image Process Module Version 01.02.09.0394
 // ----------------------------------------------------------------------------
-// CreateAlphaChannelsProcess.cpp - Released 2017-07-09T18:07:33Z
+// CreateAlphaChannelsProcess.cpp - Released 2017-07-18T16:14:18Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -300,4 +300,4 @@ int CreateAlphaChannelsProcess::ProcessCommandLine( const StringList& argv ) con
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CreateAlphaChannelsProcess.cpp - Released 2017-07-09T18:07:33Z
+// EOF CreateAlphaChannelsProcess.cpp - Released 2017-07-18T16:14:18Z

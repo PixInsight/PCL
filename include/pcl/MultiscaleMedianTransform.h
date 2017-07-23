@@ -166,7 +166,9 @@ public:
     */
    MultiscaleMedianTransform( int n = 4, int d = 0 ) :
       RedundantMultiscaleTransform( n, d ),
-      m_medianWaveletTransform( false ), m_medianWaveletThreshold( 5.0F )
+      m_multiwayStructures( true ),
+      m_medianWaveletTransform( false ),
+      m_medianWaveletThreshold( 5.0F )
    {
    }
 
@@ -196,6 +198,7 @@ public:
    MultiscaleMedianTransform& operator =( const MultiscaleMedianTransform& x )
    {
       (void)RedundantMultiscaleTransform::operator =( x );
+      m_multiwayStructures = x.m_multiwayStructures;
       m_medianWaveletTransform = x.m_medianWaveletTransform;
       m_medianWaveletThreshold = x.m_medianWaveletThreshold;
       return *this;
@@ -207,9 +210,46 @@ public:
    MultiscaleMedianTransform& operator =( MultiscaleMedianTransform&& x )
    {
       (void)RedundantMultiscaleTransform::operator =( std::move( x ) );
+      m_multiwayStructures = x.m_multiwayStructures;
       m_medianWaveletTransform = x.m_medianWaveletTransform;
       m_medianWaveletThreshold = x.m_medianWaveletThreshold;
       return *this;
+   }
+
+   /*!
+    * Returns true if this transform applies special multiway structuring
+    * elements for improved isotropic behavior. Returns false if simple
+    * structures are used instead for improved execution speed, at the cost of
+    * some performance degradation in the isotropic behavior of the transform.
+    */
+   bool UsingMultiwayStructures() const
+   {
+      return m_multiwayStructures;
+   }
+
+   /*!
+    * Enables the use of multiway structuring elements. See
+    * UsingMultiwayStructures() for more information.
+    *
+    * \note Calling this member function implicitly deletes all existing
+    * transform layers.
+    */
+   void EnableMultiwayStructures( bool enable = true )
+   {
+      DestroyLayers();
+      m_multiwayStructures = enable;
+   }
+
+   /*!
+    * Disables the use of multiway structuring elements. See
+    * UsingMultiwayStructures() for more information.
+    *
+    * \note Calling this member function implicitly deletes all existing
+    * transform layers.
+    */
+   void DisableMultiwayStructures( bool disable = true )
+   {
+      EnableMultiwayStructures( !disable );
    }
 
    /*!
@@ -283,6 +323,11 @@ public:
    }
 
 private:
+
+   /*
+    * Use multiway structural elements for improved isotropy.
+    */
+   bool m_multiwayStructures     : 1;
 
    /*
     * Compute a wavelet-median transform.

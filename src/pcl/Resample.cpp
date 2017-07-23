@@ -152,14 +152,14 @@ class PCL_ResampleEngine
 public:
 
    template <class P> static
-   void Apply( GenericImage<P>& image, const Resample& resample )
+   void Apply( GenericImage<P>& image, const Resample& R )
    {
       int width = image.Width();
       int w0 = width;
       int height = image.Height();
       int h0 = height;
 
-      resample.GetNewSizes( width, height );
+      R.GetNewSizes( width, height );
 
       if ( width == w0 && height == h0 )
          return;
@@ -183,8 +183,8 @@ public:
 
       StatusMonitor status = image.Status();
 
-      int numberOfThreads = resample.IsParallelProcessingEnabled() ?
-               Min( resample.MaxProcessors(), pcl::Thread::NumberOfThreads( height, 1 ) ) : 1;
+      int numberOfThreads = R.IsParallelProcessingEnabled() ?
+               Min( R.MaxProcessors(), pcl::Thread::NumberOfThreads( height, 1 ) ) : 1;
       int rowsPerThread = height/numberOfThreads;
 
       try
@@ -192,7 +192,7 @@ public:
          size_type N = size_type( width )*size_type( height );
          if ( status.IsInitializationEnabled() )
             status.Initialize( String().Format( "Resampling to %dx%d px, ", width, height )
-                                                + resample.Interpolation().Description(), size_type( n )*N );
+                                                + R.Interpolation().Description(), size_type( n )*N );
          f0 = image.ReleaseData();
 
          for ( int c = 0; c < n; ++c )
@@ -202,7 +202,7 @@ public:
 
             ReferenceArray<Thread<P> > threads;
             for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
-               threads.Add( new Thread<P>( data, resample.Interpolation().NewInterpolator<P>( f0[c], w0, h0 ),
+               threads.Add( new Thread<P>( data, R.Interpolation().NewInterpolator<P>( f0[c], w0, h0, R.UsingUnclippedInterpolation() ),
                                            i*rowsPerThread,
                                            (j < numberOfThreads) ? j*rowsPerThread : height ) );
 

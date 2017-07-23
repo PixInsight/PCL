@@ -145,7 +145,7 @@ public:
          ReferenceArray<Thread<P> > threads;
          for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
             threads.Add( new Thread<P>( data,
-                                        T.Interpolation().NewInterpolator<P>( image[c], width, height ),
+                                        T.Interpolation().NewInterpolator<P>( image[c], width, height, T.UsingUnclippedInterpolation() ),
                                         i*rowsPerThread,
                                         (j < numberOfThreads) ? j*rowsPerThread : height ) );
 

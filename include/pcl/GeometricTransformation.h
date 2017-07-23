@@ -140,7 +140,7 @@ public:
     * different pixel interpolation.
     */
    InterpolatingGeometricTransformation( PixelInterpolation& p ) :
-      GeometricTransformation(), m_interpolation( &p )
+      GeometricTransformation(), m_interpolation( &p ), m_unclipped( false )
    {
       PCL_CHECK( m_interpolation != nullptr )
    }
@@ -153,16 +153,13 @@ public:
     * object \a x must remain valid and accessible as long as at least one of
     * both objects is associated with it.
     */
-   InterpolatingGeometricTransformation( const InterpolatingGeometricTransformation& x ) :
-      GeometricTransformation( x ), m_interpolation( x.m_interpolation )
-   {
-   }
+   InterpolatingGeometricTransformation( const InterpolatingGeometricTransformation& ) = default;
 
    /*!
     * Move constructor.
     */
    InterpolatingGeometricTransformation( InterpolatingGeometricTransformation&& x ) :
-      GeometricTransformation( x ), m_interpolation( x.m_interpolation )
+      GeometricTransformation( x ), m_interpolation( x.m_interpolation ), m_unclipped( x.m_unclipped )
    {
       x.m_interpolation = nullptr;
    }
@@ -178,11 +175,7 @@ public:
     * object \a x must remain valid and accessible as long as at least one of
     * both objects is associated with it.
     */
-   InterpolatingGeometricTransformation& operator =( const InterpolatingGeometricTransformation& x )
-   {
-      m_interpolation = x.m_interpolation;
-      return *this;
-   }
+   InterpolatingGeometricTransformation& operator =( const InterpolatingGeometricTransformation& ) = default;
 
    /*!
     * Move assignment operator. Returns a reference to this object.
@@ -191,6 +184,7 @@ public:
    {
       m_interpolation = x.m_interpolation;
       x.m_interpolation = nullptr;
+      m_unclipped = x.m_unclipped;
       return *this;
    }
 
@@ -232,9 +226,43 @@ public:
       PCL_CHECK( m_interpolation != nullptr )
    }
 
+   /*!
+    * Returns true if this image transformation applies unclipped pixel
+    * interpolations. Unclipped interpolations don't constrain interpolated
+    * pixel sample values to the native range of the pixel data type of the
+    * transformed image. This allows to apply interpolating transformations to
+    * images that exceed their representable ranges; for example, when images
+    * are used to store and manipulate arbitrary matrices for convenience.
+    *
+    * Unclipped transformations are always disabled by default.
+    */
+   bool UsingUnclippedInterpolation() const
+   {
+      return m_unclipped;
+   }
+
+   /*!
+    * Enables the use of unclipped pixel interpolations. See
+    * UsingUnclippedInterpolation() for more information.
+    */
+   void EnableUnclippedInterpolation( bool enable = true )
+   {
+      m_unclipped = enable;
+   }
+
+   /*!
+    * Disables the use of unclipped pixel interpolations. See
+    * UsingUnclippedInterpolation() for more information.
+    */
+   void DisableUnclippedInterpolation( bool disable = true )
+   {
+      EnableUnclippedInterpolation( !disable );
+   }
+
 protected:
 
    PixelInterpolation* m_interpolation;
+   bool                m_unclipped : 1;
 };
 
 // ----------------------------------------------------------------------------

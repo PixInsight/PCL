@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0336
+// Standard ColorSpaces Process Module Version 01.01.00.0340
 // ----------------------------------------------------------------------------
-// ExtractCIELAction.cpp - Released 2017-07-09T18:07:32Z
+// ExtractCIELAction.cpp - Released 2017-07-18T16:14:18Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
@@ -50,13 +50,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include "ExtractCIELAction.h"
 #include "ChannelExtractionProcess.h"
 #include "ChannelExtractionInstance.h"
 #include "ChannelParameters.h"
+#include "ExtractCIELAction.h"
 
-#include <pcl/KeyCodes.h>
 #include <pcl/ButtonCodes.h>
+#include <pcl/GlobalSettings.h>
+#include <pcl/KeyCodes.h>
 
 namespace pcl
 {
@@ -68,7 +69,9 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 ExtractCIELAction::ExtractCIELAction() :
-Action( L"Image > Extract > Lightness (CIE L*)", Bitmap( ExtractCIELActionIcon_XPM ), L"Image" )
+   Action( "Image > Extract > Lightness (CIE L*)",
+           Bitmap( ExtractCIELActionIcon_XPM ),
+           (PixInsightSettings::GlobalInteger( "MainWindow/LogicalScreenWidth" ) > 1920) ? "Image" : "" )
 {
    SetToolTip( "Extract CIE L* component" );
 }
@@ -95,4 +98,4 @@ bool ExtractCIELAction::IsEnabled( ActionInfo info ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ExtractCIELAction.cpp - Released 2017-07-09T18:07:32Z
+// EOF ExtractCIELAction.cpp - Released 2017-07-18T16:14:18Z

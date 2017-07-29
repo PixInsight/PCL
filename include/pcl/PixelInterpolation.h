@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// pcl/PixelInterpolation.h - Released 2017-07-09T18:07:07Z
+// pcl/PixelInterpolation.h - Released 2017-07-18T16:13:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -116,15 +116,40 @@ public:
       typedef typename P::sample sample;
 
       /*!
-       * Constructs and initializes a new %Interpolator object that
-       * interpolates a pixel sample matrix \a f of the specified \a width and
-       * \a height dimensions, using the specified interpolation \a i.
+       * Constructs and initializes a new %Interpolator object.
+       *
+       * \param interpolation    Pointer to a dynamically allocated instance of
+       *                         the two-dimensional interpolation algorithm.
+       *                         The instance will be owned by this object,
+       *                         which will destroy and deallocate it upon
+       *                         destruction.
+       *
+       * \param data             Source matrix of pixel sample values that will
+       *                         be interpolated.
+       *
+       * \param width            Horizontal dimension (most rapidly varying
+       *                         matrix subscript) of the source data matrix.
+       *                         Must be greater than zero.
+       *
+       * \param height           Vertical dimension (most slowly varying matrix
+       *                         subscript) of the source data matrix. Must be
+       *                         greater than zero.
+       *
+       * \param unclipped        If false (default value), the interpolation
+       *                         will constrain interpolated values to the
+       *                         native range of the pixel sample type
+       *                         represented by the template argument P. If
+       *                         true, interpolated pixel values will be
+       *                         returned unmodified. Note that this only makes
+       *                         sense for floating point pixel sample types.
        */
-      Interpolator( BidimensionalInterpolation<sample>* i,
-                    const sample* f, int width, int height ) : m_interpolation( i )
+      Interpolator( BidimensionalInterpolation<sample>* interpolation,
+                    const sample* data, int width, int height, bool unclipped = false ) :
+         m_interpolation( interpolation ),
+         m_unclipped( unclipped )
       {
          if ( !m_interpolation.IsNull() )
-            m_interpolation->Initialize( f, width, height );
+            m_interpolation->Initialize( data, width, height );
       }
 
       /*!
@@ -165,15 +190,28 @@ public:
       }
 
       /*!
-       * Interpolates a pixel sample value at the specified \a x and \a y
+       * Interpolates a pixel sample value at the specified \a x and \a y image
        * coordinates.
+       *
+       * If this is an unclipped interpolator (see the class constructor), the
+       * interpolated value will be returned unmodified. If this is a clipped
+       * interpolator (default state), the returned value will be constrained
+       * to stay within the native range of the pixel sample type represented
+       * by the template argument P. Note that unclipped interpolation only
+       * makes sense for floating point pixel sample types.
        */
       sample operator()( double x, double y ) const
       {
          PCL_PRECONDITION( !m_interpolation.IsNull() )
          double r = (*m_interpolation)( x, y );
-         return (r < P::MinSampleValue()) ? P::MinSampleValue() :
-            ((r > P::MaxSampleValue()) ? P::MaxSampleValue() : P::FloatToSample( r ));
+         if ( !m_unclipped )
+         {
+            if ( r > P::MaxSampleValue() )
+               return P::MaxSampleValue();
+            if ( r < P::MinSampleValue() )
+               return P::MinSampleValue();
+         }
+         return P::FloatToSample( r );
       }
 
       /*!
@@ -191,6 +229,7 @@ public:
    private:
 
       AutoPointer<BidimensionalInterpolation<sample> > m_interpolation;
+                                                  bool m_unclipped : 1;
    };
 
    // -------------------------------------------------------------------------
@@ -235,19 +274,19 @@ public:
    /*!
     * Creates a new Interpolator object specialized for a pixel sample type P.
     *
-    * \param f       Two-dimensional matrix of pixel sample values that will be
+    * \param data    Two-dimensional matrix of pixel sample values that will be
     *                interpolated.
     *
     * \param width   Horizontal dimension (most rapidly varying matrix
     *                subscript) of the source data matrix.
     *
-    * \param height  Vertical dimension (most slowly varying matrix
-    *                subscript) of the source data matrix.
+    * \param height  Vertical dimension (most slowly varying matrix subscript)
+    *                of the source data matrix.
     */
    template <class P, class T>
-   Interpolator<P>* NewInterpolator( const T* f, int width, int height ) const
+   Interpolator<P>* NewInterpolator( const T* data, int width, int height, bool unclipped = false ) const
    {
-      return new Interpolator<P>( NewInterpolation( f ), f, width, height );
+      return new Interpolator<P>( NewInterpolation( data ), data, width, height );
    }
 
 protected:
@@ -1090,4 +1129,4 @@ private:
 #endif   // __PCL_PixelInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/PixelInterpolation.h - Released 2017-07-09T18:07:07Z
+// EOF pcl/PixelInterpolation.h - Released 2017-07-18T16:13:52Z

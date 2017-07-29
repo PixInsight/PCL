@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0390
+// Standard Image Process Module Version 01.02.09.0394
 // ----------------------------------------------------------------------------
-// ImageModule.cpp - Released 2017-07-09T18:07:33Z
+// ImageModule.cpp - Released 2017-07-18T16:14:18Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     02
 #define MODULE_VERSION_REVISION  09
-#define MODULE_VERSION_BUILD     0390
+#define MODULE_VERSION_BUILD     0394
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017
 #define MODULE_RELEASE_MONTH     7
-#define MODULE_RELEASE_DAY       9
+#define MODULE_RELEASE_DAY       18
 
 #include "ImageModule.h"
 #include "NewImageProcess.h"
@@ -89,6 +89,8 @@ ImageModule::ImageModule() : MetaModule()
 {
 }
 
+// ----------------------------------------------------------------------------
+
 const char* ImageModule::Version() const
 {
    return PCL_MODULE_VERSION( MODULE_VERSION_MAJOR,
@@ -98,35 +100,49 @@ const char* ImageModule::Version() const
                               MODULE_VERSION_LANGUAGE );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString ImageModule::Name() const
 {
    return "Image";
 }
+
+// ----------------------------------------------------------------------------
 
 String ImageModule::Description() const
 {
    return "PixInsight Standard Image Process Module";
 }
 
+// ----------------------------------------------------------------------------
+
 String ImageModule::Company() const
 {
    return "Pleiades Astrophoto";
 }
+
+// ----------------------------------------------------------------------------
 
 String ImageModule::Author() const
 {
    return "Juan Conejero, PTeam";
 }
 
+// ----------------------------------------------------------------------------
+
 String ImageModule::Copyright() const
 {
    return "Copyright (c) 2005-2017, Pleiades Astrophoto";
 }
 
+// ----------------------------------------------------------------------------
+
 String ImageModule::TradeMarks() const
 {
    return "PixInsight";
 }
+
+// ----------------------------------------------------------------------------
 
 String ImageModule::OriginalFileName() const
 {
@@ -144,12 +160,16 @@ String ImageModule::OriginalFileName() const
 #endif
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageModule::GetReleaseDate( int& year, int& month, int& day ) const
 {
    year  = MODULE_RELEASE_YEAR;
    month = MODULE_RELEASE_MONTH;
    day   = MODULE_RELEASE_DAY;
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageModule::OnLoad()
 {
@@ -189,4 +209,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF ImageModule.cpp - Released 2017-07-09T18:07:33Z
+// EOF ImageModule.cpp - Released 2017-07-18T16:14:18Z

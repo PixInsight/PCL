@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard GradientDomain Process Module Version 00.06.04.0203
+// Standard GradientDomain Process Module Version 00.06.04.0207
 // ----------------------------------------------------------------------------
-// GradientsMergeMosaicParameters.cpp - Released 2017-07-09T18:07:33Z
+// GradientsMergeMosaicParameters.cpp - Released 2017-07-18T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -234,4 +234,4 @@ bool GradientsMergeMosaicGenerateMask::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF GradientsMergeMosaicParameters.cpp - Released 2017-07-09T18:07:33Z
+// EOF GradientsMergeMosaicParameters.cpp - Released 2017-07-18T16:14:19Z

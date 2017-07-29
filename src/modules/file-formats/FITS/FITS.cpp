@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.05.0399
+// Standard FITS File Format Module Version 01.01.05.0403
 // ----------------------------------------------------------------------------
-// FITS.cpp - Released 2017-07-09T18:07:25Z
+// FITS.cpp - Released 2017-07-18T16:14:10Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
@@ -2692,4 +2692,4 @@ void FITSWriter::WriteExtensionHDU( const FITSExtensionData& ext )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITS.cpp - Released 2017-07-09T18:07:25Z
+// EOF FITS.cpp - Released 2017-07-18T16:14:10Z

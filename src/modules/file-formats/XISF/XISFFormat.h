@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.09.0153
+// Standard XISF File Format Module Version 01.00.09.0157
 // ----------------------------------------------------------------------------
-// XISFFormat.h - Released 2017-07-09T18:07:25Z
+// XISFFormat.h - Released 2017-07-18T16:14:10Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -151,4 +151,4 @@ public:
 #endif   // __XISFFormat_h
 
 // ----------------------------------------------------------------------------
-// EOF XISFFormat.h - Released 2017-07-09T18:07:25Z
+// EOF XISFFormat.h - Released 2017-07-18T16:14:10Z

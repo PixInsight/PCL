@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0205
+// Standard INDIClient Process Module Version 01.00.15.0209
 // ----------------------------------------------------------------------------
-// INDIMountInterface.cpp - Released 2017-07-09T18:07:33Z
+// INDIMountInterface.cpp - Released 2017-07-18T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -51,15 +51,17 @@
 // ----------------------------------------------------------------------------
 
 #include <pcl/Console.h>
+#include <pcl/ExternalProcess.h>
+#include <pcl/FileDialog.h>
+#include <pcl/GlobalSettings.h>
 #include <pcl/Graphics.h>
 #include <pcl/Math.h>
+#include <pcl/MessageBox.h>
 #include <pcl/MetaModule.h>
-#include <pcl/FileDialog.h>
-#include <pcl/ExternalProcess.h>
-
 
 #include "ApparentPosition.h"
 #include "Alignment.h"
+
 #include "INDIDeviceControllerInterface.h"
 #include "INDIMountInterface.h"
 #include "INDIMountParameters.h"
@@ -2067,112 +2069,133 @@ set object 12 circle size 0.1 fs transparent border 3
 plot '%s' index 0 using 3:4 title "west" with points pointtype 5, '%s' index 1 using 3:4 title "east" with points pointtype 7
 )";
 
-void INDIMountInterface::plotAlignemtResiduals(AlignmentModel* model){
+void INDIMountInterface::plotAlignemtResiduals( AlignmentModel* model )
+{
+   const Array<SyncDataPoint>& syncDatapointList = model->getSyncDataPoints();
+   Array<double> delHAs;
+   Array<double> delDecs;
 
-	Array<SyncDataPoint>& syncDatapointList = model->getSyncDataPoints();
-	Array<double> delHAs;
-	Array<double> delDecs;
-	// create residual data file
-	IsoString fileContent;
-	String modelResidualDataPath = File::SystemTempDirectory();
-	if (!modelResidualDataPath.EndsWith('/'))
-		modelResidualDataPath += '/';
-	modelResidualDataPath += "ModelResidual.dat";
-	// pier side is west or None
-	double ra_factor = 15 * 60;
-	double dec_factor = 60;
-	for (auto syncPoint : syncDatapointList) {
-		if (!syncPoint.enabled || syncPoint.pierSide == IMCPierSide::East)
-			continue;
-		double cel_ha = AlignmentModel::rangeShiftHourAngle(syncPoint.localSiderialTime - syncPoint.celestialRA);
-		double tel_ha = AlignmentModel::rangeShiftHourAngle(syncPoint.localSiderialTime - syncPoint.telecopeRA);
-		double cel_dec = syncPoint.celestialDEC;
-		double del_ha = cel_ha - tel_ha;
-		double del_dec = syncPoint.celestialDEC - syncPoint.telecopeDEC;
+   // create residual data file
+   String modelResidualDataPath = File::SystemTempDirectory();
+   if ( !modelResidualDataPath.EndsWith( '/' ) )
+      modelResidualDataPath << '/';
+   modelResidualDataPath << "ModelResidual.dat";
 
-		// compute alignment correction
-		double haCor = 0;
-		double decCor = 0;
-		model->Apply(haCor, decCor, cel_ha, cel_dec);
-		double del_haCor = cel_ha - haCor;
-		double del_decCor = cel_dec - decCor;
-		double haResidual = (del_ha - del_haCor) * ra_factor;
-		double decResidual = (del_dec - del_decCor) * dec_factor;
-		fileContent.Append(	IsoString().Format("%f %f %f %f\n", cel_ha , cel_dec, haResidual , decResidual));
-		delHAs.Append(haResidual);
-		delDecs.Append(decResidual);
-	}
-	fileContent.Append("\n");
-	fileContent.Append("\n");
-	// pier side is east
-	for (auto syncPoint : syncDatapointList) {
-		if (!syncPoint.enabled || syncPoint.pierSide != IMCPierSide::East)
-			continue;
-		double cel_ha = AlignmentModel::rangeShiftHourAngle(syncPoint.localSiderialTime - syncPoint.celestialRA);
-		double tel_ha = AlignmentModel::rangeShiftHourAngle(syncPoint.localSiderialTime - syncPoint.telecopeRA);
-		double cel_dec = syncPoint.celestialDEC;
-		double del_ha = cel_ha - tel_ha;
-		double del_dec = syncPoint.celestialDEC - syncPoint.telecopeDEC;
+   IsoString fileContent;
 
-		// compute alignment correction
-		double haCor = 0;
-		double decCor = 0;
-		model->Apply(haCor, decCor, cel_ha, cel_dec);
-		double del_haCor = cel_ha - haCor;
-		double del_decCor = cel_dec - decCor;
-		double haResidual = (del_ha - del_haCor) * ra_factor;
-		double decResidual = (del_dec - del_decCor) * dec_factor;
-		fileContent.Append(IsoString().Format("%f %f %f %f\n", cel_ha  , cel_dec, haResidual , decResidual));
-		delHAs.Append(haResidual);
-		delDecs.Append(decResidual);
-	}
-	if (File::Exists(modelResidualDataPath)) {
-		File::Remove(modelResidualDataPath);
-	}
-	File::WriteTextFile(modelResidualDataPath, fileContent);
+   // pier side is west or None
+   const double ra_factor = 15 * 60;
+   const double dec_factor = 60;
+   for ( auto syncPoint : syncDatapointList )
+   {
+      if ( !syncPoint.enabled || syncPoint.pierSide == IMCPierSide::East )
+         continue;
 
-	// now create gnuplot file
-	IsoString gnufileContent;
-	String tmpFilePath = File::SystemTempDirectory();
-	if (!tmpFilePath.EndsWith('/'))
-		tmpFilePath += '/';
-	String gnuFilePath = tmpFilePath + "AlignmentResiduals.gnu";
+      double cel_ha = AlignmentModel::rangeShiftHourAngle( syncPoint.localSiderialTime - syncPoint.celestialRA );
+      double tel_ha = AlignmentModel::rangeShiftHourAngle( syncPoint.localSiderialTime - syncPoint.telecopeRA );
+      double cel_dec = syncPoint.celestialDEC;
+      double del_ha = cel_ha - tel_ha;
+      double del_dec = syncPoint.celestialDEC - syncPoint.telecopeDEC;
 
-	// output file names
-	Array<String> outputFiles;
-	outputFiles.Add(tmpFilePath +  "residuals_ha_ha.svg");
-	outputFiles.Add(tmpFilePath +  "residuals_dec_ha.svg");
-	outputFiles.Add(tmpFilePath +  "residuals_ha_3d.svg");
-	outputFiles.Add(tmpFilePath +  "residuals_ha_dec.svg");
-	outputFiles.Add(tmpFilePath +  "residuals_dec_dec.svg");
-	outputFiles.Add(tmpFilePath +  "residuals_dec_3d.svg");
-	outputFiles.Add(tmpFilePath +  "residuals_delha_deldec.svg");
-	double maxDev=std::max(*delHAs.MaxItem(),*delDecs.MaxItem());
+      // compute alignment correction
+      double haCor = 0;
+      double decCor = 0;
+      model->Apply( haCor, decCor, cel_ha, cel_dec );
+      double del_haCor = cel_ha - haCor;
+      double del_decCor = cel_dec - decCor;
+      double haResidual = (del_ha - del_haCor) * ra_factor;
+      double decResidual = (del_dec - del_decCor) * dec_factor;
+      fileContent.AppendFormat( "%f %f %f %f\n", cel_ha, cel_dec, haResidual, decResidual );
+      delHAs << haResidual;
+      delDecs << decResidual;
+   }
+   fileContent << '\n' << '\n';
 
-	gnufileContent = IsoString().Format(RESIDUAL_GNUPLOT_TEMPLATE, outputFiles[0].ToIsoString().c_str(),  modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
-			outputFiles[1].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
-			outputFiles[2].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
-			outputFiles[3].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
-			outputFiles[4].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
-			outputFiles[5].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
-			-maxDev,maxDev,-maxDev,maxDev,
-			outputFiles[6].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str());
+   // pier side is east
+   for ( auto syncPoint : syncDatapointList )
+   {
+      if ( !syncPoint.enabled || syncPoint.pierSide != IMCPierSide::East )
+         continue;
 
-	if (File::Exists(gnuFilePath)) {
-		File::Remove(gnuFilePath);
-	}
-	File::WriteTextFile(gnuFilePath, gnufileContent);
+      double cel_ha = AlignmentModel::rangeShiftHourAngle( syncPoint.localSiderialTime - syncPoint.celestialRA );
+      double tel_ha = AlignmentModel::rangeShiftHourAngle( syncPoint.localSiderialTime - syncPoint.telecopeRA );
+      double cel_dec = syncPoint.celestialDEC;
+      double del_ha = cel_ha - tel_ha;
+      double del_dec = syncPoint.celestialDEC - syncPoint.telecopeDEC;
 
-	StringList options;
-	options.Add(gnuFilePath);
-	ExternalProcess::ExecuteProgram("/opt/PixInsight/bin/gnuplot",options);
+      // compute alignment correction
+      double haCor = 0;
+      double decCor = 0;
+      model->Apply( haCor, decCor, cel_ha, cel_dec );
+      double del_haCor = cel_ha - haCor;
+      double del_decCor = cel_dec - decCor;
+      double haResidual = (del_ha - del_haCor) * ra_factor;
+      double decResidual = (del_dec - del_decCor) * dec_factor;
+      fileContent.AppendFormat( "%f %f %f %f\n", cel_ha, cel_dec, haResidual, decResidual );
+      delHAs << haResidual;
+      delDecs << decResidual;
+   }
 
-	for (auto imagePath :outputFiles ){
-		Array<ImageWindow> windowArray = ImageWindow::Open(imagePath);
-		windowArray[0].SetZoomFactor(1);
-		windowArray[0].FitWindow();
-		windowArray[0].Show();
-	}
+   File::WriteTextFile( modelResidualDataPath, fileContent );
+
+   // now create gnuplot file
+   String tmpFilePath = File::SystemTempDirectory();
+   if ( !tmpFilePath.EndsWith( '/' ) )
+      tmpFilePath << '/';
+   String gnuFilePath = tmpFilePath + "AlignmentResiduals.gnu";
+
+   // output file names
+   Array<String> outputFiles;
+   outputFiles << tmpFilePath + "residuals_ha_ha.svg"
+               << tmpFilePath + "residuals_dec_ha.svg"
+               << tmpFilePath + "residuals_ha_3d.svg"
+               << tmpFilePath + "residuals_ha_dec.svg"
+               << tmpFilePath + "residuals_dec_dec.svg"
+               << tmpFilePath + "residuals_dec_3d.svg"
+               << tmpFilePath + "residuals_delha_deldec.svg";
+
+   {
+      IsoString modelResidualDataPath8 = modelResidualDataPath.ToUTF8();
+      IsoString outputFiles80 = outputFiles[0].ToUTF8();
+      IsoString outputFiles81 = outputFiles[1].ToUTF8();
+      IsoString outputFiles82 = outputFiles[2].ToUTF8();
+      IsoString outputFiles83 = outputFiles[3].ToUTF8();
+      IsoString outputFiles84 = outputFiles[4].ToUTF8();
+      IsoString outputFiles85 = outputFiles[5].ToUTF8();
+      IsoString outputFiles86 = outputFiles[6].ToUTF8();
+      double maxDev = Max( *delHAs.MaxItem(), *delDecs.MaxItem() );
+
+      File::WriteTextFile( gnuFilePath, IsoString().Format( RESIDUAL_GNUPLOT_TEMPLATE,
+            outputFiles80.c_str(), modelResidualDataPath8.c_str(), modelResidualDataPath8.c_str(),
+            outputFiles81.c_str(), modelResidualDataPath8.c_str(), modelResidualDataPath8.c_str(),
+            outputFiles82.c_str(), modelResidualDataPath8.c_str(), modelResidualDataPath8.c_str(),
+            outputFiles83.c_str(), modelResidualDataPath8.c_str(), modelResidualDataPath8.c_str(),
+            outputFiles84.c_str(), modelResidualDataPath8.c_str(), modelResidualDataPath8.c_str(),
+            outputFiles85.c_str(), modelResidualDataPath8.c_str(), modelResidualDataPath8.c_str(),
+            -maxDev, maxDev, -maxDev, maxDev,
+            outputFiles86.c_str(), modelResidualDataPath8.c_str(), modelResidualDataPath8.c_str() ) );
+   }
+
+   int exitCode = ExternalProcess::ExecuteProgram(
+                     PixInsightSettings::GlobalString( "Application/BinDirectory" ) + "/gnuplot",
+                     StringList() << gnuFilePath );
+
+   if ( exitCode == 0 )
+   {
+      for ( auto imagePath : outputFiles )
+      {
+         Array<ImageWindow> windowArray = ImageWindow::Open( imagePath );
+         windowArray[0].SetZoomFactor( 1 );
+         windowArray[0].FitWindow();
+         windowArray[0].Show();
+      }
+   }
+   else
+   {
+      MessageBox( "<p>Failure to generate alignment residuals graph. Gnuplot exited with code " + String( exitCode ) + ".</p>",
+                  WindowTitle(),
+                  StdIcon::Error, StdButton::Ok ).Execute();
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -2180,4 +2203,4 @@ void INDIMountInterface::plotAlignemtResiduals(AlignmentModel* model){
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInterface.cpp - Released 2017-07-09T18:07:33Z
+// EOF INDIMountInterface.cpp - Released 2017-07-18T16:14:19Z

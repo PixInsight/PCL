@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// pcl/Translation.cpp - Released 2017-07-09T18:07:16Z
+// pcl/Translation.cpp - Released 2017-07-18T16:14:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -62,9 +62,9 @@ class PCL_TranslationEngine
 public:
 
    template <class P> static
-   void Apply( GenericImage<P>& image, const Translation& translation )
+   void Apply( GenericImage<P>& image, const Translation& T )
    {
-      if ( translation.Delta() == 0.0 )
+      if ( T.Delta() == 0.0 )
          return;
 
       int width = image.Width();
@@ -82,8 +82,8 @@ public:
 
       StatusMonitor status = image.Status();
 
-      int numberOfThreads = translation.IsParallelProcessingEnabled() ?
-               Min( translation.MaxProcessors(), pcl::Thread::NumberOfThreads( height, 1 ) ) : 1;
+      int numberOfThreads = T.IsParallelProcessingEnabled() ?
+               Min( T.MaxProcessors(), pcl::Thread::NumberOfThreads( height, 1 ) ) : 1;
       int rowsPerThread = height/numberOfThreads;
 
       try
@@ -91,22 +91,22 @@ public:
          size_type N = size_type( width )*size_type( height );
          if ( status.IsInitializationEnabled() )
             status.Initialize( String().Format( "Translate dx=%.3f, dy=%.3f, ",
-                        translation.Delta().x, translation.Delta().y ) + translation.Interpolation().Description(),
+                        T.Delta().x, T.Delta().y ) + T.Interpolation().Description(),
                         size_type( n )*N );
 
          f0 = image.ReleaseData();
 
          for ( int c = 0; c < n; ++c )
          {
-            ThreadData<P> data( translation.Delta(), width, height, status, N );
+            ThreadData<P> data( T.Delta(), width, height, status, N );
 
             data.f = f = image.Allocator().AllocatePixels( size_type( width )*size_type( height ) );
-            data.fillValue = (c < translation.FillValues().Length()) ? P::ToSample( translation.FillValues()[c] ) : P::MinSampleValue();
+            data.fillValue = (c < T.FillValues().Length()) ? P::ToSample( T.FillValues()[c] ) : P::MinSampleValue();
 
             ReferenceArray<Thread<P> > threads;
             for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
                threads.Add( new Thread<P>( data,
-                                           translation.Interpolation().NewInterpolator<P>( f0[c], width, height ),
+                                           T.Interpolation().NewInterpolator<P>( f0[c], width, height, T.UsingUnclippedInterpolation() ),
                                            i*rowsPerThread,
                                            (j < numberOfThreads) ? j*rowsPerThread : height ) );
 
@@ -231,4 +231,4 @@ void Translation::Apply( UInt32Image& img ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Translation.cpp - Released 2017-07-09T18:07:16Z
+// EOF pcl/Translation.cpp - Released 2017-07-18T16:14:00Z

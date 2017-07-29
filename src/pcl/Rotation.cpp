@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// pcl/Rotation.cpp - Released 2017-07-09T18:07:16Z
+// pcl/Rotation.cpp - Released 2017-07-18T16:14:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -92,9 +92,9 @@ class PCL_RotationEngine
 public:
 
    template <class P> static
-   void Apply( GenericImage<P>& image, const Rotation& rotation )
+   void Apply( GenericImage<P>& image, const Rotation& R )
    {
-      if ( rotation.Angle() == 0 )
+      if ( 1 + R.Angle() == 1 )
          return;
 
       int width = image.Width();
@@ -105,7 +105,7 @@ public:
       int w0 = width;
       int h0 = height;
       double x0, y0;
-      GetRotatedBounds( width, height, x0, y0, rotation );
+      GetRotatedBounds( width, height, x0, y0, R );
 
       image.EnsureUnique();
 
@@ -116,14 +116,14 @@ public:
       typename GenericImage<P>::color_space cs0 = image.ColorSpace();
 
       double sa, ca;
-      pcl::SinCos( double( -rotation.Angle() ), sa, ca );
+      pcl::SinCos( double( -R.Angle() ), sa, ca );
 
-      DPoint center = rotation.Center();
+      DPoint center = R.Center();
 
       StatusMonitor status = image.Status();
 
-      int numberOfThreads = rotation.IsParallelProcessingEnabled() ?
-               Min( rotation.MaxProcessors(), pcl::Thread::NumberOfThreads( height, 1 ) ) : 1;
+      int numberOfThreads = R.IsParallelProcessingEnabled() ?
+               Min( R.MaxProcessors(), pcl::Thread::NumberOfThreads( height, 1 ) ) : 1;
       int rowsPerThread = height/numberOfThreads;
 
       try
@@ -131,7 +131,7 @@ public:
          size_type N = size_type( width )*size_type( height );
          if ( status.IsInitializationEnabled() )
             status.Initialize( String().Format( "Rotate %.3f deg, ",
-                        pcl::Deg( rotation.Angle() ) ) + rotation.Interpolation().Description(),
+                        pcl::Deg( R.Angle() ) ) + R.Interpolation().Description(),
                         size_type( n )*N );
 
          f0 = image.ReleaseData();
@@ -141,12 +141,12 @@ public:
             ThreadData<P> data( sa, ca, center, DPoint( x0, y0 ), w0, h0, width, status, N );
 
             data.f = f = image.Allocator().AllocatePixels( size_type( width )*size_type( height ) );
-            data.fillValue = (c < rotation.FillValues().Length()) ? P::ToSample( rotation.FillValues()[c] ) : P::MinSampleValue();
+            data.fillValue = (c < R.FillValues().Length()) ? P::ToSample( R.FillValues()[c] ) : P::MinSampleValue();
 
             ReferenceArray<Thread<P> > threads;
             for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
                threads.Add( new Thread<P>( data,
-                                           rotation.Interpolation().NewInterpolator<P>( f0[c], w0, h0 ),
+                                           R.Interpolation().NewInterpolator<P>( f0[c], w0, h0, R.UsingUnclippedInterpolation() ),
                                            i*rowsPerThread,
                                            (j < numberOfThreads) ? j*rowsPerThread : height ) );
 
@@ -277,4 +277,4 @@ void Rotation::Apply( pcl::UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Rotation.cpp - Released 2017-07-09T18:07:16Z
+// EOF pcl/Rotation.cpp - Released 2017-07-18T16:14:00Z

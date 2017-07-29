@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// pcl/PolarTransform.cpp - Released 2017-07-09T18:07:16Z
+// pcl/PolarTransform.cpp - Released 2017-07-18T16:14:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -145,7 +145,7 @@ public:
          ReferenceArray<Thread<P> > threads;
          for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
             threads.Add( new Thread<P>( data,
-                                        T.Interpolation().NewInterpolator<P>( image[c], width, height ),
+                                        T.Interpolation().NewInterpolator<P>( image[c], width, height, T.UsingUnclippedInterpolation() ),
                                         i*rowsPerThread,
                                         (j < numberOfThreads) ? j*rowsPerThread : height ) );
 
@@ -297,4 +297,4 @@ void LogPolarTransform::Apply( pcl::UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/PolarTransform.cpp - Released 2017-07-09T18:07:16Z
+// EOF pcl/PolarTransform.cpp - Released 2017-07-18T16:14:00Z

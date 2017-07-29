@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard NoiseGeneration Process Module Version 01.00.02.0313
+// Standard NoiseGeneration Process Module Version 01.00.02.0317
 // ----------------------------------------------------------------------------
-// NoiseGeneratorParameters.cpp - Released 2017-07-09T18:07:33Z
+// NoiseGeneratorParameters.cpp - Released 2017-07-18T16:14:18Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard NoiseGeneration PixInsight module.
 //
@@ -192,4 +192,4 @@ size_type NGPreserveBrightness::DefaultValueIndex() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF NoiseGeneratorParameters.cpp - Released 2017-07-09T18:07:33Z
+// EOF NoiseGeneratorParameters.cpp - Released 2017-07-18T16:14:18Z

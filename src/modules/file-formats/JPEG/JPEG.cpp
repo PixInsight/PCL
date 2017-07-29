@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard JPEG File Format Module Version 01.00.04.0334
+// Standard JPEG File Format Module Version 01.00.04.0338
 // ----------------------------------------------------------------------------
-// JPEG.cpp - Released 2017-07-09T18:07:25Z
+// JPEG.cpp - Released 2017-07-18T16:14:10Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
@@ -894,4 +894,4 @@ void JPEGWriter::WriteImage( const UInt32Image& image )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF JPEG.cpp - Released 2017-07-09T18:07:25Z
+// EOF JPEG.cpp - Released 2017-07-18T16:14:10Z

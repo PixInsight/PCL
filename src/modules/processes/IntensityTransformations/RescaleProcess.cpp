@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0393
+// Standard IntensityTransformations Process Module Version 01.07.01.0397
 // ----------------------------------------------------------------------------
-// RescaleProcess.cpp - Released 2017-07-09T18:07:33Z
+// RescaleProcess.cpp - Released 2017-07-18T16:14:18Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -281,4 +281,4 @@ int RescaleProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RescaleProcess.cpp - Released 2017-07-09T18:07:33Z
+// EOF RescaleProcess.cpp - Released 2017-07-18T16:14:18Z

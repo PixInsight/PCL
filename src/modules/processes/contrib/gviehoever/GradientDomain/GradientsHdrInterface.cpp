@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard GradientDomain Process Module Version 00.06.04.0203
+// Standard GradientDomain Process Module Version 00.06.04.0207
 // ----------------------------------------------------------------------------
-// GradientsHdrInterface.cpp - Released 2017-07-09T18:07:33Z
+// GradientsHdrInterface.cpp - Released 2017-07-18T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -374,4 +374,4 @@ GradientsHdrInterface::GUIData::GUIData( GradientsHdrInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF GradientsHdrInterface.cpp - Released 2017-07-09T18:07:33Z
+// EOF GradientsHdrInterface.cpp - Released 2017-07-18T16:14:19Z

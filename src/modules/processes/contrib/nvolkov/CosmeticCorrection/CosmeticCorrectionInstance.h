@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard CosmeticCorrection Process Module Version 01.02.05.0187
+// Standard CosmeticCorrection Process Module Version 01.02.05.0191
 // ----------------------------------------------------------------------------
-// CosmeticCorrectionInstance.h - Released 2017-07-09T18:07:33Z
+// CosmeticCorrectionInstance.h - Released 2017-07-18T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
@@ -187,4 +187,4 @@ private:
 #endif   // __CosmeticCorrectionInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF CosmeticCorrectionInstance.h - Released 2017-07-09T18:07:33Z
+// EOF CosmeticCorrectionInstance.h - Released 2017-07-18T16:14:19Z

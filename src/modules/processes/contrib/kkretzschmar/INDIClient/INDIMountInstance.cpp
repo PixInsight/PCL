@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0205
+// Standard INDIClient Process Module Version 01.00.15.0209
 // ----------------------------------------------------------------------------
-// INDIMountInstance.cpp - Released 2017-07-09T18:07:33Z
+// INDIMountInstance.cpp - Released 2017-07-18T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -644,16 +644,26 @@ void INDIMountInstance::AddSyncDataPoint(const SyncDataPoint& syncDataPoint){
 }
 
 
-void INDIMountInstance::loadSyncData(Array<SyncDataPoint>& syncDataList, String syncDataFile) {
-	IsoStringList syncDataRows = File::ReadLines(syncDataFile);
-	for (size_t i = 0 ; i < syncDataRows.Length(); ++i) {
-		IsoStringList tokens;
-		syncDataRows[i].Break(tokens, ",", true);
-		if (tokens.Length() == 0){
-			continue;
-		}
-		syncDataList.Add({tokens[0].ToDouble(),tokens[1].ToDouble(),tokens[2].ToDouble(),tokens[3].ToDouble(),tokens[4].ToDouble(), tokens[5] == "West" ? IMCPierSide::West : ( tokens[5] == "East" ? IMCPierSide::East : IMCPierSide::None ), tokens[6] == "true" ? true : false});
-	}
+void INDIMountInstance::loadSyncData( Array<SyncDataPoint>& syncDataList, String syncDataFile )
+{
+   IsoStringList syncDataRows = File::ReadLines( syncDataFile );
+   for ( const IsoString& row : syncDataRows )
+   {
+      IsoStringList tokens;
+      row.Break( tokens, ',', true/*trim*/ );
+      if ( !tokens.IsEmpty() )
+         if ( tokens.Length() == 7 )
+            syncDataList.Add( { TimePoint::Now(),
+                                tokens[0].ToDouble(),
+                                tokens[1].ToDouble(),
+                                tokens[2].ToDouble(),
+                                tokens[3].ToDouble(),
+                                tokens[4].ToDouble(),
+                                (tokens[5] == "West") ? IMCPierSide::West : ((tokens[5] == "East") ? IMCPierSide::East : IMCPierSide::None),
+                                tokens[6] == "true" } );
+         // else
+         //    throw Error( "Invalid sync data format" );
+   }
 }
 
 void AbstractINDIMountExecution::ApplyPointingModelCorrection(AlignmentModel* aModel, double& targetRA, double& targetDec) {
@@ -1021,4 +1031,4 @@ void AbstractINDIMountExecution::Abort()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInstance.cpp - Released 2017-07-09T18:07:33Z
+// EOF INDIMountInstance.cpp - Released 2017-07-18T16:14:19Z

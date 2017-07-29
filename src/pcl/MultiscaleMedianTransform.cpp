@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// pcl/MultiscaleMedianTransform.cpp - Released 2017-07-09T18:07:16Z
+// pcl/MultiscaleMedianTransform.cpp - Released 2017-07-18T16:14:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -68,101 +68,107 @@ namespace pcl
 /*
  * 3x3 structuring element
  */
-static const char* B03[] = {  "-x-"
+static const char* B03[] = {  "xxx"
                               "xxx"
-                              "-x-",
+                              "xxx",
                               //
+                              "-x-"
                               "xxx"
-                              "xxx"
-                              "xxx"  };
+                              "-x-" };
 /*
  * 5x5 structuring element
  */
-static const char* B05[] = {  "--x--"
-                              "-xxx-"
+static const char* B05[] = {  "-xxx-"
                               "xxxxx"
-                              "-xxx-"
-                              "--x--",
+                              "xxxxx"
+                              "xxxxx"
+                              "-xxx-",
                               //
+                              "--x--"
                               "-xxx-"
                               "xxxxx"
-                              "xxxxx"
-                              "xxxxx"
-                              "-xxx-"  };
+                              "-xxx-"
+                              "--x--" };
 /*
  * 7x7 structuring element
  */
-static const char* B07[] = {  "---x---"
-                              "-xxxxx-"
+static const char* B07[] = {  "--xxx--"
                               "-xxxxx-"
                               "xxxxxxx"
+                              "xxxxxxx"
+                              "xxxxxxx"
                               "-xxxxx-"
-                              "-xxxxx-"
-                              "---x---",
+                              "--xxx--",
                               //
-                              "--xxx--"
+                              "---x---"
+                              "-xxxxx-"
                               "-xxxxx-"
                               "xxxxxxx"
-                              "xxxxxxx"
-                              "xxxxxxx"
                               "-xxxxx-"
-                              "--xxx--"  };
+                              "-xxxxx-"
+                              "---x---" };
 /*
  * 9x9 structuring element
  */
-static const char* B09[] = {  "----x----"
-                              "--xxxxx--"
-                              "-xxxxxxx-"
+static const char* B09[] = {  "--xxxxx--"
                               "-xxxxxxx-"
                               "xxxxxxxxx"
+                              "xxxxxxxxx"
+                              "xxxxxxxxx"
+                              "xxxxxxxxx"
+                              "xxxxxxxxx"
                               "-xxxxxxx-"
-                              "-xxxxxxx-"
-                              "--xxxxx--"
-                              "----x----",
+                              "--xxxxx--",
                               //
+                              "----x----"
                               "--xxxxx--"
                               "-xxxxxxx-"
-                              "xxxxxxxxx"
-                              "xxxxxxxxx"
-                              "xxxxxxxxx"
-                              "xxxxxxxxx"
+                              "-xxxxxxx-"
                               "xxxxxxxxx"
                               "-xxxxxxx-"
-                              "--xxxxx--"  };
+                              "-xxxxxxx-"
+                              "--xxxxx--"
+                              "----x----" };
 /*
  * 11x11 structuring element
  */
-static const char* B11[] = {  "-----x-----"
-                              "---xxxxx---"
+static const char* B11[] = {  "---xxxxx---"
                               "--xxxxxxx--"
-                              "-xxxxxxxxx-"
                               "-xxxxxxxxx-"
                               "xxxxxxxxxxx"
-                              "-xxxxxxxxx-"
+                              "xxxxxxxxxxx"
+                              "xxxxxxxxxxx"
+                              "xxxxxxxxxxx"
+                              "xxxxxxxxxxx"
                               "-xxxxxxxxx-"
                               "--xxxxxxx--"
-                              "---xxxxx---"
-                              "-----x-----",
+                              "---xxxxx---",
                               //
+                              "-----x-----"
                               "---xxxxx---"
                               "--xxxxxxx--"
                               "-xxxxxxxxx-"
-                              "xxxxxxxxxxx"
-                              "xxxxxxxxxxx"
-                              "xxxxxxxxxxx"
-                              "xxxxxxxxxxx"
+                              "-xxxxxxxxx-"
                               "xxxxxxxxxxx"
                               "-xxxxxxxxx-"
+                              "-xxxxxxxxx-"
                               "--xxxxxxx--"
-                              "---xxxxx---"  };
+                              "---xxxxx---"
+                              "-----x-----" };
 
 // ----------------------------------------------------------------------------
 
-static BitmapStructure* S03 = nullptr;
-static BitmapStructure* S05 = nullptr;
-static BitmapStructure* S07 = nullptr;
-static BitmapStructure* S09 = nullptr;
-static BitmapStructure* S11 = nullptr;
+static BitmapStructure* MWS03 = nullptr;
+static BitmapStructure* MWS05 = nullptr;
+static BitmapStructure* MWS07 = nullptr;
+static BitmapStructure* MWS09 = nullptr;
+static BitmapStructure* MWS11 = nullptr;
+
+static BitmapStructure* SWS03 = nullptr;
+static BitmapStructure* SWS05 = nullptr;
+static BitmapStructure* SWS07 = nullptr;
+static BitmapStructure* SWS09 = nullptr;
+static BitmapStructure* SWS11 = nullptr;
 
 static void InitializeStructures()
 {
@@ -174,11 +180,17 @@ static void InitializeStructures()
       volatile AutoLock lock( mutex );
       if ( initialized.Load() == 0 )
       {
-         S03 = new BitmapStructure( B03,  3, 2 );
-         S05 = new BitmapStructure( B05,  5, 2 );
-         S07 = new BitmapStructure( B07,  7, 2 );
-         S09 = new BitmapStructure( B09,  9, 2 );
-         S11 = new BitmapStructure( B11, 11, 2 );
+         MWS03 = new BitmapStructure( B03,  3, 2 );
+         MWS05 = new BitmapStructure( B05,  5, 2 );
+         MWS07 = new BitmapStructure( B07,  7, 2 );
+         MWS09 = new BitmapStructure( B09,  9, 2 );
+         MWS11 = new BitmapStructure( B11, 11, 2 );
+
+         SWS03 = new BitmapStructure( B03,  3, 1 );
+         SWS05 = new BitmapStructure( B05,  5, 1 );
+         SWS07 = new BitmapStructure( B07,  7, 1 );
+         SWS09 = new BitmapStructure( B09,  9, 1 );
+         SWS11 = new BitmapStructure( B11, 11, 1 );
 
          initialized.Store( 1 );
       }
@@ -220,7 +232,7 @@ public:
             GenericImage<P> cj( cj0 );
             cj.Status() = status;
 
-            MedianFilterLayer( cj, T.FilterSize( j0 ), T.m_parallel, T.m_maxProcessors );
+            MedianFilterLayer( cj, T.FilterSize( j0 ), T.m_multiwayStructures, T.m_parallel, T.m_maxProcessors );
 
             if ( T.m_medianWaveletTransform )
             {
@@ -278,31 +290,52 @@ public:
 private:
 
    template <class P> static
-   void MedianFilterLayer( GenericImage<P>& cj, int n, bool parallel, int maxProcessors )
+   void MedianFilterLayer( GenericImage<P>& cj, int n, bool multiway, bool parallel, int maxProcessors )
    {
       if ( n <= 11 )
       {
-         const BitmapStructure* S;
-         switch ( n )
-         {
-         default:
-         case 3:
-            S = S03;
-            break;
-         case 5:
-            S = S05;
-            break;
-         case 7:
-            S = S07;
-            break;
-         case 9:
-            S = S09;
-            break;
-         case 11:
-            S = S11;
-            break;
-         }
-         MorphologicalTransformation M( MedianFilter(), *S );
+         const BitmapStructure* B;
+         if ( multiway )
+            switch ( n )
+            {
+            default:
+            case 3:
+               B = MWS03;
+               break;
+            case 5:
+               B = MWS05;
+               break;
+            case 7:
+               B = MWS07;
+               break;
+            case 9:
+               B = MWS09;
+               break;
+            case 11:
+               B = MWS11;
+               break;
+            }
+         else
+            switch ( n )
+            {
+            default:
+            case 3:
+               B = SWS03;
+               break;
+            case 5:
+               B = SWS05;
+               break;
+            case 7:
+               B = SWS07;
+               break;
+            case 9:
+               B = SWS09;
+               break;
+            case 11:
+               B = SWS11;
+               break;
+            }
+         MorphologicalTransformation M( MedianFilter(), *B );
          M.EnableParallelProcessing( parallel, maxProcessors );
          M >> cj;
       }
@@ -340,7 +373,7 @@ private:
          CircularStructure C( MAX_STRUCTURE_SIZE - 2 );
          MorphologicalTransformation M( MedianFilter(), C );
 #else
-         MorphologicalTransformation M( MedianFilter(), *S09 );
+         MorphologicalTransformation M( MedianFilter(), *(multiway ? MWS09 : SWS09) );
 #endif
          M.EnableParallelProcessing( parallel, maxProcessors );
          M >> cj;
@@ -430,4 +463,4 @@ void MultiscaleMedianTransform::Transform( const UInt32Image& image )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MultiscaleMedianTransform.cpp - Released 2017-07-09T18:07:16Z
+// EOF pcl/MultiscaleMedianTransform.cpp - Released 2017-07-18T16:14:00Z

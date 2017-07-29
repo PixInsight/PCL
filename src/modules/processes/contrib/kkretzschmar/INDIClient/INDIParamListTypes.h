@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0205
+// Standard INDIClient Process Module Version 01.00.15.0209
 // ----------------------------------------------------------------------------
-// INDIParamListTypes.h - Released 2017-07-09T18:07:33Z
+// INDIParamListTypes.h - Released 2017-07-18T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -203,4 +203,4 @@ typedef Array<INDINewPropertyListItem> INDINewPropertyListItemArray;
 #endif   // __INDIParamListTypes_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIParamListTypes.h - Released 2017-07-09T18:07:33Z
+// EOF INDIParamListTypes.h - Released 2017-07-18T16:14:19Z

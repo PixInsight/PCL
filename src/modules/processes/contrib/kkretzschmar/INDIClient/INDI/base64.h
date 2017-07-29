@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0205
+// Standard INDIClient Process Module Version 01.00.15.0209
 // ----------------------------------------------------------------------------
-// base64.h - Released 2017-07-09T18:07:33Z
+// base64.h - Released 2017-07-18T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -108,4 +108,4 @@ extern int from64tobits(char *out, const char *in);
 #endif
 
 // ----------------------------------------------------------------------------
-// EOF base64.h - Released 2017-07-09T18:07:33Z
+// EOF base64.h - Released 2017-07-18T16:14:19Z

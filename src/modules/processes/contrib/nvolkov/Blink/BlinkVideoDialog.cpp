@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.02.0263
+// Standard Blink Process Module Version 01.02.02.0267
 // ----------------------------------------------------------------------------
-// BlinkVideoDialog.cpp - Released 2017-07-09T18:07:33Z
+// BlinkVideoDialog.cpp - Released 2017-07-18T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
@@ -51,15 +51,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include "BlinkVideoDialog.h"
 #include "BlinkInterface.h"
+#include "BlinkVideoDialog.h"
 
 #include <pcl/Console.h>
+#include <pcl/FileFormat.h>
 #include <pcl/MessageBox.h>
 #include <pcl/StdStatus.h>
-#include <pcl/FileFormat.h>
-
-#include <time.h> // for Timestamp() implementation
+#include <pcl/TimePoint.h>
 
 #define DIALOG_TITLE "Make Video"
 
@@ -70,11 +69,7 @@ namespace pcl
 
 static IsoString Timestamp()
 {
-   time_t t0 = ::time( 0 );
-   const tm* t = ::localtime( &t0 );
-   return IsoString().Format( "[%d-%02d-%02d %02d:%02d:%02d] ",
-                              t->tm_year+1900, t->tm_mon+1, t->tm_mday,
-                              t->tm_hour, t->tm_min, t->tm_sec );
+   return TimePoint::Now().UTCToLocalTime().ToIsoString( "[%Y-%M-%D %h:%m:%s] " );
 }
 
 // ----------------------------------------------------------------------------
@@ -633,4 +628,4 @@ BlinkVideoDialog::BlinkVideoDialog( BlinkInterface* parent ) :
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BlinkVideoDialog.cpp - Released 2017-07-09T18:07:33Z
+// EOF BlinkVideoDialog.cpp - Released 2017-07-18T16:14:19Z

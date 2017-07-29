@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard JPEG2000 File Format Module Version 01.00.02.0317
+// Standard JPEG2000 File Format Module Version 01.00.02.0321
 // ----------------------------------------------------------------------------
-// JPEG2000Format.cpp - Released 2017-07-09T18:07:25Z
+// JPEG2000Format.cpp - Released 2017-07-18T16:14:10Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG2000 PixInsight module.
 //
@@ -365,4 +365,4 @@ JPEG2000FormatOptions* JPEG2000FormatOptions::FromGenericDataBlock( const void* 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF JPEG2000Format.cpp - Released 2017-07-09T18:07:25Z
+// EOF JPEG2000Format.cpp - Released 2017-07-18T16:14:10Z

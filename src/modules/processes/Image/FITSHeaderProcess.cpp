@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0390
+// Standard Image Process Module Version 01.02.09.0394
 // ----------------------------------------------------------------------------
-// FITSHeaderProcess.cpp - Released 2017-07-09T18:07:33Z
+// FITSHeaderProcess.cpp - Released 2017-07-18T16:14:18Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -230,4 +230,4 @@ int FITSHeaderProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITSHeaderProcess.cpp - Released 2017-07-09T18:07:33Z
+// EOF FITSHeaderProcess.cpp - Released 2017-07-18T16:14:18Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0205
+// Standard INDIClient Process Module Version 01.00.15.0209
 // ----------------------------------------------------------------------------
-// INDIMountInstance.h - Released 2017-07-09T18:07:33Z
+// INDIMountInstance.h - Released 2017-07-18T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -117,15 +117,12 @@ private:
            double   o_currentDec;
    mutable double   o_apparentTargetRA;
    mutable double   o_apparentTargetDec;
-   	   	   double   o_geographicLatitude;
-   	   	   double   o_syncLST;
-   	   	   double   o_syncCelestialRA;
-  	   	   double   o_syncCelestialDEC;
-  	   	   double   o_syncTelescopeRA;
-  	   	   double   o_syncTelescopeDEC;
-
-
-
+           double   o_geographicLatitude;
+           double   o_syncLST;
+           double   o_syncCelestialRA;
+           double   o_syncCelestialDEC;
+           double   o_syncTelescopeRA;
+           double   o_syncTelescopeDEC;
 
    Array<SyncDataPoint>  syncDataArray;
 
@@ -144,7 +141,6 @@ public:
       m_instance( instance ),
       m_running( false ),
       m_aborted( false )
-
    {
    }
 
@@ -201,4 +197,4 @@ private:
 #endif   // __INDIMountInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInstance.h - Released 2017-07-09T18:07:33Z
+// EOF INDIMountInstance.h - Released 2017-07-18T16:14:19Z

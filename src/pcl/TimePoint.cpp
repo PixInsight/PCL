@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// pcl/TimePoint.cpp - Released 2017-07-09T18:07:16Z
+// pcl/TimePoint.cpp - Released 2017-07-18T16:14:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -115,20 +115,34 @@ TimePoint::TimePoint( time_t time )
 
 // ----------------------------------------------------------------------------
 
-TimePoint::TimePoint( const FileTime& fileTime, bool localTime )
+TimePoint::TimePoint( const FileTime& fileTime )
 {
-   ComplexTimeToJD( m_jdi, m_jdf,
-      fileTime.year, fileTime.month, fileTime.day,
-      (fileTime.hour + (fileTime.minute + (fileTime.second + 0.001*fileTime.milliseconds)/60)/60)/24 );
-   if ( !localTime )
+   ComplexTimeToJD( m_jdi, m_jdf, fileTime.year, fileTime.month, fileTime.day,
+                    (fileTime.hour + (fileTime.minute + (fileTime.second + 0.001*fileTime.milliseconds)/60)/60)/24 );
+}
+
+// ----------------------------------------------------------------------------
+
+double TimePoint::SystemOffsetFromUTC() const
+{
+   time_t t = time_t( SecondsSinceUNIXEpoch() );
+   tm ut, lt;
    {
-      double tz = SystemTimeZone();
-      if ( tz != 0 )
-      {
-         m_jdf += tz/24;
-         Normalize();
-      }
+      static Mutex mutex;
+      volatile AutoLock lock( mutex );
+      ut = *::gmtime( &t );
+      lt = *::localtime( &t );
    }
+
+   double udh = ut.tm_hour + (ut.tm_min + ut.tm_sec/60.0)/60;
+   double ldh = lt.tm_hour + (lt.tm_min + lt.tm_sec/60.0)/60;
+   if ( ut.tm_year == lt.tm_year )
+      if ( ut.tm_mon == lt.tm_mon )
+         if ( ut.tm_mday == lt.tm_mday )
+            return ldh - udh;
+
+   return Round( 24 * (ComplexTimeToJD( lt.tm_year+1900, lt.tm_mon+1, lt.tm_mday, ldh/24 )
+                     - ComplexTimeToJD( ut.tm_year+1900, ut.tm_mon+1, ut.tm_mday, udh/24 )), 6 );
 }
 
 // ----------------------------------------------------------------------------
@@ -139,25 +153,6 @@ TimePoint TimePoint::Now()
    ::gettimeofday( &tv, nullptr );
    // 1970-01-01 = JD 2440587.5
    return TimePoint( 2440587, 0.5 + (tv.tv_sec + 1.0e-06*tv.tv_usec)/86400 );
-}
-
-// ----------------------------------------------------------------------------
-
-double TimePoint::SystemTimeZone()
-{
-#if defined( __PCL_WINDOWS )
-   long tz;
-   if ( ::_get_timezone( &tz ) == 0 )
-      return tz/3600.0;
-   return 0;
-#elif defined( __PCL_FREEBSD )
-   time_t t = ::time( nullptr );
-   struct tm r;
-   ::localtime_r( &t, &r );
-   return r.tm_gmtoff/3600.0;
-#else
-   return ::timezone/3600.0;
-#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -267,4 +262,4 @@ String TimePoint::ToString( const String& format ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/TimePoint.cpp - Released 2017-07-09T18:07:16Z
+// EOF pcl/TimePoint.cpp - Released 2017-07-18T16:14:00Z

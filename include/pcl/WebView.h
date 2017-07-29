@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// pcl/WebView.h - Released 2017-07-09T18:07:07Z
+// pcl/WebView.h - Released 2017-07-18T16:13:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -310,7 +310,7 @@ public:
     * This function has no way to know if script execution failed, for example
     * as a result of syntax errors, invalid code, or exceptions thrown from
     * JavaScript code. A Variant will always be generated to transport the
-    * result, but it may not transpòrt a valid object (see Variant::IsValid())
+    * result, but it may not transport a valid object (see Variant::IsValid())
     * if the script failed. How to diagnose script execution is completely up
     * to the caller implementation.
     *
@@ -325,7 +325,7 @@ public:
     * may lead to a crash of the PixInsight platform. Also bear in mind that
     * scripts are extremely powerful and potentially dangerous if you don't
     * know well what you are doing. What happens during execution of your
-    * scripts is your entire responsibility. We mean it.
+    * scripts is your entire responsibility.
     */
    void EvaluateScript( const String& sourceCode, const IsoString& language = IsoString() );
 
@@ -550,4 +550,4 @@ private:
 #endif   // __PCL_WebView_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/WebView.h - Released 2017-07-09T18:07:07Z
+// EOF pcl/WebView.h - Released 2017-07-18T16:13:52Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0393
+// Standard IntensityTransformations Process Module Version 01.07.01.0397
 // ----------------------------------------------------------------------------
-// RescaleActions.cpp - Released 2017-07-09T18:07:33Z
+// RescaleActions.cpp - Released 2017-07-18T16:14:18Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -51,8 +51,8 @@
 // ----------------------------------------------------------------------------
 
 #include "RescaleActions.h"
-#include "RescaleProcess.h"
 #include "RescaleInstance.h"
+#include "RescaleProcess.h"
 
 namespace pcl
 {
@@ -65,7 +65,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 RescaleRGBAction::RescaleRGBAction() :
-Action( "Image > Rescale > Rescale RGB/K", Bitmap( RescaleRGBActionIcon_XPM ), "Intensity Transformations" )
+   Action( "Image > Rescale > Rescale RGB/K", Bitmap( RescaleRGBActionIcon_XPM ), "Intensity Transformations" )
 {
    SetToolTip( "Rescale" );
 }
@@ -83,7 +83,7 @@ bool RescaleRGBAction::IsEnabled( ActionInfo info ) const
 // ----------------------------------------------------------------------------
 
 RescaleRGBIndividualAction::RescaleRGBIndividualAction() :
-Action( "Image > Rescale > Rescale Individual RGB/K Channels", Bitmap( RescaleRGBActionIcon_XPM ) )
+   Action( "Image > Rescale > Rescale Individual RGB/K Channels", Bitmap( RescaleRGBActionIcon_XPM ) )
 {
 }
 
@@ -100,7 +100,7 @@ bool RescaleRGBIndividualAction::IsEnabled( ActionInfo info ) const
 // ----------------------------------------------------------------------------
 
 RescaleCIELAction::RescaleCIELAction() :
-Action( "Image > Rescale > Rescale CIE L* Component", Bitmap( RescaleLumActionIcon_XPM ) )
+   Action( "Image > Rescale > Rescale CIE L* Component", Bitmap( RescaleLumActionIcon_XPM ) )
 {
 }
 
@@ -117,7 +117,7 @@ bool RescaleCIELAction::IsEnabled( ActionInfo info ) const
 // ----------------------------------------------------------------------------
 
 RescaleCIEYAction::RescaleCIEYAction() :
-Action( "Image > Rescale > Rescale CIE Y Component", Bitmap( RescaleLumActionIcon_XPM ) )
+   Action( "Image > Rescale > Rescale CIE Y Component", Bitmap( RescaleLumActionIcon_XPM ) )
 {
 }
 
@@ -136,4 +136,4 @@ bool RescaleCIEYAction::IsEnabled( ActionInfo info ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RescaleActions.cpp - Released 2017-07-09T18:07:33Z
+// EOF RescaleActions.cpp - Released 2017-07-18T16:14:18Z

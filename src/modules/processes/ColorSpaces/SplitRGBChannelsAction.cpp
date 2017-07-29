@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0336
+// Standard ColorSpaces Process Module Version 01.01.00.0340
 // ----------------------------------------------------------------------------
-// SplitRGBChannelsAction.cpp - Released 2017-07-09T18:07:32Z
+// SplitRGBChannelsAction.cpp - Released 2017-07-18T16:14:18Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
@@ -51,12 +51,12 @@
 // ----------------------------------------------------------------------------
 
 #include "SplitRGBChannelsAction.h"
-#include "ChannelExtractionProcess.h"
 #include "ChannelExtractionInstance.h"
+#include "ChannelExtractionProcess.h"
 #include "ChannelParameters.h"
 
-#include <pcl/KeyCodes.h>
 #include <pcl/ButtonCodes.h>
+#include <pcl/KeyCodes.h>
 
 namespace pcl
 {
@@ -71,7 +71,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 SplitRGBChannelsAction::SplitRGBChannelsAction() :
-Action( L"Image > Extract > Split RGB Channels", Bitmap( SplitRGBChannelsActionIcon_XPM ), L"Image" )
+   Action( "Image > Extract > Split RGB Channels", Bitmap( SplitRGBChannelsActionIcon_XPM ), "Image" )
 {
    SetToolTip( "Split RGB Channels" );
 }
@@ -96,7 +96,7 @@ bool SplitRGBChannelsAction::IsEnabled( ActionInfo info ) const
 // ----------------------------------------------------------------------------
 
 ExtractRedChannelAction::ExtractRedChannelAction() :
-Action( L"Image > Extract > Red Channel", Bitmap( ExtractRedChannelActionIcon_XPM ) )
+   Action( "Image > Extract > Red Channel", Bitmap( ExtractRedChannelActionIcon_XPM ) )
 {
    SetToolTip( "Extract Red Channel" );
 }
@@ -121,7 +121,7 @@ bool ExtractRedChannelAction::IsEnabled( ActionInfo info ) const
 // ----------------------------------------------------------------------------
 
 ExtractGreenChannelAction::ExtractGreenChannelAction() :
-Action( L"Image > Extract > Green Channel", Bitmap( ExtractGreenChannelActionIcon_XPM ) )
+   Action( "Image > Extract > Green Channel", Bitmap( ExtractGreenChannelActionIcon_XPM ) )
 {
    SetToolTip( "Extract Green Channel" );
 }
@@ -146,7 +146,7 @@ bool ExtractGreenChannelAction::IsEnabled( ActionInfo info ) const
 // ----------------------------------------------------------------------------
 
 ExtractBlueChannelAction::ExtractBlueChannelAction() :
-Action( L"Image > Extract > Blue Channel", Bitmap( ExtractBlueChannelActionIcon_XPM ) )
+   Action( "Image > Extract > Blue Channel", Bitmap( ExtractBlueChannelActionIcon_XPM ) )
 {
    SetToolTip( "Extract Blue Channel" );
 }
@@ -173,4 +173,4 @@ bool ExtractBlueChannelAction::IsEnabled( ActionInfo info ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SplitRGBChannelsAction.cpp - Released 2017-07-09T18:07:32Z
+// EOF SplitRGBChannelsAction.cpp - Released 2017-07-18T16:14:18Z

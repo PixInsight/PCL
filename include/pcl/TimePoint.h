@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// pcl/TimePoint.h - Released 2017-07-09T18:07:07Z
+// pcl/TimePoint.h - Released 2017-07-18T16:13:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -194,16 +194,11 @@ public:
     *
     * \param fileTime   Reference to a FileTime structure, from which date and
     *                   time elements will be obtained to construct a
-    *                   %TimePoint object.
-    *
-    * \param localTime  True to construct a %TimePoint directly from %FileTime
-    *                   components, which normally represent a local time on
-    *                   systems that support time zones. False to subtract the
-    *                   current time zone offset, if available, to build a
-    *                   %TimePoint object as UTC without offset. This parameter
-    *                   is false by default.
+    *                   %TimePoint object. The file time is expected to be
+    *                   represented as UTC, which is coherent with most file
+    *                   systems.
     */
-   TimePoint( const FileTime& fileTime, bool localTime = false );
+   TimePoint( const FileTime& fileTime );
 
    /*!
     * Copy constructor.
@@ -699,6 +694,32 @@ public:
    }
 
    /*!
+    * Returns the UTC offset for this time point on the host machine, or the
+    * difference <em>Local Standard Time (LST) minus Universal Coordinated Time
+    * (UTC)</em>, in hours, at the date represented by this object. This
+    * function takes into account daylight saving time when applicable.
+    */
+   double SystemOffsetFromUTC() const;
+
+   /*!
+    * Returns this time point represented as Local Standard Time (LST),
+    * assuming that this object represents a time point in the UTC time scale.
+    */
+   TimePoint UTCToLocalTime() const
+   {
+      return TimePoint( m_jdi, m_jdf + SystemOffsetFromUTC()/24 );
+   }
+
+   /*!
+    * Returns this time point represented as UTC, assuming that this object
+    * represents a time point in Local Standard Time (LST).
+    */
+   TimePoint LocalTimeToUTC() const
+   {
+      return TimePoint( m_jdi, m_jdf - SystemOffsetFromUTC()/24 );
+   }
+
+   /*!
     * Returns a %TimePoint object corresponding to the current date and time in
     * the UTC time scale.
     */
@@ -739,12 +760,6 @@ public:
       t.m_jdf = 0.5;
       return t;
    }
-
-   /*!
-    * Returns the current time zone offset of the host machine, or the
-    * difference <em>local standard time minus UTC</em>, in hours.
-    */
-   static double SystemTimeZone();
 
    /*!
     * Returns a %TimePoint object constructed from an ISO 8601 extended
@@ -1100,4 +1115,4 @@ inline TimePoint operator -( const TimePoint& t, double d )
 #endif   // __PCL_TimePoint_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/TimePoint.h - Released 2017-07-09T18:07:07Z
+// EOF pcl/TimePoint.h - Released 2017-07-18T16:13:52Z

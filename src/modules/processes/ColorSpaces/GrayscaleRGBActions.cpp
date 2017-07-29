@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0336
+// Standard ColorSpaces Process Module Version 01.01.00.0340
 // ----------------------------------------------------------------------------
-// GrayscaleRGBActions.cpp - Released 2017-07-09T18:07:32Z
+// GrayscaleRGBActions.cpp - Released 2017-07-18T16:14:18Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
@@ -51,11 +51,11 @@
 // ----------------------------------------------------------------------------
 
 #include "GrayscaleRGBActions.h"
-#include "GrayscaleRGBProcesses.h"
 #include "GrayscaleRGBInstances.h"
+#include "GrayscaleRGBProcesses.h"
 
-#include <pcl/KeyCodes.h>
 #include <pcl/ButtonCodes.h>
+#include <pcl/KeyCodes.h>
 
 namespace pcl
 {
@@ -67,7 +67,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 ConvertToGrayscaleAction::ConvertToGrayscaleAction() :
-Action( "Image > Color Spaces > Convert to Grayscale", Bitmap( ConvertToGrayscaleActionIcon_XPM ), "Color Spaces" )
+   Action( "Image > Color Spaces > Convert to Grayscale", Bitmap( ConvertToGrayscaleActionIcon_XPM ), "Color Spaces" )
 {
    SetToolTip( "Convert to Grayscale" );
 }
@@ -94,7 +94,7 @@ bool ConvertToGrayscaleAction::IsEnabled( ActionInfo info ) const
 // ----------------------------------------------------------------------------
 
 ConvertToRGBColorAction::ConvertToRGBColorAction() :
-Action( "Image > Color Spaces > Convert to RGB Color", Bitmap( ConvertToRGBColorActionIcon_XPM ), "Color Spaces" )
+   Action( "Image > Color Spaces > Convert to RGB Color", Bitmap( ConvertToRGBColorActionIcon_XPM ), "Color Spaces" )
 {
    SetToolTip( "Convert to RGB Color" );
 }
@@ -118,4 +118,4 @@ bool ConvertToRGBColorAction::IsEnabled( ActionInfo info ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF GrayscaleRGBActions.cpp - Released 2017-07-09T18:07:32Z
+// EOF GrayscaleRGBActions.cpp - Released 2017-07-18T16:14:18Z

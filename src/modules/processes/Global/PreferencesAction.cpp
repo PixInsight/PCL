@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0861
+// /_/     \____//_____/   PCL 02.01.07.0869
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0366
+// Standard Global Process Module Version 01.02.07.0370
 // ----------------------------------------------------------------------------
-// PreferencesAction.cpp - Released 2017-07-09T18:07:33Z
+// PreferencesAction.cpp - Released 2017-07-18T16:14:18Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -51,9 +51,9 @@
 // ----------------------------------------------------------------------------
 
 #include "PreferencesAction.h"
-#include "PreferencesProcess.h"
 #include "PreferencesInstance.h"
 #include "PreferencesInterface.h"
+#include "PreferencesProcess.h"
 
 namespace pcl
 {
@@ -65,7 +65,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 PreferencesAction::PreferencesAction() :
-   Action( L"Edit > Global Preferences", Bitmap( PreferencesActionIcon_XPM ), L"Edit" )
+   Action( "Edit > Global Preferences", Bitmap( PreferencesActionIcon_XPM ), "Edit" )
 {
    SetToolTip( "Global Preferences" );
 }
@@ -84,4 +84,4 @@ void PreferencesAction::Execute()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesAction.cpp - Released 2017-07-09T18:07:33Z
+// EOF PreferencesAction.cpp - Released 2017-07-18T16:14:18Z

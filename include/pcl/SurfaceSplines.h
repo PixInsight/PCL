@@ -186,15 +186,28 @@ public:
 /*!
  * \class PointSurfaceSpline
  * \brief Vector surface spline interpolation/approximation in two dimensions
+ *
+ * The template parameter P represents an interpolation point in two
+ * dimensions. The type P must implement 'x' and 'y' data members accessible
+ * from the current %PointSurfaceSpline template specialization. These members
+ * must provide the values of the horizontal and vertical coordinates,
+ * respectively, of an interpolation point. In addition, the scalar types of
+ * the x and y point members must support conversion to double semantics.
  */
+template <class P = FPoint>
 class PointSurfaceSpline
 {
 public:
 
    /*!
+    * Represents an interpolation point in two dimensions.
+    */
+   typedef P                                 point;
+
+   /*!
     * Represents a sequence of interpolation points.
     */
-   typedef Array<FPoint>                     point_list;
+   typedef Array<point>                      point_list;
 
    /*!
     * Represents a coordinate interpolating/approximating surface spline.
@@ -256,20 +269,40 @@ public:
     *
     * \param smoothness Smoothing factor. Must be >= 0. The default value is 0.
     *
+    * \param W          Reference to a vector of positive node \e weights > 0,
+    *                   when the smoothing factor is > 1. For an interpolation
+    *                   spline, this parameter will be ignored (see below).
+    *
     * \param order      Derivative order. Must be >= 1. The default value is 2.
     *
-    * For \a smoothness = 0, an interpolating spline will be generated: all
+    * For \a smoothness <= 0, an interpolating spline will be generated: all
     * node values will be reproduced exactly at their respective coordinates.
+    * In this case the \a W parameter will be ignored.
     *
     * For \a smoothness > 0, a smoothing (or approximating) spline will be
     * generated: increasing \a smoothness values will generate splines closer
-    * to the reference plane of the input node set.
+    * to the reference plane of the input node set. If nonempty, the specified
+    * vector \a W of node weights will be used to assign a different
+    * interpolation \e strength to each interpolation node. In this case the
+    * vector \a W must have at least the same length as the shortest of the
+    * \a P1 and \a P2 vectors, and must contain values greater than zero. A
+    * node weight larger than one will reduce the smoothness of the
+    * interpolating surface at the corresponding node coordinates, or in other
+    * words, it will give more prominence to the corresponding data point. A
+    * node weight of one will apply the specified \a smoothness at its node
+    * position. Contrarily, a node weight smaller than one will increase the
+    * interpolation smoothness.
     *
     * The surface spline will be continuously differentiable up to the
     * specified \a order. If this order is too high, an ill-conditioned
-    * linear system may result.
+    * linear system may result, especially for large data sets. The recommended
+    * values are 2, 3, 4 or 5, but order 2 is usually the best and safest
+    * option for most applications. Derivative orders greater than 3 may yield
+    * numerically unstable interpolation devices, which should always be used
+    * with care.
     */
-   void Initialize( const point_list& P1, const point_list& P2, float smoothness = 0, int order = 2 )
+   void Initialize( const point_list& P1, const point_list& P2,
+                    float smoothness = 0, const FVector& W = FVector(), int order = 2 )
    {
       PCL_PRECONDITION( P1.Length() >= 3 )
       PCL_PRECONDITION( P1.Length() <= P2.Length() )
@@ -298,8 +331,51 @@ public:
          Zx[i] = P2[i].x;
          Zy[i] = P2[i].y;
       }
-      m_Sx.Initialize( X.Begin(), Y.Begin(), Zx.Begin(), X.Length() );
-      m_Sy.Initialize( X.Begin(), Y.Begin(), Zy.Begin(), X.Length() );
+      m_Sx.Initialize( X.Begin(), Y.Begin(), Zx.Begin(), X.Length(), W.Begin() );
+      m_Sy.Initialize( X.Begin(), Y.Begin(), Zy.Begin(), X.Length(), W.Begin() );
+   }
+
+   /*!
+    * Returns an approximation to the inverse surface spline of this object.
+    *
+    * The returned object can be used to perform an inverse interpolation:
+    * Given an interpolation point P2, the returned spline will interpolate the
+    * corresponding node point P1. See Initialize() for more information on
+    * spline initialization.
+    *
+    * In general, the returned object can only provide an approximation to the
+    * inverse of the underlying coordinate transformation. In particular, if
+    * this object has been initialized as an approximating surface spline, its
+    * inverse spline will compute node point coordinates from approximate
+    * (smoothed) interpolated coordinates, instead of the original ones.
+    *
+    * If two or more interpolation points were identical when this object was
+    * initialized, calling this member function may lead to an ill-conditioned
+    * linear system. In such case, an Error exception will be thrown.
+    *
+    * If this object has not been initialized, this function returns an
+    * uninitialized %PointSurfaceSpline object.
+    */
+   PointSurfaceSpline Inverse() const
+   {
+      PointSurfaceSpline inverse;
+      if ( IsValid() )
+      {
+         DVector X = m_Sx.X(),
+                 Y = m_Sx.Y(),
+                 Zx( X.Length() ),
+                 Zy( X.Length() );
+         for ( int i = 0; i < X.Length(); ++i )
+         {
+            Zx[i] = m_Sx( X[i], Y[i] );
+            Zy[i] = m_Sy( X[i], Y[i] );
+         }
+         inverse.m_Sx.SetOrder( m_Sx.Order() );
+         inverse.m_Sy.SetOrder( m_Sy.Order() );
+         inverse.m_Sx.Initialize( Zx.Begin(), Zy.Begin(), X.Begin(), X.Length() );
+         inverse.m_Sy.Initialize( Zx.Begin(), Zy.Begin(), Y.Begin(), X.Length() );
+      }
+      return inverse;
    }
 
    /*!
@@ -423,7 +499,8 @@ public:
     *                within the boundaries of this rectangle at discrete
     *                \a delta coordinate intervals.
     *
-    * \param delta   Grid distance for discrete initialization. Must be > 0.
+    * \param delta   Grid distance for calculation of discrete function values.
+    *                Must be > 0.
     *
     * \param S       Reference to a PointSurfaceSpline object that will be used
     *                as the underlying interpolation to compute interpolation
@@ -439,7 +516,8 @@ public:
     * the interpolation initialization process using multiple concurrent
     * threads (see EnableParallelProcessing()).
     */
-   void Initialize( const Rect& rect, int delta, const PointSurfaceSpline& S, bool verbose = true )
+   template <class P>
+   void Initialize( const Rect& rect, int delta, const PointSurfaceSpline<P>& S, bool verbose = true )
    {
       m_rect = rect;
       m_delta = delta;
@@ -457,11 +535,11 @@ public:
 
       int numberOfThreads = m_parallel ? Thread::NumberOfThreads( rows, 1 ) : 1;
       int rowsPerThread = rows/numberOfThreads;
-      ReferenceArray<GridInitializationThread> threads;
+      ReferenceArray<GridInitializationThread<P> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
-         threads.Add( new GridInitializationThread( *this, S,
-                                                    i*rowsPerThread,
-                                                    (j < numberOfThreads) ? j*rowsPerThread : rows ) );
+         threads.Add( new GridInitializationThread<P>( *this, S,
+                                                       i*rowsPerThread,
+                                                       (j < numberOfThreads) ? j*rowsPerThread : rows ) );
       for ( int i = 0; i < numberOfThreads; ++i )
          threads[i].Start( ThreadPriority::DefaultMax, i );
       for ( int i = 0; i < numberOfThreads; ++i )
@@ -479,6 +557,24 @@ public:
    bool IsValid() const
    {
       return !(m_Gx.IsEmpty() || m_Gy.IsEmpty());
+   }
+
+   /*!
+    * Returns the current interpolation reference rectangle. See Initialize()
+    * for more information.
+    */
+   const Rect& ReferenceRect() const
+   {
+      return m_rect;
+   }
+
+   /*!
+    * Returns the current grid distance for calculation of discrete function
+    * values. See Initialize() for more information.
+    */
+   int Delta() const
+   {
+      return m_delta;
    }
 
    /*!
@@ -545,11 +641,14 @@ private:
    grid_interpolation m_Ix, m_Iy;
    bool               m_parallel : 1;
 
+   template <class P>
    class GridInitializationThread : public Thread
    {
    public:
 
-      GridInitializationThread( PointGridInterpolation& grid, const PointSurfaceSpline& splines, int startRow, int endRow ) :
+      typedef PointSurfaceSpline<P> point_interpolation;
+
+      GridInitializationThread( PointGridInterpolation& grid, const point_interpolation& splines, int startRow, int endRow ) :
          m_grid( grid ), m_splines( splines ), m_startRow( startRow ), m_endRow( endRow )
       {
       }
@@ -567,12 +666,10 @@ private:
 
    private:
 
-      PointGridInterpolation&   m_grid;
-      const PointSurfaceSpline& m_splines;
-      int                       m_startRow, m_endRow;
+      PointGridInterpolation&    m_grid;
+      const point_interpolation& m_splines;
+      int                        m_startRow, m_endRow;
    };
-
-   friend class PointGridInterpolation::GridInitializationThread;
 };
 
 // ----------------------------------------------------------------------------

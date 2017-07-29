@@ -1743,9 +1743,20 @@ IsoStringList File::ReadLines( const String& filePath, ReadTextOptions options )
 
    for ( ;; )
    {
-      char* npos = ::strchr( p, IsoCharTraits::LF() ); // UNIX
-      char* rpos = ::strchr( p, IsoCharTraits::CR() ); // Windows or legacy Mac
-      char* eol = (npos == nullptr) ? rpos : ((rpos == nullptr) ? npos : Min( npos, rpos ));
+      char* npos = nullptr;
+      char* rpos = nullptr;
+      for ( char* q = p; q < end; ++q )
+         if ( *q == IsoCharTraits::LF() ) // UNIX
+         {
+            npos = q;
+            break;
+         }
+         else if ( *q == IsoCharTraits::CR() ) // Windows or legacy Mac
+         {
+            rpos = q;
+            break;
+         }
+      char* eol = (rpos == nullptr) ? npos : rpos;
       if ( eol == nullptr )
          break;
       char nl = *eol;
@@ -1807,9 +1818,20 @@ size_type File::ScanLines( const String& filePath, bool (*callback)( char*, void
 
    for ( ;; )
    {
-      char* npos = ::strchr( p, IsoCharTraits::LF() ); // UNIX
-      char* rpos = ::strchr( p, IsoCharTraits::CR() ); // Windows or legacy Mac
-      char* eol = (npos == nullptr) ? rpos : ((rpos == nullptr) ? npos : Min( npos, rpos ));
+      char* npos = nullptr;
+      char* rpos = nullptr;
+      for ( char* q = p; q < end; ++q )
+         if ( *q == IsoCharTraits::LF() ) // UNIX
+         {
+            npos = q;
+            break;
+         }
+         else if ( *q == IsoCharTraits::CR() ) // Windows or legacy Mac
+         {
+            rpos = q;
+            break;
+         }
+      char* eol = (rpos == nullptr) ? npos : rpos;
       if ( eol == nullptr )
          break;
       char nl = *eol;

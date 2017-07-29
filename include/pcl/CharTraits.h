@@ -718,6 +718,22 @@ public:
    }
 
    /*!
+    * Returns the single quote character "'".
+    */
+   static constexpr char_type SingleQuote()
+   {
+      return char_type( '\'' );
+   }
+
+   /*!
+    * Returns the double quote character '"'.
+    */
+   static constexpr char_type DoubleQuote()
+   {
+      return char_type( '\"' );
+   }
+
+   /*!
     * Returns true iff a character \a c is a null string terminator.
     */
    static constexpr bool IsNull( char_type c )

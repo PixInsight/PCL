@@ -696,6 +696,72 @@ public:
    }
 
    /*!
+    * Returns the norm of this vector. For any real p > 0, the norm N of a
+    * vector v is given by:
+    *
+    * N = sum( abs( x )^p )^(1/p)
+    *
+    * for all vector components x of v.
+    *
+    * \sa L1Norm(), L2Norm()
+    */
+   double Norm( double p ) const
+   {
+      return pcl::Norm( m_data->Begin(), m_data->End(), p );
+   }
+
+   /*!
+    * Returns the L1 norm (or Manhattan norm) of this vector. The L1 norm is the
+    * sum of the absolute values of all vector components.
+    */
+   double L1Norm() const
+   {
+      return pcl::L1Norm( m_data->Begin(), m_data->End() );
+   }
+
+   /*!
+    * Returns the L2 norm (or Euclidean norm) of this vector. The L2 norm is the
+    * square root of the sum of squared vector components.
+    */
+   double L2Norm() const
+   {
+      return pcl::L2Norm( m_data->Begin(), m_data->End() );
+   }
+
+   /*!
+    * Returns the L2 norm (or Euclidean norm) of this vector. This function is a
+    * synonym for L2Norm().
+    */
+   double Norm() const
+   {
+      return L2Norm();
+   }
+
+   /*!
+    * Returns a unit vector with the same direction as this vector. A unit
+    * vector has a norm (or magnitude) of 1.
+    */
+   GenericVector Unit() const
+   {
+      GenericVector R( *this );
+      double N = L2Norm();
+      if ( 1 + N > 1 )
+         R /= N;
+      return R;
+   }
+
+   /*!
+    * Transforms this vector to a unit vector with the same direction. A unit
+    * vector has a norm (or magnitude) of 1.
+    */
+   void SetUnit()
+   {
+      double N = L2Norm();
+      if ( 1 + N > 1 )
+         (void)operator /=( N );
+   }
+
+   /*!
     * Sorts the components of this vector in ascending order.
     */
    void Sort()
@@ -1656,6 +1722,81 @@ public:
 #endif   // !__PCL_NO_STL_COMPATIBLE_ITERATORS
 
    /*!
+    * Computes spherical coordinates from this three-component vector.
+    *
+    * \param[out] lon   Reference to a variable where the computed longitude
+    *                   in radians, in the range [-pi,+pi], will be stored. If
+    *                   the vector points to one pole, that is, if *lat is
+    *                   either -pi/2 or +pi/2, the computed longitude will be
+    *                   zero.
+    *
+    * \param[out] lat   Reference to a variable where the computed latitude
+    *                   in radians, in the range [-pi/2,+pi/2], will be stored.
+    *
+    * This function requires a vector with at least three coordinates. For
+    * performance reasons, the vector length is not verified.
+    *
+    * The returned coordinates lie on a sphere of unit radius, that is, only
+    * the direction of the input vector is taken into account, never its
+    * magnitude.
+    *
+    * \sa FromSpherical()
+    */
+   template <typename T1, typename T2>
+   void ToSpherical( T1& lon, T2& lat ) const
+   {
+      PCL_PRECONDITION( Length() >= 3 )
+      double x = *At( 0 );
+      double y = *At( 1 );
+      double z = *At( 2 );
+      double m2 = x*x + y*y;
+      lon = T1( (m2 == 0) ? 0.0 : ArcTan( y, x ) );
+      lat = T2( (z == 0)  ? 0.0 : ArcTan( z, pcl::Sqrt( m2 ) ) );
+   }
+
+   /*!
+    * Returns a three-component vector with rectangular coordinates computed
+    * from spherical coordinates, given by their sines and cosines
+    *
+    * \param slon  Sine of the longitude.
+    * \param clon  Cosine of the longitude.
+    * \param slat  Sine of the latitude.
+    * \param clat  Cosine of the latitude.
+    *
+    * The returned vector contains the <em>direction cosines</em> for the
+    * specified position on the sphere. It is a unit vector (unit magnitude)
+    * pointing from the center of the sphere to the specified location.
+    *
+    * \sa ToSpherical()
+    */
+   static GenericVector FromSpherical( double slon, double clon, double slat, double clat )
+   {
+      return GenericVector( clon*clat, slon*clat, slat );
+   }
+
+   /*!
+    * Returns a three-component vector with rectangular coordinates computed
+    * from the specified spherical coordinates.
+    *
+    * \param lon  Longitude in radians.
+    * \param lat  Latitude in radians.
+    *
+    * The returned vector contains the <em>direction cosines</em> for the
+    * specified position on the sphere. It is a unit vector (unit magnitude)
+    * pointing from the center of the sphere to the specified location.
+    *
+    * \sa ToSpherical()
+    */
+   template <typename T1, typename T2>
+   static GenericVector FromSpherical( const T1& lon, const T2& lat )
+   {
+      double slon, clon, slat, clat;
+      SinCos( double( lon ), slon, clon );
+      SinCos( double( lat ), slat, clat );
+      return FromSpherical( slon, clon, slat, clat );
+   }
+
+   /*!
     * Generates a sequence of string tokens separated with the specified
     * \a separator string. Returns a reference to the target string \a s.
     *
@@ -2568,6 +2709,36 @@ typedef GenericVector<Complex32>    C32Vector;
  * %C64Vector is a template instantiation of GenericVector for \c Complex64.
  */
 typedef GenericVector<Complex64>    C64Vector;
+
+#ifndef _MSC_VER
+
+/*!
+ * \class pcl::F80Vector
+ * \ingroup vector_types
+ * \brief 80-bit extended precision floating point real vector.
+ *
+ * %F80Vector is a template instantiation of GenericVector for \c long
+ * \c double.
+ *
+ * \note This template instantiation is not available on Windows with Visual
+ * C++ compilers.
+ */
+typedef GenericVector<long double>  F80Vector;
+
+/*!
+ * \class pcl::LDVector
+ * \ingroup vector_types
+ * \brief 80-bit extended precision floating point real vector.
+ *
+ * %LDVector is an alias for F80Vector. It is a template instantiation of
+ * GenericVector for \c long \c double.
+ *
+ * \note This template instantiation is not available on Windows with Visual
+ * C++ compilers.
+ */
+typedef F80Vector                   LDVector;
+
+#endif   // !_MSC_VER
 
 #endif   // !__PCL_NO_VECTOR_INSTANTIATE
 

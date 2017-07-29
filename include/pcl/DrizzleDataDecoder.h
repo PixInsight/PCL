@@ -82,7 +82,7 @@ public:
       Initialize();
 
       if ( end < 0 )
-         end = s.Length();
+         end = int( s.Length() );
       IsoString itemId;
       int block = 0;
       int blockStart = 0;
@@ -126,7 +126,7 @@ public:
       IsoString filtered;
 
       if ( end < 0 )
-         end = s.Length();
+         end = int( s.Length() );
       IsoString itemId;
       int block = 0;
       int blockStart = 0;
@@ -327,7 +327,8 @@ class DrizzleSplineDecoder : public DrizzleDecoderBase
 {
 public:
 
-   typedef PointSurfaceSpline::spline spline;
+   typedef PointSurfaceSpline<FPoint>  vector_spline;
+   typedef vector_spline::spline       spline;
 
    DrizzleSplineDecoder() : DrizzleDecoderBase()
    {
@@ -395,6 +396,8 @@ class DrizzleDataDecoder : public DrizzleDecoderBase
 {
 public:
 
+   typedef PointSurfaceSpline<FPoint>  vector_spline;
+
    DrizzleDataDecoder() : DrizzleDecoderBase()
    {
    }
@@ -433,7 +436,7 @@ public:
       return m_H;
    }
 
-   const PointSurfaceSpline& AlignmentSplines() const
+   const vector_spline& AlignmentSplines() const
    {
       return m_S;
    }
@@ -495,34 +498,34 @@ public:
 
 protected:
 
-   typedef PointSurfaceSpline::spline   spline;
-   typedef Array<Point>                 rejection_coordinates;
-   typedef Array<rejection_coordinates> rejection_data;
+   typedef vector_spline::spline          spline;
+   typedef Array<Point>                   rejection_coordinates;
+   typedef Array<rejection_coordinates>   rejection_data;
 
    /*
     * Drizzle data
     */
-   String             m_filePath;
-   String             m_targetPath;
-   int                m_referenceWidth;
-   int                m_referenceHeight;
-   Matrix             m_H;
-   PointSurfaceSpline m_S;
-   Vector             m_location;
-   Vector             m_referenceLocation;
-   Vector             m_scale;
-   Vector             m_weight;
-   UI64Vector         m_rejectionLowCount;
-   UI64Vector         m_rejectionHighCount;
-   UInt8Image         m_rejectionMap;
+   String         m_filePath;
+   String         m_targetPath;
+   int            m_referenceWidth;
+   int            m_referenceHeight;
+   Matrix         m_H;
+   vector_spline  m_S;
+   Vector         m_location;
+   Vector         m_referenceLocation;
+   Vector         m_scale;
+   Vector         m_weight;
+   UI64Vector     m_rejectionLowCount;
+   UI64Vector     m_rejectionHighCount;
+   UInt8Image     m_rejectionMap;
 
    /*
     * Intermediate working data
     */
-   spline             m_Sx;
-   spline             m_Sy;
-   rejection_data     m_rejectLowData;
-   rejection_data     m_rejectHighData;
+   spline         m_Sx;
+   spline         m_Sy;
+   rejection_data m_rejectLowData;
+   rejection_data m_rejectHighData;
 
    virtual void Initialize()
    {
@@ -668,8 +671,8 @@ protected:
             size_type j = s.Find( '}', ++i );
             if ( j >= size_type( end ) )
                throw Error( "At offset=" + String( i ) + ": Unterminated block." );
-            R.Append( ParseRejectionCoordinates( s, i, j ) );
-            i = j;
+            R.Append( ParseRejectionCoordinates( s, i, int( j ) ) );
+            i = int( j );
          }
          else if ( !IsoCharTraits::IsSpace( s[i] ) )
             throw Error( "At offset=" + String( i ) + ": Unexpected token \'" + s[i] + '\'' );

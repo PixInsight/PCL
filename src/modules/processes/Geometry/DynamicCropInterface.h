@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// DynamicCropInterface.h - Released 2016/02/21 20:22:42 UTC
+// DynamicCropInterface.h - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -53,14 +53,14 @@
 #ifndef __DynamicCropInterface_h
 #define __DynamicCropInterface_h
 
-#include <pcl/ProcessInterface.h>
-
 #include <pcl/CheckBox.h>
 #include <pcl/ComboBox.h>
 #include <pcl/Edit.h>
 #include <pcl/Graphics.h>
 #include <pcl/Label.h>
 #include <pcl/NumericControl.h>
+#include <pcl/ProcessInterface.h>
+#include <pcl/RadioButton.h>
 #include <pcl/SectionBar.h>
 #include <pcl/Sizer.h>
 #include <pcl/SpinBox.h>
@@ -91,7 +91,7 @@ public:
    virtual void EditPreferences();
    virtual void ResetInstance();
 
-   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
+   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& flags );
 
    virtual ProcessImplementation* NewProcess() const;
 
@@ -124,10 +124,6 @@ private:
 
    DynamicCropInstance instance;
 
-   /*
-    * Workbench
-    */
-
    union Flags
    {
       struct
@@ -152,25 +148,21 @@ private:
       bool operator ==( const Flags& x ) const { return allBits == x.allBits; }
    };
 
-   View*    view;             // dynamic target
-   double   width, height;    // dimensions of cropping rectangle
-   DPoint   center;           // center of cropping rectangle
-   DPoint   rotationCenter;   // center of rotation
-   bool     rotationFixed;    // rotationCenter fixed, or moves with crop rect.
-   int      anchorPoint;      // anchor point from 0=top/left to 8=bottom/right
-   DPoint   anchor;           // position of anchor point
-
-   Flags    flags;            // current operation flags
-
-   bool     dragging;         // dragging the mouse
-   DPoint   dragOrigin;       // initial drag position
-
-   bool     initializing;     // defining the initial cropping rectangle
-   Rect     rect;             // initial cropping rectangle
-
-   RGBA     selectionColor;   // color for the cropping rectangle
-   RGBA     centerColor;      // color for the center mark
-   RGBA     fillColor;        // color to fill the cropping rectangle
+   View     m_view;              // the dynamic target
+   double   m_width, m_height;   // dimensions of the cropping rectangle
+   DPoint   m_center;            // center of cropping rectangle
+   DPoint   m_rotationCenter;    // center of rotation
+   bool     m_rotationFixed;     // true if rotation center is fixed, false if it moves with the cropping rect.
+   int      m_anchorPoint;       // anchor point from 0=top/left to 8=bottom/right
+   DPoint   m_anchor;            // position of anchor point
+   Flags    m_flags;             // current operation flags
+   bool     m_dragging;          // dragging the mouse
+   DPoint   m_dragOrigin;        // initial drag position
+   bool     m_initializing;      // defining the initial cropping rectangle
+   Rect     m_rect;              // initial cropping rectangle
+   RGBA     m_selectionColor;    // color for the cropping rectangle
+   RGBA     m_centerColor;       // color for the center mark
+   RGBA     m_fillColor;         // color to fill the cropping rectangle
 
    void Initialize( const Rect& );
 
@@ -211,12 +203,8 @@ private:
    // Rotation angle of a point with respect to the center of the cropping system
    double RotationAngle( const DPoint& p ) const
    {
-      return ArcTan( rotationCenter.y - p.y, p.x - rotationCenter.x );
+      return ArcTan( m_rotationCenter.y - p.y, p.x - m_rotationCenter.x );
    }
-
-   /*
-    * GUI
-    */
 
    struct GUIData
    {
@@ -252,12 +240,16 @@ private:
       SectionBar        Scale_SectionBar;
       Control           Scale_Control;
       VerticalSizer     Scale_Sizer;
-         HorizontalSizer   ScaleX_Sizer;
-            NumericEdit       ScaleX_NumericEdit;
-            NumericEdit       ScaledWidth_NumericEdit;
-         HorizontalSizer   ScaleY_Sizer;
-            NumericEdit       ScaleY_NumericEdit;
-            NumericEdit       ScaledHeight_NumericEdit;
+         NumericEdit       ScaleX_NumericEdit;
+         NumericEdit       ScaleY_NumericEdit;
+         NumericEdit       ScaledWidthPx_NumericEdit;
+         NumericEdit       ScaledHeightPx_NumericEdit;
+         NumericEdit       ScaledWidthCm_NumericEdit;
+         NumericEdit       ScaledHeightCm_NumericEdit;
+         NumericEdit       ScaledWidthIn_NumericEdit;
+         NumericEdit       ScaledHeightIn_NumericEdit;
+         HorizontalSizer   PreserveAspectRatio_Sizer;
+            CheckBox          PreserveAspectRatio_CheckBox;
 
       SectionBar        Interpolation_SectionBar;
       Control           Interpolation_Control;
@@ -267,6 +259,17 @@ private:
             ComboBox          Algorithm_ComboBox;
          NumericEdit       ClampingThreshold_NumericEdit;
          NumericEdit       Smoothness_NumericEdit;
+
+      SectionBar        Resolution_SectionBar;
+      Control           Resolution_Control;
+      VerticalSizer     Resolution_Sizer;
+         NumericEdit       HorizontalResolution_NumericEdit;
+         NumericEdit       VerticalResolution_NumericEdit;
+         HorizontalSizer   ResolutionUnit_Sizer;
+            RadioButton       CentimeterUnits_RadioButton;
+            RadioButton       InchUnits_RadioButton;
+         HorizontalSizer   ForceResolution_Sizer;
+            CheckBox          ForceResolution_CheckBox;
 
       SectionBar        FillColor_SectionBar;
       Control           FillColor_Control;
@@ -280,19 +283,14 @@ private:
 
    GUIData* GUI;
 
-   /*
-    * GUI Updates
-    */
-
    void InitControls();
-
    void UpdateControls();
    void UpdateSizePosControls();
    void UpdateRotationControls();
    void UpdateScaleControls();
    void UpdateInterpolationControls();
+   void UpdateResolutionControls();
    void UpdateFillColorControls();
-
    void UpdateView();
 
    /*
@@ -323,6 +321,10 @@ private:
    void __Algorithm_ItemSelected( ComboBox& sender, int itemIndex );
    void __Algorithm_ValueUpdated( NumericEdit& sender, double value );
 
+   void __Resolution_ValueUpdated( NumericEdit& sender, double value );
+   void __Units_ButtonClick( Button& sender, bool checked );
+   void __ForceResolution_ButtonClick( Button& sender, bool checked );
+
    void __FilColor_ValueUpdated( NumericEdit& sender, double value );
 
    void __ColorSample_Paint( Control& sender, const Rect& updateRect );
@@ -346,4 +348,4 @@ PCL_END_LOCAL
 #endif   // __DynamicCropInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropInterface.h - Released 2016/02/21 20:22:42 UTC
+// EOF DynamicCropInterface.h - Released 2016/11/17 18:14:58 UTC

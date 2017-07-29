@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.12.0183
+// Standard INDIClient Process Module Version 01.00.15.0199
 // ----------------------------------------------------------------------------
-// INDIMountInstance.h - Released 2016/06/04 15:14:47 UTC
+// INDIMountInstance.h - Released 2016/06/20 17:47:31 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -71,10 +71,11 @@ public:
    virtual void Assign( const ProcessImplementation& );
 
    virtual bool CanExecuteOn( const View&, String& whyNot ) const;
-   virtual bool CanExecuteGlobal( String& whyNot ) const;
-
-   virtual bool ExecuteGlobal();
+   virtual bool IsHistoryUpdater( const View& v ) const;
    virtual bool ExecuteOn( View& view );
+
+   virtual bool CanExecuteGlobal( String& whyNot ) const;
+   virtual bool ExecuteGlobal();
 
    virtual void* LockParameter( const MetaParameter* p, size_type tableRow );
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
@@ -86,18 +87,22 @@ public:
    static String MountSlewRatePropertyString( int slewRateIdx );
 
    void GetCurrentCoordinates();
+   void GetTargetCoordinates( double& ra, double& dec ) const;
 
 private:
 
-   String   p_deviceName;
-   pcl_enum p_command;
-   pcl_enum p_slewRate;
-   double   p_targetRA;
-   double   p_targetDec;
+           String   p_deviceName;
+           pcl_enum p_command;
+           pcl_enum p_slewRate;
+           double   p_targetRA;
+           double   p_targetDec;
+           pcl_bool p_computeApparentPosition;
 
-   double   o_currentLST;
-   double   o_currentRA;
-   double   o_currentDec;
+           double   o_currentLST;
+           double   o_currentRA;
+           double   o_currentDec;
+   mutable double   o_apparentTargetRA;
+   mutable double   o_apparentTargetDec;
 
    friend class INDIMountInterface;
    friend class AbstractINDIMountExecution;
@@ -167,4 +172,4 @@ private:
 #endif   // __INDIMountInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInstance.h - Released 2016/06/04 15:14:47 UTC
+// EOF INDIMountInstance.h - Released 2016/06/20 17:47:31 UTC

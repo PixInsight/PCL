@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.12.0183
+// Standard INDIClient Process Module Version 01.00.15.0199
 // ----------------------------------------------------------------------------
-// INDIMountParameters.h - Released 2016/06/04 15:14:47 UTC
+// INDIMountParameters.h - Released 2016/06/20 17:47:31 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -91,7 +91,7 @@ public:
       MoveWestStop,
       MoveEastStart,
       MoveEastStop,
-      Goto,
+      GoTo,
       Sync,
       ParkDefault,
       NumberOfCommands,
@@ -108,6 +108,33 @@ public:
 };
 
 extern IMCCommand* TheIMCCommandParameter;
+
+// ----------------------------------------------------------------------------
+
+class IMCSlewRate : public MetaEnumeration
+{
+public:
+
+   enum
+   {
+      Guide,
+      Centering,
+      Find,
+      Max,
+      NumberOfCommands,
+      Default = Max
+   };
+
+   IMCSlewRate( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
+};
+
+extern IMCSlewRate* TheIMCSlewRateParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -145,30 +172,17 @@ extern IMCTargetDec* TheIMCTargetDecParameter;
 
 // ----------------------------------------------------------------------------
 
-class IMCSlewRate : public MetaEnumeration
+class IMCComputeApparentPosition : public MetaBoolean
 {
 public:
 
-   enum
-   {
-      Guide,
-      Centering,
-      Find,
-      Max,
-      NumberOfCommands,
-      Default = Max
-   };
-
-   IMCSlewRate( MetaProcess* );
+   IMCComputeApparentPosition( MetaProcess* );
 
    virtual IsoString Id() const;
-   virtual size_type NumberOfElements() const;
-   virtual IsoString ElementId( size_type ) const;
-   virtual int ElementValue( size_type ) const;
-   virtual size_type DefaultValueIndex() const;
+   virtual bool DefaultValue() const;
 };
 
-extern IMCSlewRate* TheIMCSlewRateParameter;
+extern IMCComputeApparentPosition* TheIMCComputeApparentPositionParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -202,7 +216,6 @@ public:
    virtual double MinimumValue() const;
    virtual double MaximumValue() const;
    virtual bool IsReadOnly() const;
-
 };
 
 extern IMCCurrentRA* TheIMCCurrentRAParameter;
@@ -221,10 +234,45 @@ public:
    virtual double MinimumValue() const;
    virtual double MaximumValue() const;
    virtual bool IsReadOnly() const;
-
 };
 
 extern IMCCurrentDec* TheIMCCurrentDecParameter;
+
+// ----------------------------------------------------------------------------
+
+class IMCApparentTargetRA : public MetaDouble
+{
+public:
+
+   IMCApparentTargetRA( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern IMCApparentTargetRA* TheIMCApparentTargetRAParameter;
+
+// ----------------------------------------------------------------------------
+
+class IMCApparentTargetDec : public MetaDouble
+{
+public:
+
+   IMCApparentTargetDec( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern IMCApparentTargetDec* TheIMCApparentTargetDecParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -235,4 +283,4 @@ PCL_END_LOCAL
 #endif   // __INDIMountParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountParameters.h - Released 2016/06/04 15:14:47 UTC
+// EOF INDIMountParameters.h - Released 2016/06/20 17:47:31 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// ResampleInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// ResampleInterface.cpp - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -61,7 +61,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ResampleInterface* TheResampleInterface = 0;
+ResampleInterface* TheResampleInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -75,19 +75,19 @@ ResampleInterface* TheResampleInterface = 0;
 // ----------------------------------------------------------------------------
 
 ResampleInterface::ResampleInterface() :
-ProcessInterface(),
-instance( TheResampleProcess ),
-sourceWidth( 1000 ),
-sourceHeight( 1000 ),
-GUI( 0 )
+   ProcessInterface(),
+   instance( TheResampleProcess ),
+   sourceWidth( 1000 ),
+   sourceHeight( 1000 ),
+   GUI( nullptr )
 {
    TheResampleInterface = this;
 }
 
 ResampleInterface::~ResampleInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString ResampleInterface::Id() const
@@ -117,15 +117,16 @@ void ResampleInterface::ApplyInstance() const
 
 void ResampleInterface::TrackViewUpdated( bool active )
 {
-   if ( GUI != 0 && active )
-   {
-      ImageWindow w = ImageWindow::ActiveWindow();
+   if ( GUI != nullptr )
+      if ( active )
+      {
+         ImageWindow w = ImageWindow::ActiveWindow();
 
-      if ( !w.IsNull() )
-         ImageFocused( w.MainView() );
-      else
-         UpdateControls();
-   }
+         if ( !w.IsNull() )
+            ImageFocused( w.MainView() );
+         else
+            UpdateControls();
+      }
 }
 
 void ResampleInterface::ResetInstance()
@@ -136,8 +137,7 @@ void ResampleInterface::ResetInstance()
 
 bool ResampleInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "Resample" );
@@ -157,8 +157,7 @@ ProcessImplementation* ResampleInterface::NewProcess() const
 bool ResampleInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
    const ResampleInstance* r = dynamic_cast<const ResampleInstance*>( &p );
-
-   if ( r == 0 )
+   if ( r == nullptr )
    {
       whyNot = "Not a Resample instance.";
       return false;
@@ -190,35 +189,37 @@ bool ResampleInterface::WantsImageNotifications() const
 
 void ResampleInterface::ImageUpdated( const View& v )
 {
-   if ( GUI != 0 && v == currentView )
-   {
-      v.Window().MainView().GetSize( sourceWidth, sourceHeight );
-      UpdateControls();
-   }
+   if ( GUI != nullptr )
+      if ( v == currentView )
+      {
+         v.Window().MainView().GetSize( sourceWidth, sourceHeight );
+         UpdateControls();
+      }
 }
 
 void ResampleInterface::ImageFocused( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() )
-      if ( !v.IsNull() )
-      {
-         ImageWindow w = v.Window();
-         View mainView = w.MainView();
+   if ( !v.IsNull() )
+      if ( GUI != nullptr )
+         if ( IsTrackViewActive() )
+         {
+            ImageWindow w = v.Window();
+            View mainView = w.MainView();
 
-         mainView.GetSize( sourceWidth, sourceHeight );
+            mainView.GetSize( sourceWidth, sourceHeight );
 
-         GUI->AllImages_ViewList.SelectView( mainView ); // normally not necessary, but we can invoke this f() directly
+            GUI->AllImages_ViewList.SelectView( mainView ); // normally not necessary, but we can invoke this f() directly
 
-         double xRes, yRes;
-         bool metric;
-         w.GetResolution( xRes, yRes, metric );
+            double xRes, yRes;
+            bool metric;
+            w.GetResolution( xRes, yRes, metric );
 
-         instance.p_resolution.x = xRes;
-         instance.p_resolution.y = yRes;
-         instance.p_metric = metric;
+            instance.p_resolution.x = xRes;
+            instance.p_resolution.y = yRes;
+            instance.p_metric = metric;
 
-         UpdateControls();
-      }
+            UpdateControls();
+         }
 }
 
 // ----------------------------------------------------------------------------
@@ -261,13 +262,13 @@ void ResampleInterface::UpdateControls()
    GUI->TargetHeightCentimeters_NumericEdit.SetValue( hcm );
    GUI->TargetHeightInches_NumericEdit.SetValue( hin );
 
-   GUI->PreserveAspectRatio_CheckBox.Enable( instance.p_mode == int( ResampleMode::RelativeDimensions ) );
+   GUI->PreserveAspectRatio_CheckBox.Enable( instance.p_mode == int( RSMode::RelativeDimensions ) );
 
-   if ( instance.p_mode != int( ResampleMode::RelativeDimensions ) )
+   if ( instance.p_mode != int( RSMode::RelativeDimensions ) )
       GUI->PreserveAspectRatio_CheckBox.SetChecked(
-         instance.p_mode == int( ResampleMode::ForceArea ) ||
-            instance.p_mode != int( ResampleMode::RelativeDimensions ) &&
-            instance.p_absMode != int( AbsoluteResampleMode::ForceWidthAndHeight ) );
+         instance.p_mode == int( RSMode::ForceArea ) ||
+            instance.p_mode != int( RSMode::RelativeDimensions ) &&
+            instance.p_absMode != int( RSAbsoluteMode::ForceWidthAndHeight ) );
 
    String info;
 
@@ -307,8 +308,8 @@ void ResampleInterface::UpdateControls()
    GUI->ResampleMode_ComboBox.SetCurrentItem( instance.p_mode );
 
    GUI->AbsMode_ComboBox.SetCurrentItem( instance.p_absMode );
-   GUI->AbsMode_ComboBox.Enable( instance.p_mode != int( ResampleMode::RelativeDimensions ) &&
-                                 instance.p_mode != int( ResampleMode::ForceArea ) );
+   GUI->AbsMode_ComboBox.Enable( instance.p_mode != int( RSMode::RelativeDimensions ) &&
+                                 instance.p_mode != int( RSMode::ForceArea ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -371,17 +372,17 @@ void ResampleInterface::__Width_ValueUpdated( NumericEdit& sender, double value 
       switch ( instance.p_mode )
       {
       default:
-      case ResampleMode::RelativeDimensions:
+      case RSMode::RelativeDimensions:
          instance.p_size.x = double( px )/sourceWidth;
          if ( keepAspectRatio )
             instance.p_size.y = instance.p_size.x;
          break;
-      case ResampleMode::AbsolutePixels:
+      case RSMode::AbsolutePixels:
          instance.p_size.x = px;
          if ( keepAspectRatio )
             instance.p_size.y = py;
          break;
-      case ResampleMode::AbsoluteCentimeters:
+      case RSMode::AbsoluteCentimeters:
          instance.p_size.x = px/instance.p_resolution.x;
          if ( !instance.p_metric )
             instance.p_size.x *= 2.54;
@@ -392,7 +393,7 @@ void ResampleInterface::__Width_ValueUpdated( NumericEdit& sender, double value 
                instance.p_size.y *= 2.54;
          }
          break;
-      case ResampleMode::AbsoluteInches:
+      case RSMode::AbsoluteInches:
          instance.p_size.x = px/instance.p_resolution.x;
          if ( instance.p_metric )
             instance.p_size.x /= 2.54;
@@ -403,7 +404,7 @@ void ResampleInterface::__Width_ValueUpdated( NumericEdit& sender, double value 
                instance.p_size.y /= 2.54;
          }
          break;
-      case ResampleMode::ForceArea:
+      case RSMode::ForceArea:
          instance.p_size.x = size_type( px )*size_type( py ); // size.x is area in pixels; size.y not used
          break;
       }
@@ -448,17 +449,17 @@ void ResampleInterface::__Height_ValueUpdated( NumericEdit& sender, double value
       switch ( instance.p_mode )
       {
       default:
-      case ResampleMode::RelativeDimensions:
+      case RSMode::RelativeDimensions:
          instance.p_size.y = double( py )/sourceHeight;
          if ( keepAspectRatio )
             instance.p_size.x = instance.p_size.y;
          break;
-      case ResampleMode::AbsolutePixels:
+      case RSMode::AbsolutePixels:
          instance.p_size.y = py;
          if ( keepAspectRatio )
             instance.p_size.x = px;
          break;
-      case ResampleMode::AbsoluteCentimeters:
+      case RSMode::AbsoluteCentimeters:
          instance.p_size.y = py/instance.p_resolution.y;
          if ( !instance.p_metric )
             instance.p_size.y *= 2.54;
@@ -469,7 +470,7 @@ void ResampleInterface::__Height_ValueUpdated( NumericEdit& sender, double value
                instance.p_size.x *= 2.54;
          }
          break;
-      case ResampleMode::AbsoluteInches:
+      case RSMode::AbsoluteInches:
          instance.p_size.y = py/instance.p_resolution.y;
          if ( instance.p_metric )
             instance.p_size.y /= 2.54;
@@ -480,18 +481,13 @@ void ResampleInterface::__Height_ValueUpdated( NumericEdit& sender, double value
                instance.p_size.x /= 2.54;
          }
          break;
-      case ResampleMode::ForceArea:
+      case RSMode::ForceArea:
          instance.p_size.x = size_type( py )*size_type( px ); // size.x is area in pixels; size.y not used
          break;
       }
    }
 
    UpdateControls();
-}
-
-void ResampleInterface::__PreserveAspectRatio_ButtonClick( Button& /*sender*/, bool /*checked*/ )
-{
-   // ### Nothing to do
 }
 
 void ResampleInterface::__Resolution_ValueUpdated( NumericEdit& sender, double value )
@@ -550,18 +546,18 @@ void ResampleInterface::__Mode_ItemSelected( ComboBox& sender, int itemIndex )
    switch ( instance.p_mode )
    {
    default:
-   case ResampleMode::RelativeDimensions:
+   case RSMode::RelativeDimensions:
       instance.p_size.x = double( w )/sourceWidth;
       instance.p_size.y = double( h )/sourceHeight;
       GUI->PreserveAspectRatio_CheckBox.SetChecked( instance.p_size.x == instance.p_size.y );
       break;
 
-   case ResampleMode::AbsolutePixels:
+   case RSMode::AbsolutePixels:
       instance.p_size.x = w;
       instance.p_size.y = h;
       break;
 
-   case ResampleMode::AbsoluteCentimeters:
+   case RSMode::AbsoluteCentimeters:
       instance.p_size.x = w/instance.p_resolution.x;
       instance.p_size.y = h/instance.p_resolution.y;
 
@@ -573,7 +569,7 @@ void ResampleInterface::__Mode_ItemSelected( ComboBox& sender, int itemIndex )
 
       break;
 
-   case ResampleMode::AbsoluteInches:
+   case RSMode::AbsoluteInches:
       instance.p_size.x = w/instance.p_resolution.x;
       instance.p_size.y = h/instance.p_resolution.y;
 
@@ -585,7 +581,7 @@ void ResampleInterface::__Mode_ItemSelected( ComboBox& sender, int itemIndex )
 
       break;
 
-   case ResampleMode::ForceArea:
+   case RSMode::ForceArea:
       instance.p_size.x = size_type( w )*size_type( h );
       break;
    }
@@ -737,9 +733,8 @@ ResampleInterface::GUIData::GUIData( ResampleInterface& w )
    DimensionsRow3_Sizer.Add( TargetHeightCentimeters_NumericEdit );
    DimensionsRow3_Sizer.Add( TargetHeightInches_NumericEdit );
 
-   PreserveAspectRatio_CheckBox.SetText( "Preserve Aspect Ratio" );
+   PreserveAspectRatio_CheckBox.SetText( "Preserve aspect ratio" );
    PreserveAspectRatio_CheckBox.Check(); // default = on
-   PreserveAspectRatio_CheckBox.OnClick( (Button::click_event_handler)&ResampleInterface::__PreserveAspectRatio_ButtonClick, w );
 
    DimensionsRow4_Sizer.AddUnscaledSpacing( labelWidth1 + ui6 );
    DimensionsRow4_Sizer.Add( PreserveAspectRatio_CheckBox );
@@ -792,9 +787,9 @@ ResampleInterface::GUIData::GUIData( ResampleInterface& w )
    ClampingThreshold_NumericControl.slider.SetRange( 0, 100 );
    ClampingThreshold_NumericControl.slider.SetScaledMinWidth( 250 );
    ClampingThreshold_NumericControl.SetReal();
-   ClampingThreshold_NumericControl.SetRange( TheClampingThresholdResampleParameter->MinimumValue(),
-                                              TheClampingThresholdResampleParameter->MaximumValue() );
-   ClampingThreshold_NumericControl.SetPrecision( TheClampingThresholdResampleParameter->Precision() );
+   ClampingThreshold_NumericControl.SetRange( TheRSClampingThresholdParameter->MinimumValue(),
+                                              TheRSClampingThresholdParameter->MaximumValue() );
+   ClampingThreshold_NumericControl.SetPrecision( TheRSClampingThresholdParameter->Precision() );
    ClampingThreshold_NumericControl.SetToolTip( "<p>Deringing clamping threshold for bicubic spline and Lanczos interpolation algorithms.</p>" );
    ClampingThreshold_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&ResampleInterface::__Algorithm_ValueUpdated, w );
 
@@ -803,9 +798,9 @@ ResampleInterface::GUIData::GUIData( ResampleInterface& w )
    Smoothness_NumericControl.slider.SetRange( 100, 500 );
    Smoothness_NumericControl.slider.SetScaledMinWidth( 250 );
    Smoothness_NumericControl.SetReal();
-   Smoothness_NumericControl.SetRange( TheSmoothnessResampleParameter->MinimumValue(),
-                                       TheSmoothnessResampleParameter->MaximumValue() );
-   Smoothness_NumericControl.SetPrecision( TheSmoothnessResampleParameter->Precision() );
+   Smoothness_NumericControl.SetRange( TheRSSmoothnessParameter->MinimumValue(),
+                                       TheRSSmoothnessParameter->MaximumValue() );
+   Smoothness_NumericControl.SetPrecision( TheRSSmoothnessParameter->Precision() );
    Smoothness_NumericControl.SetToolTip( "<p>Smoothness level for cubic filter interpolation algorithms.</p>" );
    Smoothness_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&ResampleInterface::__Algorithm_ValueUpdated, w );
 
@@ -845,8 +840,8 @@ ResampleInterface::GUIData::GUIData( ResampleInterface& w )
    InchUnits_RadioButton.SetText( "Inches" );
    InchUnits_RadioButton.OnClick( (Button::click_event_handler)&ResampleInterface::__Units_ButtonClick, w );
 
-   ForceResolution_CheckBox.SetText( "Force Resolution" );
-   ForceResolution_CheckBox.SetToolTip( "Modify resolution of target image(s)" );
+   ForceResolution_CheckBox.SetText( "Force resolution" );
+   ForceResolution_CheckBox.SetToolTip( "Modify resolution metadata of target image(s)" );
    ForceResolution_CheckBox.OnClick( (Button::click_event_handler)&ResampleInterface::__ForceResolution_ButtonClick, w );
 
    ResolutionRow2_Sizer.SetSpacing( 8 );
@@ -933,4 +928,4 @@ ResampleInterface::GUIData::GUIData( ResampleInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ResampleInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ResampleInterface.cpp - Released 2016/11/17 18:14:58 UTC

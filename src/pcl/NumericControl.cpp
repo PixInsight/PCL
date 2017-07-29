@@ -64,8 +64,9 @@ NumericEdit::NumericEdit( Control& parent ) :
    m_upperBound( 1 ),
    m_precision( 6 ),
    m_real( true ),
-   m_autoEditWidth( true ),
+   m_fixed( false ),
    m_scientific( false ),
+   m_autoEditWidth( true ),
    m_sciTriggerExp( -1 )
 {
    SetSizer( sizer );
@@ -104,14 +105,14 @@ String NumericEdit::ValueAsString( double v ) const
 {
    v = Range( v, m_lowerBound, m_upperBound );
 
-   if ( IsReal() )
+   if ( m_real )
    {
       if ( m_scientific )
          if ( m_sciTriggerExp < 0 || v != 0 && (Abs( v ) > Pow10I<double>()( +m_sciTriggerExp ) ||
                                                 Abs( v ) < Pow10I<double>()( -m_sciTriggerExp )) )
             return String().Format( "%.*le", int( m_precision ), v );
 
-      return String().Format( "%.*lf", PrecisionForValue( int( m_precision ), v ), v );
+      return String().Format( "%.*lf", PrecisionForValue( v ), v );
    }
 
    return String().Format( "%.0lf", v );
@@ -119,12 +120,15 @@ String NumericEdit::ValueAsString( double v ) const
 
 // ----------------------------------------------------------------------------
 
-int NumericEdit::PrecisionForValue( int precision, double value )
+int NumericEdit::PrecisionForValue( double value ) const
 {
-   value = Abs( value );
-   if ( value < 10 )
-      return precision;
-   return Max( 0, precision - Max( 0, TruncInt( Log( value ) ) ) );
+   if ( !m_fixed )
+   {
+      value = Abs( value );
+      if ( value >= 10 )
+         return Max( 0, int( m_precision ) - Max( 0, TruncInt( Log( value ) ) ) );
+   }
+   return m_precision;
 }
 
 // ----------------------------------------------------------------------------
@@ -174,6 +178,16 @@ void NumericEdit::SetRange( double lr, double ur )
 void NumericEdit::SetPrecision( int n )
 {
    m_precision = unsigned( Range( n, 0, 15 ) );
+   if ( m_autoEditWidth )
+      AdjustEditWidth();
+   UpdateControls();
+}
+
+// ----------------------------------------------------------------------------
+
+void NumericEdit::EnableFixedPrecision( bool enable )
+{
+   m_fixed = enable;
    if ( m_autoEditWidth )
       AdjustEditWidth();
    UpdateControls();
@@ -245,7 +259,7 @@ void NumericEdit::EditCompleted( Edit& sender )
       if ( m_real )
       {
          newValue = sender.Text().ToDouble();
-         newValue = Round( newValue, PrecisionForValue( int( m_precision ), newValue ) );
+         newValue = Round( newValue, PrecisionForValue( newValue ) );
       }
       else
          newValue = sender.Text().ToInt();

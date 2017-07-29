@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.12.0183
+// Standard INDIClient Process Module Version 01.00.15.0199
 // ----------------------------------------------------------------------------
-// INDICCDFrameInterface.cpp - Released 2016/06/04 15:14:47 UTC
+// INDICCDFrameInterface.cpp - Released 2016/06/20 17:47:31 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -231,6 +231,8 @@ ProcessImplementation* INDICCDFrameInterface::NewProcess() const
    instance->p_clientDownloadDirectory = GUI->ClientDownloadDir_Edit.Text().Trimmed();
    instance->p_clientFileNameTemplate = GUI->ClientFileNameTemplate_Edit.Text().Trimmed();
    instance->p_clientOutputFormatHints = GUI->ClientOutputFormatHints_Edit.Text().Trimmed();
+   instance->p_objectName = GUI->ObjectName_Edit.Text().Trimmed();
+   instance->p_telescopeSelection = GUI->TelescopeDevice_Combo.CurrentItem();
    return instance;
 }
 
@@ -260,6 +262,8 @@ bool INDICCDFrameInterface::ImportProcess( const ProcessImplementation& p )
       GUI->ExposureTime_NumericEdit.SetValue( instance->p_exposureTime );
       GUI->ExposureDelay_NumericEdit.SetValue( instance->p_exposureDelay );
       GUI->ExposureCount_SpinBox.SetValue( instance->p_exposureCount );
+      GUI->ObjectName_Edit.SetText( instance->p_objectName );
+      GUI->TelescopeDevice_Combo.SetCurrentItem( Max( instance->p_telescopeSelection, GUI->TelescopeDevice_Combo.NumberOfItems()-1 ) );
       GUI->OpenClientFrames_CheckBox.SetChecked( instance->p_openClientImages );
       GUI->ReuseImageWindow_CheckBox.SetChecked( instance->p_reuseImageWindow );
       GUI->AutoStretch_CheckBox.SetChecked( instance->p_autoStretch );
@@ -314,9 +318,9 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    CCDTemp_NumericEdit.label.SetText( "Temperature:" );
    CCDTemp_NumericEdit.label.SetFixedWidth( labelWidth1 );
    CCDTemp_NumericEdit.edit.SetFixedWidth( editWidth1 );
+   CCDTemp_NumericEdit.edit.SetReadOnly();
    CCDTemp_NumericEdit.sizer.AddStretch();
    CCDTemp_NumericEdit.SetToolTip( "<p>Current chip temperature in degrees Celsius.</p>" );
-   CCDTemp_NumericEdit.Disable();
 
    CCDTargetTemp_NumericEdit.SetReal();
    CCDTargetTemp_NumericEdit.SetPrecision( 2 );
@@ -732,10 +736,10 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    ExposureCount_Sizer.Add( ExposureCount_SpinBox );
    ExposureCount_Sizer.AddStretch();
 
-   FrameAcquisitionLeft_Sizer.SetSpacing( 4 );
-   FrameAcquisitionLeft_Sizer.Add( ExposureTime_NumericEdit );
-   FrameAcquisitionLeft_Sizer.Add( ExposureDelay_NumericEdit );
-   FrameAcquisitionLeft_Sizer.Add( ExposureCount_Sizer );
+   ExposureParametersLeft_Sizer.SetSpacing( 4 );
+   ExposureParametersLeft_Sizer.Add( ExposureTime_NumericEdit );
+   ExposureParametersLeft_Sizer.Add( ExposureDelay_NumericEdit );
+   ExposureParametersLeft_Sizer.Add( ExposureCount_Sizer );
 
    StartExposure_PushButton.SetText( "Start" );
    StartExposure_PushButton.SetIcon( w.ScaledResource( ":/icons/play.png" ) );
@@ -754,15 +758,75 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    CancelExposure_Sizer.Add( CancelExposure_PushButton );
    CancelExposure_Sizer.AddStretch();
 
-   FrameAcquisitionRight_Sizer.SetSpacing( 4 );
-   FrameAcquisitionRight_Sizer.Add( StartExposure_Sizer );
-   FrameAcquisitionRight_Sizer.Add( CancelExposure_Sizer );
-   FrameAcquisitionRight_Sizer.Add( ExposureInfo_Label, 100 );
+   ExposureParametersRight_Sizer.SetSpacing( 4 );
+   ExposureParametersRight_Sizer.Add( StartExposure_Sizer );
+   ExposureParametersRight_Sizer.Add( CancelExposure_Sizer );
+   ExposureParametersRight_Sizer.Add( ExposureInfo_Label, 100 );
 
-   FrameAcquisition_Sizer.SetSpacing( 16 );
-   FrameAcquisition_Sizer.Add( FrameAcquisitionLeft_Sizer );
-   FrameAcquisition_Sizer.Add( FrameAcquisitionRight_Sizer, 100 );
-   FrameAcquisition_Sizer.AddStretch();
+   ExposureParameters_Sizer.SetSpacing( 16 );
+   ExposureParameters_Sizer.Add( ExposureParametersLeft_Sizer );
+   ExposureParameters_Sizer.Add( ExposureParametersRight_Sizer, 100 );
+   ExposureParameters_Sizer.AddStretch();
+
+   const char* objectNameToolTip =
+      "<p>Name of the main astronomical object or subject in the acquired images. The specified text will be the "
+      "value of Observation:Object:Name standard XISF properties and OBJECT FITS keywords in newly created light frames.</p>";
+
+   ObjectName_Label.SetText( "Object name:" );
+   ObjectName_Label.SetToolTip( objectNameToolTip );
+   ObjectName_Label.SetMinWidth( labelWidth1 );
+   ObjectName_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   ObjectName_Edit.SetToolTip( objectNameToolTip );
+   ObjectName_Edit.SetText( TheICFObjectNameParameter->DefaultValue() );
+
+   ObjectName_Sizer.SetSpacing( 4 );
+   ObjectName_Sizer.Add( ObjectName_Label );
+   ObjectName_Sizer.Add( ObjectName_Edit, 100 );
+
+   const char* telescopeDeviceToolTip =
+      "<p>This parameter tells INDICCDFrame how to select the telescope used for acquisition of light frames:</p>"
+
+      "<p><b>No telescope.</b> Newly acquired light frames won't have any property or keyword related to accurate observation "
+      "coordinates. The OBJCTRA and OBJCDEC FITS keywords provided by INDI will be left intact. This option is <i>not recommended</i> "
+      "unless you are acquiring test frames with a camera on a table, for example.</p>"
+
+      "<p><b>Active telescope</b> Select the device specified as the ACTIVE_DEVICES/ACTIVE_TELESCOPE property of the INDI CCD device "
+      "being used. You must define this property manually with the name of the appropriate telescope device.</p>"
+
+      "<p><b>Mount controller telescope.</b> Use the device currently selected in the INDI Mount Controller interface.</p>"
+
+      "<p><b>Mount controller or active telescope.</b> Use the INDI Mount Controller device if available, or the "
+      "ACTIVE_DEVICES/ACTIVE_TELESCOPE device otherwise. This is the default option.</p>"
+
+      "<p>When a telescope device is available, it is used to retrieve its current EOD (epoch of date) coordinates, just before "
+      "starting each light frame exposure. These are apparent coordinates, which are reduced to mean positions referred to the mean "
+      "equinox and equator of J2000.0 (ICRS) by an accurate inverse transformation, including corrections for precession, nutation "
+      "and stellar aberration. The computed coordinates are directly comparable to standard catalog positions, irrespective of the "
+      "date of acquisition. Once these coordinates are computed for each acquired image, they are stored as standard XISF properties "
+      "(Observation:Center:RA and Observation:Center:Dec). For compatibility with legacy applications, the same coordinates replace "
+      "the OBJCTRA and OBJCTDEC FITS keywords provided by the INDI server.</p>";
+
+   TelescopeDevice_Label.SetText( "Telescope device:" );
+   TelescopeDevice_Label.SetToolTip( telescopeDeviceToolTip );
+   TelescopeDevice_Label.SetMinWidth( labelWidth1 );
+   TelescopeDevice_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   TelescopeDevice_Combo.AddItem( "No telescope" );
+   TelescopeDevice_Combo.AddItem( "Active telescope" );
+   TelescopeDevice_Combo.AddItem( "Mount controller telescope" );
+   TelescopeDevice_Combo.AddItem( "Mount controller or active telescope" );
+   TelescopeDevice_Combo.SetToolTip( telescopeDeviceToolTip );
+   //TelescopeDevice_Combo.OnItemSelected( (ComboBox::item_event_handler)&INDICCDFrameInterface::e_ItemSelected, w );
+
+   TelescopeDevice_Sizer.SetSpacing( 4 );
+   TelescopeDevice_Sizer.Add( TelescopeDevice_Label );
+   TelescopeDevice_Sizer.Add( TelescopeDevice_Combo, 100 );
+
+   FrameAcquisition_Sizer.SetSpacing( 4 );
+   FrameAcquisition_Sizer.Add( ExposureParameters_Sizer );
+   FrameAcquisition_Sizer.Add( ObjectName_Sizer );
+   FrameAcquisition_Sizer.Add( TelescopeDevice_Sizer );
 
    FrameAcquisition_Control.SetSizer( FrameAcquisition_Sizer );
 
@@ -851,7 +915,7 @@ void INDICCDFrameInterface::e_Timer( Timer& sender )
             GUI->CCDDevice_Combo.AddItem( "<No Device Available>" );
          else
          {
-            GUI->CCDDevice_Combo.AddItem( "<No Device Selected>" );
+            GUI->CCDDevice_Combo.AddItem( String() );
 
             for ( auto device : devices )
             {
@@ -859,6 +923,9 @@ void INDICCDFrameInterface::e_Timer( Timer& sender )
                if ( indi->HasPropertyItem( device.DeviceName, "CCD_FRAME", "WIDTH" ) ) // is this a camera device?
                   GUI->CCDDevice_Combo.AddItem( device.DeviceName );
             }
+
+            GUI->CCDDevice_Combo.SetItemText( 0,
+                  (GUI->CCDDevice_Combo.NumberOfItems() > 1) ? "<No Device Selected>" : "<No Camera Device Available>" );
 
             int i = Max( 0, GUI->CCDDevice_Combo.FindItem( m_device ) );
             GUI->CCDDevice_Combo.SetCurrentItem( i );
@@ -1032,6 +1099,15 @@ __device_found:
                   GUI->CCDFrameType_Combo.Enable();
                   break;
                }
+
+         if ( m_execution == nullptr )
+         {
+            bool isLightFrame = GUI->CCDFrameType_Combo.CurrentItem() == ICFFrameType::LightFrame;
+            GUI->ObjectName_Label.Enable( isLightFrame );
+            GUI->ObjectName_Edit.Enable( isLightFrame );
+            GUI->TelescopeDevice_Label.Enable( isLightFrame );
+            GUI->TelescopeDevice_Combo.Enable( isLightFrame );
+         }
       }
 
       if ( indi->GetPropertyItem( m_device, "UPLOAD_SETTINGS", "UPLOAD_DIR", item ) )
@@ -1118,6 +1194,10 @@ private:
       m_iface->GUI->ExposureDelay_NumericEdit.Disable();
       m_iface->GUI->ExposureCount_Label.Disable();
       m_iface->GUI->ExposureCount_SpinBox.Disable();
+      m_iface->GUI->ObjectName_Label.Disable();
+      m_iface->GUI->ObjectName_Edit.Disable();
+      m_iface->GUI->TelescopeDevice_Label.Disable();
+      m_iface->GUI->TelescopeDevice_Combo.Disable();
       m_iface->GUI->OpenClientFrames_CheckBox.Disable();
       m_iface->GUI->ReuseImageWindow_CheckBox.Disable();
       m_iface->GUI->AutoStretch_CheckBox.Disable();
@@ -1196,10 +1276,15 @@ private:
       m_iface->ProcessEvents();
    }
 
-   virtual void NewFrameEvent( ImageWindow& window, bool reusedWindow )
+   virtual void NewFrameEvent( ImageWindow& window, bool reusedWindow, bool geometryChanged )
    {
       if ( reusedWindow )
-         window.Regenerate();
+      {
+         if ( geometryChanged )
+            window.ZoomToFit( false/*allowZoom*/ );
+         else
+            window.Regenerate();
+      }
       else
       {
          window.BringToFront();
@@ -1275,4 +1360,4 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInterface.cpp - Released 2016/06/04 15:14:47 UTC
+// EOF INDICCDFrameInterface.cpp - Released 2016/06/20 17:47:31 UTC

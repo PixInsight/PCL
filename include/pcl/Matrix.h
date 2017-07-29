@@ -1441,78 +1441,7 @@ public:
     * its determinant is zero or insignificant), then this function throws the
     * appropriate Error exception.
     */
-   GenericMatrix Inverse() const
-   {
-      if ( Rows() != Cols() || Rows() == 0 )
-         throw Error( "Invalid matrix inversion: Non-square or empty matrix." );
-
-      /*
-       * Use direct formulae to invert 1x1, 2x2 and 3x3 matrices.
-       * Use Gauss-Jordan elimination to invert larger matrices.
-       */
-      switch ( Rows() )
-      {
-      case 1:
-         {
-            if ( 1 + *m_data->v[0] == 1 )
-               throw Error( "Invalid matrix inversion: Singular matrix." );
-            GenericMatrix Ai( 1, 1 );
-            Ai[0][0] = 1/(*m_data->v[0]);
-            return Ai;
-         }
-      case 2:
-         {
-            const_block_iterator A0 = m_data->v[0];
-            const_block_iterator A1 = m_data->v[1];
-
-            // Determinant
-            element d = A0[0]*A1[1] - A0[1]*A1[0];
-            if ( 1 + d == 1 )
-               throw Error( "Invalid matrix inversion: Singular matrix." );
-
-            GenericMatrix Ai( 2, 2 );
-            Ai[0][0] =  A1[1]/d;
-            Ai[0][1] = -A0[1]/d;
-            Ai[1][0] = -A1[0]/d;
-            Ai[1][1] =  A0[0]/d;
-            return Ai;
-         }
-      case 3:
-         {
-            const_block_iterator A0 = m_data->v[0];
-            const_block_iterator A1 = m_data->v[1];
-            const_block_iterator A2 = m_data->v[2];
-
-            // Determinant
-            element d1 = A1[1]*A2[2] - A1[2]*A2[1];
-            element d2 = A1[2]*A2[0] - A1[0]*A2[2];
-            element d3 = A1[0]*A2[1] - A1[1]*A2[0];
-            element d  = A0[0]*d1 + A0[1]*d2 + A0[2]*d3;
-            if ( 1 + d == 1 )
-               throw Error( "Invalid matrix inversion: Singular matrix." );
-
-            GenericMatrix Ai( 3, 3 );
-            Ai[0][0] = d1/d;
-            Ai[0][1] = (A2[1]*A0[2] - A2[2]*A0[1])/d;
-            Ai[0][2] = (A0[1]*A1[2] - A0[2]*A1[1])/d;
-            Ai[1][0] = d2/d;
-            Ai[1][1] = (A2[2]*A0[0] - A2[0]*A0[2])/d;
-            Ai[1][2] = (A0[2]*A1[0] - A0[0]*A1[2])/d;
-            Ai[2][0] = d3/d;
-            Ai[2][1] = (A2[0]*A0[1] - A2[1]*A0[0])/d;
-            Ai[2][2] = (A0[0]*A1[1] - A0[1]*A1[0])/d;
-            return Ai;
-         }
-      default:
-         {
-            void PCL_FUNC InPlaceGaussJordan( GenericMatrix<T>&, GenericMatrix<T>& );
-            GenericMatrix Ai( *this );
-            GenericMatrix B = UnitMatrix( Rows() );
-            InPlaceGaussJordan( Ai, B );
-            return Ai;
-         }
-      }
-   }
+   GenericMatrix Inverse() const;
 
    /*!
     * Inverts this matrix.
@@ -1524,20 +1453,7 @@ public:
     * its determinant is zero or insignificant), then this function throws the
     * appropriate Error exception.
     */
-   void Invert()
-   {
-      if ( Rows() <= 3 )
-         Transfer( Inverse() );
-      else
-      {
-         if ( Rows() != Cols() || Rows() == 0 )
-            throw Error( "Invalid matrix inversion: Non-square or empty matrix." );
-         void PCL_FUNC InPlaceGaussJordan( GenericMatrix<T>&, GenericMatrix<T>& );
-         EnsureUnique();
-         GenericMatrix B = UnitMatrix( Rows() );
-         InPlaceGaussJordan( *this, B );
-      }
-   }
+   void Invert();
 
    /*!
     * Flips this matrix. Flipping a matrix consists of rotating its elements by
@@ -1561,6 +1477,246 @@ public:
       GenericMatrix Tf( m_data->Cols(), m_data->Rows() );
       pcl::CopyReversed( Tf.m_data->End(), m_data->Begin(), m_data->End() );
       return Tf;
+   }
+
+   /*!
+    * Rotates this 3x3 matrix about the X axis.
+    *
+    * \param sphi    Sine of the rotation angle.
+    *
+    * \param cphi    Cosine of the rotation angle.
+    *
+    * Positive rotation angles apply anticlockwise rotations about the X axis,
+    * as seen looking towards the origin from positive x. The applied
+    * transformation can be represented by the matrix:
+    *
+    * \verbatim
+    * 1     0        0
+    * 0   +cphi   +sphi
+    * 0   -sphi   +cphi
+    * \endverbatim
+    *
+    * If this matrix has dimensions different from 3 rows and 3 columns, this
+    * function invokes undefined behavior. For the sake of performance, this
+    * condition is not explicitly verified.
+    *
+    * \sa RotateX( double ), RotatedX()
+    */
+   void RotateX( double sphi, double cphi )
+   {
+      PCL_PRECONDITION( Rows() == 3 && Cols() == 3 )
+      block_iterator A1 = m_data->v[1];
+      block_iterator A2 = m_data->v[2];
+      double a10 =  cphi*A1[0] + sphi*A2[0];
+      double a11 =  cphi*A1[1] + sphi*A2[1];
+      double a12 =  cphi*A1[2] + sphi*A2[2];
+      double a20 = -sphi*A1[0] + cphi*A2[0];
+      double a21 = -sphi*A1[1] + cphi*A2[1];
+      double a22 = -sphi*A1[2] + cphi*A2[2];
+      A1[0] = element( a10 );
+      A1[1] = element( a11 );
+      A1[2] = element( a12 );
+      A2[0] = element( a20 );
+      A2[1] = element( a21 );
+      A2[2] = element( a22 );
+   }
+
+   /*!
+    * Rotates this 3x3 matrix about the X axis by the specified angle \a phi in
+    * radians.
+    *
+    * Calling this function is equivalent to:
+    *
+    * \code RotateX( Sin( phi ), Cos( phi ) ) \endcode
+    */
+   void RotateX( double phi )
+   {
+      double sphi, cphi;
+      SinCos( phi, sphi, cphi );
+      RotateX( sphi, cphi );
+   }
+
+   /*!
+    * Returns a rotated copy of this 3x3 matrix about the X axis by a rotation
+    * angle given by its sine \a sphi and cosine \a cphi.
+    * See RotateX( double, double ).
+    */
+   GenericMatrix RotatedX( double sphi, double cphi ) const
+   {
+      GenericMatrix R( *this );
+      R.RotateX( sphi, cphi );
+      return R;
+   }
+
+   /*!
+    * Returns a rotated copy of this 3x3 matrix about the X axis by the
+    * specified rotation angle \a phi in radians. See RotateX( double ).
+    */
+   GenericMatrix RotatedX( double phi ) const
+   {
+      GenericMatrix R( *this );
+      R.RotateX( phi );
+      return R;
+   }
+
+   /*!
+    * Rotates this 3x3 matrix about the Y axis.
+    *
+    * \param sphi    Sine of the rotation angle.
+    *
+    * \param cphi    Cosine of the rotation angle.
+    *
+    * Positive rotation angles apply anticlockwise rotations about the Y axis,
+    * as seen looking towards the origin from positive y. The applied
+    * transformation can be represented by the matrix:
+    *
+    * \verbatim
+    * +cphi  0  -sphi
+    *   0    1    0
+    * +sphi  0  +cphi
+    * \endverbatim
+    *
+    * If this matrix has dimensions different from 3 rows and 3 columns, this
+    * function invokes undefined behavior. For the sake of performance, this
+    * condition is not explicitly verified.
+    *
+    * \sa RotateY( double ), RotatedY()
+    */
+   void RotateY( double sphi, double cphi )
+   {
+      PCL_PRECONDITION( Rows() == 3 && Cols() == 3 )
+      block_iterator A0 = m_data->v[0];
+      block_iterator A2 = m_data->v[2];
+      double a00 = cphi*A0[0] - sphi*A2[0];
+      double a01 = cphi*A0[1] - sphi*A2[1];
+      double a02 = cphi*A0[2] - sphi*A2[2];
+      double a20 = sphi*A0[0] + cphi*A2[0];
+      double a21 = sphi*A0[1] + cphi*A2[1];
+      double a22 = sphi*A0[2] + cphi*A2[2];
+      A0[0] = a00;
+      A0[1] = a01;
+      A0[2] = a02;
+      A2[0] = a20;
+      A2[1] = a21;
+      A2[2] = a22;
+   }
+
+   /*!
+    * Rotates this 3x3 matrix about the Y axis by the specified angle \a phi in
+    * radians.
+    *
+    * Calling this function is equivalent to:
+    *
+    * \code RotateY( Sin( phi ), Cos( phi ) ) \endcode
+    */
+   void RotateY( double phi )
+   {
+      double sphi, cphi;
+      SinCos( phi, sphi, cphi );
+      RotateY( sphi, cphi );
+   }
+
+   /*!
+    * Returns a rotated copy of this 3x3 matrix about the Y axis by a rotation
+    * angle given by its sine \a sphi and cosine \a cphi.
+    * See RotateY( double, double ).
+    */
+   GenericMatrix RotatedY( double sphi, double cphi ) const
+   {
+      GenericMatrix R( *this );
+      R.RotateY( sphi, cphi );
+      return R;
+   }
+
+   /*!
+    * Returns a rotated copy of this 3x3 matrix about the Y axis by the
+    * specified rotation angle \a phi in radians. See RotateY( double ).
+    */
+   GenericMatrix RotatedY( double phi ) const
+   {
+      GenericMatrix R( *this );
+      R.RotateY( phi );
+      return R;
+   }
+
+   /*!
+    * Rotates this 3x3 matrix about the Z axis.
+    *
+    * \param sphi    Sine of the rotation angle.
+    *
+    * \param cphi    Cosine of the rotation angle.
+    *
+    * Positive rotation angles apply anticlockwise rotations about the Z axis,
+    * as seen looking towards the origin from positive z. The applied
+    * transformation can be represented by the matrix:
+    *
+    * \verbatim
+    * +cphi  +sphi  0
+    * -sphi  +cphi  0
+    *   0      0    1
+    * \endverbatim
+    *
+    * If this matrix has dimensions different from 3 rows and 3 columns, this
+    * function invokes undefined behavior. For the sake of performance, this
+    * condition is not explicitly verified.
+    *
+    * \sa RotateZ( double ), RotatedZ()
+    */
+   void RotateZ( double sphi, double cphi )
+   {
+      PCL_PRECONDITION( Rows() == 3 && Cols() == 3 )
+      block_iterator A0 = m_data->v[0];
+      block_iterator A1 = m_data->v[1];
+      double a00 =  cphi*A0[0] + sphi*A1[0];
+      double a01 =  cphi*A0[1] + sphi*A1[1];
+      double a02 =  cphi*A0[2] + sphi*A1[2];
+      double a10 = -sphi*A0[0] + cphi*A1[0];
+      double a11 = -sphi*A0[1] + cphi*A1[1];
+      double a12 = -sphi*A0[2] + cphi*A1[2];
+      A0[0] = a00;
+      A0[1] = a01;
+      A0[2] = a02;
+      A1[0] = a10;
+      A1[1] = a11;
+      A1[2] = a12;
+   }
+
+   /*!
+    * Rotates this 3x3 matrix about the Z axis by the specified angle \a phi in
+    * radians.
+    *
+    * Calling this function is equivalent to:
+    *
+    * \code RotateZ( Sin( phi ), Cos( phi ) ) \endcode
+    */
+   void RotateZ( double phi )
+   {
+      double sphi, cphi;
+      SinCos( phi, sphi, cphi );
+      RotateZ( sphi, cphi );
+   }
+
+   /*!
+    * Returns a rotated copy of this 3x3 matrix about the Z axis by a rotation
+    * angle given by its sine \a sphi and cosine \a cphi.
+    * See RotateZ( double, double ).
+    */
+   GenericMatrix RotatedZ( double sphi, double cphi ) const
+   {
+      GenericMatrix R( *this );
+      R.RotateZ( sphi, cphi );
+      return R;
+   }
+
+   /*!
+    * Returns a rotated copy of this 3x3 matrix about the Z axis by the
+    * specified rotation angle \a phi in radians. See RotateZ( double ).
+    */
+   GenericMatrix RotatedZ( double phi ) const
+   {
+      GenericMatrix R( *this );
+      R.RotateZ( phi );
+      return R;
    }
 
    /*!
@@ -2677,7 +2833,110 @@ private:
       if ( !m_data->Detach() )
          delete m_data;
    }
+
+   /*!
+    * \internal
+    * Invert a small matrix of dimension <= 3.
+    */
+   static bool Invert( block_iterator* Ai, const_block_iterator const* A, int n )
+   {
+      switch ( n )
+      {
+      case 1:
+         if ( 1 + **A == 1 )
+            return false;
+         **Ai = 1/(**A);
+         break;
+      case 2:
+         {
+            const_block_iterator A0 = A[0];
+            const_block_iterator A1 = A[1];
+            element d = A0[0]*A1[1] - A0[1]*A1[0];
+            if ( 1 + d == 1 )
+               return false;
+            Ai[0][0] =  A1[1]/d;
+            Ai[0][1] = -A0[1]/d;
+            Ai[1][0] = -A1[0]/d;
+            Ai[1][1] =  A0[0]/d;
+         }
+         break;
+      case 3:
+         {
+            const_block_iterator A0 = A[0];
+            const_block_iterator A1 = A[1];
+            const_block_iterator A2 = A[2];
+            element d1 = A1[1]*A2[2] - A1[2]*A2[1];
+            element d2 = A1[2]*A2[0] - A1[0]*A2[2];
+            element d3 = A1[0]*A2[1] - A1[1]*A2[0];
+            element d  = A0[0]*d1 + A0[1]*d2 + A0[2]*d3;
+            if ( 1 + d == 1 )
+               return false;
+            Ai[0][0] = d1/d;
+            Ai[0][1] = (A2[1]*A0[2] - A2[2]*A0[1])/d;
+            Ai[0][2] = (A0[1]*A1[2] - A0[2]*A1[1])/d;
+            Ai[1][0] = d2/d;
+            Ai[1][1] = (A2[2]*A0[0] - A2[0]*A0[2])/d;
+            Ai[1][2] = (A0[2]*A1[0] - A0[0]*A1[2])/d;
+            Ai[2][0] = d3/d;
+            Ai[2][1] = (A2[0]*A0[1] - A2[1]*A0[0])/d;
+            Ai[2][2] = (A0[0]*A1[1] - A0[1]*A1[0])/d;
+         }
+         break;
+      default: // ?!
+         return false;
+      }
+      return true;
+   }
 };
+
+// ### N.B.: Visual C++ is unable to compile the next two member functions if
+//           the following external function declarations are placed within the
+//           member function bodies. This forces us to implement them after the
+//           GenericMatrix<> class declaration.
+
+void PCL_FUNC InPlaceGaussJordan( GenericMatrix<double>&, GenericMatrix<double>& );
+void PCL_FUNC InPlaceGaussJordan( GenericMatrix<float>&, GenericMatrix<float>& );
+
+template <typename T> inline
+GenericMatrix<T> GenericMatrix<T>::Inverse() const
+{
+   if ( Rows() != Cols() || Rows() == 0 )
+      throw Error( "Invalid matrix inversion: Non-square or empty matrix." );
+
+   /*
+    * - Use direct formulae to invert 1x1, 2x2 and 3x3 matrices.
+    * - Use Gauss-Jordan elimination to invert 4x4 and larger matrices.
+    */
+   if ( Rows() < 4 )
+   {
+      GenericMatrix Ai( Rows(), Rows() );
+      if ( !Invert( Ai.m_data->v, m_data->v, Rows() ) )
+         throw Error( "Invalid matrix inversion: Singular matrix." );
+      return Ai;
+   }
+   else
+   {
+      GenericMatrix Ai( *this );
+      GenericMatrix B = UnitMatrix( Rows() );
+      InPlaceGaussJordan( Ai, B );
+      return Ai;
+   }
+}
+
+template <typename T> inline
+void GenericMatrix<T>::Invert()
+{
+   if ( Rows() <= 3 )
+      Transfer( Inverse() );
+   else
+   {
+      if ( Rows() != Cols() || Rows() == 0 )
+         throw Error( "Invalid matrix inversion: Non-square or empty matrix." );
+      EnsureUnique();
+      GenericMatrix B = UnitMatrix( Rows() );
+      InPlaceGaussJordan( *this, B );
+   }
+}
 
 // ----------------------------------------------------------------------------
 
@@ -2837,6 +3096,36 @@ GenericMatrix<T> operator *( const GenericMatrix<T>& A, const GenericMatrix<T>& 
          R[i][j] = rij;
       }
    return R;
+}
+
+/*!
+ * Returns the product of a matrix \a A by a vector \a x.
+ *
+ * If the specified objects are incompatible for multiplication (because the
+ * number of components in \a x is not equal to the number of columns in \a A),
+ * this function throws the appropriate Error exception.
+ *
+ * The result of the product of a matrix with \e m rows and \e n columns by a
+ * vector of \e n components is a vector of \e m components.
+ *
+ * \ingroup matrix_operators
+ */
+template <typename T> inline
+GenericVector<T> operator *( const GenericMatrix<T>& A, const GenericVector<T>& x )
+{
+   int n = A.Cols();
+   int m = A.Rows();
+   if ( x.Length() != n )
+      throw Error( "Invalid matrix-vector multiplication." );
+   GenericVector<T> r( m );
+   for ( int i = 0; i < m; ++i )
+   {
+      T ri = 0;
+      for ( int j = 0; j < n; ++j )
+         ri += A[i][j] * x[j];
+      r[i] = ri;
+   }
+   return r;
 }
 
 /*!
@@ -3133,6 +3422,36 @@ typedef GenericMatrix<Complex32>    C32Matrix;
  * %C64Matrix is a template instantiation of GenericMatrix for \c Complex64.
  */
 typedef GenericMatrix<Complex64>    C64Matrix;
+
+#ifndef _MSC_VER
+
+/*!
+ * \class pcl::F80Matrix
+ * \ingroup matrix_types
+ * \brief 80-bit extended precision floating point real matrix.
+ *
+ * %F80Matrix is a template instantiation of GenericMatrix for \c long
+ * \c double.
+ *
+ * \note This template instantiation is not available on Windows with Visual
+ * C++ compilers.
+ */
+typedef GenericMatrix<long double>  F80Matrix;
+
+/*!
+ * \class pcl::LDMatrix
+ * \ingroup matrix_types
+ * \brief 80-bit extended precision floating point real matrix.
+ *
+ * %LDMatrix is an alias for F80Matrix. It is a template instantiation of
+ * GenericMatrix for \c long \c double.
+ *
+ * \note This template instantiation is not available on Windows with Visual
+ * C++ compilers.
+ */
+typedef F80Matrix                   LDMatrix;
+
+#endif   // !_MSC_VER
 
 #endif   // !__PCL_NO_MATRIX_INSTANTIATE
 

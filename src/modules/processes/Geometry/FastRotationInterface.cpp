@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// FastRotationInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// FastRotationInterface.cpp - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -58,7 +58,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-FastRotationInterface* TheFastRotationInterface = 0;
+FastRotationInterface* TheFastRotationInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -67,48 +67,38 @@ FastRotationInterface* TheFastRotationInterface = 0;
 // ----------------------------------------------------------------------------
 
 FastRotationInterface::FastRotationInterface() :
-ProcessInterface(), instance( TheFastRotationProcess ), GUI( 0 )
+   ProcessInterface(),
+   instance( TheFastRotationProcess ),
+   GUI( nullptr )
 {
    TheFastRotationInterface = this;
 }
 
-// ----------------------------------------------------------------------------
-
 FastRotationInterface::~FastRotationInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
-
-// ----------------------------------------------------------------------------
 
 IsoString FastRotationInterface::Id() const
 {
    return "FastRotation";
 }
 
-// ----------------------------------------------------------------------------
-
 MetaProcess* FastRotationInterface::Process() const
 {
    return TheFastRotationProcess;
 }
-
-// ----------------------------------------------------------------------------
 
 const char** FastRotationInterface::IconImageXPM() const
 {
    return FastRotationIcon_XPM;
 }
 
-// ----------------------------------------------------------------------------
-
 void FastRotationInterface::ApplyInstance() const
 {
    instance.LaunchOnCurrentWindow();
 }
-
-// ----------------------------------------------------------------------------
 
 void FastRotationInterface::ResetInstance()
 {
@@ -116,11 +106,9 @@ void FastRotationInterface::ResetInstance()
    ImportProcess( defaultInstance );
 }
 
-// ----------------------------------------------------------------------------
-
 bool FastRotationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "FastRotation" );
@@ -131,20 +119,15 @@ bool FastRotationInterface::Launch( const MetaProcess& P, const ProcessImplement
    return &P == TheFastRotationProcess;
 }
 
-// ----------------------------------------------------------------------------
-
 ProcessImplementation* FastRotationInterface::NewProcess() const
 {
    return new FastRotationInstance( instance );
 }
 
-// ----------------------------------------------------------------------------
-
 bool FastRotationInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
    const FastRotationInstance* r = dynamic_cast<const FastRotationInstance*>( &p );
-
-   if ( r == 0 )
+   if ( r == nullptr )
    {
       whyNot = "Not a FastRotation instance.";
       return false;
@@ -154,14 +137,10 @@ bool FastRotationInterface::ValidateProcess( const ProcessImplementation& p, Str
    return true;
 }
 
-// ----------------------------------------------------------------------------
-
 bool FastRotationInterface::RequiresInstanceValidation() const
 {
    return true;
 }
-
-// ----------------------------------------------------------------------------
 
 bool FastRotationInterface::ImportProcess( const ProcessImplementation& p )
 {
@@ -170,45 +149,41 @@ bool FastRotationInterface::ImportProcess( const ProcessImplementation& p )
    return true;
 }
 
-// ----------------------------------------------------------------------------
-
 void FastRotationInterface::UpdateControls()
 {
    switch ( instance.p_mode )
    {
    default:
-   case FastRotationMode::Rotate180:
+   case FRMode::Rotate180:
       GUI->Rotate180_RadioButton.Check();
       break;
-   case FastRotationMode::Rotate90CW:
+   case FRMode::Rotate90CW:
       GUI->Rotate90CW_RadioButton.Check();
       break;
-   case FastRotationMode::Rotate90CCW:
+   case FRMode::Rotate90CCW:
       GUI->Rotate90CCW_RadioButton.Check();
       break;
-   case FastRotationMode::HorizontalMirror:
+   case FRMode::HorizontalMirror:
       GUI->HorizontalMirror_RadioButton.Check();
       break;
-   case FastRotationMode::VerticalMirror:
+   case FRMode::VerticalMirror:
       GUI->VerticalMirror_RadioButton.Check();
       break;
    }
 }
 
-// ----------------------------------------------------------------------------
-
-void FastRotationInterface::TransformButtonClick( Button& sender, bool /*checked*/ )
+void FastRotationInterface::__ButtonClick( Button& sender, bool /*checked*/ )
 {
    if ( sender == GUI->Rotate180_RadioButton )
-      instance.p_mode = FastRotationMode::Rotate180;
+      instance.p_mode = FRMode::Rotate180;
    else if ( sender == GUI->Rotate90CW_RadioButton )
-      instance.p_mode = FastRotationMode::Rotate90CW;
+      instance.p_mode = FRMode::Rotate90CW;
    else if ( sender == GUI->Rotate90CCW_RadioButton )
-      instance.p_mode = FastRotationMode::Rotate90CCW;
+      instance.p_mode = FRMode::Rotate90CCW;
    else if ( sender == GUI->HorizontalMirror_RadioButton )
-      instance.p_mode = FastRotationMode::HorizontalMirror;
+      instance.p_mode = FRMode::HorizontalMirror;
    else if ( sender == GUI->VerticalMirror_RadioButton )
-      instance.p_mode = FastRotationMode::VerticalMirror;
+      instance.p_mode = FRMode::VerticalMirror;
 }
 
 // ----------------------------------------------------------------------------
@@ -216,19 +191,19 @@ void FastRotationInterface::TransformButtonClick( Button& sender, bool /*checked
 FastRotationInterface::GUIData::GUIData( FastRotationInterface& w )
 {
    Rotate180_RadioButton.SetText( "Rotate 180\xb0" );
-   Rotate180_RadioButton.OnClick( (Button::click_event_handler)&FastRotationInterface::TransformButtonClick, w );
+   Rotate180_RadioButton.OnClick( (Button::click_event_handler)&FastRotationInterface::__ButtonClick, w );
 
    Rotate90CW_RadioButton.SetText( "Rotate 90\xb0 Clockwise" );
-   Rotate90CW_RadioButton.OnClick( (Button::click_event_handler)&FastRotationInterface::TransformButtonClick, w );
+   Rotate90CW_RadioButton.OnClick( (Button::click_event_handler)&FastRotationInterface::__ButtonClick, w );
 
    Rotate90CCW_RadioButton.SetText( "Rotate 90\xb0 Counter-clockwise" );
-   Rotate90CCW_RadioButton.OnClick( (Button::click_event_handler)&FastRotationInterface::TransformButtonClick, w );
+   Rotate90CCW_RadioButton.OnClick( (Button::click_event_handler)&FastRotationInterface::__ButtonClick, w );
 
    HorizontalMirror_RadioButton.SetText( "Horizontal Mirror" );
-   HorizontalMirror_RadioButton.OnClick( (Button::click_event_handler)&FastRotationInterface::TransformButtonClick, w );
+   HorizontalMirror_RadioButton.OnClick( (Button::click_event_handler)&FastRotationInterface::__ButtonClick, w );
 
    VerticalMirror_RadioButton.SetText( "Vertical Mirror" );
-   VerticalMirror_RadioButton.OnClick( (Button::click_event_handler)&FastRotationInterface::TransformButtonClick, w );
+   VerticalMirror_RadioButton.OnClick( (Button::click_event_handler)&FastRotationInterface::__ButtonClick, w );
 
    Transform_Sizer.SetMargin( 6 );
    Transform_Sizer.Add( Rotate180_RadioButton );
@@ -256,4 +231,4 @@ FastRotationInterface::GUIData::GUIData( FastRotationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FastRotationInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF FastRotationInterface.cpp - Released 2016/11/17 18:14:58 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.12.0183
+// Standard INDIClient Process Module Version 01.00.15.0199
 // ----------------------------------------------------------------------------
-// INDIMountInstance.cpp - Released 2016/06/04 15:14:47 UTC
+// INDIMountInstance.cpp - Released 2016/06/20 17:47:31 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -50,6 +50,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
+#include "ApparentPosition.h"
 #include "INDIClient.h"
 #include "INDIMountInstance.h"
 #include "INDIMountParameters.h"
@@ -75,9 +76,12 @@ INDIMountInstance::INDIMountInstance( const MetaProcess* m ) :
    p_slewRate( IMCSlewRate::Default ),
    p_targetRA( TheIMCTargetRAParameter->DefaultValue() ),
    p_targetDec( TheIMCTargetDecParameter->DefaultValue() ),
+   p_computeApparentPosition( TheIMCComputeApparentPositionParameter->DefaultValue() ),
    o_currentLST( TheIMCCurrentLSTParameter->DefaultValue() ),
    o_currentRA( TheIMCCurrentRAParameter->DefaultValue() ),
-   o_currentDec( TheIMCCurrentDecParameter->DefaultValue() )
+   o_currentDec( TheIMCCurrentDecParameter->DefaultValue() ),
+   o_apparentTargetRA( TheIMCApparentTargetRAParameter->DefaultValue() ),
+   o_apparentTargetDec( TheIMCApparentTargetDecParameter->DefaultValue() )
 {
 }
 
@@ -92,14 +96,17 @@ void INDIMountInstance::Assign( const ProcessImplementation& p )
    const INDIMountInstance* x = dynamic_cast<const INDIMountInstance*>( &p );
    if ( x != nullptr )
    {
-      p_deviceName = x->p_deviceName;
-      p_command    = x->p_command;
-      p_slewRate   = x->p_slewRate;
-      o_currentLST = x->o_currentLST;
-      p_targetRA   = x->p_targetRA;
-      p_targetDec  = x->o_currentDec;
-      o_currentRA  = x->o_currentRA;
-      o_currentDec = x->o_currentDec;
+      p_deviceName              = x->p_deviceName;
+      p_command                 = x->p_command;
+      p_slewRate                = x->p_slewRate;
+      p_targetRA                = x->p_targetRA;
+      p_targetDec               = x->p_targetDec;
+      p_computeApparentPosition = x->p_computeApparentPosition;
+      o_currentLST              = x->o_currentLST;
+      o_currentRA               = x->o_currentRA;
+      o_currentDec              = x->o_currentDec;
+      o_apparentTargetRA        = x->o_apparentTargetRA;
+      o_apparentTargetDec       = x->o_apparentTargetDec;
    }
 }
 
@@ -113,21 +120,39 @@ bool INDIMountInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) co
 
    if ( !view.IsMainView() )
    {
-      whyNot = "IMDI Mount can only be executed on main views, not on previews.";
+      whyNot = "IMDIMount can only be executed on main views, not on previews.";
       return false;
    }
 
-   FITSKeywordArray keywords;
-   view.Window().GetKeywords( keywords );
-   int keysExist = 0;
-   for ( const FITSHeaderKeyword& key : keywords )
-      if ( key.name == "OBJCTRA" )
-         keysExist |= 1;
-      else if ( key.name == "OBJCTDEC" )
-         keysExist |= 2;
-   if ( keysExist == 3 )
-      return true;
-   whyNot = "INDI Mount can only be executed on solved views with valid OBJCTRA and OBJCTDEC keywords.";
+   if ( !view.HasProperty( "Observation:Center:RA" ) || !view.HasProperty( "Observation:Center:Dec" ) )
+   {
+      whyNot = "The view does not define valid observation coordinates.";
+      return false;
+   }
+
+   if ( !view.HasProperty( "Image:Center:RA" ) || !view.HasProperty( "Image:Center:Dec" ) )
+   {
+      FITSKeywordArray keywords;
+      view.Window().GetKeywords( keywords );
+      int keysExist = 0;
+      for ( const FITSHeaderKeyword& key : keywords )
+         if ( key.name == "OBJCTRA" )
+            keysExist |= 1;
+         else if ( key.name == "OBJCTDEC" )
+            keysExist |= 2;
+      if ( keysExist != 3 )
+      {
+         whyNot = "The view does not define valid image center coordinates.";
+         return false;
+      }
+   }
+
+   whyNot.Clear();
+   return true;
+}
+
+bool INDIMountInstance::IsHistoryUpdater( const View& ) const
+{
    return false;
 }
 
@@ -168,7 +193,7 @@ private:
 
       switch ( m_command )
       {
-      case IMCCommand::Goto:
+      case IMCCommand::GoTo:
       case IMCCommand::Park:
       case IMCCommand::ParkDefault:
       case IMCCommand::Sync:
@@ -184,7 +209,7 @@ private:
 
             switch ( m_command )
             {
-            case IMCCommand::Goto:
+            case IMCCommand::GoTo:
                m_monitor.Clear();
                m_monitor.SetCallback( &m_status );
                m_monitor.Initialize( "Slewing to " + targetPosText, TargetDistance( targetRA, currentRA, targetDec, currentDec ) );
@@ -238,18 +263,29 @@ private:
 
    virtual void MountEvent( double targetRA, double currentRA, double targetDec, double currentDec )
    {
-      if ( m_monitor.IsInitialized() )
+      if ( m_console.AbortRequested() )
       {
-         // Always make sure we have a valid monitor count available.
-         size_type distance = TargetDistance( targetRA, currentRA, targetDec, currentDec );
-         if ( m_monitor.Total() > distance )
-         {
-            size_type delta = m_monitor.Total() - distance;
-            if ( delta > m_monitor.Count() )
-               m_monitor += delta - m_monitor.Count();
-         }
+         // N.B.: We have to do this here because there is no guarantee that
+         // m_monitor will check for abortion below. For example, for very
+         // small slew distances, m_monitor could never be updated.
+         m_console.Abort();
+         Abort();
       }
-      Module->ProcessEvents();
+      else
+      {
+         if ( m_monitor.IsInitialized() )
+         {
+            // Always make sure we have a valid monitor count available.
+            size_type distance = TargetDistance( targetRA, currentRA, targetDec, currentDec );
+            if ( m_monitor.Total() > distance )
+            {
+               size_type delta = m_monitor.Total() - distance;
+               if ( delta > m_monitor.Count() )
+                  m_monitor += delta - m_monitor.Count();
+            }
+         }
+         Module->ProcessEvents();
+      }
    }
 
    virtual void EndMountEvent()
@@ -280,47 +316,99 @@ bool INDIMountInstance::ExecuteGlobal()
 
 bool INDIMountInstance::ExecuteOn( View& view )
 {
-   AutoViewLock lock( view );
+   double observationCenterRA, observationCenterDec;
+   double imageCenterRA = -1, imageCenterDec = -91;
+   {
+      AutoViewLock lock( view );
 
-   // Save original parameters
-   double storedTargetRA = p_targetRA;
-   double storedTargetDEC = p_targetDec;
-   pcl_enum storedCommandType = p_command;
+      Variant ra = view.PropertyValue( "Observation:Center:RA" );
+      Variant dec = view.PropertyValue( "Observation:Center:Dec" );
+      if ( !ra.IsValid() || !dec.IsValid() )
+         throw Error( "The view does not define valid observation coordinates." );
+      observationCenterRA = ra.ToDouble()/15;
+      observationCenterDec = dec.ToDouble();
+
+      if ( view.HasProperty( "Image:Center:RA" ) && view.HasProperty( "Image:Center:Dec" ) )
+      {
+         ra = view.PropertyValue( "Image:Center:RA" );
+         dec = view.PropertyValue( "Image:Center:Dec" );
+         if ( !ra.IsValid() || !dec.IsValid() )
+            throw Error( "The view does not define valid image center coordinates." );
+         imageCenterRA = ra.ToDouble()/15;
+         imageCenterDec = dec.ToDouble();
+      }
+      else
+      {
+         FITSKeywordArray keywords;
+         view.Window().GetKeywords( keywords );
+         for ( auto k : keywords )
+            if ( k.name == "OBJCTRA" )
+               k.StripValueDelimiters().TrySexagesimalToDouble( imageCenterRA, ' ' );
+            else if ( k.name == "OBJCTDEC" )
+               k.StripValueDelimiters().TrySexagesimalToDouble( imageCenterDec, ' ' );
+         if ( imageCenterRA < 0 || imageCenterDec < -90 )
+            throw Error( "The view does not define image center coordinates." );
+         Console().WarningLn( "<end><cbr>Warning: Retrieved image center coordinates from obsolete FITS keywords 'OBJCTRA' and 'OBJCTDEC'" );
+      }
+   }
 
    GetCurrentCoordinates();
 
-   FITSKeywordArray K;
-   view.Window().GetKeywords( K );
-   for ( FITSKeywordArray::iterator i = K.Begin(); i != K.End(); ++i )
-      if ( i->name == "OBJCTRA" )
-      {
-         double centerRA = i->StripValueDelimiters().SexagesimalToDouble( ' ' );
-         p_targetRA = 2*o_currentRA - centerRA;
-         if ( o_currentLST >= 0 ) // ### N.B.: o_currentLST < 0 if LST property could not be retrieved
-            if ( p_targetRA < o_currentLST )
-               if ( MessageBox( "<p>New center right ascension coordinate crossed the meridian and will possibly trigger a meridian flip.</p>"
-                                "<p><b>Continue?</b></p>",
-                                Meta()->Id(),
-                                StdIcon::Warning,
-                                StdButton::Yes, StdButton::No ).Execute() != StdButton::Yes )
-               {
-                  return false;
-               }
-      }
-      else if ( i->name == "OBJCTDEC" )
-      {
-         double centerDEC = i->StripValueDelimiters().SexagesimalToDouble( ' ' );
-         p_targetDec = 2*o_currentDec - centerDEC;
-      }
+   double deltaRA = observationCenterRA - imageCenterRA;
+   double deltaDec = observationCenterDec - imageCenterDec;
 
-   p_command = IMCCommand::Goto;
-   INDIMountInstanceExecution( *this ).Perform();
+   if ( o_currentLST >= 0 ) // ### N.B.: o_currentLST < 0 if LST property could not be retrieved
+   {
+      double currentHourAngle = o_currentLST - o_currentRA;
+      double newHourAngle = currentHourAngle - deltaRA;
+      if ( (currentHourAngle < 0) != (newHourAngle < 0) )
+         if ( MessageBox( "<p>New center right ascension coordinate crosses the meridian, and will possibly trigger a meridian flip.</p>"
+                           "<p><b>Continue?</b></p>",
+                           Meta()->Id(),
+                           StdIcon::Warning,
+                           StdButton::Yes, StdButton::No ).Execute() != StdButton::Yes )
+         {
+            return false;
+         }
+   }
 
-   // Restore original parameters
-   p_targetRA = storedTargetRA;
-   p_targetDec = storedTargetDEC;
-   p_command = storedCommandType;
-   return true;
+   // Save original parameter values
+   pcl_enum storedCommand = p_command;
+   double storedTargetRA = p_targetRA;
+   double storedTargetDec = p_targetDec;
+   pcl_bool storedComputeApparentPosition = p_computeApparentPosition;
+
+   try
+   {
+      p_command = IMCCommand::GoTo;
+      p_targetRA = o_currentRA + deltaRA;
+      p_targetDec = o_currentDec + deltaDec;
+      p_computeApparentPosition = false;
+
+      Console().WriteLn( "<end><cbr>Applying differential correction: dRA = "
+                  + String::ToSexagesimal( deltaRA,
+                           SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, true/*sign*/ ) )
+                  + ", dDec = "
+                  + String::ToSexagesimal( deltaDec,
+                           SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, true/*sign*/ ) ) );
+
+      INDIMountInstanceExecution( *this ).Perform();
+
+      // Restore original parameter values
+      p_command = storedCommand;
+      p_targetRA = storedTargetRA;
+      p_targetDec = storedTargetDec;
+      p_computeApparentPosition = storedComputeApparentPosition;
+      return true;
+   }
+   catch( ... )
+   {
+      p_command = storedCommand;
+      p_targetRA = storedTargetRA;
+      p_targetDec = storedTargetDec;
+      p_computeApparentPosition = storedComputeApparentPosition;
+      throw;
+   }
 }
 
 void* INDIMountInstance::LockParameter( const MetaParameter* p, size_type tableRow )
@@ -335,12 +423,18 @@ void* INDIMountInstance::LockParameter( const MetaParameter* p, size_type tableR
       return &p_targetRA;
    if ( p == TheIMCTargetDecParameter )
       return &p_targetDec;
+   if ( p == TheIMCComputeApparentPositionParameter )
+      return &p_computeApparentPosition;
    if (p == TheIMCCurrentLSTParameter )
       return &o_currentLST;
    if ( p == TheIMCCurrentRAParameter )
       return &o_currentRA;
    if ( p == TheIMCCurrentDecParameter )
       return &o_currentDec;
+   if ( p == TheIMCApparentTargetRAParameter )
+      return &o_apparentTargetRA;
+   if ( p == TheIMCApparentTargetDecParameter )
+      return &o_apparentTargetDec;
 
    return nullptr;
 }
@@ -440,6 +534,26 @@ void INDIMountInstance::GetCurrentCoordinates()
       o_currentLST = itemH.PropertyValue.ToDouble();
 }
 
+void INDIMountInstance::GetTargetCoordinates( double& targetRA, double& targetDec ) const
+{
+   if ( p_computeApparentPosition )
+   {
+      time_t t0 = ::time( 0 );
+      const tm* t = ::gmtime( &t0 );
+      double jd = ComplexTimeToJD( t->tm_year+1900, t->tm_mon+1, t->tm_mday, (t->tm_hour + (t->tm_min + t->tm_sec/60.0)/60.0)/24.0 );
+      double ra = Rad( p_targetRA*15 );
+      double dec = Rad( p_targetDec );
+      ApparentPosition( jd ).Apply( ra, dec );
+      targetRA = o_apparentTargetRA = Deg( ra )/15;
+      targetDec = o_apparentTargetDec = Deg( dec );
+   }
+   else
+   {
+      targetRA = p_targetRA;
+      targetDec = p_targetDec;
+   }
+}
+
 void AbstractINDIMountExecution::Perform()
 {
    if ( IsRunning() )
@@ -467,35 +581,40 @@ void AbstractINDIMountExecution::Perform()
          indi->MaybeSendNewPropertyItem( m_instance.p_deviceName, "TELESCOPE_PARK", "INDI_SWITCH", "UNPARK", "ON", false/*async*/ );
          break;
 
-      case IMCCommand::Goto:
-         StartMountEvent( m_instance.p_targetRA, m_instance.o_currentRA, m_instance.p_targetDec, m_instance.o_currentDec, m_instance.p_command );
-         indi->SendNewPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "INDI_NUMBER",  // send (RA,DEC) coordinates in bulk request
-                                    "RA", m_instance.p_targetRA,
-                                    "DEC", m_instance.p_targetDec, true/*async*/ );
-         for ( ElapsedTime T; ; )
+      case IMCCommand::GoTo:
          {
-            INDIPropertyListItem RA_item;
-            INDIPropertyListItem Dec_item;
-            if (    indi->GetPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "RA", RA_item, false/*formatted*/ )
-                 && indi->GetPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "DEC", Dec_item, false/*formatted*/ ) )
-               if ( RA_item.PropertyState == IPS_BUSY || Dec_item.PropertyState == IPS_BUSY )
-               {
-                  if ( T() > 0.1 )
+            double targetRA, targetDec;
+            m_instance.GetTargetCoordinates( targetRA, targetDec );
+
+            StartMountEvent( targetRA, m_instance.o_currentRA, targetDec, m_instance.o_currentDec, m_instance.p_command );
+            indi->SendNewPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "INDI_NUMBER",  // send (RA,DEC) coordinates in bulk request
+                                       "RA", targetRA,
+                                       "DEC", targetDec, true/*async*/ );
+            for ( ElapsedTime T; ; )
+            {
+               INDIPropertyListItem RA_item;
+               INDIPropertyListItem Dec_item;
+               if (    indi->GetPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "RA", RA_item, false/*formatted*/ )
+                  && indi->GetPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "DEC", Dec_item, false/*formatted*/ ) )
+                  if ( RA_item.PropertyState == IPS_BUSY || Dec_item.PropertyState == IPS_BUSY )
                   {
-                     T.Reset();
-                     m_instance.o_currentRA = RA_item.PropertyValue.ToDouble();
-                     m_instance.o_currentDec = Dec_item.PropertyValue.ToDouble();
-                     MountEvent( m_instance.p_targetRA, m_instance.o_currentRA, m_instance.p_targetDec, m_instance.o_currentDec );
+                     if ( T() > 0.1 )
+                     {
+                        T.Reset();
+                        m_instance.o_currentRA = RA_item.PropertyValue.ToDouble();
+                        m_instance.o_currentDec = Dec_item.PropertyValue.ToDouble();
+                        MountEvent( targetRA, m_instance.o_currentRA, targetDec, m_instance.o_currentDec );
+                     }
+                     else
+                        WaitEvent();
                   }
                   else
-                     WaitEvent();
-               }
-               else
-               {
-                  m_instance.GetCurrentCoordinates();
-                  EndMountEvent();
-                  break;
-               }
+                  {
+                     m_instance.GetCurrentCoordinates();
+                     EndMountEvent();
+                     break;
+                  }
+            }
          }
          m_instance.GetCurrentCoordinates();
          break;
@@ -567,14 +686,19 @@ void AbstractINDIMountExecution::Perform()
          break;
 
       case IMCCommand::Sync:
-         StartMountEvent( m_instance.p_targetRA, m_instance.o_currentRA, m_instance.p_targetDec, m_instance.o_currentDec, m_instance.p_command );
-         indi->SendNewPropertyItem( m_instance.p_deviceName, "ON_COORD_SET", "INDI_SWITCH", "SYNC", "ON", false/*async*/ );
-         indi->SendNewPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "INDI_NUMBER",
-                                    "RA", m_instance.p_targetRA,
-                                    "DEC",m_instance.p_targetDec, false/*async*/ );
-         indi->SendNewPropertyItem( m_instance.p_deviceName, "ON_COORD_SET", "INDI_SWITCH", "TRACK", "ON", false/*async*/ );
-         m_instance.GetCurrentCoordinates();
-         EndMountEvent();
+         {
+            double targetRA, targetDec;
+            m_instance.GetTargetCoordinates( targetRA, targetDec );
+
+            StartMountEvent( targetRA, m_instance.o_currentRA, targetDec, m_instance.o_currentDec, m_instance.p_command );
+            indi->SendNewPropertyItem( m_instance.p_deviceName, "ON_COORD_SET", "INDI_SWITCH", "SYNC", "ON", false/*async*/ );
+            indi->SendNewPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "INDI_NUMBER",
+                                       "RA", targetRA,
+                                       "DEC", targetDec, false/*async*/ );
+            indi->SendNewPropertyItem( m_instance.p_deviceName, "ON_COORD_SET", "INDI_SWITCH", "TRACK", "ON", false/*async*/ );
+            m_instance.GetCurrentCoordinates();
+            EndMountEvent();
+         }
          break;
 
       case IMCCommand::MoveNorthStart:
@@ -650,4 +774,4 @@ void AbstractINDIMountExecution::Abort()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInstance.cpp - Released 2016/06/04 15:14:47 UTC
+// EOF INDIMountInstance.cpp - Released 2016/06/20 17:47:31 UTC

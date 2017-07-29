@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// ResampleProcess.cpp - Released 2016/02/21 20:22:42 UTC
+// ResampleProcess.cpp - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -60,7 +60,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ResampleProcess* TheResampleProcess = 0;
+ResampleProcess* TheResampleProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -72,76 +72,58 @@ ResampleProcess::ResampleProcess() : MetaProcess()
 {
    TheResampleProcess = this;
 
-   // Instantiate process parameters
-
-   new XSize( this );
-   new YSize( this );
-   new ResampleMode( this );
-   new AbsoluteResampleMode( this );
-   TheXResolutionResampleParameter = new XResolution( this );
-   TheYResolutionResampleParameter = new YResolution( this );
-   TheMetricResolutionResampleParameter = new MetricResolution( this );
-   TheForceResolutionResampleParameter = new ForceResolution( this );
-   TheInterpolationAlgorithmResampleParameter = new InterpolationAlgorithm( this );
-   TheClampingThresholdResampleParameter = new ClampingThreshold( this );
-   TheSmoothnessResampleParameter = new Smoothness( this );
+   new RSXSize( this );
+   new RSYSize( this );
+   new RSMode( this );
+   new RSAbsoluteMode( this );
+   TheRSXResolutionParameter = new XResolution( this );
+   TheRSYResolutionParameter = new YResolution( this );
+   TheRSMetricResolutionParameter = new MetricResolution( this );
+   TheRSForceResolutionParameter = new ForceResolution( this );
+   TheRSInterpolationAlgorithmParameter = new InterpolationAlgorithm( this );
+   TheRSClampingThresholdParameter = new ClampingThreshold( this );
+   TheRSSmoothnessParameter = new Smoothness( this );
 }
-
-// ----------------------------------------------------------------------------
 
 IsoString ResampleProcess::Id() const
 {
    return "Resample";
 }
 
-// ----------------------------------------------------------------------------
-
 IsoString ResampleProcess::Category() const
 {
    return "Geometry";
 }
-
-// ----------------------------------------------------------------------------
 
 uint32 ResampleProcess::Version() const
 {
    return 0x100;
 }
 
-// ----------------------------------------------------------------------------
-
 String ResampleProcess::Description() const
 {
    return "";
 }
-
-// ----------------------------------------------------------------------------
 
 const char** ResampleProcess::IconImageXPM() const
 {
    return ResampleIcon_XPM;
 }
 
-// ----------------------------------------------------------------------------
-
 ProcessInterface* ResampleProcess::DefaultInterface() const
 {
    return TheResampleInterface;
 }
-
-// -------------------------------------------------------------------------
 
 ProcessImplementation* ResampleProcess::Create() const
 {
    return new ResampleInstance( this );
 }
 
-// ----------------------------------------------------------------------------
-
 ProcessImplementation* ResampleProcess::Clone( const ProcessImplementation& p ) const
 {
    const ResampleInstance* instPtr = dynamic_cast<const ResampleInstance*>( &p );
-   return (instPtr != 0) ? new ResampleInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new ResampleInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -149,4 +131,4 @@ ProcessImplementation* ResampleProcess::Clone( const ProcessImplementation& p ) 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ResampleProcess.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ResampleProcess.cpp - Released 2016/11/17 18:14:58 UTC

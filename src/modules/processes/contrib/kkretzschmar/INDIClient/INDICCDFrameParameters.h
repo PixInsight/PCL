@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.12.0183
+// Standard INDIClient Process Module Version 01.00.15.0199
 // ----------------------------------------------------------------------------
-// INDICCDFrameParameters.h - Released 2016/06/04 15:14:47 UTC
+// INDICCDFrameParameters.h - Released 2016/06/20 17:47:31 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -385,6 +385,73 @@ public:
 extern ICFClientOutputFormatHints* TheICFClientOutputFormatHintsParameter;
 
 // ----------------------------------------------------------------------------
+
+class ICFObjectName : public MetaString
+{
+public:
+
+   ICFObjectName( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual String DefaultValue() const;
+};
+
+extern ICFObjectName* TheICFObjectNameParameter;
+
+// ----------------------------------------------------------------------------
+
+class ICFTelescopeSelection : public MetaEnumeration
+{
+public:
+
+   enum { NoTelescope,
+          ActiveTelescope,
+          MountControllerTelescope,
+          MountControllerOrActiveTelescope,
+          TelescopeDeviceName,
+          NumberOfTelescopeSelections,
+          Default = MountControllerOrActiveTelescope };
+
+   ICFTelescopeSelection( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
+};
+
+extern ICFTelescopeSelection* TheICFTelescopeSelectionParameter;
+
+// ----------------------------------------------------------------------------
+
+class ICFRequireSelectedTelescope : public MetaBoolean
+{
+public:
+
+   ICFRequireSelectedTelescope( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern ICFRequireSelectedTelescope* TheICFRequireSelectedTelescopeParameter;
+
+// ----------------------------------------------------------------------------
+
+class ICFTelescopeDeviceName : public MetaString
+{
+public:
+
+   ICFTelescopeDeviceName( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual String DefaultValue() const;
+};
+
+extern ICFTelescopeDeviceName* TheICFTelescopeDeviceNameParameter;
+
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 class ICFClientFrames : public MetaTable
@@ -464,4 +531,4 @@ PCL_END_LOCAL
 #endif   // __INDICCDFrameParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameParameters.h - Released 2016/06/04 15:14:47 UTC
+// EOF INDICCDFrameParameters.h - Released 2016/06/20 17:47:31 UTC

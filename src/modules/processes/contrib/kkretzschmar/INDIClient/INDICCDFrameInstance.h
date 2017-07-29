@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.12.0183
+// Standard INDIClient Process Module Version 01.00.15.0199
 // ----------------------------------------------------------------------------
-// INDICCDFrameInstance.h - Released 2016/06/04 15:14:47 UTC
+// INDICCDFrameInstance.h - Released 2016/06/20 17:47:31 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -80,6 +80,7 @@ public:
    virtual size_type ParameterLength( const MetaParameter*, size_type tableRow ) const;
 
    bool ValidateDevice( bool throwErrors = true ) const;
+   String TelescopeDeviceName( bool throwErrors = true ) const;
 
    void SendDeviceProperties( bool asynchronous = true ) const;
 
@@ -114,6 +115,10 @@ private:
    String     p_clientDownloadDirectory;
    String     p_clientFileNameTemplate;
    String     p_clientOutputFormatHints;
+   String     p_objectName;
+   pcl_enum   p_telescopeSelection;
+   pcl_bool   p_requireSelectedTelescope;
+   String     p_telescopeDeviceName; // only if p_telescopeSelection = device name
 
    StringList o_clientViewIds;
    StringList o_clientFilePaths;
@@ -191,7 +196,7 @@ protected:
 
    virtual void WaitingForServerEvent() = 0;
 
-   virtual void NewFrameEvent( ImageWindow&, bool reusedWindow ) = 0;
+   virtual void NewFrameEvent( ImageWindow&, bool reusedWindow, bool geometryChanged ) = 0;
    virtual void NewFrameEvent( const String& filePath ) = 0;
 
    virtual void EndAcquisitionEvent() = 0;
@@ -200,8 +205,15 @@ protected:
 
 private:
 
-   bool m_running, m_aborted;
-   int  m_successCount, m_errorCount;
+   bool m_running;
+   bool m_aborted;
+   int  m_successCount;
+   int  m_errorCount;
+
+   // Geometry of the current image window
+   static int s_width;
+   static int s_height;
+   static int s_numberOfChannels;
 };
 
 // ----------------------------------------------------------------------------
@@ -211,4 +223,4 @@ private:
 #endif   // __INDICCDFrameInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInstance.h - Released 2016/06/04 15:14:47 UTC
+// EOF INDICCDFrameInstance.h - Released 2016/06/20 17:47:31 UTC

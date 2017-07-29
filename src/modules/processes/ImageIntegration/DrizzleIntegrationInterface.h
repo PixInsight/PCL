@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.09.04.0322
+// Standard ImageIntegration Process Module Version 01.11.00.0344
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInterface.h - Released 2016/02/21 20:22:43 UTC
+// DrizzleIntegrationInterface.h - Released 2016/11/13 17:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -54,6 +54,7 @@
 #define __DrizzleIntegrationInterface_h
 
 #include <pcl/CheckBox.h>
+#include <pcl/ComboBox.h>
 #include <pcl/NumericControl.h>
 #include <pcl/ProcessInterface.h>
 #include <pcl/PushButton.h>
@@ -137,6 +138,12 @@ private:
             Label             Scale_Label;
             SpinBox           Scale_SpinBox;
          NumericControl    DropShrink_NumericControl;
+         HorizontalSizer   KernelFunction_Sizer;
+            Label             KernelFunction_Label;
+            ComboBox          KernelFunction_ComboBox;
+         HorizontalSizer   GridSize_Sizer;
+            Label             GridSize_Label;
+            SpinBox           GridSize_SpinBox;
          HorizontalSizer   EnableRejection_Sizer;
             CheckBox          EnableRejection_CheckBox;
          HorizontalSizer   EnableImageWeighting_Sizer;
@@ -183,6 +190,7 @@ private:
    void __NodeActivated( TreeBox& sender, TreeBox::Node& node, int col );
    void __NodeSelectionUpdated( TreeBox& sender );
    void __Click( Button& sender, bool checked );
+   void __ItemSelected( ComboBox& sender, int itemIndex );
    void __EditCompleted( Edit& sender );
    void __SpinValueUpdated( SpinBox& sender, int value );
    void __ToggleSection( SectionBar& sender, Control& section, bool start );
@@ -204,4 +212,4 @@ PCL_END_LOCAL
 #endif   // __DrizzleIntegrationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInterface.h - Released 2016/02/21 20:22:43 UTC
+// EOF DrizzleIntegrationInterface.h - Released 2016/11/13 17:30:54 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// DynamicCropPreferencesDialog.cpp - Released 2016/02/21 20:22:42 UTC
+// DynamicCropPreferencesDialog.cpp - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -50,28 +50,28 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include "DynamicCropPreferencesDialog.h"
 #include "DynamicCropInterface.h"
+#include "DynamicCropPreferencesDialog.h"
 
 namespace pcl
 {
 
-#define fillColor    TheDynamicCropInterface->fillColor
+#define m_fillColor  TheDynamicCropInterface->m_fillColor
 
 // ----------------------------------------------------------------------------
 
 DynamicCropPreferencesDialog::DynamicCropPreferencesDialog() : Dialog()
 {
-   savedColor = fillColor;
+   savedColor = m_fillColor;
 
    pcl::Font fnt = Font();
    int buttonWidth = fnt.Width( String( "Cancel" ) + String( 'M', 4 ) );
 
    Black_RadioButton.SetText( "Black" );
-   Black_RadioButton.OnClick( (pcl::Button::click_event_handler)&DynamicCropPreferencesDialog::Button_Click, *this );
+   Black_RadioButton.OnClick( (pcl::Button::click_event_handler)&DynamicCropPreferencesDialog::__Click, *this );
 
    White_RadioButton.SetText( "White" );
-   White_RadioButton.OnClick( (pcl::Button::click_event_handler)&DynamicCropPreferencesDialog::Button_Click, *this );
+   White_RadioButton.OnClick( (pcl::Button::click_event_handler)&DynamicCropPreferencesDialog::__Click, *this );
 
    Alpha_Label.SetText( "Alpha Blend:" );
    Alpha_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
@@ -81,7 +81,7 @@ DynamicCropPreferencesDialog::DynamicCropPreferencesDialog() : Dialog()
    Alpha_Slider.SetTickFrequency( 10 );
    Alpha_Slider.SetTickStyle( TickStyle::NoTicks );
    Alpha_Slider.SetScaledMinWidth( 265 );
-   Alpha_Slider.OnValueUpdated( (Slider::value_event_handler)&DynamicCropPreferencesDialog::Slider_ValueUpdated, *this );
+   Alpha_Slider.OnValueUpdated( (Slider::value_event_handler)&DynamicCropPreferencesDialog::__ValueUpdated, *this );
 
    FillColor_Sizer.SetMargin( 8 );
    FillColor_Sizer.SetSpacing( 6 );
@@ -98,12 +98,12 @@ DynamicCropPreferencesDialog::DynamicCropPreferencesDialog() : Dialog()
    OK_PushButton.SetMinWidth( buttonWidth );
    OK_PushButton.SetDefault();
    OK_PushButton.SetCursor( StdCursor::Checkmark );
-   OK_PushButton.OnClick( (pcl::Button::click_event_handler)&DynamicCropPreferencesDialog::Button_Click, *this );
+   OK_PushButton.OnClick( (pcl::Button::click_event_handler)&DynamicCropPreferencesDialog::__Click, *this );
 
    Cancel_PushButton.SetText( "Cancel" );
    Cancel_PushButton.SetMinWidth( buttonWidth );
    Cancel_PushButton.SetCursor( StdCursor::Crossmark );
-   Cancel_PushButton.OnClick( (pcl::Button::click_event_handler)&DynamicCropPreferencesDialog::Button_Click, *this );
+   Cancel_PushButton.OnClick( (pcl::Button::click_event_handler)&DynamicCropPreferencesDialog::__Click, *this );
 
    Buttons_Sizer.SetSpacing( 8 );
    Buttons_Sizer.AddStretch();
@@ -122,12 +122,12 @@ DynamicCropPreferencesDialog::DynamicCropPreferencesDialog() : Dialog()
 
    SetWindowTitle( "DynamicCrop Interface Preferences" );
 
-   OnReturn( (pcl::Dialog::return_event_handler)&DynamicCropPreferencesDialog::Dialog_Return, *this );
+   OnReturn( (pcl::Dialog::return_event_handler)&DynamicCropPreferencesDialog::__Return, *this );
 
-   Black_RadioButton.SetChecked( Red( fillColor ) == 0 );
-   White_RadioButton.SetChecked( Red( fillColor ) != 0 );
+   Black_RadioButton.SetChecked( Red( m_fillColor ) == 0 );
+   White_RadioButton.SetChecked( Red( m_fillColor ) != 0 );
 
-   Alpha_Slider.SetValue( Alpha( fillColor ) );
+   Alpha_Slider.SetValue( Alpha( m_fillColor ) );
 
    Update();
 }
@@ -141,18 +141,18 @@ void DynamicCropPreferencesDialog::Update()
 
    uint8 base = White_RadioButton.IsChecked() ? 0xFF : 0x00;
 
-   fillColor = RGBAColor( base, base, base, alpha );
+   m_fillColor = RGBAColor( base, base, base, alpha );
 
-   if ( TheDynamicCropInterface->view != 0 )
+   if ( !TheDynamicCropInterface->m_view.IsNull() )
       TheDynamicCropInterface->UpdateView();
 }
 
-void DynamicCropPreferencesDialog::Slider_ValueUpdated( Slider& /*sender*/, int /*value*/ )
+void DynamicCropPreferencesDialog::__ValueUpdated( Slider& /*sender*/, int /*value*/ )
 {
    Update();
 }
 
-void DynamicCropPreferencesDialog::Button_Click( Button& sender, bool /*checked*/ )
+void DynamicCropPreferencesDialog::__Click( Button& sender, bool /*checked*/ )
 {
    if ( sender == Black_RadioButton || sender == White_RadioButton )
       Update();
@@ -162,13 +162,12 @@ void DynamicCropPreferencesDialog::Button_Click( Button& sender, bool /*checked*
       Cancel();
 }
 
-void DynamicCropPreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
+void DynamicCropPreferencesDialog::__Return( Dialog& sender, int retVal )
 {
    if ( retVal != StdDialogCode::Ok )
    {
-      fillColor = savedColor;
-
-      if ( TheDynamicCropInterface->view != 0 )
+      m_fillColor = savedColor;
+      if ( !TheDynamicCropInterface->m_view.IsNull() )
          TheDynamicCropInterface->UpdateView();
    }
 }
@@ -178,4 +177,4 @@ void DynamicCropPreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropPreferencesDialog.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF DynamicCropPreferencesDialog.cpp - Released 2016/11/17 18:14:58 UTC

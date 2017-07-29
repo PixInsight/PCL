@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// GeometryModule.cpp - Released 2016/02/21 20:22:42 UTC
+// GeometryModule.cpp - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -51,31 +51,35 @@
 // ----------------------------------------------------------------------------
 
 #define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     01
+#define MODULE_VERSION_MINOR     02
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0314
+#define MODULE_VERSION_BUILD     0322
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2016
-#define MODULE_RELEASE_MONTH     2
-#define MODULE_RELEASE_DAY       21
+#define MODULE_RELEASE_MONTH     11
+#define MODULE_RELEASE_DAY       17
 
-#include "GeometryModule.h"
-#include "DynamicCropProcess.h"
+#include <pcl/ImageWindow.h>
+#include <pcl/MessageBox.h>
+#include <pcl/View.h>
+
+#include "ChannelMatchInterface.h"
+#include "ChannelMatchProcess.h"
+#include "CropInterface.h"
+#include "CropProcess.h"
 #include "DynamicCropInterface.h"
-#include "FastRotationProcess.h"
+#include "DynamicCropProcess.h"
 #include "FastRotationActions.h"
 #include "FastRotationInterface.h"
-#include "ChannelMatchProcess.h"
-#include "ChannelMatchInterface.h"
-#include "ResampleProcess.h"
-#include "ResampleInterface.h"
-#include "IntegerResampleProcess.h"
+#include "FastRotationProcess.h"
+#include "GeometryModule.h"
 #include "IntegerResampleInterface.h"
-#include "RotationProcess.h"
+#include "IntegerResampleProcess.h"
+#include "ResampleInterface.h"
+#include "ResampleProcess.h"
 #include "RotationInterface.h"
-#include "CropProcess.h"
-#include "CropInterface.h"
+#include "RotationProcess.h"
 
 namespace pcl
 {
@@ -159,6 +163,84 @@ void GeometryModule::OnLoad()
 
 // ----------------------------------------------------------------------------
 
+static SortedIsoStringList s_astrometryKeywords;
+
+bool WarnOnAstrometryMetadataOrPreviewsOrMask( const ImageWindow& window, const IsoString& processId )
+{
+   if ( window.HasPreviews() || window.HasMaskReferences() || !window.Mask().IsNull() )
+      if ( MessageBox( "<p>" + window.MainView().Id() + "</p>"
+                       "<p>Existing previews and mask references will be deleted.</p>"
+                       "<p><b>Some of these side effects could be irreversible. Proceed?</b></p>",
+                       processId,
+                       StdIcon::Warning,
+                       StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
+      {
+         return false;
+      }
+
+   if ( s_astrometryKeywords.IsEmpty() )
+      s_astrometryKeywords << "CTYPE1"
+                           << "CTYPE2"
+                           << "CRPIX1"
+                           << "CRPIX2"
+                           << "CRVAL1"
+                           << "CRVAL2"
+                           << "CD1_1"
+                           << "CD1_2"
+                           << "CD2_1"
+                           << "CD2_2"
+                           << "CDELT1"
+                           << "CDELT2"
+                           << "CROTA1"
+                           << "CROTA2"
+                           << "REFSPLINE"; // a custom keyword set by the ImageSolver script
+
+   FITSKeywordArray keywords;
+   window.GetKeywords( keywords );
+   for ( auto k : keywords )
+      if ( s_astrometryKeywords.Contains( k.name ) )
+      {
+         if ( MessageBox( "<p>" + window.MainView().Id() + "</p>"
+                          "<p>The image contains an astrometric solution that will be deleted by the geometric transformation.</p>"
+                          "<p><b>This side effect could be irreversible. Proceed?</b></p>",
+                          processId,
+                          StdIcon::Warning,
+                          StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
+         {
+            return false;
+         }
+         break;
+      }
+
+   return true;
+}
+
+void DeleteAstrometryMetadataAndPreviewsAndMask( ImageWindow& window )
+{
+   window.RemoveMaskReferences();
+   window.RemoveMask();
+   DeleteAstrometryMetadataAndPreviews( window );
+}
+
+void DeleteAstrometryMetadataAndPreviews( ImageWindow& window )
+{
+   window.DeletePreviews();
+
+   FITSKeywordArray keywords, newKeywords;
+   window.GetKeywords( keywords );
+   for ( auto k : keywords )
+      if ( !s_astrometryKeywords.Contains( k.name ) )
+         newKeywords << k;
+   if ( newKeywords.Length() < keywords.Length() )
+      window.SetKeywords( newKeywords );
+
+   // Delete a custom property generated by the ImageSolver script.
+   if ( window.MainView().HasProperty( "Transformation_ImageToProjection" ) )
+      window.MainView().DeleteProperty( "Transformation_ImageToProjection" );
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 // ----------------------------------------------------------------------------
@@ -208,4 +290,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF GeometryModule.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF GeometryModule.cpp - Released 2016/11/17 18:14:58 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// IntegerResampleParameters.h - Released 2016/02/21 20:22:42 UTC
+// IntegerResampleParameters.h - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -62,11 +62,11 @@ PCL_BEGIN_LOCAL
 
 // ----------------------------------------------------------------------------
 
-class ZoomFactor : public MetaInt32
+class IRZoomFactor : public MetaInt32
 {
 public:
 
-   ZoomFactor( MetaProcess* );
+   IRZoomFactor( MetaProcess* );
 
    virtual IsoString Id() const;
    virtual double DefaultValue() const;
@@ -74,11 +74,11 @@ public:
    virtual double MaximumValue() const;
 };
 
-extern ZoomFactor* TheZoomFactorParameter;
+extern IRZoomFactor* TheIRZoomFactorParameter;
 
 // ----------------------------------------------------------------------------
 
-class IntegerDownsamplingMode : public MetaEnumeration // avoid conflict with PCL's IntegerDownsampleMode
+class IRDownsamplingMode : public MetaEnumeration
 {
 public:
 
@@ -86,26 +86,27 @@ public:
           Median,
           Maximum,
           Minimum,
-          NumberOfIntegerDownsamplingModes,
+          NumberOfModes,
           Default = Average };
 
-   IntegerDownsamplingMode( MetaProcess* );
+   IRDownsamplingMode( MetaProcess* );
 
    virtual IsoString Id() const;
+   virtual IsoString Aliases() const;
    virtual size_type NumberOfElements() const;
    virtual IsoString ElementId( size_type ) const;
    virtual int ElementValue( size_type ) const;
    virtual size_type DefaultValueIndex() const;
 };
 
-extern IntegerDownsamplingMode* TheIntegerDownsamplingModeParameter;
+extern IRDownsamplingMode* TheIRDownsamplingModeParameter;
 
 // ----------------------------------------------------------------------------
 
-extern XResolution* TheXResolutionIntegerResampleParameter;
-extern YResolution* TheYResolutionIntegerResampleParameter;
-extern MetricResolution* TheMetricResolutionIntegerResampleParameter;
-extern ForceResolution* TheForceResolutionIntegerResampleParameter;
+extern XResolution* TheIRXResolutionParameter;
+extern YResolution* TheIRYResolutionParameter;
+extern MetricResolution* TheIRMetricResolutionParameter;
+extern ForceResolution* TheIRForceResolutionParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -116,4 +117,4 @@ PCL_END_LOCAL
 #endif   // __IntegerResampleParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF IntegerResampleParameters.h - Released 2016/02/21 20:22:42 UTC
+// EOF IntegerResampleParameters.h - Released 2016/11/17 18:14:58 UTC

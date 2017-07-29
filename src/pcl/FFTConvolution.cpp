@@ -68,18 +68,18 @@ public:
       {
          Rect r = image.SelectedRectangle();
          if ( F.m_filter )
-            const_cast<FFTConvolution&>( F ).m_h = Initialize( *F.m_filter, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
+            F.m_h = Initialize( *F.m_filter, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
          else
-            const_cast<FFTConvolution&>( F ).m_h = Initialize( F.m_image, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
+            F.m_h = Initialize( F.m_image, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
       }
 
-      Convolve( image, *F.m_h, F.IsParallelProcessingEnabled(), F.MaxProcessors() );
+      Convolve( image, *F.m_h, F.IsRealComponentOutputEnabled(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
    }
 
 private:
 
    template <class P>
-   static void Convolve( GenericImage<P>& image, const ComplexImage& psfFFT, bool parallel, int maxProcessors )
+   static void Convolve( GenericImage<P>& image, const ComplexImage& psfFFT, bool outputRealCmp, bool parallel, int maxProcessors )
    {
       Rect r = image.SelectedRectangle();
 
@@ -185,10 +185,7 @@ private:
 
             C.Status() += dN1;
 
-            image.SetStatusCallback( 0 );
-            image.Mov( C, Point( r.x0, r.y0 ), ch, Rect( dw, dh, r.Width()+dw, r.Height()+dh ) );
-
-            image.Status() = C.Status();
+            StoreResult( image, C, ch, dw, dh, r, outputRealCmp );
          }
 
          if ( statusInitialized )
@@ -200,6 +197,37 @@ private:
             image.Status().EnableInitialization();
          throw;
       }
+   }
+
+   template <class P>
+   static void StoreResult( GenericImage<P>& image, const ComplexImage& C, int ch, int dw, int dh, const Rect& r, bool outputRealCmp )
+   {
+      image.SetStatusCallback( nullptr );
+
+      if ( outputRealCmp )
+      {
+         ComplexImage::const_roi_sample_iterator i( C, r.MovedBy( dw, dh ) );
+         for ( typename GenericImage<P>::roi_sample_iterator o( image, r, ch ); o; ++i, ++o )
+            *o = (*i).Real();
+      }
+      else
+         image.Mov( C, r.LeftTop(), ch, r.MovedBy( dw, dh ) );
+
+      image.Status() = C.Status();
+   }
+
+   static void StoreResult( ComplexImage& image, const ComplexImage& C, int ch, int dw, int dh, const Rect& r, bool outputRealCmp )
+   {
+      image.SetStatusCallback( nullptr );
+      image.Mov( C, r.LeftTop(), ch, r.MovedBy( dw, dh ) );
+      image.Status() = C.Status();
+   }
+
+   static void StoreResult( DComplexImage& image, const ComplexImage& C, int ch, int dw, int dh, const Rect& r, bool outputRealCmp )
+   {
+      image.SetStatusCallback( nullptr );
+      image.Mov( C, r.LeftTop(), ch, r.MovedBy( dw, dh ) );
+      image.Status() = C.Status();
    }
 
    static ComplexImage* Initialize( const KernelFilter& PSF,

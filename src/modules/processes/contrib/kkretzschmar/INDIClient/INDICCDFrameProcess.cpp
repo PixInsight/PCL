@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.12.0183
+// Standard INDIClient Process Module Version 01.00.15.0199
 // ----------------------------------------------------------------------------
-// INDICCDFrameProcess.cpp - Released 2016/06/04 15:14:47 UTC
+// INDICCDFrameProcess.cpp - Released 2016/06/20 17:47:31 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -98,6 +98,10 @@ INDICCDFrameProcess::INDICCDFrameProcess() : MetaProcess()
    new ICFClientDownloadDirectory( this );
    new ICFClientFileNameTemplate( this );
    new ICFClientOutputFormatHints( this );
+   new ICFObjectName( this );
+   new ICFTelescopeSelection( this );
+   new ICFRequireSelectedTelescope( this );
+   new ICFTelescopeDeviceName( this );
 
    new ICFClientFrames( this );
    new ICFClientViewId( TheICFClientFramesParameter );
@@ -202,4 +206,4 @@ int INDICCDFrameProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameProcess.cpp - Released 2016/06/04 15:14:47 UTC
+// EOF INDICCDFrameProcess.cpp - Released 2016/06/20 17:47:31 UTC

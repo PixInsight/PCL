@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// DynamicCropInstance.h - Released 2016/02/21 20:22:42 UTC
+// DynamicCropInstance.h - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -75,16 +75,15 @@ public:
 
    virtual void Assign( const ProcessImplementation& );
 
-   virtual bool IsMaskable( const View&, const ImageWindow& ) const
-   {
-      return false;
-   }
+   virtual bool IsMaskable( const View&, const ImageWindow& ) const;
+
+   virtual UndoFlags UndoMode( const View& ) const;
 
    virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
    virtual bool BeforeExecution( View& );
    virtual bool ExecuteOn( View& );
 
-   virtual void* LockParameter( const MetaParameter*, size_type /*tableRow*/ );
+   virtual void* LockParameter( const MetaParameter*, size_type tableRow );
 
 private:
 
@@ -96,6 +95,9 @@ private:
    pcl_enum p_interpolation;     // Interpolation algorithm
    float    p_clampingThreshold; // deringing clamping for bicubic spline and Lanczos
    float    p_smoothness;        // smoothness for cubic filter interpolations
+   DPoint   p_resolution;        // horizontal and vertical resolution in pixels
+   pcl_bool p_metric;            // metric resolution?
+   pcl_bool p_forceResolution;   // set resolution of target image window?
    DVector  p_fillColor;         // Filling values for unused areas (R/K,G,B,A)
 
    friend class DynamicCropEngine;
@@ -109,4 +111,4 @@ private:
 #endif   // __DynamicCropInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropInstance.h - Released 2016/02/21 20:22:42 UTC
+// EOF DynamicCropInstance.h - Released 2016/11/17 18:14:58 UTC

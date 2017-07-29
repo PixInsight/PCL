@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.12.0183
+// Standard INDIClient Process Module Version 01.00.15.0199
 // ----------------------------------------------------------------------------
-// INDIMountInterface.h - Released 2016/06/04 15:14:47 UTC
+// INDIMountInterface.h - Released 2016/06/20 17:47:31 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -83,17 +83,63 @@ public:
 
    CoordinateSearchDialog();
 
-   double TargetRA() const
+   const String& ObjectName() const
    {
-      return m_targetRA;
+      return m_objectName;
    }
 
-   double TargetDec() const
+   const String& ObjectType() const
    {
-      return m_targetDec;
+      return m_objectType;
    }
 
-   bool HasValidTargetCoordinates() const
+   const String& SpectralType() const
+   {
+      return m_spectralType;
+   }
+
+   double VMagnitude() const
+   {
+      return m_vmag;
+   }
+
+   // degrees
+   double RA() const
+   {
+      return m_RA;
+   }
+
+   // degrees
+   double Dec() const
+   {
+      return m_Dec;
+   }
+
+   // mas/year
+   double MuRA() const
+   {
+      return m_muRA;
+   }
+
+   // mas/year
+   double MuDec() const
+   {
+      return m_muDec;
+   }
+
+   // mas
+   double Parallax() const
+   {
+      return m_parallax;
+   }
+
+   // AU/year
+   double RadialVelocity() const
+   {
+      return m_radVel;
+   }
+
+   bool HasValidCoordinates() const
    {
       return m_valid;
    }
@@ -116,8 +162,16 @@ private:
          PushButton           GoTo_Button;
          PushButton           Cancel_Button;
 
-   double    m_targetRA;
-   double    m_targetDec;
+   String    m_objectName;
+   String    m_objectType;
+   String    m_spectralType;
+   double    m_vmag;     // flux in the V filter
+   double    m_RA;       // in degrees
+   double    m_Dec;      // in degrees
+   double    m_muRA;     // in mas/year
+   double    m_muDec;    // in mas/year
+   double    m_parallax; // in mas
+   double    m_radVel;   // in AU/year
    bool      m_valid;
    bool      m_goto;
    bool      m_downloading;
@@ -156,6 +210,11 @@ public:
    virtual bool ValidateProcess( const ProcessImplementation&, String& whyNot ) const;
    virtual bool RequiresInstanceValidation() const;
    virtual bool ImportProcess( const ProcessImplementation& );
+
+   const String& CurrentDeviceName() const
+   {
+      return m_device;
+   }
 
 private:
 
@@ -196,27 +255,6 @@ private:
                Label             ALT_Label;
                Label             ALT_Value_Label;
 
-      SectionBar        MountMove_SectionBar;
-      Control           MountMove_Control;
-      HorizontalSizer   MountMove_Sizer;
-         Control           SlewLeft_Control;
-         VerticalSizer     SlewLeft_Sizer;
-            HorizontalSizer   MountMoveTopRow_Sizer;
-               ToolButton        MountMoveTopLeft_Button;
-               ToolButton        MountMoveTop_Button;
-               ToolButton        MountMoveTopRight_Button;
-            HorizontalSizer   MountMoveMiddleRow_Sizer;
-               ToolButton        MountMoveLeft_Button;
-               ToolButton        MountMoveStop_Button;
-               ToolButton        MountMoveRight_Button;
-            HorizontalSizer   MountMoveBottomRow_Sizer;
-               ToolButton        MountMoveBottomLeft_Button;
-               ToolButton        MountMoveBottom_Button;
-               ToolButton        MountMoveBottomRight_Button;
-         VerticalSizer     SlewRight_Sizer;
-            Label             MountMoveSpeed_Label;
-            ComboBox          MountMoveSpeed_ComboBox;
-
       SectionBar        MountGoTo_SectionBar;
       Control           MountGoTo_Control;
       VerticalSizer     MountGoTo_Sizer;
@@ -240,6 +278,27 @@ private:
          HorizontalSizer   MountGoToCancel_Sizer;
             PushButton        MountGoToCancel_Button;
          Label             MountGoToInfo_Label;
+
+      SectionBar        Slew_SectionBar;
+      Control           Slew_Control;
+      HorizontalSizer   Slew_Sizer;
+         Control           SlewLeft_Control;
+         VerticalSizer     SlewLeft_Sizer;
+            HorizontalSizer   SlewTopRow_Sizer;
+               ToolButton        SlewTopLeft_Button;
+               ToolButton        SlewTop_Button;
+               ToolButton        SlewTopRight_Button;
+            HorizontalSizer   SlewMiddleRow_Sizer;
+               ToolButton        SlewLeft_Button;
+               ToolButton        SlewStop_Button;
+               ToolButton        SlewRight_Button;
+            HorizontalSizer   SlewBottomRow_Sizer;
+               ToolButton        SlewBottomLeft_Button;
+               ToolButton        SlewBottom_Button;
+               ToolButton        SlewBottomRight_Button;
+         VerticalSizer     SlewRight_Sizer;
+            Label             SlewSpeed_Label;
+            ComboBox          SlewSpeed_ComboBox;
    };
 
    GUIData* GUI;
@@ -269,4 +328,4 @@ PCL_END_LOCAL
 #endif   // __INDIMountInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInterface.h - Released 2016/06/04 15:14:47 UTC
+// EOF INDIMountInterface.h - Released 2016/06/20 17:47:31 UTC

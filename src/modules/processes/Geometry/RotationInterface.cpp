@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// RotationInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// RotationInterface.cpp - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -51,8 +51,8 @@
 // ----------------------------------------------------------------------------
 
 #include "RotationInterface.h"
-#include "RotationProcess.h"
 #include "RotationParameters.h"
+#include "RotationProcess.h"
 
 #include <pcl/Graphics.h>
 
@@ -61,7 +61,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-RotationInterface* TheRotationInterface = 0;
+RotationInterface* TheRotationInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -70,18 +70,18 @@ RotationInterface* TheRotationInterface = 0;
 // ----------------------------------------------------------------------------
 
 RotationInterface::RotationInterface() :
-ProcessInterface(),
-instance( TheRotationProcess ),
-GUI( 0 ),
-dragging( false )
+   ProcessInterface(),
+   instance( TheRotationProcess ),
+   GUI( nullptr ),
+   dragging( false )
 {
    TheRotationInterface = this;
 }
 
 RotationInterface::~RotationInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString RotationInterface::Id() const
@@ -112,8 +112,7 @@ void RotationInterface::ResetInstance()
 
 bool RotationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "Rotation" );
@@ -132,8 +131,7 @@ ProcessImplementation* RotationInterface::NewProcess() const
 bool RotationInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
    const RotationInstance* r = dynamic_cast<const RotationInstance*>( &p );
-
-   if ( r == 0 )
+   if ( r == nullptr )
    {
       whyNot = "Not a Rotation instance.";
       return false;
@@ -162,14 +160,15 @@ bool RotationInterface::WantsReadoutNotifications() const
 
 void RotationInterface::UpdateReadout( const View&, const pcl::DPoint&, double R, double G, double B, double /*A*/ )
 {
-   if ( GUI != 0 && IsVisible() && GUI->FillColor_SectionBar.Section().IsVisible() )
-   {
-      instance.p_fillColor[0] = R;
-      instance.p_fillColor[1] = G;
-      instance.p_fillColor[2] = B;
-
-      UpdateFillColorControls();
-   }
+   if ( GUI != nullptr )
+      if ( IsVisible() )
+         if ( GUI->FillColor_SectionBar.Section().IsVisible() )
+         {
+            instance.p_fillColor[0] = R;
+            instance.p_fillColor[1] = G;
+            instance.p_fillColor[2] = B;
+            UpdateFillColorControls();
+         }
 }
 
 // ----------------------------------------------------------------------------
@@ -213,10 +212,8 @@ void RotationInterface::UpdateFillColorControls()
 void RotationInterface::__Angle_ValueUpdated( NumericEdit& sender, double value )
 {
    double a = Rad( value );
-
    if ( GUI->Clockwise_CheckBox.IsChecked() )
       a = -a;
-
    instance.p_angle = ArcTan( Sin( a ), Cos( a ) );
 
    UpdateNumericControls();
@@ -443,9 +440,9 @@ RotationInterface::GUIData::GUIData( RotationInterface& w )
    Algorithm_Sizer.Add( Algorithm_ComboBox, 100 );
 
    ClampingThreshold_NumericEdit.SetReal();
-   ClampingThreshold_NumericEdit.SetPrecision( TheClampingThresholdRotationParameter->Precision() );
-   ClampingThreshold_NumericEdit.SetRange( TheClampingThresholdRotationParameter->MinimumValue(),
-                                    TheClampingThresholdRotationParameter->MaximumValue() );
+   ClampingThreshold_NumericEdit.SetPrecision( TheRTClampingThresholdParameter->Precision() );
+   ClampingThreshold_NumericEdit.SetRange( TheRTClampingThresholdParameter->MinimumValue(),
+                                    TheRTClampingThresholdParameter->MaximumValue() );
    ClampingThreshold_NumericEdit.label.SetText( "Clamping threshold:" );
    ClampingThreshold_NumericEdit.label.SetFixedWidth( labelWidth1 );
    ClampingThreshold_NumericEdit.SetToolTip( "<p>Deringing clamping threshold for bicubic spline and Lanczos interpolation algorithms.</p>" );
@@ -453,9 +450,9 @@ RotationInterface::GUIData::GUIData( RotationInterface& w )
    ClampingThreshold_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&RotationInterface::__Algorithm_ValueUpdated, w );
 
    Smoothness_NumericEdit.SetReal();
-   Smoothness_NumericEdit.SetPrecision( TheSmoothnessRotationParameter->Precision() );
-   Smoothness_NumericEdit.SetRange( TheSmoothnessRotationParameter->MinimumValue(),
-                                    TheSmoothnessRotationParameter->MaximumValue() );
+   Smoothness_NumericEdit.SetPrecision( TheRTSmoothnessParameter->Precision() );
+   Smoothness_NumericEdit.SetRange( TheRTSmoothnessParameter->MinimumValue(),
+                                    TheRTSmoothnessParameter->MaximumValue() );
    Smoothness_NumericEdit.label.SetText( "Smoothness:" );
    Smoothness_NumericEdit.label.SetFixedWidth( labelWidth1 );
    Smoothness_NumericEdit.SetToolTip( "<p>Smoothness level for cubic filter interpolation algorithms.</p>" );
@@ -542,4 +539,4 @@ RotationInterface::GUIData::GUIData( RotationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RotationInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF RotationInterface.cpp - Released 2016/11/17 18:14:58 UTC

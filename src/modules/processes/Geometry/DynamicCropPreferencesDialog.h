@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// DynamicCropPreferencesDialog.h - Released 2016/02/21 20:22:42 UTC
+// DynamicCropPreferencesDialog.h - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -53,20 +53,18 @@
 #ifndef __DynamicCropPreferencesDialog_h
 #define __DynamicCropPreferencesDialog_h
 
-#include <pcl/Dialog.h>
-#include <pcl/Sizer.h>
-#include <pcl/GroupBox.h>
-#include <pcl/RadioButton.h>
-#include <pcl/Label.h>
-#include <pcl/Slider.h>
-#include <pcl/PushButton.h>
 #include <pcl/Color.h>
+#include <pcl/Dialog.h>
+#include <pcl/GroupBox.h>
+#include <pcl/Label.h>
+#include <pcl/PushButton.h>
+#include <pcl/RadioButton.h>
+#include <pcl/Sizer.h>
+#include <pcl/Slider.h>
 
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// DynamicCropPreferencesDialog
 // ----------------------------------------------------------------------------
 
 class DynamicCropPreferencesDialog : public Dialog
@@ -75,13 +73,9 @@ public:
 
    DynamicCropPreferencesDialog();
 
-   // -------------------------------------------------------------------------
-
 private:
 
    RGBA savedColor;
-
-   // -------------------------------------------------------------------------
 
    VerticalSizer  Global_Sizer;
 
@@ -96,13 +90,11 @@ private:
       PushButton        OK_PushButton;
       PushButton        Cancel_PushButton;
 
-   // -------------------------------------------------------------------------
+      void Update();
 
-   void Update();
-
-   void Slider_ValueUpdated( Slider& sender, int value );
-   void Button_Click( Button& sender, bool checked );
-   void Dialog_Return( Dialog& sender, int retVal );
+   void __ValueUpdated( Slider& sender, int value );
+   void __Click( Button& sender, bool checked );
+   void __Return( Dialog& sender, int retVal );
 };
 
 // ----------------------------------------------------------------------------
@@ -112,4 +104,4 @@ private:
 #endif   // __DynamicCropPreferencesDialog_h
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropPreferencesDialog.h - Released 2016/02/21 20:22:42 UTC
+// EOF DynamicCropPreferencesDialog.h - Released 2016/11/17 18:14:58 UTC

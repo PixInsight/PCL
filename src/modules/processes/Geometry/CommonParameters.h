@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// CommonParameters.h - Released 2016/02/21 20:22:42 UTC
+// CommonParameters.h - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -250,7 +250,6 @@ public:
 
    virtual IsoString Id() const;
    virtual int Precision() const;
-
    virtual double DefaultValue() const;
    virtual double MinimumValue() const;
    virtual double MaximumValue() const;
@@ -293,7 +292,6 @@ public:
 
    virtual IsoString Id() const;
    virtual int Precision() const;
-
    virtual double DefaultValue() const;
    virtual double MinimumValue() const;
    virtual double MaximumValue() const;
@@ -309,7 +307,6 @@ public:
 
    virtual IsoString Id() const;
    virtual int Precision() const;
-
    virtual double DefaultValue() const;
    virtual double MinimumValue() const;
    virtual double MaximumValue() const;
@@ -325,7 +322,6 @@ public:
 
    virtual IsoString Id() const;
    virtual int Precision() const;
-
    virtual double DefaultValue() const;
    virtual double MinimumValue() const;
    virtual double MaximumValue() const;
@@ -340,7 +336,6 @@ public:
    MetricResolution( MetaProcess* );
 
    virtual IsoString Id() const;
-
    virtual bool DefaultValue() const;
 };
 
@@ -353,7 +348,6 @@ public:
    ForceResolution( MetaProcess* );
 
    virtual IsoString Id() const;
-
    virtual bool DefaultValue() const;
 };
 
@@ -424,4 +418,4 @@ public:
 #endif   // __CommonParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF CommonParameters.h - Released 2016/02/21 20:22:42 UTC
+// EOF CommonParameters.h - Released 2016/11/17 18:14:58 UTC

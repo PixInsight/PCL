@@ -1696,18 +1696,19 @@ IsoString& IsoString::ToDecodedHTMLSpecialChars()
 template <class T> static
 void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const T& separator, const T& str )
 {
-   Array<T> tokens;
-   str.Break( tokens, separator, true/*trim*/ );
-   int n = int( tokens.Length() );
-   if ( n < 1 )
-      throw ParseError( "Parsing sexagesimal expression: empty string" );
-   if ( n > 3 )
-      throw ParseError( "Parsing sexagesimal expression: too many components" );
-   for ( int i = 0; i < n; ++i )
-      if ( tokens[i].IsEmpty() )
-         throw ParseError( "Parsing sexagesimal expression: empty component(s)" );
    try
    {
+      Array<T> tokens;
+      str.Break( tokens, separator, true/*trim*/ );
+      int n = int( tokens.Length() );
+      if ( n < 1 )
+         throw ParseError( "empty string" );
+      if ( n > 3 )
+         throw ParseError( "too many components" );
+      for ( int i = 0; i < n; ++i )
+         if ( tokens[i].IsEmpty() )
+            throw ParseError( "empty component(s)" );
+
       double t1;
       if ( n == 1 )
       {
@@ -1715,7 +1716,7 @@ void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const T& separat
       }
       else
       {
-         int d = Abs( tokens[0].ToInt() );
+         int d = Abs( tokens[0].ToInt( 10 ) );
          if ( n == 2 )
          {
             double m = tokens[1].ToDouble();
@@ -1725,7 +1726,7 @@ void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const T& separat
          }
          else
          {
-            int m = tokens[1].ToInt();
+            int m = tokens[1].ToInt( 10 );
             if ( m < 0 /*|| m >= 60*/ ) // uncomment for strict component range checks
                throw ParseError( "second component out of range", tokens[1] );
             double s = tokens[2].ToDouble();
@@ -1784,7 +1785,7 @@ bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const T& sepa
    else
    {
       int d;
-      if ( !tokens[0].TryToInt( d ) )
+      if ( !tokens[0].TryToInt( d, 10 ) )
          return false;
       d = Abs( d );
 
@@ -1800,7 +1801,7 @@ bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const T& sepa
       else
       {
          int m;
-         if ( !tokens[1].TryToInt( m ) )
+         if ( !tokens[1].TryToInt( m, 10 ) )
             return false;
          if ( m < 0 /*|| m >= 60*/ ) // uncomment for strict component range checks
             return false;
@@ -1895,6 +1896,389 @@ String String::ToSexagesimal( int sign, double s1, double s2, double s3, const S
 IsoString IsoString::ToSexagesimal( int sign, double s1, double s2, double s3, const SexagesimalConversionOptions& options )
 {
    return pcl::ToSexagesimal<IsoString>( sign, s1, s2, s3, options );
+}
+
+// ----------------------------------------------------------------------------
+
+template <class T> static
+void ParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz, const T& str )
+{
+   try
+   {
+      // Position of the time separator
+      size_type t = str.Find( 'T' );
+      // Date, time and time zone substrings
+      T date, time, zone;
+      if ( t != T::notFound )
+      {
+         date = str.Substring( 0, t );
+         time = str.Substring( t+1 );
+
+         size_type z = time.Find( '+' );
+         if ( z == T::notFound )
+            z = time.Find( '-' );
+         if ( z != T::notFound )
+         {
+            zone = time.Substring( z );
+            time.SetLength( z );
+         }
+         else if ( time.EndsWith( 'Z' ) ) // Zulu time
+            time.SetLength( time.Length()-1 );
+      }
+      else
+         date = str;
+
+      int bc = date.StartsWith( '-' ) ? -1 : +1;
+      if ( bc < 0 )
+         date = date.Substring( 1 );
+      Array<T> dateTokens;
+      date.Break( dateTokens, '-' );
+      if ( dateTokens.Length() != 3 )
+         throw ParseError( "wrong number of date components" );
+
+      year = bc*dateTokens[0].ToInt( 10 );
+
+      month = dateTokens[1].ToInt( 10 );
+      if ( month < 1 || month > 12 )
+         throw ParseError( "month out of range" );
+
+      day = dateTokens[2].ToInt( 10 );
+      if ( day < 1 || day > 31 )
+         throw ParseError( "day out of range" );
+
+      dayf = tz = 0;
+
+      if ( t != T::notFound )
+      {
+         Array<T> timeTokens;
+         time.Break( timeTokens, ':' );
+         double hours, minutes, seconds;
+         switch ( timeTokens.Length() )
+         {
+         case 3:
+            hours = timeTokens[0].ToInt( 10 );
+            minutes = timeTokens[1].ToInt( 10 );
+            seconds = timeTokens[2].ToDouble();
+            break;
+         case 2:
+            hours = timeTokens[0].ToInt( 10 );
+            minutes = timeTokens[1].ToDouble();
+            seconds = 0;
+            break;
+         case 1:
+            hours = timeTokens[0].ToDouble();
+            minutes = 0;
+            seconds = 0;
+            break;
+         default:
+            throw ParseError( "wrong number of time components" );
+         }
+
+         if ( hours < 0 || hours >= 24 )
+            throw ParseError( "hour out of range" );
+         if ( minutes < 0 || minutes >= 60 )
+            throw ParseError( "minute out of range" );
+         if ( seconds < 0 || seconds >= 60 )
+            throw ParseError( "seconds out of range" );
+
+         dayf = (hours + (minutes + seconds/60)/60)/24;
+
+         if ( !zone.IsEmpty() )
+         {
+            Array<T> zoneTokens;
+            zone.Break( zoneTokens, ':' );
+            if ( zoneTokens.Length() < 1 || zoneTokens.Length() > 2 )
+               throw ParseError( "wrong number of time zone components" );
+            int zh = zoneTokens[0].ToInt( 10 );
+            if ( Abs( zh ) > 12 )
+               throw ParseError( "time zone hours out of range" );
+            int zm = 0;
+            if ( zoneTokens.Length() == 2 )
+            {
+               zm = zoneTokens[1].ToInt( 10 );
+               if ( zm < 0 || zm > 59 )
+                  throw ParseError( "time zone minutes out of range" );
+            }
+            tz = ((zh < 0) ? -1 : +1) * (Abs( zh ) + zm/60.0);
+            if ( Abs( tz ) > 12 )
+               throw ParseError( "time zone out of range" );
+         }
+      }
+   }
+   catch ( const ParseError& e )
+   {
+      throw ParseError( "Parsing ISO 8601 date/time expression: " + e.Message() );
+   }
+   catch ( ... )
+   {
+      throw;
+   }
+}
+
+void String::ParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz ) const
+{
+   pcl::ParseISO8601DateTime( year, month, day, dayf, tz, *this );
+}
+
+void IsoString::ParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz ) const
+{
+   pcl::ParseISO8601DateTime( year, month, day, dayf, tz, *this );
+}
+
+// ----------------------------------------------------------------------------
+
+template <class T> static
+bool TryParseISO8601DateTime( int& _year, int& _month, int& _day, double& _dayf, double& _tz, const T& str )
+{
+   // Position of the time separator
+   size_type t = str.Find( 'T' );
+   // Date, time and time zone substrings
+   T date, time, zone;
+   if ( t != T::notFound )
+   {
+      date = str.Substring( 0, t );
+      time = str.Substring( t+1 );
+
+      size_type z = time.Find( '+' );
+      if ( z == T::notFound )
+         z = time.Find( '-' );
+      if ( z != T::notFound )
+      {
+         zone = time.Substring( z );
+         time.SetLength( z );
+      }
+      else if ( time.EndsWith( 'Z' ) ) // Zulu time
+         time.SetLength( time.Length()-1 );
+   }
+   else
+      date = str;
+
+   int bc = date.StartsWith( '-' ) ? -1 : +1;
+   if ( bc < 0 )
+      date = date.Substring( 1 );
+   Array<T> dateTokens;
+   date.Break( dateTokens, '-' );
+   if ( dateTokens.Length() != 3 )
+      return false;
+
+   int year;
+   if ( !dateTokens[0].TryToInt( year, 10 ) )
+      return false;
+   if ( bc < 0 )
+      year = -year;
+
+   int month;
+   if ( !dateTokens[1].TryToInt( month, 10 ) )
+      return false;
+   if ( month < 1 || month > 12 )
+      return false;
+
+   int day;
+   if ( !dateTokens[2].TryToInt( day, 10 ) )
+      return false;
+   if ( day < 1 || day > 31 )
+      return false;
+
+   double dayf = 0;
+   double tz = 0;
+
+   if ( t != T::notFound )
+   {
+      Array<T> timeTokens;
+      time.Break( timeTokens, ':' );
+      switch ( timeTokens.Length() )
+      {
+      case 3:
+         {
+            int hours;
+            if ( !timeTokens[0].TryToInt( hours, 10 ) )
+               return false;
+            if ( hours < 0 || hours >= 24 )
+               return false;
+            int minutes;
+            if ( !timeTokens[1].TryToInt( minutes, 10 ) )
+               return false;
+            if ( minutes < 0 || minutes >= 60 )
+               return false;
+            double seconds;
+            if ( !timeTokens[2].TryToDouble( seconds ) )
+               return false;
+            if ( seconds < 0 || seconds >= 60 )
+               return false;
+            dayf = (hours + (minutes + seconds/60)/60)/24;
+         }
+         break;
+      case 2:
+         {
+            int hours;
+            if ( !timeTokens[0].TryToInt( hours, 10 ) )
+               return false;
+            if ( hours < 0 || hours >= 24 )
+               return false;
+            double minutes;
+            if ( !timeTokens[1].TryToDouble( minutes ) )
+               return false;
+            if ( minutes < 0 || minutes >= 60 )
+               return false;
+            dayf = (hours + minutes/60)/24;
+         }
+         break;
+      case 1:
+         {
+            double hours;
+            if ( !timeTokens[0].TryToDouble( hours ) )
+               return false;
+            if ( hours < 0 || hours >= 24 )
+               return false;
+            dayf = hours/24;
+         }
+         break;
+      default:
+         return false;
+      }
+
+      if ( !zone.IsEmpty() )
+      {
+         Array<T> zoneTokens;
+         zone.Break( zoneTokens, ':' );
+         if ( zoneTokens.Length() < 1 || zoneTokens.Length() > 2 )
+            return false;
+         int zh;
+         if ( !zoneTokens[0].TryToInt( zh, 10 ) )
+            return false;
+         if ( Abs( zh ) > 12 )
+            return false;
+         int zm = 0;
+         if ( zoneTokens.Length() == 2 )
+         {
+            if ( !zoneTokens[1].TryToInt( zm, 10 ) )
+               return false;
+            if ( zm < 0 || zm > 59 )
+               return false;
+         }
+         tz = ((zh < 0) ? -1 : +1) * (Abs( zh ) + zm/60.0);
+         if ( Abs( tz ) > 12 )
+            return false;
+      }
+   }
+
+   _year = year;
+   _month = month;
+   _day = day;
+   _dayf = dayf;
+   _tz = tz;
+   return true;
+}
+
+bool String::TryParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz ) const
+{
+   return pcl::TryParseISO8601DateTime( year, month, day, dayf, tz, *this );
+}
+
+bool IsoString::TryParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz ) const
+{
+   return pcl::TryParseISO8601DateTime( year, month, day, dayf, tz, *this );
+}
+
+// ----------------------------------------------------------------------------
+
+template <class T> static
+T ToISO8601DateTime( int year, int month, int day, double dayf, double tz, const ISO8601ConversionOptions& options )
+{
+   T time;
+   if ( options.timeItems > 0 )
+   {
+      double h, m, s;
+      switch ( options.timeItems )
+      {
+      default:
+      case 3:
+         h = Frac( dayf )*24;
+         m = Frac( h )*60;
+         s = Round( Frac( m )*60, options.precision );
+         h = TruncInt( h );
+         m = TruncInt( m );
+         if ( s == 60 )
+         {
+            s = 0;
+            m = TruncInt( m + 1 );
+            if ( m > 59 )
+            {
+               m = 0;
+               h += 1;
+            }
+         }
+         break;
+      case 2:
+         h = Frac( dayf )*24;
+         m = Round( Frac( h )*60, options.precision );
+         s = 0;
+         h = TruncInt( h );
+         if ( m == 60 )
+         {
+            m = 0;
+            h += 1;
+         }
+         break;
+      case 1:
+         h = Round( Frac( dayf )*24, options.precision );
+         m = 0;
+         s = 0;
+         break;
+      }
+
+      if ( h == 24 )
+      {
+         h = 0;
+         ++day;
+      }
+
+      int w = (options.precision > 0) ? 3+options.precision : 2;
+      switch ( options.timeItems )
+      {
+      default:
+      case 3:
+         time.Format( "T%02d:%02d:%0*.*lf", TruncInt( h ), TruncInt( m ), w, options.precision, s );
+         break;
+      case 2:
+         time.Format( "T%02d:%0*.*lf", TruncInt( h ), w, options.precision, m );
+         break;
+      case 1:
+         time.Format( "T%0*.*lf", w, options.precision, h );
+         break;
+      }
+
+      if ( options.timeZone )
+         if ( tz == 0 && options.zuluTime )
+            time << 'Z';
+         else
+         {
+            double h = Abs( tz );
+            int m = RoundInt( Frac( h )*60 );
+            if ( m == 60 )
+            {
+               m = 0;
+               ++h;
+            }
+            time.AppendFormat( "%c%02d:%02d", (tz < 0) ? '-' : '+', TruncInt( h ), m );
+         }
+   }
+
+   JDToComplexTime( year, month, day, dayf, ComplexTimeToJD( year, month, day ) );
+
+   return T().Format( "%d-%02d-%02d", year, month, day ) + time;
+}
+
+String String::ToISO8601DateTime( int year, int month, int day, double dayf, double tz,
+                                  const ISO8601ConversionOptions& options )
+{
+   return pcl::ToISO8601DateTime<String>( year, month, day, dayf, tz, options );
+}
+
+IsoString IsoString::ToISO8601DateTime( int year, int month, int day, double dayf, double tz,
+                                  const ISO8601ConversionOptions& options )
+{
+   return pcl::ToISO8601DateTime<IsoString>( year, month, day, dayf, tz, options );
 }
 
 // ----------------------------------------------------------------------------

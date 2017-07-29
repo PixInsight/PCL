@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.09.04.0322
+// Standard ImageIntegration Process Module Version 01.11.00.0344
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// DrizzleIntegrationInstance.cpp - Released 2016/11/13 17:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -52,6 +52,7 @@
 
 #include "DrizzleIntegrationInstance.h"
 
+#include <pcl/AutoPointer.h>
 #include <pcl/DrizzleDataDecoder.h>
 #include <pcl/ErrorHandler.h>
 #include <pcl/FileFormat.h>
@@ -65,7 +66,8 @@
 #include <pcl/Version.h>
 #include <pcl/View.h>
 
-#define DRIZZLE_RESOLUTION 5
+#define DRIZZLE_BOUNDS_TOLERANCE 1.0e-5
+#define DRIZZLE_KERNEL_EPSILON   0.025
 
 namespace pcl
 {
@@ -143,6 +145,230 @@ private:
 
 // ----------------------------------------------------------------------------
 
+/*
+ * Abstract base class of drizzle kernel functions. Discretizes a
+ * two-dimensional function on a uniform square lattice and computes LUT tables
+ * for fast double integration over arbitrary regions on the XY plane.
+ */
+class DrizzleKernelFunction
+{
+public:
+
+   DrizzleKernelFunction() = default;
+   DrizzleKernelFunction( const DrizzleKernelFunction& ) = default;
+   DrizzleKernelFunction& operator =( const DrizzleKernelFunction& ) = default;
+
+   virtual ~DrizzleKernelFunction()
+   {
+   }
+
+   /*
+    * Initialize microdrop LUTs for the specified drop region and integration
+    * grid size.
+    */
+   void Initialize( double dropSize, int n )
+   {
+      Reset( dropSize );
+      m_pos = 0;
+      int n2 = n*n;
+      m_xlut = DVector( n2 );
+      m_ylut = DVector( n2 );
+      m_zlut = DVector( n2 );
+      double r = dropSize/2, d = dropSize/n, d2 = d/2;
+      for ( int i = 0, k = 0; i < n; ++i )
+      {
+         double x = i*d + d2;
+         for ( int j = 0; j < n; ++j, ++k )
+         {
+            m_xlut[k] = x;
+            m_ylut[k] = j*d + d2;
+            m_zlut[k] = Value( x - r, m_ylut[k] - r );
+         }
+      }
+      // Normalize for unit integration volume.
+      m_zlut /= n2*Value( 0, 0 );
+   }
+
+   /*
+    * Set the current drop position in alignment reference coordinates.
+    */
+   void MoveTo( double x, double y )
+   {
+      m_pos.x = x;
+      m_pos.y = y;
+   }
+
+   /*
+    * Immutable iterator for fast LUT-based double integration.
+    */
+   class const_iterator : public ForwardIterator
+   {
+   public:
+
+      const_iterator( const DrizzleKernelFunction& F ) :
+         f( F ), x( F.m_xlut.Begin() ), y( F.m_ylut.Begin() ), z( F.m_zlut.Begin() )
+      {
+      }
+
+      const_iterator( const const_iterator& ) = default;
+#ifndef _MSC_VER
+      const_iterator( const_iterator&& ) = default;
+#endif
+
+      /*
+       * Returns true iff this iterator is valid.
+       */
+      operator bool() const
+      {
+         return x < f.m_xlut.End();
+      }
+
+      /*
+       * Horizontal microdrop coordinate for the current LUT item.
+       */
+      double X() const
+      {
+         return *x + f.m_pos.x;
+      }
+
+      /*
+       * Vertical microdrop coordinate for the current LUT item.
+       */
+      double Y() const
+      {
+         return *y + f.m_pos.y;
+      }
+
+      /*
+       * Function value for the current LUT item.
+       */
+      double Z() const
+      {
+         return *z;
+      }
+
+      /*
+       * Preincrement operator.
+       */
+      const_iterator& operator ++()
+      {
+         ++x; ++y; ++z;
+         return *this;
+      }
+
+      /*
+       * Postincrement operator.
+       */
+      const_iterator operator ++( int )
+      {
+         const_iterator i( *this );
+         ++x; ++y; ++z;
+         return i;
+      }
+
+   private:
+
+      const DrizzleKernelFunction& f;
+      DVector::const_iterator      x, y, z;
+   };
+
+   /*
+    * Returns a new iterator located at the beginning of all LUTs.
+    */
+   const_iterator Begin() const
+   {
+      return const_iterator( *this );
+   }
+
+protected:
+
+   /*
+    * Reset function parameters for the specified drop size and prepare for
+    * LUT initialization.
+    */
+   virtual void Reset( double dropSize ) = 0;
+
+   /*
+    * Function value at the specified local coordinates in the [0,1] range. The
+    * origin of coordinates dx=dy=0 is at the center of the sampling region.
+    * The kernel function must be rotationally symmetric with its global
+    * maximum at the origin.
+    */
+   virtual double Value( double dx, double dy ) const = 0;
+
+private:
+
+   /*
+    * Current drop position.
+    */
+   DPoint m_pos;
+
+   /*
+    * Microdrop LUT for fast double integration.
+    */
+   DVector m_xlut; // horizontal coordinates
+   DVector m_ylut; // vertical coordinates
+   DVector m_zlut; // function values
+};
+
+/*
+ * Gaussian drizzle kernel function.
+ */
+class GaussianDrizzleKernelFunction : public DrizzleKernelFunction
+{
+public:
+
+   GaussianDrizzleKernelFunction() = default;
+
+private:
+
+   double m_2s2;
+
+   virtual void Reset( double dropSize )
+   {
+      double sigma = dropSize/2/Sqrt( -2*Ln( DRIZZLE_KERNEL_EPSILON ) );
+      PCL_CHECK( sigma > 0 )
+      m_2s2 = 2*sigma*sigma;
+   }
+
+   virtual double Value( double dx, double dy ) const
+   {
+      return Exp( -(dx*dx + dy*dy)/m_2s2 );
+   }
+};
+
+/*
+ * Variable shape drizzle kernel function.
+ */
+class VariableShapeDrizzleKernelFunction : public DrizzleKernelFunction
+{
+public:
+
+   VariableShapeDrizzleKernelFunction( double shape ) : DrizzleKernelFunction(), m_shape( shape ), m_rk( 1 )
+   {
+      PCL_PRECONDITION( m_shape > 0 )
+   }
+
+private:
+
+   double m_shape;
+   double m_rk;
+
+   virtual void Reset( double dropSize )
+   {
+      double sigma = dropSize/2/Pow( -m_shape*Ln( DRIZZLE_KERNEL_EPSILON ), 1/m_shape );
+      PCL_CHECK( sigma > 0 )
+      m_rk = m_shape * Pow( sigma, m_shape );
+   }
+
+   virtual double Value( double dx, double dy ) const
+   {
+      return Exp( -Pow( Sqrt( (dx*dx + dy*dy) ), m_shape )/m_rk );
+   }
+};
+
+// ----------------------------------------------------------------------------
+
 DrizzleIntegrationInstance::DrizzleIntegrationInstance( const MetaProcess* m ) :
    ProcessImplementation( m ),
    p_inputData(),
@@ -150,6 +376,9 @@ DrizzleIntegrationInstance::DrizzleIntegrationInstance( const MetaProcess* m ) :
    p_inputDirectory(),
    p_scale( TheDZScaleParameter->DefaultValue() ),
    p_dropShrink( TheDZDropShrinkParameter->DefaultValue() ),
+   p_kernelFunction( DZKernelFunction::Default ),
+   p_kernelGridSize( TheDZKernelGridSizeParameter->DefaultValue() ),
+   p_origin( TheDZOriginXParameter->DefaultValue(), TheDZOriginYParameter->DefaultValue() ),
    p_enableRejection( TheDZEnableRejectionParameter->DefaultValue() ),
    p_enableImageWeighting( TheDZEnableImageWeightingParameter->DefaultValue() ),
    p_enableSurfaceSplines( TheDZEnableSurfaceSplinesParameter->DefaultValue() ),
@@ -178,6 +407,9 @@ void DrizzleIntegrationInstance::Assign( const ProcessImplementation& p )
       p_inputDirectory       = x->p_inputDirectory;
       p_scale                = x->p_scale;
       p_dropShrink           = x->p_dropShrink;
+      p_kernelFunction       = x->p_kernelFunction;
+      p_kernelGridSize       = x->p_kernelGridSize;
+      p_origin               = x->p_origin;
       p_enableRejection      = x->p_enableRejection;
       p_enableImageWeighting = x->p_enableImageWeighting;
       p_enableSurfaceSplines = x->p_enableSurfaceSplines;
@@ -266,13 +498,12 @@ private:
       const Image&                    source;
             Image&                    result;
             Image&                    weight;
-            Homography                H;
-            PointGridInterpolation    G;
+            Homography                H, Hinv;
+            PointGridInterpolation    G, Ginv;
             double                    dropDelta0;
             double                    dropDelta1;
             bool                      splines;
             bool                      rejection;
-            bool                      perChannelRejection;
    };
 
    class DrizzleThread : public Thread
@@ -284,7 +515,7 @@ private:
       DrizzleThread( const ThreadData& data, int firstRow, int endRow ) :
          Thread(),
          totalDropArea( 0 ),
-         m_data( data ), m_firstRow( firstRow ), m_endRow( endRow )
+         m_data( data ), m_firstRow( firstRow ), m_endRow( endRow ), m_kernel()
       {
       }
 
@@ -293,6 +524,42 @@ private:
          INIT_THREAD_MONITOR()
 
          totalDropArea = 0;
+
+         m_kernel.Reset();
+         bool circular = false;
+         switch ( m_data.engine.m_instance.p_kernelFunction )
+         {
+         default:
+         case DZKernelFunction::Square:
+            break;
+         case DZKernelFunction::Circular:
+            circular = true;
+            break;
+         case DZKernelFunction::Gaussian:
+            m_kernel = new GaussianDrizzleKernelFunction;
+            break;
+         case DZKernelFunction::Variable10:
+            m_kernel = new VariableShapeDrizzleKernelFunction( 1.0 );
+            break;
+         case DZKernelFunction::Variable15:
+            m_kernel = new VariableShapeDrizzleKernelFunction( 1.5 );
+            break;
+         case DZKernelFunction::Variable30:
+            m_kernel = new VariableShapeDrizzleKernelFunction( 3.0 );
+            break;
+         case DZKernelFunction::Variable40:
+            m_kernel = new VariableShapeDrizzleKernelFunction( 4.0 );
+            break;
+         case DZKernelFunction::Variable50:
+            m_kernel = new VariableShapeDrizzleKernelFunction( 5.0 );
+            break;
+         case DZKernelFunction::Variable60:
+            m_kernel = new VariableShapeDrizzleKernelFunction( 6.0 );
+            break;
+         }
+
+         if ( !m_kernel.IsNull() )
+            m_kernel->Initialize( 1 - 2*m_data.dropDelta0, m_data.engine.m_instance.p_kernelGridSize );
 
          Image::pixel_iterator r( m_data.result );
          r.MoveBy( 0, m_firstRow );
@@ -305,27 +572,9 @@ private:
             referenceRect.y0 = (y + m_data.engine.m_origin.y) * m_data.engine.m_pixelSize;
             referenceRect.y1 = referenceRect.y0 + m_data.engine.m_pixelSize;
 
-            Point referencePixel;
-            if ( m_data.rejection )
-            {
-               referencePixel.y = TruncInt( referenceRect.y0 + 0.5 );
-               if ( referencePixel.y >= m_data.engine.m_referenceHeight )
-                  referencePixel.y = m_data.engine.m_referenceHeight-1;
-            }
-
             for ( int x = 0; x < m_data.engine.m_width; ++x, ++r, ++w )
             {
                referenceRect.x0 = (x + m_data.engine.m_origin.x) * m_data.engine.m_pixelSize;
-
-               if ( m_data.rejection )
-               {
-                  referencePixel.x = TruncInt( referenceRect.x0 + 0.5 );
-                  if ( referencePixel.x >= m_data.engine.m_referenceWidth )
-                     referencePixel.x = m_data.engine.m_referenceWidth-1;
-                  if ( m_data.engine.Reject( referencePixel ) )
-                     continue;
-               }
-
                referenceRect.x1 = referenceRect.x0 + m_data.engine.m_pixelSize;
 
                DPoint sourceP0, sourceP1, sourceP2, sourceP3;
@@ -344,20 +593,15 @@ private:
                   sourceP3 = m_data.H( referenceRect.x1, referenceRect.y1 );
                }
 
-               sourceP0.MoveBy( 0.5 );
-               sourceP1.MoveBy( 0.5 );
-               sourceP2.MoveBy( 0.5 );
-               sourceP3.MoveBy( 0.5 );
+               sourceP0 += m_data.engine.m_instance.p_origin;
+               sourceP1 += m_data.engine.m_instance.p_origin;
+               sourceP2 += m_data.engine.m_instance.p_origin;
+               sourceP3 += m_data.engine.m_instance.p_origin;
 
-               sourceP0.Round( DRIZZLE_RESOLUTION );
-               sourceP1.Round( DRIZZLE_RESOLUTION );
-               sourceP2.Round( DRIZZLE_RESOLUTION );
-               sourceP3.Round( DRIZZLE_RESOLUTION );
-
-               DRect sourceBounds( Min( Min( Min( sourceP0.x, sourceP1.x ), sourceP2.x ), sourceP3.x ) + 1.0e-5,
-                                   Min( Min( Min( sourceP0.y, sourceP1.y ), sourceP2.y ), sourceP3.y ) + 1.0e-5,
-                                   Max( Max( Max( sourceP0.x, sourceP1.x ), sourceP2.x ), sourceP3.x ) - 1.0e-5,
-                                   Max( Max( Max( sourceP0.y, sourceP1.y ), sourceP2.y ), sourceP3.y ) - 1.0e-5 );
+               DRect sourceBounds( Min( Min( Min( sourceP0.x, sourceP1.x ), sourceP2.x ), sourceP3.x ) - DRIZZLE_BOUNDS_TOLERANCE,
+                                   Min( Min( Min( sourceP0.y, sourceP1.y ), sourceP2.y ), sourceP3.y ) - DRIZZLE_BOUNDS_TOLERANCE,
+                                   Max( Max( Max( sourceP0.x, sourceP1.x ), sourceP2.x ), sourceP3.x ) + DRIZZLE_BOUNDS_TOLERANCE,
+                                   Max( Max( Max( sourceP0.y, sourceP1.y ), sourceP2.y ), sourceP3.y ) + DRIZZLE_BOUNDS_TOLERANCE );
 
                Array<Point> sourcePixels;
                {
@@ -368,28 +612,35 @@ private:
                            for ( int x = b.x0; x <= b.x1; ++x )
                               if ( x >= 0 )
                                  if ( x < m_data.source.Width() )
-                                    sourcePixels.Append( Point( x, y ) );
+                                    sourcePixels << Point( x, y );
                }
 
-               for ( Array<Point>::const_iterator p = sourcePixels.Begin(); p != sourcePixels.End(); ++p )
+               for ( auto p : sourcePixels )
                {
-                  DRect dropRect( p->x + m_data.dropDelta0,
-                                  p->y + m_data.dropDelta0,
-                                  p->x + m_data.dropDelta1,
-                                  p->y + m_data.dropDelta1 );
-
-                  dropRect.Round( DRIZZLE_RESOLUTION );
+                  DRect dropRect( p.x + m_data.dropDelta0,
+                                  p.y + m_data.dropDelta0,
+                                  p.x + m_data.dropDelta1,
+                                  p.y + m_data.dropDelta1 );
 
                   if ( CanRectsIntersect( dropRect, sourceBounds ) )
                   {
+                     if ( !m_kernel.IsNull() )
+                        m_kernel->MoveTo( dropRect.x0, dropRect.y0 );
+
                      double area;
-                     if ( GetAreaOfIntersectionOfQuadAndRect( area, dropRect, sourceP0, sourceP1, sourceP2, sourceP3 ) )
+                     if ( circular ?
+                            GetAreaOfIntersectionOfQuadAndCircle( area, dropRect.Center(), dropRect.Width()/2, sourceP0, sourceP1, sourceP2, sourceP3 )
+                          : GetAreaOfIntersectionOfQuadAndRect( area, dropRect, sourceP0, sourceP1, sourceP2, sourceP3, m_kernel ) )
                      {
+                        Point q;
+                        if ( m_data.rejection )
+                           q = (m_data.splines ? m_data.Ginv( p ) : m_data.Hinv( p )).RoundedToInt();
+
                         for ( int c = 0; c < m_data.engine.m_numberOfChannels; ++c )
-                        {
-                           double value = m_data.source( *p, c );
-                           if ( 1 + value != 1 )
-                              if ( !m_data.perChannelRejection || !m_data.engine.Reject( referencePixel, c ) )
+                           if ( !m_data.rejection || !m_data.engine.Reject( q, c ) )
+                           {
+                              double value = m_data.source( p, c );
+                              if ( 1 + value != 1 )
                               {
                                  double normalizedValue = (value - m_data.engine.Location( c ))
                                                          * m_data.engine.Scale( c )
@@ -400,7 +651,7 @@ private:
                                  r[c] += weightedArea * normalizedValue;
                                  w[c] += weightedArea;
                               }
-                        }
+                           }
 
                         totalDropArea += area;
                      }
@@ -414,17 +665,29 @@ private:
 
    private:
 
-      const ThreadData& m_data;
-            int         m_firstRow, m_endRow;
+      const ThreadData&                        m_data;
+            int                                m_firstRow, m_endRow;
+            AutoPointer<DrizzleKernelFunction> m_kernel;
    };
 
    /*
-    * A functional class for sorting a set of points in clockwise direction.
+    * Predicate class for sorting a set of points in clockwise direction.
     */
    class PointsClockwisePredicate
    {
    public:
 
+      /*
+       * Initialize point sorting with respect to the specified center point.
+       */
+      PointsClockwisePredicate( const DPoint& center ) : c( center )
+      {
+      }
+
+      /*
+       * Initialize point sorting with respect to the barycenter of the
+       * specified set of points.
+       */
       PointsClockwisePredicate( const Array<DPoint>& P ) : c( 0 )
       {
          /*
@@ -437,6 +700,10 @@ private:
          c /= n;
       }
 
+      /*
+       * Predicate function: Returns true iff the point a precedes the point b
+       * in clockwise sorting order.
+       */
       bool operator()( const DPoint& a, const DPoint& b ) const
       {
          /*
@@ -481,26 +748,67 @@ private:
 
    private:
 
-      DPoint c; // barycenter
+      DPoint c; // reference center point
    };
 
+   /*
+    * Returns true iff a nonempty intersection exists between the specified
+    * rectangles r and s.
+    */
    static bool CanRectsIntersect( const DRect& r, const DRect& s )
    {
       return s.x0 < r.x1 && s.x1 > r.x0 && s.y0 < r.y1 && s.y1 > r.y0;
    }
 
+   /*
+    * Returns true iff the specified line segment with end points p0 and p1
+    * intersects the rectangle r.
+    */
    static bool CanSegmentAndRectIntersect( const DPoint& p0, const DPoint& p1, const DRect& r )
    {
       return ((p0.y < p1.y) ? p0.y < r.y1 && p1.y > r.y0 : p1.y < r.y1 && p0.y > r.y0) &&
              ((p0.x < p1.x) ? p0.x < r.x1 && p1.x > r.x0 : p1.x < r.x1 && p0.x > r.x0);
    }
 
+   /*
+    * Returns true iff the specified point p is interior to the rectangle r.
+    */
    static bool PointInsideRect( const DPoint& p, const DRect& r )
    {
       return p.x >= r.x0 && p.x <= r.x1 && p.y >= r.y0 && p.y <= r.y1;
    }
 
+   static bool PointInsideConvexPolygon( double x, double y, const Array<DPoint>& P )
+   {
+      size_type n = P.Length()-1;
+      if ( n < 2 )
+         return false;
+      bool s = (P[1].x - x)*(P[0].y - y) - (P[0].x - x)*(P[1].y - y) < 0;
+      for ( size_type i = 1; i < n; ++i )
+         if ( ((P[i+1].x - x)*(P[i].y - y) - (P[i].x - x)*(P[i+1].y - y) < 0) != s )
+            return false;
+      if ( ((P[0].x - x)*(P[n].y - y) - (P[n].x - x)*(P[0].y - y) < 0) != s )
+         return false;
+      return true;
+   }
+
    /*
+    * Returns true iff a point p is in the convex polygon defined by the set of
+    * points P.
+    *
+    * Adapted from the Wolfram Demonstrations Project:
+    * "An Efficient Test for a Point to Be in a Convex Polygon"
+    * http://demonstrations.wolfram.com/AnEfficientTestForAPointToBeInAConvexPolygon/
+    * Contributed by Robert Nowak
+    */
+   static bool PointInsideConvexPolygon( const DPoint& p, const Array<DPoint>& P )
+   {
+      return PointInsideConvexPolygon( p.x, p.y, P );
+   }
+
+   /*
+    * Returns true iff a point p is in the convex quad {p0,p1,p2,p3}.
+    *
     * Adapted from the Wolfram Demonstrations Project:
     * "An Efficient Test for a Point to Be in a Convex Polygon"
     * http://demonstrations.wolfram.com/AnEfficientTestForAPointToBeInAConvexPolygon/
@@ -520,76 +828,12 @@ private:
                                            q0.x*q3.y - q3.x*q0.y >= 0;
    }
 
-   static void GetIntersectionOfSegmentAndHorizontalSegment( Array<DPoint>& P, const DPoint& a, const DPoint& b,
-                                                             double x0, double y, double x1 )
-   {
-      // Fail if the lines are parallel
-      if ( a.y == b.y )
-         return;
-
-      // Fail if the segment is above or below the horizontal line
-      if ( a.y <= y && b.y <= y || a.y > y && b.y > y )
-         return;
-
-      // Fail if the segments share an end-point
-      if ( (a.x == x0 || a.x == x1) && a.y == y || (b.x == x0 || b.x == x1) && b.y == y )
-         return;
-
-      if ( a.x == b.x )
-      {
-         // Perpendicular lines
-         if ( a.x > x0 && a.x < x1 )
-            P.Append( DPoint( a.x, y ) );
-      }
-      else
-      {
-         double m = (b.y - a.y)/(b.x - a.x);
-         double x = (y - a.y + m*a.x)/m;
-         if ( x > x0 && x < x1 )
-            P.Append( DPoint( x, y ) );
-      }
-   }
-
-   static void GetIntersectionOfSegmentAndVerticalSegment( Array<DPoint>& P, const DPoint& a, const DPoint& b,
-                                                           double x, double y0, double y1 )
-   {
-      // Fail if the lines are parallel
-      if ( a.x == b.x )
-         return;
-
-      // Fail if the segment is at one side of the vertical line
-      if ( a.x <= x && b.x <= x || a.x > x && b.x > x )
-         return;
-
-      // Fail if the segments share an end-point
-      if ( (a.y == y0 || a.y == y1) && a.x == x || (b.y == y0 || b.y == y1) && b.x == x )
-         return;
-
-      if ( a.y == b.y )
-      {
-         // Perpendicular lines
-         if ( a.y > y0 && a.y < y1 )
-            P.Append( DPoint( x, a.y ) );
-      }
-      else
-      {
-         double m = (b.y - a.y)/(b.x - a.x);
-         double y = m*x + a.y - m*a.x;
-         if ( y > y0 && y < y1 )
-            P.Append( DPoint( x, y ) );
-      }
-   }
-
-   static void GetIntersectionsOfSegmentAndRect( Array<DPoint>& P, const DPoint& a, const DPoint& b, const DRect& r )
-   {
-      GetIntersectionOfSegmentAndHorizontalSegment( P, a, b, r.x0, r.y0, r.x1 );
-      GetIntersectionOfSegmentAndHorizontalSegment( P, a, b, r.x0, r.y1, r.x1 );
-      GetIntersectionOfSegmentAndVerticalSegment( P, a, b, r.x0, r.y0, r.y1 );
-      GetIntersectionOfSegmentAndVerticalSegment( P, a, b, r.x1, r.y0, r.y1 );
-   }
-
    /*
-    * Adapted from a public-domain function by Darel Rex Finley, 2006.
+    * Returns the area of a polygon defined by the set of points P. The points
+    * must be sorted in clockwise or counter-clockwise direction with respect
+    * to a common location.
+    *
+    * Adapted from a public-domain function by Darel Rex Finley, 2006:
     * http://alienryderflex.com/polygon_area/
     */
    static double AreaOfPolygon( const Array<DPoint>& P )
@@ -600,12 +844,116 @@ private:
          s += (P[j].x + P[i].x)*(P[j].y - P[i].y);
          j = i;
       }
-      return ((s < 0) ? -s : s)/2; // s > 0 if points are listed clockwise
+      return ((s < 0) ? -s : s)/2; // s < 0 if points are listed counter-clockwise
    }
 
-   static bool GetAreaOfIntersectionOfQuadAndRect( double& f, const DRect& r,
-                                                   const DPoint& p0, const DPoint& p1, const DPoint& p2, const DPoint& p3 )
+   /*
+    * Returns true iff the point p is in the circle with center C and square
+    * radius R2.
+    */
+   static bool PointInsideCircle( const DPoint& p, const DPoint& C, double R2 )
    {
+      double dx = p.x - C.x;
+      double dy = p.y - C.y;
+      return dx*dx + dy*dy <= R2;
+   }
+
+   /*
+    * Computes the intersection between an arbitrary line segment with end
+    * points a, b and a horizontal line segment with end points {x0,y} and
+    * {x1,y}, and appends it to the set of points P.
+    */
+   static void GetIntersectionOfSegmentAndHorizontalSegment( Array<DPoint>& P, const DPoint& a, const DPoint& b,
+                                                             double x0, double y, double x1 )
+   {
+      // No intersection if the lines are parallel.
+      if ( a.y == b.y )
+         return;
+
+      // No intersection if the segment is above or below the horizontal line.
+      if ( a.y <= y && b.y <= y || a.y > y && b.y > y )
+         return;
+
+      // No intersection if the segments share an end point.
+      if ( (a.x == x0 || a.x == x1) && a.y == y || (b.x == x0 || b.x == x1) && b.y == y )
+         return;
+
+      if ( a.x == b.x )
+      {
+         // Perpendicular lines
+         if ( a.x > x0 && a.x < x1 )
+            P << DPoint( a.x, y );
+      }
+      else
+      {
+         double m = (b.y - a.y)/(b.x - a.x);
+         double x = (y - a.y + m*a.x)/m;
+         if ( x > x0 && x < x1 )
+            P << DPoint( x, y );
+      }
+   }
+
+   /*
+    * Computes the intersection between an arbitrary line segment with end
+    * points a, b and a vertical line segment with end points {x,y0} and
+    * {x,y1}, and appends it to the set of points P.
+    */
+   static void GetIntersectionOfSegmentAndVerticalSegment( Array<DPoint>& P, const DPoint& a, const DPoint& b,
+                                                           double x, double y0, double y1 )
+   {
+      // No intersection if the lines are parallel.
+      if ( a.x == b.x )
+         return;
+
+      // No intersection if the segment is at one side of the vertical line.
+      if ( a.x <= x && b.x <= x || a.x > x && b.x > x )
+         return;
+
+      // No intersection if the segments share an end point.
+      if ( (a.y == y0 || a.y == y1) && a.x == x || (b.y == y0 || b.y == y1) && b.x == x )
+         return;
+
+      if ( a.y == b.y )
+      {
+         // Perpendicular lines
+         if ( a.y > y0 && a.y < y1 )
+            P << DPoint( x, a.y );
+      }
+      else
+      {
+         double m = (b.y - a.y)/(b.x - a.x);
+         double y = m*x + a.y - m*a.x;
+         if ( y > y0 && y < y1 )
+            P << DPoint( x, y );
+      }
+   }
+
+   /*
+    * Computes the intersections between a line segment with end points a, b
+    * and a rectangle r, and appends them to the set of points P.
+    */
+   static void GetIntersectionsOfSegmentAndRect( Array<DPoint>& P, const DPoint& a, const DPoint& b, const DRect& r )
+   {
+      GetIntersectionOfSegmentAndHorizontalSegment( P, a, b, r.x0, r.y0, r.x1 );
+      GetIntersectionOfSegmentAndHorizontalSegment( P, a, b, r.x0, r.y1, r.x1 );
+      GetIntersectionOfSegmentAndVerticalSegment( P, a, b, r.x0, r.y0, r.y1 );
+      GetIntersectionOfSegmentAndVerticalSegment( P, a, b, r.x1, r.y0, r.y1 );
+   }
+
+   /*
+    * Computes the area of the intersection between a rectangle r and a convex
+    * quad {p0,p1,p2,p3}. If the specified drizzle kernel function F is
+    * not null, returns the double integration of the kernel function over the
+    * intersection region. If a nonempty intersection exists, stores its area
+    * in the specified variable f and returns true; otherwise returns false.
+    */
+   static bool GetAreaOfIntersectionOfQuadAndRect( double& f, const DRect& r,
+                                                   const DPoint& p0, const DPoint& p1, const DPoint& p2, const DPoint& p3,
+                                                   const DrizzleKernelFunction* F )
+   {
+      /*
+       * Intersections with quad sides.
+       */
       Array<DPoint> P;
       if ( CanSegmentAndRectIntersect( p0, p1, r ) )
          GetIntersectionsOfSegmentAndRect( P, p0, p1, r );
@@ -616,65 +964,226 @@ private:
       if ( CanSegmentAndRectIntersect( p3, p0, r ) )
          GetIntersectionsOfSegmentAndRect( P, p3, p0, r );
 
+      /*
+       * Interior quad vertices.
+       */
       if ( PointInsideRect( p0, r ) )
-         P.Append( p0 );
+         P << p0;
       if ( PointInsideRect( p1, r ) )
-         P.Append( p1 );
+         P << p1;
       if ( PointInsideRect( p2, r ) )
-         P.Append( p2 );
+         P << p2;
       if ( PointInsideRect( p3, r ) )
-         P.Append( p3 );
+         P << p3;
 
+      /*
+       * Interior rectangle vertices.
+       */
       if ( PointInsideConvexQuad( DPoint( r.x0, r.y0 ), p0, p1, p2, p3 ) )
-         P.Append( DPoint( r.x0, r.y0 ) );
+         P << DPoint( r.x0, r.y0 );
       if ( PointInsideConvexQuad( DPoint( r.x0, r.y1 ), p0, p1, p2, p3 ) )
-         P.Append( DPoint( r.x0, r.y1 ) );
+         P << DPoint( r.x0, r.y1 );
       if ( PointInsideConvexQuad( DPoint( r.x1, r.y0 ), p0, p1, p2, p3 ) )
-         P.Append( DPoint( r.x1, r.y0 ) );
+         P << DPoint( r.x1, r.y0 );
       if ( PointInsideConvexQuad( DPoint( r.x1, r.y1 ), p0, p1, p2, p3 ) )
-         P.Append( DPoint( r.x1, r.y1 ) );
+         P << DPoint( r.x1, r.y1 );
 
       if ( P.Length() < 3 )
          return false;
 
-      // Make sure the intersection is a convex polygon.
+      /*
+       * Make sure the intersection is a convex polygon.
+       */
       if ( P.Length() > 3 )
          InsertionSort( P.Begin(), P.End(), PointsClockwisePredicate( P ) );
 
-      f = AreaOfPolygon( P );
+      /*
+       * If no kernel function is being applied, compute the area of the
+       * intersection polygon. Otherwise compute an approximation to the double
+       * integral of the kernel function over the intersection polygon.
+       */
+      if ( F == nullptr )
+         f = AreaOfPolygon( P );
+      else
+      {
+         f = 0;
+         for ( DrizzleKernelFunction::const_iterator i = F->Begin(); i; ++i )
+            if ( PointInsideConvexPolygon( i.X(), i.Y(), P ) )
+               f += i.Z();
+      }
       return true;
    }
 
-   bool Reject( const Point& p ) const
+   /*
+    * Returns true iff the point p belongs to the line segment a-b, excluding
+    * its end points. The three points a, b, p must be colinear.
+    */
+   static bool ColinearPointInSegment( const DPoint& a, const DPoint& b, const DPoint& p )
    {
-      // Assume m_decoder.HasRejectionData() == true
-      for ( int c = 0; c < m_decoder.RejectionMap().NumberOfChannels(); ++c )
-         if ( m_decoder.RejectionMap()( p, c ) != 0 )
-            return true;
-      return false;
+      return p.x < Max( a.x, b.x ) &&
+             p.x > Min( a.x, b.x ) &&
+             p.y < Max( a.y, b.y ) &&
+             p.y > Min( a.y, b.y );
    }
 
+   /*
+    * Computes the intersections between a line segment with end points p1, p2
+    * and a cricle with center C and square radius R2. If two intersection
+    * points exist, stores them in the set of points P. This function excludes
+    * segments tangent to the circle and segment end points belonging to the
+    * circumference.
+    */
+   static void GetIntersectionsOfSegmentAndCircle( Array<DPoint>& P, const DPoint& p1, const DPoint& p2, const DPoint& C, double R2 )
+   {
+      DPoint a = p1 - C;
+      DPoint b = p2 - C;
+      double dx = b.x - a.x;
+      double dy = b.y - a.y;
+      double dr2 = dx*dx + dy*dy;
+      double D = a.x*b.y - b.x*a.y;
+      double d = R2*dr2 - D*D;
+      if ( d <= 0 ) // exterior or tangent line
+         return;
+      double sd = Sqrt( d );
+      double tx = dx*sd;
+      if ( dy < 0 )
+         tx = -tx;
+      double ty = Abs( dy )*sd;
+      double Ddx = -D*dx;
+      double Ddy = D*dy;
+      DPoint q1( (Ddy + tx)/dr2, (Ddx + ty)/dr2 );
+      DPoint q2( (Ddy - tx)/dr2, (Ddx - ty)/dr2 );
+      if ( ColinearPointInSegment( a, b, q1 ) )
+         P << q1 + C;
+      if ( ColinearPointInSegment( a, b, q2 ) )
+         P << q2 + C;
+   }
+
+   /*
+    * Computes the area of the intersection between a circle with center C and
+    * radius R and a convex quad {p0,p1,p2,p3}. If a nonempty intersection
+    * exists, stores its area in the specified variable f and returns true;
+    * otherwise returns false.
+    */
+   static bool GetAreaOfIntersectionOfQuadAndCircle( double& f, const DPoint& C, double R,
+                                                     const DPoint& p0, const DPoint& p1, const DPoint& p2, const DPoint& p3 )
+   {
+      double R2 = R*R;
+      bool p0Inside = PointInsideCircle( p0, C, R2 );
+      bool p1Inside = PointInsideCircle( p1, C, R2 );
+      bool p2Inside = PointInsideCircle( p2, C, R2 );
+      bool p3Inside = PointInsideCircle( p3, C, R2 );
+
+      /*
+       * Special case: Quad completely inside circle.
+       */
+      if ( p0Inside && p1Inside && p2Inside && p3Inside )
+      {
+         f = AreaOfPolygon( Array<DPoint>() << p0 << p1 << p2 << p3 );
+         return true;
+      }
+
+      /*
+       * Intersections with quad sides.
+       */
+      Array<DPoint> P;
+      GetIntersectionsOfSegmentAndCircle( P, p0, p1, C, R2 );
+      GetIntersectionsOfSegmentAndCircle( P, p1, p2, C, R2 );
+      GetIntersectionsOfSegmentAndCircle( P, p2, p3, C, R2 );
+      GetIntersectionsOfSegmentAndCircle( P, p3, p0, C, R2 );
+
+      /*
+       * Accumulate circular segments.
+       */
+      f = 0;
+      if ( P.Length() > 1 )
+      {
+         InsertionSort( P.Begin(), P.End(), PointsClockwisePredicate( C ) );
+         for ( size_type i = 1; i < P.Length(); i += 2 )
+         {
+            double dx = P[i].x - P[i-1].x;
+            double dy = P[i].y - P[i-1].y;
+            double theta = 2*ArcSin( Min( Sqrt( dx*dx + dy*dy )/R/2, 1.0 ) );
+            f += R2*(theta - Sin( theta ))/2;
+         }
+      }
+
+      /*
+       * Add quad vertices interior to circle.
+       */
+      if ( p0Inside )
+         P << p0;
+      if ( p1Inside )
+         P << p1;
+      if ( p2Inside )
+         P << p2;
+      if ( p3Inside )
+         P << p3;
+
+      if ( P.Length() < 3 )
+      {
+         /*
+          * Special case: Circle completely inside quad, or only two
+          * intersections with one quad side.
+          */
+         if ( PointInsideConvexQuad( C, p0, p1, p2, p3 ) )
+         {
+            // If there are two intersections, subtract circular segment.
+            f = Const<double>::pi()*R2 - f;
+            return true;
+         }
+         return false;
+      }
+
+      /*
+       * Add area of intersected polygon.
+       */
+      InsertionSort( P.Begin(), P.End(), PointsClockwisePredicate( P ) );
+      f += AreaOfPolygon( P );
+      return true;
+   }
+
+   /*
+    * Returns true iff the pixel with coordinates given by the specified point
+    * p is being rejected for the channel c of the current source image.
+    */
    bool Reject( const Point& p, int c ) const
    {
       // Assume m_decoder.HasRejectionData() == true
-      return m_decoder.RejectionMap()( p, c ) != 0;
+      return m_decoder.RejectionMap().Includes( p ) && m_decoder.RejectionMap()( p.x, p.y, c ) != 0;
    }
 
+   /*
+    * Returns the location estimate for the specified channel of the current
+    * source image.
+    */
    const double Location( int c ) const
    {
       return m_decoder.Location()[c];
    }
 
+   /*
+    * Returns the location estimate for the specified channel of the reference
+    * source image.
+    */
    const double ReferenceLocation( int c ) const
    {
       return m_decoder.ReferenceLocation()[c];
    }
 
+   /*
+    * Returns the scale estimate for the specified channel of the current
+    * source image.
+    */
    const double Scale( int c ) const
    {
       return m_decoder.Scale()[c];
    }
 
+   /*
+    * Returns the statistical weight for the specified channel of the current
+    * source image.
+    */
    const double Weight( int c ) const
    {
       if ( m_instance.p_enableImageWeighting )
@@ -706,11 +1215,11 @@ private:
          FITSKeywordArray keywords;
          if ( !file.Extract( keywords ) )
             throw CatchedException();
-         for ( FITSKeywordArray::const_iterator i = keywords.Begin(); i != keywords.End(); ++i )
-            if ( !i->name.CompareIC( keyName ) )
+         for ( auto k : keywords )
+            if ( !k.name.CompareIC( keyName ) )
             {
-               if ( i->IsNumeric() )
-                  if ( i->GetNumericValue( value ) )
+               if ( k.IsNumeric() )
+                  if ( k.GetNumericValue( value ) )
                      return true;
                break;
             }
@@ -718,6 +1227,9 @@ private:
       return false;
    }
 
+   /*
+    * Normalizes the drizzle result image for the specified drizzle weight map.
+    */
    void Normalize( ImageVariant& result, ImageVariant& weight ) const
    {
       Image::pixel_iterator r( static_cast<Image&>( *result ) );
@@ -758,13 +1270,13 @@ void DrizzleIntegrationEngine::Perform()
       int succeeded = 0;
       int skipped = 0;
       int failed = 0;
-      for ( input_data_list::const_iterator i = m_instance.p_inputData.Begin(); i != m_instance.p_inputData.End(); ++i )
+      for ( auto item : m_instance.p_inputData )
       {
          try
          {
             ++count;
 
-            if ( !i->enabled )
+            if ( !item.enabled )
             {
                ++skipped;
                continue;
@@ -772,13 +1284,13 @@ void DrizzleIntegrationEngine::Perform()
 
             console.WriteLn( String().Format( "<end><cbr><br>* Parsing drizzle data file %d of %d:",
                                              count, m_instance.p_inputData.Length() ) );
-            console.WriteLn( "<raw>" + i->path + "</raw>" );
+            console.WriteLn( "<raw>" + item.path + "</raw>" );
 
-            if ( !File::Exists( i->path ) )
-               throw Error( "No such file: " + i->path );
+            if ( !File::Exists( item.path ) )
+               throw Error( "No such file: " + item.path );
 
             {
-               IsoString text = File::ReadTextFile( i->path );
+               IsoString text = File::ReadTextFile( item.path );
                m_decoder.Decode( text );
                if ( !m_instance.p_enableSurfaceSplines || !m_decoder.HasSplines() )
                   if ( !m_decoder.HasMatrix() )
@@ -833,9 +1345,9 @@ void DrizzleIntegrationEngine::Perform()
             else
             {
                if ( m_decoder.ReferenceWidth() != m_referenceWidth ||
-                  m_decoder.ReferenceHeight() != m_referenceHeight ||
-                  m_decoder.NumberOfChannels() != m_numberOfChannels )
-                  throw Error( "Inconsistent image geometry: " + i->path );
+                    m_decoder.ReferenceHeight() != m_referenceHeight ||
+                    m_decoder.NumberOfChannels() != m_numberOfChannels )
+                  throw Error( "Inconsistent image geometry: " + item.path );
             }
 
             String filePath = m_decoder.FilePath();
@@ -918,15 +1430,15 @@ void DrizzleIntegrationEngine::Perform()
 
             console.Write( "<end><cbr>Scale factors : " );
             for ( int c = 0; c < m_numberOfChannels; ++c )
-               console.Write( String().Format( " %8.5f", m_decoder.Scale()[c] ) );
+               console.Write( String().Format( " %8.5lf", m_decoder.Scale()[c] ) );
             console.Write(       "<br>Zero offset   : " );
             for ( int c = 0; c < m_numberOfChannels; ++c )
-               console.Write( String().Format( " %+.6e", m_decoder.ReferenceLocation()[c] - m_decoder.Location()[c] ) );
+               console.Write( String().Format( " %+.6le", m_decoder.ReferenceLocation()[c] - m_decoder.Location()[c] ) );
             if ( m_instance.p_enableImageWeighting )
             {
                console.Write(    "<br>Weight        : " );
                for ( int c = 0; c < m_numberOfChannels; ++c )
-                  console.Write( String().Format( " %10.5f", m_decoder.Weight()[c] ) );
+                  console.Write( String().Format( " %10.5lf", m_decoder.Weight()[c] ) );
                console.WriteLn();
             }
 
@@ -944,12 +1456,20 @@ void DrizzleIntegrationEngine::Perform()
             threadData.H = Homography( m_decoder.AlignmentMatrix() );
             if ( m_instance.p_enableSurfaceSplines )
                if ( m_decoder.HasSplines() )
-                  threadData.G.Initialize( Rect( m_referenceWidth, m_referenceHeight ), 8, m_decoder.AlignmentSplines() );
+               {
+                  console.WriteLn( "<end><cbr>Building 2D surface interpolation grids...<flush>" );
+                  threadData.G.Initialize( Rect( m_referenceWidth, m_referenceHeight ), 8, m_decoder.AlignmentSplines(), false/*verbose*/ );
+               }
             threadData.dropDelta0 = (1 - m_instance.p_dropShrink)/2;
             threadData.dropDelta1 = 1 - threadData.dropDelta0;
             threadData.splines = threadData.G.IsValid();
             threadData.rejection = m_instance.p_enableRejection && m_decoder.HasRejectionData();
-            threadData.perChannelRejection = threadData.rejection && m_numberOfChannels > 1;
+            if ( threadData.rejection )
+            {
+               threadData.Hinv = threadData.H.Inverse();
+               if ( threadData.splines )
+                  threadData.Ginv.Initialize( threadData.G.ReferenceRect(), threadData.G.Delta(), m_decoder.AlignmentSplines().Inverse(), false/*verbose*/ );
+            }
             threadData.status.Initialize( "Integrating pixels", m_height );
 
             int numberOfThreads = Thread::NumberOfThreads( m_height, Max( 1, 4096/m_width ) );
@@ -978,8 +1498,8 @@ void DrizzleIntegrationEngine::Perform()
 
             sourceImage.FreeData();
 
-            console.WriteLn( String().Format( "<end><cbr>Input data  : %.3f", inputData ) );
-            console.WriteLn( String().Format( "<end><cbr>Output data : %.3f", outputData ) );
+            console.WriteLn( String().Format( "<end><cbr>Input data    : %.3lf", inputData ) );
+            console.WriteLn( String().Format( "<end><cbr>Output data   : %.3lf", outputData ) );
 
             for ( int i = 0; i < m_numberOfChannels && i < 3; ++i )
             {
@@ -998,7 +1518,7 @@ void DrizzleIntegrationEngine::Perform()
                imageData.rejectedHigh[i] = m_decoder.RejectionHighCount()[i];
             }
             imageData.outputData = outputData;
-            m_instance.o_output.imageData.Append( imageData );
+            m_instance.o_output.imageData << imageData;
 
             ++succeeded;
          }
@@ -1070,7 +1590,7 @@ void DrizzleIntegrationEngine::Perform()
 
       Normalize( resultImage, weightImage );
 
-      console.WriteLn( String().Format( "<end><cbr><br>Total output data : %.3f", totalOutputData ) );
+      console.WriteLn( String().Format( "<end><cbr><br>Total output data : %.3lf", totalOutputData ) );
 
       m_instance.o_output.integrationImageId = resultWindow.MainView().Id();
       m_instance.o_output.weightImageId = weightWindow.MainView().Id();
@@ -1087,9 +1607,17 @@ void DrizzleIntegrationEngine::Perform()
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(), "Integration with DrizzleIntegration process" ) );
 
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
-                                       IsoString().Format( "DrizzleIntegration.scale: %.2f", m_instance.p_scale ) ) );
+                                       IsoString().Format( "DrizzleIntegration.scale: %.2lf", m_instance.p_scale ) ) );
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
-                                       IsoString().Format( "DrizzleIntegration.dropShrink: %.2f", m_instance.p_dropShrink ) ) );
+                                       IsoString().Format( "DrizzleIntegration.dropShrink: %.2lf", m_instance.p_dropShrink ) ) );
+      keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
+                                       "DrizzleIntegration.kernelFunction: " + TheDZKernelFunctionParameter->ElementId( m_instance.p_kernelFunction ) ) );
+      keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
+                                       IsoString().Format( "DrizzleIntegration.kernelGridSize: %d", m_instance.p_kernelGridSize ) ) );
+      keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
+                                       IsoString().Format( "DrizzleIntegration.originX: %.2f", m_instance.p_origin.x ) ) );
+      keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
+                                       IsoString().Format( "DrizzleIntegration.originY: %.2f", m_instance.p_origin.y ) ) );
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
                                        "DrizzleIntegration.enableRejection: " + IsoString( bool( m_instance.p_enableRejection ) ) ) );
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
@@ -1107,7 +1635,7 @@ void DrizzleIntegrationEngine::Perform()
                                        IsoString().Format( "DrizzleIntegration.drizzleGeometry: left=%d, top=%d, width=%d, height=%d",
                                                          m_origin.x, m_origin.y, m_width, m_height ) ) );
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
-                                       IsoString().Format( "DrizzleIntegration.pixelSize: %.3f", m_pixelSize ) ) );
+                                       IsoString().Format( "DrizzleIntegration.pixelSize: %.3lf", m_pixelSize ) ) );
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
                                        IsoString().Format( "DrizzleIntegration.numberOfImages: %d", succeeded ) ) );
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
@@ -1115,17 +1643,17 @@ void DrizzleIntegrationEngine::Perform()
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
                                        IsoString().Format( "DrizzleIntegration.integratedPixels: %lu", m_instance.o_output.integratedPixels ) ) );
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
-                                       IsoString().Format( "DrizzleIntegration.outputData: %.3f", totalOutputData ) ) );
+                                       IsoString().Format( "DrizzleIntegration.outputData: %.3lf", totalOutputData ) ) );
       if ( !ignoringPedestal )
          if ( havePedestal )
             if ( pedestal > 0 )
             {
                keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
-                                                IsoString().Format( "DrizzleIntegration.outputPedestal: %.4g DN", pedestal ) ) );
+                                                IsoString().Format( "DrizzleIntegration.outputPedestal: %.4lg DN", pedestal ) ) );
                keywords.Add( FITSHeaderKeyword( "PEDESTAL",
-                                                IsoString().Format( "%.4g", pedestal ),
+                                                IsoString().Format( "%.4lg", pedestal ),
                                                 "Value in DN added to enforce positivity" ) );
-               console.NoteLn( String().Format( "* PEDESTAL keyword created with value: %.4g DN", pedestal ) );
+               console.NoteLn( String().Format( "* PEDESTAL keyword created with value: %.4lg DN", pedestal ) );
             }
 
       resultWindow.SetKeywords( keywords );
@@ -1188,6 +1716,14 @@ void* DrizzleIntegrationInstance::LockParameter( const MetaParameter* p, size_ty
       return &p_scale;
    if ( p == TheDZDropShrinkParameter )
       return &p_dropShrink;
+   if ( p == TheDZKernelFunctionParameter )
+      return &p_kernelFunction;
+   if ( p == TheDZKernelGridSizeParameter )
+      return &p_kernelGridSize;
+   if ( p == TheDZOriginXParameter )
+      return &p_origin.x;
+   if ( p == TheDZOriginYParameter )
+      return &p_origin.y;
    if ( p == TheDZEnableRejectionParameter )
       return &p_enableRejection;
    if ( p == TheDZEnableImageWeightingParameter )
@@ -1276,7 +1812,7 @@ void* DrizzleIntegrationInstance::LockParameter( const MetaParameter* p, size_ty
    if ( p == TheDZImageOutputDataParameter )
       return &o_output.imageData[tableRow].outputData;
 
-   return 0;
+   return nullptr;
 }
 
 bool DrizzleIntegrationInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
@@ -1364,4 +1900,4 @@ size_type DrizzleIntegrationInstance::ParameterLength( const MetaParameter* p, s
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF DrizzleIntegrationInstance.cpp - Released 2016/11/13 17:30:54 UTC

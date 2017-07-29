@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// FastRotationInstance.h - Released 2016/02/21 20:22:42 UTC
+// FastRotationInstance.h - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -61,28 +61,25 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// FastRotationInstance
-// ----------------------------------------------------------------------------
 
 class FastRotationInstance : public ProcessImplementation
 {
 public:
 
-   FastRotationInstance( const MetaProcess*, int = FastRotationMode::Rotate180 );
+   FastRotationInstance( const MetaProcess*, int = FRMode::Rotate180 );
    FastRotationInstance( const FastRotationInstance& );
 
    virtual void Assign( const ProcessImplementation& );
 
-   virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
+   virtual bool IsMaskable( const View&, const ImageWindow& ) const;
 
-   virtual bool IsMaskable( const View&, const ImageWindow& ) const
-   {
-      return false;
-   }
+   virtual UndoFlags UndoMode( const View& ) const;
+
+   virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
 
    virtual bool BeforeExecution( View& );
    virtual bool ExecuteOn( View& );
-   virtual void* LockParameter( const MetaParameter*, size_type /*tableRow*/ );
+   virtual void* LockParameter( const MetaParameter*, size_type tableRow );
 
 private:
 
@@ -99,4 +96,4 @@ private:
 #endif   // __FastRotationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF FastRotationInstance.h - Released 2016/02/21 20:22:42 UTC
+// EOF FastRotationInstance.h - Released 2016/11/17 18:14:58 UTC

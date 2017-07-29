@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.09.04.0322
+// Standard ImageIntegration Process Module Version 01.11.00.0344
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationProcess.cpp - Released 2016/02/21 20:22:43 UTC
+// DrizzleIntegrationProcess.cpp - Released 2016/11/13 17:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -50,21 +50,17 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include "DrizzleIntegrationProcess.h"
 #include "DrizzleIntegrationParameters.h"
+#include "DrizzleIntegrationProcess.h"
 #include "DrizzleIntegrationInstance.h"
 #include "DrizzleIntegrationInterface.h"
-
-#ifdef __PCL_WINDOWS
-# include <stdio.h>  // for _setmaxstdio()
-#endif
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-DrizzleIntegrationProcess* TheDrizzleIntegrationProcess = 0;
+DrizzleIntegrationProcess* TheDrizzleIntegrationProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -76,7 +72,6 @@ DrizzleIntegrationProcess::DrizzleIntegrationProcess() : MetaProcess()
 {
    TheDrizzleIntegrationProcess = this;
 
-   // Instantiate process parameters
    new DZInputData( this );
    new DZItemEnabled( TheDZInputDataParameter );
    new DZItemPath( TheDZInputDataParameter );
@@ -84,6 +79,10 @@ DrizzleIntegrationProcess::DrizzleIntegrationProcess() : MetaProcess()
    new DZInputDirectory( this );
    new DZScale( this );
    new DZDropShrink( this );
+   new DZKernelFunction( this );
+   new DZKernelGridSize( this );
+   new DZOriginX( this );
+   new DZOriginY( this );
    new DZEnableRejection( this );
    new DZEnableImageWeighting( this );
    new DZEnableSurfaceSplines( this );
@@ -187,7 +186,7 @@ ProcessImplementation* DrizzleIntegrationProcess::Create() const
 ProcessImplementation* DrizzleIntegrationProcess::Clone( const ProcessImplementation& p ) const
 {
    const DrizzleIntegrationInstance* instPtr = dynamic_cast<const DrizzleIntegrationInstance*>( &p );
-   return (instPtr != 0) ? new DrizzleIntegrationInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new DrizzleIntegrationInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -195,4 +194,4 @@ ProcessImplementation* DrizzleIntegrationProcess::Clone( const ProcessImplementa
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationProcess.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF DrizzleIntegrationProcess.cpp - Released 2016/11/13 17:30:54 UTC

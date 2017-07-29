@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// IntegerResampleParameters.cpp - Released 2016/02/21 20:22:42 UTC
+// IntegerResampleParameters.cpp - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -57,58 +57,63 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ZoomFactor*                TheZoomFactorParameter = 0;
-IntegerDownsamplingMode*   TheIntegerDownsamplingModeParameter = 0;
-XResolution*               TheXResolutionIntegerResampleParameter = 0;
-YResolution*               TheYResolutionIntegerResampleParameter = 0;
-MetricResolution*          TheMetricResolutionIntegerResampleParameter = 0;
-ForceResolution*           TheForceResolutionIntegerResampleParameter = 0;
+IRZoomFactor*       TheIRZoomFactorParameter = nullptr;
+IRDownsamplingMode* TheIRDownsamplingModeParameter = nullptr;
+XResolution*        TheIRXResolutionParameter = nullptr;
+YResolution*        TheIRYResolutionParameter = nullptr;
+MetricResolution*   TheIRMetricResolutionParameter = nullptr;
+ForceResolution*    TheIRForceResolutionParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
-ZoomFactor::ZoomFactor( MetaProcess* P ) : MetaInt32( P )
+IRZoomFactor::IRZoomFactor( MetaProcess* P ) : MetaInt32( P )
 {
-   TheZoomFactorParameter = this;
+   TheIRZoomFactorParameter = this;
 }
 
-IsoString ZoomFactor::Id() const
+IsoString IRZoomFactor::Id() const
 {
    return "zoomFactor";
 }
 
-double ZoomFactor::DefaultValue() const
+double IRZoomFactor::DefaultValue() const
 {
    return -2;
 }
 
-double ZoomFactor::MinimumValue() const
+double IRZoomFactor::MinimumValue() const
 {
    return -256;
 }
 
-double ZoomFactor::MaximumValue() const
+double IRZoomFactor::MaximumValue() const
 {
    return +256;
 }
 
 // ----------------------------------------------------------------------------
 
-IntegerDownsamplingMode::IntegerDownsamplingMode( MetaProcess* P ) : MetaEnumeration( P )
+IRDownsamplingMode::IRDownsamplingMode( MetaProcess* P ) : MetaEnumeration( P )
 {
-   TheIntegerDownsamplingModeParameter = this;
+   TheIRDownsamplingModeParameter = this;
 }
 
-IsoString IntegerDownsamplingMode::Id() const
+IsoString IRDownsamplingMode::Id() const
 {
-   return "subsampleMode";
+   return "downsamplingMode";
 }
 
-size_type IntegerDownsamplingMode::NumberOfElements() const
+IsoString IRDownsamplingMode::Aliases() const
 {
-   return NumberOfIntegerDownsamplingModes;
+   return "subsampleMode"; // for compatibility with old versions
 }
 
-IsoString IntegerDownsamplingMode::ElementId( size_type i ) const
+size_type IRDownsamplingMode::NumberOfElements() const
+{
+   return NumberOfModes;
+}
+
+IsoString IRDownsamplingMode::ElementId( size_type i ) const
 {
    switch ( i )
    {
@@ -120,12 +125,12 @@ IsoString IntegerDownsamplingMode::ElementId( size_type i ) const
    }
 }
 
-int IntegerDownsamplingMode::ElementValue( size_type i ) const
+int IRDownsamplingMode::ElementValue( size_type i ) const
 {
    return int( i );
 }
 
-size_type IntegerDownsamplingMode::DefaultValueIndex() const
+size_type IRDownsamplingMode::DefaultValueIndex() const
 {
    return Default;
 }
@@ -135,4 +140,4 @@ size_type IntegerDownsamplingMode::DefaultValueIndex() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IntegerResampleParameters.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF IntegerResampleParameters.cpp - Released 2016/11/17 18:14:58 UTC

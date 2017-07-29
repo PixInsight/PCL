@@ -426,7 +426,7 @@ void GeneralAnalyticalPointingModel::evaluateBasis( Matrix& basisVectors, double
    // rescale hour angle to degrees
    hourAngle *= factorHaToDeg;
    if ( basisVectors.Rows() != 2 || basisVectors.Columns() != static_cast<int>( m_numOfModelParameters ) )
-      throw Error( "Internal error: TpointPointingModel::evaluateBasis: Matrix dimensions do not match" );
+      throw Error( "Internal error: PointingModel::evaluateBasis: Matrix dimensions do not match" );
 
    double ctc  = Cos( Rad( hourAngle ) );
    double cdc  = Cos( Rad( dec ) );
@@ -757,7 +757,7 @@ void GeneralAnalyticalPointingModel::Parse( const XMLDocument& xml )
          else if ( element.Name() == "GeographicLatitude" )
             m_siteLatitude = element.Text().Trimmed().ToDouble();
          else if ( element.Name() == "Configuration" )
-            m_modelConfig = element.Text().Trimmed().ToInt();
+            m_modelConfig = element.Text().Trimmed().ToUInt();
          else if ( element.Name() == "CreationTime" )
          {
             m_modelCreationTime = TimePoint( element.Text().Trimmed() );

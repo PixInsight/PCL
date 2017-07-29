@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Cryptography.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Cryptography.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,13 @@
 
 /// \file pcl/Cryptography.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_UIObject_h
-#include <pcl/UIObject.h>
-#endif
-
-#ifndef __PCL_ByteArray_h
+#include <pcl/AutoPointer.h>
 #include <pcl/ByteArray.h>
-#endif
+#include <pcl/Exception.h>
+#include <pcl/String.h>
 
 namespace pcl
 {
@@ -76,7 +68,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup cryptography_classes Cryptographic Hash and Encryption Classes
+ * \defgroup cryptography_classes Cryptographic Hashing and Encryption Classes
  */
 
 /*!
@@ -90,9 +82,14 @@ namespace pcl
  * \ingroup cryptography_classes
  * \sa MD5, SHA1, SHA224, SHA256, SHA384, SHA512, CryptographicHashFactory
  */
-class PCL_CLASS CryptographicHash : public UIObject
+class PCL_CLASS CryptographicHash
 {
 public:
+
+   /*!
+    * Default constructor.
+    */
+   CryptographicHash() = default;
 
    /*!
     * Destroys a %CryptographicHash object.
@@ -102,16 +99,16 @@ public:
    }
 
    /*!
-    * Ensures that the server-side object managed by this instance is uniquely
-    * referenced.
-    *
-    * Since cryptographic hashes are unique objects by definition, calling this
-    * member function has no effect.
+    * Copy constructor. This constructor is disabled because %CryptographicHash
+    * objects are unique.
     */
-   virtual void EnsureUnique()
-   {
-      // Unique by definition
-   }
+   CryptographicHash( const CryptographicHash& ) = delete;
+
+   /*!
+    * Copy assignment. This operator is disabled because %CryptographicHash
+    * objects are unique.
+    */
+   CryptographicHash& operator =( const CryptographicHash& ) = delete;
 
    /*!
     * Returns the name of this cryptographic hashing algorithm.
@@ -127,13 +124,13 @@ public:
    /*!
     * Initializes this cryptographic hash generator.
     */
-   virtual void Initialize();
+   virtual void Initialize() = 0;
 
    /*!
     * Updates the hash generator with a new \a data chunk of the specified
     * \a length in bytes.
     */
-   virtual void Update( const void* data, size_type length );
+   virtual void Update( const void* data, size_type length ) = 0;
 
    /*!
     * Updates the hash generator with data from a container with contiguous
@@ -209,21 +206,7 @@ protected:
     * must provide room for at least HashLength() bytes, that is, the length in
     * bytes of the message digest produced by this hashing algorithm.
     */
-   virtual void Finalize( void* hash );
-
-   /*!
-    * \internal
-    */
-   CryptographicHash( void* h ) : UIObject( h )
-   {
-   }
-
-private:
-
-   virtual void* CloneHandle() const;
-
-   CryptographicHash( const CryptographicHash& ) = delete;
-   void operator =( const CryptographicHash& ) = delete;
+   virtual void Finalize( void* hash ) = 0;
 
    friend class CryptographicHashFactory;
 };
@@ -254,14 +237,14 @@ public:
    /*!
     * Constructs an %MD5 hash generator.
     */
-   MD5();
+   MD5() : m_context( nullptr )
+   {
+   }
 
    /*!
     * Destroys an %MD5 hash generator.
     */
-   virtual ~MD5()
-   {
-   }
+   virtual ~MD5();
 
    /*!
     * Returns the name of this cryptographic hashing algorithm: "MD5".
@@ -275,13 +258,29 @@ public:
     * Returns the length in bytes of a hash sequence (or message digest)
     * calculated with this cryptographic hashing algorithm.
     *
-    * As implemented in %MD5, this function returns 16, the length in bytes of
-    * an %MD5 digest.
+    * As reimplemented in %MD5, this function returns 16, the length in bytes
+    * of an %MD5 digest.
     */
    virtual size_type HashLength() const
    {
       return 16;
    }
+
+   /*!
+    */
+   virtual void Initialize();
+
+   /*!
+    */
+   virtual void Update( const void* data, size_type length );
+
+private:
+
+   void* m_context;
+
+   /*!
+    */
+   virtual void Finalize( void* hash );
 };
 
 // ----------------------------------------------------------------------------
@@ -312,14 +311,14 @@ public:
    /*!
     * Constructs an SHA-1 hash generator.
     */
-   SHA1();
+   SHA1() : m_context( nullptr )
+   {
+   }
 
    /*!
     * Destroys an SHA-1 hash generator.
     */
-   virtual ~SHA1()
-   {
-   }
+   virtual ~SHA1();
 
    /*!
     * Returns the name of this cryptographic hashing algorithm: "SHA1".
@@ -333,13 +332,29 @@ public:
     * Returns the length in bytes of a hash sequence (or message digest)
     * calculated with this cryptographic hashing algorithm.
     *
-    * As implemented in %SHA1, this function returns 20, the length in bytes of
-    * an SHA-1 digest.
+    * As reimplemented in %SHA1, this function returns 20, the length in bytes
+    * of an SHA-1 digest.
     */
    virtual size_type HashLength() const
    {
       return 20;
    }
+
+   /*!
+    */
+   virtual void Initialize();
+
+   /*!
+    */
+   virtual void Update( const void* data, size_type length );
+
+private:
+
+   void* m_context; // RFC4634
+
+   /*!
+    */
+   virtual void Finalize( void* hash );
 };
 
 // ----------------------------------------------------------------------------
@@ -370,14 +385,14 @@ public:
    /*!
     * Constructs an SHA-224 hash generator.
     */
-   SHA224();
+   SHA224() : m_context( nullptr )
+   {
+   }
 
    /*!
     * Destroys an SHA-224 hash generator.
     */
-   virtual ~SHA224()
-   {
-   }
+   virtual ~SHA224();
 
    /*!
     * Returns the name of this cryptographic hashing algorithm: "SHA224".
@@ -391,13 +406,29 @@ public:
     * Returns the length in bytes of a hash sequence (or message digest)
     * calculated with this cryptographic hashing algorithm.
     *
-    * As implemented in %SHA224, this function returns 28, the length in bytes
-    * of an SHA-224 digest.
+    * As reimplemented in %SHA224, this function returns 28, the length in
+    * bytes of an SHA-224 digest.
     */
    virtual size_type HashLength() const
    {
       return 28;
    }
+
+   /*!
+    */
+   virtual void Initialize();
+
+   /*!
+    */
+   virtual void Update( const void* data, size_type length );
+
+private:
+
+   void* m_context; // RFC4634
+
+   /*!
+    */
+   virtual void Finalize( void* hash );
 };
 
 // ----------------------------------------------------------------------------
@@ -427,14 +458,14 @@ public:
    /*!
     * Constructs an SHA-256 hash generator.
     */
-   SHA256();
+   SHA256() : m_context( nullptr )
+   {
+   }
 
    /*!
     * Destroys an SHA-256 hash generator.
     */
-   virtual ~SHA256()
-   {
-   }
+   virtual ~SHA256();
 
    /*!
     * Returns the name of this cryptographic hashing algorithm: "SHA256".
@@ -448,13 +479,29 @@ public:
     * Returns the length in bytes of a hash sequence (or message digest)
     * calculated with this cryptographic hashing algorithm.
     *
-    * As implemented in %SHA256, this function returns 32, the length in bytes
-    * of an SHA-256 digest.
+    * As reimplemented in %SHA256, this function returns 32, the length in
+    * bytes of an SHA-256 digest.
     */
    virtual size_type HashLength() const
    {
       return 32;
    }
+
+   /*!
+    */
+   virtual void Initialize();
+
+   /*!
+    */
+   virtual void Update( const void* data, size_type length );
+
+private:
+
+   void* m_context; // RFC4634
+
+   /*!
+    */
+   virtual void Finalize( void* hash );
 };
 
 // ----------------------------------------------------------------------------
@@ -484,14 +531,14 @@ public:
    /*!
     * Constructs an SHA-384 hash generator.
     */
-   SHA384();
+   SHA384() : m_context( nullptr )
+   {
+   }
 
    /*!
     * Destroys an SHA-384 hash generator.
     */
-   virtual ~SHA384()
-   {
-   }
+   virtual ~SHA384();
 
    /*!
     * Returns the name of this cryptographic hashing algorithm: "SHA384".
@@ -505,13 +552,29 @@ public:
     * Returns the length in bytes of a hash sequence (or message digest)
     * calculated with this cryptographic hashing algorithm.
     *
-    * As implemented in %SHA384, this function returns 48, the length in bytes
-    * of an SHA-384 digest.
+    * As reimplemented in %SHA384, this function returns 48, the length in
+    * bytes of an SHA-384 digest.
     */
    virtual size_type HashLength() const
    {
       return 48;
    }
+
+   /*!
+    */
+   virtual void Initialize();
+
+   /*!
+    */
+   virtual void Update( const void* data, size_type length );
+
+private:
+
+   void* m_context; // RFC4634
+
+   /*!
+    */
+   virtual void Finalize( void* hash );
 };
 
 // ----------------------------------------------------------------------------
@@ -522,7 +585,7 @@ public:
  *
  * \b References
  *
- * The SHA-2 family of secure hash functions (SHA-512, SHA-512, and SHA-512)
+ * The SHA-2 family of secure hash functions (SHA-384, SHA-384, and SHA-512)
  * was specified by NIST in 2002 with the publication of FIPS PUB 180-2. FIPS
  * PUB 180-2 has been superseded by FIPS PUB 180-3 and FIPS PUB 180-4:
  *
@@ -541,14 +604,14 @@ public:
    /*!
     * Constructs an SHA-512 hash generator.
     */
-   SHA512();
+   SHA512() : m_context( nullptr )
+   {
+   }
 
    /*!
     * Destroys an SHA-512 hash generator.
     */
-   virtual ~SHA512()
-   {
-   }
+   virtual ~SHA512();
 
    /*!
     * Returns the name of this cryptographic hashing algorithm: "SHA512".
@@ -562,13 +625,29 @@ public:
     * Returns the length in bytes of a hash sequence (or message digest)
     * calculated with this cryptographic hashing algorithm.
     *
-    * As implemented in %SHA512, this function returns 64, the length in bytes
-    * of an SHA-512 digest.
+    * As reimplemented in %SHA512, this function returns 64, the length in
+    * bytes of an SHA-512 digest.
     */
    virtual size_type HashLength() const
    {
       return 64;
    }
+
+   /*!
+    */
+   virtual void Initialize();
+
+   /*!
+    */
+   virtual void Update( const void* data, size_type length );
+
+private:
+
+   void* m_context; // RFC4634
+
+   /*!
+    */
+   virtual void Finalize( void* hash );
 };
 
 // ----------------------------------------------------------------------------
@@ -596,15 +675,30 @@ public:
     * \param algorithmName Name of a supported cryptographic hashing algorithm.
     *                      Currently this parameter can be one of: "md5",
     *                      "sha1", "sha224", "sha256", "sha384", and "sha512".
-    *                      String comparisons are case-insensitive.
+    *                      Comparisons are performed on trimmed strings and
+    *                      case-insensitive.
     *
     * If an invalid or unsupported algorithm name is specified, this
     * constructor throws an Error exception.
     */
-   CryptographicHashFactory( const IsoString& algorithmName );
+   CryptographicHashFactory( const IsoString& algorithmName ) :
+      CryptographicHash(), m_hash()
+   {
+      switch ( algorithmName.Trimmed().CaseFolded().Hash32() )
+      {
+      case 0x445dd715: m_hash = new MD5; break;
+      case 0x3cac24af: m_hash = new SHA1; break;
+      case 0x7e50b015: m_hash = new SHA224; break;
+      case 0xcbbce793: m_hash = new SHA256; break;
+      case 0x858a0d3d: m_hash = new SHA384; break;
+      case 0xb24dfd53: m_hash = new SHA512; break;
+      default:
+         throw Error( "CryptographicHashFactory: Unknown/unsupported algorithm \'" + algorithmName + '\'' );
+      }
+   }
 
-   template <class S>
-   CryptographicHashFactory( S algorithmName ) : CryptographicHashFactory( IsoString( algorithmName ) )
+   CryptographicHashFactory( const IsoString::ustring_base& algorithmName ) :
+      CryptographicHashFactory( IsoString( algorithmName ) )
    {
    }
 
@@ -613,8 +707,6 @@ public:
     */
    virtual ~CryptographicHashFactory()
    {
-      delete m_hash;
-      m_hash = nullptr;
    }
 
    /*!
@@ -653,7 +745,7 @@ public:
 
 private:
 
-   CryptographicHash* m_hash;
+   AutoPointer<CryptographicHash> m_hash;
 
    virtual void Finalize( void* hash )
    {
@@ -670,31 +762,35 @@ private:
  * %Cipher defines a common interface for implementations of algorithms
  * performing encryption and decryption of generic data.
  *
- * Currently we have implemented the AES-256 cipher with CBC encryption and
- * decryption on the PixInsight platform, available as the AES256 PCL class.
+ * Currently we have implemented the AES-256 cipher with CBC/ECB encryption and
+ * decryption on the PixInsight platform, available as the AES256 class.
  *
  * \ingroup cryptography_classes
  * \sa AES256
  */
-class PCL_CLASS Cipher : public UIObject
+class PCL_CLASS Cipher
 {
 public:
+
+   /*!
+    * Default constructor.
+    */
+   Cipher() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   Cipher( const Cipher& ) = default;
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
+    */
+   Cipher& operator =( const Cipher& ) = default;
 
    /*!
     * Destroys a %Cipher object.
     */
    virtual ~Cipher()
-   {
-   }
-
-   /*!
-    * Ensures that the server-side object managed by this instance is uniquely
-    * referenced.
-    *
-    * Since cipher algorithms are unique objects by definition, calling this
-    * member function has no effect.
-    */
-   virtual void EnsureUnique()
    {
    }
 
@@ -777,7 +873,7 @@ public:
    ByteArray Encrypt( const C& input ) const
    {
       ByteArray output( input.Size() );
-      Encrypt( output.Begin(), input.Begin(), output.Length() );
+      Encrypt( output.Begin(), input.Begin(), input.Size() );
       return output;
    }
 
@@ -823,25 +919,9 @@ public:
    ByteArray Decrypt( const C& input ) const
    {
       ByteArray output( input.Size() );
-      Decrypt( output.Begin(), input.Begin(), output.Length() );
+      Decrypt( output.Begin(), input.Begin(), input.Size() );
       return output;
    }
-
-protected:
-
-   /*!
-    * \internal
-    */
-   Cipher( void* h ) : UIObject( h )
-   {
-   }
-
-private:
-
-   virtual void* CloneHandle() const;
-
-   Cipher( const Cipher& ) = delete;
-   void operator =( const Cipher& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -860,6 +940,8 @@ private:
  *
  * http://csrc.nist.gov/encryption/aes/rijndael/Rijndael.pdf
  * http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf
+ *
+ * \ingroup cryptography_classes
  */
 class PCL_CLASS AES256 : public Cipher
 {
@@ -888,10 +970,13 @@ public:
     *
     * \note For enhanced security, this constructor wipes out the specified
     * cipher \a key, filling it with 32 zero bytes. If you want to preserve the
-    * key (which in general is a <em>very bad idea</em> for security reasons),
-    * make a copy before invoking this constructor.
+    * key (which in general is a <em>bad idea</em> for security reasons), make
+    * a safe copy before invoking this constructor.
     */
-   AES256( void* key );
+   AES256( void* key )
+   {
+      SetKey( key );
+   }
 
    /*!
     * Constructs an AES-256 cipher object.
@@ -900,17 +985,37 @@ public:
     *                contents of this string Will be wiped out (filled with
     *                null characters) by this constructor.
     *
-    * The AES cipher key will be initialized with the lowercase hexadecimal
-    * representation of the MD5 checksum of the specified \a key string (note
-    * that an %MD5 checksum is a sequence of 16 bytes, whose hex representation
-    * has 32 characters, or 256 bits).
+    * The AES-256 cipher key will be initialized with the lowercase hexadecimal
+    * representation of 20 successive MD5 checksum operations applied to the
+    * specified \a key string (note that an %MD5 checksum is a sequence of 16
+    * bytes, whose hexadecimal representation has 32 characters, or 256 bits).
     *
     * \note For enhanced security, this constructor wipes out the specified
     * cipher \a key string, filling it with null characters. If you want to
-    * preserve the original key (which in general is a <em>very bad idea</em>
-    * for security reasons), make a copy before invoking this constructor.
+    * preserve the original key (which in general is a <em>bad idea</em> for
+    * security reasons), make a copy and ensure it references its string data
+    * uniquely before invoking this constructor.
     */
-   AES256( IsoString& key );
+   AES256( IsoString& key )
+   {
+      ByteArray h = MD5().Hash( key );
+      key.SecureFill();
+      for ( int i = 1; i < 20; ++i )
+         h = MD5().Hash( h );
+      IsoString k = IsoString::ToHex( h );
+      h.Fill( uint8( 0 ) );
+      SetKey( k.Begin() );
+   }
+
+   /*!
+    * Copy constructor.
+    */
+   AES256( const AES256& ) = default;
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
+    */
+   AES256& operator =( const AES256& ) = default;
 
    /*!
     * Destroys an AES-256 cipher object.
@@ -920,7 +1025,7 @@ public:
    }
 
    /*!
-    * Returns the name of this cipher algorithm: "AES256".
+    * Returns "AES256", the name of this cipher algorithm.
     */
    virtual String AlgorithmName() const
    {
@@ -928,11 +1033,11 @@ public:
    }
 
    /*!
-    * Returns the length in bytes of a key in the AES-256 cipher algorithm: 32.
+    * Returns 32, the length in bytes of a key in the AES-256 cipher algorithm.
     */
    virtual size_type KeyLength() const
    {
-      return sizeof( key_type );
+      return 32;
    }
 
    /*!
@@ -977,7 +1082,7 @@ public:
     *
     * \param input         Starting address of the input 16-byte block.
     */
-   void EncryptBlock( block_type output, const block_type input ) const;
+   void EncryptBlock( void* output, const void* input ) const;
 
    /*!
     * AES block decryption (ECB mode).
@@ -986,7 +1091,19 @@ public:
     *
     * \param input         Starting address of the input 16-byte block.
     */
-   void DecryptBlock( block_type output, const block_type input ) const;
+   void DecryptBlock( void* output, const void* input ) const;
+
+private:
+
+   uint32 m_erk[ 60 ]; // encryption round keys, 4*(Nr+1) elements
+   uint32 m_drk[ 60 ]; // decryption round keys, 4*(Nr+1) elements
+
+   /*!
+    * \internal
+    * Sets a new encryption/decryption key. Generates the round key tables and
+    * wipes out 32 contiguous bytes starting at \a key.
+    */
+   void SetKey( void* key );
 };
 
 // ----------------------------------------------------------------------------
@@ -996,4 +1113,4 @@ public:
 #endif   // __PCL_Cryptography_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Cryptography.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Cryptography.h - Released 2017-06-28T11:58:36Z

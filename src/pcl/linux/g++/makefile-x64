@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.100
-# Copyright (C) 2009-2015 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Fri, 24 Jun 2016 18:54:09 GMT
+# Generated on .... 2017-06-28T11:40:09.122Z
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ Linux/g++
@@ -19,6 +19,7 @@ all: $(OBJ_DIR)/libPCL-pxi.a
 #
 
 SRC_FILES= \
+../../AES256.cpp \
 ../../API.cpp \
 ../../APIInterface.cpp \
 ../../ATrousWaveletTransform.cpp \
@@ -26,6 +27,7 @@ SRC_FILES= \
 ../../AdaptiveLocalFilter.cpp \
 ../../Algebra.cpp \
 ../../Arguments.cpp \
+../../AstrometricMetadata.cpp \
 ../../Base64.cpp \
 ../../Bitmap.cpp \
 ../../BitmapBox.cpp \
@@ -46,12 +48,12 @@ SRC_FILES= \
 ../../Control.cpp \
 ../../Convolution.cpp \
 ../../Crop.cpp \
-../../Cryptography.cpp \
 ../../CubicSplineInterpolation.cpp \
 ../../Cursor.cpp \
 ../../Diagnostics.cpp \
 ../../Dialog.cpp \
 ../../DisplayFunction.cpp \
+../../DrizzleData.cpp \
 ../../Edit.cpp \
 ../../Exception.cpp \
 ../../ExternalProcess.cpp \
@@ -72,8 +74,10 @@ SRC_FILES= \
 ../../FourierTransform.cpp \
 ../../Frame.cpp \
 ../../GlobalSettings.cpp \
+../../GnomonicProjection.cpp \
 ../../Graphics.cpp \
 ../../GroupBox.cpp \
+../../HammerAitoffProjection.cpp \
 ../../HexString.cpp \
 ../../Histogram.cpp \
 ../../HistogramTransformation.cpp \
@@ -94,7 +98,10 @@ SRC_FILES= \
 ../../Label.cpp \
 ../../LanczosInterpolation.cpp \
 ../../LinearFit.cpp \
+../../LocalNormalizationData.cpp \
+../../MD5.cpp \
 ../../Median.cpp \
+../../MercatorProjection.cpp \
 ../../MessageBox.cpp \
 ../../MetaFileFormat.cpp \
 ../../MetaModule.cpp \
@@ -107,6 +114,7 @@ SRC_FILES= \
 ../../MuteStatus.cpp \
 ../../NetworkTransfer.cpp \
 ../../NumericControl.cpp \
+../../OrthographicProjection.cpp \
 ../../Pen.cpp \
 ../../PolarTransform.cpp \
 ../../PreviewSelectionDialog.cpp \
@@ -115,6 +123,8 @@ SRC_FILES= \
 ../../ProcessInstance.cpp \
 ../../ProcessInterface.cpp \
 ../../ProcessParameter.cpp \
+../../ProjectionBase.cpp \
+../../ProjectionFactory.cpp \
 ../../PushButton.cpp \
 ../../PyramidalWaveletTransform.cpp \
 ../../RGBColorSystem.cpp \
@@ -127,6 +137,11 @@ SRC_FILES= \
 ../../Render.cpp \
 ../../Resample.cpp \
 ../../Rotation.cpp \
+../../SHA1.cpp \
+../../SHA224.cpp \
+../../SHA256.cpp \
+../../SHA384.cpp \
+../../SHA512.cpp \
 ../../SVG.cpp \
 ../../ScrollBox.cpp \
 ../../SectionBar.cpp \
@@ -136,6 +151,7 @@ SRC_FILES= \
 ../../SharedPixelData.cpp \
 ../../Sizer.cpp \
 ../../Slider.cpp \
+../../SphericalRotation.cpp \
 ../../SpinBox.cpp \
 ../../SpinStatus.cpp \
 ../../StatusMonitor.cpp \
@@ -145,6 +161,7 @@ SRC_FILES= \
 ../../TabBox.cpp \
 ../../TextBox.cpp \
 ../../Thread.cpp \
+../../TimePoint.cpp \
 ../../Timer.cpp \
 ../../ToolButton.cpp \
 ../../Translation.cpp \
@@ -160,13 +177,22 @@ SRC_FILES= \
 ../../View.cpp \
 ../../ViewList.cpp \
 ../../ViewSelectionDialog.cpp \
-../../Win32Exception.cpp
+../../WCSKeywords.cpp \
+../../WebView.cpp \
+../../Win32Exception.cpp \
+../../WorldTransformation.cpp \
+../../XISF.cpp \
+../../XISFReader.cpp \
+../../XISFWriter.cpp \
+../../XML.cpp \
+../../XMLReference.cpp
 
 #
 # Object files
 #
 
 OBJ_FILES= \
+./x64/Release/AES256.o \
 ./x64/Release/API.o \
 ./x64/Release/APIInterface.o \
 ./x64/Release/ATrousWaveletTransform.o \
@@ -174,6 +200,7 @@ OBJ_FILES= \
 ./x64/Release/AdaptiveLocalFilter.o \
 ./x64/Release/Algebra.o \
 ./x64/Release/Arguments.o \
+./x64/Release/AstrometricMetadata.o \
 ./x64/Release/Base64.o \
 ./x64/Release/Bitmap.o \
 ./x64/Release/BitmapBox.o \
@@ -194,12 +221,12 @@ OBJ_FILES= \
 ./x64/Release/Control.o \
 ./x64/Release/Convolution.o \
 ./x64/Release/Crop.o \
-./x64/Release/Cryptography.o \
 ./x64/Release/CubicSplineInterpolation.o \
 ./x64/Release/Cursor.o \
 ./x64/Release/Diagnostics.o \
 ./x64/Release/Dialog.o \
 ./x64/Release/DisplayFunction.o \
+./x64/Release/DrizzleData.o \
 ./x64/Release/Edit.o \
 ./x64/Release/Exception.o \
 ./x64/Release/ExternalProcess.o \
@@ -220,8 +247,10 @@ OBJ_FILES= \
 ./x64/Release/FourierTransform.o \
 ./x64/Release/Frame.o \
 ./x64/Release/GlobalSettings.o \
+./x64/Release/GnomonicProjection.o \
 ./x64/Release/Graphics.o \
 ./x64/Release/GroupBox.o \
+./x64/Release/HammerAitoffProjection.o \
 ./x64/Release/HexString.o \
 ./x64/Release/Histogram.o \
 ./x64/Release/HistogramTransformation.o \
@@ -242,7 +271,10 @@ OBJ_FILES= \
 ./x64/Release/Label.o \
 ./x64/Release/LanczosInterpolation.o \
 ./x64/Release/LinearFit.o \
+./x64/Release/LocalNormalizationData.o \
+./x64/Release/MD5.o \
 ./x64/Release/Median.o \
+./x64/Release/MercatorProjection.o \
 ./x64/Release/MessageBox.o \
 ./x64/Release/MetaFileFormat.o \
 ./x64/Release/MetaModule.o \
@@ -255,6 +287,7 @@ OBJ_FILES= \
 ./x64/Release/MuteStatus.o \
 ./x64/Release/NetworkTransfer.o \
 ./x64/Release/NumericControl.o \
+./x64/Release/OrthographicProjection.o \
 ./x64/Release/Pen.o \
 ./x64/Release/PolarTransform.o \
 ./x64/Release/PreviewSelectionDialog.o \
@@ -263,6 +296,8 @@ OBJ_FILES= \
 ./x64/Release/ProcessInstance.o \
 ./x64/Release/ProcessInterface.o \
 ./x64/Release/ProcessParameter.o \
+./x64/Release/ProjectionBase.o \
+./x64/Release/ProjectionFactory.o \
 ./x64/Release/PushButton.o \
 ./x64/Release/PyramidalWaveletTransform.o \
 ./x64/Release/RGBColorSystem.o \
@@ -275,6 +310,11 @@ OBJ_FILES= \
 ./x64/Release/Render.o \
 ./x64/Release/Resample.o \
 ./x64/Release/Rotation.o \
+./x64/Release/SHA1.o \
+./x64/Release/SHA224.o \
+./x64/Release/SHA256.o \
+./x64/Release/SHA384.o \
+./x64/Release/SHA512.o \
 ./x64/Release/SVG.o \
 ./x64/Release/ScrollBox.o \
 ./x64/Release/SectionBar.o \
@@ -284,6 +324,7 @@ OBJ_FILES= \
 ./x64/Release/SharedPixelData.o \
 ./x64/Release/Sizer.o \
 ./x64/Release/Slider.o \
+./x64/Release/SphericalRotation.o \
 ./x64/Release/SpinBox.o \
 ./x64/Release/SpinStatus.o \
 ./x64/Release/StatusMonitor.o \
@@ -293,6 +334,7 @@ OBJ_FILES= \
 ./x64/Release/TabBox.o \
 ./x64/Release/TextBox.o \
 ./x64/Release/Thread.o \
+./x64/Release/TimePoint.o \
 ./x64/Release/Timer.o \
 ./x64/Release/ToolButton.o \
 ./x64/Release/Translation.o \
@@ -308,13 +350,22 @@ OBJ_FILES= \
 ./x64/Release/View.o \
 ./x64/Release/ViewList.o \
 ./x64/Release/ViewSelectionDialog.o \
-./x64/Release/Win32Exception.o
+./x64/Release/WCSKeywords.o \
+./x64/Release/WebView.o \
+./x64/Release/Win32Exception.o \
+./x64/Release/WorldTransformation.o \
+./x64/Release/XISF.o \
+./x64/Release/XISFReader.o \
+./x64/Release/XISFWriter.o \
+./x64/Release/XML.o \
+./x64/Release/XMLReference.o
 
 #
 # Dependency files
 #
 
 DEP_FILES= \
+./x64/Release/AES256.d \
 ./x64/Release/API.d \
 ./x64/Release/APIInterface.d \
 ./x64/Release/ATrousWaveletTransform.d \
@@ -322,6 +373,7 @@ DEP_FILES= \
 ./x64/Release/AdaptiveLocalFilter.d \
 ./x64/Release/Algebra.d \
 ./x64/Release/Arguments.d \
+./x64/Release/AstrometricMetadata.d \
 ./x64/Release/Base64.d \
 ./x64/Release/Bitmap.d \
 ./x64/Release/BitmapBox.d \
@@ -342,12 +394,12 @@ DEP_FILES= \
 ./x64/Release/Control.d \
 ./x64/Release/Convolution.d \
 ./x64/Release/Crop.d \
-./x64/Release/Cryptography.d \
 ./x64/Release/CubicSplineInterpolation.d \
 ./x64/Release/Cursor.d \
 ./x64/Release/Diagnostics.d \
 ./x64/Release/Dialog.d \
 ./x64/Release/DisplayFunction.d \
+./x64/Release/DrizzleData.d \
 ./x64/Release/Edit.d \
 ./x64/Release/Exception.d \
 ./x64/Release/ExternalProcess.d \
@@ -368,8 +420,10 @@ DEP_FILES= \
 ./x64/Release/FourierTransform.d \
 ./x64/Release/Frame.d \
 ./x64/Release/GlobalSettings.d \
+./x64/Release/GnomonicProjection.d \
 ./x64/Release/Graphics.d \
 ./x64/Release/GroupBox.d \
+./x64/Release/HammerAitoffProjection.d \
 ./x64/Release/HexString.d \
 ./x64/Release/Histogram.d \
 ./x64/Release/HistogramTransformation.d \
@@ -390,7 +444,10 @@ DEP_FILES= \
 ./x64/Release/Label.d \
 ./x64/Release/LanczosInterpolation.d \
 ./x64/Release/LinearFit.d \
+./x64/Release/LocalNormalizationData.d \
+./x64/Release/MD5.d \
 ./x64/Release/Median.d \
+./x64/Release/MercatorProjection.d \
 ./x64/Release/MessageBox.d \
 ./x64/Release/MetaFileFormat.d \
 ./x64/Release/MetaModule.d \
@@ -403,6 +460,7 @@ DEP_FILES= \
 ./x64/Release/MuteStatus.d \
 ./x64/Release/NetworkTransfer.d \
 ./x64/Release/NumericControl.d \
+./x64/Release/OrthographicProjection.d \
 ./x64/Release/Pen.d \
 ./x64/Release/PolarTransform.d \
 ./x64/Release/PreviewSelectionDialog.d \
@@ -411,6 +469,8 @@ DEP_FILES= \
 ./x64/Release/ProcessInstance.d \
 ./x64/Release/ProcessInterface.d \
 ./x64/Release/ProcessParameter.d \
+./x64/Release/ProjectionBase.d \
+./x64/Release/ProjectionFactory.d \
 ./x64/Release/PushButton.d \
 ./x64/Release/PyramidalWaveletTransform.d \
 ./x64/Release/RGBColorSystem.d \
@@ -423,6 +483,11 @@ DEP_FILES= \
 ./x64/Release/Render.d \
 ./x64/Release/Resample.d \
 ./x64/Release/Rotation.d \
+./x64/Release/SHA1.d \
+./x64/Release/SHA224.d \
+./x64/Release/SHA256.d \
+./x64/Release/SHA384.d \
+./x64/Release/SHA512.d \
 ./x64/Release/SVG.d \
 ./x64/Release/ScrollBox.d \
 ./x64/Release/SectionBar.d \
@@ -432,6 +497,7 @@ DEP_FILES= \
 ./x64/Release/SharedPixelData.d \
 ./x64/Release/Sizer.d \
 ./x64/Release/Slider.d \
+./x64/Release/SphericalRotation.d \
 ./x64/Release/SpinBox.d \
 ./x64/Release/SpinStatus.d \
 ./x64/Release/StatusMonitor.d \
@@ -441,6 +507,7 @@ DEP_FILES= \
 ./x64/Release/TabBox.d \
 ./x64/Release/TextBox.d \
 ./x64/Release/Thread.d \
+./x64/Release/TimePoint.d \
 ./x64/Release/Timer.d \
 ./x64/Release/ToolButton.d \
 ./x64/Release/Translation.d \
@@ -456,7 +523,15 @@ DEP_FILES= \
 ./x64/Release/View.d \
 ./x64/Release/ViewList.d \
 ./x64/Release/ViewSelectionDialog.d \
-./x64/Release/Win32Exception.d
+./x64/Release/WCSKeywords.d \
+./x64/Release/WebView.d \
+./x64/Release/Win32Exception.d \
+./x64/Release/WorldTransformation.d \
+./x64/Release/XISF.d \
+./x64/Release/XISFReader.d \
+./x64/Release/XISFWriter.d \
+./x64/Release/XML.d \
+./x64/Release/XMLReference.d
 
 #
 # Rules
@@ -477,6 +552,6 @@ post-build:
 	cp $(OBJ_DIR)/libPCL-pxi.a $(PCLLIBDIR64)
 
 ./x64/Release/%.o: ../../%.cpp
-	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

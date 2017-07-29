@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ExternalProcess.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/ExternalProcess.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -116,10 +116,6 @@ public:
 
 // ----------------------------------------------------------------------------
 
-#ifdef _MSC_VER
-#  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
-#endif
-
 ExternalProcess::ExternalProcess() :
    UIObject( (*API->ExternalProcess->CreateExternalProcess)( ModuleHandle(), this ) )
 {
@@ -151,8 +147,8 @@ ExternalProcess& ExternalProcess::Null()
 void ExternalProcess::Start( const String& program, const StringList& arguments )
 {
    Array<const char16_type*> argv;
-   for ( StringList::const_iterator i = arguments.Begin(); i != arguments.End(); ++i )
-      argv.Add( i->c_str() );
+   for ( const String& arg : arguments )
+      argv.Add( arg.c_str() );
    if ( (*API->ExternalProcess->StartExternalProcess)( handle, program.c_str(), argv.Begin(), argv.Length() ) == api_false )
       throw APIFunctionError( "StartExternalProcess" );
 }
@@ -453,8 +449,8 @@ StringList ExternalProcess::Environment() const
 void ExternalProcess::SetEnvironment( const StringList& environment )
 {
    Array<const char16_type*> vars;
-   for ( StringList::const_iterator i = environment.Begin(); i != environment.End(); ++i )
-      vars.Add( i->c_str() );
+   for ( const String& env : environment )
+      vars.Add( env.c_str() );
    if ( (*API->ExternalProcess->SetExternalProcessEnvironment)( handle, vars.Begin(), vars.Length() ) == api_false )
       throw APIFunctionError( "SetExternalProcessEnvironment" );
 }
@@ -464,8 +460,8 @@ void ExternalProcess::SetEnvironment( const StringList& environment )
 int ExternalProcess::ExecuteProgram( const String& program, const StringList& arguments )
 {
    Array<const char16_type*> argv;
-   for ( StringList::const_iterator i = arguments.Begin(); i != arguments.End(); ++i )
-      argv.Add( i->c_str() );
+   for ( const String& arg : arguments )
+      argv.Add( arg.c_str() );
    int retVal = (*API->ExternalProcess->ExecuteProgram)( program.c_str(), argv.Begin(), argv.Length() );
    if ( retVal < -1 )
       ExternalProcessPrivate::Throw( ExternalProcessContext::FailedToStart );
@@ -477,8 +473,8 @@ int ExternalProcess::ExecuteProgram( const String& program, const StringList& ar
 ExternalProcess::pid_type ExternalProcess::StartProgram( const String& program, const StringList& arguments, const String& workingDirectory )
 {
    Array<const char16_type*> argv;
-   for ( StringList::const_iterator i = arguments.Begin(); i != arguments.End(); ++i )
-      argv.Add( i->c_str() );
+   for ( const String& arg : arguments )
+      argv.Add( arg.c_str() );
    uint64 pid = 0;
    api_bool ok = (*API->ExternalProcess->StartProgram)( program.c_str(), argv.Begin(), argv.Length(), workingDirectory.c_str(), &pid );
    if ( ok == api_false || pid == 0 )
@@ -550,7 +546,7 @@ void ExternalProcess::OnStarted( process_event_handler handler, Control& receive
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->ExternalProcess->SetExternalProcessStartedEventRoutine)( handle, &receiver,
-                     (handler != nullptr) ? ExternalProcessEventDispatcher::Started : 0 ) == api_false )
+                     (handler != nullptr) ? ExternalProcessEventDispatcher::Started : nullptr ) == api_false )
       throw APIFunctionError( "SetExternalProcessStartedEventRoutine" );
    m_handlers->onStarted = handler;
 }
@@ -559,7 +555,7 @@ void ExternalProcess::OnFinished( process_exit_event_handler handler, Control& r
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->ExternalProcess->SetExternalProcessFinishedEventRoutine)( handle, &receiver,
-                     (handler != nullptr) ? ExternalProcessEventDispatcher::Finished : 0 ) == api_false )
+                     (handler != nullptr) ? ExternalProcessEventDispatcher::Finished : nullptr ) == api_false )
       throw APIFunctionError( "SetExternalProcessFinishedEventRoutine" );
    m_handlers->onFinished = handler;
 }
@@ -568,7 +564,7 @@ void ExternalProcess::OnStandardOutputDataAvailable( process_event_handler handl
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->ExternalProcess->SetExternalProcessStandardOutputDataAvailableEventRoutine)( handle, &receiver,
-                     (handler != nullptr) ? ExternalProcessEventDispatcher::StandardOutputDataAvailable : 0 ) == api_false )
+                     (handler != nullptr) ? ExternalProcessEventDispatcher::StandardOutputDataAvailable : nullptr ) == api_false )
       throw APIFunctionError( "SetExternalProcessStandardOutputDataAvailableEventRoutine" );
    m_handlers->onStandardOutputDataAvailable = handler;
 }
@@ -577,7 +573,7 @@ void ExternalProcess::OnStandardErrorDataAvailable( process_event_handler handle
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->ExternalProcess->SetExternalProcessStandardErrorDataAvailableEventRoutine)( handle, &receiver,
-                     (handler != nullptr) ? ExternalProcessEventDispatcher::StandardErrorDataAvailable : 0 ) == api_false )
+                     (handler != nullptr) ? ExternalProcessEventDispatcher::StandardErrorDataAvailable : nullptr ) == api_false )
       throw APIFunctionError( "SetExternalProcessStandardErrorDataAvailableEventRoutine" );
    m_handlers->onStandardErrorDataAvailable = handler;
 }
@@ -586,7 +582,7 @@ void ExternalProcess::OnError( process_error_event_handler handler, Control& rec
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->ExternalProcess->SetExternalProcessErrorEventRoutine)( handle, &receiver,
-                     (handler != nullptr) ? ExternalProcessEventDispatcher::Error : 0 ) == api_false )
+                     (handler != nullptr) ? ExternalProcessEventDispatcher::Error : nullptr ) == api_false )
       throw APIFunctionError( "SetExternalProcessErrorEventRoutine" );
    m_handlers->onError = handler;
 }
@@ -598,4 +594,4 @@ void ExternalProcess::OnError( process_error_event_handler handler, Control& rec
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ExternalProcess.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/ExternalProcess.cpp - Released 2017-06-28T11:58:42Z

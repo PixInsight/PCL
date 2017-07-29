@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/LanczosInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// pcl/LanczosInterpolation.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,29 +54,13 @@
 
 /// \file pcl/LanczosInterpolation.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Utility_h
-#include <pcl/Utility.h>
-#endif
-
-#ifndef __PCL_BidimensionalInterpolation_h
 #include <pcl/BidimensionalInterpolation.h>
-#endif
-
-#ifndef __PCL_Math_h
 #include <pcl/Math.h>
-#endif
-
-#ifndef __PCL_Vector_h
+#include <pcl/Utility.h>
 #include <pcl/Vector.h>
-#endif
 
 namespace pcl
 {
@@ -99,24 +83,22 @@ namespace pcl
 #define __PCL_LANCZOS_CLAMPING_THRESHOLD  0.3F
 #endif
 
+// ----------------------------------------------------------------------------
+
 /*
- * LUT-based interpolations for 3rd, 4th and 5th order Lanczos functions run
- * 3x faster than the corresponding function evaluation interpolations.
+ * Floating point and integer LUT-based interpolations for 3rd, 4th and 5th
+ * order Lanczos functions. LUTs are initialized automatically on-demand by
+ * thread-safe internal routines.
+ *
+ * Real Lanczos LUTs are accurate to +/- 1e-7 DN
+ * Integer Lanczos LUTs are accurate to +/- 1 16-bit DN
  */
-#ifndef __PCL_DONT_USE_LANCZOS_LUTS
+#define __PCL_LANCZOS_LUT_REAL_RESOLUTION 4096
+const double** PCL_FUNC PCL_InitializeLanczosRealLUT( int );
+#define __PCL_LANCZOS_LUT_INT_RESOLUTION  65535
+const float* PCL_FUNC PCL_InitializeLanczosIntLUT( int );
 
-// Lanczos LUTs are accurate to +/- 1 16-bit DN
-#define __PCL_LANCZOS_LUT_RESOLUTION      65535
-
-// LUT data requires a maximum of 3 MB
-extern PCL_DATA float* PCL_Lanczos3_LUT;
-extern PCL_DATA float* PCL_Lanczos4_LUT;
-extern PCL_DATA float* PCL_Lanczos5_LUT;
-
-// On-demand thread-safe LUT generation
-void PCL_FUNC PCL_InitializeLanczosLUT( float*&, int );
-
-#endif   // !__PCL_DONT_USE_LANCZOS_LUTS
+// ----------------------------------------------------------------------------
 
 #define PCL_LANCZOS_ACC()        \
          if ( s < 0 )            \
@@ -166,6 +148,18 @@ void PCL_FUNC PCL_InitializeLanczosLUT( float*&, int );
 template <typename T>
 class PCL_CLASS LanczosInterpolation : public BidimensionalInterpolation<T>
 {
+private:
+
+   struct Default
+   {
+      template <typename _T> static bool UseLUT( _T* ) { return false; }
+      static bool UseLUT( uint8* ) { return true; }
+      static bool UseLUT( int8* ) { return true; }
+      static bool UseLUT( uint16* ) { return true; }
+      static bool UseLUT( int16* ) { return true; }
+      static bool UseLUT( float* ) { return true; }
+   };
+
 public:
 
    /*!
@@ -184,16 +178,37 @@ public:
     *                feature. The default value is 0.3. For more information,
     *                refer to the documentation for the
     *                SetClampingThreshold( float ) member function.
+    *
+    * \param useLUT  If true, the interpolation will use a precomputed LUT of
+    *                function values at discrete intervals. This greatly
+    *                improves performance, increasing execution speed by about
+    *                a factor of 2. In current PCL versions, the Lanczos
+    *                functions are sampled at 0.00025 px resolution, which
+    *                provides an interpolation accuracy of about 1.0e-07. This
+    *                is valid for interpolation of 32-bit floating point data,
+    *                but can be insufficient for 32-bit integers and double
+    *                precision, depending on the application. If this parameter
+    *                is false, the interpolation will compute actual function
+    *                values for each interpolation point. This parameter is
+    *                true by default for the uint8, int8, uint16, int16, and
+    *                float template specializations; false by default for other
+    *                types.
     */
-   LanczosInterpolation( int n = 3, float clamp = __PCL_LANCZOS_CLAMPING_THRESHOLD ) :
-      BidimensionalInterpolation<T>(),
+   LanczosInterpolation( int n = 3, float clamp = __PCL_LANCZOS_CLAMPING_THRESHOLD, bool useLUT = Default::UseLUT( (T*)0 ) ) :
       m_n( Max( 1, n ) ),
-      m_clamp( clamp >= 0 ), m_clampTh( Range( clamp, 0.0F, 1.0F ) ), m_clampThInv( 1 - m_clampTh ),
+      m_lut( useLUT ? PCL_InitializeLanczosRealLUT( m_n ) : nullptr ),
+      m_clamp( clamp >= 0 ), m_clampTh( Range( clamp, 0.0F, 1.0F ) ),
+      m_clampThInv( 1 - m_clampTh ),
       m_Lx( 2*m_n )
    {
       PCL_PRECONDITION( n >= 1 )
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
    }
+
+   /*!
+    * Copy constructor.
+    */
+   LanczosInterpolation( const LanczosInterpolation& ) = default;
 
    /*!
     * Virtual destructor.
@@ -217,16 +232,8 @@ public:
       PCL_CHECK( m_n >= 1 )
 
       // Central grid coordinates
-      int x0 = Range( TruncI( x ), 0, m_width-1 );
-      int y0 = Range( TruncI( y ), 0, m_height-1 );
-
-      // Interpolation increments
-      double dx = x - x0;
-      double dy = y - y0;
-
-      // Precalculate horizontal filter values
-      for ( int j = -m_n + 1, k = 0; j <= m_n; ++j, ++k )
-         m_Lx[k] = Lanczos( j - dx );
+      int x0 = Range( TruncInt( x ), 0, m_width-1 );
+      int y0 = Range( TruncInt( y ), 0, m_height-1 );
 
       double sp = 0; // positive filter values
       double sn = 0; // negative filter values
@@ -234,34 +241,87 @@ public:
       double wn = 0; // negative filter weight
       int i;         // row index
 
-      // Clipped rows at top
-      for ( i = -m_n + 1; i <= m_n; ++i )
+      if ( m_lut != nullptr )
       {
-         int y = y0 + i;
-         if ( y >= 0 )
-            break;
-         if ( m_fillBorder )
-            FillRow( sp, sn, wp, wn, i - dy );
-         else
-            InterpolateRow( sp, sn, wp, wn, m_data - 2*int64( y )*m_width, x0, i - dy );
-      }
+         // Discrete interpolation increments
+         int dx = TruncInt( __PCL_LANCZOS_LUT_REAL_RESOLUTION*(x - x0) );
+         int dy = TruncInt( __PCL_LANCZOS_LUT_REAL_RESOLUTION*(y - y0) );
 
-      // Unclipped rows
-      for ( ; i <= m_n; ++i )
-      {
-         int y = y0 + i;
-         if ( y == m_height )
-            break;
-         InterpolateRow( sp, sn, wp, wn, m_data + int64( y )*m_width, x0, i - dy );
-      }
+         // Precalculate horizontal filter values
+         for ( int j = -m_n + 1, k = 0; j <= m_n; ++j, ++k )
+            m_Lx[k] = m_lut[k][dx];
 
-      // Clipped rows at bottom
-      for ( ; i <= m_n; ++i )
+         int k;      // LUT node index
+
+         // Clipped rows at top
+         for ( i = -m_n + 1, k = 0; i <= m_n; ++i, ++k )
+         {
+            int y = y0 + i;
+            if ( y >= 0 )
+               break;
+            if ( m_fillBorder )
+               FillRow( sp, sn, wp, wn, m_lut[k][dy] );
+            else
+               InterpolateRow( sp, sn, wp, wn, m_data - 2*int64( y )*m_width, x0, m_lut[k][dy] );
+         }
+
+         // Unclipped rows
+         for ( ; i <= m_n; ++i, ++k )
+         {
+            int y = y0 + i;
+            if ( y == m_height )
+               break;
+            InterpolateRow( sp, sn, wp, wn, m_data + int64( y )*m_width, x0, m_lut[k][dy] );
+         }
+
+         // Clipped rows at bottom
+         for ( ; i <= m_n; ++i, ++k )
+         {
+            if ( m_fillBorder )
+               FillRow( sp, sn, wp, wn, m_lut[k][dy] );
+            else
+               InterpolateRow( sp, sn, wp, wn, m_data + int64( 2*m_height - 2 - y0 - i )*m_width, x0, m_lut[k][dy] );
+         }
+      }
+      else
       {
-         if ( m_fillBorder )
-            FillRow( sp, sn, wp, wn, i - dy );
-         else
-            InterpolateRow( sp, sn, wp, wn, m_data + int64( 2*m_height - 2 - y0 - i )*m_width, x0, i - dy );
+         // Interpolation increments
+         double dx = x - x0;
+         double dy = y - y0;
+
+         // Precalculate horizontal filter values
+         for ( int j = -m_n + 1, k = 0; j <= m_n; ++j, ++k )
+            m_Lx[k] = Lanczos( j - dx );
+
+         // Clipped rows at top
+         for ( i = -m_n + 1; i <= m_n; ++i )
+         {
+            int y = y0 + i;
+            if ( y >= 0 )
+               break;
+            if ( m_fillBorder )
+               FillRow( sp, sn, wp, wn, Lanczos( i - dy ) );
+            else
+               InterpolateRow( sp, sn, wp, wn, m_data - 2*int64( y )*m_width, x0, Lanczos( i - dy ) );
+         }
+
+         // Unclipped rows
+         for ( ; i <= m_n; ++i )
+         {
+            int y = y0 + i;
+            if ( y == m_height )
+               break;
+            InterpolateRow( sp, sn, wp, wn, m_data + int64( y )*m_width, x0, Lanczos( i - dy ) );
+         }
+
+         // Clipped rows at bottom
+         for ( ; i <= m_n; ++i )
+         {
+            if ( m_fillBorder )
+               FillRow( sp, sn, wp, wn, Lanczos( i - dy ) );
+            else
+               InterpolateRow( sp, sn, wp, wn, m_data + int64( 2*m_height - 2 - y0 - i )*m_width, x0, Lanczos( i - dy ) );
+         }
       }
 
       // Clamping
@@ -363,11 +423,12 @@ public:
 
 private:
 
-           int     m_n;          // filter order
-           bool    m_clamp : 1;  // clamping enabled ?
-           double  m_clampTh;    // clamping threshold in [0,1]
-           double  m_clampThInv; // 1 - m_clampTh
-   mutable DVector m_Lx;         // precalculated row of function values
+           int      m_n;          // filter order
+     const double** m_lut;        // precomputed function values
+           bool     m_clamp : 1;  // clamping enabled ?
+           double   m_clampTh;    // clamping threshold in [0,1]
+           double   m_clampThInv; // 1 - m_clampTh
+   mutable DVector  m_Lx;         // precalculated row of function values
 
    /*
     * Sinc function for x > 0
@@ -394,10 +455,8 @@ private:
     * Interpolate a row of pixels.
     * Can be either an unclipped row or a mirrored border row.
     */
-   void InterpolateRow( double& sp, double& sn, double& wp, double& wn, const T* f, int x0, double y ) const
+   void InterpolateRow( double& sp, double& sn, double& wp, double& wn, const T* f, int x0, double Ly ) const
    {
-      double Ly = Lanczos( y );
-
       int j, k;
 
       // Clipped pixels at the left border
@@ -435,10 +494,8 @@ private:
    /*
     * Interpolate a clipped pixel row with border filling.
     */
-   void FillRow( double& sp, double& sn, double& wp, double& wn, double y ) const
+   void FillRow( double& sp, double& sn, double& wp, double& wn, double Ly ) const
    {
-      double Ly = Lanczos( y );
-
       for ( int j = -m_n + 1, k = 0; j <= m_n; ++j, ++k )
       {
          double L = m_Lx[k] * Ly;
@@ -455,11 +512,11 @@ private:
  * \class LanczosLUTInterpolationBase
  * \brief Base class of two dimensional LUT-based Lanczos interpolation algorithms.
  *
- * This is a base class for Lanczos interpolation algorithms implemented
- * through precalculated look-up tables (LUTs). The filter order \a n is
- * specified as the second template class argument. For a description of the
- * Lanczos algorithm and information on its performance and features, refer to
- * the documentation for the LanczosInterpolation class.
+ * This is the base class for fixed-order Lanczos interpolation algorithms
+ * implemented through precalculated look-up tables (LUTs). The filter order
+ * \a n is specified as the second template class argument. For a description
+ * of the Lanczos algorithm and information on its performance and features,
+ * refer to the documentation for the LanczosInterpolation class.
  *
  * LUT-based Lanczos interpolations are about three times faster than the
  * corresponding function evaluation interpolations. Interpolation from the
@@ -477,9 +534,6 @@ public:
    /*!
     * Constructs a %LanczosLUTInterpolationBase instance.
     *
-    * \param lut     Reference to the LUT corresponding to the specified
-    *                filter order \a n (second template class argument).
-    *
     * \param clamp   Clamping threshold. Clamping is applied to fix undershoot
     *                (aka ringing) artifacts. A value of this parameter within
     *                the [0,1] range enables clamping: The lower the clamping
@@ -488,21 +542,23 @@ public:
     *                feature. The default value is 0.3. For more information,
     *                refer to the documentation for the
     *                SetClampingThreshold( float ) member function.
-    *
-    * \note The specified nth-order Lanczos LUT is allocated and initialized
-    * the first time this constructor is invoked.
     */
-   LanczosLUTInterpolationBase( float*& lut, float clamp ) :
+   LanczosLUTInterpolationBase( float clamp ) :
       BidimensionalInterpolation<T>(),
-      m_lut( lut ),
-      m_clamp( clamp >= 0 ), m_clampTh( Range( clamp, 0.0F, 1.0F ) ), m_clampThInv( 1 - m_clampTh ),
+      m_lut( PCL_InitializeLanczosIntLUT( m_n ) ),
+      m_clamp( clamp >= 0 ), m_clampTh( Range( clamp, 0.0F, 1.0F ) ),
+      m_clampThInv( 1 - m_clampTh ),
       m_Lx( 2*m_n ), m_Ly( 2*m_n )
    {
       PCL_PRECONDITION( m_n >= 1 )
-      PCL_PRECONDITION( lut != 0 )
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
-      PCL_InitializeLanczosLUT( m_lut, m_n );
+      PCL_CHECK( m_lut != nullptr )
    }
+
+   /*!
+    * Copy constructor.
+    */
+   LanczosLUTInterpolationBase( const LanczosLUTInterpolationBase& ) = default;
 
    /*!
     * Virtual destructor.
@@ -525,15 +581,15 @@ public:
       PCL_PRECONDITION( y >= 0 && y < m_height )
 
       // Central grid coordinates
-      int x0 = Range( TruncI( x ), 0, m_width-1 );
-      int y0 = Range( TruncI( y ), 0, m_height-1 );
+      int x0 = Range( TruncInt( x ), 0, m_width-1 );
+      int y0 = Range( TruncInt( y ), 0, m_height-1 );
 
       // Precalculate function values
-      int dx = RoundI( (x - x0)*__PCL_LANCZOS_LUT_RESOLUTION );
-      int dy = RoundI( (y - y0)*__PCL_LANCZOS_LUT_RESOLUTION );
+      int dx = RoundInt( (x - x0)*__PCL_LANCZOS_LUT_INT_RESOLUTION );
+      int dy = RoundInt( (y - y0)*__PCL_LANCZOS_LUT_INT_RESOLUTION );
       for ( int j = -m_n + 1, k = 0; j <= m_n; ++j, ++k )
       {
-         int d0 = j*__PCL_LANCZOS_LUT_RESOLUTION;
+         int d0 = j*__PCL_LANCZOS_LUT_INT_RESOLUTION;
          m_Lx[k] = m_lut[Abs( d0 - dx )];
          m_Ly[k] = m_lut[Abs( d0 - dy )];
       }
@@ -673,7 +729,7 @@ public:
 
 private:
 
-           float*& m_lut;        // filter LUT
+     const float*  m_lut;        // filter LUT
            bool    m_clamp : 1;  // clamping enabled ?
            double  m_clampTh;    // clamping threshold in [0,1]
            double  m_clampThInv; // 1 - m_clampTh
@@ -753,7 +809,7 @@ private:
  * Lanczos4LUTInterpolation, Lanczos5LUTInterpolation
  */
 template <typename T>
-class PCL_CLASS Lanczos3LUTInterpolation : public LanczosLUTInterpolationBase<T, 3>
+class PCL_CLASS Lanczos3LUTInterpolation : public LanczosLUTInterpolationBase<T,3>
 {
 public:
 
@@ -768,16 +824,17 @@ public:
     *                feature. The default value is 0.3. For more information,
     *                refer to the documentation for the
     *                SetClampingThreshold( float ) member function.
-    *
-    * \note The 3rd-order Lanczos LUT is allocated and initialized the first
-    * time this constructor is invoked. LUT allocation and initialization are
-    * thread-safe.
     */
    Lanczos3LUTInterpolation( float clamp = __PCL_LANCZOS_CLAMPING_THRESHOLD ) :
-      LanczosLUTInterpolationBase<T, 3>( PCL_Lanczos3_LUT, clamp )
+      LanczosLUTInterpolationBase<T,3>( clamp )
    {
       PCL_PRECONDITION( 0 <= clamp && clamp <= 1 )
    }
+
+   /*!
+    * Copy constructor.
+    */
+   Lanczos3LUTInterpolation( const Lanczos3LUTInterpolation& ) = default;
 
    /*!
     * Virtual destructor.
@@ -807,7 +864,7 @@ public:
  * Lanczos3LUTInterpolation, Lanczos5LUTInterpolation
  */
 template <typename T>
-class PCL_CLASS Lanczos4LUTInterpolation : public LanczosLUTInterpolationBase<T, 4>
+class PCL_CLASS Lanczos4LUTInterpolation : public LanczosLUTInterpolationBase<T,4>
 {
 public:
 
@@ -822,16 +879,17 @@ public:
     *                feature. The default value is 0.3. For more information,
     *                refer to the documentation for the
     *                SetClampingThreshold( float ) member function.
-    *
-    * \note The 4th-order Lanczos LUT is allocated and initialized the first
-    * time this constructor is invoked. LUT allocation and initialization are
-    * thread-safe.
     */
    Lanczos4LUTInterpolation( float clamp = __PCL_LANCZOS_CLAMPING_THRESHOLD ) :
-      LanczosLUTInterpolationBase<T, 4>( PCL_Lanczos4_LUT, clamp )
+      LanczosLUTInterpolationBase<T,4>( clamp )
    {
       PCL_PRECONDITION( 0 <= clamp && clamp <= 1 )
    }
+
+   /*!
+    * Copy constructor.
+    */
+   Lanczos4LUTInterpolation( const Lanczos4LUTInterpolation& ) = default;
 
    /*!
     * Virtual destructor.
@@ -861,7 +919,7 @@ public:
  * Lanczos3LUTInterpolation, Lanczos4LUTInterpolation
  */
 template <typename T>
-class PCL_CLASS Lanczos5LUTInterpolation : public LanczosLUTInterpolationBase<T, 5>
+class PCL_CLASS Lanczos5LUTInterpolation : public LanczosLUTInterpolationBase<T,5>
 {
 public:
 
@@ -876,16 +934,17 @@ public:
     *                feature. The default value is 0.3. For more information,
     *                refer to the documentation for the
     *                SetClampingThreshold( float ) member function.
-    *
-    * \note The 5th-order Lanczos LUT is allocated and initialized the first
-    * time this constructor is invoked. LUT allocation and initialization are
-    * thread-safe.
     */
    Lanczos5LUTInterpolation( float clamp = __PCL_LANCZOS_CLAMPING_THRESHOLD ) :
-      LanczosLUTInterpolationBase<T, 5>( PCL_Lanczos5_LUT, clamp )
+      LanczosLUTInterpolationBase<T,5>( clamp )
    {
       PCL_PRECONDITION( 0 <= clamp && clamp <= 1 )
    }
+
+   /*!
+    * Copy constructor.
+    */
+   Lanczos5LUTInterpolation( const Lanczos5LUTInterpolation& ) = default;
 
    /*!
     * Virtual destructor.
@@ -912,4 +971,4 @@ public:
 #endif   // __PCL_LanczosInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/LanczosInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/LanczosInterpolation.h - Released 2017-06-28T11:58:36Z

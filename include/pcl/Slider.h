@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Slider.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Slider.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,23 +54,14 @@
 
 /// \file pcl/Slider.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Flags_h
 #include <pcl/Flags.h>
-#endif
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_AutoPointer_h
 #include <pcl/AutoPointer.h>
-#endif
-
-#ifndef __PCL_Control_h
 #include <pcl/Control.h>
-#endif
 
 #endif   // __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
@@ -80,7 +71,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace TickStyle
+ * \namespace pcl::TickStyle
  * \brief     Slider tick styles.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -99,15 +90,9 @@ namespace TickStyle
       NoTicks   = 0x00,
       Top       = 0x01,
       Bottom    = 0x02,
-#if defined( _MSC_VER ) && _MSC_VER >= 1700 // VC++ >= 2012
-      Left      = 1,
-      Right     = 2,
-      BothSides = 3
-#else
       Left      = Top,
       Right     = Bottom,
       BothSides = Top|Bottom
-#endif
    };
 }
 
@@ -502,4 +487,4 @@ public:
 #endif   // __PCL_Slider_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Slider.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Slider.h - Released 2017-06-28T11:58:36Z

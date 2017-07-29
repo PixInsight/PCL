@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/KDTree.h - Released 2016/02/21 20:22:12 UTC
+// pcl/KDTree.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/KDTree.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Array_h
 #include <pcl/Array.h>
-#endif
-
-#ifndef __PCL_Vector_h
 #include <pcl/Vector.h>
-#endif
 
 namespace pcl
 {
@@ -476,11 +469,11 @@ private:
       Node* node = new Node( SplitValue( points, index ) );
 
       point_list left, right;
-      for ( typename point_list::const_iterator i = points.Begin(); i != points.End(); ++i )
-         if ( (*i)[index] <= node->split )
-            left.Add( *i );
+      for ( const point& p : points )
+         if ( p[index] <= node->split )
+            left.Add( p );
          else
-            right.Add( *i );
+            right.Add( p );
 
       // If we are about to build a degenerate subtree, abort this branch of
       // recursion right now.
@@ -509,15 +502,15 @@ private:
          if ( node->IsLeaf() )
          {
             const LeafNode* leaf = static_cast<const LeafNode*>( node );
-            for ( typename point_list::const_iterator i = leaf->points.Begin(); i != leaf->points.End(); ++i )
+            for ( const point& p : leaf->points )
                for ( int j = 0; ; )
                {
-                  component x = (*i)[j];
+                  component x = p[j];
                   if ( x < p0[j] || p1[j] < x )
                      break;
                   if ( ++j == m_dimension )
                   {
-                     found.Add( *i );
+                     found.Add( p );
                      break;
                   }
                }
@@ -539,15 +532,15 @@ private:
          if ( node->IsLeaf() )
          {
             const LeafNode* leaf = static_cast<const LeafNode*>( node );
-            for ( typename point_list::const_iterator i = leaf->points.Begin(); i != leaf->points.End(); ++i )
+            for ( const point& p : leaf->points )
                for ( int j = 0; ; )
                {
-                  component x = (*i)[j];
+                  component x = p[j];
                   if ( x < p0[j] || p1[j] < x )
                      break;
                   if ( ++j == m_dimension )
                   {
-                     callback( *i, data );
+                     callback( p, data );
                      break;
                   }
                }
@@ -591,4 +584,4 @@ private:
 #endif   // __PCL_KDTree_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/KDTree.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/KDTree.h - Released 2017-06-28T11:58:36Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Process.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Process.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,21 +56,11 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_AutoPointer_h
 #include <pcl/AutoPointer.h>
-#endif
-
-#ifndef __PCL_ProcessBase_h
 #include <pcl/ProcessBase.h>
-#endif
-
-#ifndef __PCL_ProcessParameter_h
 #include <pcl/ProcessParameter.h>
-#endif
 
 namespace pcl
 {
@@ -134,8 +124,7 @@ public:
     */
    Process( const IsoString& classId );
 
-   template <class S>
-   Process( const S& classId ) : Process( IsoString( classId ) )
+   Process( const IsoString::ustring_base& classId ) : Process( IsoString( classId ) )
    {
    }
 
@@ -344,8 +333,7 @@ public:
     */
    static Array<Process> ProcessesByCategory( const IsoString& category );
 
-   template <class S>
-   static Array<Process> ProcessesByCategory( const S& category )
+   static Array<Process> ProcessesByCategory( const IsoString::ustring_base& category )
    {
       return ProcessesByCategory( IsoString( category ) );
    }
@@ -373,4 +361,4 @@ private:
 #endif   // __PCL_Process_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Process.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Process.h - Released 2017-06-28T11:58:36Z

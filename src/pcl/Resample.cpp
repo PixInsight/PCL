@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Resample.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Resample.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -242,11 +242,11 @@ private:
    {
       ThreadData( double a_xRatio, double a_yRatio, int a_width, const StatusMonitor& a_status, size_type a_count ) :
          AbstractImage::ThreadData( a_status, a_count ),
-         f( nullptr ), xRatio( a_xRatio ), yRatio( a_yRatio ), width( a_width )
+         xRatio( a_xRatio ), yRatio( a_yRatio ), width( a_width )
       {
       }
 
-      typename P::sample* f;
+      typename P::sample* f = nullptr;
                double     xRatio;
                double     yRatio;
                int        width;
@@ -328,4 +328,4 @@ void Resample::Apply( pcl::UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Resample.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Resample.cpp - Released 2017-06-28T11:58:42Z

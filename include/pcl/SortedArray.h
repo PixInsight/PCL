@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/SortedArray.h - Released 2016/02/21 20:22:12 UTC
+// pcl/SortedArray.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/SortedArray.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Array_h
 #include <pcl/Array.h>
-#endif
 
 namespace pcl
 {
@@ -75,8 +68,14 @@ namespace pcl
  * \class SortedArray
  * \brief Generic dynamic sorted array.
  *
- * ### TODO: Write a detailed description for %SortedArray.
+ * %SortedArray is a generic, finite sorted sequence of objects, implemented as
+ * a reference-counted, dynamic array of T instances with automatic sorting of
+ * inserted array elements. The type A provides dynamic allocation for
+ * contiguous sequences of elements of type T (StandardAllocator is used by
+ * default).
  *
+ * \sa Array, ReferenceArray, ReferenceSortedArray, IndirectArray,
+ * IndirectSortedArray
  * \ingroup dynamic_arrays
  */
 template <class T, class A = StandardAllocator>
@@ -584,16 +583,45 @@ public:
 
    /*! #
     */
-   void Remove( iterator i, size_type n = 1 )
+   void Remove( const_iterator i, size_type n = 1 )
    {
-      m_array.Remove( i, n );
+      m_array.Remove( const_cast<iterator>( i ), n );
    }
 
    /*! #
     */
-   void Remove( iterator i, iterator j )
+   void Remove( const_iterator i, const_iterator j )
    {
-      m_array.Remove( i, j );
+      m_array.Remove( const_cast<iterator>( i ), const_cast<iterator>( j ) );
+   }
+
+   /*!
+    * Destroys and removes a trailing sequence of contiguous objects from the
+    * specified iterator of this array. This operation is equivalent to:
+    *
+    * \code Remove( i, End() ) \endcode
+    *
+    * If the specified iterator \a i is located at or after the end of this
+    * array, this function does nothing. Otherwise the iterator is constrained
+    * to stay in the range [Begin(),End()) of existing array elements.
+    */
+   void Truncate( const_iterator i )
+   {
+      m_array.Truncate( const_cast<iterator>( i ) );
+   }
+
+   /*!
+    * Removes a contiguous trailing sequence of \a n existing objects from this
+    * sorted array. This operation is equivalent to:
+    *
+    * \code Truncate( End() - n ) \endcode
+    *
+    * If the specified count \a n is greater than or equal to the length of
+    * this array, this function calls Clear() to yield an empty array.
+    */
+   void Shrink( size_type n = 1 )
+   {
+      m_array.Shrink( n );
    }
 
    /*! #
@@ -602,8 +630,7 @@ public:
    {
       const_iterator i = pcl::BinarySearch( Begin(), End(), v );
       if ( i != End() )
-         Remove( const_cast<iterator>( i ),
-                 const_cast<iterator>( pcl::InsertionPoint( i+1, End(), v ) ) );
+         Remove( i, pcl::InsertionPoint( i+1, End(), v ) );
    }
 
    /*! #
@@ -980,8 +1007,8 @@ SortedArray<T,A>& operator <<( SortedArray<T,A>& x, const V& v )
 }
 
 /*!
- * Adds an object \a v to a sorted array \a x. Returns a reference to the
- * sorted array.
+ * Adds an object \a v to a temporary sorted array \a x. Returns a reference to
+ * the sorted array.
  *
  * The template argument type T must have conversion semantics from the type V,
  * such as T::T( const V& ) or equivalent.
@@ -1007,8 +1034,8 @@ SortedArray<T,A>& operator <<( SortedArray<T,A>& x1, const SortedArray<T,A>& x2 
 }
 
 /*!
- * Adds a sorted array \a x2 to a sorted array \a x1. Returns a reference to
- * the left-hand sorted array \a x1.
+ * Adds a sorted array \a x2 to a temporary sorted array \a x1. Returns a
+ * reference to the left-hand sorted array \a x1.
  * \ingroup array_insertion_operators
  */
 template <class T, class A> inline
@@ -1031,8 +1058,8 @@ SortedArray<T,A>& operator <<( SortedArray<T,A>& x1, const Array<T,A>& x2 )
 }
 
 /*!
- * Adds an array \a x2 to a sorted array \a x1. Returns a reference to the
- * left-hand sorted array \a x1.
+ * Adds an array \a x2 to a temporary sorted array \a x1. Returns a reference
+ * to the left-hand sorted array \a x1.
  * \ingroup array_insertion_operators
  */
 template <class T, class A> inline
@@ -1049,4 +1076,4 @@ SortedArray<T,A>& operator <<( SortedArray<T,A>&& x1, const Array<T,A>& x2 )
 #endif  // __PCL_SortedArray_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SortedArray.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/SortedArray.h - Released 2017-06-28T11:58:36Z

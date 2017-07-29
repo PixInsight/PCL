@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.04.03.0213
+// Standard Debayer Process Module Version 01.06.00.0267
 // ----------------------------------------------------------------------------
-// DebayerModule.cpp - Released 2016/02/21 20:22:43 UTC
+// DebayerModule.cpp - Released 2017-07-06T19:14:49Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -51,14 +51,14 @@
 // ----------------------------------------------------------------------------
 
 #define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     04
-#define MODULE_VERSION_REVISION  03
-#define MODULE_VERSION_BUILD     0213
+#define MODULE_VERSION_MINOR     06
+#define MODULE_VERSION_REVISION  00
+#define MODULE_VERSION_BUILD     0267
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2016
-#define MODULE_RELEASE_MONTH     2
-#define MODULE_RELEASE_DAY       21
+#define MODULE_RELEASE_YEAR      2017
+#define MODULE_RELEASE_MONTH     7
+#define MODULE_RELEASE_DAY       6
 
 #include "DebayerModule.h"
 #include "DebayerProcess.h"
@@ -73,6 +73,8 @@ DebayerModule::DebayerModule() : MetaModule()
 {
 }
 
+// ----------------------------------------------------------------------------
+
 const char* DebayerModule::Version() const
 {
    return PCL_MODULE_VERSION( MODULE_VERSION_MAJOR,
@@ -82,35 +84,49 @@ const char* DebayerModule::Version() const
                               MODULE_VERSION_LANGUAGE );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString DebayerModule::Name() const
 {
    return "Debayer";
 }
+
+// ----------------------------------------------------------------------------
 
 String DebayerModule::Description() const
 {
    return "Debayer Module";
 }
 
+// ----------------------------------------------------------------------------
+
 String DebayerModule::Company() const
 {
-   return "Tungsten Technologies";
+   return "Tungsten Technologies / Pleiades Astrophoto";
 }
+
+// ----------------------------------------------------------------------------
 
 String DebayerModule::Author() const
 {
-   return "Sander Pool / Zbynek Vrastil";
+   return "Sander Pool / Zbynek Vrastil / Juan Conejero";
 }
+
+// ----------------------------------------------------------------------------
 
 String DebayerModule::Copyright() const
 {
-   return "Copyright (c) Sander Pool, 2009 / Copyright (c) Zbynek Vrastil, 2011";
+   return "Copyright (c) Sander Pool, 2009 / (c) Zbynek Vrastil, 2011 / (c) Pleiades Astrophoto, 2009-2017";
 }
+
+// ----------------------------------------------------------------------------
 
 String DebayerModule::TradeMarks() const
 {
    return "PixInsight";
 }
+
+// ----------------------------------------------------------------------------
 
 String DebayerModule::OriginalFileName() const
 {
@@ -128,6 +144,8 @@ String DebayerModule::OriginalFileName() const
 #endif
 }
 
+// ----------------------------------------------------------------------------
+
 void DebayerModule::GetReleaseDate( int& year, int& month, int& day ) const
 {
    year  = MODULE_RELEASE_YEAR;
@@ -139,44 +157,18 @@ void DebayerModule::GetReleaseDate( int& year, int& month, int& day ) const
 
 } // pcl
 
-// ----------------------------------------------------------------------------
-// PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
-//
-// Module installation routine.
-//
-// If this routine is defined as a public symbol in a module, the PixInsight
-// core application calls it just after loading and initialization of the
-// module shared object.
-//
-// The mode argument specifies the kind of installation being performed by the
-// core application. See the pcl::InstallMode namespace for more information.
-// ----------------------------------------------------------------------------
-
 PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 {
-   /*
-    * When the PixInsight application installs this module, we just have to
-    * instantiate the meta objects describing it.
-    */
-
    new pcl::DebayerModule;
 
-   /*
-    * The mode argument tells us what kind of installation is being requested
-    * by the PixInsight application. Incomplete installation requests only need
-    * module descriptions.
-    */
    if ( mode == pcl::InstallMode::FullInstall )
    {
       new pcl::DebayerProcess;
       new pcl::DebayerInterface;
    }
 
-   /*
-    * Return zero to signal successful installation
-    */
    return 0;
 }
 
 // ----------------------------------------------------------------------------
-// EOF DebayerModule.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF DebayerModule.cpp - Released 2017-07-06T19:14:49Z

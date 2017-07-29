@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ProcessInterface.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/ProcessInterface.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,6 +57,7 @@
 #include <pcl/KeyCodes.h> // for IsControlPressed()/IsCmdPressed()
 #include <pcl/MetaModule.h>
 #include <pcl/ProcessImplementation.h>
+#include <pcl/ProcessInstance.h>
 #include <pcl/ProcessInterface.h>
 #include <pcl/Settings.h>
 
@@ -70,7 +71,7 @@ namespace pcl
 ProcessInterface::ProcessInterface() :
    Control( nullptr ), MetaObject( Module ), m_launchCount( 0 ), m_autoSaveGeometry( true )
 {
-   if ( Module == 0 )
+   if ( Module == nullptr )
       throw Error( "ProcessInterface: Module not initialized - illegal ProcessInterface instantiation" );
 }
 
@@ -135,15 +136,9 @@ void ProcessInterface::Cancel()
 {
    /*
     * Undocumented feature: Do not close the dynamic interface if the Control
-    * key (the Command key on OS X) is being pressed.
+    * key (the Command key on macOS) is being pressed.
     */
-   ImageWindow::TerminateDynamicSession(
-#ifdef __PCL_MACOSX
-      !IsCmdPressed()
-#else
-      !IsControlPressed()
-#endif
-   );
+   ImageWindow::TerminateDynamicSession( !IsControlOrCmdPressed() );
 }
 
 // ----------------------------------------------------------------------------
@@ -906,7 +901,8 @@ public:
    {
       try
       {
-         reinterpret_cast<ProcessInterface*>( hi )->ProcessCreated( *reinterpret_cast<const ProcessImplementation*>( hp ) );
+         ProcessInstance instance( hp );
+         reinterpret_cast<ProcessInterface*>( hi )->ProcessCreated( instance );
       }
       ERROR_HANDLER
    }
@@ -915,7 +911,8 @@ public:
    {
       try
       {
-         reinterpret_cast<ProcessInterface*>( hi )->ProcessUpdated( *reinterpret_cast<const ProcessImplementation*>( hp ) );
+         ProcessInstance instance( hp );
+         reinterpret_cast<ProcessInterface*>( hi )->ProcessUpdated( instance );
       }
       ERROR_HANDLER
    }
@@ -924,7 +921,8 @@ public:
    {
       try
       {
-         reinterpret_cast<ProcessInterface*>( hi )->ProcessDeleted( *reinterpret_cast<const ProcessImplementation*>( hp ) );
+         ProcessInstance instance( hp );
+         reinterpret_cast<ProcessInterface*>( hi )->ProcessDeleted( instance );
       }
       ERROR_HANDLER
    }
@@ -933,7 +931,8 @@ public:
    {
       try
       {
-         reinterpret_cast<ProcessInterface*>( hi )->ProcessSaved( *reinterpret_cast<const ProcessImplementation*>( hp ) );
+         ProcessInstance instance( hp );
+         reinterpret_cast<ProcessInterface*>( hi )->ProcessSaved( instance );
       }
       ERROR_HANDLER
    }
@@ -1208,4 +1207,4 @@ void ProcessInterface::PerformAPIDefinitions() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessInterface.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/ProcessInterface.cpp - Released 2017-06-28T11:58:42Z

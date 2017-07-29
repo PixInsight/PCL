@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.15.00.0398
 // ----------------------------------------------------------------------------
-// IntegrationCache.cpp - Released 2016/11/13 17:30:54 UTC
+// IntegrationCache.cpp - Released 2017-05-05T08:37:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,28 +59,30 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-IntegrationCache* TheIntegrationCache = 0;
+IntegrationCache* TheIntegrationCache = nullptr;
 
 // ----------------------------------------------------------------------------
 
 void IntegrationCacheItem::AssignData( const FileDataCacheItem& item )
 {
-#define x static_cast<const IntegrationCacheItem&>( item )
-   mean     = x.mean;
-   median   = x.median;
-   stdDev   = x.stdDev;
-   avgDev   = x.avgDev;
-   mad      = x.mad;
-   bwmv     = x.bwmv;
-   pbmv     = x.pbmv;
-   sn       = x.sn;
-   qn       = x.qn;
-   ikss     = x.ikss;
-   iksl     = x.iksl;
-   noise    = x.noise;
-   pedestal = x.pedestal;
+#define src static_cast<const IntegrationCacheItem&>( item )
+   mean     = src.mean;
+   median   = src.median;
+   stdDev   = src.stdDev;
+   avgDev   = src.avgDev;
+   mad      = src.mad;
+   bwmv     = src.bwmv;
+   pbmv     = src.pbmv;
+   sn       = src.sn;
+   qn       = src.qn;
+   ikss     = src.ikss;
+   iksl     = src.iksl;
+   noise    = src.noise;
+   metadata = src.metadata;
 #undef src
 }
+
+// ----------------------------------------------------------------------------
 
 String IntegrationCacheItem::DataAsString() const
 {
@@ -109,11 +111,13 @@ String IntegrationCacheItem::DataAsString() const
       tokens.Append( "iksl" + VectorAsString( iksl ) );
    if ( !noise.IsEmpty() )
       tokens.Append( "noise" + VectorAsString( noise ) );
-   if ( pedestal >= 0 )
-      tokens.Append( String().Format( "pedestal\n%.4f", pedestal ) );
-   String nsTokens;
-   return tokens.ToSeparated( nsTokens, '\n' );
+   if ( !metadata.IsEmpty() )
+      tokens.Append( "metadata\n" + metadata );
+
+   return String().ToNewLineSeparated( tokens );
 }
+
+// ----------------------------------------------------------------------------
 
 bool IntegrationCacheItem::GetDataFromTokens( const StringList& tokens )
 {
@@ -180,12 +184,11 @@ bool IntegrationCacheItem::GetDataFromTokens( const StringList& tokens )
          if ( !GetVector( noise, ++i, tokens ) )
             return false;
       }
-      else if ( *i == "pedestal" )
+      else if ( *i == "metadata" )
       {
          if ( ++i == tokens.End() )
             return false;
-         if ( (pedestal = i->ToFloat()) < 0 )
-            return false;
+         metadata = *i;
       }
       else
       {
@@ -199,15 +202,17 @@ bool IntegrationCacheItem::GetDataFromTokens( const StringList& tokens )
 
 IntegrationCache::IntegrationCache() : FileDataCache( "/ImageIntegration/Cache" )
 {
-   if ( TheIntegrationCache == 0 )
+   if ( TheIntegrationCache == nullptr )
       TheIntegrationCache = this;
    Load();
 }
 
+// ----------------------------------------------------------------------------
+
 IntegrationCache::~IntegrationCache()
 {
    if ( TheIntegrationCache == this )
-      TheIntegrationCache = 0;
+      TheIntegrationCache = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -215,4 +220,4 @@ IntegrationCache::~IntegrationCache()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IntegrationCache.cpp - Released 2016/11/13 17:30:54 UTC
+// EOF IntegrationCache.cpp - Released 2017-05-05T08:37:32Z

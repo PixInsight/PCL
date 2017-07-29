@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0199
+// Standard INDIClient Process Module Version 01.00.15.0203
 // ----------------------------------------------------------------------------
-// INDICCDFrameInterface.h - Released 2016/06/20 17:47:31 UTC
+// INDICCDFrameInterface.h - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2016 Klaus Kretzschmar
+// Copyright (c) 2014-2017 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -63,16 +63,37 @@
 #include <pcl/Sizer.h>
 #include <pcl/SpinBox.h>
 #include <pcl/Timer.h>
-#include <pcl/ToolButton.h>
+#include <pcl/TreeBox.h>
 
 #include "INDIClient.h"
+#include "DeviceConfigBase.h"
 
 namespace pcl
 {
 
+class INDICCDFrameInterfaceExecution;
+
+class FilterConfigDialog : public ConfigDialogBase {
+public:
+	FilterConfigDialog(const String& deviceName);
+
+	void addFilterName(size_t filterSlot, const String& filterName);
+	void adjustTreeColumns();
+private:
+
+	  HorizontalSizer   FilterConfig_Sizer;
+	  	  TreeBox           FilterNames_TreeBox;
+	  	  VerticalSizer     FilterToolBox_Sizer;
+	  	  	  ToolButton      FilterRename_ToolButton;
+
+	virtual void sendUpdatedProperties() override;
+
+	void e_Click( Button& sender, bool checked );
+
+};
+
 // ----------------------------------------------------------------------------
 
-class INDICCDFrameInterfaceExecution;
 
 class INDICCDFrameInterface : public ProcessInterface
 {
@@ -92,10 +113,15 @@ public:
    virtual bool RequiresInstanceValidation() const;
    virtual bool ImportProcess( const ProcessImplementation& );
 
+   const String& CurrentDeviceName() const
+   {
+	   return m_device;
+   }
+
 private:
 
    String                          m_device;
-   INDICCDFrameInterfaceExecution* m_execution;
+   INDICCDFrameInterfaceExecution* m_execution = nullptr;
 
    struct GUIData
    {
@@ -127,6 +153,7 @@ private:
             HorizontalSizer   CCDFilter_HSizer;
                Label             CCDFilter_Label;
                ComboBox          CCDFilter_Combo;
+               ToolButton        FilterConfig_ToolButton;
             HorizontalSizer   CCDFrameType_HSizer;
                Label             CCDFrameType_Label;
                ComboBox          CCDFrameType_Combo;
@@ -190,9 +217,13 @@ private:
          HorizontalSizer   TelescopeDevice_Sizer;
             Label             TelescopeDevice_Label;
             ComboBox          TelescopeDevice_Combo;
+         HorizontalSizer   ExternalFilterDevice_Sizer;
+            Label             ExternalFilterDevice_Label;
+            ComboBox          ExternalFilterDevice_Combo;
+
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
 
@@ -201,6 +232,8 @@ private:
    void e_Timer( Timer& sender );
    void e_Click( Button& sender, bool checked );
    void e_ItemSelected( ComboBox& sender, int itemIndex );
+   void e_FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
+   void e_FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
 
    friend class INDICCDFrameInterfaceExecution;
 };
@@ -218,4 +251,4 @@ PCL_END_LOCAL
 #endif   // __INDICCDFrameInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInterface.h - Released 2016/06/20 17:47:31 UTC
+// EOF INDICCDFrameInterface.h - Released 2017-05-02T09:43:01Z

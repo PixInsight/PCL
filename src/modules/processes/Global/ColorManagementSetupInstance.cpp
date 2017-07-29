@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0328
+// Standard Global Process Module Version 01.02.07.0347
 // ----------------------------------------------------------------------------
-// ColorManagementSetupInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// ColorManagementSetupInstance.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -64,16 +64,12 @@ namespace pcl
 ColorManagementSetupInstance::ColorManagementSetupInstance( const MetaProcess* p ) :
    ProcessImplementation( p ),
    enabled( TheCMSEnabledParameter->DefaultValue() ),
-   updateMonitorProfile(),
-   defaultRGBProfile(),
-   defaultGrayProfile(),
    defaultRenderingIntent( CMSRenderingIntent::DefaultForScreen ),
    onProfileMismatch( CMSOnProfileMismatch::Default ),
    onMissingProfile( CMSOnMissingProfile::Default ),
    defaultEmbedProfilesInRGBImages( TheCMSDefaultEmbedProfilesInRGBImagesParameter->DefaultValue() ),
    defaultEmbedProfilesInGrayscaleImages( TheCMSDefaultEmbedProfilesInGrayscaleImagesParameter->DefaultValue() ),
    useLowResolutionCLUTs( TheCMSUseLowResolutionCLUTsParameter->DefaultValue() ),
-   proofingProfile(),
    proofingIntent( CMSRenderingIntent::DefaultForProofing ),
    useProofingBPC( TheCMSUseProofingBPCParameter->DefaultValue() ),
    defaultProofingEnabled( TheCMSDefaultProofingEnabledParameter->DefaultValue() ),
@@ -150,7 +146,6 @@ bool ColorManagementSetupInstance::CanExecuteOn( const View&, pcl::String& whyNo
 
 bool ColorManagementSetupInstance::CanExecuteGlobal( pcl::String& whyNot ) const
 {
-   whyNot.Clear();
    return true;
 }
 
@@ -158,22 +153,22 @@ bool ColorManagementSetupInstance::CanExecuteGlobal( pcl::String& whyNot ) const
 
 bool ColorManagementSetupInstance::ExecuteGlobal()
 {
-   // Find all installed ICC profiles
-
+   /*
+    * Find all installed ICC profiles
+    */
    StringList all = ICCProfile::FindProfiles();
 
-   // Find the default RGB profile
-
+   /*
+    * Find the default RGB profile
+    */
    StringList descriptions;
    StringList paths;
-
    ICCProfile::ExtractProfileList( descriptions,
                                    paths,
                                    all,
                                    ICCColorSpace::RGB );
 
    StringList::const_iterator i = descriptions.Search( defaultRGBProfile );
-
    if ( i == descriptions.End() )
       throw Error( "Couldn't find the '" + defaultRGBProfile + "' profile.\n"
                    "Either it has not been installed, it is not a valid RGB profile,\n"
@@ -181,43 +176,42 @@ bool ColorManagementSetupInstance::ExecuteGlobal()
 
    String rgbPath = paths[i - descriptions.Begin()];
 
-   // Find the default grayscale profile
-
+   /*
+    * Find the default grayscale profile
+    */
    descriptions.Clear();
    paths.Clear();
-
    ICCProfile::ExtractProfileList( descriptions,
                                    paths,
                                    all,
                                    ICCColorSpace::RGB|ICCColorSpace::Gray );
 
    i = descriptions.Search( defaultGrayProfile );
-
    if ( i == descriptions.End() )
       throw Error( "Couldn't find the '" + defaultGrayProfile + "' profile.\n"
                    "Either it has not been installed, or the corresponding disk file has been removed." );
 
    String grayPath = paths[i - descriptions.Begin()];
 
-   // Find the proofing profile
-
+   /*
+    * Find the proofing profile
+    */
    descriptions.Clear();
    paths.Clear();
-
    ICCProfile::ExtractProfileList( descriptions,
                                    paths,
                                    all ); // all color spaces are valid for proofing
 
    i = descriptions.Search( proofingProfile );
-
    if ( i == descriptions.End() )
       throw Error( "Couldn't find the '" + proofingProfile + "' profile.\n"
                    "Either it has not been installed, or the corresponding disk file has been removed." );
 
    String proofingPath = paths[i - descriptions.Begin()];
 
-   // Perform global settings update
-
+   /*
+    * Perform global settings update
+    */
    PixInsightSettings::BeginUpdate();
 
    try
@@ -243,10 +237,9 @@ bool ColorManagementSetupInstance::ExecuteGlobal()
       PixInsightSettings::EndUpdate();
       return true;
    }
-
    catch ( ... )
    {
-      // ### Warning: don't forget this, or the core app. will bite your ass.
+      // ### Warning: Don't forget to do this, or the core will bite you!
       PixInsightSettings::CancelUpdate();
       throw;
    }
@@ -288,7 +281,8 @@ void* ColorManagementSetupInstance::LockParameter( const MetaParameter* p, size_
       return &defaultGamutCheckEnabled;
    if ( p == TheCMSGamutWarningColorParameter )
       return &gamutWarningColor;
-   return 0;
+
+   return nullptr;
 }
 
 bool ColorManagementSetupInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type /*tableRow*/ )
@@ -319,6 +313,7 @@ bool ColorManagementSetupInstance::AllocateParameter( size_type sizeOrLength, co
    }
    else
       return false;
+
    return true;
 }
 
@@ -332,6 +327,7 @@ size_type ColorManagementSetupInstance::ParameterLength( const MetaParameter* p,
       return proofingProfile.Length();
    if ( p == TheCMSUpdateMonitorProfileParameter )
       return updateMonitorProfile.Length();
+
    return 0;
 }
 
@@ -363,4 +359,4 @@ void ColorManagementSetupInstance::LoadCurrentSettings()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ColorManagementSetupInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ColorManagementSetupInstance.cpp - Released 2017-05-02T09:43:00Z

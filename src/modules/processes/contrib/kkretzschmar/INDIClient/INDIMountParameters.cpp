@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0199
+// Standard INDIClient Process Module Version 01.00.15.0203
 // ----------------------------------------------------------------------------
-// INDIMountParameters.cpp - Released 2016/06/20 17:47:31 UTC
+// INDIMountParameters.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2016 Klaus Kretzschmar
+// Copyright (c) 2014-2017 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -52,391 +52,120 @@
 
 #include "INDIMountParameters.h"
 
+
+
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-IMCDeviceName*              TheIMCDeviceNameParameter = nullptr;
-IMCCommand*                 TheIMCCommandParameter = nullptr;
-IMCSlewRate*                TheIMCSlewRateParameter = nullptr;
-IMCTargetRA*                TheIMCTargetRAParameter = nullptr;
-IMCTargetDec*               TheIMCTargetDecParameter = nullptr;
-IMCComputeApparentPosition* TheIMCComputeApparentPositionParameter = nullptr;
-IMCCurrentLST*              TheIMCCurrentLSTParameter = nullptr;
-IMCCurrentRA*               TheIMCCurrentRAParameter = nullptr;
-IMCCurrentDec*              TheIMCCurrentDecParameter = nullptr;
-IMCApparentTargetRA*        TheIMCApparentTargetRAParameter = nullptr;
-IMCApparentTargetDec*       TheIMCApparentTargetDecParameter = nullptr;
+
+REGISTER_MODULE_PARAMETER(IMCDeviceName);
+REGISTER_MODULE_PARAMETER(IMCCommand);
+REGISTER_MODULE_PARAMETER(IMCSlewRate);
+REGISTER_MODULE_PARAMETER(IMCTargetRA);
+REGISTER_MODULE_PARAMETER(IMCTargetDec);
+REGISTER_MODULE_PARAMETER(IMCComputeApparentPosition);
+REGISTER_MODULE_PARAMETER(IMCCurrentLST);
+REGISTER_MODULE_PARAMETER(IMCCurrentRA);
+REGISTER_MODULE_PARAMETER(IMCCurrentDec);
+REGISTER_MODULE_PARAMETER(IMCApparentTargetRA);
+REGISTER_MODULE_PARAMETER(IMCApparentTargetDec);
+REGISTER_MODULE_PARAMETER(IMCGeographicLatitude);
+REGISTER_MODULE_PARAMETER(IMCPierSide);
+REGISTER_MODULE_PARAMETER(IMCSyncLST);
+REGISTER_MODULE_PARAMETER(IMCSyncCelestialRA);
+REGISTER_MODULE_PARAMETER(IMCSyncCelestialDec);
+REGISTER_MODULE_PARAMETER(IMCSyncTelescopeRA);
+REGISTER_MODULE_PARAMETER(IMCSyncTelescopeDec);
+REGISTER_MODULE_PARAMETER(IMCAlignmentMethod);
+REGISTER_MODULE_PARAMETER(IMCEnableAlignmentCorrection);
+REGISTER_MODULE_PARAMETER(IMCAlignmentFile);
+REGISTER_MODULE_PARAMETER(IMCAlignmentConfig);
+
 
 // ----------------------------------------------------------------------------
 
-IMCDeviceName::IMCDeviceName( MetaProcess* P ) : MetaString( P )
-{
-   TheIMCDeviceNameParameter = this;
-}
+DEFINE_STRING_PARAMETER_CLASS(IMCDeviceName,"deviceName");
 
-IsoString IMCDeviceName::Id() const
-{
-   return "deviceName";
-}
+// ----------------------------------------------------------------------------
+#undef ENUM_ITEM
+#define ENUM_ITEM(X) case X: return "Command_" #X;
+DEFINE_ENUM_PARAMETER_CLASS(IMCCommand,"Command",COMMAND_ENUM, Unpark);
+
+// ----------------------------------------------------------------------------
+#undef ENUM_ITEM
+#define ENUM_ITEM(X) case X: return "SlewRate_" #X;
+DEFINE_ENUM_PARAMETER_CLASS(IMCSlewRate,"SlewRate",SLEW_RATE_ENUM, Max);
+
 
 // ----------------------------------------------------------------------------
 
-IMCCommand::IMCCommand( MetaProcess* P ) : MetaEnumeration( P )
-{
-   TheIMCCommandParameter = this;
-}
-
-IsoString IMCCommand::Id() const
-{
-   return "command";
-}
-
-size_type IMCCommand::NumberOfElements() const
-{
-   return NumberOfCommands;
-}
-
-IsoString IMCCommand::ElementId( size_type i ) const
-{
-   switch ( i )
-   {
-   default:
-   case Unpark:         return "Command_Unpark";
-   case Park:           return "Command_Park";
-   case MoveNorthStart: return "Command_MoveNorth_Start";
-   case MoveNorthStop:  return "Command_MoveNorth_Stop";
-   case MoveSouthStart: return "Command_MoveSouth_Start";
-   case MoveSouthStop:  return "Command_MoveSouth_Stop";
-   case MoveWestStart:  return "Command_MoveWest_Start";
-   case MoveWestStop:   return "Command_MoveWest_Stop";
-   case MoveEastStart:  return "Command_MoveEast_Start";
-   case MoveEastStop:   return "Command_MoveEast_Stop";
-   case GoTo:           return "Command_GoTo";
-   case Sync:           return "Command_Sync";
-   case ParkDefault:    return "Command_ParkDefault";
-   }
-}
-
-int IMCCommand::ElementValue( size_type i ) const
-{
-   return int( i );
-}
-
-size_type IMCCommand::DefaultValueIndex() const
-{
-   return size_type( Default );
-}
+DEFINE_DOUBLE_PARAMETER_CLASS(IMCTargetRA,"targetRA",8,0,0,24);
 
 // ----------------------------------------------------------------------------
 
-IMCSlewRate::IMCSlewRate( MetaProcess* P ) : MetaEnumeration( P )
-{
-   TheIMCSlewRateParameter = this;
-}
-
-IsoString IMCSlewRate::Id() const
-{
-   return "slewRate";
-}
-
-size_type IMCSlewRate::NumberOfElements() const
-{
-   return NumberOfCommands;
-}
-
-IsoString IMCSlewRate::ElementId( size_type i ) const
-{
-   switch ( i )
-   {
-   default:
-   case Guide:     return "SlewRate_Guide";
-   case Centering: return "SlewRate_Centering";
-   case Find:      return "SlewRate_Find";
-   case Max:       return "SlewRate_Max";
-   }
-}
-
-int IMCSlewRate::ElementValue( size_type i ) const
-{
-   return int( i );
-}
-
-size_type IMCSlewRate::DefaultValueIndex() const
-{
-   return size_type( Default );
-}
+DEFINE_DOUBLE_PARAMETER_CLASS(IMCTargetDec,"targetDec",7,0,-90,90);
 
 // ----------------------------------------------------------------------------
 
-IMCTargetRA::IMCTargetRA( MetaProcess* P ) : MetaDouble( P )
-{
-   TheIMCTargetRAParameter = this;
-}
-
-IsoString IMCTargetRA::Id() const
-{
-   return "targetRA";
-}
-
-int IMCTargetRA::Precision() const
-{
-   return 8;
-}
-
-double IMCTargetRA::DefaultValue() const
-{
-   return 0;
-}
-
-double IMCTargetRA::MinimumValue() const
-{
-   return 0;
-}
-
-double IMCTargetRA::MaximumValue() const
-{
-   return 24;
-}
+DEFINE_BOOLEAN_PARAMETER_CLASS(IMCComputeApparentPosition,"computeApparentPosition",false);
 
 // ----------------------------------------------------------------------------
 
-IMCTargetDec::IMCTargetDec( MetaProcess* P ) : MetaDouble( P )
-{
-   TheIMCTargetDecParameter = this;
-}
-
-IsoString IMCTargetDec::Id() const
-{
-   return "targetDec";
-}
-
-int IMCTargetDec::Precision() const
-{
-   return 7;
-}
-
-double IMCTargetDec::DefaultValue() const
-{
-   return 0;
-}
-
-double IMCTargetDec::MinimumValue() const
-{
-   return -90;
-}
-
-double IMCTargetDec::MaximumValue() const
-{
-   return +90;
-}
+DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCCurrentLST,"currentLST",8,0,0,24);
 
 // ----------------------------------------------------------------------------
 
-IMCComputeApparentPosition::IMCComputeApparentPosition( MetaProcess* P ) : MetaBoolean( P )
-{
-   TheIMCComputeApparentPositionParameter = this;
-}
-
-IsoString IMCComputeApparentPosition::Id() const
-{
-   return "computeApparentPosition";
-}
-
-bool IMCComputeApparentPosition::DefaultValue() const
-{
-   return false;
-}
+DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCCurrentRA,"currentRA",8,-1,-1,24);
 
 // ----------------------------------------------------------------------------
 
-IMCCurrentLST::IMCCurrentLST( MetaProcess* P ) : MetaDouble( P )
-{
-   TheIMCCurrentLSTParameter = this;
-}
-
-IsoString IMCCurrentLST::Id() const
-{
-   return "currentLST";
-}
-
-int IMCCurrentLST::Precision() const
-{
-   return 8;
-}
-
-double IMCCurrentLST::DefaultValue() const
-{
-   return -1; // < 0 -> unknown LST
-}
-
-double IMCCurrentLST::MinimumValue() const
-{
-   return -1; // < 0 -> unknown LST
-}
-
-double IMCCurrentLST::MaximumValue() const
-{
-   return 24;
-}
-
-bool IMCCurrentLST::IsReadOnly() const
-{
-   return true;
-}
+DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCCurrentDec,"currentDec",7,-91,-91,90);
 
 // ----------------------------------------------------------------------------
 
-IMCCurrentRA::IMCCurrentRA( MetaProcess* P ) : MetaDouble( P )
-{
-   TheIMCCurrentRAParameter = this;
-}
-
-IsoString IMCCurrentRA::Id() const
-{
-   return "currentRA";
-}
-
-int IMCCurrentRA::Precision() const
-{
-   return 8;
-}
-
-double IMCCurrentRA::DefaultValue() const
-{
-   return -1; // < 0 -> unknown RA
-}
-
-double IMCCurrentRA::MinimumValue() const
-{
-   return -1; // < 0 -> unknown RA
-}
-
-double IMCCurrentRA::MaximumValue() const
-{
-   return 24;
-}
-
-bool IMCCurrentRA::IsReadOnly() const
-{
-   return true;
-}
+DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCApparentTargetRA,"apparentTargetRA",8,-1,-1,24);
 
 // ----------------------------------------------------------------------------
 
-IMCCurrentDec::IMCCurrentDec( MetaProcess* P ) : MetaDouble( P )
-{
-   TheIMCCurrentDecParameter = this;
-}
-
-IsoString IMCCurrentDec::Id() const
-{
-   return "currentDec";
-}
-
-int IMCCurrentDec::Precision() const
-{
-   return 7;
-}
-
-double IMCCurrentDec::DefaultValue() const
-{
-   return -91; // < -90 -> unknown Dec
-}
-
-double IMCCurrentDec::MinimumValue() const
-{
-   return -91; // < -90 -> unknown Dec
-}
-
-double IMCCurrentDec::MaximumValue() const
-{
-   return +90;
-}
-
-bool IMCCurrentDec::IsReadOnly() const
-{
-   return true;
-}
+DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCApparentTargetDec,"apparentTargetDec",7,-91,-91,90);
 
 // ----------------------------------------------------------------------------
 
-IMCApparentTargetRA::IMCApparentTargetRA( MetaProcess* P ) : MetaDouble( P )
-{
-   TheIMCApparentTargetRAParameter = this;
-}
-
-IsoString IMCApparentTargetRA::Id() const
-{
-   return "apparentTargetRA";
-}
-
-int IMCApparentTargetRA::Precision() const
-{
-   return 8;
-}
-
-double IMCApparentTargetRA::DefaultValue() const
-{
-   return -1; // < 0 -> unknown RA
-}
-
-double IMCApparentTargetRA::MinimumValue() const
-{
-   return -1; // < 0 -> unknown RA
-}
-
-double IMCApparentTargetRA::MaximumValue() const
-{
-   return 24;
-}
-
-bool IMCApparentTargetRA::IsReadOnly() const
-{
-   return true;
-}
+DEFINE_DOUBLE_PARAMETER_CLASS(IMCGeographicLatitude,"geographicLatitude",7,-91,-91,90);
 
 // ----------------------------------------------------------------------------
 
-IMCApparentTargetDec::IMCApparentTargetDec( MetaProcess* P ) : MetaDouble( P )
-{
-   TheIMCApparentTargetDecParameter = this;
-}
-
-IsoString IMCApparentTargetDec::Id() const
-{
-   return "apparentTargetDec";
-}
-
-int IMCApparentTargetDec::Precision() const
-{
-   return 7;
-}
-
-double IMCApparentTargetDec::DefaultValue() const
-{
-   return -91; // < -90 -> unknown Dec
-}
-
-double IMCApparentTargetDec::MinimumValue() const
-{
-   return -91; // < -90 -> unknown Dec
-}
-
-double IMCApparentTargetDec::MaximumValue() const
-{
-   return +90;
-}
-
-bool IMCApparentTargetDec::IsReadOnly() const
-{
-   return true;
-}
+#undef ENUM_ITEM
+#define ENUM_ITEM(X) case X: return "PierSide_" #X;
+DEFINE_ENUM_PARAMETER_CLASS(IMCPierSide,"PierSide",PIERSIDE_ENUM, None);
 
 // ----------------------------------------------------------------------------
+
+DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncLST,"syncLST",8,0,0,24);
+DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncCelestialRA,"syncCelestialRA",8,0,0,24);
+DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncCelestialDec,"syncCelestialDec",7,0,-90,90);
+DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncTelescopeRA,"syncTelescopeRA",8,0,0,24);
+DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncTelescopeDec,"syncTelescopeDec",7,0,-90,90);
+
+
+// ----------------------------------------------------------------------------
+
+DEFINE_BOOLEAN_PARAMETER_CLASS(IMCEnableAlignmentCorrection,"enableAlignmentCorrection",false);
+
+#undef ENUM_ITEM
+#define ENUM_ITEM(X) case X: return "AlignmentMethod_" #X;
+DEFINE_ENUM_PARAMETER_CLASS(IMCAlignmentMethod,"AlignmentMethod",ALIGNMENT_ENUM, None);
+
+DEFINE_STRING_PARAMETER_CLASS(IMCAlignmentFile,"alignmentModelFile");
+
+DEFINE_INT32_PARAMETER_CLASS(IMCAlignmentConfig,"alignmentConfig",0,0,2048);
+
+// ----------------------------------------------------------------------------
+
 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountParameters.cpp - Released 2016/06/20 17:47:31 UTC
+// EOF INDIMountParameters.cpp - Released 2017-05-02T09:43:01Z

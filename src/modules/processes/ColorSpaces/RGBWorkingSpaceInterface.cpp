@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0298
+// Standard ColorSpaces Process Module Version 01.01.00.0317
 // ----------------------------------------------------------------------------
-// RGBWorkingSpaceInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// RGBWorkingSpaceInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -62,7 +62,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-RGBWorkingSpaceInterface* TheRGBWorkingSpaceInterface = 0;
+RGBWorkingSpaceInterface* TheRGBWorkingSpaceInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -75,15 +75,15 @@ RGBWorkingSpaceInterface* TheRGBWorkingSpaceInterface = 0;
 // ----------------------------------------------------------------------------
 
 RGBWorkingSpaceInterface::RGBWorkingSpaceInterface() :
-ProcessInterface(), instance( TheRGBWorkingSpaceProcess ), GUI( 0 )
+   instance( TheRGBWorkingSpaceProcess )
 {
    TheRGBWorkingSpaceInterface = this;
 }
 
 RGBWorkingSpaceInterface::~RGBWorkingSpaceInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString RGBWorkingSpaceInterface::Id() const
@@ -113,13 +113,11 @@ void RGBWorkingSpaceInterface::ApplyInstance() const
 
 void RGBWorkingSpaceInterface::TrackViewUpdated( bool active )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( active )
       {
          instance.applyGlobalRGBWS = false;
-
          ImageWindow w = ImageWindow::ActiveWindow();
-
          if ( !w.IsNull() )
             ImageFocused( w.MainView() );
          else
@@ -133,21 +131,9 @@ void RGBWorkingSpaceInterface::ResetInstance()
    ImportProcess( defaultInstance );
 }
 
-void RGBWorkingSpaceInterface::Initialize()
-{
-   // ### Deferred initialization
-   /*
-   GUI = new GUIData( *this );
-   SetWindowTitle( "RGBWorkingSpace" );
-   GUI->AllImages_ViewList.Regenerate( true, false ); // exclude previews
-   UpdateControls();
-   */
-}
-
 bool RGBWorkingSpaceInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "RGBWorkingSpace" );
@@ -166,16 +152,10 @@ ProcessImplementation* RGBWorkingSpaceInterface::NewProcess() const
 
 bool RGBWorkingSpaceInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const RGBWorkingSpaceInstance* r = dynamic_cast<const RGBWorkingSpaceInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not a RGBWorkingSpace instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const RGBWorkingSpaceInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a RGBWorkingSpace instance.";
+   return false;
 }
 
 bool RGBWorkingSpaceInterface::RequiresInstanceValidation() const
@@ -186,12 +166,9 @@ bool RGBWorkingSpaceInterface::RequiresInstanceValidation() const
 bool RGBWorkingSpaceInterface::ImportProcess( const ProcessImplementation& p )
 {
    instance.Assign( p );
-
    DeactivateTrackView();
    GUI->AllImages_ViewList.SelectView( View::Null() );
-
    UpdateControls();
-
    return true;
 }
 
@@ -202,36 +179,38 @@ bool RGBWorkingSpaceInterface::WantsImageNotifications() const
 
 void RGBWorkingSpaceInterface::ImageUpdated( const View& v )
 {
-   if ( GUI != 0 && v == currentView )
-   {
-      RGBColorSystem rgbws;
-      currentView.Window().GetRGBWS( rgbws );
+   if ( GUI != nullptr )
+      if ( v == currentView )
+      {
+         RGBColorSystem rgbws;
+         currentView.Window().GetRGBWS( rgbws );
 
-      instance = RGBWorkingSpaceInstance( TheRGBWorkingSpaceProcess, rgbws );
+         instance = RGBWorkingSpaceInstance( TheRGBWorkingSpaceProcess, rgbws );
 
-      UpdateControls();
-   }
+         UpdateControls();
+      }
 }
 
 void RGBWorkingSpaceInterface::ImageFocused( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() )
-      if ( !v.IsNull() )
-      {
-         View mainView = v.Window().MainView();
-
-         GUI->AllImages_ViewList.SelectView( mainView ); // normally not necessary, but we can invoke this f() directly
-
-         if ( !currentView.IsNull() )
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+         if ( !v.IsNull() )
          {
-            RGBColorSystem rgbws;
-            currentView.Window().GetRGBWS( rgbws );
+            View mainView = v.Window().MainView();
 
-            instance = RGBWorkingSpaceInstance( TheRGBWorkingSpaceProcess, rgbws );
+            GUI->AllImages_ViewList.SelectView( mainView ); // normally not necessary, but we can invoke this f() directly
 
-            UpdateControls();
+            if ( !currentView.IsNull() )
+            {
+               RGBColorSystem rgbws;
+               currentView.Window().GetRGBWS( rgbws );
+
+               instance = RGBWorkingSpaceInstance( TheRGBWorkingSpaceProcess, rgbws );
+
+               UpdateControls();
+            }
          }
-      }
 }
 
 void RGBWorkingSpaceInterface::ImageRGBWSUpdated( const View& v )
@@ -246,18 +225,18 @@ bool RGBWorkingSpaceInterface::WantsGlobalNotifications() const
 
 void RGBWorkingSpaceInterface::GlobalRGBWSUpdated()
 {
-   if ( GUI != 0 && instance.AppliesGlobalRGBWS() )
-   {
-      RGBColorSystem rgbws;
-      ImageWindow::GetGlobalRGBWS( rgbws );
+   if ( GUI != nullptr )
+      if ( instance.AppliesGlobalRGBWS() )
+      {
+         RGBColorSystem rgbws;
+         ImageWindow::GetGlobalRGBWS( rgbws );
 
-      instance = RGBWorkingSpaceInstance( TheRGBWorkingSpaceProcess, rgbws );
+         instance = RGBWorkingSpaceInstance( TheRGBWorkingSpaceProcess, rgbws );
 
-      UpdateControls();
-   }
+         UpdateControls();
+      }
 }
 
-// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void RGBWorkingSpaceInterface::UpdateControls()
@@ -307,7 +286,6 @@ void RGBWorkingSpaceInterface::UpdateControls()
 }
 
 // ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
 
 void RGBWorkingSpaceInterface::__ViewList_ViewSelected( ViewList& /*sender*/, View& )
 {
@@ -317,39 +295,36 @@ void RGBWorkingSpaceInterface::__ViewList_ViewSelected( ViewList& /*sender*/, Vi
    {
       RGBColorSystem rgbws;
       currentView.Window().GetRGBWS( rgbws );
-
       instance = RGBWorkingSpaceInstance( TheRGBWorkingSpaceProcess, rgbws );
-
       UpdateControls();
    }
 }
 
 void RGBWorkingSpaceInterface::__LuminanceCoefficient_ValueUpdated( NumericEdit& sender, double value )
 {
-   int i = -1;
+   int i;
    if ( sender == GUI->RY_NumericControl )
       i = 0;
    else if ( sender == GUI->GY_NumericControl )
       i = 1;
    else if ( sender == GUI->BY_NumericControl )
       i = 2;
+   else
+      return;
 
-   if ( i >= 0 )
+   if ( instance.Y[i] != value )
    {
-      if ( instance.Y[i] != value )
-      {
-         DeactivateTrackView();
-         GUI->AllImages_ViewList.SelectView( View::Null() );
-         instance.Y[i] = value;
-         UpdateControls();
-      }
+      DeactivateTrackView();
+      GUI->AllImages_ViewList.SelectView( View::Null() );
+      instance.Y[i] = value;
+      UpdateControls();
    }
 }
 
 void RGBWorkingSpaceInterface::__ChromaticityCoordinate_ValueUpdated( NumericEdit& sender, double value )
 {
-   int i = -1;
-   bool x = false;
+   int i;
+   bool x;
    if ( sender == GUI->Rx_NumericEdit )
    {
       i = 0;
@@ -380,17 +355,16 @@ void RGBWorkingSpaceInterface::__ChromaticityCoordinate_ValueUpdated( NumericEdi
       i = 2;
       x = false;
    }
+   else
+      return;
 
-   if ( i >= 0 )
+   float& item = (x ? instance.x : instance.y)[i];
+   if ( item != value )
    {
-      float& item = (x ? instance.x : instance.y)[i];
-      if ( item != value )
-      {
-         DeactivateTrackView();
-         GUI->AllImages_ViewList.SelectView( View::Null() );
-         item = value;
-         UpdateControls();
-      }
+      DeactivateTrackView();
+      GUI->AllImages_ViewList.SelectView( View::Null() );
+      item = value;
+      UpdateControls();
    }
 }
 
@@ -417,19 +391,15 @@ void RGBWorkingSpaceInterface::__sRGBGamma_ButtonClick( Button& /*sender*/, bool
 {
    DeactivateTrackView();
    GUI->AllImages_ViewList.SelectView( View::Null() );
-
    instance.sRGB = checked;
-
    if ( instance.sRGB )
       instance.gamma = RGBColorSystem::sRGB.Gamma();
-
    UpdateControls();
 }
 
 void RGBWorkingSpaceInterface::__LoadRGBWS_ButtonClick( Button& sender, bool /*checked*/ )
 {
    RGBColorSystem rgbws;
-
    if ( sender == GUI->LoadDefaultRGBWS_PushButton )
       rgbws = RGBColorSystem::sRGB;
    else if ( sender == GUI->LoadGlobalRGBWS_PushButton )
@@ -439,9 +409,7 @@ void RGBWorkingSpaceInterface::__LoadRGBWS_ButtonClick( Button& sender, bool /*c
 
    DeactivateTrackView();
    GUI->AllImages_ViewList.SelectView( View::Null() );
-
    instance = RGBWorkingSpaceInstance( TheRGBWorkingSpaceProcess, rgbws );
-
    UpdateControls();
 }
 
@@ -449,17 +417,33 @@ void RGBWorkingSpaceInterface::__ApplyGlobalRGBWS_ButtonClick( Button& /*sender*
 {
    RGBColorSystem rgbws;
    ImageWindow::GetGlobalRGBWS( rgbws );
-
    DeactivateTrackView();
    GUI->AllImages_ViewList.SelectView( View::Null() );
-
    instance = RGBWorkingSpaceInstance( TheRGBWorkingSpaceProcess, rgbws );
    instance.applyGlobalRGBWS = checked;
-
    UpdateControls();
 }
 
-// ----------------------------------------------------------------------------
+void RGBWorkingSpaceInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->AllImages_ViewList )
+      wantsView = view.IsMainView();
+}
+
+void RGBWorkingSpaceInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->AllImages_ViewList )
+      if ( view.IsMainView() )
+      {
+         DeactivateTrackView();
+         RGBColorSystem rgbws;
+         view.Window().GetRGBWS( rgbws );
+         instance = RGBWorkingSpaceInstance( TheRGBWorkingSpaceProcess, rgbws );
+         GUI->AllImages_ViewList.SelectView( view );
+         UpdateControls();
+      }
+}
+
 // ----------------------------------------------------------------------------
 
 RGBWorkingSpaceInterface::GUIData::GUIData( RGBWorkingSpaceInterface& w )
@@ -471,6 +455,8 @@ RGBWorkingSpaceInterface::GUIData::GUIData( RGBWorkingSpaceInterface& w )
    //
 
    AllImages_ViewList.OnViewSelected( (ViewList::view_event_handler)&RGBWorkingSpaceInterface::__ViewList_ViewSelected, w );
+   AllImages_ViewList.OnViewDrag( (Control::view_drag_event_handler)&RGBWorkingSpaceInterface::__ViewDrag, w );
+   AllImages_ViewList.OnViewDrop( (Control::view_drop_event_handler)&RGBWorkingSpaceInterface::__ViewDrop, w );
 
    //
 
@@ -709,4 +695,4 @@ RGBWorkingSpaceInterface::GUIData::GUIData( RGBWorkingSpaceInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RGBWorkingSpaceInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF RGBWorkingSpaceInterface.cpp - Released 2017-05-02T09:43:00Z

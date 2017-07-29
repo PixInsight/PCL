@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0374
 // ----------------------------------------------------------------------------
-// AdaptiveStretchCurveGraphInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// AdaptiveStretchCurveGraphInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -75,22 +75,22 @@ static int s_sizeItems[] = { 400, 500, 600, 800, 1000 };
 // ----------------------------------------------------------------------------
 
 AdaptiveStretchCurveGraphInterface::AdaptiveStretchCurveGraphInterface() :
-ProcessInterface(),
-GUI( 0 ),
-m_width( 400 ),
-m_height( 400 ),
-m_backgroundColor( 0xFFFFFFFF ), // white
-m_curveColor( 0xFFFF0000 ),      // red
-m_gridColor( 0xFFD0D0D0 ),       // light gray
-m_axisColor( 0xFF000000 ),       // black
-m_fontFace( "Helvetica" ),
-m_fontSize( 12 ),
-m_tickSize( 5 ),
-m_margin( 15 ),
-m_curve(),
-m_curveRect( 0 ),
-m_gridBitmap( Bitmap::Null() ),
-m_curveBitmap( Bitmap::Null() )
+   ProcessInterface(),
+   GUI( 0 ),
+   m_width( 400 ),
+   m_height( 400 ),
+   m_backgroundColor( 0xFFFFFFFF ), // white
+   m_curveColor( 0xFFFF0000 ),      // red
+   m_gridColor( 0xFFD0D0D0 ),       // light gray
+   m_axisColor( 0xFF000000 ),       // black
+   m_fontFace( "Helvetica" ),
+   m_fontSize( 12 ),
+   m_tickSize( 5 ),
+   m_margin( 15 ),
+   m_curve(),
+   m_curveRect( 0 ),
+   m_gridBitmap( Bitmap::Null() ),
+   m_curveBitmap( Bitmap::Null() )
 {
    TheAdaptiveStretchCurveGraphInterface = this;
 }
@@ -437,4 +437,4 @@ AdaptiveStretchCurveGraphInterface::GUIData::GUIData( AdaptiveStretchCurveGraphI
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AdaptiveStretchCurveGraphInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF AdaptiveStretchCurveGraphInterface.cpp - Released 2017-05-02T09:43:00Z

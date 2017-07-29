@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ImageGeometry.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ImageGeometry.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/ImageGeometry.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Point_h
 #include <pcl/Point.h>
-#endif
-
-#ifndef __PCL_Rectangle_h
 #include <pcl/Rectangle.h>
-#endif
 
 namespace pcl
 {
@@ -381,14 +371,10 @@ protected:
       }
    };
 
-   Geometry* m_geometry;
+   Geometry* m_geometry = nullptr;
 
-   ImageGeometry() : m_geometry( nullptr )
-   {
-   }
-
+   ImageGeometry() = default;
    ImageGeometry( const ImageGeometry& ) = default;
-
    ImageGeometry& operator =( const ImageGeometry& ) = default;
 
    virtual ~ImageGeometry()
@@ -415,4 +401,4 @@ protected:
 #endif   // __PCL_ImageGeometry_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageGeometry.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ImageGeometry.h - Released 2017-06-28T11:58:36Z

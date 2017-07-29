@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------
 //
 //  Little Color Management System
-//  Copyright (c) 1998-2012 Marti Maria Saguer
+//  Copyright (c) 1998-2016 Marti Maria Saguer
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -414,13 +414,13 @@ cmsStage*  CMSEXPORT cmsStageAllocMatrix(cmsContext ContextID, cmsUInt32Number R
 
     if (Offset != NULL) {
 
-        NewElem ->Offset = (cmsFloat64Number*) _cmsCalloc(ContextID, Cols, sizeof(cmsFloat64Number));
+        NewElem ->Offset = (cmsFloat64Number*) _cmsCalloc(ContextID, Rows, sizeof(cmsFloat64Number));
         if (NewElem->Offset == NULL) {
            MatrixElemTypeFree(NewMPE);
            return NULL;
         }
 
-        for (i=0; i < Cols; i++) {
+        for (i=0; i < Rows; i++) {
                 NewElem ->Offset[i] = Offset[i];
         }
 
@@ -505,7 +505,7 @@ void* CLUTElemDup(cmsStage* mpe)
                 goto Error;
         } else {
             NewElem ->Tab.T = (cmsUInt16Number*) _cmsDupMem(mpe ->ContextID, Data ->Tab.T, Data ->nEntries * sizeof (cmsUInt16Number));
-            if (NewElem ->Tab.TFloat == NULL)
+            if (NewElem ->Tab.T == NULL)
                 goto Error;
         }
     }
@@ -770,6 +770,9 @@ cmsBool CMSEXPORT cmsStageSampleCLut16bit(cmsStage* mpe, cmsSAMPLER16 Sampler, v
     if (nInputs > MAX_INPUT_DIMENSIONS) return FALSE;
     if (nOutputs >= MAX_STAGE_CHANNELS) return FALSE;
 
+    memset(In, 0, sizeof(In));
+    memset(Out, 0, sizeof(Out));
+
     nTotalPoints = CubeSize(nSamples, nInputs);
     if (nTotalPoints == 0) return FALSE;
 
@@ -808,7 +811,7 @@ cmsBool CMSEXPORT cmsStageSampleCLut16bit(cmsStage* mpe, cmsSAMPLER16 Sampler, v
     return TRUE;
 }
 
-// Same as anterior, but for floting point
+// Same as anterior, but for floating point
 cmsBool CMSEXPORT cmsStageSampleCLutFloat(cmsStage* mpe, cmsSAMPLERFLOAT Sampler, void * Cargo, cmsUInt32Number dwFlags)
 {
     int i, t, nTotalPoints, index, rest;
@@ -992,7 +995,7 @@ cmsStage* _cmsStageAllocLabV2ToV4curves(cmsContext ContextID)
             return NULL;
         }
 
-        // We need to map * (0xffff / 0xff00), thats same as (257 / 256)
+        // We need to map * (0xffff / 0xff00), that's same as (257 / 256)
         // So we can use 258-entry tables to do the trick (i / 257) * (255 * 257) * (257 / 256);
         for (i=0; i < 257; i++)  {
 
@@ -1271,21 +1274,40 @@ cmsStage* CMSEXPORT cmsStageDup(cmsStage* mpe)
 // ***********************************************************************************************************
 
 // This function sets up the channel count
-
 static
-void BlessLUT(cmsPipeline* lut)
+cmsBool BlessLUT(cmsPipeline* lut)
 {
-    // We can set the input/ouput channels only if we have elements.
+    // We can set the input/output channels only if we have elements.
     if (lut ->Elements != NULL) {
 
-        cmsStage *First, *Last;
+        cmsStage* prev;
+        cmsStage* next;
+        cmsStage* First;
+        cmsStage* Last;
 
         First  = cmsPipelineGetPtrToFirstStage(lut);
         Last   = cmsPipelineGetPtrToLastStage(lut);
 
-        if (First != NULL)lut ->InputChannels = First ->InputChannels;
-        if (Last != NULL) lut ->OutputChannels = Last ->OutputChannels;
+        if (First == NULL || Last == NULL) return FALSE;
+
+        lut->InputChannels = First->InputChannels;
+        lut->OutputChannels = Last->OutputChannels;
+
+        // Check chain consistency
+        prev = First;
+        next = prev->Next;
+
+        while (next != NULL)
+        {
+            if (next->InputChannels != prev->OutputChannels)
+                return FALSE;
+
+            next = next->Next;
+            prev = prev->Next;
     }
+}
+
+    return TRUE;    
 }
 
 
@@ -1339,20 +1361,17 @@ void _LUTevalFloat(register const cmsFloat32Number In[], register cmsFloat32Numb
 }
 
 
-
-
 // LUT Creation & Destruction
-
 cmsPipeline* CMSEXPORT cmsPipelineAlloc(cmsContext ContextID, cmsUInt32Number InputChannels, cmsUInt32Number OutputChannels)
 {
        cmsPipeline* NewLUT;
 
+       // A value of zero in channels is allowed as placeholder
        if (InputChannels >= cmsMAXCHANNELS ||
            OutputChannels >= cmsMAXCHANNELS) return NULL;
 
        NewLUT = (cmsPipeline*) _cmsMallocZero(ContextID, sizeof(cmsPipeline));
        if (NewLUT == NULL) return NULL;
-
 
        NewLUT -> InputChannels  = InputChannels;
        NewLUT -> OutputChannels = OutputChannels;
@@ -1364,7 +1383,11 @@ cmsPipeline* CMSEXPORT cmsPipelineAlloc(cmsContext ContextID, cmsUInt32Number In
        NewLUT ->Data        = NewLUT;
        NewLUT ->ContextID   = ContextID;
 
-       BlessLUT(NewLUT);
+       if (!BlessLUT(NewLUT))
+       {
+           _cmsFree(ContextID, NewLUT);
+           return NULL;
+       }
 
        return NewLUT;
 }
@@ -1453,7 +1476,8 @@ cmsPipeline* CMSEXPORT cmsPipelineDup(const cmsPipeline* lut)
                  First = FALSE;
              }
              else {
-                Anterior ->Next = NewMPE;
+                if (Anterior != NULL) 
+                    Anterior ->Next = NewMPE;
              }
 
             Anterior = NewMPE;
@@ -1470,7 +1494,12 @@ cmsPipeline* CMSEXPORT cmsPipelineDup(const cmsPipeline* lut)
 
     NewLUT ->SaveAs8Bits    = lut ->SaveAs8Bits;
 
-    BlessLUT(NewLUT);
+    if (!BlessLUT(NewLUT))
+    {
+        _cmsFree(lut->ContextID, NewLUT);
+        return NULL;
+    }
+
     return NewLUT;
 }
 
@@ -1498,7 +1527,7 @@ int CMSEXPORT cmsPipelineInsertStage(cmsPipeline* lut, cmsStageLoc loc, cmsStage
                 for (pt = lut ->Elements;
                      pt != NULL;
                      pt = pt -> Next) Anterior = pt;
-
+                
                 Anterior ->Next = mpe;
                 mpe ->Next = NULL;
             }
@@ -1507,8 +1536,7 @@ int CMSEXPORT cmsPipelineInsertStage(cmsPipeline* lut, cmsStageLoc loc, cmsStage
             return FALSE;
     }
 
-    BlessLUT(lut);
-    return TRUE;
+    return BlessLUT(lut);    
 }
 
 // Unlink an element and return the pointer to it
@@ -1563,6 +1591,7 @@ void CMSEXPORT cmsPipelineUnlinkStage(cmsPipeline* lut, cmsStageLoc loc, cmsStag
     else
         cmsStageFree(Unlinked);
 
+    // May fail, but we ignore it
     BlessLUT(lut);
 }
 
@@ -1589,8 +1618,7 @@ cmsBool  CMSEXPORT cmsPipelineCat(cmsPipeline* l1, const cmsPipeline* l2)
                 return FALSE;
     }
 
-    BlessLUT(l1);
-    return TRUE;
+    return BlessLUT(l1);    
 }
 
 

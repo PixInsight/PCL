@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ICCProfileTransformation.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/ICCProfileTransformation.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -55,6 +55,8 @@
 #include <pcl/api/APIException.h>
 #include <pcl/api/APIInterface.h>
 
+#include <lcms/lcms2.h>
+
 namespace pcl
 {
 
@@ -76,10 +78,11 @@ void ICCProfileTransformation::AddAt( size_type i, const ICCProfile::handle prof
 {
    CloseTransformation();
    if ( !ICCProfile::IsValidHandle( profileHandle ) )
-      throw Error( String().Format( "Invalid ICC profile handle %X", profileHandle ) );
+      throw Error( String().Format( "Invalid ICC profile handle %p", profileHandle ) );
    AddOrReplaceAt( i, profileHandle );
 }
 
+// Internal
 void ICCProfileTransformation::AddOrReplaceAt( size_type i, const ICCProfile::handle h )
 {
    for ( size_type n = m_profiles.Length(); n <= i; ++n )
@@ -110,9 +113,9 @@ void ICCProfileTransformation::Clear()
 {
    CloseTransformation();
 
-   for ( profile_list::iterator i = m_profiles.Begin(); i != m_profiles.End(); ++i )
-      if ( ICCProfile::IsValidHandle( *i ) )
-         ICCProfile::Close( *i );
+   for ( ICCProfile::handle h : m_profiles )
+      if ( ICCProfile::IsValidHandle( h ) )
+         ICCProfile::Close( h );
 
    m_profiles.Clear();
    m_srcRGB = m_dstRGB = false;
@@ -120,95 +123,83 @@ void ICCProfileTransformation::Clear()
 
 // ----------------------------------------------------------------------------
 
+static uint32 PCLRenderingIntentToLCMS( ICCProfileTransformation::rendering_intent intent )
+{
+   switch ( intent )
+   {
+   case ICCRenderingIntent::Perceptual:           return INTENT_PERCEPTUAL;
+   default: // ?!
+   case ICCRenderingIntent::RelativeColorimetric: return INTENT_RELATIVE_COLORIMETRIC;
+   case ICCRenderingIntent::Saturation:           return INTENT_SATURATION;
+   case ICCRenderingIntent::AbsoluteColorimetric: return INTENT_ABSOLUTE_COLORIMETRIC;
+   }
+}
+
 void ICCProfileTransformation::CreateTransformation( bool floatingPoint ) const
 {
    CloseTransformation();
 
    if ( m_profiles.Length() < 2 )
-      throw Error( "Insufficient profiles to create an ICC color transformation." );
+      throw Error( "Two or more profiles are required to create an ICC color transformation." );
 
    if ( m_proofingTransformation && m_profiles.Length() != 3 )
-      throw Error( "A proofing ICC color transformation requires three ICC profiles." );
+      throw Error( "A proofing ICC color transformation requires exactly three ICC profiles." );
 
-   for ( size_type i = 0; i < m_profiles.Length(); ++i )
-      if ( m_profiles[i] == 0 )
-         throw Error( "Cannot create an ICC color transformation due to invalid or undefined ICC profile(s)." );
+   for ( ICCProfile::handle h : m_profiles )
+      if ( !ICCProfile::IsValidHandle( h ) )
+         throw Error( String().Format( "Cannot create an ICC color transformation: Invalid ICC profile handle %p.", h ) );
 
-   m_srcRGB = (*API->ColorManagement->GetProfileColorSpace)( *m_profiles.Begin() ) != int32( ICCColorSpace::Gray );
-   m_dstRGB = (*API->ColorManagement->GetProfileColorSpace)( *m_profiles.ReverseBegin() ) != int32( ICCColorSpace::Gray );
-
+   m_srcRGB = ICCProfile::ColorSpace( *m_profiles.Begin() ) != ICCColorSpace::Gray;
+   m_dstRGB = ICCProfile::ColorSpace( *m_profiles.ReverseBegin() ) != ICCColorSpace::Gray;
    m_floatingPoint = floatingPoint;
 
-   int32 srcFormat = m_srcRGB ?
-      (m_floatingPoint ? ColorManagementContext::RGB_F64 : ColorManagementContext::RGB_I16) :
-      (m_floatingPoint ? ColorManagementContext::Gray_F64 : ColorManagementContext::Gray_I16);
-
-   int32 dstFormat = m_dstRGB ?
-      (m_floatingPoint ? ColorManagementContext::RGB_F64 : ColorManagementContext::RGB_I16) :
-      (m_floatingPoint ? ColorManagementContext::Gray_F64 : ColorManagementContext::Gray_I16);
+   uint32 srcFormat = m_srcRGB ?
+      (m_floatingPoint ? TYPE_RGB_DBL : TYPE_RGB_16) : (m_floatingPoint ? TYPE_GRAY_DBL : TYPE_GRAY_16);
+   uint32 dstFormat = m_dstRGB ?
+      (m_floatingPoint ? TYPE_RGB_DBL : TYPE_RGB_16) : (m_floatingPoint ? TYPE_GRAY_DBL : TYPE_GRAY_16);
 
    uint32 flags = 0;
 
    if ( m_blackPointCompensation )
-      flags |= ColorManagementContext::BlackPointCompensation;
+      flags |= cmsFLAGS_BLACKPOINTCOMPENSATION;
 
    if ( m_highResolutionCLUT )
-      flags |= ColorManagementContext::HighResolutionCLUT;
+      flags |= cmsFLAGS_HIGHRESPRECALC;
    else if ( m_lowResolutionCLUT )
-      flags |= ColorManagementContext::LowResolutionCLUT;
+      flags |= cmsFLAGS_LOWRESPRECALC;
 
    if ( m_gamutCheck )
-      flags |= ColorManagementContext::GamutCheck;
+      flags |= cmsFLAGS_GAMUTCHECK;
 
    if ( m_proofingTransformation )
-      m_transformation = (*API->ColorManagement->CreateProofingTransformation)(
+      m_transformation = ::cmsCreateProofingTransform(
                                        m_profiles[0],
+                                       srcFormat,
                                        m_profiles[2],
-                                       m_profiles[1],
-                                       srcFormat,
                                        dstFormat,
-                                       m_intent,
-                                       m_proofingIntent,
-                                       flags );
+                                       m_profiles[1],
+                                       PCLRenderingIntentToLCMS( m_intent ),
+                                       PCLRenderingIntentToLCMS( m_proofingIntent ),
+                                       flags|cmsFLAGS_SOFTPROOFING );
    else if ( m_profiles.Length() == 2 )
-      m_transformation = (*API->ColorManagement->CreateTransformation)(
+      m_transformation = ::cmsCreateTransform(
                                        m_profiles[0],
-                                       m_profiles[1],
                                        srcFormat,
+                                       m_profiles[1],
                                        dstFormat,
-                                       m_intent,
+                                       PCLRenderingIntentToLCMS( m_intent ),
                                        flags );
    else
-      m_transformation = (*API->ColorManagement->CreateMultiprofileTransformation)(
-                                       (icc_profile_handle*)m_profiles.Begin(),
+      m_transformation = ::cmsCreateMultiprofileTransform(
+                                       const_cast<void**>( m_profiles.Begin() ),
                                        uint32( m_profiles.Length() ),
                                        srcFormat,
                                        dstFormat,
-                                       m_intent,
+                                       PCLRenderingIntentToLCMS( m_intent ),
                                        flags );
 
    if ( m_transformation == nullptr )
-   {
-      size_type len;
-      (void)(*API->ColorManagement->GetLastErrorMessage)( 0, &len );
-
-      String apiMessage;
-      if ( len > 0 )
-      {
-         apiMessage.SetLength( len );
-         if ( (*API->ColorManagement->GetLastErrorMessage)( apiMessage.Begin(), &len ) == api_false )
-            apiMessage.Clear();
-         else
-            apiMessage.ResizeToNullTerminated();
-      }
-
-      if ( apiMessage.IsEmpty() )
-         apiMessage = '.';
-      else
-         apiMessage.Prepend( ": " );
-
-      throw Error( "Error initializing ICC color profile transformation" + apiMessage );
-   }
+      ICCProfile::ThrowErrorWithCMSInfo( "Failure to initialize ICC color profile transformation." );
 }
 
 // ----------------------------------------------------------------------------
@@ -217,11 +208,9 @@ void ICCProfileTransformation::CloseTransformation() const
 {
    if ( m_transformation != nullptr )
    {
-      transformation_handle t = m_transformation;
+      ::cmsDeleteTransform( m_transformation );
       m_transformation = nullptr;
       m_floatingPoint = false;
-      if ( (*API->ColorManagement->DestroyTransformation)( t ) == api_false )
-         throw APIFunctionError( "DestroyTransformation" );
    }
 }
 
@@ -239,8 +228,9 @@ public:
       if ( image.IsEmptySelection() || T.Profiles().IsEmpty() )
          return;
 
-      if ( image.ColorSpace() != ColorSpace::RGB && image.ColorSpace() != ColorSpace::Gray )
-         throw Error( String().Format( "Unsupported color space %X in ICC color transformation.", image.ColorSpace() ) );
+      if ( image.ColorSpace() != ColorSpace::RGB )
+         if ( image.ColorSpace() != ColorSpace::Gray )
+            throw Error( String().Format( "Unsupported color space %X in ICC color transformation.", image.ColorSpace() ) );
 
       image.EnsureUnique();
 
@@ -345,10 +335,7 @@ private:
                      P::FromSample( srcColors[p++], *R1++ );
                }
 
-            (void)(*API->ColorManagement->Transfrom)( m_data.transformation,
-                                                      srcColors.Begin(),
-                                                      dstColors.Begin(),
-                                                      width );
+            ::cmsDoTransform( m_data.transformation, srcColors.Begin(), dstColors.Begin(), width );
 
             for ( int x = 0, p = 0; x < width; ++x, ++R, ++G, ++B )
                if ( m_data.T.IsTargetRGBProfile() )
@@ -485,16 +472,18 @@ void ICCProofingTransformation::SetTargetProfile( const ICCProfile::handle profi
 
 RGBA ICCProofingTransformation::GamutWarningColor()
 {
-   float r, g, b;
-   (*API->ColorManagement->GetGamutWarningColor)( &r, &g, &b );
-   return RGBAColor( r, g, b );
+   Array<uint16> gw( size_type( cmsMAXCHANNELS ) );
+   ::cmsGetAlarmCodes( gw.Begin() );
+   return RGBAColor( gw[0]/65535.0, gw[1]/65535.0, gw[2]/65535.0 );
 }
 
 void ICCProofingTransformation::SetGamutWarningColor( RGBA color )
 {
-   (*API->ColorManagement->SetGamutWarningColor)( Red( color )/255.0,
-                                                  Green( color )/255.0,
-                                                  Blue( color )/255.0 );
+   Array<uint16> gw( size_type( cmsMAXCHANNELS ), uint16( 0 ) );
+   gw[0] = uint16( RoundInt( Red( color )/255.0*65535 ) );
+   gw[1] = uint16( RoundInt( Green( color )/255.0*65535 ) );
+   gw[2] = uint16( RoundInt( Blue( color )/255.0*65535 ) );
+   ::cmsSetAlarmCodes( gw.Begin() );
 }
 
 // ----------------------------------------------------------------------------
@@ -502,4 +491,4 @@ void ICCProofingTransformation::SetGamutWarningColor( RGBA color )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ICCProfileTransformation.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/ICCProfileTransformation.cpp - Released 2017-06-28T11:58:42Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/MultiscaleMedianTransform.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/MultiscaleMedianTransform.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,6 +57,8 @@
 #include <pcl/PixelInterpolation.h>
 #include <pcl/Resample.h>
 #include <pcl/SeparableConvolution.h>
+
+#define MAX_STRUCTURE_SIZE 11
 
 namespace pcl
 {
@@ -156,11 +158,11 @@ static const char* B11[] = {  "-----x-----"
 
 // ----------------------------------------------------------------------------
 
-static BitmapStructure* S03 = 0;
-static BitmapStructure* S05 = 0;
-static BitmapStructure* S07 = 0;
-static BitmapStructure* S09 = 0;
-static BitmapStructure* S11 = 0;
+static BitmapStructure* S03 = nullptr;
+static BitmapStructure* S05 = nullptr;
+static BitmapStructure* S07 = nullptr;
+static BitmapStructure* S09 = nullptr;
+static BitmapStructure* S11 = nullptr;
 
 static void InitializeStructures()
 {
@@ -278,55 +280,12 @@ private:
    template <class P> static
    void MedianFilterLayer( GenericImage<P>& cj, int n, bool parallel, int maxProcessors )
    {
-      if ( n > 11 )
+      if ( n <= 11 )
       {
-         /*
-         CircularStructure C( n );
-         MorphologicalTransformation( MedianFilter(), C ) >> cj;
-         */
-
-         int w0 = cj.Width();
-         int h0 = cj.Height();
-         size_type N = cj.NumberOfSamples();
-
-         // Don't alter cj's monitor during resampling
-         StatusMonitor status = cj.Status();
-         cj.Status().Clear();
-         {
-            double r = double( n )/9;
-            int fr = TruncI( 1.5*r ); // NB: fr >= 2
-            PCL_CHECK( fr >= 2 )
-            BicubicFilterPixelInterpolation I( fr, fr, MitchellNetravaliCubicFilter() );
-            Resample R( I, 1/r );
-            R.EnableParallelProcessing( parallel, maxProcessors );
-            R >> cj;
-         }
-         N += status.Count();
-         cj.Status() = status;
-
-         MorphologicalTransformation M( MedianFilter(), *S09 );
-         M.EnableParallelProcessing( parallel, maxProcessors );
-         M >> cj;
-
-         // Don't alter cj's monitor during resampling
-         status = cj.Status();
-         status += N - status.Count();
-         cj.Status().Clear();
-         {
-            BicubicSplinePixelInterpolation I;
-            Resample R( I );
-            R.SetMode( ResizeMode::AbsolutePixels );
-            R.SetSizes( w0, h0 );
-            R.EnableParallelProcessing( parallel, maxProcessors );
-            R >> cj;
-         }
-         cj.Status() = status;
-      }
-      else
-      {
-         BitmapStructure* S = 0;
+         const BitmapStructure* S;
          switch ( n )
          {
+         default:
          case 3:
             S = S03;
             break;
@@ -346,6 +305,59 @@ private:
          MorphologicalTransformation M( MedianFilter(), *S );
          M.EnableParallelProcessing( parallel, maxProcessors );
          M >> cj;
+      }
+#if MAX_STRUCTURE_SIZE > 11
+      else if ( n <= MAX_STRUCTURE_SIZE )
+      {
+         CircularStructure C( n );
+         MorphologicalTransformation M( MedianFilter(), C );
+         M.EnableParallelProcessing( parallel, maxProcessors );
+         M >> cj;
+      }
+#endif
+      else
+      {
+         int w0 = cj.Width();
+         int h0 = cj.Height();
+         size_type N = cj.NumberOfSamples();
+
+         // Don't alter cj's monitor during resampling
+         StatusMonitor status = cj.Status();
+         cj.Status().Clear();
+         {
+            double r = double( n )/(MAX_STRUCTURE_SIZE - 2);
+            int fr = TruncInt( 1.5*r ); // NB: fr >= 2
+            PCL_CHECK( fr >= 2 )
+            BicubicFilterPixelInterpolation I( fr, fr, MitchellNetravaliCubicFilter() );
+            Resample R( I, 1/r );
+            R.EnableParallelProcessing( parallel, maxProcessors );
+            R >> cj;
+         }
+         N += status.Count();
+         cj.Status() = status;
+
+#if MAX_STRUCTURE_SIZE > 11
+         CircularStructure C( MAX_STRUCTURE_SIZE - 2 );
+         MorphologicalTransformation M( MedianFilter(), C );
+#else
+         MorphologicalTransformation M( MedianFilter(), *S09 );
+#endif
+         M.EnableParallelProcessing( parallel, maxProcessors );
+         M >> cj;
+
+         // Don't alter cj's monitor during resampling
+         status = cj.Status();
+         status += N - status.Count();
+         cj.Status().Clear();
+         {
+            BicubicSplinePixelInterpolation I;
+            Resample R( I );
+            R.SetMode( ResizeMode::AbsolutePixels );
+            R.SetSizes( w0, h0 );
+            R.EnableParallelProcessing( parallel, maxProcessors );
+            R >> cj;
+         }
+         cj.Status() = status;
       }
    }
 
@@ -418,4 +430,4 @@ void MultiscaleMedianTransform::Transform( const UInt32Image& image )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MultiscaleMedianTransform.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/MultiscaleMedianTransform.cpp - Released 2017-06-28T11:58:42Z

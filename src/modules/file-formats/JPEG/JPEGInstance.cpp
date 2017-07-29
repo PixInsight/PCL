@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard JPEG File Format Module Version 01.00.03.0295
+// Standard JPEG File Format Module Version 01.00.04.0316
 // ----------------------------------------------------------------------------
-// JPEGInstance.cpp - Released 2016/02/21 20:22:34 UTC
+// JPEGInstance.cpp - Released 2017-05-02T09:42:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -63,14 +63,11 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 JPEGInstance::JPEGInstance( const JPEGFormat* f ) :
-   FileFormatImplementation( f ),
-   reader( 0 ),
-   writer( 0 ),
-   readCount( 0 ),
-   queriedOptions( false ),
-   embeddedICCProfile( 0 )
+   FileFormatImplementation( f )
 {
 }
+
+// ----------------------------------------------------------------------------
 
 JPEGInstance::~JPEGInstance()
 {
@@ -79,7 +76,16 @@ JPEGInstance::~JPEGInstance()
 
 // ----------------------------------------------------------------------------
 
-ImageDescriptionArray JPEGInstance::Open( const String& filePath, const IsoString& /*hints*/ )
+template <class S>
+static void CheckOpenStream( const S& stream, const String& memberFunc )
+{
+   if ( !stream || !stream->IsOpen() )
+      throw Error( "JPEGInstance::" + memberFunc + "(): Illegal request on a closed stream." );
+}
+
+// ----------------------------------------------------------------------------
+
+ImageDescriptionArray JPEGInstance::Open( const String& filePath, const IsoString& hints )
 {
    Close();
 
@@ -87,17 +93,28 @@ ImageDescriptionArray JPEGInstance::Open( const String& filePath, const IsoStrin
    {
       Exception::EnableConsoleOutput();
 
-      reader = new JPEGReader;
-      reader->Open( filePath );
+      JPEGImageOptions jpegOptions = JPEGFormat::DefaultOptions();
+      IsoStringList theHints;
+      hints.Break( theHints, ' ', true/*trim*/ );
+      theHints.Remove( IsoString() );
+      for ( IsoStringList::const_iterator i = theHints.Begin(); i < theHints.End(); ++i )
+         if ( *i == "verbosity" )
+         {
+            if ( ++i == theHints.End() )
+               break;
+            int n;
+            if ( i->TryToInt( n ) )
+               jpegOptions.verbosity = Range( n, 0, 3 );
+         }
 
-      ImageDescriptionArray a;
-      a.Add( ImageDescription( reader->Info(), reader->Options() ) );
-      return a;
+      m_reader = new JPEGReader;
+      m_reader->SetJPEGOptions( jpegOptions );
+      m_reader->Open( filePath );
+      return ImageDescriptionArray() << ImageDescription( m_reader->Info(), m_reader->Options() );
    }
    catch ( ... )
    {
-      if ( reader != 0 )
-         delete reader, reader = 0;
+      Close();
       throw;
    }
 }
@@ -106,17 +123,17 @@ ImageDescriptionArray JPEGInstance::Open( const String& filePath, const IsoStrin
 
 bool JPEGInstance::IsOpen() const
 {
-   return reader != 0 && reader->IsOpen() || writer != 0 && writer->IsOpen();
+   return m_reader && m_reader->IsOpen() || m_writer && m_writer->IsOpen();
 }
 
 // ----------------------------------------------------------------------------
 
 String JPEGInstance::FilePath() const
 {
-   if ( reader != 0 )
-      return reader->Path();
-   if ( writer != 0 )
-      return writer->Path();
+   if ( m_reader )
+      return m_reader->Path();
+   if ( m_writer )
+      return m_writer->Path();
    return String();
 }
 
@@ -124,13 +141,10 @@ String JPEGInstance::FilePath() const
 
 void JPEGInstance::Close()
 {
-   if ( reader != 0 )
-      delete reader, reader = 0;
-   if ( writer != 0 )
-      delete writer, writer = 0;
-   if ( embeddedICCProfile != 0 )
-      delete embeddedICCProfile, embeddedICCProfile = 0;
-   readCount = 0;
+   m_reader.Destroy();
+   m_writer.Destroy();
+   m_queriedOptions = false;
+   m_readCount = 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -138,28 +152,27 @@ void JPEGInstance::Close()
 void* JPEGInstance::FormatSpecificData() const
 {
    if ( !IsOpen() )
-      return 0;
+      return nullptr;
 
    JPEGFormat::FormatOptions* data = new JPEGFormat::FormatOptions;
-   if ( reader != 0 )
-      data->options = reader->JPEGOptions();
-   else if ( writer != 0 )
-      data->options = writer->JPEGOptions();
+   if ( m_reader )
+      data->options = m_reader->JPEGOptions();
+   else if ( m_writer )
+      data->options = m_writer->JPEGOptions();
    return data;
 }
 
 // ----------------------------------------------------------------------------
 
-String JPEGInstance::ImageProperties() const
+String JPEGInstance::ImageFormatInfo() const
 {
-   if ( !IsOpen() )
-      return String();
-
    JPEGImageOptions options;
-   if ( reader != 0 )
-      options = reader->JPEGOptions();
-   else if ( writer != 0 )
-      options = writer->JPEGOptions();
+   if ( m_reader )
+      options = m_reader->JPEGOptions();
+   else if ( m_writer )
+      options = m_writer->JPEGOptions();
+   else
+      return String();
 
    return String().Format( "quality=%d coding=%s progressive=%s JFIF-version=%d.%d",
                            int( options.quality ),
@@ -170,19 +183,14 @@ String JPEGInstance::ImageProperties() const
 
 // ----------------------------------------------------------------------------
 
-void JPEGInstance::Extract( ICCProfile& icc )
+ICCProfile JPEGInstance::ReadICCProfile()
 {
-   if ( !IsOpen() )
-      throw Error( "JPEG format: Attempt to extract an ICC profile without opening or creating a file" );
-
-   if ( reader != 0 )
-   {
-      reader->Extract( icc );
-      if ( icc.IsProfile() )
-         Console().WriteLn( "<end><cbr>ICC profile extracted: \'" + icc.Description() + "\', " + String( icc.ProfileSize() ) + " bytes" );
-   }
-   else if ( writer->EmbeddedICCProfile() != 0 )
-      icc = *writer->EmbeddedICCProfile();
+   CheckOpenStream( m_reader, "ReadICCProfile" );
+   ICCProfile icc = m_reader->ReadICCProfile();
+   if ( icc.IsProfile() )
+      if ( m_reader->JPEGOptions().verbosity > 0 )
+         Console().WriteLn( "<end><cbr>ICC profile extracted: \'" + icc.Description() + "\', " + String( icc.ProfileSize() ) + " bytes." );
+   return icc;
 }
 
 // ----------------------------------------------------------------------------
@@ -190,68 +198,53 @@ void JPEGInstance::Extract( ICCProfile& icc )
 template <class P>
 static void ReadJPEGImage( GenericImage<P>& image, JPEGReader* reader, int& readCount )
 {
-   if ( reader == 0 || !reader->IsOpen() )
-      throw Error( "JPEG format: Attempt to read an image before opening a file" );
+   CheckOpenStream( reader, "ReadImage" );
 
-   try
+   /*
+    * The readCount thing is a trick to allow reading the same JPEG image
+    * multiple times from the same format instance. That does not work with
+    * jpeglib. An ugly trick, but hey, works.
+    */
+   if ( readCount++ )
    {
-      /*
-       * The readCount thing is a trick to allow reading the same JPEG image
-       * multiple times from the same format instance. Ugly but heck, it works.
-       */
-      if ( readCount )
-      {
-         String filePath = reader->Path();
-         reader = new JPEGReader;
-         reader->Open( filePath );
-      }
-
-      StandardStatus status;
-      image.SetStatusCallback( &status );
+      AutoPointer<JPEGReader> newReader( new JPEGReader );
+      newReader->Open( reader->Path() );
+      newReader->ReadImage( image );
+   }
+   else
       reader->ReadImage( image );
-
-      if ( readCount )
-         delete reader;
-      ++readCount;
-   }
-   catch ( ... )
-   {
-      if ( readCount )
-         delete reader;
-      throw;
-   }
 }
 
 void JPEGInstance::ReadImage( Image& img )
 {
-   ReadJPEGImage( img, reader, readCount );
+   ReadJPEGImage( img, m_reader, m_readCount );
 }
 
 void JPEGInstance::ReadImage( DImage& img )
 {
-   ReadJPEGImage( img, reader, readCount );
+   ReadJPEGImage( img, m_reader, m_readCount );
 }
 
 void JPEGInstance::ReadImage( UInt8Image& img )
 {
-   ReadJPEGImage( img, reader, readCount );
+   ReadJPEGImage( img, m_reader, m_readCount );
 }
 
 void JPEGInstance::ReadImage( UInt16Image& img )
 {
-   ReadJPEGImage( img, reader, readCount );
+   ReadJPEGImage( img, m_reader, m_readCount );
 }
 
 void JPEGInstance::ReadImage( UInt32Image& img )
 {
-   ReadJPEGImage( img, reader, readCount );
+   ReadJPEGImage( img, m_reader, m_readCount );
 }
 
 // ----------------------------------------------------------------------------
 
 bool JPEGInstance::QueryOptions( Array<ImageOptions>& imageOptions, Array<void*>& formatOptions )
 {
-   queriedOptions = true;
+   m_queriedOptions = true;
 
    /*
     * Format-independent options
@@ -263,16 +256,16 @@ bool JPEGInstance::QueryOptions( Array<ImageOptions>& imageOptions, Array<void*>
    /*
     * Format-specific options
     */
-   JPEGFormat::FormatOptions* jpeg = 0;
+   JPEGFormat::FormatOptions* jpeg = nullptr;
 
    if ( !formatOptions.IsEmpty() )
    {
       JPEGFormat::FormatOptions* o = JPEGFormat::FormatOptions::FromGenericDataBlock( *formatOptions );
-      if ( o != 0 )
+      if ( o != nullptr )
          jpeg = o;
    }
 
-   bool reusedFormatOptions = jpeg != 0;
+   bool reusedFormatOptions = jpeg != nullptr;
    if ( !reusedFormatOptions )
       jpeg = new JPEGFormat::FormatOptions;
 
@@ -311,16 +304,16 @@ bool JPEGInstance::QueryOptions( Array<ImageOptions>& imageOptions, Array<void*>
 
 // ----------------------------------------------------------------------------
 
-void JPEGInstance::Create( const String& filePath, int /*numberOfImages*/, const IsoString& hints )
+void JPEGInstance::Create( const String& filePath, int numberOfImages, const IsoString& hints )
 {
    Close();
 
    Exception::EnableConsoleOutput();
 
-   writer = new JPEGWriter;
-   writer->Create( filePath );
+   m_writer = new JPEGWriter;
+   m_writer->Create( filePath );
 
-   JPEGImageOptions options = JPEGFormat::DefaultOptions();
+   JPEGImageOptions jpegOptions = JPEGFormat::DefaultOptions();
 
    IsoStringList theHints;
    hints.Break( theHints, ' ', true/*trim*/ );
@@ -331,68 +324,70 @@ void JPEGInstance::Create( const String& filePath, int /*numberOfImages*/, const
       {
          if ( ++i == theHints.End() )
             break;
-         int q = options.quality;
+         int q = jpegOptions.quality;
          if ( i->TryToInt( q ) )
-            options.quality = Range( q, 0, 100 );
+            jpegOptions.quality = Range( q, 0, 100 );
       }
       else if ( *i == "optimized" )
-         options.optimizedCoding = true;
+         jpegOptions.optimizedCoding = true;
       else if ( *i == "no-optimized" )
-         options.optimizedCoding = false;
+         jpegOptions.optimizedCoding = false;
       else if ( *i == "arithmetic" )
-         options.arithmeticCoding = true;
+         jpegOptions.arithmeticCoding = true;
       else if ( *i == "huffman" )
-         options.arithmeticCoding = false;
+         jpegOptions.arithmeticCoding = false;
       else if ( *i == "progressive" )
-         options.progressive = true;
+         jpegOptions.progressive = true;
       else if ( *i == "no-progressive" )
-         options.progressive = false;
+         jpegOptions.progressive = false;
+      else if ( *i == "verbosity" )
+      {
+         if ( ++i == theHints.End() )
+            break;
+         int n;
+         if ( i->TryToInt( n ) )
+            jpegOptions.verbosity = Range( n, 0, 3 );
+      }
    }
 
-   writer->JPEGOptions() = options;
+   m_writer->SetJPEGOptions( jpegOptions );
 }
 
 // ----------------------------------------------------------------------------
 
-void JPEGInstance::SetOptions( const ImageOptions& options )
+void JPEGInstance::SetOptions( const ImageOptions& newOptions )
 {
-   if ( writer == 0 || !writer->IsOpen() )
-      throw Error( "JPEG format: Attempt to set image options before creating a file" );
-
-   writer->Options() = options;
-
-   if ( !queriedOptions )
+   CheckOpenStream( m_writer, "SetOptions" );
+   ImageOptions options = newOptions;
+   if ( !m_queriedOptions )
    {
       JPEGFormat::EmbeddingOverrides overrides = JPEGFormat::DefaultEmbeddingOverrides();
-
       if ( overrides.overrideICCProfileEmbedding )
-         writer->Options().embedICCProfile = overrides.embedICCProfiles;
+         options.embedICCProfile = overrides.embedICCProfiles;
    }
+   m_writer->SetOptions( options );
 }
 
 // ----------------------------------------------------------------------------
 
 void JPEGInstance::SetFormatSpecificData( const void* data )
 {
-   if ( writer == 0 || !writer->IsOpen() )
-      throw Error( "JPEG format: Attempt to set format-specific options before creating a file" );
-
+   CheckOpenStream( m_writer, "SetFormatSpecificData" );
    const JPEGFormat::FormatOptions* o = JPEGFormat::FormatOptions::FromGenericDataBlock( data );
-   if ( o != 0 )
-      writer->JPEGOptions() = o->options;
+   if ( o != nullptr )
+      m_writer->SetJPEGOptions( o->options );
 }
 
 // ----------------------------------------------------------------------------
 
-void JPEGInstance::Embed( const ICCProfile& icc )
+void JPEGInstance::WriteICCProfile( const ICCProfile& icc )
 {
-   if ( writer == 0 || !writer->IsOpen() )
-      throw Error( "JPEG format: Attempt to embed an ICC profile before creating a file" );
-
+   CheckOpenStream( m_writer, "WriteICCProfile" );
    if ( icc.IsProfile() )
    {
-      writer->Embed( *(embeddedICCProfile = new ICCProfile( icc )) );
-      Console().WriteLn( "<end><cbr>ICC profile embedded: \'" + icc.Description() + "\', " + String( icc.ProfileSize() ) + " bytes" );
+      m_writer->WriteICCProfile( icc );
+      if ( m_writer->JPEGOptions().verbosity > 0 )
+         Console().WriteLn( "<end><cbr>ICC profile embedded: \'" + icc.Description() + "\', " + String( icc.ProfileSize() ) + " bytes." );
    }
 }
 
@@ -401,38 +396,34 @@ void JPEGInstance::Embed( const ICCProfile& icc )
 template <class P>
 static void WriteJPEGImage( const GenericImage<P>& image, JPEGWriter* writer )
 {
-   if ( writer == 0 || !writer->IsOpen() )
-      throw Error( "JPEG format: Attempt to write an image before creating a file" );
-
-   StandardStatus status;
-   image.SetStatusCallback( &status );
+   CheckOpenStream( writer, "WriteImage" );
    image.SelectNominalChannels(); // JPEG doesn't support alpha channels
    writer->WriteImage( image );
 }
 
 void JPEGInstance::WriteImage( const Image& img )
 {
-   WriteJPEGImage( img, writer );
+   WriteJPEGImage( img, m_writer );
 }
 
 void JPEGInstance::WriteImage( const DImage& img )
 {
-   WriteJPEGImage( img, writer );
+   WriteJPEGImage( img, m_writer );
 }
 
 void JPEGInstance::WriteImage( const UInt8Image& img )
 {
-   WriteJPEGImage( img, writer );
+   WriteJPEGImage( img, m_writer );
 }
 
 void JPEGInstance::WriteImage( const UInt16Image& img )
 {
-   WriteJPEGImage( img, writer );
+   WriteJPEGImage( img, m_writer );
 }
 
 void JPEGInstance::WriteImage( const UInt32Image& img )
 {
-   WriteJPEGImage( img, writer );
+   WriteJPEGImage( img, m_writer );
 }
 
 bool JPEGInstance::WasLossyWrite() const
@@ -445,4 +436,4 @@ bool JPEGInstance::WasLossyWrite() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF JPEGInstance.cpp - Released 2016/02/21 20:22:34 UTC
+// EOF JPEGInstance.cpp - Released 2017-05-02T09:42:51Z

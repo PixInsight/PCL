@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.15.00.0398
 // ----------------------------------------------------------------------------
-// ImageIntegrationInterface.cpp - Released 2016/11/13 17:30:54 UTC
+// ImageIntegrationInterface.cpp - Released 2017-05-05T08:37:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -55,9 +55,9 @@
 #include "ImageIntegrationProcess.h"
 #include "IntegrationCache.h"
 
-#include <pcl/DrizzleDataDecoder.h>
+#include <pcl/DrizzleData.h>
 #include <pcl/FileDialog.h>
-//#include <pcl/FileFormat.h>
+#include <pcl/FileFormat.h>
 #include <pcl/MessageBox.h>
 #include <pcl/PreviewSelectionDialog.h>
 
@@ -68,7 +68,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ImageIntegrationInterface* TheImageIntegrationInterface = 0;
+ImageIntegrationInterface* TheImageIntegrationInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -77,49 +77,65 @@ ImageIntegrationInterface* TheImageIntegrationInterface = 0;
 // ----------------------------------------------------------------------------
 
 ImageIntegrationInterface::ImageIntegrationInterface() :
-ProcessInterface(), instance( TheImageIntegrationProcess ), GUI( 0 )
+   instance( TheImageIntegrationProcess )
 {
    TheImageIntegrationInterface = this;
 
-   // The auto save geometry feature is of no good to interfaces that include
-   // both auto-expanding controls (e.g. TreeBox) and collapsible sections
-   // (e.g. SectionBar).
+   /*
+    * The auto save geometry feature is of no good to interfaces that include
+    * both auto-expanding controls (e.g. TreeBox) and collapsible sections
+    * (e.g. SectionBar).
+    */
    DisableAutoSaveGeometry();
 }
 
+// ----------------------------------------------------------------------------
+
 ImageIntegrationInterface::~ImageIntegrationInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString ImageIntegrationInterface::Id() const
 {
    return "ImageIntegration";
 }
 
+// ----------------------------------------------------------------------------
+
 MetaProcess* ImageIntegrationInterface::Process() const
 {
    return TheImageIntegrationProcess;
 }
+
+// ----------------------------------------------------------------------------
 
 const char** ImageIntegrationInterface::IconImageXPM() const
 {
    return ImageIntegrationIcon_XPM;
 }
 
+// ----------------------------------------------------------------------------
+
 InterfaceFeatures ImageIntegrationInterface::Features() const
 {
    return InterfaceFeature::DefaultGlobal | InterfaceFeature::PreferencesButton;
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageIntegrationInterface::EditPreferences()
 {
-   if ( TheIntegrationCache == 0 )
+   if ( TheIntegrationCache == nullptr )
       new IntegrationCache; // loads upon construction
    FileDataCachePreferencesDialog dlg( TheIntegrationCache );
    dlg.Execute();
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageIntegrationInterface::ResetInstance()
 {
@@ -127,10 +143,11 @@ void ImageIntegrationInterface::ResetInstance()
    ImportProcess( defaultInstance );
 }
 
+// ----------------------------------------------------------------------------
+
 bool ImageIntegrationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "ImageIntegration" );
@@ -146,28 +163,31 @@ bool ImageIntegrationInterface::Launch( const MetaProcess& P, const ProcessImple
    return &P == TheImageIntegrationProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* ImageIntegrationInterface::NewProcess() const
 {
    return new ImageIntegrationInstance( instance );
 }
 
+// ----------------------------------------------------------------------------
+
 bool ImageIntegrationInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const ImageIntegrationInstance* r = dynamic_cast<const ImageIntegrationInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not an ImageIntegration instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const ImageIntegrationInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an ImageIntegration instance.";
+   return false;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ImageIntegrationInterface::RequiresInstanceValidation() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ImageIntegrationInterface::ImportProcess( const ProcessImplementation& p )
 {
@@ -175,6 +195,8 @@ bool ImageIntegrationInterface::ImportProcess( const ProcessImplementation& p )
    UpdateControls();
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageIntegrationInterface::SaveSettings() const
 {
@@ -194,10 +216,12 @@ void ImageIntegrationInterface::UpdateControls()
    UpdateROIControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageIntegrationInterface::UpdateInputImagesItem( size_type i )
 {
    TreeBox::Node* node = GUI->InputImages_TreeBox[i];
-   if ( node == 0 )
+   if ( node == nullptr )
       return;
 
    const ImageIntegrationInstance::ImageItem& item = instance.p_images[i];
@@ -228,6 +252,8 @@ void ImageIntegrationInterface::UpdateInputImagesItem( size_type i )
    node->SetToolTip( 2, toolTip );
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageIntegrationInterface::UpdateInputImagesList()
 {
    int currentIdx = GUI->InputImages_TreeBox.ChildIndex( GUI->InputImages_TreeBox.CurrentNode() );
@@ -252,6 +278,8 @@ void ImageIntegrationInterface::UpdateInputImagesList()
    GUI->InputImages_TreeBox.EnableUpdates();
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageIntegrationInterface::UpdateImageSelectionButtons()
 {
    bool hasItems = GUI->InputImages_TreeBox.NumberOfChildren() > 0;
@@ -267,10 +295,14 @@ void ImageIntegrationInterface::UpdateImageSelectionButtons()
    GUI->Clear_PushButton.Enable( hasItems );
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageIntegrationInterface::UpdateFormatHintsControls()
 {
    GUI->InputHints_Edit.SetText( instance.p_inputHints );
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageIntegrationInterface::UpdateIntegrationControls()
 {
@@ -316,6 +348,8 @@ void ImageIntegrationInterface::UpdateIntegrationControls()
 
    GUI->UseCache_CheckBox.SetChecked( instance.p_useCache );
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageIntegrationInterface::UpdateRejectionControls()
 {
@@ -400,7 +434,37 @@ void ImageIntegrationInterface::UpdateRejectionControls()
 
    GUI->RangeHigh_NumericControl.Enable( instance.p_rangeClipHigh );
    GUI->RangeHigh_NumericControl.SetValue( instance.p_rangeHigh );
+
+   GUI->LargeScaleRejection_Control.Enable( doesRejection );
+
+   GUI->RejectLargeScaleLow_CheckBox.SetChecked( instance.p_largeScaleClipLow );
+   GUI->RejectLargeScaleLow_CheckBox.Enable( instance.p_clipLow );
+
+   GUI->SmallScaleLayersLow_Label.Enable( instance.p_clipLow && instance.p_largeScaleClipLow );
+
+   GUI->SmallScaleLayersLow_SpinBox.SetValue( instance.p_largeScaleClipLowProtectedLayers );
+   GUI->SmallScaleLayersLow_SpinBox.Enable( instance.p_clipLow && instance.p_largeScaleClipLow );
+
+   GUI->GrowthLow_Label.Enable( instance.p_clipLow && instance.p_largeScaleClipLow );
+
+   GUI->GrowthLow_SpinBox.SetValue( instance.p_largeScaleClipLowGrowth );
+   GUI->GrowthLow_SpinBox.Enable( instance.p_clipLow && instance.p_largeScaleClipLow );
+
+   GUI->RejectLargeScaleHigh_CheckBox.SetChecked( instance.p_largeScaleClipHigh );
+   GUI->RejectLargeScaleHigh_CheckBox.Enable( instance.p_clipHigh );
+
+   GUI->SmallScaleLayersHigh_Label.Enable( instance.p_clipHigh && instance.p_largeScaleClipHigh );
+
+   GUI->SmallScaleLayersHigh_SpinBox.SetValue( instance.p_largeScaleClipHighProtectedLayers );
+   GUI->SmallScaleLayersHigh_SpinBox.Enable( instance.p_clipHigh && instance.p_largeScaleClipHigh );
+
+   GUI->GrowthHigh_Label.Enable( instance.p_clipHigh && instance.p_largeScaleClipHigh );
+
+   GUI->GrowthHigh_SpinBox.SetValue( instance.p_largeScaleClipHighGrowth );
+   GUI->GrowthHigh_SpinBox.Enable( instance.p_clipHigh && instance.p_largeScaleClipHigh );
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageIntegrationInterface::UpdateROIControls()
 {
@@ -419,9 +483,9 @@ void ImageIntegrationInterface::__InputImages_CurrentNodeUpdated( TreeBox& sende
    int index = sender.ChildIndex( &current );
    if ( index < 0 || size_type( index ) >= instance.p_images.Length() )
       throw Error( "ImageIntegrationInterface: *Warning* Corrupted interface structures" );
-
-   // ### If there's something that depends on which image is selected in the list, do it here.
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageIntegrationInterface::__InputImages_NodeActivated( TreeBox& sender, TreeBox::Node& node, int col )
 {
@@ -441,50 +505,46 @@ void ImageIntegrationInterface::__InputImages_NodeActivated( TreeBox& sender, Tr
       break;
    case 2:
       {
-         Array<ImageWindow> w = ImageWindow::Open( item.path );
-         for ( Array<ImageWindow>::iterator i = w.Begin(); i != w.End(); ++i )
-            i->Show();
+         Array<ImageWindow> windows = ImageWindow::Open( item.path, IsoString()/*id*/, instance.p_inputHints );
+         for ( ImageWindow& window : windows )
+            window.Show();
       }
       break;
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageIntegrationInterface::__InputImages_NodeSelectionUpdated( TreeBox& sender )
 {
    UpdateImageSelectionButtons();
 }
 
-static size_type TreeInsertionIndex( const TreeBox& tree )
-{
-   const TreeBox::Node* n = tree.CurrentNode();
-   return (n != 0) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
-}
+// ----------------------------------------------------------------------------
 
 String ImageIntegrationInterface::DrizzleTargetName( const String& filePath )
 {
-   /*
-    * Load drizzle data file contents.
-    */
-   IsoString text = File::ReadTextFile( filePath );
+   DrizzleData drz( filePath, true/*ignoreIntegrationData*/ );
 
    /*
-    * If the .drz file includes a target path, return it.
+    * If the drizzle file includes a target alignment path, use it. Otherwise
+    * the target should have the same name as the drizzle data file.
     */
-   DrizzleTargetDecoder decoder;
-   decoder.Decode( text );
-   if ( decoder.HasTarget() )
-   {
-      if ( GUI->StaticDrizzleTargets_CheckBox.IsChecked() )
-         return File::ChangeExtension( decoder.TargetPath(), String() );
-      return File::ExtractName( decoder.TargetPath() );
-   }
+   String targetfilePath = drz.AlignmentTargetFilePath();
+   if ( targetfilePath.IsEmpty() )
+      targetfilePath = filePath;
 
-   /*
-    * Otherwise the target should have the same name as the .drz file.
-    */
    if ( GUI->StaticDrizzleTargets_CheckBox.IsChecked() )
-      return File::ChangeExtension( filePath, String() );
-   return File::ExtractName( filePath );
+      return File::ChangeExtension( targetfilePath, String() );
+   return File::ExtractName( targetfilePath );
+}
+
+// ----------------------------------------------------------------------------
+
+static size_type TreeInsertionIndex( const TreeBox& tree )
+{
+   const TreeBox::Node* n = tree.CurrentNode();
+   return (n != nullptr) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
 }
 
 void ImageIntegrationInterface::__InputImages_Click( Button& sender, bool checked )
@@ -532,6 +592,7 @@ void ImageIntegrationInterface::__InputImages_Click( Button& sender, bool checke
    {
       FileFilter drzFiles;
       drzFiles.SetDescription( "Drizzle Data Files" );
+      drzFiles.AddExtension( ".xdrz" );
       drzFiles.AddExtension( ".drz" );
 
       OpenFileDialog d;
@@ -615,7 +676,7 @@ void ImageIntegrationInterface::__InputImages_Click( Button& sender, bool checke
    else if ( sender == GUI->SetReference_PushButton )
    {
       TreeBox::Node* node = GUI->InputImages_TreeBox.CurrentNode();
-      if ( node != 0 )
+      if ( node != nullptr )
       {
          int idx = GUI->InputImages_TreeBox.ChildIndex( node );
          if ( idx > 0 )
@@ -667,6 +728,8 @@ void ImageIntegrationInterface::__InputImages_Click( Button& sender, bool checke
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageIntegrationInterface::__FormatHints_EditCompleted( Edit& sender )
 {
    String hints = sender.Text().Trimmed();
@@ -676,6 +739,8 @@ void ImageIntegrationInterface::__FormatHints_EditCompleted( Edit& sender )
 
    sender.SetText( hints );
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageIntegrationInterface::__Integration_ItemSelected( ComboBox& sender, int itemIndex )
 {
@@ -700,6 +765,8 @@ void ImageIntegrationInterface::__Integration_ItemSelected( ComboBox& sender, in
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageIntegrationInterface::__Integration_EditCompleted( Edit& sender )
 {
    if ( sender == GUI->WeightKeyword_Edit )
@@ -711,6 +778,8 @@ void ImageIntegrationInterface::__Integration_EditCompleted( Edit& sender )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageIntegrationInterface::__Integration_SpinValueUpdated( SpinBox& sender, int value )
 {
    if ( sender == GUI->BufferSize_SpinBox )
@@ -718,6 +787,8 @@ void ImageIntegrationInterface::__Integration_SpinValueUpdated( SpinBox& sender,
    else if ( sender == GUI->StackSize_SpinBox )
       instance.p_stackSizeMB = value;
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageIntegrationInterface::__Integration_Click( Button& sender, bool checked )
 {
@@ -740,6 +811,8 @@ void ImageIntegrationInterface::__Integration_Click( Button& sender, bool checke
       instance.p_useCache = checked;
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageIntegrationInterface::__Rejection_ItemSelected( ComboBox& sender, int itemIndex )
 {
    if ( sender == GUI->RejectionAlgorithm_ComboBox )
@@ -754,13 +827,25 @@ void ImageIntegrationInterface::__Rejection_ItemSelected( ComboBox& sender, int 
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageIntegrationInterface::__Rejection_SpinValueUpdated( SpinBox& sender, int value )
 {
    if ( sender == GUI->MinMaxLow_SpinBox )
       instance.p_minMaxLow = value;
    else if ( sender == GUI->MinMaxHigh_SpinBox )
       instance.p_minMaxHigh = value;
+   else if ( sender == GUI->SmallScaleLayersLow_SpinBox )
+      instance.p_largeScaleClipLowProtectedLayers = value;
+   else if ( sender == GUI->GrowthLow_SpinBox )
+      instance.p_largeScaleClipLowGrowth = value;
+   else if ( sender == GUI->SmallScaleLayersHigh_SpinBox )
+      instance.p_largeScaleClipHighProtectedLayers = value;
+   else if ( sender == GUI->GrowthHigh_SpinBox )
+      instance.p_largeScaleClipHighGrowth = value;
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageIntegrationInterface::__Rejection_EditValueUpdated( NumericEdit& sender, double value )
 {
@@ -787,6 +872,8 @@ void ImageIntegrationInterface::__Rejection_EditValueUpdated( NumericEdit& sende
    else if ( sender == GUI->RangeHigh_NumericControl )
       instance.p_rangeHigh = value;
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageIntegrationInterface::__Rejection_Click( Button& sender, bool checked )
 {
@@ -819,13 +906,27 @@ void ImageIntegrationInterface::__Rejection_Click( Button& sender, bool checked 
       instance.p_reportRangeRejection = checked;
    else if ( sender == GUI->MapRangeRejection_CheckBox )
       instance.p_mapRangeRejection = checked;
+   else if ( sender == GUI->RejectLargeScaleLow_CheckBox )
+   {
+      instance.p_largeScaleClipLow = checked;
+      UpdateRejectionControls();
+   }
+   else if ( sender == GUI->RejectLargeScaleHigh_CheckBox )
+   {
+      instance.p_largeScaleClipHigh = checked;
+      UpdateRejectionControls();
+   }
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageIntegrationInterface::__ROI_Check( SectionBar& sender, bool checked )
 {
    if ( sender == GUI->ROI_SectionBar )
       instance.p_useROI = checked;
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageIntegrationInterface::__ROI_SpinValueUpdated( SpinBox& sender, int value )
 {
@@ -838,6 +939,8 @@ void ImageIntegrationInterface::__ROI_SpinValueUpdated( SpinBox& sender, int val
    else if ( sender == GUI->ROIHeight_SpinBox )
       instance.p_roi.y1 = instance.p_roi.y0 + value;
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageIntegrationInterface::__ROI_Click( Button& sender, bool checked )
 {
@@ -858,6 +961,8 @@ void ImageIntegrationInterface::__ROI_Click( Button& sender, bool checked )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageIntegrationInterface::__ToggleSection( SectionBar& sender, Control& section, bool start )
 {
    if ( start )
@@ -872,6 +977,100 @@ void ImageIntegrationInterface::__ToggleSection( SectionBar& sender, Control& se
       else
          SetFixedHeight();
    }
+}
+
+// ----------------------------------------------------------------------------
+
+void ImageIntegrationInterface::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+{
+   if ( sender == GUI->InputImages_TreeBox.Viewport() )
+      wantsFiles = true;
+}
+
+// ----------------------------------------------------------------------------
+
+void ImageIntegrationInterface::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+{
+   if ( sender == GUI->InputImages_TreeBox.Viewport() )
+   {
+      StringList drizzleFiles;
+      bool recursive = IsControlOrCmdPressed();
+      size_type i0 = TreeInsertionIndex( GUI->InputImages_TreeBox );
+      for ( const String& item : files )
+      {
+         StringList inputFiles;
+         if ( File::Exists( item ) )
+         {
+            String ext = File::ExtractSuffix( item ).CaseFolded();
+            if ( ext == ".xdrz" || ext == ".drz" )
+               drizzleFiles << item;
+            else
+               inputFiles << item;
+         }
+         else if ( File::DirectoryExists( item ) )
+         {
+            inputFiles << FileFormat::SupportedImageFiles( item, true/*toRead*/, false/*toWrite*/, recursive );
+            drizzleFiles << FileFormat::DrizzleFiles( item, recursive );
+         }
+
+         inputFiles.Sort();
+         for ( const String& file : inputFiles )
+         {
+            String ext = File::ExtractSuffix( file ).CaseFolded();
+            if ( ext == ".xdrz" || ext == ".drz" )
+               drizzleFiles << file;
+            else
+               instance.p_images.Insert( instance.p_images.At( i0++ ), ImageIntegrationInstance::ImageItem( file ) );
+         }
+      }
+
+      for ( const String& file : drizzleFiles )
+      {
+         String targetName = DrizzleTargetName( file );
+         for ( ImageIntegrationInstance::ImageItem& item : instance.p_images )
+         {
+            String name = GUI->StaticDrizzleTargets_CheckBox.IsChecked() ?
+                              File::ChangeExtension( item.path, String() ) : File::ExtractName( item.path );
+            if ( name == targetName )
+            {
+               item.drzPath = file;
+               break;
+            }
+         }
+      }
+
+      UpdateInputImagesList();
+      UpdateImageSelectionButtons();
+
+      if ( !drizzleFiles.IsEmpty() )
+         if ( !instance.p_generateDrizzleData )
+         {
+            instance.p_generateDrizzleData = true;
+            UpdateIntegrationControls();
+         }
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+void ImageIntegrationInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->ROI_SectionBar || sender == GUI->ROI_Control || sender == GUI->SelectPreview_Button )
+      wantsView = view.IsPreview();
+}
+
+// ----------------------------------------------------------------------------
+
+void ImageIntegrationInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->ROI_SectionBar || sender == GUI->ROI_Control || sender == GUI->SelectPreview_Button )
+      if ( view.IsPreview() )
+      {
+         instance.p_useROI = true;
+         instance.p_roi = view.Window().PreviewRect( view.Id() );
+         GUI->ROI_SectionBar.ShowSection();
+         UpdateROIControls();
+      }
 }
 
 // ----------------------------------------------------------------------------
@@ -901,6 +1100,8 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    InputImages_TreeBox.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler)&ImageIntegrationInterface::__InputImages_CurrentNodeUpdated, w );
    InputImages_TreeBox.OnNodeActivated( (TreeBox::node_event_handler)&ImageIntegrationInterface::__InputImages_NodeActivated, w );
    InputImages_TreeBox.OnNodeSelectionUpdated( (TreeBox::tree_event_handler)&ImageIntegrationInterface::__InputImages_NodeSelectionUpdated, w );
+   InputImages_TreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler)&ImageIntegrationInterface::__FileDrag, w );
+   InputImages_TreeBox.Viewport().OnFileDrop( (Control::file_drop_event_handler)&ImageIntegrationInterface::__FileDrop, w );
 
    AddFiles_PushButton.SetText( "Add Files" );
    AddFiles_PushButton.SetToolTip( "<p>Add existing image files to the list of input images.</p>" );
@@ -908,7 +1109,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
 
    AddDrizzleFiles_PushButton.SetText( "Add Drizzle Files" );
    AddDrizzleFiles_PushButton.SetToolTip( "<p>Associate existing drizzle data files with input images.</p>"
-      "<p>Drizzle data files carry the .drz suffix. Normally you should select .drz files generated by "
+      "<p>Drizzle data files carry the .xdrz suffix. Normally you should select .xdrz files generated by "
       "the StarAlignment tool for the same files that you are integrating.</p>" );
    AddDrizzleFiles_PushButton.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__InputImages_Click, w );
 
@@ -947,12 +1148,12 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
 
    StaticDrizzleTargets_CheckBox.SetText( "Static drizzle targets" );
    StaticDrizzleTargets_CheckBox.SetToolTip( "<p>When assigning drizzle data files to target images, take into account "
-      "full file paths stored in .drz files. This allows you to integrate drizzle target images with duplicate file "
+      "full file paths stored in .xdrz files. This allows you to integrate drizzle target images with duplicate file "
       "names on different directories. However, by enabling this option your data set gets tied to specific locations "
       "on the local filesystem. When this option is disabled (the default state), only file names are used to associate "
-      "target images with .drz files, which allows you to move your images freely throughout the filesystem, including "
+      "target images with .xdrz files, which allows you to move your images freely throughout the filesystem, including "
       "the possibility to migrate them to different machines.</p>"
-      "<p>Changes to this option will come into play the next time you use Add Drizzle Files to associate .drz files "
+      "<p>Changes to this option will come into play the next time you use Add Drizzle Files to associate .xdrz files "
       "with target images. Existing file associations are not affected.</p>");
    //StaticDrizzleTargets_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__InputImages_Click, w );
 
@@ -1223,7 +1424,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "<p>Drizzle data files contain geometrical projection parameters, pixel rejection and statistical data "
       "for the DrizzleIntegration tool. StarAlignment creates drizzle files with projection data, and the "
       "ImageIntegration tool appends rejection and statistical data to the same files. Drizzle files carry "
-      "the .drz file suffix.</p>" );
+      "the .xdrz file suffix.</p>" );
    GenerateDrizzleData_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Integration_Click, w );
 
    GenerateDrizzleData_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
@@ -1714,11 +1915,139 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
 
    //
 
+   LargeScaleRejection_SectionBar.SetTitle( "Large-Scale Pixel Rejection" );
+   LargeScaleRejection_SectionBar.SetSection( LargeScaleRejection_Control );
+   LargeScaleRejection_SectionBar.SetToolTip( "<p>Large-scale pixel rejection uses multiscale analysis techniques to detect structures "
+      "of rejected pixels. These structures are grown to cover borderline regions where high uncertainty may lead to insufficient rejection "
+      "by statistical pixel rejection algorithms.</p>"
+      "<p>This feature is very efficient to improve rejection of plane and satellite trails and flashes. With large-scale high pixel rejection "
+      "enabled, you can be sure these artifacts will be correctly rejected without needing to reduce clipping factors, which in turn allows "
+      "for more accurate rejection with inclusion of more signal in the integrated result. Large-scale low rejection may be useful to remove "
+      "dust motes and other relatively large dark artifacts.</p>" );
+   LargeScaleRejection_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&ImageIntegrationInterface::__ToggleSection, w );
+
+   RejectLargeScaleLow_CheckBox.SetText( "Reject low large-scale structures" );
+   RejectLargeScaleLow_CheckBox.SetToolTip( "<p>Enable large-scale rejection for low pixels. A low pixel sample has a value below the "
+      "estimated central value of its pixel stack.</p>" );
+   RejectLargeScaleLow_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Rejection_Click, w );
+
+   RejectLargeScaleLow_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
+   RejectLargeScaleLow_Sizer.Add( RejectLargeScaleLow_CheckBox );
+   RejectLargeScaleLow_Sizer.AddStretch();
+
+   const char* smallScaleLayersLowToolTip = "<p>Number of small-scale layers that will be excluded from large-scale low pixel "
+   "rejection maps. Increase this value to detect larger groups of contiguous rejected pixels. Excluding too few layers may lead to "
+   "excessive (unnecessary) large-scale rejection. Excluding too many layers may lead to insufficient large-scale rejection. The "
+   "default value of two layers is generally a good compromise.</p>";
+
+   SmallScaleLayersLow_Label.SetText( "Layers (low):" );
+   SmallScaleLayersLow_Label.SetFixedWidth( labelWidth1 );
+   SmallScaleLayersLow_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   SmallScaleLayersLow_Label.SetToolTip( smallScaleLayersLowToolTip );
+
+   SmallScaleLayersLow_SpinBox.SetRange( int( TheIILargeScaleClipHighProtectedLayersParameter->MinimumValue() ),
+                                         int( TheIILargeScaleClipHighProtectedLayersParameter->MaximumValue() ) );
+   SmallScaleLayersLow_SpinBox.SetToolTip( smallScaleLayersLowToolTip );
+   SmallScaleLayersLow_SpinBox.SetFixedWidth( editWidth2 );
+   SmallScaleLayersLow_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&ImageIntegrationInterface::__Rejection_SpinValueUpdated, w );
+
+   SmallScaleLayersLow_Sizer.SetSpacing( 4 );
+   SmallScaleLayersLow_Sizer.Add( SmallScaleLayersLow_Label );
+   SmallScaleLayersLow_Sizer.Add( SmallScaleLayersLow_SpinBox );
+   SmallScaleLayersLow_Sizer.AddStretch();
+
+   const char* growthLowToolTip = "<p>Growth of large-scale pixel rejection structures. Increase to extend rejection to more "
+   "adjacent pixels. Excessive growth will reject too many pixels unnecessarily around large-scale structures, such as plane trails. "
+   "Insufficient growth will leave unrejected pixels on high-uncertainty regions. The default value of two pixels is generally a "
+   "good option.</p>";
+
+   GrowthLow_Label.SetText( "Growth (low):" );
+   GrowthLow_Label.SetFixedWidth( labelWidth1 );
+   GrowthLow_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   GrowthLow_Label.SetToolTip( growthLowToolTip );
+
+   GrowthLow_SpinBox.SetRange( int( TheIILargeScaleClipHighGrowthParameter->MinimumValue() ),
+                               int( TheIILargeScaleClipHighGrowthParameter->MaximumValue() ) );
+   GrowthLow_SpinBox.SetToolTip( growthLowToolTip );
+   GrowthLow_SpinBox.SetFixedWidth( editWidth2 );
+   GrowthLow_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&ImageIntegrationInterface::__Rejection_SpinValueUpdated, w );
+
+   GrowthLow_Sizer.SetSpacing( 4 );
+   GrowthLow_Sizer.Add( GrowthLow_Label );
+   GrowthLow_Sizer.Add( GrowthLow_SpinBox );
+   GrowthLow_Sizer.AddStretch();
+
+   RejectLargeScaleHigh_CheckBox.SetText( "Reject high large-scale structures" );
+   RejectLargeScaleHigh_CheckBox.SetToolTip( "<p>Enable large-scale rejection for high pixels. A high pixel sample has a value above the "
+      "estimated central value of its pixel stack.</p>" );
+   RejectLargeScaleHigh_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Rejection_Click, w );
+
+   RejectLargeScaleHigh_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
+   RejectLargeScaleHigh_Sizer.Add( RejectLargeScaleHigh_CheckBox );
+   RejectLargeScaleHigh_Sizer.AddStretch();
+
+   const char* smallScaleLayersHighToolTip = "<p>Number of small-scale layers that will be excluded from large-scale high pixel "
+   "rejection maps. Increase this value to detect larger groups of contiguous rejected pixels. Excluding too few layers may lead to "
+   "excessive (unnecessary) large-scale rejection. Excluding too many layers may lead to insufficient large-scale rejection. The "
+   "default value of two layers is generally a good compromise.</p>";
+
+   SmallScaleLayersHigh_Label.SetText( "Layers (high):" );
+   SmallScaleLayersHigh_Label.SetFixedWidth( labelWidth1 );
+   SmallScaleLayersHigh_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   SmallScaleLayersHigh_Label.SetToolTip( smallScaleLayersHighToolTip );
+
+   SmallScaleLayersHigh_SpinBox.SetRange( int( TheIILargeScaleClipHighProtectedLayersParameter->MinimumValue() ),
+                                         int( TheIILargeScaleClipHighProtectedLayersParameter->MaximumValue() ) );
+   SmallScaleLayersHigh_SpinBox.SetToolTip( smallScaleLayersHighToolTip );
+   SmallScaleLayersHigh_SpinBox.SetFixedWidth( editWidth2 );
+   SmallScaleLayersHigh_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&ImageIntegrationInterface::__Rejection_SpinValueUpdated, w );
+
+   SmallScaleLayersHigh_Sizer.SetSpacing( 4 );
+   SmallScaleLayersHigh_Sizer.Add( SmallScaleLayersHigh_Label );
+   SmallScaleLayersHigh_Sizer.Add( SmallScaleLayersHigh_SpinBox );
+   SmallScaleLayersHigh_Sizer.AddStretch();
+
+   const char* growthHighToolTip = "<p>Growth of large-scale pixel rejection structures. Increase to extend rejection to more "
+   "adjacent pixels. Excessive growth will reject too many pixels unnecessarily around large-scale structures, such as plane trails. "
+   "Insufficient growth will leave unrejected pixels on high-uncertainty regions. The default value of two pixels is generally a "
+   "good option.</p>";
+
+   GrowthHigh_Label.SetText( "Growth (high):" );
+   GrowthHigh_Label.SetFixedWidth( labelWidth1 );
+   GrowthHigh_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   GrowthHigh_Label.SetToolTip( growthHighToolTip );
+
+   GrowthHigh_SpinBox.SetRange( int( TheIILargeScaleClipHighGrowthParameter->MinimumValue() ),
+                               int( TheIILargeScaleClipHighGrowthParameter->MaximumValue() ) );
+   GrowthHigh_SpinBox.SetToolTip( growthHighToolTip );
+   GrowthHigh_SpinBox.SetFixedWidth( editWidth2 );
+   GrowthHigh_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&ImageIntegrationInterface::__Rejection_SpinValueUpdated, w );
+
+   GrowthHigh_Sizer.SetSpacing( 4 );
+   GrowthHigh_Sizer.Add( GrowthHigh_Label );
+   GrowthHigh_Sizer.Add( GrowthHigh_SpinBox );
+   GrowthHigh_Sizer.AddStretch();
+
+   LargeScaleRejection_Sizer.SetSpacing( 4 );
+   LargeScaleRejection_Sizer.Add( RejectLargeScaleLow_Sizer );
+   LargeScaleRejection_Sizer.Add( SmallScaleLayersLow_Sizer );
+   LargeScaleRejection_Sizer.Add( GrowthLow_Sizer );
+   LargeScaleRejection_Sizer.Add( RejectLargeScaleHigh_Sizer );
+   LargeScaleRejection_Sizer.Add( SmallScaleLayersHigh_Sizer );
+   LargeScaleRejection_Sizer.Add( GrowthHigh_Sizer );
+
+   LargeScaleRejection_Control.SetSizer( LargeScaleRejection_Sizer );
+   LargeScaleRejection_Control.AdjustToContents();
+
+   //
+
    ROI_SectionBar.SetTitle( "Region of Interest" );
    ROI_SectionBar.EnableTitleCheckBox();
-   ROI_SectionBar.OnCheck( (SectionBar::check_event_handler)&ImageIntegrationInterface::__ROI_Check, w );
    ROI_SectionBar.SetSection( ROI_Control );
+   ROI_SectionBar.OnCheck( (SectionBar::check_event_handler)&ImageIntegrationInterface::__ROI_Check, w );
    ROI_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&ImageIntegrationInterface::__ToggleSection, w );
+   ROI_SectionBar.OnViewDrag( (Control::view_drag_event_handler)&ImageIntegrationInterface::__ViewDrag, w );
+   ROI_SectionBar.OnViewDrop( (Control::view_drop_event_handler)&ImageIntegrationInterface::__ViewDrop, w );
 
    const char* roiX0ToolTip = "<p>X pixel coordinate of the upper-left corner of the ROI.</p>";
 
@@ -1786,6 +2115,8 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    SelectPreview_Button.SetText( "From Preview" );
    SelectPreview_Button.SetToolTip( "<p>Import ROI coordinates from an existing preview.</p>" );
    SelectPreview_Button.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__ROI_Click, w );
+   SelectPreview_Button.OnViewDrag( (Control::view_drag_event_handler)&ImageIntegrationInterface::__ViewDrag, w );
+   SelectPreview_Button.OnViewDrop( (Control::view_drop_event_handler)&ImageIntegrationInterface::__ViewDrop, w );
 
    ROIHeight_Sizer.SetSpacing( 4 );
    ROIHeight_Sizer.Add( ROIHeight_Label );
@@ -1801,6 +2132,8 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
 
    ROI_Control.SetSizer( ROI_Sizer );
    ROI_Control.AdjustToContents();
+   ROI_Control.OnViewDrag( (Control::view_drag_event_handler)&ImageIntegrationInterface::__ViewDrag, w );
+   ROI_Control.OnViewDrop( (Control::view_drop_event_handler)&ImageIntegrationInterface::__ViewDrop, w );
 
    //
 
@@ -1818,6 +2151,8 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    Global_Sizer.Add( Rejection2_Control );
    Global_Sizer.Add( Rejection3_SectionBar );
    Global_Sizer.Add( Rejection3_Control );
+   Global_Sizer.Add( LargeScaleRejection_SectionBar );
+   Global_Sizer.Add( LargeScaleRejection_Control );
    Global_Sizer.Add( ROI_SectionBar );
    Global_Sizer.Add( ROI_Control );
 
@@ -1828,6 +2163,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    Rejection1_Control.Hide();
    Rejection2_Control.Hide();
    Rejection3_Control.Hide();
+   LargeScaleRejection_Control.Hide();
    ROI_Control.Hide();
 
    w.AdjustToContents();
@@ -1838,4 +2174,4 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInterface.cpp - Released 2016/11/13 17:30:54 UTC
+// EOF ImageIntegrationInterface.cpp - Released 2017-05-05T08:37:32Z

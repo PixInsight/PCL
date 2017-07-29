@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0199
+// Standard INDIClient Process Module Version 01.00.15.0203
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerInterface.cpp - Released 2016/06/20 17:47:31 UTC
+// INDIDeviceControllerInterface.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2016 Klaus Kretzschmar
+// Copyright (c) 2014-2017 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -92,7 +92,7 @@ class DeviceNode : public TreeBox::Node
 {
 public:
 
-   DeviceNode( TreeBox& parent, const INDIDeviceListItem& item ) : TreeBox::Node()
+   DeviceNode( TreeBox& parent, const INDIDeviceListItem& item )
    {
       parent.Add( this );
       Update( item );
@@ -141,7 +141,7 @@ class PropertyNode : public TreeBox::Node
 {
 public:
 
-   PropertyNode( DeviceNode* parent, const INDIPropertyListItem& item ) : TreeBox::Node()
+   PropertyNode( DeviceNode* parent, const INDIPropertyListItem& item )
    {
       parent->Add( this );
       Update( item );
@@ -202,7 +202,7 @@ class PropertyElementNode : public TreeBox::Node
 {
 public:
 
-   PropertyElementNode( PropertyNode* parent, const INDIPropertyListItem& item ) : TreeBox::Node()
+   PropertyElementNode( PropertyNode* parent, const INDIPropertyListItem& item )
    {
       parent->Add( this );
       Update( item );
@@ -245,7 +245,6 @@ class PropertyEditDialog : public Dialog
 public:
 
    PropertyEditDialog( const INDIPropertyListItem& item ) :
-      Dialog(),
       m_item( item )
    {
       Key_Label.SetText( item.PropertyKey );
@@ -498,9 +497,7 @@ bool PropertyEditDialog::EditProperty( INDINewPropertyItem& result, const INDIPr
 
 // ----------------------------------------------------------------------------
 
-INDIDeviceControllerInterface::INDIDeviceControllerInterface() :
-   ProcessInterface(),
-   GUI( nullptr )
+INDIDeviceControllerInterface::INDIDeviceControllerInterface()
 {
    TheINDIDeviceControllerInterface = this;
 }
@@ -558,15 +555,10 @@ ProcessImplementation* INDIDeviceControllerInterface::NewProcess() const
 
 bool INDIDeviceControllerInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const INDIDeviceControllerInstance* r = dynamic_cast<const INDIDeviceControllerInstance*>( &p );
-   if ( r == nullptr )
-   {
-      whyNot = "Not an INDIDeviceController instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const INDIDeviceControllerInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an INDIDeviceController instance.";
+   return false;
 }
 
 bool INDIDeviceControllerInterface::RequiresInstanceValidation() const
@@ -1109,4 +1101,4 @@ void INDIDeviceControllerInterface::e_Timer( Timer& sender )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerInterface.cpp - Released 2016/06/20 17:47:31 UTC
+// EOF INDIDeviceControllerInterface.cpp - Released 2017-05-02T09:43:01Z

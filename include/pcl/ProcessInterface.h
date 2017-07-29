@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ProcessInterface.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ProcessInterface.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,25 +56,12 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Flags_h
-#include <pcl/Flags.h>
-#endif
-
-#ifndef __PCL_MetaObject_h
-#include <pcl/MetaObject.h>
-#endif
-
-#ifndef __PCL_Control_h
 #include <pcl/Control.h>
-#endif
-
-#ifndef __PCL_ImageVariant_h
 #include <pcl/ImageVariant.h>
-#endif
+#include <pcl/Flags.h>
+#include <pcl/MetaObject.h>
 
 #endif   // __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
@@ -84,7 +71,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace InterfaceFeature
+ * \namespace pcl::InterfaceFeature
  * \brief     Provides symbolic constants defining feature flags to customize
  *            process interfaces.
  *
@@ -199,21 +186,14 @@ namespace InterfaceFeature
       PreferencesButton         = 0x00000400,  // Preferences button - To edit process and interface-specific preferences
       ResetButton               = 0x00000800,  // Reset button - To reset process instance parameters
       InfoArea                  = 0x00010000,  // Info Area - To create a single-line text area
-
-#if defined( _MSC_VER ) && _MSC_VER >= 1700 // VC++ >= 2012
-      Default        = 2179,
-      DefaultGlobal  = 2181,
-      DefaultDynamic = 2225
-#else
       Default        = DragObject | ApplyToViewButton | BrowseDocumentationButton | ResetButton, // A default set of flags for static interfaces
       DefaultGlobal  = DragObject | ApplyGlobalButton | BrowseDocumentationButton | ResetButton, // A default set of flags for static interfaces that execute globally
       DefaultDynamic = DragObject | ExecuteButton | CancelButton | BrowseDocumentationButton | ResetButton // A default set of flags for dynamic interfaces
-#endif
    };
 }
 
 /*!
- * \typedef InterfaceFeatures
+ * \class pcl::InterfaceFeatures
  * \brief A collection of interface feature flags.
  */
 typedef Flags<InterfaceFeature::mask_type>   InterfaceFeatures;
@@ -226,6 +206,7 @@ typedef Flags<InterfaceFeature::mask_type>   InterfaceFeatures;
 
 class PCL_CLASS MetaProcess;
 class PCL_CLASS ProcessImplementation;
+class PCL_CLASS ProcessInstance;
 class PCL_CLASS VectorGraphics;
 class PCL_CLASS View;
 
@@ -235,8 +216,8 @@ class PCL_CLASS View;
  * \class ProcessInterface
  * \brief Client-side interface to a PixInsight process interface window.
  *
- * ### TODO: PCL 2.0.x: Rename this class to %ProcessInterfaceImplementation
- * ### TODO: PCL 2.x: New %ProcessInterface class for intermodule communication
+ * ### TODO: PCL 2.1.x: Rename this class to %ProcessInterfaceImplementation
+ * ### TODO: PCL 2.2: New %ProcessInterface class for intermodule communication
  *
  * ### TODO: Write a detailed description for %ProcessInterface.
  */
@@ -252,7 +233,7 @@ public:
    /*!
     * Destroys a %ProcessInterface object.
     */
-   virtual ~ProcessInterface()
+   virtual ~ProcessInterface() noexcept( false )
    {
    }
 
@@ -361,14 +342,14 @@ public:
     * 32-bit RGBA color images (including an alpha channel) are fully
     * supported.
     *
-    * If this function returns zero, a default icon will be assigned to this
+    * If this function returns nullptr, a default icon will be assigned to this
     * interface automatically.
     *
     * \sa IconImageFile()
     */
    virtual const char** IconImageXPM() const
    {
-      return 0;
+      return nullptr;
    }
 
    /*!
@@ -414,7 +395,7 @@ public:
     */
    virtual const char** SmallIconImageXPM() const
    {
-      return 0;
+      return nullptr;
    }
 
    /*!
@@ -520,8 +501,9 @@ public:
     * Function called when the user toggles the pushed state of the Real Time
     * Preview control bar button.
     *
-    * \param active  True if the Real Time Preview button is currently active
-    *             (or pushed down); false if the button is unpushed.
+    * \param active     True if the Real Time Preview button is currently
+    *                   active (or pushed down); false if the button is
+    *                   unpushed.
     *
     * For this function to be invoked, the InterfaceFeature::RealTimeButton
     * flag must be included in the set of feature flags returned by a
@@ -554,8 +536,9 @@ public:
     *
     * \code
     * const MetaProcess* P = Process();
-    * if ( P != 0 && P->CanBrowseDocumentation() )
-    *    P->BrowseDocumentation();
+    * if ( P != nullptr )
+    *    if ( P->CanBrowseDocumentation() )
+    *       P->BrowseDocumentation();
     * \endcode
     *
     * In general, a derived class should not need to reimplement this member
@@ -567,8 +550,8 @@ public:
     * Function called when the user toggles the pushed state of the Track %View
     * control bar button.
     *
-    * \param active  True if the Track %View button is currently active (pushed
-    *                down); false if the button is unpushed.
+    * \param active     True if the Track %View button is currently active
+    *                   (pushed down); false if the button is unpushed.
     *
     * For this function to be invoked, the InterfaceFeature::TrackViewButton
     * flag must be included in the set of feature flags returned by a
@@ -602,9 +585,8 @@ public:
     *
     * \note Note that along with this function, a process should reimplement
     * the MetaProcess::EditPreferences() member in its MetaProcess subclass,
-    * and that both implementations should be coherent.
-    *
-    * \note The default implementation of this function does nothing.
+    * and that both implementations should be coherent. The default
+    * implementation of this function does nothing.
     *
     * \sa MetaProcess::CanEditPreferences(), MetaProcess::EditPreferences()
     */
@@ -659,17 +641,17 @@ public:
     * %Process interface launch routine.
     *
     * \param process    Reference to the metaprocess describing the process
-    *             class that is launching this interface, either directly as
-    *             its default interface, or through an existing process
-    *             instance.
+    *                   class that is launching this interface, either directly
+    *                   as its default interface, or through an existing
+    *                   process instance.
     *
     * \param instance   Address of a process instance that is trying to launch
-    *             this interface, or zero if it is being launched directly as
-    *             the default interface of the \a process.
+    *                   this interface, or zero if it is being launched
+    *                   directly as the default interface of the \a process.
     *
     * \param[out] dynamic  True if this interface wants to be launched in
-    *             dynamic mode; false if this interface will launch as a static
-    *             interface.
+    *                   dynamic mode; false if this interface will launch as a
+    *                   static interface.
     *
     * \param flags      Reserved for future extensions - must not be modified.
     *
@@ -711,16 +693,18 @@ public:
     * of a process interface, and has the important advantage that it minimizes
     * resources and memory usage because an interface is only initialized if it
     * is ever used. Most interfaces are almost never launched by the user,
-    * except on special occasions, so wasting resources for them continually is
-    * very inefficient. All standard PixInsight interfaces use now the deferred
-    * initialization technique.
+    * except on special occasions, so investing resources for them continually
+    * is inefficient in general. All standard PixInsight interfaces use the
+    * deferred initialization technique for that reason.
     *
-    * \note Developers using the deferred initialization technique must be very
-    * careful to ensure that their interfaces will never try to access any
+    * However, developers using the deferred initialization technique must be
+    * very careful to ensure that their interfaces will never try to access any
     * child controls and other interface elements prior to initializing them.
+    * This is particularly important if an interface responds to platform
+    * notifications or events generated by other controls.
     *
     * \note The default implementation of this function sets \a dynamic = false
-    * before returning true.
+    * and returns true, so all process interfaces are static by default.
     *
     * \sa Initialize(), LaunchCount(), Launch( unsigned )
     */
@@ -746,10 +730,10 @@ public:
     * bool Launch( ProcessInterface& iface, unsigned flags = 0 )
     * {
     *    const MetaProcess* process = iface.Process();
-    *    if ( process == 0 )
+    *    if ( process == nullptr )
     *       return false;
-    *    bool dum;
-    *    return iface.Launch( *process, 0, dum, flags );
+    *    bool notUsed;
+    *    return iface.Launch( *process, nullptr, notUsed, flags );
     * }
     * \endcode
     *
@@ -789,7 +773,7 @@ public:
     *
     * \note If an interface does not reimplement this function, then it will be
     * a plain tool with no processing capabilities. This is because the default
-    * implementation of this function returns zero, meaning that no process
+    * implementation of this function returns nullptr, meaning that no process
     * instance can be generated. In this case, it is \e mandatory that the
     * interface reimplements the IsInstanceGenerator() member function to
     * return false.
@@ -798,7 +782,7 @@ public:
     */
    virtual ProcessImplementation* NewProcess() const
    {
-      return 0;
+      return nullptr;
    }
 
    /*!
@@ -898,12 +882,12 @@ public:
     * Instance validation function.
     *
     * \param instance   Reference to a process instance that is being validated
-    *             before being imported by this interface.
+    *                   before being imported by this interface.
     *
-    * \param[out] whyNot   If this function returns false, it should return
-    *             also a brief text (256 characters maximum) in this string,
-    *             explaining why the specified \a instance is not a valid
-    *             instance to be imported by this interface.
+    * \param[out] whyNot  If this function returns false, it should return also
+    *                   a brief text (256 characters maximum) in this string,
+    *                   explaining why the specified \a instance is not a valid
+    *                   instance to be imported by this interface.
     *
     * This function will not be called unless the RequiresInstanceValidation()
     * member function is reimplemented to return true in a derived class.
@@ -1001,28 +985,29 @@ public:
     * Function called when the real-time preview image needs an update, and
     * this interface is the owner of the Real-Time Preview system.
     *
-    * \param[in,out] image    Reference to a shared image where the real-time
-    *             rendition would be generated. This image contains the pixel
-    *             data of a view selected for real-time previewing. A
-    *             subsequent call to GenerateRealTimePreview() would receive
-    *             a reference to an image with the same pixel data, for
-    *             effective real-time preview generation.
+    * \param[in,out] image  Reference to a shared image where the real-time
+    *                   rendition would be generated. This image contains the
+    *                   pixel data of a view selected for real-time previewing.
+    *                   A subsequent call to GenerateRealTimePreview() would
+    *                   receive a reference to an image with the same pixel
+    *                   data, for effective real-time preview generation.
     *
     * \param view       Reference to a view that is currently selected in the
-    *             Real-Time Preview system of the PixInsight core application.
-    *             The passed \a image contains a representation of the image in
-    *             this view.
+    *                   Real-Time Preview system of the core application. The
+    *                   passed \a image contains a representation of the image
+    *                   in this view.
     *
     * \param zoomLevel  Indicates the integer zoom ratio that has been applied
-    *             to the specified \a image, with respect to the original
-    *             view's image. If this parameter is a negative number, it
-    *             represents a reduction factor; for example, -2 corresponds to
-    *             a 1:2 reduction ratio, meaning that each pixel of \a image
-    *             corresponds to 4 source pixels in the view being previewed.
-    *             If this parameter is a positive number, it can only be equal
-    *             to 1, indicating that each pixel in \a image corresponds to
-    *             one source pixel. In other words, real-time preview images
-    *             can be scaled down, but are never magnified or scaled up.
+    *                   to the specified \a image, with respect to the original
+    *                   view's image. If this parameter is a negative number,
+    *                   it represents a reduction factor; for example, -2
+    *                   corresponds to a 1:2 reduction ratio, meaning that each
+    *                   pixel of \a image corresponds to 4 source pixels in the
+    *                   view being previewed. If this parameter is a positive
+    *                   number, it can only be equal to 1, indicating that each
+    *                   pixel in \a image corresponds to one source pixel. In
+    *                   other words, real-time preview images can be scaled
+    *                   down, but are never magnified or scaled up.
     *
     * Returns true if the real-time preview requires an update for the
     * specified image; false if no update is required.
@@ -1045,36 +1030,39 @@ public:
    /*!
     * Function called to generate a new real-time preview rendition.
     *
-    * \param[in,out] image    Reference to a shared image where the real-time
-    *             rendition must be generated. On input, this image contains
-    *             the pixel data of a view selected for real-time previewing.
-    *             On output, this image must be transformed to represent a
-    *             preview of the current process instance being edited on this
-    *             process interface.
+    * \param[in,out] image Reference to a shared image where the real-time
+    *                   rendition must be generated. On input, this image
+    *                   contains the pixel data of a view selected for
+    *                   real-time previewing. On output, this image must be
+    *                   transformed to represent a preview of the current
+    *                   process instance being edited on this process
+    *                   interface.
     *
     * \param view       Reference to a view that is currently selected in the
-    *             Real-Time Preview system of the PixInsight core application.
-    *             The passed \a image contains a representation of the image in
-    *             this view.
+    *                   Real-Time Preview system of the core application. The
+    *                   passed \a image contains a representation of the image
+    *                   in this view.
     *
     * \param zoomLevel  Indicates the integer zoom ratio that has been applied
-    *             to the specified \a image, with respect to the original
-    *             view's image. If this parameter is a negative number, it
-    *             represents a reduction factor; for example, -2 corresponds to
-    *             a 1:2 reduction ratio, meaning that each pixel of \a image
-    *             corresponds to 4 source pixels in the view being previewed.
-    *             If this parameter is a positive number, it can only be equal
-    *             to 1, indicating that each pixel in \a image corresponds to
-    *             one source pixel. In other words, real-time preview images
-    *             can be scaled down, but are never magnified or scaled up.
+    *                   to the specified \a image, with respect to the original
+    *                   view's image. If this parameter is a negative number,
+    *                   it represents a reduction factor; for example, -2
+    *                   corresponds to a 1:2 reduction ratio, meaning that each
+    *                   pixel of \a image corresponds to 4 source pixels in the
+    *                   view being previewed. If this parameter is a positive
+    *                   number, it can only be equal to 1, indicating that each
+    *                   pixel in \a image corresponds to one source pixel. In
+    *                   other words, real-time preview images can be scaled
+    *                   down, but are never magnified or scaled up.
     *
     * \param[out] info  Reference to a string where a brief informative text
-    *             (256 characters maximum) can optionally be stored to describe
-    *             some special circumstances about the generated rendition.
-    *             Typically, this string can be used to inform about an inexact
-    *             or partial rendition, for example because the applied
-    *             reduction ratio (\a zoomLevel) doesn't allow a reasonably
-    *             accurate representation of some process features.
+    *                   (256 characters maximum) can optionally be stored to
+    *                   describe some special circumstances about the generated
+    *                   rendition. Typically, this string can be used to inform
+    *                   about an inexact or partial rendition, for example
+    *                   because the applied reduction ratio (\a zoomLevel)
+    *                   does not allow a reasonably accurate representation of
+    *                   some process features.
     *
     * Returns true to signal that the passed \a image has been modified and can
     * now be used to update the current real-time preview. Returns false to
@@ -1139,8 +1127,8 @@ public:
     * simultaneously, of course), depending on the value returned by the
     * Launch() function. However, dynamic interface semantics will not be
     * available to an interface unless it reimplements this function to return
-    * true. This has been done in this way to help saving GUI resources, which
-    * is a PCL design principle.
+    * true. This has been done in this way to help saving platform resources,
+    * which is a design principle of PCL.
     *
     * If this function returns false (as it does by default), dynamic process
     * semantics will not be available for this interface.
@@ -1181,7 +1169,7 @@ public:
    }
 
    /*!
-    * Function called when the mouse cursor enters the viewport of a view \a v,
+    * Function called when the mouse cursor enters the viewport of a \a view,
     * during an active dynamic session.
     *
     * \note The default implementation of this function does nothing.
@@ -1189,12 +1177,12 @@ public:
     * \sa DynamicMouseLeave(), DynamicMouseMove(), DynamicMousePress(),
     * DynamicMouseRelease(), DynamicMouseDoubleClick(), DynamicMouseWheel()
     */
-   virtual void DynamicMouseEnter( View& v )
+   virtual void DynamicMouseEnter( View& view )
    {
    }
 
    /*!
-    * Function called when the mouse cursor leaves the viewport of a view \a v,
+    * Function called when the mouse cursor leaves the viewport of a \a view,
     * during an active dynamic session.
     *
     * \note The default implementation of this function does nothing.
@@ -1202,7 +1190,7 @@ public:
     * \sa DynamicMouseEnter(), DynamicMouseMove(), DynamicMousePress(),
     * DynamicMouseRelease(), DynamicMouseDoubleClick(), DynamicMouseWheel()
     */
-   virtual void DynamicMouseLeave( View& )
+   virtual void DynamicMouseLeave( View& view )
    {
    }
 
@@ -1210,26 +1198,26 @@ public:
     * Function called when the mouse cursor is displaced on a view, during an
     * active dynamic session.
     *
-    * \param v    Reference to a view over which the mouse cursor has been
-    *             displaced.
+    * \param view       Reference to a view over which the mouse cursor has
+    *                   been displaced.
     *
-    * \param p    New mouse cursor position in image coordinates.
+    * \param cursorPos  New mouse cursor position in image coordinates.
     *
     * \param buttons    Indicates the current states of all mouse buttons. This
-    *             value is an OR'ed combination of MouseButton flags. A flag
-    *             set indicates a pressed mouse button.
+    *                   value is an OR'ed combination of MouseButton flags. A
+    *                   flag set indicates a pressed mouse button.
     *
     * \param modifiers  Indicates the current states of all keyboard modifiers.
-    *             This value is an OR'ed combination of KeyModifier flags. A
-    *             flag set indicates a pressed modifier key.
+    *                   This value is an OR'ed combination of KeyModifier
+    *                   flags. A flag set indicates a pressed modifier key.
     *
     * \note The default implementation of this function does nothing.
     *
     * \sa DynamicMouseEnter(), DynamicMouseLeave(), DynamicMousePress(),
     * DynamicMouseRelease(), DynamicMouseDoubleClick(), DynamicMouseWheel()
     */
-   virtual void DynamicMouseMove( View& v, const DPoint& p,
-                                       unsigned buttons, unsigned modifiers )
+   virtual void DynamicMouseMove( View& view, const DPoint& cursorPos,
+                                  unsigned buttons, unsigned modifiers )
    {
    }
 
@@ -1237,29 +1225,29 @@ public:
     * Function called when a mouse button is pressed on a view, during an
     * active dynamic session.
     *
-    * \param v    Reference to a view over which a mouse button has been
-    *             pressed.
+    * \param view       Reference to a view over which a mouse button has been
+    *                   pressed.
     *
-    * \param p    Current mouse cursor position in image coordinates.
+    * \param cursorPos  Current mouse cursor position in image coordinates.
     *
     * \param button     Identifies the mouse button that has been pressed. This
-    *             value is a unique MouseButton flag.
+    *                   value is a unique MouseButton flag.
     *
     * \param buttons    Indicates the current states of all mouse buttons. This
-    *             value is an OR'ed combination of MouseButton flags. A flag
-    *             set indicates a pressed mouse button.
+    *                   value is an OR'ed combination of MouseButton flags. A
+    *                   flag set indicates a pressed mouse button.
     *
     * \param modifiers  Indicates the current states of all keyboard modifiers.
-    *             This value is an OR'ed combination of KeyModifier flags. A
-    *             flag set indicates a pressed modifier key.
+    *                   This value is an OR'ed combination of KeyModifier
+    *                   flags. A flag set indicates a pressed modifier key.
     *
     * \note The default implementation of this function does nothing.
     *
     * \sa DynamicMouseEnter(), DynamicMouseLeave(), DynamicMouseMove(),
     * DynamicMouseRelease(), DynamicMouseDoubleClick(), DynamicMouseWheel()
     */
-   virtual void DynamicMousePress( View& v, const DPoint& p,
-                           int button, unsigned buttons, unsigned modifiers )
+   virtual void DynamicMousePress( View& view, const DPoint& cursorPos,
+                                   int button, unsigned buttons, unsigned modifiers )
    {
    }
 
@@ -1267,29 +1255,29 @@ public:
     * Function called when a mouse button is released on a view, during an
     * active dynamic session.
     *
-    * \param v    Reference to a view over which a mouse button has been
-    *             released.
+    * \param view       Reference to a view over which a mouse button has been
+    *                   released.
     *
-    * \param p    Current mouse cursor position in image coordinates.
+    * \param cursorPos  Current mouse cursor position in image coordinates.
     *
     * \param button     Identifies the mouse button that has been released.
-    *             This value is a unique MouseButton flag.
+    *                   This value is a unique MouseButton flag.
     *
     * \param buttons    Indicates the current states of all mouse buttons. This
-    *             value is an OR'ed combination of MouseButton flags. A flag
-    *             set indicates a pressed mouse button.
+    *                   value is an OR'ed combination of MouseButton flags. A
+    *                   flag set indicates a pressed mouse button.
     *
     * \param modifiers  Indicates the current states of all keyboard modifiers.
-    *             This value is an OR'ed combination of KeyModifier flags. A
-    *             flag set indicates a pressed modifier key.
+    *                   This value is an OR'ed combination of KeyModifier
+    *                   flags. A flag set indicates a pressed modifier key.
     *
     * \note The default implementation of this function does nothing.
     *
     * \sa DynamicMouseEnter(), DynamicMouseLeave(), DynamicMouseMove(),
     * DynamicMousePress(), DynamicMouseDoubleClick(), DynamicMouseWheel()
     */
-   virtual void DynamicMouseRelease( View& v, const DPoint& p,
-                           int button, unsigned buttons, unsigned modifiers )
+   virtual void DynamicMouseRelease( View& view, const DPoint& cursorPos,
+                                     int button, unsigned buttons, unsigned modifiers )
    {
    }
 
@@ -1297,26 +1285,26 @@ public:
     * Function called when the primary mouse button is double-clicked on a
     * view, during an active dynamic session.
     *
-    * \param v    Reference to a view over which the primary mouse button has
-    *             been double-clicked.
+    * \param view       Reference to a view over which the primary mouse button
+    *                   has been double-clicked.
     *
-    * \param p    Current mouse cursor position in image coordinates.
+    * \param cursorPos  Current mouse cursor position in image coordinates.
     *
     * \param buttons    Indicates the current states of all mouse buttons. This
-    *             value is an OR'ed combination of MouseButton flags. A flag
-    *             set indicates a pressed mouse button.
+    *                   value is an OR'ed combination of MouseButton flags. A
+    *                   flag set indicates a pressed mouse button.
     *
     * \param modifiers  Indicates the current states of all keyboard modifiers.
-    *             This value is an OR'ed combination of KeyModifier flags. A
-    *             flag set indicates a pressed modifier key.
+    *                   This value is an OR'ed combination of KeyModifier
+    *                   flags. A flag set indicates a pressed modifier key.
     *
     * \note The default implementation of this function does nothing.
     *
     * \sa DynamicMouseEnter(), DynamicMouseLeave(), DynamicMouseMove(),
     * DynamicMousePress(), DynamicMouseRelease(), DynamicMouseWheel()
     */
-   virtual void DynamicMouseDoubleClick( View& v, const DPoint& p,
-                                       unsigned buttons, unsigned modifiers )
+   virtual void DynamicMouseDoubleClick( View& view, const DPoint& cursorPos,
+                                         unsigned buttons, unsigned modifiers )
    {
    }
 
@@ -1324,15 +1312,15 @@ public:
     * Function called if a key is pressed when a view has the keyboard focus,
     * during an active dynamic session.
     *
-    * \param v    Reference to the view that had the keyboard focus when a key
-    *             was pressed.
+    * \param view       Reference to the view that had the keyboard focus when
+    *                   a key was pressed.
     *
-    * \param key  A KeyCode code identifying the keyboard key that has been
-    *             pressed.
+    * \param key        A KeyCode code identifying the keyboard key that has
+    *                   been pressed.
     *
     * \param modifiers  Indicates the current states of all keyboard modifiers.
-    *             This value is an OR'ed combination of KeyModifier flags. A
-    *             flag set indicates a pressed modifier key.
+    *                   This value is an OR'ed combination of KeyModifier
+    *                   flags. A flag set indicates a pressed modifier key.
     *
     * This function returns true if it processes the keyboard press event. If
     * false is returned, then the keyboard event may propagate to other
@@ -1342,7 +1330,7 @@ public:
     *
     * \sa DynamicKeyRelease()
     */
-   virtual bool DynamicKeyPress( View& v, int key, unsigned modifiers )
+   virtual bool DynamicKeyPress( View& view, int key, unsigned modifiers )
    {
       return false;
    }
@@ -1351,15 +1339,15 @@ public:
     * Function called if a key is released when a view has the keyboard focus,
     * during an active dynamic session.
     *
-    * \param v    Reference to the view that had the keyboard focus when a key
-    *             was released.
+    * \param view       Reference to the view that had the keyboard focus when
+    *                   a key was released.
     *
-    * \param key  A KeyCode code identifying the keyboard key that has been
-    *             released.
+    * \param key        A KeyCode code identifying the keyboard key that has
+    *                   been released.
     *
     * \param modifiers  Indicates the current states of all keyboard modifiers.
-    *             This value is an OR'ed combination of KeyModifier flags. A
-    *             flag set indicates a pressed modifier key.
+    *                   This value is an OR'ed combination of KeyModifier
+    *                   flags. A flag set indicates a pressed modifier key.
     *
     * This function returns true if it processes the keyboard release event. If
     * false is returned, then the keyboard event may propagate to other
@@ -1369,7 +1357,7 @@ public:
     *
     * \sa DynamicKeyPress()
     */
-   virtual bool DynamicKeyRelease( View& v, int key, unsigned modifiers )
+   virtual bool DynamicKeyRelease( View& view, int key, unsigned modifiers )
    {
       return false;
    }
@@ -1378,24 +1366,25 @@ public:
     * Function called when the mouse wheel is rotated while the mouse cursor is
     * over a view, during an active dynamic session.
     *
-    * \param v    Reference to a view over which the mouse cursor was located
-    *             when the mouse wheel was rotated.
+    * \param view       Reference to a view over which the mouse cursor was
+    *                   located when the mouse wheel was rotated.
     *
-    * \param p    Current mouse cursor position in image coordinates.
+    * \param cursorPos  Current mouse cursor position in image coordinates.
     *
     * \param wheelDelta Wheel rotation increment. A positive increment
-    *             indicates that the wheel has been rotated in the forward
-    *             direction; negative increments correspond to backwards
-    *             rotation. For example, negative increments should be used to
-    *             scroll down a scrollable area, as a document browser.
+    *                   indicates that the wheel has been rotated in the
+    *                   forward direction; negative increments correspond to
+    *                   backwards rotation. For example, negative increments
+    *                   should be used to scroll down a scrollable area, as a
+    *                   document browser.
     *
     * \param buttons    Indicates the current states of all mouse buttons. This
-    *             value is an OR'ed combination of MouseButton flags. A flag
-    *             set indicates a pressed mouse button.
+    *                   value is an OR'ed combination of MouseButton flags. A
+    *                   flag set indicates a pressed mouse button.
     *
     * \param modifiers  Indicates the current states of all keyboard modifiers.
-    *             This value is an OR'ed combination of KeyModifier flags. A
-    *             flag set indicates a pressed modifier key.
+    *                   This value is an OR'ed combination of KeyModifier
+    *                   flags. A flag set indicates a pressed modifier key.
     *
     * This function returns true if it processes the wheel rotation event. If
     * false is returned, then the wheel event will propagate to other elements
@@ -1406,8 +1395,8 @@ public:
     * \sa DynamicMouseEnter(), DynamicMouseLeave(), DynamicMouseMove(),
     * DynamicMousePress(), DynamicMouseRelease(), DynamicMouseDoubleClick()
     */
-   virtual bool DynamicMouseWheel( View& v, const DPoint& p,
-                        int wheelDelta, unsigned buttons, unsigned modifiers )
+   virtual bool DynamicMouseWheel( View& view, const DPoint& cursorPos,
+                                   int wheelDelta, unsigned buttons, unsigned modifiers )
    {
       return false;
    }
@@ -1416,9 +1405,9 @@ public:
     * Function called when a view's screen rendition needs to be updated,
     * during an active dynamic session.
     *
-    * \param v    Reference to a view that requires a screen update.
+    * \param view       Reference to a view that requires a screen update.
     *
-    * \param r    Update region in image coordinates.
+    * \param rect       Update region in image coordinates.
     *
     * This function \e must be reimplemented by dynamic interfaces that
     * maintain their own graphical content over image views.
@@ -1434,7 +1423,7 @@ public:
     *
     * \sa DynamicPaint()
     */
-   virtual bool RequiresDynamicUpdate( const View& v, const DRect& r ) const
+   virtual bool RequiresDynamicUpdate( const View& view, const DRect& rect ) const
    {
       return false;
    }
@@ -1442,28 +1431,28 @@ public:
    /*!
     * Function called when a view's screen rendition has been updated.
     *
-    * \param v    Reference to a view where the specified \a r update region
-    *             should be redrawn by this interface.
+    * \param view       Reference to a view where the specified update region
+    *                   should be redrawn by this interface.
     *
-    * \param g    Reference to a vector graphics context, where all screen
-    *             drawing work must be performed.
+    * \param graphics   Reference to a vector graphics context, where all
+    *                   screen drawing work must be performed.
     *
-    * \param r    Update region in image coordinates.
+    * \param rect       Update region in image coordinates.
     *
     * This function \e must be reimplemented by dynamic interfaces that
     * maintain their own graphical content over image views.
     *
-    * When this function is invoked, the update region \a r on the target view
-    * \a v will contain just the screen rendition of the view's image, with
-    * display functions and color management transformations applied as
-    * appropriate, but without any additional vectorial contents such as
-    * preview rectangles, selections, auxiliary geometric items, cursors, etc,
-    * which are always rendered \e after this function returns.
+    * When this function is invoked, the update region will contain just the
+    * screen rendition of the target \a view's image, with display functions
+    * and color management transformations applied as appropriate, but without
+    * any additional vectorial contents such as preview rectangles, selections,
+    * auxiliary geometric items, cursors, etc, which are always rendered
+    * \e after this function returns.
     *
-    * When this function is called, the update region \a r has already been set
-    * as the current clipping region of the graphics context \a g in viewport
+    * When this function is called, the update region has already been set as
+    * the current clipping region of the \a graphics context in viewport
     * coordinates. The module being invoked can only define a clipping region
-    * as an intersection with the update rectangle \a r, but not outside it. In
+    * as an intersection with the update rectangle, but not outside it. In
     * other words, this function can only paint \e inside the specified update
     * rectangle. Any attempt to define a larger clipping region, for example by
     * calling Graphics::SetClipRect(), is illegal and will be blocked by the
@@ -1473,7 +1462,7 @@ public:
     *
     * \sa RequiresDynamicUpdate(), VectorGraphics
     */
-   virtual void DynamicPaint( const View& v, VectorGraphics& g, const DRect& r ) const
+   virtual void DynamicPaint( const View& view, VectorGraphics& graphics, const DRect& rect ) const
    {
    }
 
@@ -1505,56 +1494,56 @@ public:
    /*!
     * Notification sent when a new view has been created.
     *
-    * \param v    Reference to the view that has been created. Can be either a
-    *             main view or a preview.
+    * \param view       Reference to the view that has been created. Can be
+    *                   either a main view or a preview.
     *
     * \ingroup image_notifications
     * \sa \ref image_notifications "Image Notification Functions"
     */
-   virtual void ImageCreated( const View& v )
+   virtual void ImageCreated( const View& view )
    {
    }
 
    /*!
     * Notification sent when the image in a view has been modified.
     *
-    * \param v    Reference to the view whose image has been modified. Can be
-    *             either a main view or a preview.
+    * \param view       Reference to the view whose image has been modified.
+    *                   Can be either a main view or a preview.
     *
     * \ingroup image_notifications
     * \sa \ref image_notifications "Image Notification Functions"
     */
-   virtual void ImageUpdated( const View& v )
+   virtual void ImageUpdated( const View& view )
    {
    }
 
    /*!
     * Notification sent when the identifier of a view has been changed.
     *
-    * \param v    Reference to the view whose identifier has been changed. Can
-    *             be either a main view or a preview.
+    * \param view       Reference to the view whose identifier has been
+    *                   changed. Can be either a main view or a preview.
     *
     * \ingroup image_notifications
     * \sa \ref image_notifications "Image Notification Functions"
     */
-   virtual void ImageRenamed( const View& v )
+   virtual void ImageRenamed( const View& view )
    {
    }
 
    /*!
     * Notification sent when an existing view is about to be destroyed.
     *
-    * \param v    Reference to the view that will be destroyed. Can be either a
-    *             main view or a preview.
+    * \param view       Reference to the view that will be destroyed. Can be
+    *                   either a main view or a preview.
     *
-    * When an image window is closed and it has one or more previews defined, a
-    * ImageDeleted() notification is sent for each of its previews, then a
+    * When an image window is closed and it has one or more previews defined,
+    * an ImageDeleted() notification is sent for each of its previews, then a
     * final notification is sent for its main view.
     *
     * \ingroup image_notifications
     * \sa \ref image_notifications "Image Notification Functions"
     */
-   virtual void ImageDeleted( const View& v )
+   virtual void ImageDeleted( const View& view )
    {
    }
 
@@ -1562,20 +1551,20 @@ public:
     * Notification sent when a view has been activated and has received the
     * input focus.
     *
-    * \param v    Reference to the view that has been activated and focused.
-    *             This is from now on the current <em>active view</em> in the
-    *             core application's GUI. \a v can be either a main view or a
-    *             preview.
+    * \param view       Reference to the view that has been activated and
+    *                   focused. This is from now on the current <em>active
+    *                   view</em> in the core application's GUI. \a view can be
+    *                   either a main view or a preview.
     *
-    * If the \a v view is a preview, this notification implicitly means that
-    * its parent image window has been activated and is now the topmost, active
-    * window in the GUI workspace. In this case, however, a notification for
-    * the window's main view is not sent; only the active view is notified.
+    * If the \a view is a preview, this notification implicitly means that its
+    * parent image window has been activated and is now the topmost, active
+    * window in the current workspace. In this case, however, a notification
+    * for the window's main view is not sent; only the active view is notified.
     *
     * \ingroup image_notifications
     * \sa \ref image_notifications "Image Notification Functions"
     */
-   virtual void ImageFocused( const View& v )
+   virtual void ImageFocused( const View& view )
    {
    }
 
@@ -1583,12 +1572,12 @@ public:
     * Notification sent when a view has been locked for read and/or write
     * operations.
     *
-    * \param v    Reference to the view that has been locked.
+    * \param view       Reference to the view that has been locked.
     *
     * \ingroup image_notifications
     * \sa \ref image_notifications "Image Notification Functions"
     */
-   virtual void ImageLocked( const View& v )
+   virtual void ImageLocked( const View& view )
    {
    }
 
@@ -1596,12 +1585,12 @@ public:
     * Notification sent when a view has been unlocked for read and/or write
     * operations.
     *
-    * \param v    Reference to the view that has been unlocked.
+    * \param view       Reference to the view that has been unlocked.
     *
     * \ingroup image_notifications
     * \sa \ref image_notifications "Image Notification Functions"
     */
-   virtual void ImageUnlocked( const View& v )
+   virtual void ImageUnlocked( const View& view )
    {
    }
 
@@ -1609,12 +1598,12 @@ public:
     * Notification sent when the <em>screen transfer functions</em> (STF) have
     * been enabled for a view.
     *
-    * \param v    Reference to a view whose STF have been enabled.
+    * \param view       Reference to a view whose STF have been enabled.
     *
     * \ingroup image_notifications
     * \sa \ref image_notifications "Image Notification Functions"
     */
-   virtual void ImageSTFEnabled( const View& v )
+   virtual void ImageSTFEnabled( const View& view )
    {
    }
 
@@ -1622,12 +1611,12 @@ public:
     * Notification sent when the <em>screen transfer functions</em> (STF) have
     * been disabled for a view.
     *
-    * \param v    Reference to a view whose STF have been disabled.
+    * \param view       Reference to a view whose STF have been disabled.
     *
     * \ingroup image_notifications
     * \sa \ref image_notifications "Image Notification Functions"
     */
-   virtual void ImageSTFDisabled( const View& v )
+   virtual void ImageSTFDisabled( const View& view )
    {
    }
 
@@ -1635,12 +1624,12 @@ public:
     * Notification sent when the <em>screen transfer functions</em> (STF) of a
     * view have been updated.
     *
-    * \param v    Reference to a view whose STF have been updated.
+    * \param view       Reference to a view whose STF have been updated.
     *
     * \ingroup image_notifications
     * \sa \ref image_notifications "Image Notification Functions"
     */
-   virtual void ImageSTFUpdated( const View& v )
+   virtual void ImageSTFUpdated( const View& view )
    {
    }
 
@@ -1648,12 +1637,12 @@ public:
     * Notification sent when the parameters of the <em>RGB working space</em>
     * (RGBWS) of a view have been updated.
     *
-    * \param v    Reference to a view whose RGBWS has been updated.
+    * \param view       Reference to a view whose RGBWS has been updated.
     *
     * \ingroup image_notifications
     * \sa \ref image_notifications "Image Notification Functions"
     */
-   virtual void ImageRGBWSUpdated( const View& v )
+   virtual void ImageRGBWSUpdated( const View& view )
    {
    }
 
@@ -1661,13 +1650,13 @@ public:
     * Notification sent when <em>color management</em> (CM) has been enabled
     * for a view.
     *
-    * \param v    Reference to a view for which color management has been
-    *             enabled.
+    * \param view       Reference to a view for which color management has been
+    *                   enabled.
     *
     * \ingroup image_notifications
     * \sa \ref image_notifications "Image Notification Functions"
     */
-   virtual void ImageCMEnabled( const View& v )
+   virtual void ImageCMEnabled( const View& view )
    {
    }
 
@@ -1675,43 +1664,44 @@ public:
     * Notification sent when <em>color management</em> (CM) has been disabled
     * for a view.
     *
-    * \param v    Reference to a view for which color management has been
-    *             disabled.
+    * \param view       Reference to a view for which color management has been
+    *                   disabled.
     *
     * \ingroup image_notifications
     * \sa \ref image_notifications "Image Notification Functions"
     */
-   virtual void ImageCMDisabled( const View& v )
+   virtual void ImageCMDisabled( const View& view )
    {
    }
 
    /*!
-    * Notification sent when the <em>color management</em> (CM) data of a view
-    * have been updated.
+    * Notification sent when the <em>color management</em> (CM) parameters of a
+    * view have been updated.
     *
-    * \param v    Reference to a view whose color management data have been
-    *             changed.
+    * \param view       Reference to a view whose color management data or
+    *                   working parameters have been modified.
     *
     * This notification is sent when a view's ICC profile is changed or
     * deleted, and when some color management features are modified, as
-    * soft-proofing or gamut check.
+    * soft-proofing or gamut check, among others.
     *
     * \ingroup image_notifications
     * \sa \ref image_notifications "Image Notification Functions"
     */
-   virtual void ImageCMUpdated( const View& v )
+   virtual void ImageCMUpdated( const View& view )
    {
    }
 
    /*!
     * Notification sent when an image has been saved to a disk file.
     *
-    * \param v    Reference to a view whose image has been written to a file.
+    * \param view       Reference to a view whose image has been successfully
+    *                   written to a file.
     *
     * \ingroup image_notifications
     * \sa \ref image_notifications "Image Notification Functions"
     */
-   virtual void ImageSaved( const View& v )
+   virtual void ImageSaved( const View& view )
    {
    }
 
@@ -1744,40 +1734,40 @@ public:
     * Notification sent when a mask has been selected for (or removed from) an
     * image window.
     *
-    * \param v    Reference to the main view of an image window for which
-    *             either a new mask has been selected, or an existing mask has
-    *             been removed.
+    * \param view       Reference to the main view of an image window for which
+    *                   either a new mask has been selected, or an existing
+    *                   mask has been removed.
     *
     * \ingroup mask_notifications
     * \sa \ref mask_notifications "Mask Notification Functions"
     */
-   virtual void MaskUpdated( const View& v )
+   virtual void MaskUpdated( const View& view )
    {
    }
 
    /*!
     * Notification sent when masking has been enabled for an image window.
     *
-    * \param v    Reference to the main view of an image window for which
-    *             masking has been enabled.
+    * \param view       Reference to the main view of an image window for which
+    *                   masking has been enabled.
     *
     * \ingroup mask_notifications
     * \sa \ref mask_notifications "Mask Notification Functions"
     */
-   virtual void MaskEnabled( const View& v )
+   virtual void MaskEnabled( const View& view )
    {
    }
 
    /*!
     * Notification sent when masking has been disabled for an image window.
     *
-    * \param v    Reference to the main view of an image window for which
-    *             masking has been disabled.
+    * \param view       Reference to the main view of an image window for which
+    *                   masking has been disabled.
     *
     * \ingroup mask_notifications
     * \sa \ref mask_notifications "Mask Notification Functions"
     */
-   virtual void MaskDisabled( const View& v )
+   virtual void MaskDisabled( const View& view )
    {
    }
 
@@ -1785,13 +1775,13 @@ public:
     * Notification sent when mask visibility has been enabled for an image
     * window.
     *
-    * \param v    Reference to the main view of an image window whose mask is
-    *             now shown.
+    * \param view       Reference to the main view of an image window whose
+    *                   mask is now visible.
     *
     * \ingroup mask_notifications
     * \sa \ref mask_notifications "Mask Notification Functions"
     */
-   virtual void MaskShown( const View& v )
+   virtual void MaskShown( const View& view )
    {
    }
 
@@ -1799,19 +1789,19 @@ public:
     * Notification sent when mask visibility has been disabled for an image
     * window.
     *
-    * \param v    Reference to the main view of an image window whose mask is
-    *             now hidden.
+    * \param view       Reference to the main view of an image window whose
+    *                   mask is now hidden.
     *
     * \ingroup mask_notifications
     * \sa \ref mask_notifications "Mask Notification Functions"
     */
-   virtual void MaskHidden( const View& v )
+   virtual void MaskHidden( const View& view )
    {
    }
 
    /*!
-    * \defgroup transparency_notifications Image Transparency Notification
-    *                                      Functions
+    * \defgroup transparency_notifications Image Transparency&nbsp;\
+    * Notification Functions
     *
     * The PixInsight core application calls transparency notification functions
     * to keep interfaces informed about changes in transparency rendering modes
@@ -1840,14 +1830,14 @@ public:
     * Notification sent when transparency rendering has been disabled for an
     * image window.
     *
-    * \param v    Reference to the main view of an image window for which
-    *             transparency rendering has been disabled.
+    * \param view       Reference to the main view of an image window for which
+    *                   transparency rendering has been disabled.
     *
     * \ingroup transparency_notifications
     * \sa \ref transparency_notifications
     *          "Image Transparency Notification Functions"
     */
-   virtual void TransparencyHidden( const View& v )
+   virtual void TransparencyHidden( const View& view )
    {
    }
 
@@ -1855,19 +1845,20 @@ public:
     * Notification sent when the current transparency rendering mode has been
     * updated for an image window.
     *
-    * \param v    Reference to the main view of an image window whose
-    *             transparency rendering mode has been updated.
+    * \param view       Reference to the main view of an image window whose
+    *                   transparency rendering mode has been updated.
     *
     * \ingroup transparency_notifications
     * \sa \ref transparency_notifications
     *          "Image Transparency Notification Functions"
     */
-   virtual void TransparencyModeUpdated( const View& v )
+   virtual void TransparencyModeUpdated( const View& view )
    {
    }
 
    /*!
-    * \defgroup view_property_notifications View Property Notification Functions
+    * \defgroup view_property_notifications View Property Notification&nbsp;\
+    * Functions
     *
     * The PixInsight core application calls view property notification
     * functions to keep interfaces informed about changes and events involving
@@ -1894,8 +1885,8 @@ public:
    /*!
     * Notification sent when a view property has been created or modified.
     *
-    * \param v    Reference to a view where a new property has been created or
-    *             an existing property has been modified.
+    * \param view       Reference to a view where a new property has been
+    *                   created, or an existing property has been modified.
     *
     * \param property   Identifier of the view property that has been created
     *                   or modified.
@@ -1903,21 +1894,21 @@ public:
     * \ingroup view_property_notifications
     * \sa \ref view_property_notifications "View Property Notification Functions"
     */
-   virtual void ViewPropertyUpdated( const View& v, const IsoString& property )
+   virtual void ViewPropertyUpdated( const View& view, const IsoString& property )
    {
    }
 
    /*!
     * Notification sent when a view property has been deleted.
     *
-    * \param v    Reference to a view where a property has been deleted.
+    * \param view       Reference to a view where a property has been deleted.
     *
     * \param property   Identifier of the view property that has been deleted.
     *
     * \ingroup view_property_notifications
     * \sa \ref view_property_notifications "View Property Notification Functions"
     */
-   virtual void ViewPropertyDeleted( const View& v, const IsoString& property )
+   virtual void ViewPropertyDeleted( const View& view, const IsoString& property )
    {
    }
 
@@ -1958,25 +1949,26 @@ public:
    /*!
     * Notification sent to signal the beginning of a new readout procedure.
     *
-    * \param v    Reference to a view for which new readout data notifications
-    *             will be sent from now on.
+    * \param view       Reference to a view from which new readout data
+    *                   notifications will be sent from now on.
     *
     * \ingroup readout_notifications
     * \sa \ref readout_notifications "Readout Notification Functions"
     */
-   virtual void BeginReadout( const View& v )
+   virtual void BeginReadout( const View& view )
    {
    }
 
    /*!
     * Notification sent when new readout data are available.
     *
-    * \param v    Reference to a view for which new readout data is being sent.
+    * \param view       Reference to a view from which new readout data is
+    *                   being sent.
     *
-    * \param p    Readout position in image coordinates.
+    * \param position   Readout position in image coordinates.
     *
-    * \param R,G,B,A   New readout red, green, blue and alpha values,
-    *             respectively, in the normalized real range [0,1].
+    * \param R,G,B,A    New readout red, green, blue and alpha values,
+    *                   respectively, in the normalized real range [0,1].
     *
     * \note Although images can have an unlimited number of alpha channels in
     * PixInsight, only readout values from the first alpha channel (which
@@ -1985,20 +1977,20 @@ public:
     * \ingroup readout_notifications
     * \sa \ref readout_notifications "Readout Notification Functions"
     */
-   virtual void UpdateReadout( const View& v, const DPoint& p, double R, double G, double B, double A )
+   virtual void UpdateReadout( const View& view, const DPoint& position, double R, double G, double B, double A )
    {
    }
 
    /*!
     * Notification sent to signal the end of an active readout procedure.
     *
-    * \param v    Reference to the view for which new readout data
-    *             notifications will no longer be sent.
+    * \param view       Reference to the view from which new readout data
+    *                   notifications will no longer be sent.
     *
     * \ingroup readout_notifications
     * \sa \ref readout_notifications "Readout Notification Functions"
     */
-   virtual void EndReadout( const View& v )
+   virtual void EndReadout( const View& view )
    {
    }
 
@@ -2031,54 +2023,57 @@ public:
    /*!
     * Notification sent when a new process instance has been created.
     *
-    * \param p    Reference to a process instance that has been newly created.
+    * \param instance   Reference to a process instance that has been newly
+    *                   created.
     *
     * \ingroup process_notifications
     * \sa \ref process_notifications "Process Instance Notification Functions"
     */
-   virtual void ProcessCreated( const ProcessImplementation& p )
+   virtual void ProcessCreated( const ProcessInstance& instance )
    {
    }
 
    /*!
     * Notification sent when an existing process instance has been updated.
     *
-    * \param p    Reference to a process instance that has been modified.
+    * \param instance   Reference to a process instance that has been modified.
     *
     * \ingroup process_notifications
     * \sa \ref process_notifications "Process Instance Notification Functions"
     */
-   virtual void ProcessUpdated( const ProcessImplementation& p )
+   virtual void ProcessUpdated( const ProcessInstance& instance )
    {
    }
 
    /*!
     * Notification sent when a process instance is about to be destroyed.
     *
-    * \param p    Reference to a process instance that will be destroyed.
+    * \param instance   Reference to a process instance that will be destroyed.
     *
     * \ingroup process_notifications
     * \sa \ref process_notifications "Process Instance Notification Functions"
     */
-   virtual void ProcessDeleted( const ProcessImplementation& p )
+   virtual void ProcessDeleted( const ProcessInstance& instance )
    {
    }
 
    /*!
     * Notification sent when a process instance has been saved to a disk file.
     *
-    * \param p    Reference to a process instance that has been written to a
-    *             disk file.
+    * \param instance   Reference to a process instance that has been written
+    *                   successfully to a disk file (for example, as part of a
+    *                   .xpsm file).
     *
     * \ingroup process_notifications
     * \sa \ref process_notifications "Process Instance Notification Functions"
     */
-   virtual void ProcessSaved( const ProcessImplementation& p )
+   virtual void ProcessSaved( const ProcessInstance& instance )
    {
    }
 
    /*!
-    * \defgroup rtpreview_notifications Real Time Preview Notification Functions
+    * \defgroup rtpreview_notifications Real Time Preview Notification&nbsp;\
+    * Functions
     *
     * The PixInsight core application calls real time preview notification
     * functions to keep interfaces informed about changes and events involving
@@ -2107,8 +2102,8 @@ public:
     * Notification sent when the owner of the real time previewing system has
     * been changed.
     *
-    * \param iface   Reference to a process interface that is now the owner of
-    *                the real-time previewing system.
+    * \param iface      Reference to a process interface that is now the owner
+    *                   of the real-time previewing system.
     *
     * \ingroup rtpreview_notifications
     * \sa \ref rtpreview_notifications "Real Time Preview Notification Functions"
@@ -2121,14 +2116,14 @@ public:
     * Notification sent when a real time preview LUT structure has been
     * generated.
     *
-    * \param colorModel    Identifies the LUT structure that has been
-    *             recalculated and is now available.
+    * \param colorModel Identifies the LUT structure that has been recalculated
+    *                   and is now available.
     *
     * \ingroup rtpreview_notifications
     * \sa \ref rtpreview_notifications "Real Time Preview Notification Functions"
     *
-    * \deprecated  This function has been deprecated and should not be used.
-    * The real-time previewing system no longer depends on look up table (LUT)
+    * \deprecated This function has been deprecated and should not be used. The
+    * real-time previewing system no longer depends on look up table (LUT)
     * structures.
     */
    virtual void RealTimePreviewLUTUpdated( int colorModel )
@@ -2214,10 +2209,10 @@ public:
    }
 
    /*!
-    * Notification sent when global color management (CM) data have been
-    * modified. This includes selecting a new default ICC profile, or changing
-    * some global color management parameters, as default profile mismatching
-    * policies or rendering intents.
+    * Notification sent when global color management (CM) data or working
+    * parameters have been modified. This includes selecting a new default ICC
+    * profile, or changing some global color management parameters, such as
+    * default profile mismatching policies or rendering intents.
     *
     * \ingroup global_notifications
     * \sa \ref global_notifications "Global Notification Functions"
@@ -2333,9 +2328,9 @@ public:
     *
     * This function stores geometry data in the following settings keys:
     *
-    * Interfaces/&lt;id&gt;/Geometry/Left
-    * Interfaces/&lt;id&gt;/Geometry/Top
-    * Interfaces/&lt;id&gt;/Geometry/Width
+    * Interfaces/&lt;id&gt;/Geometry/Left \n
+    * Interfaces/&lt;id&gt;/Geometry/Top \n
+    * Interfaces/&lt;id&gt;/Geometry/Width \n
     * Interfaces/&lt;id&gt;/Geometry/Height
     *
     * where &lt;id&gt; is the identifier of this interface, as returned by the
@@ -2427,7 +2422,8 @@ public:
    /*!
     * Issues an %ImageUpdated notification for a view.
     *
-    * \param v    The view for which an ImageUpdated notification will be sent.
+    * \param view       Reference to the view for which an ImageUpdated
+    *                   notification will be sent.
     *
     * The PixInsight core application will send ImageUpdated() notifications to
     * all objects that listen image notifications on the entire PixInsight
@@ -2443,10 +2439,12 @@ public:
     * actions performed by the user.
     *
     * \note This member function must \e not be used on a regular basis without
-    * having a good reason to do so. Excessive use of this member function may
-    * degrade the performance of the whole platform due to overhead.
+    * having a \e really good reason to do so. An abusive use of this function,
+    * such as too frequent calls performed during intensive real-time
+    * operations, may degrade the performance of the whole platform due to
+    * excessive overhead.
     */
-   static void BroadcastImageUpdated( const View& v );
+   static void BroadcastImageUpdated( const View& view );
 
    /*!
     * Processes pending user interface events.
@@ -2463,10 +2461,10 @@ public:
     * mouse and keyboard events. Unprocessed input events will remain pending
     * and will be processed as appropriate when execution returns to
     * PixInsight's main event handling loop, or when this function is called
-    * with \a excludeUserInputEvents set to false.
+    * again with \a excludeUserInputEvents set to false.
     *
     * \note Do not call this function too frequently, as doing so may degrade
-    * performance of the whole PixInsight graphical interface. For example,
+    * the performance of the whole PixInsight graphical interface. For example,
     * calling this function at 250 ms intervals is reasonable and more than
     * sufficient in most cases. Normally, you should only need to call this
     * function during real-time image and graphics generation procedures, or
@@ -2500,4 +2498,4 @@ private:
 #endif   // __PCL_ProcessInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessInterface.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ProcessInterface.h - Released 2017-06-28T11:58:36Z

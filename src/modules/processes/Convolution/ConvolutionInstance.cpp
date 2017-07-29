@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Convolution Process Module Version 01.01.03.0207
+// Standard Convolution Process Module Version 01.01.03.0226
 // ----------------------------------------------------------------------------
-// ConvolutionInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// ConvolutionInstance.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -119,7 +119,6 @@ bool ConvolutionInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) 
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
@@ -487,4 +486,4 @@ bool ConvolutionInstance::CreateFilterImage( Image& filter ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ConvolutionInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ConvolutionInstance.cpp - Released 2017-05-02T09:43:00Z

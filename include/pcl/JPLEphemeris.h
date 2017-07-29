@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/JPLEphemeris.h - Released 2016/06/24 19:00:23 UTC
+// pcl/JPLEphemeris.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,29 +54,13 @@
 
 /// \file pcl/JPLEphemeris.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Arguments_h
 #include <pcl/Arguments.h>
-#endif
-
-#ifndef __PCL_ErrorHandler_h
 #include <pcl/ErrorHandler.h>
-#endif
-
-#ifndef __PCL_KeyValue_h
 #include <pcl/KeyValue.h>
-#endif
-
-#ifndef __PCL_MultiVector_h
 #include <pcl/MultiVector.h>
-#endif
-
-#ifndef __PCL_StringList_h
 #include <pcl/StringList.h>
-#endif
 
 namespace pcl
 {
@@ -84,7 +68,11 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace JPLEphemerisItem
+ * \defgroup ephemeris_calculation Solar System Ephemerides
+ */
+
+/*!
+ * \namespace pcl::JPLEphemerisItem
  * \brief     JPL planetary ephemeris items
  *
  * Defines symbolic constants for native and derived JPL planetary ephemeris
@@ -112,6 +100,8 @@ namespace pcl
  * <tr><td>JPLEphemerisItem::Earth</td>                 <td>Geocenter relative to the solar system barycenter, synthesized from Earth-Moon barycenter and geocentric Moon.</td></tr>
  * <tr><td>JPLEphemerisItem::SSBMoon</td>               <td>Moon relative to the solar system barycenter, synthesized from Earth-Moon barycenter and geocentric Moon.</td></tr>
  * </table>
+ *
+ * \ingroup ephemeris_calculation
  */
 namespace JPLEphemerisItem
 {
@@ -151,7 +141,7 @@ namespace JPLEphemerisItem
  * \class JPLEphemeris
  * \brief JPL planetary ephemeris
  *
- * This class implements JPL DE/LE planetary ephemeris computed from original
+ * This class implements JPL DE/LE planetary ephemerides computed from original
  * files in ASCII format. On the PixInsight/PCL platform, this is a utility
  * class used to generate truncated binary ephemeris files by reinterpolation
  * with Chebyshev polynomials from the original ephemeris data.
@@ -160,6 +150,8 @@ namespace JPLEphemerisItem
  * utility programs and examples, are available at:
  *
  * ftp://ssd.jpl.nasa.gov/pub/eph/planets/
+ *
+ * \ingroup ephemeris_calculation
  */
 class JPLEphemeris
 {
@@ -508,7 +500,8 @@ private:
 
    /*!
     * \internal
-    * Chebyshev polynomial evaluation.
+    * Chebyshev polynomial evaluation. Special function adapted to JPL
+    * ephemeris data.
     */
    void Interpolate( double* r, double* v, double jd1, double jd2, item_index n ) const
    {
@@ -587,4 +580,4 @@ private:
 #endif  // __PCL_JPLEphemeris_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/JPLEphemeris.h - Released 2016/06/24 19:00:23 UTC
+// EOF pcl/JPLEphemeris.h - Released 2017-06-28T11:58:36Z

@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.02.0225
+// Standard Blink Process Module Version 01.02.02.0244
 // ----------------------------------------------------------------------------
-// BlinkStatisticsDialog.cpp - Released 2016/04/11 10:12:47 UTC
+// BlinkStatisticsDialog.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
-// Copyright (c) 2011-2016 Nikolay Volkov
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2017 Nikolay Volkov
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -773,4 +773,4 @@ void BlinkStatisticsDialog::__Dialog_Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BlinkStatisticsDialog.cpp - Released 2016/04/11 10:12:47 UTC
+// EOF BlinkStatisticsDialog.cpp - Released 2017-05-02T09:43:01Z

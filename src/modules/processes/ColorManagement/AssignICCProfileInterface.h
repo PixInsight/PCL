@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ColorManagement Process Module Version 01.00.00.0284
+// Standard ColorManagement Process Module Version 01.00.00.0303
 // ----------------------------------------------------------------------------
-// AssignICCProfileInterface.h - Released 2016/02/21 20:22:42 UTC
+// AssignICCProfileInterface.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorManagement PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,26 +53,23 @@
 #ifndef __AssignICCProfileInterface_h
 #define __AssignICCProfileInterface_h
 
-#include <pcl/ProcessInterface.h>
-#include <pcl/ICCProfile.h>
-
-#include <pcl/Sizer.h>
-#include <pcl/ViewList.h>
-#include <pcl/GroupBox.h>
-#include <pcl/Label.h>
 #include <pcl/ComboBox.h>
-#include <pcl/ToolButton.h>
 #include <pcl/Edit.h>
-#include <pcl/RadioButton.h>
+#include <pcl/GroupBox.h>
+#include <pcl/ICCProfile.h>
+#include <pcl/Label.h>
+#include <pcl/ProcessInterface.h>
 #include <pcl/PushButton.h>
+#include <pcl/RadioButton.h>
+#include <pcl/Sizer.h>
+#include <pcl/ToolButton.h>
+#include <pcl/ViewList.h>
 
 #include "AssignICCProfileInstance.h"
 
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// AssignICCProfileInterface
 // ----------------------------------------------------------------------------
 
 class AssignICCProfileInterface : public ProcessInterface
@@ -87,8 +84,6 @@ public:
    virtual const char** IconImageXPM() const;
 
    virtual InterfaceFeatures Features() const;
-
-   virtual void Initialize();
 
    virtual void ApplyInstance() const;
    virtual void TrackViewUpdated( bool active );
@@ -111,14 +106,10 @@ public:
    virtual bool WantsGlobalNotifications() const;
    virtual void GlobalCMUpdated();
 
-   // -------------------------------------------------------------------------
-
 private:
 
-   AssignICCProfileInstance   instance;
-   ICCProfile::profile_list   profiles;
-
-   // -------------------------------------------------------------------------
+   AssignICCProfileInstance instance;
+   ICCProfile::profile_list profiles;
 
    struct GUIData
    {
@@ -142,17 +133,18 @@ private:
             ToolButton        RefreshProfiles_ToolButton;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
    void RefreshProfiles();
 
    void __ViewList_ViewSelected( ViewList& sender, View& view );
-
    void __AssignMode_ButtonClick( Button& sender, bool checked );
    void __TargetProfile_EditCompleted( Edit& );
    void __Profile_ItemSelected( ComboBox& sender, int itemIndex );
    void __RefreshProfiles_ButtonClick( Button& sender, bool checked );
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
 
    friend struct GUIData;
 };
@@ -170,4 +162,4 @@ PCL_END_LOCAL
 #endif   // __AssignICCProfileInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF AssignICCProfileInterface.h - Released 2016/02/21 20:22:42 UTC
+// EOF AssignICCProfileInterface.h - Released 2017-05-02T09:43:00Z

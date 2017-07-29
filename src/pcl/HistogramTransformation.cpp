@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/HistogramTransformation.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/HistogramTransformation.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -62,8 +62,8 @@ bool HistogramTransformation::IsIdentityTransformationSet() const
 {
    if ( !IsIdentityTransformation() )
       return false;
-   for ( transformation_list::const_iterator i = m_transformChain.Begin(); i != m_transformChain.End(); ++i )
-      if ( !i->IsIdentityTransformationSet() )
+   for ( const HistogramTransformation& H : m_transformChain )
+      if ( !H.IsIdentityTransformationSet() )
          return false;
    return true;
 }
@@ -145,8 +145,8 @@ void HistogramTransformation::Apply( Histogram& dstH, const Histogram& srcH ) co
    {
       double f = double( i )/(srcH.m_resolution - 1);
       Transform( f );
-      for ( transformation_list::const_iterator j = m_transformChain.Begin(); j != m_transformChain.End(); ++j )
-         j->Transform( f );
+      for ( const HistogramTransformation& H : m_transformChain )
+         H.Transform( f );
       dstH.m_histogram[RoundInt( f*(dstH.m_resolution - 1) )] += srcH.m_histogram[i];
    }
 
@@ -164,8 +164,8 @@ void HistogramTransformation::Make8BitLUT( uint8* lut ) const
    {
       double f = double( i )/uint8_max;
       Transform( f );
-      for ( transformation_list::const_iterator j = m_transformChain.Begin(); j != m_transformChain.End(); ++j )
-         j->Transform( f );
+      for ( const HistogramTransformation& H : m_transformChain )
+         H.Transform( f );
       *lut++ = uint8( RoundInt( f*uint8_max ) );
    }
 }
@@ -181,8 +181,8 @@ void HistogramTransformation::Make16BitLUT( uint8* lut ) const
    {
       double f = double( i )/uint16_max;
       Transform( f );
-      for ( transformation_list::const_iterator j = m_transformChain.Begin(); j != m_transformChain.End(); ++j )
-         j->Transform( f );
+      for ( const HistogramTransformation& H : m_transformChain )
+         H.Transform( f );
       *lut++ = uint8( RoundInt( f*uint8_max ) );
    }
 }
@@ -196,8 +196,8 @@ void HistogramTransformation::Make16BitLUT( uint16* lut ) const
    {
       double f = double( i )/uint16_max;
       Transform( f );
-      for ( transformation_list::const_iterator j = m_transformChain.Begin(); j != m_transformChain.End(); ++j )
-         j->Transform( f );
+      for ( const HistogramTransformation& H : m_transformChain )
+         H.Transform( f );
       *lut++ = uint16( RoundInt( f*uint16_max ) );
    }
 }
@@ -213,8 +213,8 @@ void HistogramTransformation::Make20BitLUT( uint8* lut ) const
    {
       double f = double( i )/uint20_max;
       Transform( f );
-      for ( transformation_list::const_iterator j = m_transformChain.Begin(); j != m_transformChain.End(); ++j )
-         j->Transform( f );
+      for ( const HistogramTransformation& H : m_transformChain )
+         H.Transform( f );
       *lut++ = uint8( RoundInt( f*uint8_max ) );
    }
 }
@@ -228,8 +228,8 @@ void HistogramTransformation::Make20BitLUT( uint16* lut ) const
    {
       double f = double( i )/uint20_max;
       Transform( f );
-      for ( transformation_list::const_iterator j = m_transformChain.Begin(); j != m_transformChain.End(); ++j )
-         j->Transform( f );
+      for ( const HistogramTransformation& H : m_transformChain )
+         H.Transform( f );
       *lut++ = uint16( RoundInt( f*uint16_max ) );
    }
 }
@@ -263,9 +263,8 @@ public:
          {
             double f = double( i )/uint24_max;
             m_T.Transform( f );
-            for ( HistogramTransformation::transformation_list::const_iterator j = m_T.m_transformChain.Begin();
-                  j != m_T.m_transformChain.End(); ++j )
-               j->Transform( f );
+            for ( const HistogramTransformation& H : m_T.m_transformChain )
+               H.Transform( f );
             m_lut[i] = uint8( RoundInt( f*uint8_max ) );
          }
    }
@@ -332,9 +331,8 @@ public:
          {
             double f = double( i )/uint24_max;
             m_T.Transform( f );
-            for ( HistogramTransformation::transformation_list::const_iterator j = m_T.m_transformChain.Begin();
-                  j != m_T.m_transformChain.End(); ++j )
-               j->Transform( f );
+            for ( const HistogramTransformation& H : m_T.m_transformChain )
+               H.Transform( f );
             m_lut[i] = uint16( RoundInt( f*uint16_max ) );
          }
    }
@@ -521,4 +519,4 @@ void HistogramTransformation::Apply( pcl::UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/HistogramTransformation.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/HistogramTransformation.cpp - Released 2017-06-28T11:58:42Z

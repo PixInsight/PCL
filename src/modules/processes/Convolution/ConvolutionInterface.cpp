@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Convolution Process Module Version 01.01.03.0207
+// Standard Convolution Process Module Version 01.01.03.0226
 // ----------------------------------------------------------------------------
-// ConvolutionInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// ConvolutionInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -71,7 +71,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ConvolutionInterface* TheConvolutionInterface = 0;
+ConvolutionInterface* TheConvolutionInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -82,7 +82,7 @@ ConvolutionInterface* TheConvolutionInterface = 0;
 
 static bool CanAddFilter( const Filter& f )
 {
-   if ( TheFilterLibrary.FilterByName( f.Name() ) == 0 )
+   if ( TheFilterLibrary.FilterByName( f.Name() ) == nullptr )
       return true;
    if ( !TheFilterLibrary.IsWritable() )
       return true;
@@ -97,7 +97,7 @@ static bool CanAddFilter( const Filter& f )
 
 static bool CanRemoveFilter( const Filter& f )
 {
-   if ( TheFilterLibrary.FilterByName( f.Name() ) == 0 )
+   if ( TheFilterLibrary.FilterByName( f.Name() ) == nullptr )
       return true;
    if ( !TheFilterLibrary.IsWritable() )
       return true;
@@ -130,8 +130,7 @@ static bool CanSaveTheLibrary()
 // ----------------------------------------------------------------------------
 
 ConvolutionInterface::ConvolutionInterface() :
-ProcessInterface(),
-instance( TheConvolutionProcess ), m_realTimeThread( 0 ), GUI( 0 )
+   instance( TheConvolutionProcess )
 {
    TheConvolutionInterface = this;
 }
@@ -140,8 +139,8 @@ instance( TheConvolutionProcess ), m_realTimeThread( 0 ), GUI( 0 )
 
 ConvolutionInterface::~ConvolutionInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -191,7 +190,7 @@ void ConvolutionInterface::ResetInstance()
 
 void ConvolutionInterface::RealTimePreviewUpdated( bool active )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( active )
          RealTimePreview::SetOwner( *this ); // implicitly updates the R-T preview
       else
@@ -202,7 +201,7 @@ void ConvolutionInterface::RealTimePreviewUpdated( bool active )
 
 bool ConvolutionInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       static bool firstTimeLaunch = true;
       if ( firstTimeLaunch )
@@ -236,15 +235,10 @@ ProcessImplementation* ConvolutionInterface::NewProcess() const
 
 bool ConvolutionInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const ConvolutionInstance* r = dynamic_cast<const ConvolutionInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a Convolution instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const ConvolutionInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a Convolution instance.";
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -313,7 +307,7 @@ bool ConvolutionInterface::GenerateRealTimePreview( UInt16Image& image, const Vi
             m_realTimeThread->Wait();
 
             delete m_realTimeThread;
-            m_realTimeThread = 0;
+            m_realTimeThread = nullptr;
             return false;
          }
       }
@@ -323,7 +317,7 @@ bool ConvolutionInterface::GenerateRealTimePreview( UInt16Image& image, const Vi
          image.Assign( m_realTimeThread->m_image );
 
          delete m_realTimeThread;
-         m_realTimeThread = 0;
+         m_realTimeThread = nullptr;
          return true;
       }
    }
@@ -354,7 +348,7 @@ bool ConvolutionInterface::WantsImageNotifications() const
 
 void ConvolutionInterface::ImageUpdated( const View& v )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( instance.mode == ConMode::Image )
          if ( v.FullId() == IsoString( instance.viewId ) )
             UpdateImageFilterControls();
@@ -364,7 +358,7 @@ void ConvolutionInterface::ImageUpdated( const View& v )
 
 void ConvolutionInterface::ImageRenamed( const View& v )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( instance.mode == ConMode::Image )
          UpdateImageFilterControls();
 }
@@ -373,7 +367,7 @@ void ConvolutionInterface::ImageRenamed( const View& v )
 
 void ConvolutionInterface::ImageDeleted( const View& v )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( instance.mode == ConMode::Image )
          if ( v.FullId() == IsoString( instance.viewId ) )
             UpdateImageFilterControls();
@@ -397,8 +391,8 @@ void ConvolutionInterface::UpdateCurrentModeControls()
    switch ( instance.mode )
    {
    case ConMode::Parametric: UpdateParametricFilterControls(); break;
-   case ConMode::Library:  UpdateLibraryFilterControls(); break;
-   case ConMode::Image:    UpdateImageFilterControls(); break;
+   case ConMode::Library:    UpdateLibraryFilterControls(); break;
+   case ConMode::Image:      UpdateImageFilterControls(); break;
    }
 }
 
@@ -488,7 +482,7 @@ void ConvolutionInterface::UpdateRealTimePreview()
 {
    if ( IsRealTimePreviewActive() )
    {
-      if ( m_realTimeThread != 0 )
+      if ( m_realTimeThread != nullptr )
          m_realTimeThread->Abort();
       GUI->UpdateRealTimePreview_Timer.Start();
    }
@@ -710,9 +704,26 @@ void ConvolutionInterface::__Image_Click( Button& sender, bool checked )
    }
 }
 
+void ConvolutionInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->View_Edit || sender == GUI->FilterMode_TabBox )
+      wantsView = true;
+}
+
+void ConvolutionInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->View_Edit || sender == GUI->FilterMode_TabBox )
+   {
+      instance.mode = ConMode::Image;
+      instance.viewId = view.FullId();
+      UpdateControls();
+      UpdateRealTimePreview();
+   }
+}
+
 void ConvolutionInterface::__UpdateRealTimePreview_Timer( Timer& sender )
 {
-   if ( m_realTimeThread != 0 )
+   if ( m_realTimeThread != nullptr )
       if ( m_realTimeThread->IsActive() )
          return;
 
@@ -924,6 +935,8 @@ ConvolutionInterface::GUIData::GUIData( ConvolutionInterface& w )
 
    View_Edit.SetReadOnly();
    View_Edit.SetToolTip( "<p>Identifier of a view (main view or preview) to be used as a convolution filter.</p>" );
+   View_Edit.OnViewDrag( (Control::view_drag_event_handler)&ConvolutionInterface::__ViewDrag, w );
+   View_Edit.OnViewDrop( (Control::view_drop_event_handler)&ConvolutionInterface::__ViewDrop, w );
 
    View_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    View_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -948,6 +961,8 @@ ConvolutionInterface::GUIData::GUIData( ConvolutionInterface& w )
    FilterMode_TabBox.AddPage( Library_Control, "Library" );
    FilterMode_TabBox.AddPage( Image_Control, "Image" );
    FilterMode_TabBox.OnPageSelected( (TabBox::page_event_handler)&ConvolutionInterface::__Filter_PageSelected, w );
+   FilterMode_TabBox.OnViewDrag( (Control::view_drag_event_handler)&ConvolutionInterface::__ViewDrag, w );
+   FilterMode_TabBox.OnViewDrop( (Control::view_drop_event_handler)&ConvolutionInterface::__ViewDrop, w );
 
    FilterThumbnail_Control.SetScaledFixedSize( 160, 160 );
    FilterThumbnail_Control.SetToolTip( "<p>Thumbnail preview of the current convolution filter.</p>"
@@ -994,4 +1009,4 @@ ConvolutionInterface::GUIData::GUIData( ConvolutionInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ConvolutionInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ConvolutionInterface.cpp - Released 2017-05-02T09:43:00Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/CubicSplineInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// pcl/CubicSplineInterpolation.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,34 +54,28 @@
 
 /// \file pcl/CubicSplineInterpolation.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_UnidimensionalInterpolation_h
 #include <pcl/UnidimensionalInterpolation.h>
-#endif
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
+/*!
+ * \class CubicSplineInterpolationBase
+ * \brief Base class of interpolating cubic splines in one dimension
+ * \internal
+ */
 class CubicSplineInterpolationBase
 {
 protected:
 
-   CubicSplineInterpolationBase()
-   {
-   }
+   CubicSplineInterpolationBase() = default;
 
-   CubicSplineInterpolationBase( const CubicSplineInterpolationBase& )
-   {
-   }
+   CubicSplineInterpolationBase( const CubicSplineInterpolationBase& ) = default;
 
    virtual ~CubicSplineInterpolationBase()
    {
@@ -129,14 +123,15 @@ public:
    /*!
     * Constructs a %CubicSplineInterpolation instance.
     */
-   CubicSplineInterpolation() :
-      UnidimensionalInterpolation<T>(),
-      m_dy1( 0 ), m_dyn( 0 ), m_dy2(), m_current( 0 )
-   {
-   }
+   CubicSplineInterpolation() = default;
 
    /*!
-    * Destroys a %CubicSplineInterpolation object.
+    * Copy constructor.
+    */
+   CubicSplineInterpolation( const CubicSplineInterpolation& ) = default;
+
+   /*!
+    * Virtual destructor.
     */
    virtual ~CubicSplineInterpolation()
    {
@@ -176,15 +171,14 @@ public:
    /*!
     * Generation of an interpolating cubic spline.
     *
-    * \param x    %Vector of x-values:
+    * \param x    %Vector of x-values:\n
+    *             \n
+    *    \li If \a x is not empty: Must be a vector of monotonically
+    *    increasing, distinct values: x[0] < x[1] < ... < x[n-1].\n
+    *    \li If \a x is empty: This function will generate a natural cubic
+    *    spline with implicit x[i] = i for i = {0,1,...,n-1}.
     *
-    *       \li If \a x is not empty: Must be a vector of monotonically
-    *       increasing, distinct values: x[0] < x[1] < ... < x[n-1].
-    *
-    *       \li If \a x is empty: This function will generate a natural cubic
-    *       spline with implicit x[i] = i for i = {0,1,...,n-1}.
-    *
-    * \param y    %Vector of function values for i = {0,...,n-1}.
+    * \param y    %Vector of function values for i = {0,1,...,n-1}.
     *
     * When \a x is an empty vector, a <em>natural spline</em> is always
     * generated: boundary conditions are ignored and taken as zero at both ends
@@ -257,10 +251,10 @@ public:
 
 private:
 
-           T           m_dy1;     // 1st derivative of spline at the first data point
-           T           m_dyn;     // 1st derivative of spline at the last data point
-           vector_type m_dy2;     // second derivatives of the interpolating function at x[i]
-   mutable int32       m_current; // index of the current interpolation segment
+           T           m_dy1 = 0;     // 1st derivative of spline at the first data point
+           T           m_dyn = 0;     // 1st derivative of spline at the last data point
+           vector_type m_dy2;         // second derivatives of the interpolating function at x[i]
+   mutable int32       m_current = 0; // index of the current interpolation segment
 };
 
 // ----------------------------------------------------------------------------
@@ -270,4 +264,4 @@ private:
 #endif  // __PCL_CubicSplineInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/CubicSplineInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/CubicSplineInterpolation.h - Released 2017-06-28T11:58:36Z

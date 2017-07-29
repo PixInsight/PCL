@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0346
 // ----------------------------------------------------------------------------
-// CropInterface.h - Released 2016/11/17 18:14:58 UTC
+// CropInterface.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -108,14 +108,15 @@ private:
 
    CropInstance instance;
 
-   // Source dimensions in pixels
-   int sourceWidth, sourceHeight;
+   // Sample source dimensions in pixels.
+   int sourceWidth = 1000;
+   int sourceHeight = 1000;
 
    // Current anchor point:
    // 0 1 2
    // 3 4 5
    // 6 7 8
-   int anchor;
+   int anchor = 4; // center
 
    struct GUIData
    {
@@ -204,37 +205,26 @@ private:
       Bitmap L_Bitmap, R_Bitmap, T_Bitmap, B_Bitmap, TL_Bitmap, TR_Bitmap, BL_Bitmap, BR_Bitmap;
    };
 
-   GUIData* GUI;
-
-   bool dragging; // dragging the mouse cursor on the angle dial
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
    void UpdateAnchors();
    void UpdateNumericControls();
    void UpdateFillColorControls();
 
-   /*
-    * Event Handlers
-    */
-
    void __ViewList_ViewSelected( ViewList& sender, View& view );
-
    void __Margin_ValueUpdated( NumericEdit& sender, double value );
-
    void __Anchor_ButtonClick( Button& sender, bool checked );
-
    void __Width_ValueUpdated( NumericEdit& sender, double value );
    void __Height_ValueUpdated( NumericEdit& sender, double value );
-
    void __Resolution_ValueUpdated( NumericEdit& sender, double value );
    void __Units_ButtonClick( Button& sender, bool checked );
    void __ForceResolution_ButtonClick( Button& sender, bool checked );
-
    void __Mode_ItemSelected( ComboBox& sender, int itemIndex );
-
    void __FilColor_ValueUpdated( NumericEdit& sender, double value );
-
    void __ColorSample_Paint( Control& sender, const Rect& updateRect );
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
 
    friend struct GUIData;
 };
@@ -252,4 +242,4 @@ PCL_END_LOCAL
 #endif   // __CropInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF CropInterface.h - Released 2016/11/17 18:14:58 UTC
+// EOF CropInterface.h - Released 2017-05-02T09:43:00Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0346
 // ----------------------------------------------------------------------------
-// IntegerResampleParameters.h - Released 2016/11/17 18:14:58 UTC
+// IntegerResampleParameters.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -108,6 +108,8 @@ extern YResolution* TheIRYResolutionParameter;
 extern MetricResolution* TheIRMetricResolutionParameter;
 extern ForceResolution* TheIRForceResolutionParameter;
 
+extern NoGUIMessages* TheIRNoGUIMessagesParameter;
+
 // ----------------------------------------------------------------------------
 
 PCL_END_LOCAL
@@ -117,4 +119,4 @@ PCL_END_LOCAL
 #endif   // __IntegerResampleParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF IntegerResampleParameters.h - Released 2016/11/17 18:14:58 UTC
+// EOF IntegerResampleParameters.h - Released 2017-05-02T09:43:00Z

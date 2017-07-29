@@ -1,11 +1,6 @@
-/* jconfig.h.  Generated from jconfig.cfg by configure.  */
-/* jconfig.cfg --- source file edited by configure script */
-/* see jconfig.txt for explanations */
-
-/*
- * ### 20140110
- * Modified to make it compatible with UNIX/Linux and Windows platforms
- */
+// ----------------------------------------------------------------------------
+// Custom configuration file for PCL builds
+// ----------------------------------------------------------------------------
 
 #define HAVE_PROTOTYPES 1
 #define HAVE_UNSIGNED_CHAR 1

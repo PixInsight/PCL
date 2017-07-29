@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ICCProfile.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/ICCProfile.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -49,6 +49,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
+#include <pcl/AutoLock.h>
 #include <pcl/EndianConversions.h>
 #include <pcl/File.h>
 #include <pcl/GlobalSettings.h>
@@ -57,13 +58,15 @@
 #include <pcl/api/APIException.h>
 #include <pcl/api/APIInterface.h>
 
+#include <lcms/lcms2.h>
+
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
 /*
- * ICC profile header structure, 4.2.0 specification.
+ * ICC profile header structure, 4.3.0.0 specification.
  */
 struct ICCHeader
 {
@@ -101,164 +104,329 @@ struct ICCHeader
 
 // ----------------------------------------------------------------------------
 
-#define header reinterpret_cast<const ICCHeader*>( data.Begin() )
-
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-
 #define ICC_MAGIC_NUMBER   0x61637370 // 'acsp'
+#define ICC_FLAGS_BYTE_IDX 44
 
-static bool IsValidHeader( const ICCHeader* h )
+static bool CanBeProfile( const ICCHeader* h )
 {
    return h != nullptr &&
           h->Size() > sizeof( ICCHeader ) &&
           h->Signature() == ICC_MAGIC_NUMBER;
 }
 
-static bool IsValidHeader( const ByteArray& x )
+static bool CanBeProfile( const ByteArray& x )
 {
-   return IsValidHeader( reinterpret_cast<const ICCHeader*>( x.Begin() ) );
+   return CanBeProfile( reinterpret_cast<const ICCHeader*>( x.Begin() ) );
+}
+
+static bool CanBeProfile( const void* x )
+{
+   return CanBeProfile( reinterpret_cast<const ICCHeader*>( x ) );
 }
 
 // ----------------------------------------------------------------------------
 
-static void ThrowError( const String& message )
+/*
+ * Thread-safe LCMS error log.
+ */
+class LCMSErrorMessage
 {
-   size_type len;
-   (void)(*API->ColorManagement->GetLastErrorMessage)( 0, &len );
+public:
 
-   String apiMessage;
-   if ( len > 0 )
+   static void InstallHandlers();
+   static void Throw( const String& info );
+   static String Get();
+
+   static cmsContext CheckContext()
    {
-      apiMessage.SetLength( len );
-      if ( (*API->ColorManagement->GetLastErrorMessage)( apiMessage.Begin(), &len ) == api_false )
-         apiMessage.Clear();
-      else
-         apiMessage.ResizeToNullTerminated();
+      return s_checkContext;
    }
 
-   if ( apiMessage.IsEmpty() )
-      apiMessage = '.';
-   else
-      apiMessage.Prepend( ": " );
+   bool operator ==( const LCMSErrorMessage& x ) const
+   {
+      return thread == x.thread;
+   }
 
-   throw Error( message + apiMessage );
+   bool operator <( const LCMSErrorMessage& x ) const
+   {
+      return thread < x.thread;
+   }
+
+private:
+
+   typedef SortedArray<LCMSErrorMessage> message_list;
+
+   static Mutex        s_mutex;
+   static message_list s_messages;
+   static cmsContext   s_checkContext;
+
+   thread_handle thread;
+   String        message;
+
+   LCMSErrorMessage();
+   LCMSErrorMessage( uint32 errorCode, const char* errorText );
+
+   static void LogError( cmsContext, uint32 errorCode, const char* errorText );
+};
+
+Mutex                          LCMSErrorMessage::s_mutex;
+LCMSErrorMessage::message_list LCMSErrorMessage::s_messages;
+cmsContext                     LCMSErrorMessage::s_checkContext = nullptr;
+
+LCMSErrorMessage::LCMSErrorMessage() :
+   thread( (*API->Thread->GetCurrentThread)() )
+{
+}
+
+LCMSErrorMessage::LCMSErrorMessage( uint32 errorCode, const char* errorText ) :
+   thread( (*API->Thread->GetCurrentThread)() ),
+   message( String().Format( "LCMS Error (%u): ", errorCode ) + errorText )
+{
+}
+
+void LCMSErrorMessage::LogError( cmsContext, uint32 errorCode, const char* errorText )
+{
+   volatile AutoLock lock( s_mutex );
+   s_messages.Add( LCMSErrorMessage( errorCode, errorText ) );
+}
+
+void LCMSErrorMessage::InstallHandlers()
+{
+   static AtomicInt done;
+   if ( !done )
+   {
+      static Mutex mutex;
+      volatile AutoLock lock( mutex );
+      if ( done.Load() == 0 )
+      {
+         s_checkContext = ::cmsCreateContext( nullptr/*Plugin*/, nullptr/*UserData*/ );
+         ::cmsSetLogErrorHandler( LogError );
+         done.Store( 1 );
+      }
+   }
+}
+
+void LCMSErrorMessage::Throw( const String& info )
+{
+   String message = info;
+   String lcmsMessage = LCMSErrorMessage::Get();
+   if ( !lcmsMessage.IsEmpty() )
+      message << '\n' << lcmsMessage;
+   throw Error( message );
+}
+
+String LCMSErrorMessage::Get()
+{
+   volatile AutoLock lock( s_mutex );
+   String message;
+   message_list::const_iterator i = s_messages.Search( LCMSErrorMessage() );
+   if ( i != s_messages.End() )
+   {
+      message = i->message;
+      message_list::const_iterator j = i;
+      for ( ; ++j != s_messages.End() && *j == *i; )
+         message << '\n' << j->message;
+      s_messages.Remove( i, j );
+   }
+   return message;
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+#define thisHeader reinterpret_cast<const ICCHeader*>( m_data.Begin() )
+
+// ----------------------------------------------------------------------------
+
+void ICCProfile::ThrowErrorWithCMSInfo( const String& message )
+{
+   LCMSErrorMessage::InstallHandlers();
+   LCMSErrorMessage::Throw( message );
 }
 
 // ----------------------------------------------------------------------------
 
-bool ICCProfile::IsSameProfile( const ICCProfile& icc ) const
+bool ICCProfile::IsSameProfile( const ICCProfile& other ) const
 {
-#define iccHeader reinterpret_cast<const ICCHeader*>( icc.data.Begin() )
+#define otherHeader reinterpret_cast<const ICCHeader*>( other.m_data.Begin() )
 
-   if ( data.IsEmpty() )
-      return icc.data.IsEmpty();
-   if ( icc.data.IsEmpty() )
-      return data.IsEmpty();
-   size_type profileSize = header->Size();
-   if ( iccHeader->Size() != profileSize )
+   if ( m_data.IsEmpty() )
+      return other.m_data.IsEmpty();
+   if ( other.m_data.IsEmpty() )
       return false;
-   return ::memcmp( data.Begin(), icc.data.Begin(), profileSize ) == 0;
+   size_type size = thisHeader->Size();
+   if ( otherHeader->Size() != size )
+      return false;
+   return ::memcmp( m_data.Begin(), other.m_data.Begin(), size ) == 0;
 
-#undef iccHeader
+#undef otherHeader
 }
 
 // ----------------------------------------------------------------------------
 
 size_type ICCProfile::ProfileSize() const
 {
-   return data.IsEmpty() ? size_type( 0 ) : header->Size();
+   return m_data.IsEmpty() ? size_type( 0 ) : thisHeader->Size();
 }
 
 // ----------------------------------------------------------------------------
 
 String ICCProfile::Description( const char* language, const char* country ) const
 {
-   if ( data.IsEmpty() )
+   if ( m_data.IsEmpty() )
       return String();
+   handle h = Open();
+   String info = Description( h, language, country );
+   Close( h );
+   return info;
+}
 
-   icc_profile_handle h = (*API->ColorManagement->OpenProfile)( data.Begin() );
-   if ( h == 0 )
-      ThrowError( "Unable to retrieve ICC profile description" );
+// ----------------------------------------------------------------------------
 
-   String description = Description( h, language, country );
+String ICCProfile::Manufacturer( const char* language, const char* country ) const
+{
+   if ( m_data.IsEmpty() )
+      return String();
+   handle h = Open();
+   String info = Manufacturer( h, language, country );
+   Close( h );
+   return info;
+}
 
-   (*API->ColorManagement->CloseProfile)( h );
+// ----------------------------------------------------------------------------
 
-   return description;
+String ICCProfile::Model( const char* language, const char* country ) const
+{
+   if ( m_data.IsEmpty() )
+      return String();
+   handle h = Open();
+   String info = Model( h, language, country );
+   Close( h );
+   return info;
+}
+
+// ----------------------------------------------------------------------------
+
+String ICCProfile::Copyright( const char* language, const char* country ) const
+{
+   if ( m_data.IsEmpty() )
+      return String();
+   handle h = Open();
+   String info = Copyright( h, language, country );
+   Close( h );
+   return info;
+}
+
+// ----------------------------------------------------------------------------
+
+void ICCProfile::GetInformation( String& description, String& manufacturer, String& model, String& copyright,
+                                 const char* language, const char* country ) const
+{
+   if ( !m_data.IsEmpty() )
+   {
+      handle h = Open();
+      description = Description( h, language, country );
+      manufacturer = Manufacturer( h, language, country );
+      model = Model( h, language, country );
+      copyright = Copyright( h, language, country );
+      Close( h );
+   }
+   else
+   {
+      description.Clear();
+      manufacturer.Clear();
+      model.Clear();
+      copyright.Clear();
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+ICCProfile::profile_class ICCProfile::Class() const
+{
+   if ( m_data.IsEmpty() )
+      return ICCProfileClass::Unknown;
+   handle h = Open();
+   ICCProfile::profile_class pc = Class( h );
+   Close( h );
+   return pc;
 }
 
 // ----------------------------------------------------------------------------
 
 ICCProfile::color_space ICCProfile::ColorSpace() const
 {
-   if ( data.IsEmpty() )
+   if ( m_data.IsEmpty() )
       return ICCColorSpace::Unknown;
-
-   icc_profile_handle h = (*API->ColorManagement->OpenProfile)( data.Begin() );
-   if ( h == 0 )
-      ThrowError( "Unable to retrieve ICC profile color space" );
-
-   ICCProfile::color_space cs =
-         ICCProfile::color_space( (*API->ColorManagement->GetProfileColorSpace)( h ) );
-
-   (*API->ColorManagement->CloseProfile)( h );
-
+   handle h = Open();
+   ICCProfile::color_space cs = ColorSpace( h );
+   Close( h );
    return cs;
+}
+
+// ----------------------------------------------------------------------------
+
+bool ICCProfile::SupportsRenderingIntent( ICCProfile::rendering_intent intent, ICCProfile::rendering_direction direction ) const
+{
+   if ( m_data.IsEmpty() )
+      return false;
+   handle h = Open();
+   bool b = SupportsRenderingIntent( h, intent, direction );
+   Close( h );
+   return b;
 }
 
 // ----------------------------------------------------------------------------
 
 bool ICCProfile::IsEmbedded() const
 {
-   return !data.IsEmpty() && (data[44] & 1) != 0;
+   return !m_data.IsEmpty() && (m_data[ICC_FLAGS_BYTE_IDX] & 1) != 0;
 }
+
+// ----------------------------------------------------------------------------
 
 void ICCProfile::SetEmbeddedFlag( bool on )
 {
-   if ( !data.IsEmpty() )
+   if ( !m_data.IsEmpty() )
    {
-      data.EnsureUnique();
+      m_data.EnsureUnique();
       if ( on )
-         data[44] |= uint8( 1 );
+         m_data[ICC_FLAGS_BYTE_IDX] |= uint8( 1 );
       else
-         data[44] &= ~uint8( 1 );
+         m_data[ICC_FLAGS_BYTE_IDX] &= ~uint8( 1 );
    }
 }
 
 // ----------------------------------------------------------------------------
 
-void ICCProfile::Load( const String& profilePath )
+void ICCProfile::Load( const String& path )
 {
-   Clear();
-
-   File f;
-
    try
    {
-      path = profilePath.Trimmed();
-      if ( path.IsEmpty() )
+      Clear();
+
+      m_path = path.Trimmed();
+      if ( m_path.IsEmpty() )
          throw Error( "Empty profile file path." );
-      if ( !File::Exists( path ) )
-         throw Error( "The profile file does not exist: " + path );
+      if ( !File::Exists( m_path ) )
+         throw Error( "The profile file does not exist: " + m_path );
 
-      f.Open( path, FileMode::Read|FileMode::Open|FileMode::ShareRead );
+      File file = File::OpenFileForReading( m_path );
 
-      fsize_type size = f.Size();
+      fsize_type size = file.Size();
       if ( size_type( size ) < sizeof( ICCHeader ) )
-         throw Error( "Invalid or corrupted ICC profile: " + path );
+         throw Error( "Invalid or corrupted ICC profile: " + m_path );
 
-      data = ByteArray( size );
-      f.Read( data.Begin(), size );
+      m_data = ByteArray( size );
+      file.Read( m_data.Begin(), size );
 
-      if ( !IsValidHeader( data ) )
-         throw Error( "Invalid or corrupted ICC profile: " + path );
+      if ( !CanBeProfile( m_data ) )
+         throw Error( "Invalid or corrupted ICC profile: " + m_path );
 
-      f.Close();
+      file.Close();
    }
    catch ( ... )
    {
-      f.Close();
       Clear();
       throw;
    }
@@ -272,103 +440,268 @@ void ICCProfile::Set( const ByteArray& icc )
 
    if ( !icc.IsEmpty() )
    {
-      if ( !IsValidHeader( icc ) )
+      if ( !CanBeProfile( icc ) )
          throw Error( String().Format( "Invalid or corrupted ICC profile data at %p", icc.Begin() ) );
-      data = icc;
+      m_data = icc;
    }
 }
 
 // ----------------------------------------------------------------------------
 
-void ICCProfile::Set( const void* icc )
+void ICCProfile::Set( const void* data )
 {
-#define iccHeader reinterpret_cast<const ICCHeader*>( icc )
+#define header reinterpret_cast<const ICCHeader*>( data )
 
    Clear();
 
-   if ( !IsValidHeader( iccHeader ) )
-      throw Error( String().Format( "Invalid or corrupted ICC profile data at %p", icc ) );
-   const uint8* iccBegin = reinterpret_cast<const uint8*>( icc );
-   data = ByteArray( iccBegin, iccBegin + iccHeader->Size() );
+   if ( !CanBeProfile( header ) )
+      throw Error( String().Format( "Invalid or corrupted ICC profile data at %p", data ) );
+   const uint8* begin = reinterpret_cast<const uint8*>( data );
+   m_data = ByteArray( begin, begin + header->Size() );
 
-#undef iccHeader
+#undef header
 }
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-ICCProfile::handle ICCProfile::Open( const String& path )
+static SortedArray<ICCProfile::handle> s_handles;
+static Mutex                           s_mutex;
+
+static void ValidateHandle( ICCProfile::handle h )
 {
-   icc_profile_handle h = (*API->ColorManagement->OpenProfileFile)( path.c_str() );
-   if ( h == 0 )
-      ThrowError( "Cannot open ICC profile: " + path );
-   return h;
+   if ( !ICCProfile::IsValidHandle( h ) )
+      throw Error( String().Format( "Invalid ICC profile handle %p", h ) );
+}
+
+// ----------------------------------------------------------------------------
+
+ICCProfile::handle ICCProfile::Open( const String& filePath )
+{
+   String path = filePath.Trimmed();
+   if ( path.IsEmpty() )
+      throw Error( "ICCProfile::Open(): Empty file path." );
+   if ( !File::Exists( path ) )
+      throw Error( "ICCProfile::Open(): No such file: " + path );
+
+   IsoString path8 =
+#ifdef __PCL_WINDOWS
+      File::UnixPathToWindows( path ).ToMBS();
+#else
+      path.ToUTF8();
+#endif
+   LCMSErrorMessage::InstallHandlers();
+   handle h = ::cmsOpenProfileFromFile( path8.c_str(), "r" );
+   if ( h == nullptr )
+      LCMSErrorMessage::Throw( "Cannot open ICC profile: " + path );
+
+   {
+      volatile AutoLock lock( s_mutex );
+      s_handles.Add( h );
+      return h;
+   }
 }
 
 // ----------------------------------------------------------------------------
 
 ICCProfile::handle ICCProfile::Open( const void* data )
 {
-   icc_profile_handle h = (*API->ColorManagement->OpenProfile)( data );
-   if ( h == 0 )
-      ThrowError( "Cannot open ICC profile" );
-   return h;
+   if ( !CanBeProfile( data ) )
+      throw Error( "ICCProfile::Open(): Invalid ICC profile structure." );
+   LCMSErrorMessage::InstallHandlers();
+   handle h = ::cmsOpenProfileFromMem( data, uint32( reinterpret_cast<const ICCHeader*>( data )->Size() ) );
+   if ( h == nullptr )
+      LCMSErrorMessage::Throw( String().Format( "Cannot open ICC profile from data at %p", data ) );
+
+   {
+      volatile AutoLock lock( s_mutex );
+      s_handles.Add( h );
+      return h;
+   }
 }
 
 // ----------------------------------------------------------------------------
 
 void ICCProfile::Close( ICCProfile::handle h )
 {
-   if ( (*API->ColorManagement->CloseProfile)( h ) == api_false )
-      ThrowError( "Cannot close ICC profile" );
+   ValidateHandle( h );
+   LCMSErrorMessage::InstallHandlers();
+   ::cmsCloseProfile( cmsHPROFILE( h ) );
+   {
+      volatile AutoLock lock( s_mutex );
+      s_handles.Remove( h );
+   }
 }
 
 // ----------------------------------------------------------------------------
 
 bool ICCProfile::IsValidHandle( ICCProfile::handle h )
 {
-   return (*API->ColorManagement->IsValidProfileHandle)( h ) != api_false;
+   volatile AutoLock lock( s_mutex );
+   return s_handles.Contains( h );
 }
 
 // ----------------------------------------------------------------------------
 
-bool ICCProfile::IsValidFile( const String& path )
+bool ICCProfile::IsValidFile( const String& filePath )
 {
-   return (*API->ColorManagement->IsValidProfileFile)( path.c_str() ) != api_false;
+   String path = filePath.Trimmed();
+   if ( !path.IsEmpty() )
+      if ( File::Exists( path ) )
+      {
+         IsoString path8 =
+#ifdef __PCL_WINDOWS
+            File::UnixPathToWindows( path ).ToMBS();
+#else
+            path.ToUTF8();
+#endif
+
+         LCMSErrorMessage::InstallHandlers();
+         cmsHPROFILE h = ::cmsOpenProfileFromFileTHR( LCMSErrorMessage::CheckContext(), path8.c_str(), "r" );
+         if ( h != nullptr )
+         {
+            ::cmsCloseProfile( h );
+            return true;
+         }
+      }
+
+   return false;
 }
 
 // ----------------------------------------------------------------------------
 
 bool ICCProfile::IsValid( const void* data )
 {
-   return (*API->ColorManagement->IsValidProfile)( data ) != api_false;
+   if ( CanBeProfile( data ) )
+   {
+      LCMSErrorMessage::InstallHandlers();
+      cmsHPROFILE h = ::cmsOpenProfileFromMemTHR( LCMSErrorMessage::CheckContext(), data,
+                                                  uint32( reinterpret_cast<const ICCHeader*>( data )->Size() ) );
+      if ( h != nullptr )
+      {
+         ::cmsCloseProfile( h );
+         return true;
+      }
+   }
+
+   return false;
 }
 
 // ----------------------------------------------------------------------------
 
-String ICCProfile::Description( handle h, const char* language, const char* country )
+static String ProfileInfo( cmsInfoType info, ICCProfile::handle h, const char* language, const char* country )
 {
+   ValidateHandle( h );
+
    if ( language == nullptr || *language == '\0' )
       language = "en";
    if ( country == nullptr || *country == '\0' )
       country = "US";
 
-   size_type len;
-   (void)(*API->ColorManagement->GetProfileInformation)( h, ::ColorManagementContext::Description,
-                                                         language, country, 0, &len );
-   String description;
-   if ( len > 0 )
-   {
-      description.SetLength( len );
-      if ( (*API->ColorManagement->GetProfileInformation)( h, ::ColorManagementContext::Description,
-                                       language, country, description.Begin(), &len ) == api_false )
-         throw APIFunctionError( "GetProfileInformation" );
-      description.ResizeToNullTerminated();
-      description.Trim();
-   }
-   return description;
+   LCMSErrorMessage::InstallHandlers();
+   uint32 n = ::cmsGetProfileInfo( h, info, language, country, 0, 0 );
+   if ( n == 0 )
+      return String();
+   Array<wchar_t> ws( n+1 );
+   ws[n] = 0;
+   (void)::cmsGetProfileInfo( h, info, language, country, ws.Begin(), n );
+   return String( ws.Begin() ).Trimmed();
 }
 
+String ICCProfile::Description( ICCProfile::handle h, const char* language, const char* country )
+{
+   return ProfileInfo( cmsInfoDescription, h, language, country );
+}
+
+String ICCProfile::Manufacturer( ICCProfile::handle h, const char* language, const char* country )
+{
+   return ProfileInfo( cmsInfoManufacturer, h, language, country );
+}
+
+String ICCProfile::Model( ICCProfile::handle h, const char* language, const char* country )
+{
+   return ProfileInfo( cmsInfoModel, h, language, country );
+}
+
+String ICCProfile::Copyright( ICCProfile::handle h, const char* language, const char* country )
+{
+   return ProfileInfo( cmsInfoCopyright, h, language, country );
+}
+
+// ----------------------------------------------------------------------------
+
+ICCProfile::profile_class ICCProfile::Class( ICCProfile::handle h )
+{
+   ValidateHandle( h );
+
+   switch ( ::cmsGetDeviceClass( h ) )
+   {
+   case cmsSigInputClass:      return ICCProfileClass::InputDevice;
+   case cmsSigDisplayClass:    return ICCProfileClass::DisplayDevice;
+   case cmsSigOutputClass:     return ICCProfileClass::OutputDevice;
+   case cmsSigLinkClass:       return ICCProfileClass::DeviceLink;
+   case cmsSigAbstractClass:   return ICCProfileClass::AbstractProfile;
+   case cmsSigColorSpaceClass: return ICCProfileClass::ColorSpaceConversion;
+   case cmsSigNamedColorClass: return ICCProfileClass::NamedColorProfile;
+   default:                    return ICCProfileClass::Unknown;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+ICCProfile::color_space ICCProfile::ColorSpace( ICCProfile::handle h )
+{
+   ValidateHandle( h );
+
+   switch ( ::cmsGetColorSpace( h ) )
+   {
+   case cmsSigXYZData:   return ICCColorSpace::XYZ;
+   case cmsSigLabData:   return ICCColorSpace::Lab;
+   case cmsSigLuvData:   return ICCColorSpace::Luv;
+   case cmsSigYCbCrData: return ICCColorSpace::YCbCr;
+   case cmsSigYxyData:   return ICCColorSpace::Yxy;
+   case cmsSigRgbData:   return ICCColorSpace::RGB;
+   case cmsSigGrayData:  return ICCColorSpace::Gray;
+   case cmsSigHsvData:   return ICCColorSpace::HSV;
+   case cmsSigHlsData:   return ICCColorSpace::HLS;
+   case cmsSigCmykData:  return ICCColorSpace::CMYK;
+   case cmsSigCmyData:   return ICCColorSpace::CMY;
+   case cmsSigLuvKData:  return ICCColorSpace::LuvK;
+   default:              return ICCColorSpace::Unknown;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+bool ICCProfile::SupportsRenderingIntent( ICCProfile::handle h,
+                                          ICCProfile::rendering_intent intent,
+                                          ICCProfile::rendering_direction direction )
+{
+   ValidateHandle( h );
+
+   uint32 cmsIntent;
+   switch ( intent )
+   {
+   case ICCRenderingIntent::Perceptual:           cmsIntent = INTENT_PERCEPTUAL;
+   case ICCRenderingIntent::RelativeColorimetric: cmsIntent = INTENT_RELATIVE_COLORIMETRIC;
+   case ICCRenderingIntent::Saturation:           cmsIntent = INTENT_SATURATION;
+   case ICCRenderingIntent::AbsoluteColorimetric: cmsIntent = INTENT_ABSOLUTE_COLORIMETRIC;
+   default: return false; // ?!
+   }
+
+   uint32 cmsDirection;
+   switch ( direction )
+   {
+   case ICCRenderingDirection::Input:    cmsDirection = LCMS_USED_AS_INPUT;
+   case ICCRenderingDirection::Output:   cmsDirection = LCMS_USED_AS_OUTPUT;
+   case ICCRenderingDirection::Proofing: cmsDirection = LCMS_USED_AS_PROOF;
+   default: return false; // ?!
+   }
+
+   return ::cmsIsIntentSupported( h, cmsIntent, cmsDirection );
+}
+
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 StringList ICCProfile::ProfileDirectories()
@@ -404,44 +737,35 @@ static String FindProfileRecursively( const String& description, const String& d
       if ( !info.IsDirectory() && !info.attributes.IsFlagSet( FileAttribute::SymbolicLink ) )
       {
          /*
-          * ### Don't restrict the search to .icc or .icm files because on the
-          *     Mac (and maybe on other platforms too) profiles can have no
-          *     file extensions, or even arbitrary extensions.
+          * N.B.: Don't restrict the search to .icc or .icm files because on
+          * some platforms ICC profiles can have no file suffixes, or even
+          * nonstandard suffixes.
           */
          //String ext = File::ExtractExtension( info.name );
          //if ( !ext.CompareIC( ".icc" ) || !ext.CompareIC( ".icm" ) )
 
-         String filePath = File::FullPath( dirPath + "/" + info.name );
-
-         ICCProfile::handle h = 0;
-
          try
          {
-            if ( (h = ICCProfile::Open( filePath )) != 0 )
-            {
-               String desc = ICCProfile::Description( h );
-               ICCProfile::Close( h );
-               if ( exactMatch ? (desc == description) : desc.ContainsIC( description ) )
-                  return filePath;
-            }
+            String filePath = File::FullPath( dirPath + "/" + info.name );
+            ICCProfile::handle h = ICCProfile::Open( filePath );
+            String desc = ICCProfile::Description( h );
+            ICCProfile::Close( h );
+            if ( exactMatch ? (desc == description) : desc.ContainsIC( description ) )
+               return filePath;
          }
          catch ( ... )
          {
-            // Do not propagate exceptions here.
-            if ( h != 0 )
-               ICCProfile::Close( h );
          }
       }
 
    StringList directories;
-
    for ( File::Find f( dirPath + "/*" ); f.NextItem( info ); )
       if ( info.IsDirectory() && info.name != "." && info.name != ".." )
          directories.Add( info.name );
 
-   for ( StringList::const_iterator i = directories.Begin(); i != directories.End(); ++i )
+   for ( const String& dir : directories )
    {
-      String filePath = FindProfileRecursively( description, dirPath + '/' + *i, exactMatch );
+      String filePath = FindProfileRecursively( description, dirPath + '/' + dir, exactMatch );
       if ( !filePath.IsEmpty() )
          return filePath;
    }
@@ -451,10 +775,10 @@ static String FindProfileRecursively( const String& description, const String& d
 
 String ICCProfile::FindInstalledProfile( const String& description, bool exactMatch )
 {
-   StringList dirs = ProfileDirectories();
-   for ( StringList::const_iterator i = dirs.Begin(); i != dirs.End(); ++i )
+   StringList directories = ProfileDirectories();
+   for ( const String& dir : directories )
    {
-      String filePath = FindProfileRecursively( description, *i, exactMatch );
+      String filePath = FindProfileRecursively( description, dir, exactMatch );
       if ( !filePath.IsEmpty() )
          return filePath;
    }
@@ -472,41 +796,35 @@ static void FindProfilesRecursively( StringList& list, const String& dirPath )
       if ( !info.IsDirectory() && !info.attributes.IsFlagSet( FileAttribute::SymbolicLink ) )
       {
          /*
-          * ### Don't restrict the search to .icc or .icm files because on the
-          *     Mac (and maybe on other platforms too) profiles can have no
-          *     file extensions, or even arbitrary extensions.
+          * N.B.: Don't restrict the search to .icc or .icm files because on
+          * some platforms ICC profiles can have no file suffixes, or even
+          * nonstandard suffixes.
           */
          //String ext = File::ExtractExtension( info.name );
          //if ( !ext.CompareIC( ".icc" ) || !ext.CompareIC( ".icm" ) )
 
-         String filePath = File::FullPath( dirPath + "/" + info.name );
-
-         File f;
-
          try
          {
-            ICCHeader hdr;
-            f.Open( filePath, FileMode::Read|FileMode::Open|FileMode::ShareRead );
-            f.Read( &hdr, sizeof( ICCHeader ) );
+            String filePath = File::FullPath( dirPath + "/" + info.name );
+            ICCHeader header;
+            File f = File::OpenFileForReading( filePath );
+            f.Read( &header, sizeof( ICCHeader ) );
             f.Close();
-            if ( IsValidHeader( &hdr ) )
+            if ( CanBeProfile( &header ) )
                list.Add( filePath );
          }
          catch ( ... )
          {
-            // Do not propagate exceptions here.
-            f.Close();
          }
       }
 
    StringList directories;
-
    for ( File::Find f( dirPath + "/*" ); f.NextItem( info ); )
       if ( info.IsDirectory() && info.name != "." && info.name != ".." )
          directories.Add( info.name );
 
-   for ( StringList::const_iterator i = directories.Begin(); i != directories.End(); ++i )
-      FindProfilesRecursively( list, dirPath + '/' + *i );
+   for ( const String& dir : directories )
+      FindProfilesRecursively( list, dirPath + '/' + dir );
 }
 
 StringList ICCProfile::FindProfiles( const String& dirPath )
@@ -514,22 +832,19 @@ StringList ICCProfile::FindProfiles( const String& dirPath )
    StringList list;
 
 #ifdef __PCL_WINDOWS
-   String path = File::WindowsPathToUnix( dirPath );
+   String path = File::WindowsPathToUnix( dirPath.Trimmed() );
 #else
-   String path = dirPath;
+   String path = dirPath.Trimmed();
 #endif
-
-   path.Trim();
-
    if ( path.IsEmpty() )
    {
-      StringList dirs = ProfileDirectories();
-      for ( StringList::const_iterator i = dirs.Begin(); i != dirs.End(); ++i )
-         FindProfilesRecursively( list, *i );
+      StringList directories = ProfileDirectories();
+      for ( const String& dir : directories )
+         FindProfilesRecursively( list, dir );
    }
    else
    {
-      // Strip away last slash except for root directories
+      // Strip away a trailing slash, except for root directories.
       if ( path.Length() > 1 && path.EndsWith( '/' )
 #ifdef __PCL_WINDOWS
         && !(path.Length() == 3 && path[1] == ':')
@@ -571,36 +886,32 @@ void ICCProfile::ExtractProfileList( StringList& selectedDescriptionsList,
                                      ICCColorSpaces colorSpace,
                                      ICCProfileClasses profileClass )
 {
-   for ( StringList::const_iterator i = pathList.Begin(); i != pathList.End(); ++i )
+   for ( const String& path : pathList )
    {
-      icc_profile_handle h = (*API->ColorManagement->OpenProfileFile)( i->c_str() );
-      if ( h != 0 )
+      try
       {
-         if ( !profileClass ||
-               profileClass.IsFlagSet( ICCProfileClasses::enum_type(
-                                          (*API->ColorManagement->GetProfileDeviceClass)( h ) ) ) )
-         {
-            if ( !colorSpace ||
-                  colorSpace.IsFlagSet( ICCColorSpaces::enum_type(
-                                             (*API->ColorManagement->GetProfileColorSpace)( h ) ) ) )
+         handle h = Open( path );
+         if ( !profileClass || profileClass.IsFlagSet( Class( h ) ) )
+            if ( !colorSpace || colorSpace.IsFlagSet( ColorSpace( h ) ) )
             {
                try
                {
-                  String desc = Description( handle( h ) );
+                  String desc = Description( h );
                   if ( !desc.IsEmpty() )
                   {
                      selectedDescriptionsList.Add( desc );
-                     selectedPathsList.Add( *i );
+                     selectedPathsList.Add( path );
                   }
                }
                catch ( ... )
                {
-                  // Do not propagate exceptions here.
                }
             }
-         }
 
-         (void)(*API->ColorManagement->CloseProfile)( h );
+         Close( h );
+      }
+      catch ( ... )
+      {
       }
    }
 }
@@ -619,9 +930,8 @@ ICCProfile::profile_list ICCProfile::FindProfilesByColorSpace( ICCColorSpaces co
    for ( StringList::const_iterator i = descriptions.Begin(), j = paths.Begin(); i != descriptions.End(); ++i, ++j )
       rawList.Add( Info( *i, *j ) );
 
-   profile_list profiles;
-
    // Remove duplicates
+   profile_list profiles;
    for ( profile_list::const_iterator i = rawList.Begin(), j = i; i != rawList.End(); ++i )
       if ( j == i || *i != *j )
       {
@@ -637,4 +947,4 @@ ICCProfile::profile_list ICCProfile::FindProfilesByColorSpace( ICCColorSpaces co
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ICCProfile.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/ICCProfile.cpp - Released 2017-06-28T11:58:42Z

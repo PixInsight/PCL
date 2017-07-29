@@ -1,8 +1,7 @@
-
 //---------------------------------------------------------------------------------
 //
 //  Little Color Management System
-//  Copyright (c) 1998-2011 Marti Maria Saguer
+//  Copyright (c) 1998-2016 Marti Maria Saguer
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -217,7 +216,7 @@ cmsBool _MultiplyMatrix(cmsPipeline* Lut)
                      // Multiply both matrices to get the result
                      _cmsMAT3per(&res, (cmsMAT3*)m2->Double, (cmsMAT3*)m1->Double);
 
-                     // Get the next in chain afer the matrices
+                     // Get the next in chain after the matrices
                      chain = (*pt2)->Next;
 
                      // Remove both matrices
@@ -229,6 +228,7 @@ cmsBool _MultiplyMatrix(cmsPipeline* Lut)
 
                             // We can not get rid of full matrix                            
                             cmsStage* Multmat = cmsStageAllocMatrix(Lut->ContextID, 3, 3, (const cmsFloat64Number*) &res, NULL);
+                            if (Multmat == NULL) return FALSE;  // Should never happen
 
                             // Recover the chain
                             Multmat->Next = chain;
@@ -529,7 +529,7 @@ cmsBool  PatchLUT(cmsStage* CLUT, cmsUInt16Number At[], cmsUInt16Number Value[],
             return TRUE;
 }
 
-// Auxiliar, to see if two values are equal or very different
+// Auxiliary, to see if two values are equal or very different
 static
 cmsBool WhitesAreEqual(int n, cmsUInt16Number White1[], cmsUInt16Number White2[] )
 {
@@ -537,7 +537,7 @@ cmsBool WhitesAreEqual(int n, cmsUInt16Number White1[], cmsUInt16Number White2[]
 
     for (i=0; i < n; i++) {
 
-        if (abs(White1[i] - White2[i]) > 0xf000) return TRUE;  // Values are so extremly different that the fixup should be avoided
+        if (abs(White1[i] - White2[i]) > 0xf000) return TRUE;  // Values are so extremely different that the fixup should be avoided
         if (White1[i] != White2[i]) return FALSE;
     }
     return TRUE;
@@ -649,6 +649,11 @@ cmsBool OptimizeByResampling(cmsPipeline** Lut, cmsUInt32Number Intent, cmsUInt3
 
     ColorSpace       = _cmsICCcolorSpace(T_COLORSPACE(*InputFormat));
     OutputColorSpace = _cmsICCcolorSpace(T_COLORSPACE(*OutputFormat));
+
+    // Color space must be specified
+    if (ColorSpace == (cmsColorSpaceSignature)-1 ||
+        OutputColorSpace == (cmsColorSpaceSignature)-1) return FALSE;
+
     nGridPoints      = _cmsReasonableGridpointsByColorspace(ColorSpace, *dwFlags);
 
     // For empty LUTs, 2 points are enough
@@ -675,7 +680,7 @@ cmsBool OptimizeByResampling(cmsPipeline** Lut, cmsUInt32Number Intent, cmsUInt3
         cmsStage* PreLin = cmsPipelineGetPtrToFirstStage(Src);
 
         // Check if suitable
-        if (PreLin ->Type == cmsSigCurveSetElemType) {
+        if (PreLin && PreLin ->Type == cmsSigCurveSetElemType) {
 
             // Maybe this is a linear tram, so we can avoid the whole stuff
             if (!AllCurvesAreLinear(PreLin)) {
@@ -686,7 +691,7 @@ cmsBool OptimizeByResampling(cmsPipeline** Lut, cmsUInt32Number Intent, cmsUInt3
                     goto Error;
 
                 // Remove prelinearization. Since we have duplicated the curve
-                // in destination LUT, the sampling shoud be applied after this stage.
+                // in destination LUT, the sampling should be applied after this stage.
                 cmsPipelineUnlinkStage(Src, cmsAT_BEGIN, &KeepPreLin);
             }
         }
@@ -694,7 +699,7 @@ cmsBool OptimizeByResampling(cmsPipeline** Lut, cmsUInt32Number Intent, cmsUInt3
 
     // Allocate the CLUT
     CLUT = cmsStageAllocCLut16bit(Src ->ContextID, nGridPoints, Src ->InputChannels, Src->OutputChannels, NULL);
-    if (CLUT == NULL) return FALSE;
+    if (CLUT == NULL) goto Error;
 
     // Add the CLUT to the destination LUT
     if (!cmsPipelineInsertStage(Dest, cmsAT_END, CLUT)) {
@@ -708,7 +713,7 @@ cmsBool OptimizeByResampling(cmsPipeline** Lut, cmsUInt32Number Intent, cmsUInt3
         cmsStage* PostLin = cmsPipelineGetPtrToLastStage(Src);
 
         // Check if suitable
-        if (cmsStageType(PostLin) == cmsSigCurveSetElemType) {
+        if (PostLin && cmsStageType(PostLin) == cmsSigCurveSetElemType) {
 
             // Maybe this is a linear tram, so we can avoid the whole stuff
             if (!AllCurvesAreLinear(PostLin)) {
@@ -718,14 +723,14 @@ cmsBool OptimizeByResampling(cmsPipeline** Lut, cmsUInt32Number Intent, cmsUInt3
                 if (!cmsPipelineInsertStage(Dest, cmsAT_END, NewPostLin))
                     goto Error;
 
-                // In destination LUT, the sampling shoud be applied after this stage.
+                // In destination LUT, the sampling should be applied after this stage.
                 cmsPipelineUnlinkStage(Src, cmsAT_END, &KeepPostLin);
             }
         }
     }
 
     // Now its time to do the sampling. We have to ignore pre/post linearization
-    // The source LUT whithout pre/post curves is passed as parameter.
+    // The source LUT without pre/post curves is passed as parameter.
     if (!cmsStageSampleCLut16bit(CLUT, XFormSampler16, (void*) Src, 0)) {
 Error:
         // Ops, something went wrong, Restore stages
@@ -1010,8 +1015,8 @@ cmsBool IsDegenerated(const cmsToneCurve* g)
     }
 
     if (Zeros == 1 && Poles == 1) return FALSE;  // For linear tables
-    if (Zeros > (nEntries / 4)) return TRUE;  // Degenerated, mostly zeros
-    if (Poles > (nEntries / 4)) return TRUE;  // Degenerated, mostly poles
+    if (Zeros > (nEntries / 20)) return TRUE;  // Degenerated, many zeros
+    if (Poles > (nEntries / 20)) return TRUE;  // Degenerated, many poles
 
     return FALSE;
 }
@@ -1033,17 +1038,19 @@ cmsBool OptimizeByComputingLinearization(cmsPipeline** Lut, cmsUInt32Number Inte
     cmsColorSpaceSignature ColorSpace, OutputColorSpace;
     cmsStage* OptimizedPrelinMpe;
     cmsStage* mpe;
-    cmsToneCurve**   OptimizedPrelinCurves;
-    _cmsStageCLutData*     OptimizedPrelinCLUT;
+    cmsToneCurve** OptimizedPrelinCurves;
+    _cmsStageCLutData* OptimizedPrelinCLUT;
 
 
     // This is a loosy optimization! does not apply in floating-point cases
     if (_cmsFormatterIsFloat(*InputFormat) || _cmsFormatterIsFloat(*OutputFormat)) return FALSE;
 
-    // Only on RGB
+    // Only on chunky RGB
     if (T_COLORSPACE(*InputFormat)  != PT_RGB) return FALSE;
-    if (T_COLORSPACE(*OutputFormat) != PT_RGB) return FALSE;
+    if (T_PLANAR(*InputFormat)) return FALSE;
 
+    if (T_COLORSPACE(*OutputFormat) != PT_RGB) return FALSE;
+    if (T_PLANAR(*OutputFormat)) return FALSE;
 
     // On 16 bits, user has to specify the feature
     if (!_cmsFormatterIs8bit(*InputFormat)) {
@@ -1066,6 +1073,22 @@ cmsBool OptimizeByComputingLinearization(cmsPipeline** Lut, cmsUInt32Number Inte
     // Empty gamma containers
     memset(Trans, 0, sizeof(Trans));
     memset(TransReverse, 0, sizeof(TransReverse));
+
+    // If the last stage of the original lut are curves, and those curves are
+    // degenerated, it is likely the transform is squeezing and clipping
+    // the output from previous CLUT. We cannot optimize this case     
+    {
+        cmsStage* last = cmsPipelineGetPtrToLastStage(OriginalLut);
+
+        if (cmsStageType(last) == cmsSigCurveSetElemType) {
+
+            _cmsStageToneCurvesData* Data = (_cmsStageToneCurvesData*)cmsStageData(last);
+            for (i = 0; i < Data->nCurves; i++) {
+                if (IsDegenerated(Data->TheCurves[i]))
+                    goto Error;
+            }
+        }
+    }
 
     for (t = 0; t < OriginalLut ->InputChannels; t++) {
         Trans[t] = cmsBuildTabulatedToneCurve16(OriginalLut ->ContextID, PRELINEARIZATION_POINTS, NULL);
@@ -1400,7 +1423,10 @@ cmsBool OptimizeByJoiningCurves(cmsPipeline** Lut, cmsUInt32Number Intent, cmsUI
         GammaTables[i] = NULL;
     }
 
-    if (GammaTables != NULL) _cmsFree(Src ->ContextID, GammaTables);
+    if (GammaTables != NULL) {
+        _cmsFree(Src->ContextID, GammaTables);
+        GammaTables = NULL;
+    }
 
     // Maybe the curves are linear at the end
     if (!AllCurvesAreLinear(ObtainedCurves)) {
@@ -1433,6 +1459,7 @@ cmsBool OptimizeByJoiningCurves(cmsPipeline** Lut, cmsUInt32Number Intent, cmsUI
 
         // LUT optimizes to nothing. Set the identity LUT
         cmsStageFree(ObtainedCurves);
+        ObtainedCurves = NULL;
 
         if (!cmsPipelineInsertStage(Dest, cmsAT_BEGIN, cmsStageAllocIdentity(Dest ->ContextID, Src ->InputChannels)))
             goto Error;
@@ -1535,7 +1562,10 @@ void FillFirstShaper(cmsS1Fixed14Number* Table, cmsToneCurve* Curve)
         R   = (cmsFloat32Number) (i / 255.0);
         y   = cmsEvalToneCurveFloat(Curve, R);
 
-        Table[i] = DOUBLE_TO_1FIXED14(y);
+        if (y < 131072.0)
+            Table[i] = DOUBLE_TO_1FIXED14(y);
+        else
+            Table[i] = 0x7fffffff;
     }
 }
 
@@ -1550,6 +1580,12 @@ void FillSecondShaper(cmsUInt16Number* Table, cmsToneCurve* Curve, cmsBool Is8Bi
 
         R   = (cmsFloat32Number) (i / 16384.0);
         Val = cmsEvalToneCurveFloat(Curve, R);    // Val comes 0..1.0
+
+        if (Val < 0)
+            Val = 0;
+
+        if (Val > 1.0)
+            Val = 1.0;
 
         if (Is8BitsOutput) {
 
@@ -1589,7 +1625,7 @@ cmsBool SetMatShaper(cmsPipeline* Dest, cmsToneCurve* Curve1[3], cmsMAT3* Mat, c
     FillSecondShaper(p ->Shaper2G, Curve2[1], Is8Bits);
     FillSecondShaper(p ->Shaper2B, Curve2[2], Is8Bits);
 
-    // Convert matrix to nFixed14. Note that those values may take more than 16 bits as
+    // Convert matrix to nFixed14. Note that those values may take more than 16 bits 
     for (i=0; i < 3; i++) {
         for (j=0; j < 3; j++) {
             p ->Mat[i][j] = DOUBLE_TO_1FIXED14(Mat->v[i].n[j]);

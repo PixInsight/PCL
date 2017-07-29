@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/TabBox.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/TabBox.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,10 +59,6 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#ifdef _MSC_VER
-#  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
-#endif
-
 TabBox::TabBox( Control& parent ) :
    Control( (*API->TabBox->CreateTabBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) )
 {
@@ -104,7 +100,7 @@ Control& TabBox::CurrentPageControl() const
 Control& TabBox::PageControlByIndex( int idx ) const
 {
    Control* w = reinterpret_cast<Control*>( (*API->TabBox->GetTabBoxPageByIndex)( handle, idx ) );
-   return (w != 0) ? *w : Control::Null();
+   return (w != nullptr) ? *w : Control::Null();
 }
 
 // ----------------------------------------------------------------------------
@@ -218,7 +214,7 @@ void TabBox::SetPageToolTip( int idx, const String& toolTip )
 Control& TabBox::LeftControl() const
 {
    Control* w = reinterpret_cast<Control*>( (*API->TabBox->GetTabBoxLeftControl)( handle ) );
-   return (w != 0) ? *w : Control::Null();
+   return (w != nullptr) ? *w : Control::Null();
 }
 
 // ----------------------------------------------------------------------------
@@ -226,7 +222,7 @@ Control& TabBox::LeftControl() const
 Control& TabBox::RightControl() const
 {
    Control* w = reinterpret_cast<Control*>( (*API->TabBox->GetTabBoxRightControl)( handle ) );
-   return (w != 0) ? *w : Control::Null();
+   return (w != nullptr) ? *w : Control::Null();
 }
 
 // ----------------------------------------------------------------------------
@@ -269,7 +265,7 @@ void TabBox::OnPageSelected( page_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->TabBox->SetTabBoxPageSelectedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? TabBoxEventDispatcher::PageSelected : 0 ) == api_false )
+                  (f != nullptr) ? TabBoxEventDispatcher::PageSelected : nullptr ) == api_false )
       throw APIFunctionError( "SetTabBoxPageSelectedEventRoutine" );
    m_handlers->onPageSelected = f;
 }
@@ -281,4 +277,4 @@ void TabBox::OnPageSelected( page_event_handler f, Control& receiver )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/TabBox.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/TabBox.cpp - Released 2017-06-28T11:58:42Z

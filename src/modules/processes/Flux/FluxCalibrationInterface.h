@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Flux Process Module Version 01.00.01.0135
+// Standard Flux Process Module Version 01.00.01.0154
 // ----------------------------------------------------------------------------
-// FluxCalibrationInterface.h - Released 2016/03/14 10:07:00 UTC
+// FluxCalibrationInterface.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,8 +66,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// FluxCalibrationInterface
-// ----------------------------------------------------------------------------
 
 class FluxCalibrationInterface : public ProcessInterface
 {
@@ -94,15 +92,13 @@ public:
 
 private:
 
-   FluxCalibrationInstance instance;
+   FluxCalibrationInstance m_instance;
 
    struct GUIData;
 
    struct CalibrationParameter : public Control
    {
-      CalibrationParameter() : Control(), m_parameter( 0 )
-      {
-      }
+      CalibrationParameter() = default;
 
       void Build( FluxCalibrationInstance::CalibrationParameter& parameter,
                   const String& labelText, const String& toolTip, bool required = false )
@@ -110,7 +106,7 @@ private:
          m_parameter = &parameter;
 
          Value_NumericEdit.SetReal();
-         Value_NumericEdit.SetRange( 1.0e-05, 1.0e+10 );
+         Value_NumericEdit.SetRange( 0.0, 1.0e+10 );
          Value_NumericEdit.SetPrecision( 4 );
          Value_NumericEdit.label.SetMinWidth( m_valueLabelWidth );
          Value_NumericEdit.label.SetText( labelText );
@@ -123,7 +119,7 @@ private:
          Mode_ComboBox.AddItem( "Literal value" );
          Mode_ComboBox.AddItem( "Standard FITS keyword" );
          Mode_ComboBox.AddItem( "Custom FITS keyword" );
-         Mode_ComboBox.SetMaxVisibleItemCount(8);
+         Mode_ComboBox.SetMaxVisibleItemCount( 8 );
          Mode_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&FluxCalibrationInterface::CalibrationParameter::__ItemSelected, *this );
 
          Keyword_Edit.SetMinWidth( m_keywordEditWidth );
@@ -167,7 +163,7 @@ private:
 
    private:
 
-      FluxCalibrationInstance::CalibrationParameter* m_parameter;
+      FluxCalibrationInstance::CalibrationParameter* m_parameter = nullptr;
 
       HorizontalSizer   Parameter_Sizer;
          NumericEdit       Value_NumericEdit;
@@ -232,7 +228,7 @@ private:
          CalibrationParameter QuantumEfficiency_Parameter;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
 
@@ -252,4 +248,4 @@ PCL_END_LOCAL
 #endif   // __FluxCalibrationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF FluxCalibrationInterface.h - Released 2016/03/14 10:07:00 UTC
+// EOF FluxCalibrationInterface.h - Released 2017-05-02T09:43:00Z

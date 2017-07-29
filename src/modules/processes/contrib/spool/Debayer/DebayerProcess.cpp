@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.04.03.0213
+// Standard Debayer Process Module Version 01.06.00.0267
 // ----------------------------------------------------------------------------
-// DebayerProcess.cpp - Released 2016/02/21 20:22:43 UTC
+// DebayerProcess.cpp - Released 2017-07-06T19:14:49Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -69,7 +69,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-DebayerProcess* TheDebayerProcess = 0;
+DebayerProcess* TheDebayerProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -83,6 +83,24 @@ DebayerProcess::DebayerProcess() : MetaProcess()
    new DebayerEvaluateNoise( this );
    new DebayerNoiseEvaluationAlgorithm( this );
    new DebayerShowImages( this );
+   new DebayerCFASourceFilePath( this );
+   new DebayerTargetItems( this );
+   new DebayerTargetEnabled( TheDebayerTargetItemsParameter );
+   new DebayerTargetImage( TheDebayerTargetItemsParameter );
+   new DebayerNoGUIMessages( this );
+   new DebayerInputHints( this );
+   new DebayerOutputHints( this );
+   new DebayerOutputDirectory( this );
+   new DebayerOutputExtension( this );
+   new DebayerOutputPrefix( this );
+   new DebayerOutputPostfix( this );
+   new DebayerOverwriteExistingFiles( this );
+   new DebayerOnError( this );
+   new DebayerUseFileThreads( this );
+   new DebayerFileThreadOverload( this );
+   new DebayerMaxFileReadThreads( this );
+   new DebayerMaxFileWriteThreads( this );
+
    new DebayerOutputImage( this );
    new DebayerNoiseEstimateR( this );
    new DebayerNoiseEstimateG( this );
@@ -93,6 +111,18 @@ DebayerProcess::DebayerProcess() : MetaProcess()
    new DebayerNoiseAlgorithmR( this );
    new DebayerNoiseAlgorithmG( this );
    new DebayerNoiseAlgorithmB( this );
+
+   new DebayerOutputFileData( this );
+   new DebayerOutputFilePath( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseEstimateR( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseEstimateG( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseEstimateB( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseFractionR( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseFractionG( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseFractionB( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseAlgorithmR( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseAlgorithmG( TheDebayerOutputFileDataParameter );
+   new DebayerOutputFileNoiseAlgorithmB( TheDebayerOutputFileDataParameter );
 }
 
 // ----------------------------------------------------------------------------
@@ -113,7 +143,7 @@ IsoString DebayerProcess::Category() const
 
 uint32 DebayerProcess::Version() const
 {
-   return 0x100; // required
+   return 0x100;
 }
 
 // ----------------------------------------------------------------------------
@@ -122,7 +152,7 @@ String DebayerProcess::Description() const
 {
    return
    "<html>"
-   "<p>Debayers a raw One Shot Color (OSC) or Digital Single-Lens Reflex (DSLR) camera image.</p>"
+   "<p>Demosaics a raw One Shot Color (OSC) or Digital Single-Lens Reflex (DSLR) camera image.</p>"
    "</html>";
 }
 
@@ -150,7 +180,7 @@ ProcessImplementation* DebayerProcess::Create() const
 ProcessImplementation* DebayerProcess::Clone( const ProcessImplementation& p ) const
 {
    const DebayerInstance* instPtr = dynamic_cast<const DebayerInstance*>( &p );
-   return (instPtr != 0) ? new DebayerInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new DebayerInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -181,8 +211,7 @@ static void ShowHelp()
 
 int DebayerProcess::ProcessCommandLine( const StringList& argv ) const
 {
-   ArgumentList arguments =
-   ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
+   ArgumentList arguments = ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
 
    DebayerInstance instance( this );
 
@@ -255,4 +284,4 @@ int DebayerProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DebayerProcess.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF DebayerProcess.cpp - Released 2017-07-06T19:14:49Z

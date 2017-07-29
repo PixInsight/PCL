@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Rectangle.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Rectangle.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,25 +54,12 @@
 
 /// \file pcl/Rectangle.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Flags_h
 #include <pcl/Flags.h>
-#endif
-
-#ifndef __PCL_Math_h
 #include <pcl/Math.h>
-#endif
-
-#ifndef __PCL_Point_h
 #include <pcl/Point.h>
-#endif
-
-#ifndef __PCL_Relational_h
 #include <pcl/Relational.h>
-#endif
 
 #ifdef __PCL_QT_INTERFACE
 #  include <QtCore/QRect>
@@ -88,7 +75,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace Clip
+ * \namespace pcl::Clip
  * \brief     %Clip codes used by the Sutherland-Cohen line clipping algorithm.
  *
  * Sutherland-Cohen clip codes:
@@ -119,7 +106,7 @@ typedef Flags<Clip::mask_type>   ClipFlags;
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup rect_classification_2d 2-D Rectangle Classification Functions
+ * \defgroup rect_classification_2d Rectangle Classification Functions
  */
 
 /*!
@@ -1577,8 +1564,8 @@ public:
     */
    GenericRectangle<int> TruncatedToInt() const
    {
-      return GenericRectangle<int>( pcl::TruncI( double( x0 ) ), pcl::TruncI( double( y0 ) ),
-                                    pcl::TruncI( double( x1 ) ), pcl::TruncI( double( y1 ) ) );
+      return GenericRectangle<int>( pcl::TruncInt( double( x0 ) ), pcl::TruncInt( double( y0 ) ),
+                                    pcl::TruncInt( double( x1 ) ), pcl::TruncInt( double( y1 ) ) );
    }
 
    /*!
@@ -2042,12 +2029,12 @@ public:
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup rect_functions_2d 2-D Rectangle Operators and Functions
+ * \defgroup rect_functions_2d Rectangle Operators and Functions
  */
 
 /*!
- * Returns true iff two rectangles \a r1 and \a r2 are equal. Two rectangles are
- * equal if their homonym coordinates are equal.
+ * Returns true iff two rectangles \a r1 and \a r2 are equal. Two rectangles
+ * are equal if their homonym coordinates are equal.
  * \ingroup rect_functions_2d
  */
 template <typename T1, typename T2> inline
@@ -2057,8 +2044,8 @@ bool operator ==( const GenericRectangle<T1>& r1, const GenericRectangle<T2>& r2
 }
 
 /*!
- * Returns true iff a rectangle \a r1 is equal to a scalar \a d2. A rectangle is
- * equal to a scalar \a d if the four coordinates of \a r are equal to \a d.
+ * Returns true iff a rectangle \a r1 is equal to a scalar \a d2. A rectangle
+ * is equal to a scalar \a d if the four coordinates of \a r are equal to \a d.
  * \ingroup rect_functions_2d
  */
 template <typename T> inline
@@ -2615,7 +2602,7 @@ void Swap( GenericRectangle<T>& r1, GenericRectangle<T>& r2 )
 #ifndef __PCL_NO_RECT_INSTANTIATE
 
 /*!
- * \defgroup rect_types_2d 2-D Rectangle Types
+ * \defgroup rect_types_2d Rectangle Types
  */
 
 /*!
@@ -2684,4 +2671,4 @@ typedef F64Rect                     DRect;
 #endif  // __PCL_Rectangle_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Rectangle.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Rectangle.h - Released 2017-06-28T11:58:36Z

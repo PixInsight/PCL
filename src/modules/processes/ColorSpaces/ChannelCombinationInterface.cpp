@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0298
+// Standard ColorSpaces Process Module Version 01.01.00.0317
 // ----------------------------------------------------------------------------
-// ChannelCombinationInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// ChannelCombinationInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -65,7 +65,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ChannelCombinationInterface* TheChannelCombinationInterface = 0;
+ChannelCombinationInterface* TheChannelCombinationInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -73,20 +73,16 @@ ChannelCombinationInterface* TheChannelCombinationInterface = 0;
 
 // ----------------------------------------------------------------------------
 
-#define currentView  GUI->TargetImage_ViewList.CurrentView()
-
-// ----------------------------------------------------------------------------
-
 ChannelCombinationInterface::ChannelCombinationInterface() :
-ProcessInterface(), instance( TheChannelCombinationProcess ), GUI( 0 )
+   instance( TheChannelCombinationProcess )
 {
    TheChannelCombinationInterface = this;
 }
 
 ChannelCombinationInterface::~ChannelCombinationInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString ChannelCombinationInterface::Id() const
@@ -109,17 +105,6 @@ InterfaceFeatures ChannelCombinationInterface::Features() const
    return InterfaceFeature::Default | InterfaceFeature::ApplyGlobalButton;
 }
 
-void ChannelCombinationInterface::Initialize()
-{
-   // ### Deferred initialization
-   /*
-   GUI = new GUIData( *this );
-   GUI->TargetImage_ViewList.Regenerate( true, false ); // exclude previews
-   SetWindowTitle( "ChannelCombination" );
-   UpdateControls();
-   */
-}
-
 void ChannelCombinationInterface::ApplyInstance() const
 {
    instance.LaunchOnCurrentView();
@@ -133,11 +118,9 @@ void ChannelCombinationInterface::ResetInstance()
 
 bool ChannelCombinationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
-      GUI->TargetImage_ViewList.Regenerate( true, false ); // exclude previews
       SetWindowTitle( "ChannelCombination" );
       UpdateControls();
    }
@@ -153,16 +136,10 @@ ProcessImplementation* ChannelCombinationInterface::NewProcess() const
 
 bool ChannelCombinationInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const ChannelCombinationInstance* r = dynamic_cast<const ChannelCombinationInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not a ChannelCombination instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const ChannelCombinationInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a ChannelCombination instance.";
+   return false;
 }
 
 bool ChannelCombinationInterface::RequiresInstanceValidation() const
@@ -173,12 +150,10 @@ bool ChannelCombinationInterface::RequiresInstanceValidation() const
 bool ChannelCombinationInterface::ImportProcess( const ProcessImplementation& p )
 {
    instance.Assign( p );
-   GUI->TargetImage_ViewList.SelectView( View::Null() );
    UpdateControls();
    return true;
 }
 
-// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void ChannelCombinationInterface::UpdateControls()
@@ -192,7 +167,8 @@ void ChannelCombinationInterface::UpdateControls()
 
    //
 
-   GUI->C0_CheckBox.SetText( ColorSpaceId::ChannelId( instance.ColorSpace(), 0 ) );
+   GUI->C0_Label.SetText( ColorSpaceId::ChannelId( instance.ColorSpace(), 0 ) );
+
    GUI->C0_CheckBox.SetChecked( instance.IsChannelEnabled( 0 ) );
 
    GUI->C0_Edit.SetText( instance.ChannelId( 0 ).IsEmpty() ? AUTO_ID : instance.ChannelId( 0 ) );
@@ -202,7 +178,8 @@ void ChannelCombinationInterface::UpdateControls()
 
    //
 
-   GUI->C1_CheckBox.SetText( ColorSpaceId::ChannelId( instance.ColorSpace(), 1 ) );
+   GUI->C1_Label.SetText( ColorSpaceId::ChannelId( instance.ColorSpace(), 1 ) );
+
    GUI->C1_CheckBox.SetChecked( instance.IsChannelEnabled( 1 ) );
 
    GUI->C1_Edit.SetText( instance.ChannelId( 1 ).IsEmpty() ? AUTO_ID : instance.ChannelId( 1 ) );
@@ -212,7 +189,8 @@ void ChannelCombinationInterface::UpdateControls()
 
    //
 
-   GUI->C2_CheckBox.SetText( ColorSpaceId::ChannelId( instance.ColorSpace(), 2 ) );
+   GUI->C2_Label.SetText( ColorSpaceId::ChannelId( instance.ColorSpace(), 2 ) );
+
    GUI->C2_CheckBox.SetChecked( instance.IsChannelEnabled( 2 ) );
 
    GUI->C2_Edit.SetText( instance.ChannelId( 2 ).IsEmpty() ? AUTO_ID : instance.ChannelId( 2 ) );
@@ -222,149 +200,150 @@ void ChannelCombinationInterface::UpdateControls()
 }
 
 // ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
 
 void ChannelCombinationInterface::__ColorSpace_Click( Button& sender, bool checked )
 {
    if ( sender == GUI->RGB_RadioButton )
-      instance.colorSpace = ColorSpaceId::RGB;
+      instance.p_colorSpace = ColorSpaceId::RGB;
    else if ( sender == GUI->HSV_RadioButton )
-      instance.colorSpace = ColorSpaceId::HSV;
+      instance.p_colorSpace = ColorSpaceId::HSV;
    else if ( sender == GUI->HSI_RadioButton )
-      instance.colorSpace = ColorSpaceId::HSI;
+      instance.p_colorSpace = ColorSpaceId::HSI;
    else if ( sender == GUI->CIEXYZ_RadioButton )
-      instance.colorSpace = ColorSpaceId::CIEXYZ;
+      instance.p_colorSpace = ColorSpaceId::CIEXYZ;
    else if ( sender == GUI->CIELab_RadioButton )
-      instance.colorSpace = ColorSpaceId::CIELab;
+      instance.p_colorSpace = ColorSpaceId::CIELab;
    else if ( sender == GUI->CIELch_RadioButton )
-      instance.colorSpace = ColorSpaceId::CIELch;
+      instance.p_colorSpace = ColorSpaceId::CIELch;
 
-   instance.channelEnabled[0] = instance.channelEnabled[1] = instance.channelEnabled[2] = true;
+   instance.p_channelEnabled[0] = instance.p_channelEnabled[1] = instance.p_channelEnabled[2] = true;
 
    UpdateControls();
 }
 
 void ChannelCombinationInterface::__Channel_Click( Button& sender, bool checked )
 {
-   int i = -1;
+   int i;
    if ( sender == GUI->C0_CheckBox )
       i = 0;
    else if ( sender == GUI->C1_CheckBox )
       i = 1;
    else if ( sender == GUI->C2_CheckBox )
       i = 2;
+   else
+      return;
 
-   if ( i >= 0 )
+   int n = 0;
+   for ( int j = 0; j < 3; ++j )
    {
-      int n = 0;
-      for ( int j = 0; j < 3; ++j )
-      {
-         if ( j == i )
-            instance.channelEnabled[i] = checked;
-         if ( instance.channelEnabled[j] )
-            ++n;
-      }
-
-      if ( n == 0 )
-         for ( int j = 0; j < 3; ++j )
-            instance.channelEnabled[j] = true;
-
-      UpdateControls();
+      if ( j == i )
+         instance.p_channelEnabled[i] = checked;
+      if ( instance.p_channelEnabled[j] )
+         ++n;
    }
+
+   if ( n == 0 )
+      for ( int j = 0; j < 3; ++j )
+         instance.p_channelEnabled[j] = true;
+
+   UpdateControls();
 }
 
 void ChannelCombinationInterface::__ChannelId_GetFocus( Control& sender )
 {
    Edit* e = dynamic_cast<Edit*>( &sender );
-   if ( e != 0 && e->Text() == AUTO_ID )
-      e->Clear();
+   if ( e != nullptr )
+      if ( e->Text() == AUTO_ID )
+         e->Clear();
 }
 
 void ChannelCombinationInterface::__ChannelId_EditCompleted( Edit& sender )
 {
-   int i = -1;
+   int i;
    if ( sender == GUI->C0_Edit )
       i = 0;
    else if ( sender == GUI->C1_Edit )
       i = 1;
    else if ( sender == GUI->C2_Edit )
       i = 2;
+   else
+      return;
 
-   if ( i >= 0 )
+   try
    {
-      try
-      {
-         pcl::String id = sender.Text();
-         id.Trim();
+      pcl::String id = sender.Text().Trimmed();
+      if ( !id.IsEmpty() )
+         if ( id != AUTO_ID )
+            if ( !id.IsValidIdentifier() )
+               throw Error( "Invalid identifier: " + id );
 
-         if ( !id.IsEmpty() && id != AUTO_ID && !id.IsValidIdentifier() )
-            throw Error( "Invalid identifier: " + id );
-
-         instance.channelId[i] = (id != AUTO_ID) ? id : String();
-         sender.SetText( instance.channelId[i].IsEmpty() ? AUTO_ID : instance.channelId[i] );
-         return;
-      }
-
-      ERROR_CLEANUP(
-         sender.SetText( instance.channelId[i] );
-         sender.SelectAll();
-         sender.Focus()
-      )
+      instance.p_channelId[i] = (id != AUTO_ID) ? id : String();
+      sender.SetText( instance.p_channelId[i].IsEmpty() ? AUTO_ID : instance.p_channelId[i] );
+      return;
    }
+   ERROR_CLEANUP(
+      sender.SetText( instance.p_channelId[i] );
+      sender.SelectAll();
+      sender.Focus()
+   )
 }
 
 void ChannelCombinationInterface::__Channel_SelectSource_Click( Button& sender, bool /*checked*/ )
 {
-   int i = -1;
+   int i;
    if ( sender == GUI->C0_ToolButton )
       i = 0;
    else if ( sender == GUI->C1_ToolButton )
       i = 1;
    else if ( sender == GUI->C2_ToolButton )
       i = 2;
+   else
+      return;
 
-   if ( i >= 0 )
+   String suffix = String( '_' ) + ColorSpaceId::ChannelId( instance.p_colorSpace, i );
+   String description = ColorSpaceId::SpaceId( instance.p_colorSpace ) + String().Format( " Channel #%d", i );
+
+   ChannelSourceSelectionDialog dlg( suffix, description );
+   if ( dlg.Execute() == StdDialogCode::Ok )
    {
-      String suffix = String( '_' ) + ColorSpaceId::ChannelId( instance.colorSpace, i );
-      String description = ColorSpaceId::SpaceId( instance.colorSpace ) + String().Format( " Channel #%d", i );
+      instance.p_channelId[i] = dlg.SourceId();
+      UpdateControls();
+   }
+}
 
-      ChannelSourceSelectionDialog dlg( currentView, suffix, description );
+void ChannelCombinationInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->C0_Edit || sender == GUI->C1_Edit || sender == GUI->C2_Edit )
+      wantsView = view.IsMainView() && !view.IsColor();
+}
 
-      if ( dlg.Execute() == StdDialogCode::Ok )
+void ChannelCombinationInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( view.IsMainView() )
+      if ( !view.IsColor() )
       {
-         instance.channelId[i] = dlg.SourceId();
+         int i;
+         if ( sender == GUI->C0_Edit )
+            i = 0;
+         else if ( sender == GUI->C1_Edit )
+            i = 1;
+         else if ( sender == GUI->C2_Edit )
+            i = 2;
+         else
+            return;
+
+         instance.p_channelId[i] = view.Id();
          UpdateControls();
       }
-   }
 }
 
-void ChannelCombinationInterface::__TargetImage_ViewSelected( ViewList& /*sender*/, View& view )
-{
-   for ( int i = 0; i < 3; ++i )
-      instance.channelId[i].Clear();
-
-   if ( !view.IsNull() )
-   {
-      IsoString baseId = view.Id();
-      for ( int i = 0; i < 3; ++i )
-      {
-         String suffix = String( '_' ) + ColorSpaceId::ChannelId( instance.colorSpace, i );
-         if ( !View::ViewById( baseId + suffix ).IsNull() )
-            instance.channelId[i] = baseId + suffix;
-      }
-   }
-
-   UpdateControls();
-}
-
-// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 ChannelCombinationInterface::GUIData::GUIData( ChannelCombinationInterface& w )
 {
    pcl::Font fnt = w.Font();
    int chEditWidth = fnt.Width( String( 'M', 35 ) );
-   int tgtLabelWidth = fnt.Width( "Target:" ) + 4;
+   int chLabelWidth = fnt.Width( "Sv" ) + 4;
 
    //
 
@@ -409,12 +388,16 @@ ChannelCombinationInterface::GUIData::GUIData( ChannelCombinationInterface& w )
 
    //
 
-   C0_CheckBox.SetFixedWidth( tgtLabelWidth );
    C0_CheckBox.OnClick( (pcl::Button::click_event_handler)&ChannelCombinationInterface::__Channel_Click, w );
+
+   C0_Label.SetFixedWidth( chLabelWidth );
+   C0_Label.SetTextAlignment( TextAlign::Center|TextAlign::VertCenter );
 
    C0_Edit.SetMinWidth( chEditWidth );
    C0_Edit.OnGetFocus( (Control::event_handler)&ChannelCombinationInterface::__ChannelId_GetFocus, w );
    C0_Edit.OnEditCompleted( (Edit::edit_event_handler)&ChannelCombinationInterface::__ChannelId_EditCompleted, w );
+   C0_Edit.OnViewDrag( (Control::view_drag_event_handler)&ChannelCombinationInterface::__ViewDrag, w );
+   C0_Edit.OnViewDrop( (Control::view_drop_event_handler)&ChannelCombinationInterface::__ViewDrop, w );
 
    C0_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    C0_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -422,18 +405,24 @@ ChannelCombinationInterface::GUIData::GUIData( ChannelCombinationInterface& w )
    C0_ToolButton.OnClick( (ToolButton::click_event_handler)&ChannelCombinationInterface::__Channel_SelectSource_Click, w );
 
    C0_Sizer.Add( C0_CheckBox );
+   C0_Sizer.Add( C0_Label );
+   C0_Sizer.AddSpacing( 4 );
    C0_Sizer.Add( C0_Edit, 100 );
    C0_Sizer.AddSpacing( 4 );
    C0_Sizer.Add( C0_ToolButton );
 
    //
 
-   C1_CheckBox.SetFixedWidth( tgtLabelWidth );
    C1_CheckBox.OnClick( (pcl::Button::click_event_handler)&ChannelCombinationInterface::__Channel_Click, w );
+
+   C1_Label.SetFixedWidth( chLabelWidth );
+   C1_Label.SetTextAlignment( TextAlign::Center|TextAlign::VertCenter );
 
    C1_Edit.SetMinWidth( chEditWidth );
    C1_Edit.OnGetFocus( (Control::event_handler)&ChannelCombinationInterface::__ChannelId_GetFocus, w );
    C1_Edit.OnEditCompleted( (Edit::edit_event_handler)&ChannelCombinationInterface::__ChannelId_EditCompleted, w );
+   C1_Edit.OnViewDrag( (Control::view_drag_event_handler)&ChannelCombinationInterface::__ViewDrag, w );
+   C1_Edit.OnViewDrop( (Control::view_drop_event_handler)&ChannelCombinationInterface::__ViewDrop, w );
 
    C1_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    C1_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -441,18 +430,24 @@ ChannelCombinationInterface::GUIData::GUIData( ChannelCombinationInterface& w )
    C1_ToolButton.OnClick( (ToolButton::click_event_handler)&ChannelCombinationInterface::__Channel_SelectSource_Click, w );
 
    C1_Sizer.Add( C1_CheckBox );
+   C1_Sizer.Add( C1_Label );
+   C1_Sizer.AddSpacing( 4 );
    C1_Sizer.Add( C1_Edit, 100 );
    C1_Sizer.AddSpacing( 4 );
    C1_Sizer.Add( C1_ToolButton );
 
    //
 
-   C2_CheckBox.SetFixedWidth( tgtLabelWidth );
    C2_CheckBox.OnClick( (pcl::Button::click_event_handler)&ChannelCombinationInterface::__Channel_Click, w );
+
+   C2_Label.SetFixedWidth( chLabelWidth );
+   C2_Label.SetTextAlignment( TextAlign::Center|TextAlign::VertCenter );
 
    C2_Edit.SetMinWidth( chEditWidth );
    C2_Edit.OnGetFocus( (Control::event_handler)&ChannelCombinationInterface::__ChannelId_GetFocus, w );
    C2_Edit.OnEditCompleted( (Edit::edit_event_handler)&ChannelCombinationInterface::__ChannelId_EditCompleted, w );
+   C2_Edit.OnViewDrag( (Control::view_drag_event_handler)&ChannelCombinationInterface::__ViewDrag, w );
+   C2_Edit.OnViewDrop( (Control::view_drop_event_handler)&ChannelCombinationInterface::__ViewDrop, w );
 
    C2_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    C2_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -460,24 +455,11 @@ ChannelCombinationInterface::GUIData::GUIData( ChannelCombinationInterface& w )
    C2_ToolButton.OnClick( (ToolButton::click_event_handler)&ChannelCombinationInterface::__Channel_SelectSource_Click, w );
 
    C2_Sizer.Add( C2_CheckBox );
+   C2_Sizer.Add( C2_Label );
+   C2_Sizer.AddSpacing( 4 );
    C2_Sizer.Add( C2_Edit, 100 );
    C2_Sizer.AddSpacing( 4 );
    C2_Sizer.Add( C2_ToolButton );
-
-   //
-
-   TargetImage_Label.SetText( "Target:" );
-   TargetImage_Label.SetFixedWidth( tgtLabelWidth );
-   TargetImage_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
-   TargetImage_Label.SetToolTip( "<p>Peek an existing view to automatically select source channel images with "
-                                 "suffixes corresponding to the current color space (for example, _R, _G and _B "
-                                 "suffixes for the RGB color space).</p>" );
-
-   TargetImage_ViewList.OnViewSelected( (ViewList::view_event_handler)&ChannelCombinationInterface::__TargetImage_ViewSelected, w );
-
-   //TargetImage_Sizer.SetSpacing( 4 );
-   TargetImage_Sizer.Add( TargetImage_Label );
-   TargetImage_Sizer.Add( TargetImage_ViewList, 100 );
 
    //
 
@@ -486,7 +468,7 @@ ChannelCombinationInterface::GUIData::GUIData( ChannelCombinationInterface& w )
    Channels_Sizer.Add( C0_Sizer );
    Channels_Sizer.Add( C1_Sizer );
    Channels_Sizer.Add( C2_Sizer );
-   Channels_Sizer.Add( TargetImage_Sizer );
+   Channels_Sizer.AddStretch();
 
    Channels_GroupBox.SetTitle( "Channels / Source Images" );
    Channels_GroupBox.SetSizer( Channels_Sizer );
@@ -497,14 +479,6 @@ ChannelCombinationInterface::GUIData::GUIData( ChannelCombinationInterface& w )
    C0_CheckBox.SetFixedWidth();
    C1_CheckBox.SetFixedWidth();
    C2_CheckBox.SetFixedWidth();
-
-   TargetImage_Label.SetFixedWidth( C0_CheckBox.Width() );
-
-   //
-
-   int minH = Min( ColorSpace_GroupBox.Height(), Channels_GroupBox.Height() );
-   ColorSpace_GroupBox.SetMinHeight( minH );
-   Channels_GroupBox.SetMinHeight( minH );
 
    //
 
@@ -523,4 +497,4 @@ ChannelCombinationInterface::GUIData::GUIData( ChannelCombinationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ChannelCombinationInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ChannelCombinationInterface.cpp - Released 2017-05-02T09:43:00Z

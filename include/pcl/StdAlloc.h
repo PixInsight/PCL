@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/StdAlloc.h - Released 2016/02/21 20:22:12 UTC
+// pcl/StdAlloc.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,13 +54,8 @@
 
 /// \file pcl/StdAlloc.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
 #include <new>
 
@@ -78,7 +73,7 @@ namespace pcl
  * default for all container classes in PCL. It defines default block sizing
  * and growing strategies that work efficiently in most cases.
  *
- * For a complete descrption of block allocators and their fundamental role in
+ * For a complete description of block allocators and their fundamental role in
  * PCL, read the documentation for the Allocator class.
  *
  * \sa Allocator
@@ -89,8 +84,18 @@ public:
 
    /*!
     * Constructs a %StandardAllocator object.
+    *
+    * \param fastGrowth    Whether to enable the fast block size growing policy
+    *                      for this allocator.
+    *
+    * \param canShrink     Whether to enable the block shrinking policy for
+    *                      this allocator.
+    *
+    * See the IsFastGrowthEnabled() and IsShrinkingEnabled() member functions
+    * for more information on allocation policies.
     */
-   StandardAllocator() : m_fastGrowth( true )
+   StandardAllocator( bool fastGrowth = true, bool canShrink = true ) :
+      m_fastGrowth( fastGrowth ), m_canShrink( canShrink )
    {
    }
 
@@ -127,28 +132,32 @@ public:
     */
    size_type BlockSize( size_type n ) const
    {
-      // Check for null allocation
+      // Check for null allocation attempts.
       if ( n == 0 )
          return 0;
 
-      // Add 24 bytes for a typical block allocation header
-      n += 24;
+      // Take into account a reasonable upper limit for the size in bytes of an
+      // allocation block header.
+      const size_type blockHeaderSize = 4*sizeof( void* );
+      n += blockHeaderSize;
 
-      // Grow linearly by 8-byte chunks for n < 64 bytes
+      // Grow linearly by 8-byte chunks for n < 64 bytes.
       if ( n < 64 )
-         return ((n >> 3) << 3) + 8-24;
+         return ((n >> 3) << 3) + 8 - blockHeaderSize;
 
-      // Grow exponentially if fast growing is enabled or n < 64K
-      if ( n < 65536 || IsFastGrowthEnabled() )
+      // Grow exponentially by doubling container capacity if fast growing is
+      // enabled or n < 64 KiB.
+      if ( IsFastGrowthEnabled() || n < 65536 )
       {
          size_type nn = 64;
          while ( nn < n )
             nn <<= 1;
-         return nn - 24;
+         return nn - blockHeaderSize;
       }
 
-      // If fast growing is disabled, grow linearly by 4K chunks for n >= 64K
-      return ((n >> 12) << 12) + 4096-24;
+      // If fast growing is disabled or n >= 64 KiB, grow linearly by 4 KiB
+      // chunks.
+      return ((n >> 12) << 12) + 4096 - blockHeaderSize;
    }
 
    /*!
@@ -225,7 +234,7 @@ public:
     * as short strings. For blocks larger than 64K, block sizes grow by
     * constant chunks of 4K.
     *
-    * The fast block size growing policy is enabled by default.
+    * The fast block size growing policy is always enabled by default.
     *
     * \sa EnableFastGrowth(), DisableFastGrowth(), BlockSize()
     */
@@ -235,7 +244,7 @@ public:
    }
 
    /*!
-    * Enables a fast block size growing policy for %StandardAllocator.
+    * Enables the fast block size growing policy for %StandardAllocator.
     *
     * See IsFastGrowthEnabled() for more information about block size growing
     * policies.
@@ -268,6 +277,8 @@ public:
     * reductions for reallocated blocks in calls to the ReallocatedBlockSize().
     * When block shrinking is disabled, already allocated blocks can only be
     * reallocated with increased lengths.
+    *
+    * The block shrinking policy is always enabled by default.
     *
     * \sa EnableShrinking(), DisableShrinking(), ReallocatedBlockSize()
     */
@@ -364,4 +375,4 @@ inline void operator delete( void* p, void*, pcl::StandardAllocator& )
 #endif  // __PCL_StdAlloc_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/StdAlloc.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/StdAlloc.h - Released 2017-06-28T11:58:36Z

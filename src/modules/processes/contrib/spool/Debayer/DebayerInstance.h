@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.04.03.0213
+// Standard Debayer Process Module Version 01.06.00.0267
 // ----------------------------------------------------------------------------
-// DebayerInstance.h - Released 2016/02/21 20:22:43 UTC
+// DebayerInstance.h - Released 2017-07-06T19:14:49Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,13 +53,15 @@
 #ifndef __DebayerInstance_h
 #define __DebayerInstance_h
 
-#include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
+#include <pcl/MetaParameter.h> // pcl_bool, pcl_enum
 #include <pcl/ProcessImplementation.h>
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
+
+class PCL_CLASS FileFormatInstance;
 
 class DebayerInstance : public ProcessImplementation
 {
@@ -69,9 +71,13 @@ public:
    DebayerInstance( const DebayerInstance& );
 
    virtual void Assign( const ProcessImplementation& );
+
+   virtual bool IsHistoryUpdater( const View& ) const;
    virtual bool CanExecuteOn( const View&, String& whyNot ) const;
    virtual bool ExecuteOn( View& );
-   inline bool IsHistoryUpdater( const View& ) const {return false;};
+
+   virtual bool CanExecuteGlobal( String& whyNot ) const;
+   virtual bool ExecuteGlobal();
 
    virtual void* LockParameter( const MetaParameter*, size_type tableRow );
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
@@ -79,30 +85,80 @@ public:
 
 private:
 
-   /*
-    * Process parameters
-    */
-   pcl_enum p_bayerPattern;
-   pcl_enum p_debayerMethod;
-   pcl_bool p_evaluateNoise;
-   pcl_enum p_noiseEvaluationAlgorithm;
-   pcl_bool p_showImages;
+   struct Item
+   {
+      pcl_bool enabled = true;
+      String   path;
 
-   /*
-    * Read-only output properties
-    */
+      Item() = default;
+      Item( const Item& ) = default;
+
+      Item( const String& path_ ) : path( path_ )
+      {
+      }
+
+      bool IsDefined() const
+      {
+         return !path.IsEmpty();
+      }
+   };
+
+   typedef Array<Item>  item_list;
+
+   // Process parameters
+   pcl_enum   p_bayerPattern;
+   pcl_enum   p_debayerMethod;
+   pcl_bool   p_evaluateNoise;
+   pcl_enum   p_noiseEvaluationAlgorithm;
+   pcl_bool   p_showImages;        // optional for view execution only
+   String     p_cfaSourceFilePath; // ...
+   item_list  p_targets;
+   pcl_bool   p_noGUIMessages;
+
+   // Format hints
+   String      p_inputHints;
+   String      p_outputHints;
+
+   // Output images
+   String      p_outputDirectory;
+   String      p_outputExtension;
+   String      p_outputPrefix;
+   String      p_outputPostfix;
+   pcl_bool    p_overwriteExistingFiles;
+   pcl_enum    p_onError;
+
+   // High-level parallelism
+   pcl_bool    p_useFileThreads;
+   float       p_fileThreadOverload;
+   int32       p_maxFileReadThreads;
+   int32       p_maxFileWriteThreads;
+
+   // Read-only output properties, view execution.
    String     o_imageId;
    FVector    o_noiseEstimates;
    FVector    o_noiseFractions;
    StringList o_noiseAlgorithms;
 
-   virtual void DoSuperPixel( Image& target, const ImageVariant& source );
-   virtual void DoBilinear( Image& target, const ImageVariant& source );
-   virtual void DoVNG( Image& target, const ImageVariant& source );
+   // Read-only output properties, batch execution.
+   struct OutputFileData
+   {
+      String     filePath;
+      FVector    noiseEstimates = FVector( 0.0F, 3 );
+      FVector    noiseFractions = FVector( 0.0F, 3 );
+      StringList noiseAlgorithms = StringList( size_type( 3 ) );
+   };
+   Array<OutputFileData> o_outputFileData;
+
+   pcl_enum CFAPatternFromTarget( const View& ) const;
+   pcl_enum CFAPatternFromTarget( FileFormatInstance& ) const;
+   static pcl_enum CFAPatternFromTargetProperty( const Variant& );
+
+   void ApplyErrorPolicy();
 
    friend class DebayerProcess;
    friend class DebayerInterface;
    friend class DebayerEngine;
+   friend class DebayerFileThread;
 };
 
 // ----------------------------------------------------------------------------
@@ -113,4 +169,4 @@ private:
 #endif   // __DebayerInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF DebayerInstance.h - Released 2016/02/21 20:22:43 UTC
+// EOF DebayerInstance.h - Released 2017-07-06T19:14:49Z

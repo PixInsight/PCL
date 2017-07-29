@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0272
+// Standard ImageCalibration Process Module Version 01.04.00.0300
 // ----------------------------------------------------------------------------
-// DefectMapInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// DefectMapInterface.cpp - Released 2017-05-17T17:41:55Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -65,7 +65,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-DefectMapInterface* TheDefectMapInterface = 0;
+DefectMapInterface* TheDefectMapInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -75,15 +75,15 @@ DefectMapInterface* TheDefectMapInterface = 0;
 // ----------------------------------------------------------------------------
 
 DefectMapInterface::DefectMapInterface() :
-ProcessInterface(), instance( TheDefectMapProcess ), GUI( 0 )
+   instance( TheDefectMapProcess )
 {
    TheDefectMapInterface = this;
 }
 
 DefectMapInterface::~DefectMapInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString DefectMapInterface::Id() const
@@ -114,7 +114,7 @@ void DefectMapInterface::ResetInstance()
 
 bool DefectMapInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "DefectMap" );
@@ -132,15 +132,10 @@ ProcessImplementation* DefectMapInterface::NewProcess() const
 
 bool DefectMapInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const DefectMapInstance* r = dynamic_cast<const DefectMapInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a DefectMap instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const DefectMapInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a DefectMap instance.";
+   return false;
 }
 
 bool DefectMapInterface::RequiresInstanceValidation() const
@@ -175,18 +170,15 @@ void DefectMapInterface::__MapImage_EditCompleted( Edit& sender )
       id.Trim();
       if ( !id.IsEmpty() && !id.IsValidIdentifier() )
          throw Error( "Invalid image identifier: " + id );
-
       instance.mapId = id;
    }
-
    ERROR_HANDLER
-
    UpdateControls();
 }
 
 void DefectMapInterface::__MapImage_Click( Button& sender, bool checked )
 {
-   ViewSelectionDialog d( instance.mapId );
+   ViewSelectionDialog d( instance.mapId, false/*allowPreviews*/ );
    d.SetWindowTitle( "Select Defect Map Image" );
    if ( d.Execute() )
    {
@@ -209,6 +201,22 @@ void DefectMapInterface::__ItemClicked( Button& sender, bool checked )
 {
    if ( sender == GUI->IsCFA_CheckBox )
       instance.isCFA = checked;
+}
+
+void DefectMapInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->MapImage_Edit )
+      wantsView = !view.IsPreview();
+}
+
+void DefectMapInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->MapImage_Edit )
+      if ( view.IsMainView() )
+      {
+         instance.mapId = view.Id();
+         UpdateControls();
+      }
 }
 
 // ----------------------------------------------------------------------------
@@ -239,6 +247,8 @@ DefectMapInterface::GUIData::GUIData( DefectMapInterface& w )
    MapImage_Edit.SetToolTip( mapIdToolTip );
    MapImage_Edit.SetMinWidth( editWidth1 );
    MapImage_Edit.OnEditCompleted( (Edit::edit_event_handler)&DefectMapInterface::__MapImage_EditCompleted, w );
+   MapImage_Edit.OnViewDrag( (Control::view_drag_event_handler)&DefectMapInterface::__ViewDrag, w );
+   MapImage_Edit.OnViewDrop( (Control::view_drop_event_handler)&DefectMapInterface::__ViewDrop, w );
 
    MapImage_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    MapImage_ToolButton.SetScaledFixedSize( 19, 19 );
@@ -326,4 +336,4 @@ DefectMapInterface::GUIData::GUIData( DefectMapInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DefectMapInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF DefectMapInterface.cpp - Released 2017-05-17T17:41:55Z

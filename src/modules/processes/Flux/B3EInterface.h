@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Flux Process Module Version 01.00.01.0135
+// Standard Flux Process Module Version 01.00.01.0154
 // ----------------------------------------------------------------------------
-// B3EInterface.h - Released 2016/03/14 10:07:00 UTC
+// B3EInterface.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,30 +53,25 @@
 #ifndef __B3EInterface_h
 #define __B3EInterface_h
 
-#include <pcl/ProcessInterface.h>
-
-#include <pcl/Sizer.h>
-#include <pcl/Label.h>
-#include <pcl/NumericControl.h>
+#include <pcl/Button.h>
 #include <pcl/CheckBox.h>
 #include <pcl/ComboBox.h>
 #include <pcl/Edit.h>
-#include <pcl/Button.h>
-#include <pcl/PushButton.h>
-#include <pcl/ToolButton.h>
-
-
-#include <pcl/SectionBar.h>
 #include <pcl/GroupBox.h>
+#include <pcl/Label.h>
+#include <pcl/NumericControl.h>
+#include <pcl/ProcessInterface.h>
+#include <pcl/PushButton.h>
+#include <pcl/SectionBar.h>
+#include <pcl/Sizer.h>
 #include <pcl/SpinBox.h>
+#include <pcl/ToolButton.h>
 
 #include "B3EInstance.h"
 
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// B3EInterface
 // ----------------------------------------------------------------------------
 
 class B3EInterface : public ProcessInterface
@@ -160,7 +155,6 @@ private:
                Label             BackgroundROIHeight1_Label;
                SpinBox           BackgroundROIHeight1_SpinBox;
                PushButton        BackgroundROISelectPreview1_Button;
-
       // Background Calibration 2
       SectionBar        BackgroundReference2_SectionBar;
       Control           BackgroundReference2_Control;
@@ -188,11 +182,10 @@ private:
                PushButton        BackgroundROISelectPreview2_Button;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
 
-   // Event Handlers
    void __EditCompleted( Edit& sender );
    void __EditCompleted_bkg( Edit& sender );
    void __Clicked( Button& sender, bool checked );
@@ -202,6 +195,8 @@ private:
    void __SpinValueUpdated( SpinBox& sender, int value );
    void __GroupBoxCheck( GroupBox& sender, bool checked );
    void __BackgroundReference_Check( SectionBar& sender, bool checked );
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
 
    friend struct GUIData;
 };
@@ -219,4 +214,4 @@ PCL_END_LOCAL
 #endif   // __B3EInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF B3EInterface.h - Released 2016/03/14 10:07:00 UTC
+// EOF B3EInterface.h - Released 2017-05-02T09:43:00Z

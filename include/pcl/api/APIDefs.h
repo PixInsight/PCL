@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/APIDefs.h - Released 2016/02/21 20:22:12 UTC
+// pcl/APIDefs.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -52,13 +52,11 @@
 #ifndef __PCL_API_APIDefs_h
 #define __PCL_API_APIDefs_h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
 using namespace pcl;
 
-// Global namespace
+// global namespace
 
 // ----------------------------------------------------------------------------
 // Basic API data types and POD structures
@@ -178,6 +176,7 @@ struct api_format_capabilities
    bool   canStoreICCProfiles       :  1;
    bool   canStoreThumbnails        :  1;
    bool   canStoreProperties        :  1;
+   bool   canStoreImageProperties   :  1;
    bool   canStoreRGBWS             :  1;
    bool   canStoreDisplayFunctions  :  1;
    bool   canStoreColorFilterArrays :  1;
@@ -186,7 +185,7 @@ struct api_format_capabilities
    bool   canEditPreferences        :  1;
    bool   usesFormatSpecificData    :  1;
    bool   supportsViewProperties    :  1;
-   uint32 __r__                     :  3;
+   uint32 __r__                     :  2;
    bool   deprecated                :  1;
 };
 
@@ -427,6 +426,8 @@ struct api_pixtraits_lut
 #define VTYPE_COMPLEX64             0x0000008000000000
 #define VTYPE_COMPLEX_MASK          0x000000F000000000
 
+#define VTYPE_TIMEPOINT             0x0000010000000000
+
 /*
  * View property attributes
  */
@@ -539,18 +540,6 @@ typedef api_handle         window_handle;
 typedef const_api_handle   const_window_handle;
 
 /*
- * Handle to an ICC profile structure
- */
-typedef api_handle         icc_profile_handle;
-typedef const_api_handle   const_icc_profile_handle;
-
-/*
- * Handle to a color transformation
- */
-typedef api_handle         color_transform_handle;
-typedef const_api_handle   const_color_transform_handle;
-
-/*
  * Handle to a console object
  */
 typedef api_handle         console_handle;
@@ -641,12 +630,6 @@ typedef api_handle         fft_handle;
 typedef const_api_handle   const_fft_handle;
 
 /*
- * Handle to a cryptographic hash / encryption algorithm
- */
-typedef api_handle         crypto_handle;
-typedef const_api_handle   const_crypto_handle;
-
-/*
  * Handle to an external process
  */
 typedef api_handle         external_process_handle;
@@ -658,7 +641,7 @@ typedef const_api_handle   const_external_process_handle;
 typedef api_handle         network_transfer_handle;
 typedef const_api_handle   const_network_transfer_handle;
 
-// End global namespace
+// end global namespace
 
 // ----------------------------------------------------------------------------
 
@@ -804,7 +787,7 @@ typedef uint32                (api_func* format_get_selected_image_index_routine
 typedef api_bool              (api_func* format_set_selected_image_index_routine)     ( file_format_handle, uint32 );
 typedef api_bool              (api_func* format_set_format_specific_data_routine)     ( file_format_handle, const void* );
 typedef void*                 (api_func* format_get_format_specific_data_routine)     ( const_file_format_handle );
-typedef const char16_type*    (api_func* format_get_image_properties_routine)         ( const_file_format_handle );
+typedef const char16_type*    (api_func* format_get_image_format_info_routine)        ( const_file_format_handle );
 typedef api_bool              (api_func* format_begin_extraction_routine)             ( file_format_handle );
 typedef void                  (api_func* format_end_extraction_routine)               ( file_format_handle );
 typedef size_type             (api_func* format_get_keyword_count_routine)            ( file_format_handle );
@@ -855,6 +838,8 @@ typedef api_bool              (api_func* keyboard_event_routine)                
 typedef api_bool              (api_func* mouse_event_routine)                         ( control_handle, control_handle, int32, int32, api_mouse_buttons, api_key_modifiers );
 typedef api_bool              (api_func* mouse_button_event_routine)                  ( control_handle, control_handle, int32, int32, api_mouse_button, api_mouse_buttons, api_key_modifiers );
 typedef api_bool              (api_func* wheel_event_routine)                         ( control_handle, control_handle, int32, int32, int32, api_mouse_buttons, api_key_modifiers );
+typedef api_bool              (api_func* file_drag_event_handler)                     ( control_handle, control_handle, int32, int32, const char16_type*, const size_type*, size_type, api_key_modifiers );
+typedef api_bool              (api_func* view_drag_event_handler)                     ( control_handle, control_handle, int32, int32, const_view_handle, api_key_modifiers );
 
 typedef void                  (api_func* destroy_event_routine)                       ( control_handle );
 
@@ -863,6 +848,8 @@ typedef void                  (api_func* button_check_event_routine)            
 
 typedef void                  (api_func* ascii_event_routine)                         ( control_handle, control_handle, const char* );
 typedef void                  (api_func* unicode_event_routine)                       ( control_handle, control_handle, const char16_type* );
+
+typedef void                  (api_func* property_event_routine)                      ( control_handle, control_handle, const api_property_value* );
 
 typedef void                  (api_func* event_routine)                               ( control_handle, control_handle );
 typedef void                  (api_func* value_event_routine)                         ( control_handle, control_handle, int32 );
@@ -950,4 +937,4 @@ void PCL_FUNC PCLImageOptionsToAPI( api_image_options&, const ImageOptions& );
 #endif   // __PCL_API_APIDefs_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/APIDefs.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/APIDefs.h - Released 2017-06-28T11:58:36Z

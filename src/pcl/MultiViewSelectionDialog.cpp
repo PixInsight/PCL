@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/MultiViewSelectionDialog.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/MultiViewSelectionDialog.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -133,6 +133,8 @@ MultiViewSelectionDialog::MultiViewSelectionDialog( bool allowPreviews ) :
    Regenerate();
 }
 
+// ----------------------------------------------------------------------------
+
 void MultiViewSelectionDialog::Regenerate()
 {
    Views_TreeBox.Clear();
@@ -142,25 +144,29 @@ void MultiViewSelectionDialog::Regenerate()
    bool includeMainViews = !m_allowPreviews || IncludeMainViews_CheckBox.IsChecked();
    bool includePreviews = m_allowPreviews && IncludePreviews_CheckBox.IsChecked();
 
-   for ( Array<View>::const_iterator i = views.Begin(); i != views.End(); ++i )
+   for ( const View& view : views )
    {
-      bool isPreview = i->IsPreview();
+      bool isPreview = view.IsPreview();
       if ( isPreview ? includePreviews : includeMainViews )
       {
          TreeBox::Node* node = new TreeBox::Node( Views_TreeBox );
          node->SetCheckable();
          node->Uncheck();
-         node->SetText( 0, i->FullId() );
+         node->SetText( 0, view.FullId() );
       }
    }
 
    Views_TreeBox.AdjustColumnWidthToContents( 0 );
 }
 
+// ----------------------------------------------------------------------------
+
 void MultiViewSelectionDialog::OptionClick( Button& sender, bool checked )
 {
    Regenerate();
 }
+
+// ----------------------------------------------------------------------------
 
 void MultiViewSelectionDialog::ButtonClick( Button& sender, bool checked )
 {
@@ -204,6 +210,8 @@ void MultiViewSelectionDialog::ButtonClick( Button& sender, bool checked )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void MultiViewSelectionDialog::ControlShow( Control& sender )
 {
    AdjustToContents();
@@ -215,4 +223,4 @@ void MultiViewSelectionDialog::ControlShow( Control& sender )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MultiViewSelectionDialog.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/MultiViewSelectionDialog.cpp - Released 2017-06-28T11:58:42Z

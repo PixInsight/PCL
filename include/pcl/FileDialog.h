@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/FileDialog.h - Released 2016/02/21 20:22:12 UTC
+// pcl/FileDialog.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/FileDialog.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_AutoPointer_h
 #include <pcl/AutoPointer.h>
-#endif
-
-#ifndef __PCL_StringList_h
-#include <pcl/StringList.h>
-#endif
-
-#ifndef __PCL_File_h
 #include <pcl/File.h>
-#endif
+#include <pcl/StringList.h>
 
 namespace pcl
 {
@@ -102,12 +92,32 @@ public:
    FileFilter() = default;
 
    /*!
+    * Constructs a %FileFilter with the specified \a description and list of
+    * file \a extensions.
+    */
+   FileFilter( const String& description, const StringList extensions )
+   {
+      SetDescription( description );
+      AddExtensions( extensions );
+   }
+
+   /*!
+    * Constructs a %FileFilter with the specified \a description and a single
+    * file \a extension.
+    */
+   FileFilter( const String& description, const String& extension )
+   {
+      SetDescription( description );
+      AddExtension( extension );
+   }
+
+   /*!
     * Copy constructor.
     */
    FileFilter( const FileFilter& x ) = default;
 
    /*!
-    * Destroys a %FileFilter object.
+    * Virtual destructor.
     */
    virtual ~FileFilter()
    {
@@ -119,16 +129,16 @@ public:
     */
    String Description() const
    {
-      return description;
+      return m_description;
    }
 
    /*!
-    * Sets the description of the file type represented by this %FileFilter
+    * Sets the \a description of the file type represented by this %FileFilter
     * object.
     */
-   void SetDescription( const String& dsc )
+   void SetDescription( const String& description )
    {
-      description = dsc;
+      m_description = description.Trimmed();
    }
 
    /*!
@@ -137,14 +147,23 @@ public:
     */
    const StringList& Extensions() const
    {
-      return extensions;
+      return m_extensions;
    }
 
    /*!
-    * Adds a file extension associated with the file type represented by this
-    * %FileFilter object.
+    * Adds a file \a extension associated with the file type represented by
+    * this %FileFilter object.
     */
-   void AddExtension( const String& ext );
+   void AddExtension( const String& extension );
+
+   /*!
+    * Adds an ordered list of file \a extensions.
+    */
+   void AddExtensions( const StringList& extensions )
+   {
+      for ( const String& extension : extensions )
+         AddExtension( extension );
+   }
 
    /*!
     * Clears the file type description and the list of file extensions.
@@ -153,8 +172,8 @@ public:
 
 private:
 
-   String      description;
-   StringList  extensions;
+   String      m_description;
+   StringList  m_extensions;
 
    String MakeAPIFilter() const;
 
@@ -219,13 +238,45 @@ public:
    void SetInitialPath( const String& path );
 
    /*!
-    * Returns a constant reference to the list of file filters in this file
+    * Returns a reference to the immutable list of file filters in this file
     * dialog.
     */
    const filter_list& Filters() const;
 
    /*!
-    * Returns a reference to the list of file filters in this file dialog.
+    * Defines the list of file \a filters to be used by this file dialog.
+    */
+   void SetFilters( const filter_list& filters );
+
+   /*!
+    * Defines a unique file \a filter to be used by this file dialog.
+    */
+   void SetFilter( const FileFilter& filter )
+   {
+      SetFilters( filter_list() << filter );
+   }
+
+   /*!
+    * Adds a set of file \a filters to the list of filters used by this file
+    * dialog.
+    */
+   void AddFilters( const filter_list& filters );
+
+   /*!
+    * Adds a file \a filter to the list of filters used by this file dialog.
+    */
+   void AddFilter( const FileFilter& filter )
+   {
+      AddFilters( filter_list() << filter );
+   }
+
+   /*!
+    * Returns a reference to the mutable list of file filters in this file
+    * dialog.
+    *
+    * \deprecated This member function has been deprecated. It is kept just to
+    * support existing code and must not be used in newly produced code. Use
+    * SetFilters() instead of this function.
     */
    filter_list& Filters();
 
@@ -481,4 +532,4 @@ private:
 #endif   // __PCL_FileDialog_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileDialog.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/FileDialog.h - Released 2017-06-28T11:58:36Z

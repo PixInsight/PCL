@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0298
+// Standard ColorSpaces Process Module Version 01.01.00.0317
 // ----------------------------------------------------------------------------
-// ChannelCombinationInstance.h - Released 2016/02/21 20:22:42 UTC
+// ChannelCombinationInstance.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,15 +53,13 @@
 #ifndef __ChannelCombinationInstance_h
 #define __ChannelCombinationInstance_h
 
-#include <pcl/ProcessImplementation.h>
-#include <pcl/Point.h>
 #include <pcl/MetaParameter.h>
+#include <pcl/Point.h>
+#include <pcl/ProcessImplementation.h>
 
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// ChannelCombinationInstance
 // ----------------------------------------------------------------------------
 
 class ChannelCombinationInstance : public ProcessImplementation
@@ -86,30 +84,26 @@ public:
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
 
-   // -------------------------------------------------------------------------
-
    int ColorSpace() const
    {
-      return colorSpace;
+      return p_colorSpace;
    }
 
    bool IsChannelEnabled( int c ) const
    {
-      return channelEnabled[c];
+      return p_channelEnabled[c];
    }
 
    const String& ChannelId( int c ) const
    {
-      return channelId[c];
+      return p_channelId[c];
    }
-
-   // -------------------------------------------------------------------------
 
 private:
 
-   pcl_enum colorSpace;
-   pcl_bool channelEnabled[ 3 ]; // PCL MetaBoolean maps to uint32
-   String   channelId[ 3 ];
+   pcl_enum p_colorSpace;
+   pcl_bool p_channelEnabled[ 3 ];
+   String   p_channelId[ 3 ];
 
    friend class ChannelCombinationInterface;
    friend class ChannelSourceSelectionDialog;
@@ -122,4 +116,4 @@ private:
 #endif   // __ChannelCombinationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF ChannelCombinationInstance.h - Released 2016/02/21 20:22:42 UTC
+// EOF ChannelCombinationInstance.h - Released 2017-05-02T09:43:00Z

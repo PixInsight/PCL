@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Fourier Process Module Version 01.00.04.0191
+// Standard Fourier Process Module Version 01.00.04.0210
 // ----------------------------------------------------------------------------
-// FourierModule.cpp - Released 2016/02/21 20:22:42 UTC
+// FourierModule.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Fourier PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  04
-#define MODULE_VERSION_BUILD     0191
+#define MODULE_VERSION_BUILD     0210
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2016
-#define MODULE_RELEASE_MONTH     2
-#define MODULE_RELEASE_DAY       21
+#define MODULE_RELEASE_YEAR      2017
+#define MODULE_RELEASE_MONTH     5
+#define MODULE_RELEASE_DAY       2
 
 #include "FourierModule.h"
 #include "FourierTransformProcess.h"
@@ -118,7 +118,7 @@ String FourierModule::Author() const
 
 String FourierModule::Copyright() const
 {
-   return "Copyright (c) 2011-2012, Carlos Milovic F. / Pleiades Astrophoto";
+   return "Copyright (c) 2011-2017 Pleiades Astrophoto";
 }
 
 // ----------------------------------------------------------------------------
@@ -159,24 +159,9 @@ void FourierModule::GetReleaseDate( int& year, int& month, int& day ) const
 
 } // pcl
 
-// ----------------------------------------------------------------------------
-// PCL_MODULE_EXPORT int InstallPixInsightModule( int )
-//
-// Module installation routine.
-// If defined, the PixInsight application calls this routine just after
-// loading the module shared library.
-// ----------------------------------------------------------------------------
-
 PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 {
-   // When the PixInsight application installs this module, we just have to
-   // instantiate the meta objects describing it.
-
    new pcl::FourierModule;
-
-   // The mode argument tells us what kind of installation is being requested
-   // by the PixInsight application. Incomplete installation requests only need
-   // module descriptions.
 
    if ( mode == pcl::InstallMode::FullInstall )
    {
@@ -186,9 +171,8 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
       new pcl::InverseFourierTransformInterface;
    }
 
-   // Return zero to signal successful installation
    return 0;
 }
 
 // ----------------------------------------------------------------------------
-// EOF FourierModule.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF FourierModule.cpp - Released 2017-05-02T09:43:00Z

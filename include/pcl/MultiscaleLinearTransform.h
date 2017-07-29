@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/MultiscaleLinearTransform.h - Released 2016/02/21 20:22:12 UTC
+// pcl/MultiscaleLinearTransform.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/MultiscaleLinearTransform.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_RedundantMultiscaleTransform_h
 #include <pcl/RedundantMultiscaleTransform.h>
-#endif
 
 namespace pcl
 {
@@ -85,7 +78,9 @@ namespace pcl
  * of increasing size 2*s + 1, where s grows following a monotonically
  * increasing sequence (the dyadic sequence 1, 2, 4, ... is used by default).
  * Multiscale coefficients are the differences between each pair of successive
- * convolved images. By default Gaussian filters are used.
+ * convolved images. By default Gaussian filters are used, but block average
+ * filters can also be used (see the class constructor) for special
+ * applications.
  *
  * The reconstruction algorithm consists of the sum of all wj multiscale layers
  * for 1 <= j <= N, plus the residual layer cN.
@@ -98,6 +93,8 @@ namespace pcl
  *
  * The last layer, at index N, is the large-scale <em>residual layer</em>.
  * Pixels in the residual layer image can only be positive or zero real values.
+ *
+ * \ingroup multiscale_transforms
  */
 class PCL_CLASS MultiscaleLinearTransform : public RedundantMultiscaleTransform
 {
@@ -129,6 +126,12 @@ public:
     *             dyadic sequence: 1, 2, 4, ... 2^i. If \a d > 0, its value is
     *             the distance in pixels between two successive scales.
     *
+    * \param useMeanFilters   If true, the transformation will use block
+    *             average filters (mean) instead of Gaussian filters. Mean
+    *             filters have important special applications, such as
+    *             computation of multiscale local variances. Gaussian filters
+    *             are always used by default.
+    *
     * The default values for \a n and \a d are 4 and 0, respectively (four
     * layers and the dyadic scaling sequence).
     *
@@ -142,8 +145,9 @@ public:
     * - If \a d > 0, then \a d is the constant increment in pixels between two
     *   successive scales (linear scaling sequence): s = d*j for 1 <= j < n.
     */
-   MultiscaleLinearTransform( int n = 4, int d = 0 ) :
-      RedundantMultiscaleTransform( n, d )
+   MultiscaleLinearTransform( int n = 4, int d = 0, bool useMeanFilters = false ) :
+      RedundantMultiscaleTransform( n, d ),
+      m_useMeanFilters( useMeanFilters )
    {
    }
 
@@ -185,7 +189,30 @@ public:
       return *this;
    }
 
+   /*!
+    * Returns true iff this transform applies block average filters instead of
+    * Gaussian filters. See the class constructor for more information.
+    */
+   bool UsesMeanFilters() const
+   {
+      return m_useMeanFilters;
+   }
+
+   /*!
+    * Returns true iff this transform applies Gaussian filters instead of block
+    * average filters. See the class constructor for more information.
+    */
+   bool UsesGaussianFilters() const
+   {
+      return !m_useMeanFilters;
+   }
+
 protected:
+
+   /*
+    * Whether we should use mean (block average) or Gaussian separable filters.
+    */
+   bool m_useMeanFilters : 1;
 
    /*
     * Transform (decomposition)
@@ -208,4 +235,4 @@ protected:
 #endif   // __PCL_MultiscaleLinearTransform_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MultiscaleLinearTransform.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/MultiscaleLinearTransform.h - Released 2017-06-28T11:58:36Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Vector.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Vector.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,44 +54,21 @@
 
 /// \file pcl/Vector.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_ReferenceCounter_h
-#include <pcl/ReferenceCounter.h>
-#endif
-
-#ifndef __PCL_Utility_h
-#include <pcl/Utility.h>
-#endif
-
-#ifndef __PCL_Search_h
-#include <pcl/Search.h>
-#endif
-
-#ifndef __PCL_Sort_h
-#include <pcl/Sort.h>
-#endif
-
-#ifndef __PCL_Exception_h
 #include <pcl/Exception.h>
-#endif
+#include <pcl/ReferenceCounter.h>
+#include <pcl/Search.h>
+#include <pcl/Sort.h>
+#include <pcl/Utility.h>
 
 #ifndef __PCL_NO_VECTOR_STATISTICS
-# ifndef __PCL_Selection_h
 #  include <pcl/Selection.h>
-# endif
 #endif
 
 #ifndef __PCL_NO_VECTOR_INSTANTIATE
-# ifndef __PCL_Complex_h
 #  include <pcl/Complex.h>
-# endif
 #endif
 
 namespace pcl
@@ -119,6 +96,8 @@ namespace pcl
  *
  * \li Support for a large set of vector operations, including scalar-to-vector
  * and vector-to-vector arithmetic operations, dot and cross products.
+ *
+ * \li Calculation of a variety of descriptive statistics of vector components.
  *
  * \sa GenericMatrix, \ref vector_operators, \ref vector_types
  */
@@ -148,12 +127,12 @@ public:
    typedef const T*                 const_iterator;
 
    /*!
-    * Constructs an empty vector.
-    * An empty vector has no component and zero length.
+    * Constructs an empty vector. An empty vector has no components and its
+    * length is zero.
     */
-   GenericVector() : m_data( nullptr )
+   GenericVector()
    {
-      m_data = new Data( 0 );
+      m_data = new Data;
    }
 
    /*!
@@ -164,18 +143,18 @@ public:
     * This constructor does not initialize vector components. The newly created
     * vector will contain unpredictable values.
     */
-   GenericVector( int len ) : m_data( nullptr )
+   GenericVector( int len )
    {
       m_data = new Data( len );
    }
 
    /*!
-    * Constructs a vector and fills it with a constant value.
+    * Constructs a vector and fills it with a constant component value.
     *
     * \param x       Initial value for all vector components.
     * \param len     Number of vector components (>= 0).
     */
-   GenericVector( const component& x, int len ) : m_data( nullptr )
+   GenericVector( const component& x, int len )
    {
       m_data = new Data( len );
       for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i )
@@ -183,7 +162,8 @@ public:
    }
 
    /*!
-    * Constructs a vector and initializes it with values from a static array.
+    * Constructs a vector and initializes it with component values taken from a
+    * static array.
     *
     * \param a       Address of the first item of a static array for
     *                initialization of vector components. The array must provide
@@ -192,7 +172,7 @@ public:
     * \param len     Number of vector components (>= 0).
     */
    template <typename T1>
-   GenericVector( const T1* a, int len ) : m_data( nullptr )
+   GenericVector( const T1* a, int len )
    {
       m_data = new Data( len );
       if ( a != nullptr )
@@ -201,11 +181,11 @@ public:
    }
 
    /*!
-    * Constructs a three-component vector initialized with the specified
-    * \a x, \a y and \a z values.
+    * Constructs a three-component vector initialized with the specified \a x,
+    * \a y and \a z component values.
     */
    template <typename T1>
-   GenericVector( const T1& x, const T1& y, const T1& z ) : m_data( nullptr )
+   GenericVector( const T1& x, const T1& y, const T1& z )
    {
       m_data = new Data( 3 );
       iterator v = m_data->Begin();
@@ -215,11 +195,11 @@ public:
    }
 
    /*!
-    * Constructs a four-component vector initialized with the specified
-    * \a x, \a y, \a z and \a t values.
+    * Constructs a four-component vector initialized with the specified \a x,
+    * \a y, \a z and \a t component values.
     */
    template <typename T1>
-   GenericVector( const T1& x, const T1& y, const T1& z, const T1& t ) : m_data( nullptr )
+   GenericVector( const T1& x, const T1& y, const T1& z, const T1& t )
    {
       m_data = new Data( 4 );
       iterator v = m_data->Begin();
@@ -480,7 +460,7 @@ public:
    GenericVector& operator /=( const GenericVector& x )
    {
       if ( x.Length() < Length() )
-         throw Error( "Invalid vector multiplication." );
+         throw Error( "Invalid vector division." );
       EnsureUnique();
       const_iterator s = x.Begin();
       for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i, ++s )
@@ -711,8 +691,8 @@ public:
    }
 
    /*!
-    * Returns the L1 norm (or Manhattan norm) of this vector. The L1 norm is the
-    * sum of the absolute values of all vector components.
+    * Returns the L1 norm (or Manhattan norm) of this vector. The L1 norm is
+    * the sum of the absolute values of all vector components.
     */
    double L1Norm() const
    {
@@ -720,8 +700,8 @@ public:
    }
 
    /*!
-    * Returns the L2 norm (or Euclidean norm) of this vector. The L2 norm is the
-    * square root of the sum of squared vector components.
+    * Returns the L2 norm (or Euclidean norm) of this vector. The L2 norm is
+    * the square root of the sum of squared vector components.
     */
    double L2Norm() const
    {
@@ -729,8 +709,8 @@ public:
    }
 
    /*!
-    * Returns the L2 norm (or Euclidean norm) of this vector. This function is a
-    * synonym for L2Norm().
+    * Returns the L2 norm (or Euclidean norm) of this vector. This function is
+    * a synonym for L2Norm().
     */
    double Norm() const
    {
@@ -1682,9 +1662,24 @@ public:
     * copies are not necessary. Typically this happens when two or more threads
     * work simultaneously on non-overlapping regions of the same vector.
     */
-   component* DataPtr()
+   iterator DataPtr()
    {
       return m_data->v;
+   }
+
+   /*!
+    * Returns a pointer to the \a ith component in this vector.
+    *
+    * All vector components are guaranteed to be stored at consecutive
+    * locations addressable from the iterator returned by this function.
+    *
+    * This member function does not ensure that the data referenced by this
+    * vector is unique. See DataPtr() for more information on how to use this
+    * member function.
+    */
+   iterator ComponentPtr( int i )
+   {
+      return m_data->At( i );
    }
 
 #ifndef __PCL_NO_STL_COMPATIBLE_ITERATORS
@@ -1820,15 +1815,12 @@ public:
       {
          s.Append( S( *i ) );
          if ( ++i < j )
-         {
-            S p( separator );
             do
             {
-               s.Append( p );
+               s.Append( separator );
                s.Append( S( *i ) );
             }
             while ( ++i < j );
-         }
       }
       return s;
    }
@@ -1927,13 +1919,12 @@ private:
     */
    struct Data : public ReferenceCounter
    {
-      int        n; // the vector length
-      component* v; // the vector components
+      int        n = 0;       //!< The vector length
+      component* v = nullptr; //!< The vector components
 
-      Data( int len ) :
-         ReferenceCounter(),
-         n( 0 ),
-         v( nullptr )
+      Data() = default;
+
+      Data( int len )
       {
          if ( len > 0 )
             Allocate( len );
@@ -1987,7 +1978,7 @@ private:
     * \internal
     * The reference-counted vector data.
     */
-   Data* m_data;
+   Data* m_data = nullptr;
 
    /*!
     * \internal
@@ -2426,8 +2417,7 @@ GenericVector<T> operator /( const GenericVector<T>& A, const T& x )
 template <typename T> inline
 GenericVector<T> operator /( GenericVector<T>&& A, const T& x )
 {
-   A /= x;
-   return A;
+   return A /= x;
 }
 
 /*!
@@ -2463,6 +2453,34 @@ GenericVector<T> operator /( const T& x, GenericVector<T>&& A )
    return A;
 }
 
+/*!
+ * Returns the result of the element-wise division of a vector \a A by another
+ * vector \a B.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator /( const GenericVector<T>& A, const GenericVector<T>& B )
+{
+   if ( A.Length() > B.Length() )
+      throw Error( "Invalid vector division." );
+   GenericVector<T> R( A.Length() );
+   typename GenericVector<T>::iterator r = R.Begin();
+   for ( typename GenericVector<T>::const_iterator a = A.Begin(), a1 = A.End(), b = B.Begin(); a < a1; ++a, ++b )
+      *r++ = *a / *b;
+   return R;
+}
+
+/*!
+ * Returns the result of the element-wise division of an r-value reference to a
+ * vector \a A by a vector \a B.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator /( GenericVector<T>&& A, const GenericVector<T>& B )
+{
+   return A /= B;
+}
+
 // ----------------------------------------------------------------------------
 
 /*!
@@ -2487,8 +2505,7 @@ GenericVector<T> operator ^( const GenericVector<T>& A, const T& x )
 template <typename T> inline
 GenericVector<T> operator ^( GenericVector<T>&& A, const T& x )
 {
-   A ^= x;
-   return A;
+   return A ^= x;
 }
 
 /*!
@@ -2529,7 +2546,7 @@ GenericVector<T> operator ^( const T& x, GenericVector<T>&& A )
 #ifndef __PCL_NO_VECTOR_INSTANTIATE
 
 /*!
- * \defgroup vector_types Predefined Vector Types
+ * \defgroup vector_types Vector Types
  */
 
 /*!
@@ -2749,4 +2766,4 @@ typedef F80Vector                   LDVector;
 #endif   // __PCL_Vector_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Vector.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Vector.h - Released 2017-06-28T11:58:36Z

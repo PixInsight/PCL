@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------
 //
 //  Little Color Management System
-//  Copyright (c) 1998-2010 Marti Maria Saguer
+//  Copyright (c) 1998-2016 Marti Maria Saguer
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -107,7 +107,7 @@ void CMSEXPORT  _cmsAdjustEndianess64(cmsUInt64Number* Result, cmsUInt64Number* 
 #endif
 }
 
-// Auxiliar -- read 8, 16 and 32-bit numbers
+// Auxiliary -- read 8, 16 and 32-bit numbers
 cmsBool CMSEXPORT  _cmsReadUInt8Number(cmsIOHANDLER* io, cmsUInt8Number* n)
 {
     cmsUInt8Number tmp;
@@ -172,14 +172,18 @@ cmsBool CMSEXPORT  _cmsReadFloat32Number(cmsIOHANDLER* io, cmsFloat32Number* n)
 
     _cmsAssert(io != NULL);
 
-    if (io -> Read(io, &tmp, sizeof(cmsFloat32Number), 1) != 1)
-            return FALSE;
+    if (io->Read(io, &tmp, sizeof(cmsUInt32Number), 1) != 1)
+        return FALSE;
 
     if (n != NULL) {
 
         tmp = _cmsAdjustEndianess32(tmp);
-        *n = *(cmsFloat32Number*) &tmp;
+        *n = *(cmsFloat32Number*)(void*)&tmp;
+
+        // fpclassify() required by C99
+        return ((fpclassify(*n) == FP_ZERO) || (fpclassify(*n) == FP_NORMAL));
     }
+
     return TRUE;
 }
 
@@ -193,7 +197,11 @@ cmsBool CMSEXPORT   _cmsReadUInt64Number(cmsIOHANDLER* io, cmsUInt64Number* n)
     if (io -> Read(io, &tmp, sizeof(cmsUInt64Number), 1) != 1)
             return FALSE;
 
-    if (n != NULL) _cmsAdjustEndianess64(n, &tmp);
+    if (n != NULL) {
+
+        _cmsAdjustEndianess64(n, &tmp);
+    }
+
     return TRUE;
 }
 
@@ -215,22 +223,6 @@ cmsBool CMSEXPORT  _cmsRead15Fixed16Number(cmsIOHANDLER* io, cmsFloat64Number* n
 }
 
 
-// Jun-21-2000: Some profiles (those that comes with W2K) comes
-// with the media white (media black?) x 100. Add a sanity check
-
-static
-void NormalizeXYZ(cmsCIEXYZ* Dest)
-{
-    while (Dest -> X > 2. &&
-           Dest -> Y > 2. &&
-           Dest -> Z > 2.) {
-
-               Dest -> X /= 10.;
-               Dest -> Y /= 10.;
-               Dest -> Z /= 10.;
-       }
-}
-
 cmsBool CMSEXPORT  _cmsReadXYZNumber(cmsIOHANDLER* io, cmsCIEXYZ* XYZ)
 {
     cmsEncodedXYZNumber xyz;
@@ -244,8 +236,6 @@ cmsBool CMSEXPORT  _cmsReadXYZNumber(cmsIOHANDLER* io, cmsCIEXYZ* XYZ)
         XYZ->X = _cms15Fixed16toDouble(_cmsAdjustEndianess32(xyz.X));
         XYZ->Y = _cms15Fixed16toDouble(_cmsAdjustEndianess32(xyz.Y));
         XYZ->Z = _cms15Fixed16toDouble(_cmsAdjustEndianess32(xyz.Z));
-
-        NormalizeXYZ(XYZ);
     }
     return TRUE;
 }
@@ -307,7 +297,7 @@ cmsBool CMSEXPORT  _cmsWriteFloat32Number(cmsIOHANDLER* io, cmsFloat32Number n)
 
     _cmsAssert(io != NULL);
 
-    tmp = *(cmsUInt32Number*) &n;
+    tmp = *(cmsUInt32Number*) (void*) &n;
     tmp = _cmsAdjustEndianess32(tmp);
     if (io -> Write(io, sizeof(cmsUInt32Number), &tmp) != 1)
             return FALSE;
@@ -503,7 +493,10 @@ cmsBool CMSEXPORT _cmsIOPrintf(cmsIOHANDLER* io, const char* frm, ...)
     va_start(args, frm);
 
     len = vsnprintf((char*) Buffer, 2047, frm, args);
-    if (len < 0) return FALSE;   // Truncated, which is a fatal error for us
+    if (len < 0) {
+        va_end(args);
+        return FALSE;   // Truncated, which is a fatal error for us
+    }
 
     rc = io ->Write(io, len, Buffer);
 
@@ -525,6 +518,7 @@ void* _cmsPluginMalloc(cmsContext ContextID, cmsUInt32Number size)
         if (ContextID == NULL) {
 
             ctx->MemPool = _cmsCreateSubAlloc(0, 2*1024);
+            if (ctx->MemPool == NULL) return NULL;
         }
         else {
             cmsSignalError(ContextID, cmsERROR_CORRUPTION_DETECTED, "NULL memory pool on context");
@@ -764,6 +758,30 @@ cmsContext CMSEXPORT cmsCreateContext(void* Plugin, void* UserData)
     struct _cmsContext_struct* ctx;
     struct _cmsContext_struct  fakeContext;
         
+    // See the comments regarding locking in lcms2_internal.h
+    // for an explanation of why we need the following code.
+#ifdef CMS_IS_WINDOWS_
+#ifndef CMS_RELY_ON_WINDOWS_STATIC_MUTEX_INIT
+    {
+        static HANDLE _cmsWindowsInitMutex = NULL;
+        static volatile HANDLE* mutex = &_cmsWindowsInitMutex;
+
+        if (*mutex == NULL)
+        {
+            HANDLE p = CreateMutex(NULL, FALSE, NULL);
+            if (p && InterlockedCompareExchangePointer((void **)mutex, (void*)p, NULL) != NULL)
+                CloseHandle(p);
+        }
+        if (*mutex == NULL || WaitForSingleObject(*mutex, INFINITE) == WAIT_FAILED)
+            return NULL;
+        if (((void **)&_cmsContextPoolHeadMutex)[0] == NULL)
+            InitializeCriticalSection(&_cmsContextPoolHeadMutex);
+        if (*mutex == NULL || !ReleaseMutex(*mutex))
+            return NULL;
+    }
+#endif
+#endif
+
     _cmsInstallAllocFunctions(_cmsFindMemoryPlugin(Plugin), &fakeContext.DefaultMemoryManager);
     
     fakeContext.chunks[UserPtr]     = UserData;
@@ -790,7 +808,7 @@ cmsContext CMSEXPORT cmsCreateContext(void* Plugin, void* UserData)
     ctx ->chunks[MemPlugin]   = &ctx->DefaultMemoryManager;
    
     // Now we can allocate the pool by using default memory manager
-    ctx ->MemPool = _cmsCreateSubAlloc(ctx, 22 * sizeof(void*));  // default size about 32 pointers
+    ctx ->MemPool = _cmsCreateSubAlloc(ctx, 22 * sizeof(void*));  // default size about 22 pointers
     if (ctx ->MemPool == NULL) {
 
          cmsDeleteContext(ctx);

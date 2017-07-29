@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0346
 // ----------------------------------------------------------------------------
-// CropInstance.cpp - Released 2016/11/17 18:14:58 UTC
+// CropInstance.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -74,7 +74,8 @@ CropInstance::CropInstance( const MetaProcess* P ) :
    p_fillColor( TheCRFillRedParameter->DefaultValue(),
                 TheCRFillGreenParameter->DefaultValue(),
                 TheCRFillBlueParameter->DefaultValue(),
-                TheCRFillAlphaParameter->DefaultValue() )
+                TheCRFillAlphaParameter->DefaultValue() ),
+   p_noGUIMessages( TheCRNoGUIMessagesParameter->DefaultValue() )
 {
 }
 
@@ -95,6 +96,7 @@ void CropInstance::Assign( const ProcessImplementation& p )
       p_metric          = x->p_metric;
       p_forceResolution = x->p_forceResolution;
       p_fillColor       = x->p_fillColor;
+      p_noGUIMessages   = x->p_noGUIMessages;
    }
 }
 
@@ -116,13 +118,12 @@ bool CropInstance::CanExecuteOn( const View& v, String& whyNot ) const
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
 bool CropInstance::BeforeExecution( View& view )
 {
-   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id() );
+   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
 }
 
 void CropInstance::GetNewSizes( int& w, int& h ) const
@@ -224,6 +225,8 @@ void* CropInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*
       return p_fillColor.At( 2 );
    if ( p == TheCRFillAlphaParameter )
       return p_fillColor.At( 3 );
+   if ( p == TheCRNoGUIMessagesParameter )
+      return & p_noGUIMessages;
    return nullptr;
 }
 
@@ -232,4 +235,4 @@ void* CropInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CropInstance.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF CropInstance.cpp - Released 2017-05-02T09:43:00Z

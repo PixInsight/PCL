@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/RGBColorSystem.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/RGBColorSystem.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -243,25 +243,23 @@ static Vector InverseMatrix( const Vector& M )
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 RGBColorSystem::Data::Data( float a_gamma, bool a_issRGB,
                             const FVector& a_x, const FVector& a_y, const FVector& a_Y ) :
-ReferenceCounter(),
-gamma( a_gamma ), issRGB( a_issRGB ), isLinear( !issRGB && gamma == 1 ),
-x( a_x ), y( a_y ), Y( a_Y )
+   gamma( a_gamma ), issRGB( a_issRGB ), isLinear( !issRGB && gamma == 1 ),
+   x( a_x ), y( a_y ), Y( a_Y )
 {
    Initialize();
 }
 
-RGBColorSystem::Data::Data( const RGBColorSystem::Data& data ) :
-ReferenceCounter(),
-gamma( data.gamma ), issRGB( data.issRGB ), isLinear( data.isLinear ),
-x( data.x ), y( data.y ), Y( data.Y ),
-M( data.M ), M_( data.M_ ),
-mX( data.mX ), mZ( data.mZ ),
-abOffset( data.abOffset ), abDelta( data.abDelta ), cDelta( data.cDelta )
+RGBColorSystem::Data::Data( float a_gamma, bool a_issRGB,
+                            const float* a_x, const float* a_y, const float* a_Y ) :
+   Data( a_gamma, a_issRGB, FVector( a_x, 3 ), FVector( a_y, 3 ), FVector( a_Y, 3 ) )
 {
 }
+
+// ----------------------------------------------------------------------------
 
 bool RGBColorSystem::Data::ValidateParameters( const FVector& x, const FVector& y, const FVector& Y )
 {
@@ -275,6 +273,8 @@ bool RGBColorSystem::Data::ValidateParameters( const FVector& x, const FVector& 
       return false;
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void RGBColorSystem::Data::Initialize()
 {
@@ -466,4 +466,4 @@ void RGBColorSystem::Data::Initialize()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/RGBColorSystem.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/RGBColorSystem.cpp - Released 2017-06-28T11:58:42Z

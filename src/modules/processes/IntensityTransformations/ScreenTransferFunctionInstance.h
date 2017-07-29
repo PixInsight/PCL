@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0374
 // ----------------------------------------------------------------------------
-// ScreenTransferFunctionInstance.h - Released 2016/02/21 20:22:43 UTC
+// ScreenTransferFunctionInstance.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,10 +53,10 @@
 #ifndef __ScreenTransferFunctionInstance_h
 #define __ScreenTransferFunctionInstance_h
 
-#include <pcl/ProcessImplementation.h>
 #include <pcl/Array.h>
 #include <pcl/HistogramTransformation.h>
-#include <pcl/MetaParameter.h> // for pcl_enum
+#include <pcl/MetaParameter.h> // pcl_enum
+#include <pcl/ProcessImplementation.h>
 
 #include "ScreenTransferFunctionParameters.h"
 
@@ -67,9 +67,9 @@ namespace pcl
 
 struct STF
 {
-   float m;       // midtones balance
-   float c0, c1;  // shadows and highlights clipping points
-   float r0, r1;  // shadows and highlights dynamic range expansion
+   float m;      // midtones balance
+   float c0, c1; // shadows and highlights clipping points
+   float r0, r1; // shadows and highlights dynamic range expansion
 
    STF()
    {
@@ -136,8 +136,10 @@ private:
 
    stf_list stf;
 
-   // The following parameter is updated by ScreenTransferFunctionInterface and
-   // is used to import STF instances by HistogramTransformationInterface.
+   /*
+    * The following parameter is updated by ScreenTransferFunctionInterface and
+    * is used to import STF instances by HistogramTransformationInterface.
+    */
    pcl_enum interaction;
 };
 
@@ -148,4 +150,4 @@ private:
 #endif   // __ScreenTransferFunctionInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF ScreenTransferFunctionInstance.h - Released 2016/02/21 20:22:43 UTC
+// EOF ScreenTransferFunctionInstance.h - Released 2017-05-02T09:43:00Z

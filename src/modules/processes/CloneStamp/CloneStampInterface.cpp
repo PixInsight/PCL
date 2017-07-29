@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard CloneStamp Process Module Version 01.00.02.0286
+// Standard CloneStamp Process Module Version 01.00.02.0305
 // ----------------------------------------------------------------------------
-// CloneStampInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// CloneStampInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CloneStamp PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -848,15 +848,10 @@ ProcessImplementation* CloneStampInterface::NewProcess() const
 
 bool CloneStampInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const CloneStampInstance* r = dynamic_cast<const CloneStampInstance*>( &p );
-   if ( r == nullptr )
-   {
-      whyNot = "Not a CloneStamp instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const CloneStampInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a CloneStamp instance.";
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -1327,18 +1322,9 @@ void CloneStampInterface::DynamicMousePress( View& v, const DPoint& p, int butto
             CloneStampInstance::Apply( image, src, mask, maskInverted, action.brush, action.cloner.ReverseBegin(), Point( delta ) );
 
             imageChanged = true;
-/*
-#ifdef __PCL_WINDOWS
-*/
+
             //targetView->Unlock( false );
             w.RegenerateImageRect( action.bounds );
-/*
-#else
-            regenRect = action.bounds;
-            GUI->Regen_Timer.Start();
-            //targetView->Unlock( false );
-#endif
-*/
          }
 
          ERROR_CLEANUP( dragging = false; )
@@ -1355,16 +1341,6 @@ void CloneStampInterface::DynamicMouseRelease( View& v, const DPoint& p, int but
 
    if ( targetView != nullptr )
    {
-/*
-#ifndef __PCL_WINDOWS
-      GUI->Regen_Timer.Stop();
-      if ( regenRect.IsRect() )
-      {
-         targetView->Window().RegenerateImageRect( regenRect );
-         regenRect = 0;
-      }
-#endif
-*/
       if ( selectingSource )
       {
          selectingSource = false;
@@ -1875,4 +1851,4 @@ CloneStampInterface::GUIData::GUIData( CloneStampInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CloneStampInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF CloneStampInterface.cpp - Released 2017-05-02T09:43:00Z

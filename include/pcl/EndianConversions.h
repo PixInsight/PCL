@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/EndianConversions.h - Released 2016/02/21 20:22:12 UTC
+// pcl/EndianConversions.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,9 +54,9 @@
 
 /// \file pcl/EndianConversions.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
+
+#include <pcl/Math.h>
 
 namespace pcl
 {
@@ -64,14 +64,14 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup endian_conversion_functions Endianness Conversion Functions
+ * \defgroup endianness_conversion_and_detection Endianness Conversion and Detection Functions
  */
 
 /*!
  * Converts a 16-bit unsigned integer from big endian to little endian byte
  * storage order.
  *
- * \ingroup endian_conversion_functions
+ * \ingroup endianness_conversion_and_detection
  */
 inline uint16 BigToLittleEndian( uint16 x )
 {
@@ -82,19 +82,31 @@ inline uint16 BigToLittleEndian( uint16 x )
  * Converts a 32-bit unsigned integer from big endian to little endian byte
  * storage order.
  *
- * \ingroup endian_conversion_functions
+ * \ingroup endianness_conversion_and_detection
  */
 inline uint32 BigToLittleEndian( uint32 x )
 {
-   return (x << 24) | ((x & 0x0000FF00ul) << 8) |
-                      ((x & 0x00FF0000ul) >> 8) | (x >> 24);
+   return (RotL( x, 8 ) & 0x00ff00ffu) | (RotR( x, 8 ) & 0xff00ff00u);
+
 }
 
 /*!
- * A convenience function for little-to-big endian conversion. It is
- * equivalent to: BigToLittleEndian( x )
+ * Converts a 64-bit unsigned integer from big endian to little endian byte
+ * storage order.
  *
- * \ingroup endian_conversion_functions
+ * \ingroup endianness_conversion_and_detection
+ */
+inline uint64 BigToLittleEndian( uint64 x )
+{
+   return (uint64( BigToLittleEndian( uint32( x ) ) ) << 32) | uint64( BigToLittleEndian( uint32( x >> 32 ) ) );
+}
+
+/*!
+ * A convenience synonym function for little-to-big endian conversions, which
+ * we define for the sake of code legibility. It is obviously equivalent to
+ * BigToLittleEndian( x ).
+ *
+ * \ingroup endianness_conversion_and_detection
  */
 template <typename T> inline T LittleToBigEndian( T x )
 {
@@ -103,9 +115,54 @@ template <typename T> inline T LittleToBigEndian( T x )
 
 // ----------------------------------------------------------------------------
 
+union __pcl_endian_check__ { uint32 w; uint8 b[ sizeof( uint32 ) ]; };
+
+constexpr __pcl_endian_check__ __pcl_endian_check_sample__ = { 0xdeadbeef };
+
+#ifdef __clang__
+
+inline bool IsLittleEndianMachine()
+{
+   return __pcl_endian_check_sample__.b[0] == 0xef;
+}
+
+inline bool IsBigEndianMachine()
+{
+   return __pcl_endian_check_sample__.b[0] == 0xde;
+}
+
+#else
+
+// Clang fails here with "read of member 'b' of union with active member 'w' is
+// not allowed in a constant expression".
+
+/*!
+ * Returns true iff the caller is running on a little-endian architecture.
+ *
+ * \ingroup endianness_conversion_and_detection
+ */
+constexpr bool IsLittleEndianMachine()
+{
+   return __pcl_endian_check_sample__.b[0] == 0xef;
+}
+
+/*!
+ * Returns true iff the caller is running on a big-endian architecture.
+ *
+ * \ingroup endianness_conversion_and_detection
+ */
+constexpr bool IsBigEndianMachine()
+{
+   return __pcl_endian_check_sample__.b[0] == 0xde;
+}
+
+#endif // __clang__
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 #endif   // __PCL_EndianConversions_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/EndianConversions.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/EndianConversions.h - Released 2017-06-28T11:58:36Z

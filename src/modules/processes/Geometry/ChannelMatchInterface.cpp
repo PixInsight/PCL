@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0346
 // ----------------------------------------------------------------------------
-// ChannelMatchInterface.cpp - Released 2016/11/17 18:14:58 UTC
+// ChannelMatchInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -68,9 +68,7 @@ ChannelMatchInterface* TheChannelMatchInterface = nullptr;
 // ----------------------------------------------------------------------------
 
 ChannelMatchInterface::ChannelMatchInterface() :
-   ProcessInterface(),
-   instance( TheChannelMatchProcess ),
-   GUI( nullptr )
+   instance( TheChannelMatchProcess )
 {
    TheChannelMatchInterface = this;
 }
@@ -127,15 +125,10 @@ ProcessImplementation* ChannelMatchInterface::NewProcess() const
 
 bool ChannelMatchInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const ChannelMatchInstance* r = dynamic_cast<const ChannelMatchInstance*>( &p );
-   if ( r == nullptr )
-   {
-      whyNot = "Not a ChannelMatch instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const ChannelMatchInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a ChannelMatch instance.";
+   return false;
 }
 
 bool ChannelMatchInterface::RequiresInstanceValidation() const
@@ -596,4 +589,4 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ChannelMatchInterface.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF ChannelMatchInterface.cpp - Released 2017-05-02T09:43:00Z

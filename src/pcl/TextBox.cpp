@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/TextBox.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/TextBox.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,10 +58,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-
-#ifdef _MSC_VER
-#  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
-#endif
 
 TextBox::TextBox( const String& text, Control& parent ) :
    Frame( (*API->TextBox->CreateTextBox)( ModuleHandle(), this, text.c_str(), parent.handle, 0/*flags*/ ) )
@@ -224,7 +220,7 @@ void TextBox::OnTextUpdated( unicode_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->TextBox->SetTextBoxUpdatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? TextBoxEventDispatcher::TextUpdated : 0 ) == api_false )
+                  (f != nullptr) ? TextBoxEventDispatcher::TextUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetTextBoxUpdatedEventRoutine" );
    m_handlers->onTextUpdated = f;
 }
@@ -233,7 +229,7 @@ void TextBox::OnCaretPositionUpdated( caret_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->TextBox->SetTextBoxCaretPositionUpdatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? TextBoxEventDispatcher::CaretPositionUpdated : 0 ) == api_false )
+                  (f != nullptr) ? TextBoxEventDispatcher::CaretPositionUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetTextBoxCaretPositionUpdatedEventRoutine" );
    m_handlers->onCaretPositionUpdated = f;
 }
@@ -242,7 +238,7 @@ void TextBox::OnSelectionUpdated( selection_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->TextBox->SetTextBoxSelectionUpdatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? TextBoxEventDispatcher::SelectionUpdated : 0 ) == api_false )
+                  (f != nullptr) ? TextBoxEventDispatcher::SelectionUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetTextBoxSelectionUpdatedEventRoutine" );
    m_handlers->onSelectionUpdated = f;
 }
@@ -254,4 +250,4 @@ void TextBox::OnSelectionUpdated( selection_event_handler f, Control& receiver )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/TextBox.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/TextBox.cpp - Released 2017-06-28T11:58:42Z

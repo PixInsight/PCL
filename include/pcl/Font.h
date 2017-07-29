@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Font.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Font.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,21 +56,11 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_UIObject_h
-#include <pcl/UIObject.h>
-#endif
-
-#ifndef __PCL_StringList_h
-#include <pcl/StringList.h>
-#endif
-
-#ifndef __PCL_Rectangle_h
 #include <pcl/Rectangle.h>
-#endif
+#include <pcl/StringList.h>
+#include <pcl/UIObject.h>
 
 #endif   // __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
@@ -80,7 +70,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace FontFamily
+ * \namespace pcl::FontFamily
  * \brief Platform-independent, standard font families
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -126,7 +116,7 @@ namespace FontFamily
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace FontWeight
+ * \namespace pcl::FontWeight
  * \brief Standard font weights
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -170,7 +160,7 @@ namespace FontWeight
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace FontStretch
+ * \namespace pcl::FontStretch
  * \brief Standard font stretchs
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -554,4 +544,4 @@ private:
 #endif   // __PCL_Font_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Font.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Font.h - Released 2017-06-28T11:58:36Z

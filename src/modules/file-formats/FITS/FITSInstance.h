@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.04.0358
+// Standard FITS File Format Module Version 01.01.05.0381
 // ----------------------------------------------------------------------------
-// FITSInstance.h - Released 2016/02/21 20:22:34 UTC
+// FITSInstance.h - Released 2017-05-02T09:42:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -55,6 +55,7 @@
 
 #include "FITS.h"
 
+#include <pcl/AutoPointer.h>
 #include <pcl/FileFormatImplementation.h>
 
 namespace pcl
@@ -83,12 +84,11 @@ public:
 
    virtual void* FormatSpecificData() const;
 
-   virtual void Extract( FITSKeywordArray& keywords );
-   virtual void Extract( ICCProfile& icc );
-   virtual void Extract( UInt8Image& thumbnail );
-   virtual ImagePropertyDescriptionArray Properties();
-   virtual Variant ReadProperty( const IsoString& property );
-   virtual void WriteProperty( const IsoString& property, const Variant& value );
+   virtual ICCProfile ReadICCProfile();
+   virtual UInt8Image ReadThumbnail();
+   virtual FITSKeywordArray ReadFITSKeywords();
+   virtual PropertyDescriptionArray ImageProperties();
+   virtual Variant ReadImageProperty( const IsoString& property );
 
    virtual void ReadImage( Image& );
    virtual void ReadImage( DImage& );
@@ -96,11 +96,11 @@ public:
    virtual void ReadImage( UInt16Image& );
    virtual void ReadImage( UInt32Image& );
 
-   virtual void Read( Image::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Read( DImage::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Read( UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Read( UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Read( UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void ReadSamples( Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void ReadSamples( DImage::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void ReadSamples( UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void ReadSamples( UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void ReadSamples( UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
 
    virtual bool QueryOptions( Array<ImageOptions>& options, Array<void*>& formatOptions );
    virtual void Create( const String& filePath, int numberOfImages, const IsoString& hints );
@@ -108,9 +108,10 @@ public:
    virtual void SetOptions( const ImageOptions& options );
    virtual void SetFormatSpecificData( const void* data );
 
-   virtual void Embed( const FITSKeywordArray& keywords );
-   virtual void Embed( const ICCProfile& icc );
-   virtual void Embed( const UInt8Image& image );
+   virtual void WriteICCProfile( const ICCProfile& );
+   virtual void WriteThumbnail( const UInt8Image& );
+   virtual void WriteFITSKeywords( const FITSKeywordArray& );
+   virtual void WriteImageProperty( const IsoString& property, const Variant& value );
 
    virtual void WriteImage( const Image& );
    virtual void WriteImage( const DImage& );
@@ -120,24 +121,21 @@ public:
 
    virtual void CreateImage( const ImageInfo& info );
 
-   virtual void Write( const Image::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Write( const DImage::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Write( const UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Write( const UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Write( const UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void WriteSamples( const Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void WriteSamples( const DImage::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void WriteSamples( const UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void WriteSamples( const UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void WriteSamples( const UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
+
+   virtual void CloseImage();
 
 private:
 
-   FITSReader*    reader;
-   FITSWriter*    writer;
-   FITSReadHints* readHints;
-
-   // Embedded data that requires persistent objects
-   ICCProfile* embeddedICCProfile;
-   UInt8Image* embeddedThumbnail;
-
-   bool queriedOptions : 1; // did us query options to the user?
-   int  verbosity;
+   AutoPointer<FITSReader>    m_reader;
+   AutoPointer<FITSWriter>    m_writer;
+   AutoPointer<FITSReadHints> m_readHints;
+   bool                       m_queriedOptions = false;
+   bool                       m_shownExtractedKeywordsInfo = false;
 };
 
 // ----------------------------------------------------------------------------
@@ -147,4 +145,4 @@ private:
 #endif   // __FITSInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF FITSInstance.h - Released 2016/02/21 20:22:34 UTC
+// EOF FITSInstance.h - Released 2017-05-02T09:42:51Z

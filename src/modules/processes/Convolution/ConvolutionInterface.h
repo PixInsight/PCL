@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Convolution Process Module Version 01.01.03.0207
+// Standard Convolution Process Module Version 01.01.03.0226
 // ----------------------------------------------------------------------------
-// ConvolutionInterface.h - Released 2016/02/21 20:22:42 UTC
+// ConvolutionInterface.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -133,7 +133,7 @@ private:
       int                 m_zoomLevel;
    };
 
-   mutable RealTimeThread* m_realTimeThread;
+   mutable RealTimeThread* m_realTimeThread = nullptr;
 
    struct GUIData
    {
@@ -188,7 +188,7 @@ private:
       Timer UpdateRealTimePreview_Timer;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
    void UpdateCurrentModeControls();
@@ -199,18 +199,16 @@ private:
    void RegenerateFiltersComboBox( int selectedItemIndex );
    void RegenerateFiltersComboBox( const String& selectedFilterName );
 
-   // Event Handlers
-
    void __Filter_PageSelected( TabBox& sender, int pageIndex );
    void __Filter_ValueUpdated( NumericEdit& sender, double value );
    void __Filter_SliderUpdated( Slider& sender, int value );
    void __Filter_Paint( Control& sender, const Rect& updateRect );
-
    //void __Library_EditCompleted( Edit& sender );
    void __Library_ItemSelected( ComboBox& sender, int itemIndex );
    void __Library_Click( Button& sender, bool checked );
    void __Image_Click( Button& sender, bool checked );
-
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
    void __UpdateRealTimePreview_Timer( Timer& );
 
    friend struct GUIData;
@@ -229,4 +227,4 @@ PCL_END_LOCAL
 #endif   // __ConvolutionInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF ConvolutionInterface.h - Released 2016/02/21 20:22:42 UTC
+// EOF ConvolutionInterface.h - Released 2017-05-02T09:43:00Z

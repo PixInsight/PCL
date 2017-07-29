@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0374
 // ----------------------------------------------------------------------------
-// RescaleInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// RescaleInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,7 +58,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-RescaleInterface* TheRescaleInterface = 0;
+RescaleInterface* TheRescaleInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -67,7 +67,7 @@ RescaleInterface* TheRescaleInterface = 0;
 // ----------------------------------------------------------------------------
 
 RescaleInterface::RescaleInterface() :
-ProcessInterface(), instance( TheRescaleProcess ), GUI( 0 )
+   instance( TheRescaleProcess )
 {
    TheRescaleInterface = this;
 }
@@ -76,8 +76,8 @@ ProcessInterface(), instance( TheRescaleProcess ), GUI( 0 )
 
 RescaleInterface::~RescaleInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -103,18 +103,6 @@ const char** RescaleInterface::IconImageXPM() const
 
 // ----------------------------------------------------------------------------
 
-void RescaleInterface::Initialize()
-{
-   // ### Deferred initialization
-   /*
-   GUI = new GUIData( *this );
-   SetWindowTitle( "Rescale" );
-   UpdateControls();
-   */
-}
-
-// ----------------------------------------------------------------------------
-
 void RescaleInterface::ApplyInstance() const
 {
    instance.LaunchOnCurrentView();
@@ -132,8 +120,7 @@ void RescaleInterface::ResetInstance()
 
 bool RescaleInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "Rescale" );
@@ -155,16 +142,10 @@ ProcessImplementation* RescaleInterface::NewProcess() const
 
 bool RescaleInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const RescaleInstance* r = dynamic_cast<const RescaleInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not a Rescale instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const RescaleInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a Rescale instance.";
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -263,4 +244,4 @@ RescaleInterface::GUIData::GUIData( RescaleInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RescaleInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF RescaleInterface.cpp - Released 2017-05-02T09:43:00Z

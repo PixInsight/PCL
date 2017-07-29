@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ColorDialog.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ColorDialog.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -49,30 +49,17 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#ifndef PCL_ColorDialog_h
-#define PCL_ColorDialog_h
+#ifndef __PCL_ColorDialog_h
+#define __PCL_ColorDialog_h
 
 /// \file pcl/ColorDialog.h
 
-#ifndef PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef PCL_Dialog_h
-#include <pcl/Dialog.h>
-#endif
-
-#ifndef PCL_NumericControl_h
-#include <pcl/NumericControl.h>
-#endif
-
-#ifndef PCL_PushButton_h
-#include <pcl/PushButton.h>
-#endif
-
-#ifndef PCL_Color_h
 #include <pcl/Color.h>
-#endif
+#include <pcl/Dialog.h>
+#include <pcl/NumericControl.h>
+#include <pcl/PushButton.h>
 
 namespace pcl
 {
@@ -203,7 +190,7 @@ protected:
 
 } // pcl
 
-#endif   // PCL_ColorDialog_h
+#endif   // __PCL_ColorDialog_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ColorDialog.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ColorDialog.h - Released 2017-06-28T11:58:36Z

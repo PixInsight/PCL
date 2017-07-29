@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/AutoPointer.h - Released 2016/02/21 20:22:12 UTC
+// pcl/AutoPointer.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/AutoPointer.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Utility_h
 #include <pcl/Utility.h>
-#endif
 
 namespace pcl
 {
@@ -288,7 +281,9 @@ public:
     * deleter template argument class.
     */
    AutoPointer( bool autoDelete = true, const deleter& d = deleter() ) :
-      m_pointer( nullptr ), m_deleter( d ), m_autoDelete( autoDelete )
+      m_pointer( nullptr ),
+      m_deleter( d ),
+      m_autoDelete( autoDelete )
    {
    }
 
@@ -310,7 +305,9 @@ public:
     * deleter template argument class.
     */
    AutoPointer( pointer p, bool autoDelete = true, const deleter& d = deleter() ) :
-      m_pointer( nullptr ), m_deleter( d ), m_autoDelete( autoDelete )
+      m_pointer( nullptr ),
+      m_deleter( d ),
+      m_autoDelete( autoDelete )
    {
       m_pointer = p;
    }
@@ -330,7 +327,9 @@ public:
     * and hence multiple deletions are not possible.
     */
    AutoPointer( AutoPointer& x ) :
-      m_pointer( x.Release() ), m_deleter( x.m_deleter ), m_autoDelete( x.m_autoDelete )
+      m_pointer( x.Release() ),
+      m_deleter( x.m_deleter ),
+      m_autoDelete( x.m_autoDelete )
    {
    }
 
@@ -338,7 +337,9 @@ public:
     * Move constructor.
     */
    AutoPointer( AutoPointer&& x ) :
-      m_pointer( x.Release() ), m_deleter( std::move( x.m_deleter ) ), m_autoDelete( x.m_autoDelete )
+      m_pointer( x.Release() ),
+      m_deleter( std::move( x.m_deleter ) ),
+      m_autoDelete( x.m_autoDelete )
    {
    }
 
@@ -650,12 +651,7 @@ public:
 
    /*!
     * Returns true iff this smart pointer stores a non-null pointer. This
-    * operator is equivalent to:
-    *
-    * \code
-    * AutoPointer<T> p;
-    * return !p.IsNull();
-    * \endcode
+    * operator is equivalent to !IsNull().
     */
    operator bool() const
    {
@@ -686,4 +682,4 @@ private:
 #endif  // __PCL_AutoPointer_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AutoPointer.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/AutoPointer.h - Released 2017-06-28T11:58:36Z

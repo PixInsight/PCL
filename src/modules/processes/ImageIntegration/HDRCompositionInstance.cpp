@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.15.00.0398
 // ----------------------------------------------------------------------------
-// HDRCompositionInstance.cpp - Released 2016/11/13 17:30:54 UTC
+// HDRCompositionInstance.cpp - Released 2017-05-05T08:37:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -98,11 +98,15 @@ HDRCompositionInstance::HDRCompositionInstance( const MetaProcess* m ) :
 {
 }
 
+// ----------------------------------------------------------------------------
+
 HDRCompositionInstance::HDRCompositionInstance( const HDRCompositionInstance& x ) :
    ProcessImplementation( x )
 {
    Assign( x );
 }
+
+// ----------------------------------------------------------------------------
 
 void HDRCompositionInstance::Assign( const ProcessImplementation& p )
 {
@@ -125,16 +129,22 @@ void HDRCompositionInstance::Assign( const ProcessImplementation& p )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool HDRCompositionInstance::CanExecuteOn( const View& view, String& whyNot ) const
 {
    whyNot = "HDRComposition can only be executed in the global context.";
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool HDRCompositionInstance::IsHistoryUpdater( const View& view ) const
 {
    return false;
 }
+
+// ----------------------------------------------------------------------------
 
 bool HDRCompositionInstance::CanExecuteGlobal( String& whyNot ) const
 {
@@ -144,7 +154,6 @@ bool HDRCompositionInstance::CanExecuteGlobal( String& whyNot ) const
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
@@ -270,7 +279,8 @@ private:
    typedef IndirectArray<HDRCompositionFile>  file_list;
 
    AutoPointer<FileFormatInstance> file;
-   size_type                       exposure;
+   size_type                       exposure = 0;
+
    static file_list                files;
    static int                      width;
    static int                      height;
@@ -278,9 +288,7 @@ private:
    static bool                     isColor;
    static AutoPointer<UInt8Image>  rejectionMask;
 
-   HDRCompositionFile() : exposure( 0 )
-   {
-   }
+   HDRCompositionFile() = default;
 
    void DoOpen( const String&, const HDRCompositionInstance* );
    void ComputeExposure( const HDRCompositionInstance* );
@@ -292,6 +300,8 @@ int HDRCompositionFile::height = 0;
 int HDRCompositionFile::numberOfChannels = 0;
 bool HDRCompositionFile::isColor = false;
 AutoPointer<UInt8Image> HDRCompositionFile::rejectionMask;
+
+// ----------------------------------------------------------------------------
 
 void HDRCompositionFile::DoOpen( const String& path, const HDRCompositionInstance* instance )
 {
@@ -363,6 +373,8 @@ void HDRCompositionFile::DoOpen( const String& path, const HDRCompositionInstanc
       }
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void HDRCompositionFile::ComputeExposure( const HDRCompositionInstance* instance )
 {
@@ -924,6 +936,7 @@ void* HDRCompositionInstance::LockParameter( const MetaParameter* p, size_type t
       return &p_outputMasks;
    if ( p == TheHCClosePreviousImagesParameter )
       return &p_closePreviousImages;
+
    return nullptr;
 }
 
@@ -961,6 +974,7 @@ size_type HDRCompositionInstance::ParameterLength( const MetaParameter* p, size_
       return p_images[tableRow].path.Length();
    if ( p == TheHCInputHintsParameter )
       return p_inputHints.Length();
+
    return 0;
 }
 
@@ -969,4 +983,4 @@ size_type HDRCompositionInstance::ParameterLength( const MetaParameter* p, size_
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HDRCompositionInstance.cpp - Released 2016/11/13 17:30:54 UTC
+// EOF HDRCompositionInstance.cpp - Released 2017-05-05T08:37:32Z

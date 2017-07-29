@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Random.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Random.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -81,12 +81,19 @@ static bool GetSystemSeed( void* bytes, size_type n )
    int fn = open( "/dev/urandom", O_RDONLY );
    if ( fn == -1 || read( fn, bytes, n ) != fsize_type( n ) )
    {
-      std::cout << "\n** Warning: Couldn't read /dev/urandom\n" << std::flush;
+      std::cout << "\n** Warning: Could not read /dev/urandom\n" << std::flush;
       return false;
    }
    close( fn );
    return true;
 #endif
+}
+
+static uint64 TimeSeed()
+{
+   union { time_t t; uint64 u; } t;
+   t.t = time( 0 );
+   return t.u;
 }
 
 static uint64 XorShift64Seed( uint64& x )
@@ -102,13 +109,6 @@ static uint64 XorShift64Seed( uint64& x )
    }
 }
 
-static uint64 TimeSeed()
-{
-   union { time_t t; uint64 u; } t;
-   t.t = time( 0 );
-   return t.u;
-}
-
 uint64 RandomSeed64()
 {
    static Mutex mutex;
@@ -120,6 +120,7 @@ uint64 RandomSeed64()
    return XorShift64Seed( seed );
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 /*
@@ -415,21 +416,27 @@ RandomNumberGenerator::RandomNumberGenerator( double ymax, uint32 seed ) :
    m_rmax = m_ymax/double( uint32_max );
 }
 
+// ----------------------------------------------------------------------------
+
 RandomNumberGenerator::~RandomNumberGenerator()
 {
 }
+
+// ----------------------------------------------------------------------------
 
 uint32 RandomNumberGenerator::Rand32()
 {
    return (*m_generator)();
 }
 
-/*
- * Box-Muller transform, polar form.
- * http://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
- */
+// ----------------------------------------------------------------------------
+
 double RandomNumberGenerator::Normal( double mean, double sigma )
 {
+   /*
+    * Box-Muller transform, polar form:
+    * http://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
+    */
    if ( m_normal )
    {
       m_normal = false;
@@ -451,12 +458,13 @@ double RandomNumberGenerator::Normal( double mean, double sigma )
    return mean + u*s*sigma;
 }
 
-/*
- * Ln( Gamma() )
- * Adapted from Numerical Recipes in C 3rd Ed. p. 257
- */
+// ----------------------------------------------------------------------------
+
 static double LnGamma( double x )
 {
+   /*
+    * Adapted from Numerical Recipes in C 3rd Ed. p. 257
+    */
    static const double cof[]=
    { 57.1562356658629235,     -59.5979603554754912,
      14.1360979747417471,      -0.491913816097620199,     0.339946499848118887e-4,
@@ -473,6 +481,8 @@ static double LnGamma( double x )
    return tmp + Ln( 2.5066282746310005*ser/x );
 }
 
+// ----------------------------------------------------------------------------
+
 int RandomNumberGenerator::Poisson( double lambda )
 {
    if ( !m_lambda )
@@ -481,7 +491,7 @@ int RandomNumberGenerator::Poisson( double lambda )
    if ( lambda < 12 )
    {
       /*
-       * Use Knuth's algorithm
+       * Use Knuth's algorithm.
        */
       if ( m_lambda[0] != lambda )
       {
@@ -495,9 +505,8 @@ int RandomNumberGenerator::Poisson( double lambda )
    }
 
    /*
-    * Use rejection sampling with a Lorentzian envelope
+    * Use rejection sampling with a Lorentzian envelope.
     */
-
    if ( m_lambda[0] != lambda )
    {
       m_lambda[0] = lambda;
@@ -529,4 +538,4 @@ int RandomNumberGenerator::Poisson( double lambda )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Random.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Random.cpp - Released 2017-06-28T11:58:42Z

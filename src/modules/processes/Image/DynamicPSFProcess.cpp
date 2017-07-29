@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0352
+// Standard Image Process Module Version 01.02.09.0371
 // ----------------------------------------------------------------------------
-// DynamicPSFProcess.cpp - Released 2016/02/21 20:22:43 UTC
+// DynamicPSFProcess.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,7 +59,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-DynamicPSFProcess* TheDynamicPSFProcess = 0;
+DynamicPSFProcess* TheDynamicPSFProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -70,8 +70,6 @@ DynamicPSFProcess* TheDynamicPSFProcess = 0;
 DynamicPSFProcess::DynamicPSFProcess() : MetaProcess()
 {
    TheDynamicPSFProcess = this;
-
-   // Instantiate process parameters
 
    new DPViewTable( this );
    new DPViewId( TheDPViewTableParameter );
@@ -184,8 +182,8 @@ ProcessImplementation* DynamicPSFProcess::Create() const
 
 ProcessImplementation* DynamicPSFProcess::Clone( const ProcessImplementation& p ) const
 {
-   const DynamicPSFInstance* i = dynamic_cast<const DynamicPSFInstance*>( &p );
-   return (i != 0) ? new DynamicPSFInstance( *i ) : 0;
+   const DynamicPSFInstance* instance = dynamic_cast<const DynamicPSFInstance*>( &p );
+   return (instance != nullptr) ? new DynamicPSFInstance( *instance ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -193,4 +191,4 @@ ProcessImplementation* DynamicPSFProcess::Clone( const ProcessImplementation& p 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicPSFProcess.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF DynamicPSFProcess.cpp - Released 2017-05-02T09:43:00Z

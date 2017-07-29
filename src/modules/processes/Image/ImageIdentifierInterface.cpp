@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0352
+// Standard Image Process Module Version 01.02.09.0371
 // ----------------------------------------------------------------------------
-// ImageIdentifierInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// ImageIdentifierInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,7 +60,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ImageIdentifierInterface* TheImageIdentifierInterface = 0;
+ImageIdentifierInterface* TheImageIdentifierInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ ImageIdentifierInterface* TheImageIdentifierInterface = 0;
 // ----------------------------------------------------------------------------
 
 ImageIdentifierInterface::ImageIdentifierInterface() :
-ProcessInterface(), instance( TheImageIdentifierProcess ), GUI( 0 )
+   instance( TheImageIdentifierProcess )
 {
    TheImageIdentifierInterface = this;
 }
@@ -78,8 +78,8 @@ ProcessInterface(), instance( TheImageIdentifierProcess ), GUI( 0 )
 
 ImageIdentifierInterface::~ImageIdentifierInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -105,18 +105,6 @@ const char** ImageIdentifierInterface::IconImageXPM() const
 
 // ----------------------------------------------------------------------------
 
-void ImageIdentifierInterface::Initialize()
-{
-   // ### Deferred initialization
-   /*
-   GUI = new GUIData( *this );
-   SetWindowTitle( "ImageIdentifier" );
-   UpdateControls();
-   */
-}
-
-// ----------------------------------------------------------------------------
-
 void ImageIdentifierInterface::ApplyInstance() const
 {
    instance.LaunchOnCurrentWindow();
@@ -134,8 +122,7 @@ void ImageIdentifierInterface::ResetInstance()
 
 bool ImageIdentifierInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "ImageIdentifier" );
@@ -157,16 +144,10 @@ ProcessImplementation* ImageIdentifierInterface::NewProcess() const
 
 bool ImageIdentifierInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const ImageIdentifierInstance* r = dynamic_cast<const ImageIdentifierInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not an ImageIdentifier instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const ImageIdentifierInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an ImageIdentifier instance.";
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -194,7 +175,7 @@ void ImageIdentifierInterface::UpdateControls()
 
 // ----------------------------------------------------------------------------
 
-void ImageIdentifierInterface::Identifier_EditCompleted( Edit& sender )
+void ImageIdentifierInterface::__EditCompleted( Edit& sender )
 {
    try
    {
@@ -204,17 +185,31 @@ void ImageIdentifierInterface::Identifier_EditCompleted( Edit& sender )
       // The identifier can either be empty, meaning that a default image
       // identifier will be set by the PixInsight application, or a valid
       // C identifier.
-
       if ( !newId.IsEmpty() && !newId.IsValidIdentifier() )
          throw Error( '\'' + newId + "': Invalid identifier" );
 
       instance.SetId( newId );
       UpdateControls();
    }
-
    ERROR_CLEANUP(
       UpdateControls();
       )
+}
+
+void ImageIdentifierInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->Identifier_Edit )
+      wantsView = view.IsMainView();
+}
+
+void ImageIdentifierInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->Identifier_Edit )
+      if ( view.IsMainView() )
+      {
+         instance.SetId( view.Id() );
+         UpdateControls();
+      }
 }
 
 // ----------------------------------------------------------------------------
@@ -224,7 +219,9 @@ ImageIdentifierInterface::GUIData::GUIData( ImageIdentifierInterface& w )
    Identifier_Label.SetText( "Identifier:" );
 
    Identifier_Edit.SetMinWidth( w.Font().Width( String( '0', 50 ) ) );
-   Identifier_Edit.OnEditCompleted( (pcl::Edit::edit_event_handler)&ImageIdentifierInterface::Identifier_EditCompleted, w );
+   Identifier_Edit.OnEditCompleted( (pcl::Edit::edit_event_handler)&ImageIdentifierInterface::__EditCompleted, w );
+   Identifier_Edit.OnViewDrag( (Control::view_drag_event_handler)&ImageIdentifierInterface::__ViewDrag, w );
+   Identifier_Edit.OnViewDrop( (Control::view_drop_event_handler)&ImageIdentifierInterface::__ViewDrop, w );
 
    Identifier_Sizer.SetSpacing( 6 );
    Identifier_Sizer.Add( Identifier_Label );
@@ -243,4 +240,4 @@ ImageIdentifierInterface::GUIData::GUIData( ImageIdentifierInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIdentifierInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF ImageIdentifierInterface.cpp - Released 2017-05-02T09:43:00Z

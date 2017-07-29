@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard GradientDomain Process Module Version 00.06.04.0165
+// Standard GradientDomain Process Module Version 00.06.04.0184
 // ----------------------------------------------------------------------------
-// GradientsMergeMosaicInterface.h - Released 2016/02/21 20:22:43 UTC
+// GradientsMergeMosaicInterface.h - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -31,61 +31,58 @@
 #ifndef __GradientsMergeMosaicInterface_h
 #define __GradientsMergeMosaicInterface_h
 
-#include <pcl/ProcessInterface.h>
-
-#include <pcl/Sizer.h>
-#include <pcl/SectionBar.h>
-#include <pcl/ToolButton.h>
-#include <pcl/PushButton.h>
-#include <pcl/NumericControl.h>
-#include <pcl/SpinBox.h>
-#include <pcl/TreeBox.h>
-#include <pcl/ComboBox.h>
 #include <pcl/CheckBox.h>
+#include <pcl/ComboBox.h>
+#include <pcl/NumericControl.h>
+#include <pcl/ProcessInterface.h>
+#include <pcl/PushButton.h>
+#include <pcl/SectionBar.h>
+#include <pcl/Sizer.h>
+#include <pcl/SpinBox.h>
+#include <pcl/ToolButton.h>
+#include <pcl/TreeBox.h>
 
 #include "GradientsMergeMosaicInstance.h"
 
 namespace pcl
 {
 
-  class GradientsMergeMosaicInterface: public ProcessInterface
-  {
-  public:
+// ----------------------------------------------------------------------------
 
-    GradientsMergeMosaicInterface();
-    virtual ~GradientsMergeMosaicInterface();
+class GradientsMergeMosaicInterface: public ProcessInterface
+{
+public:
 
-    virtual IsoString Id() const;
-    virtual IsoString Aliases() const;
-    virtual MetaProcess* Process() const;
-    virtual const char** IconImageXPM() const;
+   GradientsMergeMosaicInterface();
+   virtual ~GradientsMergeMosaicInterface();
 
-    InterfaceFeatures Features() const;
+   virtual IsoString Id() const;
+   virtual IsoString Aliases() const;
+   virtual MetaProcess* Process() const;
+   virtual const char** IconImageXPM() const;
 
-    virtual void ApplyInstance() const;
-    virtual void ResetInstance();
+   InterfaceFeatures Features() const;
 
-    virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
+   virtual void ApplyInstance() const;
+   virtual void ResetInstance();
 
-    virtual ProcessImplementation* NewProcess() const;
+   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
 
-    virtual bool ValidateProcess( const ProcessImplementation&, pcl::String& whyNot ) const;
-    virtual bool RequiresInstanceValidation() const;
+   virtual ProcessImplementation* NewProcess() const;
 
-    virtual bool ImportProcess( const ProcessImplementation& );
+   virtual bool ValidateProcess( const ProcessImplementation&, pcl::String& whyNot ) const;
+   virtual bool RequiresInstanceValidation() const;
 
-    virtual void SaveSettings() const;
+   virtual bool ImportProcess( const ProcessImplementation& );
 
-    // -------------------------------------------------------------------------
+   virtual void SaveSettings() const;
 
-  private:
+private:
 
-    GradientsMergeMosaicInstance instance;
+   GradientsMergeMosaicInstance instance;
 
-    // -------------------------------------------------------------------------
-
-    struct GUIData
-    {
+   struct GUIData
+   {
       GUIData(GradientsMergeMosaicInterface& );
 
       VerticalSizer  Global_Sizer;
@@ -93,88 +90,86 @@ namespace pcl
       SectionBar        TargetImages_SectionBar;
       Control           TargetImages_Control;
       HorizontalSizer   TargetImages_Sizer;
-       TreeBox           TargetImages_TreeBox;
-      VerticalSizer     TargetButtons_Sizer;
-       PushButton        AddFiles_PushButton;
-      PushButton         MoveUp_PushButton;
-
-      PushButton         MoveDown_PushButton;
-       PushButton        SelectAll_PushButton;
-       PushButton        InvertSelection_PushButton;
-       PushButton        ToggleSelected_PushButton;
-       PushButton        RemoveSelected_PushButton;
-       PushButton        Clear_PushButton;
-      CheckBox          FullPaths_CheckBox;
+         TreeBox           TargetImages_TreeBox;
+         VerticalSizer     TargetButtons_Sizer;
+            PushButton        AddFiles_PushButton;
+            PushButton        MoveUp_PushButton;
+            PushButton        MoveDown_PushButton;
+            PushButton        SelectAll_PushButton;
+            PushButton        InvertSelection_PushButton;
+            PushButton        ToggleSelected_PushButton;
+            PushButton        RemoveSelected_PushButton;
+            PushButton        Clear_PushButton;
+            CheckBox          FullPaths_CheckBox;
 
       SectionBar        Parameters_SectionBar;
-       Control           Parameters_Control;
-        VerticalSizer     Parameters_Sizer;
-        HorizontalSizer   Type_Sizer;
-          Label           Type_Label;
-          ComboBox        Type_ComboBox;
-      HorizontalSizer   ShrinkCount_Sizer;
-         Label             ShrinkCount_Label;
-         SpinBox           ShrinkCount_SpinBox;
+      Control           Parameters_Control;
+      VerticalSizer     Parameters_Sizer;
+         HorizontalSizer   Type_Sizer;
+            Label             Type_Label;
+            ComboBox          Type_ComboBox;
+         HorizontalSizer   ShrinkCount_Sizer;
+            Label             ShrinkCount_Label;
+            SpinBox           ShrinkCount_SpinBox;
 
       HorizontalSizer   FeatherRadius_Sizer;
          Label             FeatherRadius_Label;
          SpinBox           FeatherRadius_SpinBox;
 
-        NumericControl   BlackPoint_NumericControl;
-        HorizontalSizer   GenerateMask_Sizer;
+      NumericControl    BlackPoint_NumericControl;
+      HorizontalSizer   GenerateMask_Sizer;
          Label            GenerateMask_Label;
          CheckBox         GenerateMask_CheckBox;
+   };
 
-    };
+   GUIData* GUI = nullptr;
 
-    GUIData* GUI;
+   void UpdateControls();
+   void UpdateTargetImageItem( size_type );
+   void UpdateTargetImagesList();
+   void UpdateImageSelectionButtons();
+   void UpdateParameters();
 
-    // Interface Updates
+   void __TargetImages_CurrentNodeUpdated( TreeBox& sender, TreeBox::Node& current, TreeBox::Node& oldCurrent );
+   void __TargetImages_NodeActivated( TreeBox& sender, TreeBox::Node& node, int col );
+   void __TargetImages_NodeSelectionUpdated( TreeBox& sender );
+   void __TargetImages_Click( Button& sender, bool checked );
 
-    void UpdateControls();
-    void UpdateTargetImageItem( size_type );
-    void UpdateTargetImagesList();
-    void UpdateImageSelectionButtons();
-    void UpdateParameters();
+   // void __CheckSection( SectionBar& sender, bool checked );
+   void __ToggleSection( SectionBar& sender, Control& section, bool start );
 
-    // Event Handlers
+   /// callback for type selection
+   void __TypeItemSelected( ComboBox &sender, int itemIndex );
 
-    void __TargetImages_CurrentNodeUpdated( TreeBox& sender, TreeBox::Node& current, TreeBox::Node& oldCurrent );
-    void __TargetImages_NodeActivated( TreeBox& sender, TreeBox::Node& node, int col );
-    void __TargetImages_NodeSelectionUpdated( TreeBox& sender );
-    void __TargetImages_Click( Button& sender, bool checked );
+   /// callback for shrinkCount spinbox
+   void __ShrinkCountValueUpdated( SpinBox& sender, int value );
 
-    // void __CheckSection( SectionBar& sender, bool checked );
-    void __ToggleSection( SectionBar& sender, Control& section, bool start );
+   /// callback for featherRadius spinbox
+   void __FeatherRadiusValueUpdated( SpinBox& sender, int value );
 
-    /// callback for type selection
-    void __TypeItemSelected( ComboBox &sender, int itemIndex );
+   /// callback for black point
+   void __BlackPointValueUpdated( NumericEdit& sender, double value );
 
-    /// callback for shrinkCount spinbox
-    void __ShrinkCountValueUpdated( SpinBox& sender, int value );
+   /// callback for generate mask checkbox
+   void _GenerateMaskClicked( Button& sender, bool checked );
 
-    /// callback for featherRadius spinbox
-    void __FeatherRadiusValueUpdated( SpinBox& sender, int value );
+   void __FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
+   void __FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
 
-    /// callback for black point
-    void __BlackPointValueUpdated( NumericEdit& sender, double value );
+   friend struct GUIData;
+};
 
-    /// callback for generate mask checkbox
-    void _GenerateMaskClicked( Button& sender, bool checked );
-    friend struct GUIData;
-  };
+// ----------------------------------------------------------------------------
 
-  // ----------------------------------------------------------------------------
+PCL_BEGIN_LOCAL
+   extern GradientsMergeMosaicInterface* TheGradientsMergeMosaicInterface;
+PCL_END_LOCAL
 
-  PCL_BEGIN_LOCAL
-    extern GradientsMergeMosaicInterface* TheGradientsMergeMosaicInterface;
-  PCL_END_LOCAL
-
-  // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 } // pcl
 
 #endif
 
 // ----------------------------------------------------------------------------
-// EOF GradientsMergeMosaicInterface.h - Released 2016/02/21 20:22:43 UTC
+// EOF GradientsMergeMosaicInterface.h - Released 2017-05-02T09:43:01Z

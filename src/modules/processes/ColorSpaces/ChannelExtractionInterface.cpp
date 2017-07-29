@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0298
+// Standard ColorSpaces Process Module Version 01.01.00.0317
 // ----------------------------------------------------------------------------
-// ChannelExtractionInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// ChannelExtractionInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -63,7 +63,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ChannelExtractionInterface* TheChannelExtractionInterface = 0;
+ChannelExtractionInterface* TheChannelExtractionInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -72,46 +72,48 @@ ChannelExtractionInterface* TheChannelExtractionInterface = 0;
 // ----------------------------------------------------------------------------
 
 ChannelExtractionInterface::ChannelExtractionInterface() :
-ProcessInterface(), instance( TheChannelExtractionProcess ), GUI( 0 )
+   instance( TheChannelExtractionProcess )
 {
    TheChannelExtractionInterface = this;
 }
 
+// ----------------------------------------------------------------------------
+
 ChannelExtractionInterface::~ChannelExtractionInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString ChannelExtractionInterface::Id() const
 {
    return "ChannelExtraction";
 }
 
+// ----------------------------------------------------------------------------
+
 MetaProcess* ChannelExtractionInterface::Process() const
 {
    return TheChannelExtractionProcess;
 }
+
+// ----------------------------------------------------------------------------
 
 const char** ChannelExtractionInterface::IconImageXPM() const
 {
    return ChannelExtractionIcon_XPM;
 }
 
-void ChannelExtractionInterface::Initialize()
-{
-   // ### Deferred initialization
-   /*
-   GUI = new GUIData( *this );
-   SetWindowTitle( "ChannelExtraction" );
-   UpdateControls();
-   */
-}
+// ----------------------------------------------------------------------------
 
 void ChannelExtractionInterface::ApplyInstance() const
 {
    instance.LaunchOnCurrentView();
 }
+
+// ----------------------------------------------------------------------------
 
 void ChannelExtractionInterface::ResetInstance()
 {
@@ -119,10 +121,11 @@ void ChannelExtractionInterface::ResetInstance()
    ImportProcess( defaultInstance );
 }
 
+// ----------------------------------------------------------------------------
+
 bool ChannelExtractionInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "ChannelExtraction" );
@@ -133,29 +136,31 @@ bool ChannelExtractionInterface::Launch( const MetaProcess& P, const ProcessImpl
    return &P == TheChannelExtractionProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* ChannelExtractionInterface::NewProcess() const
 {
    return new ChannelExtractionInstance( instance );
 }
 
+// ----------------------------------------------------------------------------
+
 bool ChannelExtractionInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const ChannelExtractionInstance* r = dynamic_cast<const ChannelExtractionInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not a ChannelExtraction instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const ChannelExtractionInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a ChannelExtraction instance.";
+   return false;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ChannelExtractionInterface::RequiresInstanceValidation() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ChannelExtractionInterface::ImportProcess( const ProcessImplementation& p )
 {
@@ -164,7 +169,6 @@ bool ChannelExtractionInterface::ImportProcess( const ProcessImplementation& p )
    return true;
 }
 
-// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void ChannelExtractionInterface::UpdateControls()
@@ -211,95 +215,101 @@ void ChannelExtractionInterface::UpdateControls()
 void ChannelExtractionInterface::__ColorSpace_Click( Button& sender, bool /*checked*/ )
 {
    if ( sender == GUI->RGB_RadioButton )
-      instance.colorSpace = ColorSpaceId::RGB;
+      instance.p_colorSpace = ColorSpaceId::RGB;
    else if ( sender == GUI->HSV_RadioButton )
-      instance.colorSpace = ColorSpaceId::HSV;
+      instance.p_colorSpace = ColorSpaceId::HSV;
    else if ( sender == GUI->HSI_RadioButton )
-      instance.colorSpace = ColorSpaceId::HSI;
+      instance.p_colorSpace = ColorSpaceId::HSI;
    else if ( sender == GUI->CIEXYZ_RadioButton )
-      instance.colorSpace = ColorSpaceId::CIEXYZ;
+      instance.p_colorSpace = ColorSpaceId::CIEXYZ;
    else if ( sender == GUI->CIELab_RadioButton )
-      instance.colorSpace = ColorSpaceId::CIELab;
+      instance.p_colorSpace = ColorSpaceId::CIELab;
    else if ( sender == GUI->CIELch_RadioButton )
-      instance.colorSpace = ColorSpaceId::CIELch;
+      instance.p_colorSpace = ColorSpaceId::CIELch;
 
-   instance.channelEnabled[0] = instance.channelEnabled[1] = instance.channelEnabled[2] = true;
+   instance.p_channelEnabled[0] = instance.p_channelEnabled[1] = instance.p_channelEnabled[2] = true;
 
    UpdateControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void ChannelExtractionInterface::__Channel_Click( Button& sender, bool checked )
 {
-   int i = -1;
+   int i;
    if ( sender == GUI->C0_CheckBox )
       i = 0;
    else if ( sender == GUI->C1_CheckBox )
       i = 1;
    else if ( sender == GUI->C2_CheckBox )
       i = 2;
+   else
+      return;
 
-   if ( i >= 0 )
+   int n = 0;
+   for ( int j = 0; j < 3; ++j )
    {
-      int n = 0;
-      for ( int j = 0; j < 3; ++j )
-      {
-         if ( j == i )
-            instance.channelEnabled[i] = checked;
-         if ( instance.channelEnabled[j] )
-            ++n;
-      }
-
-      if ( n == 0 )
-         for ( int j = 0; j < 3; ++j )
-            instance.channelEnabled[j] = true;
-
-      UpdateControls();
+      if ( j == i )
+         instance.p_channelEnabled[i] = checked;
+      if ( instance.p_channelEnabled[j] )
+         ++n;
    }
+
+   if ( n == 0 )
+      for ( int j = 0; j < 3; ++j )
+         instance.p_channelEnabled[j] = true;
+
+   UpdateControls();
 }
+
+// ----------------------------------------------------------------------------
 
 void ChannelExtractionInterface::__ChannelId_GetFocus( Control& sender )
 {
    Edit* e = dynamic_cast<Edit*>( &sender );
-   if ( e != 0 && e->Text() == AUTO_ID )
-      e->Clear();
+   if ( e != nullptr )
+      if ( e->Text() == AUTO_ID )
+         e->Clear();
 }
+
+// ----------------------------------------------------------------------------
 
 void ChannelExtractionInterface::__ChannelId_EditCompleted( Edit& sender )
 {
-   int i = -1;
+   int i;
    if ( sender == GUI->C0_Edit )
       i = 0;
    else if ( sender == GUI->C1_Edit )
       i = 1;
    else if ( sender == GUI->C2_Edit )
       i = 2;
+   else
+      return;
 
-   if ( i >= 0 )
+   try
    {
-      try
-      {
-         pcl::String id = sender.Text();
-         id.Trim();
+      pcl::String id = sender.Text().Trimmed();
+      if ( !id.IsEmpty() )
+         if ( id != AUTO_ID )
+            if ( !id.IsValidIdentifier() )
+               throw Error( "Invalid identifier: " + id );
 
-         if ( !id.IsEmpty() && id != AUTO_ID && !id.IsValidIdentifier() )
-            throw Error( "Invalid identifier: " + id );
-
-         instance.channelId[i] = (id != AUTO_ID) ? id : String();
-         sender.SetText( instance.channelId[i].IsEmpty() ? AUTO_ID : instance.channelId[i] );
-         return;
-      }
-
-      ERROR_CLEANUP(
-         sender.SetText( instance.channelId[i] );
-         sender.SelectAll();
-         sender.Focus()
-      )
+      instance.p_channelId[i] = (id != AUTO_ID) ? id : String();
+      sender.SetText( instance.p_channelId[i].IsEmpty() ? AUTO_ID : instance.p_channelId[i] );
+      return;
    }
+   ERROR_CLEANUP(
+      sender.SetText( instance.p_channelId[i] );
+      sender.SelectAll();
+      sender.Focus()
+   )
 }
+
+// ----------------------------------------------------------------------------
 
 void ChannelExtractionInterface::__SampleFormat_ItemSelected( ComboBox& /*sender*/, int itemIndex )
 {
-   instance.sampleFormat = itemIndex;
+   instance.p_sampleFormat = itemIndex;
 }
 
 // ----------------------------------------------------------------------------
@@ -446,4 +456,4 @@ ChannelExtractionInterface::GUIData::GUIData( ChannelExtractionInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ChannelExtractionInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ChannelExtractionInterface.cpp - Released 2017-05-02T09:43:00Z

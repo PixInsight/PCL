@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ReferenceCounter.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ReferenceCounter.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,22 +54,14 @@
 
 /// \file pcl/ReferenceCounter.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Atomic_h
 #include <pcl/Atomic.h>
-#endif
 
 #ifdef __PCL_REFCOUNT_CHECK_DETACHMENT
-# ifndef __PCL_Exception_h
 #  include <pcl/Exception.h>
-# endif
 #else
-# ifndef __PCL_Diagnostics_h
 #  include <pcl/Diagnostics.h>
-# endif
 #endif
 
 namespace pcl
@@ -123,6 +115,25 @@ public:
    ~ReferenceCounter()
    {
    }
+
+   /*!
+    * Copy constructor. This constructor is equivalent to the default
+    * constructor because reference counters are unique objects. In other
+    * words, the reference counter is always initialized to one for newly
+    * constructed %ReferenceCounter objects.
+    *
+    * This constructor exists and is not disabled to allow reference-counted
+    * data structures to have copy constructors.
+    */
+   ReferenceCounter( const ReferenceCounter& ) : ReferenceCounter()
+   {
+   }
+
+   /*!
+    * Copy assignment. This operator is disabled because reference counters are
+    * unique objects.
+    */
+   ReferenceCounter& operator =( const ReferenceCounter& ) = delete;
 
    /*!
     * Increments the reference counter by one unit. This happens when a new
@@ -209,9 +220,6 @@ public:
 private:
 
    mutable AtomicInt m_count;
-
-   ReferenceCounter( const ReferenceCounter& ) = delete;
-   ReferenceCounter& operator =( const ReferenceCounter& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -221,4 +229,4 @@ private:
 #endif  // __PCL_ReferenceCounter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ReferenceCounter.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ReferenceCounter.h - Released 2017-06-28T11:58:36Z

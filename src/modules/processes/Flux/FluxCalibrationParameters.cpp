@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Flux Process Module Version 01.00.01.0135
+// Standard Flux Process Module Version 01.00.01.0154
 // ----------------------------------------------------------------------------
-// FluxCalibrationParameters.cpp - Released 2016/03/14 10:07:00 UTC
+// FluxCalibrationParameters.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,41 +57,41 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-FCWavelengthValue*               TheFCWavelengthValueParameter = 0;
-FCWavelengthMode*                TheFCWavelengthModeParameter = 0;
-FCWavelengthKeyword*             TheFCWavelengthKeywordParameter = 0;
+FCWavelengthValue*               TheFCWavelengthValueParameter = nullptr;
+FCWavelengthMode*                TheFCWavelengthModeParameter = nullptr;
+FCWavelengthKeyword*             TheFCWavelengthKeywordParameter = nullptr;
 
-FCTransmissivityValue*           TheFCTransmissivityValueParameter = 0;
-FCTransmissivityMode*            TheFCTransmissivityModeParameter = 0;
-FCTransmissivityKeyword*         TheFCTransmissivityKeywordParameter = 0;
+FCTransmissivityValue*           TheFCTransmissivityValueParameter = nullptr;
+FCTransmissivityMode*            TheFCTransmissivityModeParameter = nullptr;
+FCTransmissivityKeyword*         TheFCTransmissivityKeywordParameter = nullptr;
 
-FCFilterWidthValue*              TheFCFilterWidthValueParameter = 0;
-FCFilterWidthMode*               TheFCFilterWidthModeParameter = 0;
-FCFilterWidthKeyword*            TheFCFilterWidthKeywordParameter = 0;
+FCFilterWidthValue*              TheFCFilterWidthValueParameter = nullptr;
+FCFilterWidthMode*               TheFCFilterWidthModeParameter = nullptr;
+FCFilterWidthKeyword*            TheFCFilterWidthKeywordParameter = nullptr;
 
-FCApertureValue*                 TheFCApertureValueParameter = 0;
-FCApertureMode*                  TheFCApertureModeParameter = 0;
-FCApertureKeyword*               TheFCApertureKeywordParameter = 0;
+FCApertureValue*                 TheFCApertureValueParameter = nullptr;
+FCApertureMode*                  TheFCApertureModeParameter = nullptr;
+FCApertureKeyword*               TheFCApertureKeywordParameter = nullptr;
 
-FCCentralObstructionValue*       TheFCCentralObstructionValueParameter = 0;
-FCCentralObstructionMode*        TheFCCentralObstructionModeParameter = 0;
-FCCentralObstructionKeyword*     TheFCCentralObstructionKeywordParameter = 0;
+FCCentralObstructionValue*       TheFCCentralObstructionValueParameter = nullptr;
+FCCentralObstructionMode*        TheFCCentralObstructionModeParameter = nullptr;
+FCCentralObstructionKeyword*     TheFCCentralObstructionKeywordParameter = nullptr;
 
-FCExposureTimeValue*             TheFCExposureTimeValueParameter = 0;
-FCExposureTimeMode*              TheFCExposureTimeModeParameter = 0;
-FCExposureTimeKeyword*           TheFCExposureTimeKeywordParameter = 0;
+FCExposureTimeValue*             TheFCExposureTimeValueParameter = nullptr;
+FCExposureTimeMode*              TheFCExposureTimeModeParameter = nullptr;
+FCExposureTimeKeyword*           TheFCExposureTimeKeywordParameter = nullptr;
 
-FCAtmosphericExtinctionValue*    TheFCAtmosphericExtinctionValueParameter = 0;
-FCAtmosphericExtinctionMode*     TheFCAtmosphericExtinctionModeParameter = 0;
-FCAtmosphericExtinctionKeyword*  TheFCAtmosphericExtinctionKeywordParameter = 0;
+FCAtmosphericExtinctionValue*    TheFCAtmosphericExtinctionValueParameter = nullptr;
+FCAtmosphericExtinctionMode*     TheFCAtmosphericExtinctionModeParameter = nullptr;
+FCAtmosphericExtinctionKeyword*  TheFCAtmosphericExtinctionKeywordParameter = nullptr;
 
-FCSensorGainValue*               TheFCSensorGainValueParameter = 0;
-FCSensorGainMode*                TheFCSensorGainModeParameter = 0;
-FCSensorGainKeyword*             TheFCSensorGainKeywordParameter = 0;
+FCSensorGainValue*               TheFCSensorGainValueParameter = nullptr;
+FCSensorGainMode*                TheFCSensorGainModeParameter = nullptr;
+FCSensorGainKeyword*             TheFCSensorGainKeywordParameter = nullptr;
 
-FCQuantumEfficiencyValue*        TheFCQuantumEfficiencyValueParameter = 0;
-FCQuantumEfficiencyMode*         TheFCQuantumEfficiencyModeParameter = 0;
-FCQuantumEfficiencyKeyword*      TheFCQuantumEfficiencyKeywordParameter = 0;
+FCQuantumEfficiencyValue*        TheFCQuantumEfficiencyValueParameter = nullptr;
+FCQuantumEfficiencyMode*         TheFCQuantumEfficiencyModeParameter = nullptr;
+FCQuantumEfficiencyKeyword*      TheFCQuantumEfficiencyKeywordParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -117,7 +117,7 @@ double FCWavelengthValue::MinimumValue() const
 
 double FCWavelengthValue::DefaultValue() const
 {
-   return 0;
+   return 550;
 }
 
 // ----------------------------------------------------------------------------
@@ -151,7 +151,7 @@ size_type FCWavelengthKeyword::MinLength() const
 
 String FCWavelengthKeyword::AllowedCharacters() const
 {
-   return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_--";
+   return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-";
 }
 
 // ----------------------------------------------------------------------------
@@ -246,7 +246,7 @@ double FCFilterWidthValue::MinimumValue() const
 
 double FCFilterWidthValue::DefaultValue() const
 {
-   return 1;
+   return 100;
 }
 
 // ----------------------------------------------------------------------------
@@ -308,7 +308,7 @@ double FCApertureValue::MinimumValue() const
 
 double FCApertureValue::DefaultValue() const
 {
-   return 1;
+   return 250;
 }
 
 // ----------------------------------------------------------------------------
@@ -499,7 +499,7 @@ double FCAtmosphericExtinctionValue::MaximumValue() const
 
 double FCAtmosphericExtinctionValue::DefaultValue() const
 {
-   return 1;
+   return 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -629,7 +629,7 @@ double FCQuantumEfficiencyValue::MaximumValue() const
 
 double FCQuantumEfficiencyValue::DefaultValue() const
 {
-   return 1;
+   return 0.9;
 }
 
 // ----------------------------------------------------------------------------
@@ -672,4 +672,4 @@ String FCQuantumEfficiencyKeyword::AllowedCharacters() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FluxCalibrationParameters.cpp - Released 2016/03/14 10:07:00 UTC
+// EOF FluxCalibrationParameters.cpp - Released 2017-05-02T09:43:00Z

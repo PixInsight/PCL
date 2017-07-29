@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/BicubicInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// pcl/BicubicInterpolation.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,25 +54,12 @@
 
 /// \file pcl/BicubicInterpolation.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Utility_h
-#include <pcl/Utility.h>
-#endif
-
-#ifndef __PCL_BidimensionalInterpolation_h
 #include <pcl/BidimensionalInterpolation.h>
-#endif
-
-#ifndef __PCL_Math_h
 #include <pcl/Math.h>
-#endif
+#include <pcl/Utility.h>
 
 namespace pcl
 {
@@ -104,6 +91,11 @@ public:
     */
    BicubicInterpolationBase() = default;
 
+   /*!
+    * Copy constructor.
+    */
+   BicubicInterpolationBase( const BicubicInterpolationBase& ) = default;
+
 protected:
 
    void InitXY( int& i1, int& j1, double* p0, double* p1, double* p2, double* p3, double x, double y ) const
@@ -114,8 +106,8 @@ protected:
       PCL_PRECONDITION( int( y ) < m_height )
 
       // Central grid coordinates
-      i1 = pcl::Range( TruncI( y ), 0, m_height-1 );
-      j1 = pcl::Range( TruncI( x ), 0, m_width-1 );
+      i1 = pcl::Range( TruncInt( y ), 0, m_height-1 );
+      j1 = pcl::Range( TruncInt( x ), 0, m_width-1 );
 
       // Set up source matrix
 
@@ -183,8 +175,8 @@ __done:
       PCL_PRECONDITION( int( y ) < m_height )
 
       // Central grid coordinates
-      i1 = pcl::Range( TruncI( y ), 0, m_height-1 );
-      j1 = pcl::Range( TruncI( x ), 0, m_width-1 );
+      i1 = pcl::Range( TruncInt( y ), 0, m_height-1 );
+      j1 = pcl::Range( TruncInt( x ), 0, m_width-1 );
 
       // Set up source matrix
 
@@ -396,10 +388,15 @@ public:
     * is appropriate for most linear images.
     */
    BicubicSplineInterpolation( float clamp = __PCL_BICUBIC_SPLINE_CLAMPING_THRESHOLD ) :
-      BicubicInterpolationBase<T>(), m_clamp( Range( clamp, 0.0F, 1.0F ) )
+      m_clamp( Range( clamp, 0.0F, 1.0F ) )
    {
       PCL_PRECONDITION( 0 <= clamp && clamp <= 1 )
    }
+
+   /*!
+    * Copy constructor.
+    */
+   BicubicSplineInterpolation( const BicubicSplineInterpolation& ) = default;
 
    /*!
     * Virtual destructor.
@@ -625,7 +622,7 @@ private:
 };
 
 /*!
- * \class pcl::BicubicInterpolation
+ * \class BicubicInterpolation
  * \brief Bicubic interpolation - an alias for BicubicSplineInterpolation
  *
  * %BicubicInterpolation is a synonym for the BicubicSplineInterpolation class.
@@ -644,6 +641,11 @@ public:
     * Constructs a %BicubicInterpolation instance.
     */
    BicubicInterpolation() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   BicubicInterpolation( const BicubicInterpolation& ) = default;
 
    /*!
     * Virtual destructor.
@@ -680,6 +682,11 @@ public:
     * Constructs a %BicubicBSplineInterpolation instance.
     */
    BicubicBSplineInterpolation() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   BicubicBSplineInterpolation( const BicubicBSplineInterpolation& ) = default;
 
    /*!
     * Virtual destructor.
@@ -781,4 +788,4 @@ private:
 #endif   // __PCL_BicubicInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/BicubicInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/BicubicInterpolation.h - Released 2017-06-28T11:58:36Z

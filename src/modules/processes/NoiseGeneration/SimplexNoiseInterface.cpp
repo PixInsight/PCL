@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard NoiseGeneration Process Module Version 01.00.02.0275
+// Standard NoiseGeneration Process Module Version 01.00.02.0294
 // ----------------------------------------------------------------------------
-// SimplexNoiseInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// SimplexNoiseInterface.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard NoiseGeneration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -134,16 +134,10 @@ ProcessImplementation* SimplexNoiseInterface::NewProcess() const
 
 bool SimplexNoiseInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const SimplexNoiseInstance* r = dynamic_cast<const SimplexNoiseInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not a SimplexNoise instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const SimplexNoiseInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a SimplexNoise instance.";
+   return false;
 }
 
 bool SimplexNoiseInterface::RequiresInstanceValidation() const
@@ -358,4 +352,4 @@ SimplexNoiseInterface::GUIData::GUIData( SimplexNoiseInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SimplexNoiseInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF SimplexNoiseInterface.cpp - Released 2017-05-02T09:43:01Z

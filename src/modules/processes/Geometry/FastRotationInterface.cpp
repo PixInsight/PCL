@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0346
 // ----------------------------------------------------------------------------
-// FastRotationInterface.cpp - Released 2016/11/17 18:14:58 UTC
+// FastRotationInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -67,9 +67,7 @@ FastRotationInterface* TheFastRotationInterface = nullptr;
 // ----------------------------------------------------------------------------
 
 FastRotationInterface::FastRotationInterface() :
-   ProcessInterface(),
-   instance( TheFastRotationProcess ),
-   GUI( nullptr )
+   instance( TheFastRotationProcess )
 {
    TheFastRotationInterface = this;
 }
@@ -126,15 +124,10 @@ ProcessImplementation* FastRotationInterface::NewProcess() const
 
 bool FastRotationInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const FastRotationInstance* r = dynamic_cast<const FastRotationInstance*>( &p );
-   if ( r == nullptr )
-   {
-      whyNot = "Not a FastRotation instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const FastRotationInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a FastRotation instance.";
+   return false;
 }
 
 bool FastRotationInterface::RequiresInstanceValidation() const
@@ -231,4 +224,4 @@ FastRotationInterface::GUIData::GUIData( FastRotationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FastRotationInterface.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF FastRotationInterface.cpp - Released 2017-05-02T09:43:00Z

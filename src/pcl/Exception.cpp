@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Exception.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Exception.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,34 +66,15 @@ namespace pcl
 static bool s_useConsole = false;
 static bool s_useGUI = true;
 
+// ----------------------------------------------------------------------------
+
 static bool HaveConsole()
 {
-   return API != 0 && (*API->Global->GetConsole)() != 0;
+   return API != nullptr && (*API->Global->GetConsole)() != nullptr;
 }
 
 // ----------------------------------------------------------------------------
 
-String Exception::FormatInfo() const
-{
-   String info = ExceptionClass();
-   String msg = Message();
-
-   if ( !msg.IsEmpty() )
-   {
-      if ( !info.IsEmpty() )
-         info += ": ";
-      info += msg;
-   }
-
-   return info;
-}
-
-String Exception::Caption() const
-{
-   return "PCL Exception";
-}
-
-// ### TODO: Make this function a public API
 static String TranslateHTMLParagraphTags( const String& s )
 {
    String r;
@@ -135,7 +116,8 @@ static String TranslateHTMLParagraphTags( const String& s )
    return r;
 }
 
-// ### TODO: Make this function a public API
+// ----------------------------------------------------------------------------
+
 static String TranslateHTMLBreakTags( const String& s )
 {
    String r;
@@ -162,7 +144,8 @@ static String TranslateHTMLBreakTags( const String& s )
    return r;
 }
 
-// ### TODO: Make this function a public API
+// ----------------------------------------------------------------------------
+
 static String RemoveHTMLTags( const String& s )
 {
    String r;
@@ -201,6 +184,33 @@ static String RemoveHTMLTags( const String& s )
    return r;
 }
 
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+String Exception::FormatInfo() const
+{
+   String info = ExceptionClass();
+   String msg = Message();
+
+   if ( !msg.IsEmpty() )
+   {
+      if ( !info.IsEmpty() )
+         info += ": ";
+      info += msg;
+   }
+
+   return info;
+}
+
+// ----------------------------------------------------------------------------
+
+String Exception::Caption() const
+{
+   return "PCL Exception";
+}
+
+// ----------------------------------------------------------------------------
+
 void Exception::Show() const
 {
    String caption = Caption();
@@ -225,26 +235,35 @@ void Exception::Show() const
       pcl::MessageBox( info, caption, StdIcon::Error ).Execute();
 }
 
+// ----------------------------------------------------------------------------
+
 bool Exception::IsConsoleOutputEnabled()
 {
    return s_useConsole;
 }
+
+// ----------------------------------------------------------------------------
 
 void Exception::EnableConsoleOutput( bool enable )
 {
    s_useConsole = enable;
 }
 
+// ----------------------------------------------------------------------------
+
 bool Exception::IsGUIOutputEnabled()
 {
    return s_useGUI;
 }
+
+// ----------------------------------------------------------------------------
 
 void Exception::EnableGUIOutput( bool enable )
 {
    s_useGUI = enable;
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 String ParseError::Message() const
@@ -268,6 +287,8 @@ String ParseError::Message() const
 
    return s;
 }
+
+// ----------------------------------------------------------------------------
 
 void ParseError::Show() const
 {
@@ -327,6 +348,7 @@ void ParseError::Show() const
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 String SourceCodeError::Message() const
 {
@@ -351,6 +373,8 @@ String SourceCodeError::Message() const
 
    return s;
 }
+
+// ----------------------------------------------------------------------------
 
 void SourceCodeError::Show() const
 {
@@ -381,4 +405,4 @@ void SourceCodeError::Show() const
 }  // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Exception.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Exception.cpp - Released 2017-06-28T11:58:42Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/StructuringElement.h - Released 2016/02/21 20:22:12 UTC
+// pcl/StructuringElement.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,46 +54,18 @@
 
 /// \file pcl/StructuringElement.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Utility_h
-#include <pcl/Utility.h>
-#endif
-
-#ifndef __PCL_Atomic_h
 #include <pcl/Atomic.h>
-#endif
-
-#ifndef __PCL_AutoLock_h
 #include <pcl/AutoLock.h>
-#endif
-
-#ifndef __PCL_Math_h
 #include <pcl/Math.h>
-#endif
-
-#ifndef __PCL_Vector_h
+#include <pcl/Rotate.h>     // Reverse()
+#include <pcl/StringList.h> // BitmapStructure
+#include <pcl/Utility.h>
 #include <pcl/Vector.h>
-#endif
 
-#ifndef __PCL_StringList_h
-#include <pcl/StringList.h> // for BitmapStructure
-#endif
-
-#ifndef __PCL_Rotate_h
-#include <pcl/Rotate.h> // for pcl::Reverse()
-#endif
-
-#ifndef __memory_h
 #include <memory.h>
-#define __memory_h
-#endif
 
 namespace pcl
 {
@@ -967,4 +939,4 @@ protected:
 #endif   // __PCL_StructuringElement_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/StructuringElement.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/StructuringElement.h - Released 2017-06-28T11:58:36Z

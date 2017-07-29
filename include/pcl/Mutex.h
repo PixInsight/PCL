@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Mutex.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Mutex.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,31 +54,19 @@
 
 /// \file pcl/Mutex.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Utility_h
 #include <pcl/Utility.h>
-#endif
 
 #ifdef __PCL_UNIX
+#  include <pcl/Atomic.h>
 #  include <stdio.h>
 #  include <pthread.h>
-#  ifndef __PCL_Atomic_h
-#    include <pcl/Atomic.h>
-#  endif
 #endif
 
 #ifdef __PCL_WINDOWS
-#  ifndef __windows_h
-#    include <windows.h>
-#    define __windows_h
-#  endif
+#  include <windows.h>
 #endif
 
 namespace pcl
@@ -258,6 +246,18 @@ public:
    }
 
    /*!
+    * Copy constructor. This constructor is disabled because mutexes are unique
+    * objects.
+    */
+   Mutex( const Mutex& ) = delete;
+
+   /*!
+    * Copy assignment. This operator is disabled because mutexes are unique
+    * objects.
+    */
+   Mutex& operator =( const Mutex& ) = delete;
+
+   /*!
     * Locks this %Mutex object.
     *
     * When a mutex has been locked in a thread T, other threads cannot lock it
@@ -424,10 +424,6 @@ private:
 #endif   // __PCL_WINDOWS
 
    int m_spinCount;
-
-   // Cannot copy a Mutex object.
-   Mutex( const Mutex& ) = delete;
-   void operator =( const Mutex& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -437,4 +433,4 @@ private:
 #endif   // __PCL_Mutex_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Mutex.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Mutex.h - Released 2017-06-28T11:58:36Z

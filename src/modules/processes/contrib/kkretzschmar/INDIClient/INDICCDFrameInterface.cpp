@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0199
+// Standard INDIClient Process Module Version 01.00.15.0203
 // ----------------------------------------------------------------------------
-// INDICCDFrameInterface.cpp - Released 2016/06/20 17:47:31 UTC
+// INDICCDFrameInterface.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2016 Klaus Kretzschmar
+// Copyright (c) 2014-2017 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -150,13 +150,74 @@ private:
    }
 };
 
+FilterConfigDialog::FilterConfigDialog(const String& deviceName):ConfigDialogBase(deviceName){
+
+	FilterNames_TreeBox.SetMinHeight( 8 * Font().Height());
+	FilterNames_TreeBox.SetScaledMinWidth( 100 );
+	FilterNames_TreeBox.SetNumberOfColumns( 2 );
+	FilterNames_TreeBox.SetHeaderText( 0,  "Filter Slot" );
+	FilterNames_TreeBox.SetHeaderText( 1,  "Filter Name" );
+	FilterNames_TreeBox.DisableMultipleSelections();
+	FilterNames_TreeBox.SetStyleSheet( ScaledStyleSheet(
+			"QTreeView {"
+			"font-family: DejaVu Sans Mono, Monospace;"
+			"font-size: 9pt;"
+			"}"
+	) );
+
+	FilterRename_ToolButton.SetIcon(ScaledResource(":/icons/write.png"));
+	FilterRename_ToolButton.SetScaledFixedSize(22, 22);
+	FilterRename_ToolButton.SetToolTip("<p>Configure INDI filter slot name</p>");
+	FilterRename_ToolButton.OnClick((Button::click_event_handler) &FilterConfigDialog::e_Click, *this);
+
+	FilterToolBox_Sizer.SetSpacing( 8 );
+	FilterToolBox_Sizer.SetMargin( 8 );
+	FilterToolBox_Sizer.Add(FilterRename_ToolButton);
+	FilterToolBox_Sizer.AddStretch();
+
+	FilterConfig_Sizer.Add(FilterNames_TreeBox);
+	FilterConfig_Sizer.Add(FilterToolBox_Sizer);
+	FilterConfig_Sizer.AddStretch();
+
+	Global_Sizer.Add(FilterConfig_Sizer);
+
+	addBaseControls();
+
+}
+
+void FilterConfigDialog::sendUpdatedProperties() {
+	for ( int i = 0, n = FilterNames_TreeBox.NumberOfColumns(); i < n; ++i ){
+		INDIClient::TheClient()->SendNewPropertyItem( m_device, "FILTER_NAME", "INDI_TEXT", "FILTER_SLOT_NAME_"+String(i+1),FilterNames_TreeBox.Child(i)->Text(1) );
+	}
+}
+
+void FilterConfigDialog::e_Click( Button& sender, bool checked ) {
+	if (sender == FilterRename_ToolButton) {
+		TreeBox::Node* node = FilterNames_TreeBox.CurrentNode();
+		SimpleGetStringDialog dialog( "New Filter Name:", node->Text(1) );
+		if (dialog.Execute()){
+			node->SetText(1,dialog.Text());
+		}
+
+	}
+}
+
+void FilterConfigDialog::addFilterName(size_t filterSlot, const String& filterName){
+	TreeBox::Node* node = new TreeBox::Node();
+	node->SetText(0,String(filterSlot));
+	node->SetText(1,filterName);
+	FilterNames_TreeBox.Add(node);
+}
+
+void FilterConfigDialog::adjustTreeColumns()
+{
+   for ( int i = 0, n = FilterNames_TreeBox.NumberOfColumns(); i < n; ++i )
+	   FilterNames_TreeBox.AdjustColumnWidthToContents( i );
+}
+
 // ----------------------------------------------------------------------------
 
-INDICCDFrameInterface::INDICCDFrameInterface() :
-   ProcessInterface(),
-   m_device(),
-   m_execution( nullptr ),
-   GUI( nullptr )
+INDICCDFrameInterface::INDICCDFrameInterface()
 {
    TheINDICCDFrameInterface = this;
 }
@@ -179,7 +240,7 @@ MetaProcess* INDICCDFrameInterface::Process() const
 
 const char** INDICCDFrameInterface::IconImageXPM() const
 {
-   return 0; // INDICCDFrameProcess_XPM; // ### TODO
+   return nullptr; // INDICCDFrameProcess_XPM; // ### TODO
 }
 
 InterfaceFeatures INDICCDFrameInterface::Features() const
@@ -233,19 +294,16 @@ ProcessImplementation* INDICCDFrameInterface::NewProcess() const
    instance->p_clientOutputFormatHints = GUI->ClientOutputFormatHints_Edit.Text().Trimmed();
    instance->p_objectName = GUI->ObjectName_Edit.Text().Trimmed();
    instance->p_telescopeSelection = GUI->TelescopeDevice_Combo.CurrentItem();
+   instance->p_extFilterWheelDeviceName = GUI->ExternalFilterDevice_Combo.ItemText( GUI->ExternalFilterDevice_Combo.CurrentItem());
    return instance;
 }
 
 bool INDICCDFrameInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const INDICCDFrameInstance* instance = dynamic_cast<const INDICCDFrameInstance*>( &p );
-   if ( instance == nullptr )
-   {
-      whyNot = "Not an INDICCDFrame instance.";
-      return false;
-   }
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const INDICCDFrameInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an INDICCDFrame instance.";
+   return false;
 }
 
 bool INDICCDFrameInterface::RequiresInstanceValidation() const
@@ -306,11 +364,18 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    CCDDevice_Label.SetMinWidth( labelWidth1 );
    CCDDevice_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
+   FilterConfig_ToolButton.SetIcon(w.ScaledResource(":/icons/wrench.png"));
+   FilterConfig_ToolButton.SetScaledFixedSize(22, 22);
+   FilterConfig_ToolButton.SetToolTip("<p>Configure INDI filter wheel device</p>");
+   FilterConfig_ToolButton.OnClick((Button::click_event_handler) &INDICCDFrameInterface::e_Click, w);
+   FilterConfig_ToolButton.Disable();
+
    CCDDevice_Combo.OnItemSelected( (ComboBox::item_event_handler)&INDICCDFrameInterface::e_ItemSelected, w );
 
    CCDDevice_Sizer.SetSpacing( 4 );
    CCDDevice_Sizer.Add( CCDDevice_Label );
    CCDDevice_Sizer.Add( CCDDevice_Combo, 100 );
+
 
    CCDTemp_NumericEdit.SetReal();
    CCDTemp_NumericEdit.SetPrecision( 2 );
@@ -413,6 +478,8 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    CCDFilter_HSizer.SetSpacing( 4 );
    CCDFilter_HSizer.Add( CCDFilter_Label );
    CCDFilter_HSizer.Add( CCDFilter_Combo, 100 );
+   CCDFilter_HSizer.Add( FilterConfig_ToolButton );
+
 
    const char* ccdFrameTypeToolTipText =
       "<p>The frame type will be stored as a standard property and FITS header keyword in each acquired frame.</p>";
@@ -632,6 +699,8 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    ClientDownloadDir_Label.Disable();
 
    ClientDownloadDir_Edit.SetToolTip( downloadDirToolTipText );
+   ClientDownloadDir_Edit.OnFileDrag( (Control::file_drag_event_handler)&INDICCDFrameInterface::e_FileDrag, w );
+   ClientDownloadDir_Edit.OnFileDrop( (Control::file_drop_event_handler)&INDICCDFrameInterface::e_FileDrop, w );
 
    ClientDownloadDir_ToolButton.SetIcon( w.ScaledResource( ":/icons/select-file.png" ) );
    ClientDownloadDir_ToolButton.SetScaledFixedSize( 22, 22 );
@@ -823,10 +892,32 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    TelescopeDevice_Sizer.Add( TelescopeDevice_Label );
    TelescopeDevice_Sizer.Add( TelescopeDevice_Combo, 100 );
 
+
+   const char* externalFilterDeviceToolTip =
+         "<p>When the CCD device does not have an integrated filter wheel, it is possible to </p>"
+		 "specify the device name of an external filter wheel here.</p>";
+
+   ExternalFilterDevice_Label.SetText( "External filter wheel device:" );
+   ExternalFilterDevice_Label.SetToolTip( externalFilterDeviceToolTip );
+   ExternalFilterDevice_Label.SetMinWidth( labelWidth1 );
+   ExternalFilterDevice_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   ExternalFilterDevice_Label.Disable();
+
+   ExternalFilterDevice_Combo.AddItem( "<No filter wheel>" );
+   ExternalFilterDevice_Combo.SetToolTip( externalFilterDeviceToolTip );
+   ExternalFilterDevice_Combo.Disable();
+   ExternalFilterDevice_Combo.OnItemSelected( (ComboBox::item_event_handler)&INDICCDFrameInterface::e_ItemSelected, w );
+
+   ExternalFilterDevice_Sizer.SetSpacing( 4 );
+   ExternalFilterDevice_Sizer.Add( ExternalFilterDevice_Label );
+   ExternalFilterDevice_Sizer.Add( ExternalFilterDevice_Combo, 100 );
+
+
    FrameAcquisition_Sizer.SetSpacing( 4 );
    FrameAcquisition_Sizer.Add( ExposureParameters_Sizer );
    FrameAcquisition_Sizer.Add( ObjectName_Sizer );
    FrameAcquisition_Sizer.Add( TelescopeDevice_Sizer );
+   FrameAcquisition_Sizer.Add( ExternalFilterDevice_Sizer );
 
    FrameAcquisition_Control.SetSizer( FrameAcquisition_Sizer );
 
@@ -988,19 +1079,21 @@ __device_found:
          GUI->CCDBinY_Label.Disable();
       }
 
-      if ( indi->GetPropertyItem( m_device, "FILTER_SLOT", "FILTER_SLOT_VALUE", item ) )
+      String externalFilterWheelDeviceName = GUI->ExternalFilterDevice_Combo.ItemText(GUI->ExternalFilterDevice_Combo.CurrentItem());
+      if ( indi->GetPropertyItem(  externalFilterWheelDeviceName != String("<No filter wheel>") ? externalFilterWheelDeviceName : m_device, "FILTER_SLOT", "FILTER_SLOT_VALUE", item ) )
       {
          int currentFilterIndex = item.PropertyValue.ToInt() - 1;
          GUI->CCDFilter_Combo.Clear();
          for ( int i = 1; i <= 256; ++i )
          {
-            if ( !indi->GetPropertyItem( m_device, "FILTER_NAME", "FILTER_SLOT_NAME_" + String( i ), item ) )
+            if ( !indi->GetPropertyItem(  externalFilterWheelDeviceName != String("<No filter wheel>") ? externalFilterWheelDeviceName : m_device, "FILTER_NAME", "FILTER_SLOT_NAME_" + String( i ), item ) )
                break;
             GUI->CCDFilter_Combo.AddItem( item.PropertyValue );
          }
 
          GUI->CCDFilter_Combo.Enable();
          GUI->CCDFilter_Label.Enable();
+         GUI->FilterConfig_ToolButton.Enable();
          GUI->CCDFilter_Combo.SetCurrentItem( currentFilterIndex );
       }
       else
@@ -1112,6 +1205,21 @@ __device_found:
 
       if ( indi->GetPropertyItem( m_device, "UPLOAD_SETTINGS", "UPLOAD_DIR", item ) )
          GUI->ServerUploadDir_Edit.SetText( item.PropertyValue );
+
+      {
+    	  if (!GUI->ExternalFilterDevice_Combo.IsEnabled() && !GUI->CCDFilter_Combo.IsEnabled() ){
+    		  GUI->ExternalFilterDevice_Combo.Clear();
+    		  ExclConstDeviceList x = indi->ConstDeviceList();
+    		  const INDIDeviceListItemArray& devices( x );
+    		  for ( auto device : devices )
+    		  {
+    			  GUI->ExternalFilterDevice_Combo.AddItem(device.DeviceName);
+    		  }
+    		  GUI->ExternalFilterDevice_Combo.Enable();
+    		  GUI->ExternalFilterDevice_Label.Enable();
+    	  }
+      }
+
    }
 }
 
@@ -1135,6 +1243,10 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
          if ( indi->GetPropertyItem( m_device, "COOLER_CONNECTION", "CONNECT_COOLER", item ) )
             if ( item.PropertyValue == "OFF" )
                indi->SendNewPropertyItem( m_device, "COOLER_CONNECTION", "INDI_SWITCH", "CONNECT_COOLER", "ON", true/*async*/ );
+
+         // load configuration on server
+         indi->SendNewPropertyItem( m_device, "CONFIG_PROCESS", "INDI_SWITCH", "CONFIG_LOAD", "ON");
+
       }
    }
    else if ( sender == GUI->CCDBinX_Combo )
@@ -1149,7 +1261,8 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
    }
    else if ( sender == GUI->CCDFilter_Combo )
    {
-      indi->MaybeSendNewPropertyItem( m_device, "FILTER_SLOT", "INDI_NUMBER",
+	  String externalFilterWheelDeviceName = GUI->ExternalFilterDevice_Combo.ItemText(GUI->ExternalFilterDevice_Combo.CurrentItem());
+      indi->MaybeSendNewPropertyItem( externalFilterWheelDeviceName != String("<No filter wheel>") ? externalFilterWheelDeviceName : m_device, "FILTER_SLOT", "INDI_NUMBER",
                                       "FILTER_SLOT_VALUE", itemIndex+1, true/*async*/ );
    }
    else if ( sender == GUI->UploadMode_Combo )
@@ -1162,6 +1275,27 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
       indi->MaybeSendNewPropertyItem( m_device, "CCD_FRAME_TYPE", "INDI_SWITCH",
                                       INDICCDFrameInstance::CCDFrameTypePropertyString( itemIndex ), "ON", true/*async*/ );
    }
+   else if ( sender == GUI->ExternalFilterDevice_Combo )
+   {
+	   String externalFilterWheelDeviceName = sender.ItemText( itemIndex ).Trimmed();
+	   // load configuration on server
+	   indi->SendNewPropertyItem( externalFilterWheelDeviceName, "CONFIG_PROCESS", "INDI_SWITCH", "CONFIG_LOAD", "ON", true/*async*/  );
+   }
+}
+
+void INDICCDFrameInterface::e_FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+{
+   if ( sender == GUI->ClientDownloadDir_Edit )
+      if ( sender.IsEnabled() )
+         wantsFiles = files.Length() == 1 && File::DirectoryExists( files[0] );
+}
+
+void INDICCDFrameInterface::e_FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+{
+   if ( sender == GUI->ClientDownloadDir_Edit )
+      if ( sender.IsEnabled() )
+         if ( File::DirectoryExists( files[0] ) )
+            GUI->ClientDownloadDir_Edit.SetText( files[0] );
 }
 
 class INDICCDFrameInterfaceExecution : public AbstractINDICCDFrameExecution
@@ -1352,6 +1486,16 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
    {
       if ( m_execution != nullptr )
          m_execution->Abort();
+   } else if (sender == GUI->FilterConfig_ToolButton) {
+
+	   FilterConfigDialog ccdConfig(CurrentDeviceName());
+	   for (size_t index=0; index < (size_t) GUI->CCDFilter_Combo.NumberOfItems(); index++){
+		   ccdConfig.addFilterName(index+1,GUI->CCDFilter_Combo.ItemText(index));
+	   }
+	   ccdConfig.adjustTreeColumns();
+	   if (ccdConfig.Execute() && INDIClient::HasClient()) {
+
+	   }
    }
 }
 
@@ -1360,4 +1504,4 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInterface.cpp - Released 2016/06/20 17:47:31 UTC
+// EOF INDICCDFrameInterface.cpp - Released 2017-05-02T09:43:01Z

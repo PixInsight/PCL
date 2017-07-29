@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0374
 // ----------------------------------------------------------------------------
-// ExponentialTransformationInstance.h - Released 2016/02/21 20:22:43 UTC
+// ExponentialTransformationInstance.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,16 +53,14 @@
 #ifndef __ExponentialTransformationInstance_h
 #define __ExponentialTransformationInstance_h
 
-#include <pcl/ProcessImplementation.h>
 #include <pcl/Image.h>
+#include <pcl/ProcessImplementation.h>
 
 #include "ExponentialTransformationParameters.h"
 
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// ExponentialTransformationInstance
 // ----------------------------------------------------------------------------
 
 class ExponentialTransformationInstance : public ProcessImplementation
@@ -101,4 +99,4 @@ private:
 #endif   // __ExponentialTransformationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF ExponentialTransformationInstance.h - Released 2016/02/21 20:22:43 UTC
+// EOF ExponentialTransformationInstance.h - Released 2017-05-02T09:43:00Z

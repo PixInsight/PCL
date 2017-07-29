@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Bitmap.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Bitmap.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,29 +56,13 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_UIObject_h
-#include <pcl/UIObject.h>
-#endif
-
-#ifndef __PCL_Rectangle_h
-#include <pcl/Rectangle.h>
-#endif
-
-#ifndef __PCL_Color_h
 #include <pcl/Color.h>
-#endif
-
-#ifndef __PCL_String_h
-#include <pcl/String.h>
-#endif
-
-#ifndef __PCL_ImageRenderingModes_h
 #include <pcl/ImageRenderingModes.h>
-#endif
+#include <pcl/Rectangle.h>
+#include <pcl/String.h>
+#include <pcl/UIObject.h>
 
 #endif   // __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
@@ -88,7 +72,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace BitmapFormat
+ * \namespace pcl::BitmapFormat
  * \brief Bitmap pixel value interpretation modes.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -276,13 +260,14 @@ public:
     *
     * \param format  A nul-terminated character string identifying the format
     *                of the source data. Currently the following formats are
-    *                supported by the PixInsight Core application:
+    *                supported by the PixInsight core application:
     *
     * <table border="1" cellpadding="4" cellspacing="0">
     * <tr><td>%BMP</td>   <td>Windows %Bitmap</td></tr>
     * <tr><td>%GIF</td>   <td>%Graphics Interchange Format</td></tr>
     * <tr><td>%ICO</td>   <td>Windows %Icon Format</td></tr>
     * <tr><td>%JPG</td>   <td>Joint Photographic Experts Group</td></tr>
+    * <tr><td>%WEBP</td>  <td>%WebP image format</td></tr>
     * <tr><td>%MNG</td>   <td>Multiple Network %Graphics</td></tr>
     * <tr><td>%PBM</td>   <td>Portable Bitmap</td></tr>
     * <tr><td>%PNG</td>   <td>Portable Network %Graphics</td></tr>
@@ -733,6 +718,7 @@ public:
     * <tr><td>%GIF</td>   <td>%Graphics Interchange Format (.gif) (read-only)</td></tr>
     * <tr><td>%ICO</td>   <td>Windows %Icon Format (.ico)</td></tr>
     * <tr><td>%JPEG</td>  <td>Joint Photographic Experts Group (.jpg, .jpeg)</td></tr>
+    * <tr><td>%WEBP</td>  <td>%WebP image format (.webp)</td></tr>
     * <tr><td>%MNG</td>   <td>Multiple Network %Graphics (.mng) (read-only)</td></tr>
     * <tr><td>%PBM</td>   <td>Portable BitMap (.pbm) (read-only)</td></tr>
     * <tr><td>%PNG</td>   <td>Portable Network %Graphics (.png)</td></tr>
@@ -754,10 +740,11 @@ public:
     *
     * \param filePath   %File path to the output image file.
     *
-    * \param quality    %JPEG quality in the range from 0 (lowest quality) to
-    *             100 (highest quality). If the output file is not in the JPEG
-    *             format, this parameter is ignored. If this parameter is < 0,
-    *             a default quality is used.
+    * \param quality    Image quality for lossy compression in the range from 0
+    *             (lowest quality) to 100 (highest quality). Currently, this
+    *             parameter is ignored if the output file is not in one of the
+    *             %JPEG or %WebP formats. If this parameter is < 0, a default,
+    *             format-dependent quality will be used.
     *
     * The output file format is always determined by the specified file
     * extension (in \a filePath). Supported output formats include:
@@ -766,6 +753,7 @@ public:
     * <tr><td>%BMP</td>   <td>Windows %Bitmap (.bmp)</td></tr>
     * <tr><td>%ICO</td>   <td>Windows %Icon Format (.ico)</td></tr>
     * <tr><td>%JPEG</td>  <td>Joint Photographic Experts Group (.jpg, .jpeg)</td></tr>
+    * <tr><td>%WEBP</td>  <td>%WebP image format (.webp)</td></tr>
     * <tr><td>%PNG</td>   <td>Portable Network %Graphics (.png)</td></tr>
     * <tr><td>%PPM</td>   <td>Portable Pixel Map (.ppm)</td></tr>
     * <tr><td>%TIFF</td>  <td>Tagged %Image %File Format (.tif, .tiff).</td></tr>
@@ -1409,4 +1397,4 @@ private:
 #endif   // __PCL_Bitmap_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Bitmap.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Bitmap.h - Released 2017-06-28T11:58:36Z

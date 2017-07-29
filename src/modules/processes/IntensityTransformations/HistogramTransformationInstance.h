@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0374
 // ----------------------------------------------------------------------------
-// HistogramTransformationInstance.h - Released 2016/02/21 20:22:43 UTC
+// HistogramTransformationInstance.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -81,8 +81,6 @@ public:
 
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
-
-   // -------------------------------------------------------------------------
 
    double MidtonesBalance( int i ) const
    {
@@ -170,4 +168,4 @@ private:
 #endif   // __HistogramTransformationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF HistogramTransformationInstance.h - Released 2016/02/21 20:22:43 UTC
+// EOF HistogramTransformationInstance.h - Released 2017-05-02T09:43:00Z

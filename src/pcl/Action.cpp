@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Action.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Action.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -63,7 +63,7 @@ namespace pcl
 
 static void MandatoryError( const char* funcName )
 {
-   throw Error( String( "Action::" ) + funcName + "() must be reimplemented in descendant class" );
+   throw Error( String( "Action::" ) + funcName + "() must be reimplemented in descendant class." );
 }
 
 // ----------------------------------------------------------------------------
@@ -95,13 +95,8 @@ public:
 
 // ----------------------------------------------------------------------------
 
-#ifdef _MSC_VER
-#  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
-#endif
-
 Action::Action( const String& menuItem, const Bitmap& icon, const String toolBar ) :
-UIObject( (*API->Action->CreateAction)( ModuleHandle(), this, menuItem.c_str(),
-                                        toolBar.c_str(), icon.handle, 0 ) )
+   UIObject( (*API->Action->CreateAction)( ModuleHandle(), this, menuItem.c_str(), toolBar.c_str(), icon.handle, 0/*flags*/ ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateAction" );
@@ -112,18 +107,12 @@ UIObject( (*API->Action->CreateAction)( ModuleHandle(), this, menuItem.c_str(),
 
 // ----------------------------------------------------------------------------
 
-Action::Action( void* h ) : UIObject( h )
-{
-}
-
-// ----------------------------------------------------------------------------
-
 Action& Action::Null()
 {
-   static Action* nullAction = 0;
+   static Action* nullAction = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullAction == 0 )
+   if ( nullAction == nullptr )
       nullAction = new Action( reinterpret_cast<void*>( 0 ) );
    return *nullAction;
 }
@@ -261,4 +250,4 @@ void* Action::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Action.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Action.cpp - Released 2017-06-28T11:58:42Z

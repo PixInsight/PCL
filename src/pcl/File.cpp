@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/File.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/File.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -75,6 +75,7 @@
 #include <pcl/Arguments.h>
 #include <pcl/Math.h>
 #include <pcl/Random.h>
+#include <pcl/TimePoint.h>
 
 #define CHECK_OPEN_FILE( fp )                                                                         \
    if ( !IsOpen() )                                                                                   \
@@ -151,20 +152,7 @@ double FileTime::ToJD() const
 
 double FileTime::ToJDUTC() const
 {
-#if defined( __PCL_WINDOWS )
-   double jd = ToJD();
-   long tz;
-   if ( ::_get_timezone( &tz ) == 0 )
-      jd += tz/86400.0;
-   return jd;
-#elif defined( __PCL_FREEBSD )
-   time_t t = time( 0 );
-   struct tm r;
-   ::localtime_r( &t, &r );
-   return ToJD() + r.tm_gmtoff/86400.0;
-#else
-   return ToJD() + ::timezone/86400.0;
-#endif
+   return ToJD() + TimePoint::SystemTimeZone()/24;
 }
 
 // ----------------------------------------------------------------------------
@@ -658,14 +646,14 @@ void File::Open( const String& filePath, FileModes mode )
    howToOpen += 'b'; // always in binary mode
 
    /*
-    * ### TODO: Emulate fsopen() on Linux - for now, sharing modes are ignored.
+    * ### TODO: Can we emulate fsopen() on Linux?
     *
    int howToShare = mode.IsFlagSet( FileMode::ShareRead ) ?
       (mode.IsFlagSet( FileMode::ShareWrite ) ? SH_DENYNO : SH_DENYWR) :
       (mode.IsFlagSet( FileMode::ShareWrite ) ? SH_DENYRD : SH_DENYRW);
 
    m_fileHandle = (handle)::fsopen( filePath.c_str(), howToOpen.c_str(), howToShare );
-   */
+    */
 
    errno = 0;
    IsoString utf8 = filePath.ToUTF8();
@@ -1274,8 +1262,7 @@ void File::Find::End()
 
 ByteArray File::ReadFile( const String& filePath )
 {
-   File f;
-   f.OpenForReading( filePath );
+   File f = OpenFileForReading( filePath );
    ByteArray contents;
    fsize_type size = f.Size();
    if ( size > 0 )
@@ -1291,8 +1278,7 @@ ByteArray File::ReadFile( const String& filePath )
 
 void File::WriteFile( const String& filePath, const ByteArray& contents )
 {
-   File f;
-   f.CreateForWriting( filePath );
+   File f = CreateFileForWriting( filePath );
    if ( !contents.IsEmpty() )
       f.Write( reinterpret_cast<const void*>( contents.Begin() ), fsize_type( contents.Length() ) );
    f.Flush();
@@ -1301,11 +1287,19 @@ void File::WriteFile( const String& filePath, const ByteArray& contents )
 
 void File::WriteFile( const String& filePath, const ByteArray& contents, size_type start, size_type size )
 {
-   File f;
-   f.CreateForWriting( filePath );
+   File f = CreateFileForWriting( filePath );
    if ( start < contents.Length() )
       f.Write( reinterpret_cast<const void*>( contents.At( start ) ),
                fsize_type( pcl::Min( size, contents.Length()-start ) ) );
+   f.Flush();
+   f.Close();
+}
+
+void File::WriteFile( const String& filePath, const void* data, size_type size )
+{
+   File f = CreateFileForWriting( filePath );
+   if ( size > 0 )
+      f.Write( data, fsize_type( size ) );
    f.Flush();
    f.Close();
 }
@@ -1314,8 +1308,7 @@ void File::WriteFile( const String& filePath, const ByteArray& contents, size_ty
 
 IsoString File::ReadTextFile( const String& filePath )
 {
-   File f;
-   f.OpenForReading( filePath );
+   File f = OpenFileForReading( filePath );
    IsoString text;
    fsize_type size = f.Size();
    if ( size > 0 )
@@ -1331,8 +1324,7 @@ IsoString File::ReadTextFile( const String& filePath )
 
 void File::WriteTextFile( const String& filePath, const IsoString& text )
 {
-   File f;
-   f.CreateForWriting( filePath );
+   File f = CreateFileForWriting( filePath );
    if ( !text.IsEmpty() )
       f.Write( reinterpret_cast<const void*>( text.Begin() ), fsize_type( text.Length() ) );
    f.Flush();
@@ -1461,8 +1453,7 @@ void File::CopyFile( const String& targetFilePath, const String& sourceFilePath,
    if ( !sourceInfo.IsFile() )
       throw File::Error( sourceFilePath, "Cannot copy a sequential file using block copy" );
 
-   File sourceFile;
-   sourceFile.OpenForReading( sourceFilePath );
+   File sourceFile = OpenFileForReading( sourceFilePath );
 
    String tempFilePath = targetFilePath + ".pi-writing";
    if ( FileInfo( tempFilePath ).Exists() )
@@ -1580,8 +1571,7 @@ void File::MoveFile( const String& targetFilePath, const String& sourceFilePath,
    if ( !sourceInfo.IsFile() )
       throw File::Error( sourceFilePath, "Cannot move a sequential file using block copy" );
 
-   File sourceFile;
-   sourceFile.OpenForReading( sourceFilePath );
+   File sourceFile = OpenFileForReading( sourceFilePath );
 
    String tempFilePath = targetFilePath + ".pi-writing";
    if ( FileInfo( tempFilePath ).Exists() )
@@ -1720,8 +1710,7 @@ static void AddLineHelper( const char* p, const char* q, IsoStringList& lines, c
 
 IsoStringList File::ReadLines( const String& filePath, ReadTextOptions options )
 {
-   File fin;
-   fin.OpenForReading( filePath );
+   File fin = OpenFileForReading( filePath );
 
    fsize_type fileSize = fin.Size();
    if ( fileSize <= 0 )
@@ -1795,8 +1784,7 @@ static int ScanLineHelper( char*& p, char*& q, bool (*callback)( char*, void* ),
 
 size_type File::ScanLines( const String& filePath, bool (*callback)( char*, void* ), void* data, ReadTextOptions options )
 {
-   File fin;
-   fin.OpenForReading( filePath );
+   File fin = OpenFileForReading( filePath );
 
    fsize_type fileSize = fin.Size();
    if ( fileSize <= 0 )
@@ -1883,7 +1871,7 @@ static String CleanPath( const String& path )
             if ( i == 0 )
                break;
 #endif
-               ++i;
+            ++i;
          }
 
          bool eaten = false;
@@ -1903,17 +1891,12 @@ static String CleanPath( const String& path )
                if ( levels != 0 )
                {
                   if ( last == -1 )
-                  {
                      for ( int i2 = iwrite-1; i2 >= 0; --i2 )
-                     {
                         if ( out[i2] == '/' )
                         {
                            last = i2;
                            break;
                         }
-                     }
-                  }
-
                   used -= iwrite - last - 1;
                   break;
                }
@@ -1925,14 +1908,12 @@ static String CleanPath( const String& path )
                   if ( last == -1 || iwrite - last == 1 )
                   {
                      for ( int i2 = (last == -1) ? iwrite-1 : last-1; i2 >= 0; --i2 )
-                     {
                         if ( out[i2] == '/' )
                         {
                            eaten = true;
                            last = i2;
                            break;
                         }
-                     }
                   }
                   else
                      eaten = true;
@@ -1979,7 +1960,6 @@ static String CleanPath( const String& path )
          if ( len >= 1 && name[1] == '.' )
             ++dotcount;
          if ( len >= dotcount && name[dotcount] == '/' )
-         {
             if ( dotcount == 1 )
             {
                ++i;
@@ -1987,7 +1967,6 @@ static String CleanPath( const String& path )
                   ++i;
                continue;
             }
-         }
       }
 
       out[iwrite++] = name[i];
@@ -2010,6 +1989,8 @@ static String CleanPath( const String& path )
 
    return ret;
 }
+
+// ----------------------------------------------------------------------------
 
 String File::FullPath( const String& filePath )
 {
@@ -2057,6 +2038,39 @@ String File::FullPath( const String& filePath )
    throw pcl::Error( "Unable to retrieve the current directory" );
 
 #endif
+}
+
+// ----------------------------------------------------------------------------
+
+IsoString File::FileURI( const String& path )
+{
+   IsoString fullPath = File::WindowsPathToUnix( FullPath( path ) ).ToUTF8();
+   IsoString urlPath;
+   size_type i = 0;
+   if ( fullPath.Length() > 1 )
+      if ( fullPath[1] == ':' )
+         if ( fullPath[0] >= 'a' && fullPath[0] <= 'z' || fullPath[0] >= 'A' && fullPath[0] <= 'Z' )
+         {
+            urlPath << '/' << IsoCharTraits::ToUppercase( char( fullPath[0] ) ) << ':';
+            i = 2;
+         }
+   for ( IsoString::const_iterator p = fullPath.At( i ); p != fullPath.End(); ++p )
+   {
+      char c = *p;
+      if (  c >= 0x7f
+         || c <= 0x1f
+         || c == ' ' || c == '<' || c == '>' || c == '#' || c == '\"'
+         || c == '%' || c == '{' || c == '}' || c == '|' || c == '\\'
+         || c == '^' || c == '~' || c == '[' || c == ']' || c == '`'
+         || c == ';' || c == '?' || c == ':' || c == '@' || c == '='
+         || c == '&' )
+      {
+         urlPath.AppendFormat( "%%%02x", int( c ) );
+      }
+      else
+         urlPath << c;
+   }
+   return "file://" + urlPath;
 }
 
 // ----------------------------------------------------------------------------
@@ -2435,4 +2449,4 @@ bool File::IsValidHandle( handle h ) const
 }  // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/File.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/File.cpp - Released 2017-06-28T11:58:42Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/StdStatus.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/StdStatus.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -117,7 +117,7 @@ int StandardStatus::Updated( const StatusMonitor& monitor ) const
          return 1;
       }
 
-      int percent = pcl::Range( pcl::RoundI( 100*(double( monitor.Count() )/monitor.Total()) ), 0, 100 );
+      int percent = pcl::Range( pcl::RoundInt( 100*(double( monitor.Count() )/monitor.Total()) ), 0, 100 );
       if ( percent != m_last )
       {
          if ( percent == 100 )
@@ -159,4 +159,4 @@ void StandardStatus::InfoUpdated( const StatusMonitor& monitor ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/StdStatus.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/StdStatus.cpp - Released 2017-06-28T11:58:42Z

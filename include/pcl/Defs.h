@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Defs.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Defs.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,8 +57,7 @@
 /*!
  * \mainpage notitle
  *
- * <div style="text-align: center;">
- *    <div style="margin-top: 3em;"></div>
+ * <div style="margin-top: 3em; text-align: center;">
  *    <h1>
  *       PCL - PixInsight Class Library Version 2.1
  *    </h1>
@@ -66,11 +65,11 @@
  *       Reference Documentation
  *    </h1>
  *    <p>
- *       <strong>Copyright (c) 2003-2015, The PixInsight Development Team.
+ *       <strong>Copyright (c) 2003-2017, The PixInsight Development Team.
  *       All Rights Reserved</strong>
  *    </p>
  * </div>
- * <div style="margin-top: 3em; margin-bottom: 3em;"></div>
+ * <div style="margin-top: 3em; margin-bottom: 3em;">
  *    <p>
  *       <a href="http://pixinsight.com/">PixInsight</a> is an advanced image
  *       processing software platform designed specifically for
@@ -88,10 +87,10 @@
  *    </p>
  *    <p>
  *       PixInsight modules are special shared libraries (.so files on FreeBSD
- *       and Linux; .dylib under Mac OS X; .dll files on Windows) that
- *       communicate with the PixInsight core application through a high-level
- *       API provided by PCL. Along with a core communication API, PCL includes
- *       a comprehensive set of image processing algorithms, ranging from
+ *       and Linux; .dylib under macOS; .dll files on Windows) that communicate
+ *       with the PixInsight core application through a high-level API provided
+ *       by PCL. Along with a core communication API, PCL includes a
+ *       comprehensive set of image processing algorithms, ranging from
  *       geometrical transformations to multiscale analysis algorithms, most of
  *       them available as multithreaded parallel implementations.
  *    </p>
@@ -132,9 +131,9 @@
 
 /*!
  * \namespace pcl
- * \brief PCL main namespace.
+ * \brief PCL root namespace
  *
- * pcl is the main namespace in the PixInsight Class Library (PCL), where all
+ * pcl is the main namespace of the PixInsight Class Library (PCL), where all
  * public PCL classes and functions are defined.
  */
 
@@ -146,9 +145,35 @@
 /*
  * One and only one platform selection macro has to be defined.
  */
-#if !defined( __PCL_FREEBSD ) && !defined( __PCL_LINUX ) && !defined( __PCL_MACOSX ) && !defined( __PCL_WINDOWS )
-#  error No platform selection macro has been defined.
+#ifndef __PCL_FREEBSD
+#  ifndef __PCL_LINUX
+#    ifndef __PCL_MACOS
+#      ifndef __PCL_MACOSX
+#        ifndef __PCL_WINDOWS
+#          error No platform selection macro has been defined.
+#        endif
+#      endif
+#    endif
+#  endif
 #endif
+
+/*
+ * __PCL_MACOS and __PCL_MACOSX are synonyms and both always defined on macOS.
+ */
+#ifdef __PCL_MACOS
+#  ifndef __PCL_MACOSX
+#    define __PCL_MACOSX
+#  endif
+#endif
+#ifdef __PCL_MACOSX
+#  ifndef __PCL_MACOS
+#    define __PCL_MACOS
+#  endif
+#endif
+
+/*
+ * Check for conflicting platform selection macros.
+ */
 #ifdef __PCL_FREEBSD
 #  if defined( __PCL_LINUX ) || defined( __PCL_MACOSX ) || defined( __PCL_WINDOWS )
 #    error Multiple platform selection macros have been defined.
@@ -171,7 +196,7 @@
 #endif
 
 /*
- * __PCL_UNIX is always defined on FreeBSD, Linux and Mac OS X platforms.
+ * __PCL_UNIX is always defined on FreeBSD, Linux and macOS platforms.
  */
 #if defined( __PCL_LINUX ) || defined( __PCL_FREEBSD ) || defined( __PCL_MACOSX )
 #  ifndef __PCL_UNIX
@@ -189,16 +214,38 @@
 #endif
 
 /*
- * Minimum compiler requirements:
+ * Platform architecture requirements:
  *
- * - MS Visual C++ 2012 or higher on Windows
- * - GCC >= 4.6 (4.8 strongly recommended) on UNIX/Linux
+ * - x86_64 / EM64T / AMD64 architecture.
+ */
+#ifndef __x86_64__
+#  ifndef __x86_64
+#    ifndef __amd64__
+#      ifndef __amd64
+#        ifndef _M_X64
+#          ifndef _M_AMD64
+#            error This version of PCL requires an x86_64 / EM64T / AMD64 architecture.
+#          endif
+#        endif
+#      endif
+#    endif
+#  endif
+#endif
+#ifndef __PCL_X64
+#  define __PCL_X64
+#endif
+
+/*
+ * Compiler requirements:
+ *
+ * - GCC >= 4.8 on UNIX/Linux
  * - Clang >= 3.3 on UNIX/Linux
+ * - MSVC++ >= 14.0 / Visual Studio 2015 on Windows
  */
 #ifdef __PCL_WINDOWS
 #  ifdef _MSC_VER
-#    if _MSC_VER < 1700
-#      error This version of PCL requires MSVC++ 2012 or higher on MS Windows platforms.
+#    if _MSC_VER < 1900
+#      error This version of PCL requires MSVC++ 14.0 / Visual Studio 2015 or higher on MS Windows platforms.
 #    endif
 #  else
 #    error Unsupported C++ compiler on MS Windows platform.
@@ -216,11 +263,8 @@
 #    endif
 #  else
 #    ifdef __GNUC__
-#      if GCC_VERSION < 40600
-#        error This version of PCL requires GCC 4.6 or higher on UNIX/Linux platforms.
-#      endif
 #      if GCC_VERSION < 40800
-#        warning GCC 4.8 or higher should be used on UNIX/Linux platforms.
+#        error This version of PCL requires GCC 4.8 or higher on UNIX/Linux platforms.
 #      endif
 #    else
 #      error Unsupported C++ compiler on UNIX/Linux platform.
@@ -234,20 +278,18 @@
  */
 #ifndef __PCL_NO_WARNING_MUTE_PRAGMAS
 #  ifdef _MSC_VER
-#    if _MSC_VER >= 1400
-#      define _CRT_SECURE_NO_DEPRECATE 1 // Deal with MS's attempt at deprecating C standard runtime functions
-#      pragma warning( disable: 4996 )   // ...
-#    endif
-#    pragma warning( disable: 4018 )     // '<' : signed/unsigned mismatch
-#    pragma warning( disable: 4049 )     // More than 64k source lines
-#    pragma warning( disable: 4244 )     // Conversion from 'type1' to 'type2', possible loss of data
-#    pragma warning( disable: 4345 )     // Behavior change: an object of POD type constructed...
-#    pragma warning( disable: 4355 )     // 'this' : used in base member initializer list
-#    pragma warning( disable: 4521 )     // Multiple copy constructors defined
-#    pragma warning( disable: 4522 )     // Multiple assignment operators defined
-#    pragma warning( disable: 4710 )     // Function not inlined
-#    pragma warning( disable: 4723 )     // Potential divide by 0
-#    pragma warning( disable: 4800 )     // 'boolean' : forcing value to bool 'true' or 'false' (performance warning)
+#    define _CRT_SECURE_NO_DEPRECATE 1 // Deal with MS's attempt at deprecating C standard runtime functions
+#    pragma warning( disable: 4996 )   // ...
+#    pragma warning( disable: 4018 )   // '<' : signed/unsigned mismatch
+#    pragma warning( disable: 4049 )   // More than 64k source lines
+#    pragma warning( disable: 4244 )   // Conversion from 'type1' to 'type2', possible loss of data
+#    pragma warning( disable: 4345 )   // Behavior change: an object of POD type constructed...
+#    pragma warning( disable: 4355 )   // 'this' : used in base member initializer list
+#    pragma warning( disable: 4521 )   // Multiple copy constructors defined
+#    pragma warning( disable: 4522 )   // Multiple assignment operators defined
+#    pragma warning( disable: 4710 )   // Function not inlined
+#    pragma warning( disable: 4723 )   // Potential divide by 0
+#    pragma warning( disable: 4800 )   // 'boolean' : forcing value to bool 'true' or 'false' (performance warning)
 #  endif
 #endif
 
@@ -255,42 +297,42 @@
  * Compiler warning management macros
  */
 #ifdef _MSC_VER
-#define PCL_WARNINGS_PUSH \
-__pragma(warning(push))
+#  define PCL_WARNINGS_PUSH \
+      __pragma(warning(push))
 #else
-#define PCL_WARNINGS_PUSH \
-_Pragma("GCC diagnostic push")
+#  define PCL_WARNINGS_PUSH \
+      _Pragma("GCC diagnostic push")
 #endif
 
 #ifdef _MSC_VER
-#define PCL_WARNINGS_POP \
-__pragma(warning(pop))
+#  define PCL_WARNINGS_POP \
+      __pragma(warning(pop))
 #else
-#define PCL_WARNINGS_POP \
-_Pragma("GCC diagnostic pop")
+#  define PCL_WARNINGS_POP \
+      _Pragma("GCC diagnostic pop")
 #endif
 
 #ifdef _MSC_VER
-#define PCL_WARNINGS_DISABLE_UNINITIALIZED_VARIABLE \
-__pragma(warning( disable : 6001 )) \
-__pragma(warning( disable : 4700 ))
+#  define PCL_WARNINGS_DISABLE_UNINITIALIZED_VARIABLE \
+      __pragma(warning( disable: 6001 )) \
+      __pragma(warning( disable: 4700 ))
 #else
-#define PCL_WARNINGS_DISABLE_UNINITIALIZED_VARIABLE \
-_Pragma("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
+#  define PCL_WARNINGS_DISABLE_UNINITIALIZED_VARIABLE \
+      _Pragma("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
 #endif
 
 // Disable C4267: 'initializing' : conversion from 'size_t' to 'int', possible loss of data
 #ifdef _MSC_VER
-#define PCL_WARNINGS_DISABLE_SIZE_T_TO_INT_LOSS \
-__pragma(warning( disable : 4267 ))
+#  define PCL_WARNINGS_DISABLE_SIZE_T_TO_INT_LOSS \
+      __pragma(warning( disable: 4267 ))
 #endif
 
 /*
- * _CRT_RAND_S must be defined for rand_s() to work:
+ * On Windows/MSVC++, _CRT_RAND_S must be #defined for rand_s() to work:
  * http://msdn.microsoft.com/en-us/library/sxtz2fa8.aspx
  */
 #ifdef _MSC_VER
-#define _CRT_RAND_S
+#  define _CRT_RAND_S
 #endif
 
 /*
@@ -402,10 +444,10 @@ __pragma(warning( disable : 4267 ))
  * Special GCC function optimizations
  */
 #ifndef __PCL_NO_HOT_FUNCTIONS
-#  ifndef _MSC_VER
-#    define PCL_HOT_FUNCTION  __attribute__((hot))
-#  else
+#  ifdef _MSC_VER
 #    define PCL_HOT_FUNCTION
+#  else
+#    define PCL_HOT_FUNCTION  __attribute__((hot))
 #  endif
 #else
 #  define PCL_HOT_FUNCTION
@@ -447,8 +489,8 @@ __pragma(warning( disable : 4267 ))
  */
 #ifdef __PCL_WINDOWS
 #  ifndef __PCL_NO_WIN32_MINIMUM_VERSIONS
-#    define WINVER            0x0501   // XP / Server 2003
-#    define _WIN32_WINNT      0x0501
+#    define WINVER            0x0601 // Windows 7
+#    define _WIN32_WINNT      0x0601
 #  endif
 #endif
 
@@ -456,8 +498,10 @@ __pragma(warning( disable : 4267 ))
  * C++11 features not supported by Visual Studio 2013.
  */
 #ifdef _MSC_VER
-#  define constexpr
-#  define noexcept
+#  if _MSC_VER < 1900
+#    define constexpr
+#    define noexcept
+#  endif
 #endif
 
 /*
@@ -551,10 +595,8 @@ typedef signed long long      int64;
 typedef unsigned long long    uint64;
 #endif // _MSC_VER
 
-class PCL_CLASS PCL_AssertScalarSizes
+struct PCL_AssertScalarSizes
 {
-public:
-
    static_assert( sizeof( int8 ) == 1, "Invalid sizeof( int8 )" );
    static_assert( sizeof( uint8 ) == 1, "Invalid sizeof( uint8 )" );
    static_assert( sizeof( int16 ) == 2, "Invalid sizeof( int16 )" );
@@ -993,19 +1035,6 @@ inline double UBitMax( int n )
 
 #endif   // !__PCL_NO_INTEGER_LIMITS
 
-/*!
- * Left rotation macros
- */
-#ifndef __PCL_NO_ROTL_MACROS
-#  ifdef _MSC_VER
-#    define RotL32( x, r ) _rotl( x, r )
-#    define RotL64( x, r ) _rotl64( x, r )
-#  else
-#    define RotL32( x, r ) ((x << r) | (x >> (32 - r)))
-#    define RotL64( x, r ) ((x << r) | (x >> (64 - r)))
-#  endif
-#endif // !__PCL_NO_ROTL_MACROS
-
 /*
  * Unicode character types.
  */
@@ -1085,4 +1114,4 @@ typedef int64                 fsize_type;
 #endif   // __PCL_Defs_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Defs.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Defs.h - Released 2017-06-28T11:58:36Z

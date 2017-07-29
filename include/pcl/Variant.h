@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Variant.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Variant.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,45 +54,17 @@
 
 /// \file pcl/Variant.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Complex_h
-#include <pcl/Complex.h>
-#endif
-
-#ifndef __PCL_Point_h
-#include <pcl/Point.h>
-#endif
-
-#ifndef __PCL_Rectangle_h
-#include <pcl/Rectangle.h>
-#endif
-
-#ifndef __PCL_Vector_h
-#include <pcl/Vector.h>
-#endif
-
-#ifndef __PCL_Matrix_h
-#include <pcl/Matrix.h>
-#endif
-
-#ifndef __PCL_ByteArray_h
 #include <pcl/ByteArray.h>
-#endif
-
-#ifndef __PCL_String_h
-#include <pcl/String.h>
-#endif
-
-#ifndef __PCL_StringList_h
+#include <pcl/Complex.h>
+#include <pcl/Matrix.h>
+#include <pcl/Point.h>
+#include <pcl/Rectangle.h>
 #include <pcl/StringList.h>
-#endif
+#include <pcl/TimePoint.h>
+#include <pcl/Vector.h>
 
 namespace pcl
 {
@@ -100,12 +72,13 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace VariantType
+ * \namespace pcl::VariantType
  * \brief %Variant data types.
  *
  * Currently %Variant supports the following data types:
  *
  * <table border="1" cellpadding="4" cellspacing="0">
+ * <tr><td>VariantType::Invalid</td>    <td>Symbolic value used to denote an invalid, undefined or unavailable property.</td></tr>
  * <tr><td>VariantType::Bool</td>       <td>A Boolean value, equivalent to the \c bool C++ type.</td></tr>
  * <tr><td>VariantType::Boolean</td>    <td>A synonym for VariantType::Bool.</td></tr>
  * <tr><td>VariantType::Int8</td>       <td>Signed 8-bit integer (int8).</td></tr>
@@ -132,6 +105,7 @@ namespace pcl
  * <tr><td>VariantType::Complex64</td>  <td>64-bit floating point complex value (dcomplex).</td></tr>
  * <tr><td>VariantType::DComplex</td>   <td>A synonym for VariantType::Complex64.</td></tr>
  * <tr><td>VariantType::Complex</td>    <td>A synonym for VariantType::DComplex.</td></tr>
+ * <tr><td>VariantType::TimePoint</td>  <td>A time point value (TimePoint).</td></tr>
  * <tr><td>VariantType::I32Point</td>   <td>Two-dimensional point with 32-bit integer coordinates (Point).</td></tr>
  * <tr><td>VariantType::Point</td>      <td>A synonym for VariantType::I32Point.</td></tr>
  * <tr><td>VariantType::F32Point</td>   <td>Two-dimensional point with 32-bit floating point coordinates (FPoint).</td></tr>
@@ -227,6 +201,8 @@ namespace VariantType
       Complex64,
       DComplex = Complex64,
       Complex = DComplex,
+
+      TimePoint,
 
       I32Point,
       Point = I32Point,
@@ -465,6 +441,7 @@ public:
     */
    Variant( fcomplex fc ) : m_type( VariantType::FComplex )
    {
+      m_data.anyValue = 0;
       m_data.complex32Value = new fcomplex( fc );
    }
 
@@ -474,7 +451,17 @@ public:
     */
    Variant( dcomplex dc ) : m_type( VariantType::DComplex )
    {
+      m_data.anyValue = 0;
       m_data.complex64Value = new dcomplex( dc );
+   }
+
+   /*!
+    * Constructs a %Variant instance to store a time point value (TimePoint).
+    */
+   Variant( const TimePoint& t ) : m_type( VariantType::TimePoint )
+   {
+      m_data.anyValue = 0;
+      m_data.timePointValue = new TimePoint( t );
    }
 
    /*!
@@ -483,6 +470,7 @@ public:
     */
    Variant( const Point& p ) : m_type( VariantType::Point )
    {
+      m_data.anyValue = 0;
       m_data.i32PointValue = new Point( p );
    }
 
@@ -492,6 +480,7 @@ public:
     */
    Variant( const FPoint& fp ) : m_type( VariantType::FPoint )
    {
+      m_data.anyValue = 0;
       m_data.f32PointValue = new FPoint( fp );
    }
 
@@ -501,6 +490,7 @@ public:
     */
    Variant( const DPoint& dp ) : m_type( VariantType::DPoint )
    {
+      m_data.anyValue = 0;
       m_data.f64PointValue = new DPoint( dp );
    }
 
@@ -510,6 +500,7 @@ public:
     */
    Variant( const Rect& r ) : m_type( VariantType::Rect )
    {
+      m_data.anyValue = 0;
       m_data.i32RectValue = new Rect( r );
    }
 
@@ -519,6 +510,7 @@ public:
     */
    Variant( const FRect& fr ) : m_type( VariantType::FRect )
    {
+      m_data.anyValue = 0;
       m_data.f32RectValue = new FRect( fr );
    }
 
@@ -528,6 +520,7 @@ public:
     */
    Variant( const DRect& dr ) : m_type( VariantType::DRect )
    {
+      m_data.anyValue = 0;
       m_data.f64RectValue = new DRect( dr );
    }
 
@@ -537,6 +530,7 @@ public:
     */
    Variant( const CharVector& cv ) : m_type( VariantType::CharVector )
    {
+      m_data.anyValue = 0;
       m_data.i8VectorValue = new CharVector( cv );
    }
 
@@ -546,6 +540,7 @@ public:
     */
    Variant( const ByteVector& bv ) : m_type( VariantType::ByteVector )
    {
+      m_data.anyValue = 0;
       m_data.ui8VectorValue = new ByteVector( bv );
    }
 
@@ -555,6 +550,7 @@ public:
     */
    Variant( const I16Vector& i16v ) : m_type( VariantType::I16Vector )
    {
+      m_data.anyValue = 0;
       m_data.i16VectorValue = new I16Vector( i16v );
    }
 
@@ -564,6 +560,7 @@ public:
     */
    Variant( const UI16Vector& ui16v ) : m_type( VariantType::UI16Vector )
    {
+      m_data.anyValue = 0;
       m_data.ui16VectorValue = new UI16Vector( ui16v );
    }
 
@@ -573,6 +570,7 @@ public:
     */
    Variant( const IVector& iv ) : m_type( VariantType::IVector )
    {
+      m_data.anyValue = 0;
       m_data.i32VectorValue = new IVector( iv );
    }
 
@@ -582,6 +580,7 @@ public:
     */
    Variant( const UIVector& uiv ) : m_type( VariantType::UIVector )
    {
+      m_data.anyValue = 0;
       m_data.ui32VectorValue = new UIVector( uiv );
    }
 
@@ -591,6 +590,7 @@ public:
     */
    Variant( const I64Vector& i64v ) : m_type( VariantType::I64Vector )
    {
+      m_data.anyValue = 0;
       m_data.i64VectorValue = new I64Vector( i64v );
    }
 
@@ -600,6 +600,7 @@ public:
     */
    Variant( const UI64Vector& ui64v ) : m_type( VariantType::UI64Vector )
    {
+      m_data.anyValue = 0;
       m_data.ui64VectorValue = new UI64Vector( ui64v );
    }
 
@@ -609,6 +610,7 @@ public:
     */
    Variant( const FVector& fv ) : m_type( VariantType::FVector )
    {
+      m_data.anyValue = 0;
       m_data.f32VectorValue = new FVector( fv );
    }
 
@@ -618,6 +620,7 @@ public:
     */
    Variant( const DVector& dv ) : m_type( VariantType::DVector )
    {
+      m_data.anyValue = 0;
       m_data.f64VectorValue = new DVector( dv );
    }
 
@@ -627,6 +630,7 @@ public:
     */
    Variant( const C32Vector& c32v ) : m_type( VariantType::C32Vector )
    {
+      m_data.anyValue = 0;
       m_data.c32VectorValue = new C32Vector( c32v );
    }
 
@@ -636,6 +640,7 @@ public:
     */
    Variant( const C64Vector& c64v ) : m_type( VariantType::C64Vector )
    {
+      m_data.anyValue = 0;
       m_data.c64VectorValue = new C64Vector( c64v );
    }
 
@@ -645,6 +650,7 @@ public:
     */
    Variant( const CharMatrix& cm ) : m_type( VariantType::CharMatrix )
    {
+      m_data.anyValue = 0;
       m_data.i8MatrixValue = new CharMatrix( cm );
    }
 
@@ -654,6 +660,7 @@ public:
     */
    Variant( const ByteMatrix& bm ) : m_type( VariantType::ByteMatrix )
    {
+      m_data.anyValue = 0;
       m_data.ui8MatrixValue = new ByteMatrix( bm );
    }
 
@@ -663,6 +670,7 @@ public:
     */
    Variant( const I16Matrix& i16m ) : m_type( VariantType::I16Matrix )
    {
+      m_data.anyValue = 0;
       m_data.i16MatrixValue = new I16Matrix( i16m );
    }
 
@@ -672,6 +680,7 @@ public:
     */
    Variant( const UI16Matrix& ui16m ) : m_type( VariantType::UI16Matrix )
    {
+      m_data.anyValue = 0;
       m_data.ui16MatrixValue = new UI16Matrix( ui16m );
    }
 
@@ -681,6 +690,7 @@ public:
     */
    Variant( const IMatrix& im ) : m_type( VariantType::IMatrix )
    {
+      m_data.anyValue = 0;
       m_data.i32MatrixValue = new IMatrix( im );
    }
 
@@ -690,6 +700,7 @@ public:
     */
    Variant( const UIMatrix& uim ) : m_type( VariantType::UIMatrix )
    {
+      m_data.anyValue = 0;
       m_data.ui32MatrixValue = new UIMatrix( uim );
    }
 
@@ -699,6 +710,7 @@ public:
     */
    Variant( const I64Matrix& i64m ) : m_type( VariantType::I64Matrix )
    {
+      m_data.anyValue = 0;
       m_data.i64MatrixValue = new I64Matrix( i64m );
    }
 
@@ -708,6 +720,7 @@ public:
     */
    Variant( const UI64Matrix& ui64m ) : m_type( VariantType::UI64Matrix )
    {
+      m_data.anyValue = 0;
       m_data.ui64MatrixValue = new UI64Matrix( ui64m );
    }
 
@@ -717,6 +730,7 @@ public:
     */
    Variant( const FMatrix& fm ) : m_type( VariantType::FMatrix )
    {
+      m_data.anyValue = 0;
       m_data.f32MatrixValue = new FMatrix( fm );
    }
 
@@ -726,6 +740,7 @@ public:
     */
    Variant( const DMatrix& dm ) : m_type( VariantType::DMatrix )
    {
+      m_data.anyValue = 0;
       m_data.f64MatrixValue = new DMatrix( dm );
    }
 
@@ -735,6 +750,7 @@ public:
     */
    Variant( const C32Matrix& c32m ) : m_type( VariantType::C32Matrix )
    {
+      m_data.anyValue = 0;
       m_data.c32MatrixValue = new C32Matrix( c32m );
    }
 
@@ -744,6 +760,7 @@ public:
     */
    Variant( const C64Matrix& c64m ) : m_type( VariantType::C64Matrix )
    {
+      m_data.anyValue = 0;
       m_data.c64MatrixValue = new C64Matrix( c64m );
    }
 
@@ -753,6 +770,7 @@ public:
     */
    Variant( const ByteArray& ba ) : m_type( VariantType::ByteArray )
    {
+      m_data.anyValue = 0;
       m_data.byteArrayValue = new ByteArray( ba );
    }
 
@@ -761,6 +779,7 @@ public:
     */
    Variant( const String& s ) : m_type( VariantType::String )
    {
+      m_data.anyValue = 0;
       m_data.stringValue = new String( s );
    }
 
@@ -770,6 +789,7 @@ public:
     */
    Variant( const IsoString& s8 ) : m_type( VariantType::IsoString )
    {
+      m_data.anyValue = 0;
       m_data.isoStringValue = new IsoString( s8 );
    }
 
@@ -779,6 +799,7 @@ public:
     */
    Variant( const char* cp ) : m_type( VariantType::IsoString )
    {
+      m_data.anyValue = 0;
       m_data.isoStringValue = new IsoString( cp );
    }
 
@@ -788,6 +809,7 @@ public:
     */
    Variant( const StringList& sl ) : m_type( VariantType::StringList )
    {
+      m_data.anyValue = 0;
       m_data.stringListValue = new StringList( sl );
    }
 
@@ -797,6 +819,7 @@ public:
     */
    Variant( const IsoStringList& isl ) : m_type( VariantType::IsoStringList )
    {
+      m_data.anyValue = 0;
       m_data.isoStringListValue = new IsoStringList( isl );
    }
 
@@ -806,6 +829,7 @@ public:
     */
    Variant( const StringKeyValue& skv ) : m_type( VariantType::StringKeyValue )
    {
+      m_data.anyValue = 0;
       m_data.stringKeyValueValue = new StringKeyValue( skv );
    }
 
@@ -815,6 +839,7 @@ public:
     */
    Variant( const IsoStringKeyValue& iskv ) : m_type( VariantType::IsoStringKeyValue )
    {
+      m_data.anyValue = 0;
       m_data.isoStringKeyValueValue = new IsoStringKeyValue( iskv );
    }
 
@@ -824,6 +849,7 @@ public:
     */
    Variant( const StringKeyValueList& skvl ) : m_type( VariantType::StringKeyValueList )
    {
+      m_data.anyValue = 0;
       m_data.stringKeyValueListValue = new StringKeyValueList( skvl );
    }
 
@@ -833,6 +859,7 @@ public:
     */
    Variant( const IsoStringKeyValueList& iskvl ) : m_type( VariantType::IsoStringKeyValueList )
    {
+      m_data.anyValue = 0;
       m_data.isoStringKeyValueListValue = new IsoStringKeyValueList( iskvl );
    }
 
@@ -842,6 +869,7 @@ public:
     */
    Variant( const Variant& x ) : m_type( VariantType::Invalid )
    {
+      m_data.anyValue = 0;
       Copy( x );
    }
 
@@ -1102,6 +1130,15 @@ public:
    {
       return ToDComplex();
    }
+
+   /*!
+    * Converts the object stored in this %Variant to a time point value, and
+    * returns the result of the conversion.
+    *
+    * Throws an Error exception if a conversion to the TimePoint class is not
+    * possible for the object currently stored in this %Variant.
+    */
+   TimePoint ToTimePoint() const;
 
    /*!
     * Converts the object stored in this %Variant to a two-dimensional point
@@ -1531,13 +1568,24 @@ public:
    size_type BlockSize() const;
 
    /*!
+    * Returns the length in bytes of a block element for the specified \a type.
+    *
+    * \a type must be a scalar, complex, vector, matrix or string type.
+    * Otherwise this function will throw an Error exception.
+    */
+   static int BytesPerBlockElementForType( int type );
+
+   /*!
     * Returns the length in bytes of a block element, if this %Variant object
     * transports a scalar, complex, vector, matrix or string object.
     *
     * If this %Variant does not transport a scalar, complex, vector-like or
     * matrix object, this function throws an Error exception.
     */
-   int BytesPerBlockElement() const;
+   int BytesPerBlockElement() const
+   {
+      return BytesPerBlockElementForType( m_type );
+   }
 
    /*!
     * Returns true only if the specified \a type is a scalar %Variant type:
@@ -1560,7 +1608,10 @@ public:
     * Returns true only if the specified \a type is a complex %Variant type:
     * Complex32 or Complex64.
     */
-   static bool IsComplexType( int type );
+   static bool IsComplexType( int type )
+   {
+      return type == VariantType::Complex32 || type == VariantType::Complex64;
+   }
 
    /*!
     * Returns true only if the object transported by this %Variant is of a
@@ -1569,6 +1620,23 @@ public:
    bool IsComplex() const
    {
       return IsComplexType( m_type );
+   }
+
+   /*!
+    * Returns true only if the specified \a type is VariantType::TimePoint.
+    */
+   static bool IsTimePointType( int type )
+   {
+      return type == VariantType::TimePoint;
+   }
+
+   /*!
+    * Returns true only if the object transported by this %Variant is of the
+    * TimePoint type.
+    */
+   bool IsTimePoint() const
+   {
+      return IsTimePointType( m_type );
    }
 
    /*!
@@ -1609,7 +1677,10 @@ public:
     * Returns true only if the specified \a type is a character string %Variant
     * type: String or IsoString.
     */
-   static bool IsStringType( int type );
+   static bool IsStringType( int type )
+   {
+      return type == VariantType::String || type == VariantType::IsoString;
+   }
 
    /*!
     * Returns true only if the object transported by this %Variant is of a
@@ -1670,6 +1741,8 @@ private:
 
       fcomplex*   complex32Value;
       dcomplex*   complex64Value;
+
+      TimePoint*  timePointValue;
 
       I32Point*   i32PointValue;
       F32Point*   f32PointValue;
@@ -1753,8 +1826,9 @@ class PCL_AssertVariantSize
 
 } // pcl
 
-/*
- * API helper routines - internal use.
+/*!
+ * \internal
+ * API helper routines for internal use.
  */
 struct api_property_value;
 namespace pcl
@@ -1762,9 +1836,10 @@ namespace pcl
    Variant VariantFromAPIPropertyValue( const api_property_value& );
    void APIPropertyValueFromVariant( api_property_value&, const Variant& );
    Variant::data_type VariantTypeFromAPIPropertyType( uint64 );
+   uint64 APIPropertyTypeFromVariantType( Variant::data_type );
 } // pcl
 
 #endif   // __PCL_Variant_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Variant.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Variant.h - Released 2017-06-28T11:58:36Z

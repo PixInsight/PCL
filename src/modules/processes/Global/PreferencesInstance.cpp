@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0328
+// Standard Global Process Module Version 01.02.07.0347
 // ----------------------------------------------------------------------------
-// PreferencesInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// PreferencesInstance.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -96,7 +96,6 @@ bool PreferencesInstance::CanExecuteOn( const View&, pcl::String& whyNot ) const
 
 bool PreferencesInstance::CanExecuteGlobal( pcl::String& whyNot ) const
 {
-   whyNot.Clear();
    return true;
 }
 
@@ -155,6 +154,11 @@ bool PreferencesInstance::ExecuteGlobal()
       PixInsightSettings::SetGlobalFlag   ( "MainWindow/AnimateToolTip",                    mainWindow.animateToolTip );
       PixInsightSettings::SetGlobalFlag   ( "MainWindow/AnimateToolBox",                    mainWindow.animateToolBox );
       PixInsightSettings::SetGlobalInteger( "MainWindow/MaxRecentFiles",                    mainWindow.maxRecentFiles );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/ShowRecentlyUsed",                  mainWindow.showRecentlyUsed );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/ShowMostUsed",                      mainWindow.showMostUsed );
+      PixInsightSettings::SetGlobalInteger( "MainWindow/MaxUsageListLength",                mainWindow.maxUsageListLength );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/ExpandUsageItemsAtStartup",         mainWindow.expandUsageItemsAtStartup );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/OpenURLsWithInternalBrowser",       mainWindow.openURLsWithInternalBrowser );
 
       PixInsightSettings::SetGlobalFlag   ( "ImageWindow/BackupFiles",                      imageWindow.backupFiles );
       PixInsightSettings::SetGlobalFlag   ( "ImageWindow/DefaultMasksShown",                imageWindow.defaultMasksShown );
@@ -223,6 +227,8 @@ bool PreferencesInstance::ExecuteGlobal()
       PixInsightSettings::SetGlobalInteger( "Process/ConsoleDelay",                         process.consoleDelay );
       PixInsightSettings::SetGlobalInteger( "Process/AutoSavePSMPeriod",                    process.autoSavePSMPeriod );
       PixInsightSettings::SetGlobalFlag   ( "Process/AlertOnProcessCompleted",              process.alertOnProcessCompleted );
+      PixInsightSettings::SetGlobalFlag   ( "Process/EnableExecutionStatistics",            process.enableExecutionStatistics );
+      PixInsightSettings::SetGlobalFlag   ( "Process/EnableLaunchStatistics",               process.enableLaunchStatistics );
 
       PixInsightSettings::EndUpdate();
 
@@ -337,6 +343,16 @@ void* PreferencesInstance::LockParameter( const MetaParameter* p, size_type tabl
       return &mainWindow.animateToolBox;
    if ( p == METAPARAMETER_INSTANCE_ID( MainWindow, maxRecentFiles ) )
       return &mainWindow.maxRecentFiles;
+   if ( p == METAPARAMETER_INSTANCE_ID( MainWindow, showRecentlyUsed ) )
+      return &mainWindow.showRecentlyUsed;
+   if ( p == METAPARAMETER_INSTANCE_ID( MainWindow, showMostUsed ) )
+      return &mainWindow.showMostUsed;
+   if ( p == METAPARAMETER_INSTANCE_ID( MainWindow, maxUsageListLength ) )
+      return &mainWindow.maxUsageListLength;
+   if ( p == METAPARAMETER_INSTANCE_ID( MainWindow, expandUsageItemsAtStartup ) )
+      return &mainWindow.expandUsageItemsAtStartup;
+   if ( p == METAPARAMETER_INSTANCE_ID( MainWindow, openURLsWithInternalBrowser ) )
+      return &mainWindow.openURLsWithInternalBrowser;
 
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, backupFiles ) )
       return &imageWindow.backupFiles;
@@ -466,8 +482,12 @@ void* PreferencesInstance::LockParameter( const MetaParameter* p, size_type tabl
       return &process.autoSavePSMPeriod;
    if ( p == METAPARAMETER_INSTANCE_ID( Process, alertOnProcessCompleted ) )
       return &process.alertOnProcessCompleted;
+   if ( p == METAPARAMETER_INSTANCE_ID( Process, enableExecutionStatistics ) )
+      return &process.enableExecutionStatistics;
+   if ( p == METAPARAMETER_INSTANCE_ID( Process, enableLaunchStatistics ) )
+      return &process.enableLaunchStatistics;
 
-   return 0;
+   return nullptr;
 }
 
 bool PreferencesInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
@@ -487,7 +507,7 @@ bool PreferencesInstance::AllocateParameter( size_type sizeOrLength, const MetaP
    else
    {
       String* s = StringParameterFromMetaParameter( p );
-      if ( s == 0 )
+      if ( s == nullptr )
          return false;
 
       if ( sizeOrLength != 0 )
@@ -508,7 +528,7 @@ size_type PreferencesInstance::ParameterLength( const MetaParameter* p, size_typ
       return imageWindow.swapDirectories[tableRow].Length();
 
    String* s = const_cast<PreferencesInstance*>( this )->StringParameterFromMetaParameter( p );
-   if ( s != 0 )
+   if ( s != nullptr )
       return s->Length();
 
    return 0;
@@ -565,6 +585,11 @@ void PreferencesInstance::LoadDefaultSettings()
    mainWindow.animateToolTip                    =         METAPARAMETER_INSTANCE_ID( MainWindow, animateToolTip                    )->DefaultValue();
    mainWindow.animateToolBox                    =         METAPARAMETER_INSTANCE_ID( MainWindow, animateToolBox                    )->DefaultValue();
    mainWindow.maxRecentFiles                    =  int32( METAPARAMETER_INSTANCE_ID( MainWindow, maxRecentFiles                    )->DefaultValue() );
+   mainWindow.showRecentlyUsed                  =         METAPARAMETER_INSTANCE_ID( MainWindow, showRecentlyUsed                  )->DefaultValue();
+   mainWindow.showMostUsed                      =         METAPARAMETER_INSTANCE_ID( MainWindow, showMostUsed                      )->DefaultValue();
+   mainWindow.maxUsageListLength                =  int32( METAPARAMETER_INSTANCE_ID( MainWindow, maxUsageListLength                )->DefaultValue() );
+   mainWindow.expandUsageItemsAtStartup         =         METAPARAMETER_INSTANCE_ID( MainWindow, expandUsageItemsAtStartup         )->DefaultValue();
+   mainWindow.openURLsWithInternalBrowser       =         METAPARAMETER_INSTANCE_ID( MainWindow, openURLsWithInternalBrowser       )->DefaultValue();
 
    imageWindow.backupFiles                      =         METAPARAMETER_INSTANCE_ID( ImageWindow, backupFiles                      )->DefaultValue();
    imageWindow.defaultMasksShown                =         METAPARAMETER_INSTANCE_ID( ImageWindow, defaultMasksShown                )->DefaultValue();
@@ -632,6 +657,8 @@ void PreferencesInstance::LoadDefaultSettings()
    process.consoleDelay                         =  int32( METAPARAMETER_INSTANCE_ID( Process, consoleDelay                         )->DefaultValue() );
    process.autoSavePSMPeriod                    =  int32( METAPARAMETER_INSTANCE_ID( Process, autoSavePSMPeriod                    )->DefaultValue() );
    process.alertOnProcessCompleted              =         METAPARAMETER_INSTANCE_ID( Process, alertOnProcessCompleted              )->DefaultValue();
+   process.enableExecutionStatistics            =         METAPARAMETER_INSTANCE_ID( Process, enableExecutionStatistics            )->DefaultValue();
+   process.enableLaunchStatistics               =         METAPARAMETER_INSTANCE_ID( Process, enableLaunchStatistics               )->DefaultValue();
 }
 
 void PreferencesInstance::LoadCurrentSettings()
@@ -683,6 +710,11 @@ void PreferencesInstance::LoadCurrentSettings()
    mainWindow.animateToolTip                    = PixInsightSettings::GlobalFlag   ( "MainWindow/AnimateToolTip" );
    mainWindow.animateToolBox                    = PixInsightSettings::GlobalFlag   ( "MainWindow/AnimateToolBox" );
    mainWindow.maxRecentFiles                    = PixInsightSettings::GlobalInteger( "MainWindow/MaxRecentFiles" );
+   mainWindow.showRecentlyUsed                  = PixInsightSettings::GlobalFlag   ( "MainWindow/ShowRecentlyUsed" );
+   mainWindow.showMostUsed                      = PixInsightSettings::GlobalFlag   ( "MainWindow/ShowMostUsed" );
+   mainWindow.maxUsageListLength                = PixInsightSettings::GlobalInteger( "MainWindow/MaxUsageListLength" );
+   mainWindow.expandUsageItemsAtStartup         = PixInsightSettings::GlobalFlag   ( "MainWindow/ExpandUsageItemsAtStartup" );
+   mainWindow.openURLsWithInternalBrowser       = PixInsightSettings::GlobalFlag   ( "MainWindow/OpenURLsWithInternalBrowser" );
 
    imageWindow.backupFiles                      = PixInsightSettings::GlobalFlag   ( "ImageWindow/BackupFiles" );
    imageWindow.defaultMasksShown                = PixInsightSettings::GlobalFlag   ( "ImageWindow/DefaultMasksShown" );
@@ -749,6 +781,8 @@ void PreferencesInstance::LoadCurrentSettings()
    process.consoleDelay                         = PixInsightSettings::GlobalInteger( "Process/ConsoleDelay" );
    process.autoSavePSMPeriod                    = PixInsightSettings::GlobalInteger( "Process/AutoSavePSMPeriod" );
    process.alertOnProcessCompleted              = PixInsightSettings::GlobalFlag   ( "Process/AlertOnProcessCompleted" );
+   process.enableExecutionStatistics            = PixInsightSettings::GlobalFlag   ( "Process/EnableExecutionStatistics" );
+   process.enableLaunchStatistics               = PixInsightSettings::GlobalFlag   ( "Process/EnableLaunchStatistics" );
 }
 
 // ----------------------------------------------------------------------------
@@ -825,4 +859,4 @@ String* PreferencesInstance::StringParameterFromMetaParameter( const MetaParamet
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF PreferencesInstance.cpp - Released 2017-05-02T09:43:00Z

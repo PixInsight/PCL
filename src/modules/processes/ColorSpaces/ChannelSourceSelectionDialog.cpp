@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0298
+// Standard ColorSpaces Process Module Version 01.01.00.0317
 // ----------------------------------------------------------------------------
-// ChannelSourceSelectionDialog.cpp - Released 2016/02/21 20:22:42 UTC
+// ChannelSourceSelectionDialog.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,37 +59,20 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ChannelSourceSelectionDialog::ChannelSourceSelectionDialog(
-   const View& targetView,
-   const String& channelSuffix, const String& channelDesc ) : Dialog()
+ChannelSourceSelectionDialog::ChannelSourceSelectionDialog( const String& channelSuffix,
+                                                            const String& channelDesc )
 {
    pcl::Font fnt = Font();
    int comboWidth = fnt.Width( String( 'M', 40 ) );
    int buttonWidth = fnt.Width( String( "Cancel" ) + String( 'M', 4 ) );
 
-   Array<ImageWindow>   windows = ImageWindow::AllWindows();
-   Array<String>        targetImages;
-
-   if ( !targetView.IsNull() )
+   Array<ImageWindow> windows = ImageWindow::AllWindows();
+   Array<String> targetImages;
+   for ( size_type i = 0; i < windows.Length(); ++i )
    {
-      int width = targetView.Width();
-      int height = targetView.Height();
-
-      for ( size_type i = 0; i < windows.Length(); ++i )
-      {
-         View v = windows[i].MainView();
-         if ( !v.IsColor() && v.Width() == width && v.Height() == height )
-            targetImages.Add( v.Id() );
-      }
-   }
-   else
-   {
-      for ( size_type i = 0; i < windows.Length(); ++i )
-      {
-         View v = windows[i].MainView();
-         if ( !v.IsColor() )
-            targetImages.Add( v.Id() );
-      }
+      View v = windows[i].MainView();
+      if ( !v.IsColor() )
+         targetImages.Add( v.Id() );
    }
 
    if ( targetImages.IsEmpty() )
@@ -164,4 +147,4 @@ void ChannelSourceSelectionDialog::__Button_Click( Button& sender, bool checked 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ChannelSourceSelectionDialog.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ChannelSourceSelectionDialog.cpp - Released 2017-05-02T09:43:00Z

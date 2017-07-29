@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0374
 // ----------------------------------------------------------------------------
-// MaskedStretchInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// MaskedStretchInstance.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,23 +66,23 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 MaskedStretchInstance::MaskedStretchInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-p_targetBackground( TheMSTargetBackgroundParameter->DefaultValue() ),
-p_numberOfIterations( TheMSNumberOfIterationsParameter->DefaultValue() ),
-p_clippingFraction( TheMSClippingFractionParameter->DefaultValue() ),
-p_backgroundReferenceViewId(),
-p_backgroundLow( TheMSBackgroundLowParameter->DefaultValue() ),
-p_backgroundHigh( TheMSBackgroundHighParameter->DefaultValue() ),
-p_useROI( TheMSUseROIParameter->DefaultValue() ),
-p_roi( 0 ),
-p_maskType( MSMaskType::Default )
+   ProcessImplementation( m ),
+   p_targetBackground( TheMSTargetBackgroundParameter->DefaultValue() ),
+   p_numberOfIterations( TheMSNumberOfIterationsParameter->DefaultValue() ),
+   p_clippingFraction( TheMSClippingFractionParameter->DefaultValue() ),
+   p_backgroundReferenceViewId(),
+   p_backgroundLow( TheMSBackgroundLowParameter->DefaultValue() ),
+   p_backgroundHigh( TheMSBackgroundHighParameter->DefaultValue() ),
+   p_useROI( TheMSUseROIParameter->DefaultValue() ),
+   p_roi( 0 ),
+   p_maskType( MSMaskType::Default )
 {
 }
 
 // ----------------------------------------------------------------------------
 
 MaskedStretchInstance::MaskedStretchInstance( const MaskedStretchInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -92,7 +92,7 @@ ProcessImplementation( x )
 void MaskedStretchInstance::Assign( const ProcessImplementation& p )
 {
    const MaskedStretchInstance* x = dynamic_cast<const MaskedStretchInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       p_targetBackground          = x->p_targetBackground;
       p_numberOfIterations        = x->p_numberOfIterations;
@@ -116,7 +116,6 @@ bool MaskedStretchInstance::CanExecuteOn( const View& view, pcl::String& whyNot 
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
@@ -170,15 +169,15 @@ static double InitialBackground( const ImageVariant& image, double low, double h
    if ( image.IsFloatSample() )
       switch ( image.BitsPerSample() )
       {
-      case 32 : return InitialBackground( static_cast<const Image&>( *image ), low, high, clip );
-      case 64 : return InitialBackground( static_cast<const DImage&>( *image ), low, high, clip );
+      case 32: return InitialBackground( static_cast<const Image&>( *image ), low, high, clip );
+      case 64: return InitialBackground( static_cast<const DImage&>( *image ), low, high, clip );
       }
    else
       switch ( image.BitsPerSample() )
       {
-      case  8 : return InitialBackground( static_cast<const UInt8Image&>( *image ), low, high, clip );
-      case 16 : return InitialBackground( static_cast<const UInt16Image&>( *image ), low, high, clip );
-      case 32 : return InitialBackground( static_cast<const UInt32Image&>( *image ), low, high, clip );
+      case  8: return InitialBackground( static_cast<const UInt8Image&>( *image ), low, high, clip );
+      case 16: return InitialBackground( static_cast<const UInt16Image&>( *image ), low, high, clip );
+      case 32: return InitialBackground( static_cast<const UInt32Image&>( *image ), low, high, clip );
       }
 
    return 0;
@@ -255,7 +254,12 @@ private:
 
       MaskedStretchThread( const MaskedStretchInstance& instance, const AbstractImage::ThreadData& data,
                            GenericImage<P>& image, const DVector& m, size_type start, size_type end ) :
-      Thread(), m_instance( instance ), m_data( data ), m_image( image ), m_m( m ), m_start( start ), m_end( end )
+         m_instance( instance ),
+         m_data( data ),
+         m_image( image ),
+         m_m( m ),
+         m_start( start ),
+         m_end( end )
       {
       }
 
@@ -461,7 +465,8 @@ void* MaskedStretchInstance::LockParameter( const MetaParameter* p, size_type ta
       return &p_roi.y1;
    if ( p == TheMSMaskTypeParameter )
       return &p_maskType;
-   return 0;
+
+   return nullptr;
 }
 
 bool MaskedStretchInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
@@ -482,6 +487,7 @@ size_type MaskedStretchInstance::ParameterLength( const MetaParameter* p, size_t
 {
    if ( p == TheMSBackgroundReferenceViewIdParameter )
       return p_backgroundReferenceViewId.Length();
+
    return 0;
 }
 
@@ -490,4 +496,4 @@ size_type MaskedStretchInstance::ParameterLength( const MetaParameter* p, size_t
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF MaskedStretchInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF MaskedStretchInstance.cpp - Released 2017-05-02T09:43:00Z

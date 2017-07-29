@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/APIInterface.h - Released 2016/02/21 20:22:12 UTC
+// pcl/APIInterface.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -52,20 +52,17 @@
 #ifndef __PCL_API_APIInterface_h
 #define __PCL_API_APIInterface_h
 
-#ifndef __PCL_API_APIDefs_h
 #include <pcl/api/APIDefs.h>
-#endif
 
 // Global namespace
 
-#define PCL_API_Version 0x0155
+#define PCL_API_Version 0x0160
 
 extern "C"
 {
 
-/*
- * GlobalContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context GlobalContext
 {
    /*
@@ -229,9 +226,8 @@ struct api_context GlobalContext
    const ::api_pixtraits_lut* (api_func* GetPixelTraitsLUT)( uint32 version ); // version must be zero
 };
 
-/*
- * ModuleDefinitionContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ModuleDefinitionContext
 {
    void        (api_func* EnterModuleDefinitionContext)();
@@ -245,9 +241,8 @@ struct api_context ModuleDefinitionContext
    void        (api_func* ExitModuleDefinitionContext)();
 };
 
-/*
- * ProcessDefinitionContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ProcessDefinitionContext
 {
    void        (api_func* EnterProcessDefinitionContext)();
@@ -338,9 +333,8 @@ struct api_context ProcessDefinitionContext
    void        (api_func* ExitProcessDefinitionContext)();
 };
 
-/*
- * InterfaceDefinitionContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context InterfaceDefinitionContext
 {
    void           (api_func* EnterInterfaceDefinitionContext)();
@@ -446,9 +440,8 @@ struct api_context InterfaceDefinitionContext
    void           (api_func* ExitInterfaceDefinitionContext)();
 };
 
-/*
- * FileFormatDefinitionContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context FileFormatDefinitionContext
 {
    void           (api_func* EnterFileFormatDefinitionContext)();
@@ -482,7 +475,7 @@ struct api_context FileFormatDefinitionContext
    void           (api_func* SetFileFormatGetSelectedImageIndexRoutine)( pcl::format_get_selected_image_index_routine );
    void           (api_func* SetFileFormatSetFormatSpecificDataRoutine)( pcl::format_set_format_specific_data_routine );
    void           (api_func* SetFileFormatGetFormatSpecificDataRoutine)( pcl::format_get_format_specific_data_routine );
-   void           (api_func* SetFileFormatGetImagePropertiesRoutine)( pcl::format_get_image_properties_routine );
+   void           (api_func* SetFileFormatGetImageFormatInfoRoutine)( pcl::format_get_image_format_info_routine );
    void           (api_func* SetFileFormatBeginKeywordExtractionRoutine)( pcl::format_begin_extraction_routine );
    void           (api_func* SetFileFormatGetKeywordCountRoutine)( pcl::format_get_keyword_count_routine );
    void           (api_func* SetFileFormatGetNextKeywordRoutine)( pcl::format_get_next_keyword_routine );
@@ -493,13 +486,23 @@ struct api_context FileFormatDefinitionContext
    void           (api_func* SetFileFormatBeginThumbnailExtractionRoutine)( pcl::format_begin_extraction_routine );
    void           (api_func* SetFileFormatGetThumbnailRoutine)( pcl::format_get_thumbnail_routine );
    void           (api_func* SetFileFormatEndThumbnailExtractionRoutine)( pcl::format_end_extraction_routine );
+
    void           (api_func* SetFileFormatEnumerateImagePropertiesRoutine)( pcl::format_enumerate_image_properties_routine );
-   void           (api_func* SetFileFormatBeginPropertyExtractionRoutine)( pcl::format_begin_extraction_routine );
+   void           (api_func* SetFileFormatBeginImagePropertyExtractionRoutine)( pcl::format_begin_extraction_routine );
    void           (api_func* SetFileFormatGetImagePropertyRoutine)( pcl::format_get_image_property_routine );
+   void           (api_func* SetFileFormatEndImagePropertyExtractionRoutine)( pcl::format_end_extraction_routine );
+   void           (api_func* SetFileFormatBeginImagePropertyEmbeddingRoutine)( pcl::format_begin_embedding_routine );
+   void           (api_func* SetFileFormatSetImagePropertyRoutine)( pcl::format_set_image_property_routine );
+   void           (api_func* SetFileFormatEndImagePropertyEmbeddingRoutine)( pcl::format_end_embedding_routine );
+
+   void           (api_func* SetFileFormatEnumeratePropertiesRoutine)( pcl::format_enumerate_image_properties_routine );
+   void           (api_func* SetFileFormatBeginPropertyExtractionRoutine)( pcl::format_begin_extraction_routine );
+   void           (api_func* SetFileFormatGetPropertyRoutine)( pcl::format_get_image_property_routine );
    void           (api_func* SetFileFormatEndPropertyExtractionRoutine)( pcl::format_end_extraction_routine );
    void           (api_func* SetFileFormatBeginPropertyEmbeddingRoutine)( pcl::format_begin_embedding_routine );
-   void           (api_func* SetFileFormatSetImagePropertyRoutine)( pcl::format_set_image_property_routine );
+   void           (api_func* SetFileFormatSetPropertyRoutine)( pcl::format_set_image_property_routine );
    void           (api_func* SetFileFormatEndPropertyEmbeddingRoutine)( pcl::format_end_embedding_routine );
+
    void           (api_func* SetFileFormatBeginRGBWSExtractionRoutine)( pcl::format_begin_extraction_routine );
    void           (api_func* SetFileFormatGetImageRGBWSRoutine)( pcl::format_get_image_rgbws_routine );
    void           (api_func* SetFileFormatEndRGBWSExtractionRoutine)( pcl::format_end_extraction_routine );
@@ -519,12 +522,13 @@ struct api_context FileFormatDefinitionContext
    void           (api_func* SetFileFormatSetImageColorFilterArrayRoutine)( pcl::format_set_image_color_filter_array_routine );
    void           (api_func* SetFileFormatEndColorFilterArrayEmbeddingRoutine)( pcl::format_end_embedding_routine );
    void           (api_func* SetFileFormatReadImageRoutine)( pcl::format_read_image_routine );
-   void           (api_func* SetFileFormatReadPixelsRoutine)( pcl::format_read_pixels_routine );
+   void           (api_func* SetFileFormatReadSamplesRoutine)( pcl::format_read_pixels_routine );
    void           (api_func* SetFileFormatQueryOptionsRoutine)( pcl::format_query_options_routine );
    void           (api_func* SetFileFormatCreateRoutine)( pcl::format_create_routine );
    void           (api_func* SetFileFormatSetImageIdRoutine)( pcl::format_set_image_id_routine );
    void           (api_func* SetFileFormatSetImageOptionsRoutine)( pcl::format_set_image_options_routine );
    void           (api_func* SetFileFormatCreateImageRoutine)( pcl::format_create_image_routine );
+   void           (api_func* SetFileFormatCloseImageRoutine)( pcl::format_close_routine );
    void           (api_func* SetFileFormatBeginKeywordEmbeddingRoutine)( pcl::format_begin_embedding_routine );
    void           (api_func* SetFileFormatAddKeywordRoutine)( pcl::format_add_keyword_routine );
    void           (api_func* SetFileFormatEndKeywordEmbeddingRoutine)( pcl::format_end_embedding_routine );
@@ -535,7 +539,7 @@ struct api_context FileFormatDefinitionContext
    void           (api_func* SetFileFormatSetThumbnailRoutine)( pcl::format_set_thumbnail_routine );
    void           (api_func* SetFileFormatEndThumbnailEmbeddingRoutine)( pcl::format_end_embedding_routine );
    void           (api_func* SetFileFormatWriteImageRoutine)( pcl::format_write_image_routine );
-   void           (api_func* SetFileFormatWritePixelsRoutine)( pcl::format_write_pixels_routine );
+   void           (api_func* SetFileFormatWriteSamplesRoutine)( pcl::format_write_pixels_routine );
    void           (api_func* SetFileFormatQueryInexactReadRoutine)( pcl::format_query_inexact_read_routine );
    void           (api_func* SetFileFormatQueryLossyWriteRoutine)( pcl::format_query_lossy_write_routine );
    void           (api_func* SetFileFormatQueryFormatStatusRoutine)( pcl::format_query_format_status_routine );
@@ -544,18 +548,17 @@ struct api_context FileFormatDefinitionContext
    void           (api_func* ExitFileFormatDefinitionContext)();
 };
 
-/*
- * ModuleContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ModuleContext
 {
    api_bool    (api_func* LoadResource)( api_handle, const char16_type*, const char16_type* );
    api_bool    (api_func* UnloadResource)( api_handle, const char16_type*, const char16_type* );
+   api_bool    (api_func* EvaluateScript)( api_handle, api_property_value* result, const char16_type* sourceCode, const char* language );
 };
 
-/*
- * ProcessContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ProcessContext
 {
    api_bool             (api_func* EnumerateProcessCategories)( pcl::category_enumeration_callback, char*, size_type*, void* );
@@ -666,17 +669,15 @@ struct api_context ProcessContext
    api_bool             (api_func* AllocateTableRows)( process_handle, meta_parameter_handle, size_type rowCount );
 };
 
-/*
- * InterfaceContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context InterfaceContext
 {
    // ### TODO
 };
 
-/*
- * FileFormatContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context FileFormatContext
 {
    api_bool             (api_func* EnumerateFileFormats)( pcl::format_enumeration_callback, void* );
@@ -722,7 +723,7 @@ struct api_context FileFormatContext
    api_bool             (api_func* ValidateFormatSpecificData)( meta_format_handle, const void* );
    void                 (api_func* DisposeFormatSpecificData)( meta_format_handle, const void* );
 
-   api_bool             (api_func* GetImageProperties)( const_file_format_handle, char16_type*, size_type* );
+   api_bool             (api_func* GetImageFormatInfo)( const_file_format_handle, char16_type*, size_type* );
 
    api_bool             (api_func* BeginKeywordExtraction)( file_format_handle );
    size_type            (api_func* GetKeywordCount)( file_format_handle );
@@ -737,15 +738,25 @@ struct api_context FileFormatContext
    api_bool             (api_func* GetThumbnail)( file_format_handle, image_handle );
    void                 (api_func* EndThumbnailExtraction)( file_format_handle );
 
-   api_bool             (api_func* EnumerateImageProperties)( file_format_handle, pcl::property_enumeration_callback, char*, size_type*, void* );
+   api_bool             (api_func* EnumerateProperties)( file_format_handle, pcl::property_enumeration_callback, char*, size_type*, void* );
 
    api_bool             (api_func* BeginPropertyExtraction)( file_format_handle );
-   api_bool             (api_func* GetImageProperty)( file_format_handle, const char* id, api_property_value* );
+   api_bool             (api_func* GetProperty)( file_format_handle, const char* id, api_property_value* );
    void                 (api_func* EndPropertyExtraction)( file_format_handle );
 
    api_bool             (api_func* BeginPropertyEmbedding)( file_format_handle );
-   api_bool             (api_func* SetImageProperty)( file_format_handle, const char* id, const api_property_value* );
+   api_bool             (api_func* SetProperty)( file_format_handle, const char* id, const api_property_value* );
    void                 (api_func* EndPropertyEmbedding)( file_format_handle );
+
+   api_bool             (api_func* EnumerateImageProperties)( file_format_handle, pcl::property_enumeration_callback, char*, size_type*, void* );
+
+   api_bool             (api_func* BeginImagePropertyExtraction)( file_format_handle );
+   api_bool             (api_func* GetImageProperty)( file_format_handle, const char* id, api_property_value* );
+   void                 (api_func* EndImagePropertyExtraction)( file_format_handle );
+
+   api_bool             (api_func* BeginImagePropertyEmbedding)( file_format_handle );
+   api_bool             (api_func* SetImageProperty)( file_format_handle, const char* id, const api_property_value* );
+   void                 (api_func* EndImagePropertyEmbedding)( file_format_handle );
 
    api_bool             (api_func* BeginRGBWSExtraction)( file_format_handle );
    api_bool             (api_func* GetImageRGBWS)( file_format_handle, float*, api_bool*, float*, float*, float* );
@@ -773,7 +784,7 @@ struct api_context FileFormatContext
 
    api_bool             (api_func* ReadImage)( file_format_handle, image_handle );
 
-   api_bool             (api_func* ReadPixels)( file_format_handle, void*, uint32, uint32, uint32, uint32, api_bool, api_bool );
+   api_bool             (api_func* ReadSamples)( file_format_handle, void*, uint32, uint32, uint32, uint32, api_bool, api_bool );
 
    api_bool             (api_func* QueryImageFileOptions)( file_format_handle, api_image_options*, const void**, uint32 );
 
@@ -798,15 +809,15 @@ struct api_context FileFormatContext
    api_bool             (api_func* WriteImage)( file_format_handle, const_image_handle );
 
    api_bool             (api_func* CreateImage)( file_format_handle, const api_image_info* );
-   api_bool             (api_func* WritePixels)( file_format_handle, const void*, uint32, uint32, uint32, uint32, api_bool, api_bool );
+   api_bool             (api_func* WriteSamples)( file_format_handle, const void*, uint32, uint32, uint32, uint32, api_bool, api_bool );
+   api_bool             (api_func* CloseImage)( file_format_handle );
 
    api_bool             (api_func* WasInexactRead)( const_file_format_handle );
    api_bool             (api_func* WasLossyWrite)( const_file_format_handle );
 };
 
-/*
- * UIContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context UIContext
 {
    api_bool       (api_func* AttachToUIObject)( api_handle, api_handle );
@@ -824,9 +835,8 @@ struct api_context UIContext
    api_bool       (api_func* SetHandleDestroyedEventRoutine)( api_handle, pcl::destroy_event_routine );
 };
 
-/*
- * ActionContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ActionContext
 {
    action_handle  (api_func* CreateAction)( api_handle, api_handle client,
@@ -854,9 +864,8 @@ struct api_context ActionContext
    api_bool       (api_func* SetActionStateQueryRoutine)( action_handle, pcl::action_state_query_routine );
 };
 
-/*
- * ControlContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ControlContext
 {
    control_handle (api_func* CreateControl)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1032,13 +1041,16 @@ struct api_context ControlContext
    api_bool       (api_func* SetMousePressEventRoutine)( control_handle, api_handle, pcl::mouse_button_event_routine );
    api_bool       (api_func* SetMouseReleaseEventRoutine)( control_handle, api_handle, pcl::mouse_button_event_routine );
    api_bool       (api_func* SetWheelEventRoutine)( control_handle, api_handle, pcl::wheel_event_routine );
+   api_bool       (api_func* SetFileDragEventRoutine)( control_handle, api_handle, pcl::file_drag_event_handler );
+   api_bool       (api_func* SetFileDropEventRoutine)( control_handle, api_handle, pcl::file_drag_event_handler );
+   api_bool       (api_func* SetViewDragEventRoutine)( control_handle, api_handle, pcl::view_drag_event_handler );
+   api_bool       (api_func* SetViewDropEventRoutine)( control_handle, api_handle, pcl::view_drag_event_handler );
    api_bool       (api_func* SetChildCreateEventRoutine)( control_handle, api_handle, pcl::child_event_routine );
    api_bool       (api_func* SetChildDestroyEventRoutine)( control_handle, api_handle, pcl::child_event_routine );
 };
 
-/*
- * DialogContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context DialogContext
 {
    control_handle (api_func* CreateDialog)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1072,9 +1084,8 @@ struct api_context DialogContext
                                  const char16_type* caption, const char16_type* initialPath );
 };
 
-/*
- * FrameContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context FrameContext
 {
    control_handle (api_func* CreateFrame)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1088,9 +1099,8 @@ struct api_context FrameContext
    int32          (api_func* GetFrameBorderWidth)( const_control_handle );
 };
 
-/*
- * GroupBoxContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context GroupBoxContext
 {
    control_handle (api_func* CreateGroupBox)( api_handle, api_handle client, const char16_type*, control_handle parent, uint32 flags );
@@ -1107,9 +1117,8 @@ struct api_context GroupBoxContext
    api_bool       (api_func* SetGroupBoxCheckEventRoutine)( control_handle, api_handle, pcl::button_check_event_routine );
 };
 
-/*
- * TabBoxContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context TabBoxContext
 {
    control_handle (api_func* CreateTabBox)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1147,9 +1156,8 @@ struct api_context TabBoxContext
    api_bool       (api_func* SetTabBoxPageSelectedEventRoutine)( control_handle, api_handle, pcl::value_event_routine );
 };
 
-/*
- * ButtonContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ButtonContext
 {
    control_handle (api_func* CreatePushButton)( api_handle, api_handle client, const char16_type*, const_bitmap_handle, control_handle parent, uint32 flags );
@@ -1187,9 +1195,8 @@ struct api_context ButtonContext
    api_bool       (api_func* SetButtonCheckEventRoutine)( control_handle, api_handle, pcl::button_check_event_routine );
 };
 
-/*
- * EditContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context EditContext
 {
    control_handle (api_func* CreateEdit)( api_handle, api_handle client, const char16_type*, control_handle parent, uint32 flags );
@@ -1232,9 +1239,8 @@ struct api_context EditContext
    api_bool       (api_func* SetSelectionUpdatedEventRoutine)( control_handle, api_handle, pcl::range_event_routine );
 };
 
-/*
- * TextBoxContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context TextBoxContext
 {
    control_handle (api_func* CreateTextBox)( api_handle, api_handle client, const char16_type*, control_handle parent, uint32 flags );
@@ -1263,9 +1269,8 @@ struct api_context TextBoxContext
    api_bool       (api_func* SetTextBoxSelectionUpdatedEventRoutine)( control_handle, api_handle, pcl::range_event_routine );
 };
 
-/*
- * ComboBoxContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ComboBoxContext
 {
    control_handle (api_func* CreateComboBox)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1314,9 +1319,8 @@ struct api_context ComboBoxContext
    api_bool       (api_func* SetComboBoxEditTextUpdatedEventRoutine)( control_handle, api_handle, pcl::event_routine );
 };
 
-/*
- * SliderContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context SliderContext
 {
    control_handle (api_func* CreateSlider)( api_handle, api_handle client, api_bool vertical, control_handle parent, uint32 flags );
@@ -1346,9 +1350,8 @@ struct api_context SliderContext
    api_bool       (api_func* SetSliderRangeUpdatedEventRoutine)( control_handle, api_handle, pcl::range_event_routine );
 };
 
-/*
- * SpinBoxContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context SpinBoxContext
 {
    control_handle (api_func* CreateSpinBox)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1384,9 +1387,8 @@ struct api_context SpinBoxContext
    api_bool       (api_func* SetSpinBoxRangeUpdatedEventRoutine)( control_handle, api_handle, pcl::range_event_routine );
 };
 
-/*
- * LabelContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context LabelContext
 {
    control_handle (api_func* CreateLabel)( api_handle, api_handle client, const char16_type*, control_handle parent, uint32 flags );
@@ -1407,9 +1409,8 @@ struct api_context LabelContext
    void           (api_func* SetLabelRichTextEnabled)( control_handle, api_bool );
 };
 
-/*
- * BitmapBoxContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context BitmapBoxContext
 {
    control_handle (api_func* CreateBitmapBox)( api_handle, api_handle client, const_bitmap_handle, control_handle parent, uint32 flags );
@@ -1424,9 +1425,8 @@ struct api_context BitmapBoxContext
    void           (api_func* SetBitmapBoxAutoFitEnabled)( control_handle, api_bool );
 };
 
-/*
- * ScrollBoxContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ScrollBoxContext
 {
    control_handle (api_func* CreateScrollBox)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1464,12 +1464,13 @@ struct api_context ScrollBoxContext
    api_bool       (api_func* SetScrollBoxVerticalRangeUpdatedEventRoutine)( control_handle, api_handle, pcl::range_event_routine );
 };
 
-/*
- * TreeBoxContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context TreeBoxContext
 {
    control_handle (api_func* CreateTreeBox)( api_handle, api_handle client, control_handle parent, uint32 flags );
+
+   control_handle (api_func* CreateTreeBoxViewport)( control_handle, api_handle client );
 
    api_handle     (api_func* CreateTreeBoxNode)( api_handle, api_handle nodeClient );
 
@@ -1622,9 +1623,8 @@ struct api_context TreeBoxContext
    api_bool       (api_func* SetTreeBoxNodeSelectionUpdatedEventRoutine)( control_handle, api_handle, pcl::event_routine );
 };
 
-/*
- * TimerContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context TimerContext
 {
    timer_handle   (api_func* CreateTimer)( api_handle, api_handle client, uint32 flags );
@@ -1643,9 +1643,8 @@ struct api_context TimerContext
    api_bool       (api_func* SetTimerNotifyEventRoutine)( timer_handle, api_handle, pcl::timer_event_routine );
 };
 
-/*
- * ThreadContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ThreadContext
 {
    thread_handle  (api_func* CreateThread)( api_handle, api_handle client, uint32 flags );
@@ -1679,9 +1678,8 @@ struct api_context ThreadContext
    api_bool       (api_func* SetThreadExecRoutine)( thread_handle, pcl::thread_exec_routine );
 };
 
-/*
- * MutexContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context MutexContext
 {
    mutex_handle   (api_func* CreateMutex)( api_handle, api_handle client, uint32 flags ); // ### deprecated
@@ -1696,9 +1694,8 @@ struct api_context MutexContext
    void           (api_func* Unlock)( mutex_handle );
 };
 
-/*
- * ViewListContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ViewListContext
 {
    control_handle (api_func* CreateViewList)( api_handle, api_handle client, control_handle parent, uint32 flags );
@@ -1720,9 +1717,8 @@ struct api_context ViewListContext
    api_bool       (api_func* SetViewListCurrentViewUpdatedEventRoutine)( control_handle, api_handle, pcl::view_event_routine );
 };
 
-/*
- * BitmapContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context BitmapContext
 {
    bitmap_handle  (api_func* CreateBitmap)( api_handle, int32, int32, void* );
@@ -1777,9 +1773,8 @@ struct api_context BitmapContext
    void           (api_func* SetBitmapDevicePixelRatio)( bitmap_handle, double );
 };
 
-/*
- * SVGContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context SVGContext
 {
    svg_handle     (api_func* CreateSVGFile)( api_handle, const char16_type*, int32, int32, uint32 );
@@ -1807,9 +1802,8 @@ struct api_context SVGContext
    api_bool       (api_func* IsSVGPainting)( const_svg_handle );
 };
 
-/*
- * BrushContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context BrushContext
 {
    brush_handle   (api_func* CreateBrush)( api_handle, uint32, int32 );
@@ -1839,9 +1833,8 @@ struct api_context BrushContext
    api_bool       (api_func* GetBrushGradientStops)( const_brush_handle, api_gradient_stop*, size_type *count );
 };
 
-/*
- * PenContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context PenContext
 {
    pen_handle     (api_func* CreatePen)( api_handle, uint32, float, int32, int32, int32 );
@@ -1866,9 +1859,8 @@ struct api_context PenContext
    void           (api_func* SetPenBrush)( pen_handle, const_brush_handle );
 };
 
-/*
- * FontContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context FontContext
 {
    font_handle    (api_func* CreateFontByFamily)( api_handle, int32, double );
@@ -1947,9 +1939,8 @@ struct api_context FontContext
    int32          (api_func* GetNominalFontWeight)( const char16_type* font, const char16_type* style );
 };
 
-/*
- * CursorContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context CursorContext
 {
    cursor_handle  (api_func* CreateCursor)( api_handle, int32 );
@@ -1959,9 +1950,8 @@ struct api_context CursorContext
    void           (api_func* GetCursorHotSpot)( const_cursor_handle, int32*, int32* );
 };
 
-/*
- * SizerContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context SizerContext
 {
    sizer_handle   (api_func* CreateSizer)( api_handle, api_bool vertical );
@@ -2000,9 +1990,8 @@ struct api_context SizerContext
    api_bool       (api_func* GetSizerDevicePixelRatio)( const_sizer_handle, double* );
 };
 
-/*
- * GraphicsContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context GraphicsContext
 {
    graphics_handle (api_func* CreateGraphics)( api_handle );
@@ -2149,120 +2138,8 @@ struct api_context GraphicsContext
    void           (api_func* GetTextRectD)( graphics_handle, double, double, double, double, const char16_type*, int32, double*, double*, double*, double* );
 };
 
-/*
- * ColorManagementContext
- */
-struct api_context ColorManagementContext
-{
-   enum PixelType
-   {
-      RGB_Int8,
-      Gray_Int8,
-      RGB_I16,
-      Gray_I16,
-      RGB_F32,
-      Gray_F32,
-      RGB_F64,
-      Gray_F64,
-      NumberOfPixelTypes
-   };
+// ----------------------------------------------------------------------------
 
-   enum Intent // Compatible with pcl::ICCRenderingIntent
-   {
-      Perceptual,
-      Saturation,
-      RelativeColorimetric,
-      AbsoluteColorimetric,
-      NumberOfIntents
-   };
-
-   enum Direction
-   {
-      Input,
-      Output,
-      Proofing,
-      NumberOfDirections
-   };
-
-   enum InfoType
-   {
-      Description,
-      Manufacturer,
-      Model,
-      Copyright,
-      NumberOfInfoTypes
-   };
-
-   enum Flags
-   {
-      BlackPointCompensation = 0x0001,
-      HighResolutionCLUT     = 0x0002,
-      LowResolutionCLUT      = 0x0004,
-      GamutCheck             = 0x0100
-   };
-
-   icc_profile_handle (api_func* OpenProfile)( const void* data );
-   icc_profile_handle (api_func* OpenProfileFile)( const char16_type* filePath );
-
-   api_bool       (api_func* CloseProfile)( icc_profile_handle );
-
-   api_bool       (api_func* IsValidProfile)( const void* data );
-   api_bool       (api_func* IsValidProfileFile)( const char16_type* filePath );
-   api_bool       (api_func* IsValidProfileHandle)( const_icc_profile_handle );
-
-   int32          (api_func* GetProfileDeviceClass)( const_icc_profile_handle );
-   int32          (api_func* GetProfileColorSpace)( const_icc_profile_handle );
-
-   api_bool       (api_func* IsProfileIntentSupported)( const_icc_profile_handle,
-                                       int32 intent, int32 direction );
-
-   api_bool       (api_func* GetProfileInformation)( const_icc_profile_handle,
-                           int32 infoType, const char* language, const char* country,
-                           char16_type*, size_type* );
-
-   api_bool       (api_func* GetLastErrorMessage)( char16_type*, size_type* );
-
-   color_transform_handle (api_func* CreateTransformation)(
-                                       icc_profile_handle srcProfile,
-                                       icc_profile_handle dstProfile,
-                                       int32 srcPixelType,
-                                       int32 dstPixelType,
-                                       int32 intent,
-                                       uint32 flags );
-
-   color_transform_handle (api_func* CreateMultiprofileTransformation)(
-                                       icc_profile_handle* profiles,
-                                       uint32 count,
-                                       int32 srcPixelType,
-                                       int32 dstPixelType,
-                                       int32 intent,
-                                       uint32 flags );
-
-   color_transform_handle (api_func* CreateProofingTransformation)(
-                                       icc_profile_handle srcProfile,
-                                       icc_profile_handle dstProfile,
-                                       icc_profile_handle proofingProfile,
-                                       int32 srcPixelType,
-                                       int32 dstPixelType,
-                                       int32 intent,
-                                       int32 proofingIntent,
-                                       uint32 flags );
-
-   api_bool       (api_func* DestroyTransformation)( color_transform_handle );
-
-   api_bool       (api_func* Transfrom)( color_transform_handle,  /* thread-safe */
-                                         const void* input, void* output,
-                                         size_type count );
-
-   api_bool       (api_func* IsValidTransformationHandle)( const_color_transform_handle );
-
-   void           (api_func* SetGamutWarningColor)( float r, float g, float b );
-   void           (api_func* GetGamutWarningColor)( float* r, float* g, float* b );
-};
-
-/*
- * RealTimePreviewContext
- */
 struct api_context RealTimePreviewContext
 {
    api_bool       (api_func* SetRealTimePreviewOwner)( interface_handle, uint32 flags );
@@ -2275,9 +2152,8 @@ struct api_context RealTimePreviewContext
    void           (api_func* SetRealTimePreviewProgressText)( const char16_type* text, uint32 flags );
 };
 
-/*
- * NumericalContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context NumericalContext
 {
    /*
@@ -2295,14 +2171,12 @@ struct api_context NumericalContext
    api_bool       (api_func* SVDInPlaceD)( double** A, double* W, double** V, int32 rows, int32 cols );
 
    /*
-    * Linear Fit: y = a + b*x with inimized average absolute deviation.
+    * Linear Fit: y = a + b*x with minimized average absolute deviation.
     * Returns: 1=OK, -1=error, 0=aborted
     */
-   api_enum       (api_func* LinearFitF)( double* a, double* b, double* adev,
-                                          const float* fx, const float* fy, size_type n,
+   api_enum       (api_func* LinearFitF)( double* a, double* b, double* adev, const float* fx, const float* fy, size_type n,
                                           api_bool (*callback)( void* ), void* );
-   api_enum       (api_func* LinearFitD)( double* a, double* b, double* adev,
-                                          const double* fx, const double* fy, size_type n,
+   api_enum       (api_func* LinearFitD)( double* a, double* b, double* adev, const double* fx, const double* fy, size_type n,
                                           api_bool (*callback)( void* ), void* );
 
    /*
@@ -2314,10 +2188,8 @@ struct api_context NumericalContext
    api_bool       (api_func* NaturalCubicSplineGenerateF)( float* dy2, const float* fx, const float* fy, int32 n );
    api_bool       (api_func* NaturalCubicSplineGenerateD)( double* dy2, const double* fx, const double* fy, int32 n );
 
-   api_bool       (api_func* CubicSplineInterpolateF)( float* y, const float* fx, const float* fy, const float* dy2, int32 n,
-                                                       double x, int32* k );
-   api_bool       (api_func* CubicSplineInterpolateD)( double* y, const double* fx, const double* fy, const double* dy2, int32 n,
-                                                       double x, int32* k );
+   api_bool       (api_func* CubicSplineInterpolateF)( float* y, const float* fx, const float* fy, const float* dy2, int32 n, double x, int32* k );
+   api_bool       (api_func* CubicSplineInterpolateD)( double* y, const double* fx, const double* fy, const double* dy2, int32 n, double x, int32* k );
 
    api_bool       (api_func* NaturalGridCubicSplineGenerateF)( float* dy2, const float* fy, int32 n );
    api_bool       (api_func* NaturalGridCubicSplineGenerateD)( double* dy2, const double* fy, int32 n );
@@ -2379,73 +2251,8 @@ struct api_context NumericalContext
    api_bool       (api_func* FFTRealInverseTransformD)( fft_handle hFFT, double* x, const void* y ); // void* = dcomplex*
 };
 
-/*
- * CompressionContext
- */
-struct api_context CompressionContext
-{
-   uint32         (api_func* ZLibMinUncompressedBlockSize)();
-   uint32         (api_func* ZLibMaxUncompressedBlockSize)();
-   uint32         (api_func* ZLibMaxCompressedBlockSize)( uint32 size );
-   int32          (api_func* ZLibMaxCompressionLevel)();
-   int32          (api_func* ZLibDefaultCompressionLevel)();
-   api_bool       (api_func* ZLibCompressBlock)( void* outputData, uint32* outputSize, const void* inputData, uint32 inputSize, int32 level );
-   api_bool       (api_func* ZLibUncompressBlock)( void* outputData, uint32* outputSize, const void* inputData, uint32 inputSize );
+// ----------------------------------------------------------------------------
 
-   uint32         (api_func* LZ4MinUncompressedBlockSize)();
-   uint32         (api_func* LZ4MaxUncompressedBlockSize)();
-   uint32         (api_func* LZ4MaxCompressedBlockSize)( uint32 size );
-   int32          (api_func* LZ4MaxCompressionLevel)();
-   int32          (api_func* LZ4DefaultCompressionLevel)();
-   api_bool       (api_func* LZ4CompressBlock)( void* outputData, uint32* outputSize, const void* inputData, uint32 inputSize, int32 level );
-   api_bool       (api_func* LZ4UncompressBlock)( void* outputData, uint32* outputSize, const void* inputData, uint32 inputSize );
-
-   uint32         (api_func* LZ4HCMinUncompressedBlockSize)();
-   uint32         (api_func* LZ4HCMaxUncompressedBlockSize)();
-   uint32         (api_func* LZ4HCMaxCompressedBlockSize)( uint32 size );
-   int32          (api_func* LZ4HCMaxCompressionLevel)();
-   int32          (api_func* LZ4HCDefaultCompressionLevel)();
-   api_bool       (api_func* LZ4HCCompressBlock)( void* outputData, uint32* outputSize, const void* inputData, uint32 inputSize, int32 level );
-   api_bool       (api_func* LZ4HCUncompressBlock)( void* outputData, uint32* outputSize, const void* inputData, uint32 inputSize );
-
-   uint32         (api_func* BloscLZMinUncompressedBlockSize)();
-   uint32         (api_func* BloscLZMaxUncompressedBlockSize)();
-   uint32         (api_func* BloscLZMaxCompressedBlockSize)( uint32 size );
-   int32          (api_func* BloscLZMaxCompressionLevel)();
-   int32          (api_func* BloscLZDefaultCompressionLevel)();
-   api_bool       (api_func* BloscLZCompressBlock)( void* outputData, uint32* outputSize, const void* inputData, uint32 inputSize, int32 level );
-   api_bool       (api_func* BloscLZUncompressBlock)( void* outputData, uint32* outputSize, const void* inputData, uint32 inputSize );
-};
-
-/*
- * CryptographyContext
- */
-struct api_context CryptographyContext
-{
-   enum HashAlgorithm
-   {
-      MD5    = 5,
-      SHA1   = 1,
-      SHA224 = 224,
-      SHA256 = 256,
-      SHA384 = 384,
-      SHA512 = 512
-   };
-
-   crypto_handle  (api_func* CreateCryptographicHash)( api_handle, int32 hashAlg );
-
-   api_bool       (api_func* InitializeCryptographicHash)( crypto_handle );
-   api_bool       (api_func* UpdateCryptographicHash)( crypto_handle, const void* data, size_type length );
-   api_bool       (api_func* FinalizeCryptographicHash)( crypto_handle, void* hash );
-
-   crypto_handle  (api_func* CreateAES256Cipher)( api_handle, void* key ); // key is uint8[32] - key will be wiped out
-   api_bool       (api_func* AES256EncryptBlock)( const_crypto_handle, void* output, const void* input ); // blocks are uint8[16]
-   api_bool       (api_func* AES256DecryptBlock)( const_crypto_handle, void* output, const void* input ); // blocks are uint8[16]
-};
-
-/*
- * SharedImageContext
- */
 struct api_context SharedImageContext
 {
    image_handle   (api_func* CreateImage)( uint32 w, uint32 h, uint32 n, uint32 nbits, api_bool flt, uint32 cs, void* );
@@ -2474,9 +2281,9 @@ struct api_context SharedImageContext
    api_bool       (api_func* SetImagePixelData)( image_handle, void** );
 };
 
+// ----------------------------------------------------------------------------
+
 /*
- * ViewContext
- *
  * ### TODO - ASAP: Implement history management (ala PJSR).
  */
 struct api_context ViewContext
@@ -2513,6 +2320,8 @@ struct api_context ViewContext
    api_bool       (api_func* GetViewScreenTransferFunctionsEnabled)( view_handle );
    void           (api_func* SetViewScreenTransferFunctionsEnabled)( view_handle, api_bool, api_bool );
 
+   api_bool       (api_func* IsReservedViewPropertyId)( const char* id );
+   api_bool       (api_func* EnumerateViewProperties)( const_view_handle, pcl::property_enumeration_callback, char*, size_type*, void* );
    api_bool       (api_func* GetViewPropertyValue)( api_handle hModule, const_view_handle, const char* id, api_property_value* );
    api_bool       (api_func* GetViewPropertyAttributes)( api_handle hModule, const_view_handle, const char* id, uint32* flags, uint64* type );
    api_bool       (api_func* SetViewPropertyValue)( api_handle hModule, view_handle, const char* id, const api_property_value*, uint32 flags, api_bool notify );
@@ -2520,18 +2329,18 @@ struct api_context ViewContext
    api_bool       (api_func* GetViewPropertyExists)( api_handle hModule, const_view_handle, const char* id, uint64* type );
    api_bool       (api_func* DeleteViewProperty)( api_handle hModule, view_handle, const char* id, api_bool notify );
    api_bool       (api_func* ComputeViewProperty)( api_handle hModule, view_handle, const char* id, api_bool notify, api_property_value* );
+
 };
 
-/*
- * ImageWindowContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ImageWindowContext
 {
    window_handle  (api_func* CreateImageWindow)( int32 width, int32 height, int32 numberOfChannels,
                                                  int32 bitsPerSample, api_bool floatSample, api_bool color,
                                                  api_bool initialProcessing, const char* id );
 
-   api_bool       (api_func* LoadImageWindows)( const char16_type* filePath, const char* id,
+   api_bool       (api_func* LoadImageWindows)( const char16_type* url, const char* id, const char* hints,
                                                 api_bool asACopy, api_bool allowMessages,
                                                 pcl::window_enumeration_callback, void* );
 
@@ -2742,9 +2551,8 @@ struct api_context ImageWindowContext
    api_bool       (api_func* GetImageWindowDevicePixelRatio)( const_window_handle, double* );
 };
 
-/*
- * ImageViewContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context ImageViewContext
 {
    control_handle (api_func* CreateImageView)( api_handle hModule, api_handle hClient, control_handle hParent, uint32 flags,
@@ -2853,9 +2661,8 @@ struct api_context ImageViewContext
    bitmap_handle  (api_func* GetViewportBitmap)( api_handle, const_control_handle, int32 x0, int32 y0, int32 x1, int32 y1, uint32 flags );
 };
 
-/*
- * CodeEditorContext
- */
+// ----------------------------------------------------------------------------
+
 struct api_context CodeEditorContext
 {
    control_handle (api_func* CreateCodeEditor)( api_handle hModule, api_handle hClient, control_handle hParent, uint32 flags );
@@ -2932,9 +2739,48 @@ struct api_context CodeEditorContext
    api_bool       (api_func* SetEditorDynamicWordWrapModeUpdatedEventRoutine)( control_handle, api_handle, pcl::state_event_routine );
 };
 
-/*
- * ExternalProcessContext
- */
+// ----------------------------------------------------------------------------
+
+struct api_context WebViewContext
+{
+   control_handle (api_func* CreateWebView)( api_handle hModule, api_handle hClient, control_handle hParent, uint32 flags );
+
+   api_bool       (api_func* SetWebViewContent)( control_handle, const void* data, size_type size, const char* mimeType );
+   api_bool       (api_func* LoadWebViewContent)( control_handle, const char16_type* URI );
+
+   api_bool       (api_func* RequestWebViewPlainText)( const_control_handle );
+   api_bool       (api_func* RequestWebViewHTML)( const_control_handle );
+
+   api_bool       (api_func* SaveWebViewAsPDF)( control_handle, const char16_type* filePath,
+                                                const double* pageWidth, const double* pageHeight,
+                                                const double* marginLeft, const double* marginTop, const double* marginRight, const double* marginBottom,
+                                                int32 orientation );
+
+   api_bool       (api_func* GetWebViewHasSelection)( const_control_handle );
+   api_bool       (api_func* GetWebViewSelectedText)( const_control_handle, char16_type*, size_type* );
+
+   api_bool       (api_func* GetWebViewZoomFactor)( const_control_handle, double* );
+   api_bool       (api_func* SetWebViewZoomFactor)( control_handle, const double* );
+
+   uint32         (api_func* GetWebViewBackgroundColor)( const_control_handle );
+   api_bool       (api_func* SetWebViewBackgroundColor)( control_handle, uint32 );
+
+   api_bool       (api_func* ReloadWebView)( control_handle );
+   api_bool       (api_func* StopWebView)( control_handle );
+
+   api_bool       (api_func* EvaluateWebViewScript)( control_handle, const char16_type* sourceCode, const char* language );
+
+   api_bool       (api_func* SetWebViewLoadStartedEventRoutine)( control_handle, api_handle, pcl::event_routine );
+   api_bool       (api_func* SetWebViewLoadProgressEventRoutine)( control_handle, api_handle, pcl::value_event_routine );
+   api_bool       (api_func* SetWebViewLoadFinishedEventRoutine)( control_handle, api_handle, pcl::state_event_routine );
+   api_bool       (api_func* SetWebViewSelectionUpdatedEventRoutine)( control_handle, api_handle, pcl::event_routine );
+   api_bool       (api_func* SetWebViewPlainTextAvailableEventRoutine)( control_handle, api_handle, pcl::unicode_event_routine );
+   api_bool       (api_func* SetWebViewHTMLAvailableEventRoutine)( control_handle, api_handle, pcl::unicode_event_routine );
+   api_bool       (api_func* SetWebViewScriptResultAvailableEventRoutine)( control_handle, api_handle, pcl::property_event_routine );
+};
+
+// ----------------------------------------------------------------------------
+
 struct api_context ExternalProcessContext
 {
    enum IOStream
@@ -3015,9 +2861,9 @@ struct api_context ExternalProcessContext
    api_bool       (api_func* SetExternalProcessErrorEventRoutine)( external_process_handle, api_handle, pcl::external_process_status_event_routine );
 };
 
+// ----------------------------------------------------------------------------
+
 /*
- * NetworkTransferContext
- *
  * ### TODO: Somewhere during the 1.8 cycle:
  *           Improve NetworkTransfer with asynchronous network access support.
  */
@@ -3028,6 +2874,7 @@ struct api_context NetworkTransferContext
    api_bool       (api_func* SetNetworkTransferURL)( network_transfer_handle, const char16_type* url, const char16_type* userName, const char16_type* userPassword );
    api_bool       (api_func* SetNetworkTransferProxyURL)( network_transfer_handle, const char16_type* proxy, const char16_type* userName, const char16_type* userPassword );
    api_bool       (api_func* SetNetworkTransferSSL)( network_transfer_handle, api_bool useSSL, api_bool forceSSL, api_bool verifyPeer, api_bool verifyHost );
+   api_bool       (api_func* SetNetworkTransferCustomHTTPHeaders)( network_transfer_handle, const char16_type* nlsHeaders );
    api_bool       (api_func* SetNetworkTransferConnectionTimeout)( network_transfer_handle, int32 seconds );
 
    api_bool       (api_func* PerformNetworkTransferDownload)( network_transfer_handle );
@@ -3039,6 +2886,7 @@ struct api_context NetworkTransferContext
 
    api_bool       (api_func* GetNetworkTransferURL)( const_network_transfer_handle, char16_type*, size_type* );
    api_bool       (api_func* GetNetworkTransferProxyURL)( const_network_transfer_handle, char16_type*, size_type* );
+   api_bool       (api_func* GetNetworkTransferCustomHTTPHeaders)( const_network_transfer_handle, char16_type*, size_type* );
    api_bool       (api_func* GetNetworkTransferStatus)( const_network_transfer_handle );
    api_bool       (api_func* GetNetworkTransferIsAborted)( const_network_transfer_handle );
    int32          (api_func* GetNetworkTransferResponseCode)( const_network_transfer_handle );
@@ -3065,7 +2913,7 @@ namespace pcl
 {
 
 /*
- * APIInterface - Low-level C API interface
+ * Low-level C API interface
  */
 struct APIInterface
 {
@@ -3107,16 +2955,14 @@ struct APIInterface
    CursorContext*                Cursor;
    SizerContext*                 Sizer;
    GraphicsContext*              Graphics;
-   ColorManagementContext*       ColorManagement;
    RealTimePreviewContext*       RealTimePreview;
    NumericalContext*             Numerical;
-   CompressionContext*           Compression;
-   CryptographyContext*          Cryptography;
    SharedImageContext*           SharedImage;
    ViewContext*                  View;
    ImageWindowContext*           ImageWindow;
    ImageViewContext*             ImageView;
    CodeEditorContext*            CodeEditor;
+   WebViewContext*               WebView;
    ExternalProcessContext*       ExternalProcess;
    NetworkTransferContext*       NetworkTransfer;
 
@@ -3132,9 +2978,6 @@ private:
 /*
  * Global PCL API Data
  */
-
-// implemented in API.cpp
-
 extern PCL_DATA const pcl::APIInterface* API;
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
@@ -3165,4 +3008,4 @@ extern "C" void* api_func APIFunctionResolver( const char* );
 #endif   // __PCL_API_APIInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/APIInterface.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/APIInterface.h - Released 2017-06-28T11:58:36Z

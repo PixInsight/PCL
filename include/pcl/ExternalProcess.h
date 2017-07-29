@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ExternalProcess.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ExternalProcess.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,25 +56,12 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_UIObject_h
-#include <pcl/UIObject.h>
-#endif
-
-#ifndef __PCL_Flags_h
-#include <pcl/Flags.h>
-#endif
-
-#ifndef __PCL_AutoPointer_h
 #include <pcl/AutoPointer.h>
-#endif
-
-#ifndef __PCL_Control_h
 #include <pcl/Control.h>
-#endif
+#include <pcl/Flags.h>
+#include <pcl/UIObject.h>
 
 namespace pcl
 {
@@ -82,7 +69,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace ExternalProcessError
+ * \namespace pcl::ExternalProcessError
  * \brief External process error conditions.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -157,6 +144,30 @@ public:
    virtual ~ExternalProcess()
    {
    }
+
+   /*!
+    * Copy constructor. Copy semantics are disabled for %ExternalProcess
+    * because this class represents unique server-side objects.
+    */
+   ExternalProcess( const ExternalProcess& ) = delete;
+
+   /*!
+    * Copy assignment. Copy semantics are disabled for %ExternalProcess because
+    * this class represents unique server-side objects.
+    */
+   ExternalProcess& operator =( const ExternalProcess& ) = delete;
+
+   /*!
+    * Move constructor. Move semantics are disabled for %ExternalProcess
+    * because of parent-child server-side object relations.
+    */
+   ExternalProcess( ExternalProcess&& ) = delete;
+
+   /*!
+    * Move assignment. Move semantics are disabled for %ExternalProcess because
+    * of parent-child server-side object relations.
+    */
+   ExternalProcess& operator =( ExternalProcess&& ) = delete;
 
    /*!
     * Ensures that the server-side object managed by this instance is uniquely
@@ -825,11 +836,6 @@ private:
    ExternalProcess( void* );
    virtual void* CloneHandle() const;
 
-   ExternalProcess( const ExternalProcess& ) = delete;
-   ExternalProcess& operator =( const ExternalProcess& ) = delete;
-   ExternalProcess( ExternalProcess&& ) = delete;
-   ExternalProcess& operator =( ExternalProcess&& ) = delete;
-
    friend class ExternalProcessPrivate;
    friend class ExternalProcessEventDispatcher;
 };
@@ -843,4 +849,4 @@ private:
 #endif   // __PCL_ExternalProcess_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ExternalProcess.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ExternalProcess.h - Released 2017-06-28T11:58:36Z

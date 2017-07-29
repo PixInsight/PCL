@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ReferenceSortedArray.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ReferenceSortedArray.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,37 +54,15 @@
 
 /// \file pcl/ReferenceSortedArray.h
 
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Container_h
-#include <pcl/Container.h>
-#endif
-
-#ifndef __PCL_Allocator_h
 #include <pcl/Allocator.h>
-#endif
-
-#ifndef __PCL_StdAlloc_h
-#include <pcl/StdAlloc.h>
-#endif
-
-#ifndef __PCL_Iterator_h
-#include <pcl/Iterator.h>
-#endif
-
-#ifndef __PCL_ReferenceArray_h
-#include <pcl/ReferenceArray.h>
-#endif
-
-#ifndef __PCL_SortedArray_h
-#include <pcl/SortedArray.h>
-#endif
-
-#ifndef __PCL_IndirectSortedArray_h
+#include <pcl/Container.h>
 #include <pcl/IndirectSortedArray.h>
-#endif
+#include <pcl/Iterator.h>
+#include <pcl/ReferenceArray.h>
+#include <pcl/SortedArray.h>
+#include <pcl/StdAlloc.h>
 
 namespace pcl
 {
@@ -93,11 +71,29 @@ namespace pcl
 
 /*!
  * \class ReferenceSortedArray
- * \brief Dynamic array of pointers to objects providing direct iteration and
- * element access by reference.
+ * \brief Dynamic sorted array of pointers to objects providing direct
+ * iteration and element access by reference.
  *
- * ### TODO: Write a detailed description for %ReferenceSortedArray.
+ * %ReferenceSortedArray is a generic, finite sorted sequence of pointers to
+ * objects, implemented as a reference-counted, dynamic array of pointers to T
+ * instances with automatic sorting of inserted array elements. The type A
+ * provides dynamic allocation for contiguous sequences of void*
+ * (StandardAllocator is used by default).
  *
+ * Ordering of array elements is implemented by indirection, that is, the
+ * pointed-to objects are compared for sorting, not the contained pointers.
+ *
+ * Unlike IndirectArray and IndirectSortedArray, %ReferenceSortedArray provides
+ * direct access to the objects pointed to by its contained pointers, including
+ * direct iteration through references instead of pointers. This makes
+ * %ReferenceSortedArray a perfect replacement for SortedArray in cases where
+ * storing copies of objects is impractical or inviable; for example, when the
+ * objects to be stored are unique by nature. As a prerequisite for this
+ * functionality, %ReferenceSortedArray, unlike IndirectSortedArray and
+ * IndirectArray, and like ReferenceArray, cannot contain null pointers.
+ *
+ * \sa ReferenceArray, IndirectArray, IndirectSortedArray, Array, SortedArray,
+ * ReferenceCounter
  * \ingroup dynamic_arrays
  */
 template <typename T, class A = StandardAllocator>
@@ -869,6 +865,41 @@ public:
    }
 
    /*!
+    * Removes a trailing sequence of contiguous pointers from the specified
+    * iterator of this reference array. This operation is equivalent to:
+    *
+    * \code Remove( i, End() ) \endcode
+    *
+    * If the specified iterator is located at or after the end of this array,
+    * this function does nothing. Otherwise the iterator is constrained to stay
+    * in the range [Begin(),End()) of existing array elements.
+    *
+    * Only pointers are removed by this function; the pointed objects are not
+    * affected in any way.
+    */
+   void Truncate( const_iterator i )
+   {
+      m_array.Truncate( i );
+   }
+
+   /*!
+    * Removes a contiguous trailing sequence of \a n existing pointers from
+    * this reference array. This operation is equivalent to:
+    *
+    * \code Truncate( End() - n ) \endcode
+    *
+    * If the specified count \a n is greater than or equal to the length of
+    * this array, this function calls Clear() to yield an empty array.
+    *
+    * Only pointers are removed by this function; the pointed objects are not
+    * affected in any way.
+    */
+   void Shrink( size_type n = 1 )
+   {
+      m_array.Shrink( n );
+   }
+
+   /*!
     * Removes all existing pointers whose pointed objects are equal to the
     * specified value \a v in this reference array.
     *
@@ -1427,32 +1458,36 @@ private:
 // ----------------------------------------------------------------------------
 
 /*!
- * Adds a pointer to an object \a p to a reference sorted array \a x. Returns a
- * reference to the reference sorted array.
+ * Adds a non-null pointer \a p to a reference sorted array \a x. Returns a
+ * reference to the left-hand reference sorted array.
+ *
+ * A pointer to the template argument type V must be statically castable to T*.
  * \ingroup array_insertion_operators
  */
-template <class T, class A> inline
-ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>& x, const T* p )
+template <class T, class A, class V> inline
+ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>& x, const V* p )
 {
-   x.Add( p );
+   x.Add( static_cast<const T*>( p ) );
    return x;
 }
 
 /*!
- * Adds a pointer to an object \a p to a reference sorted array \a x. Returns a
- * reference to the reference sorted array.
+ * Adds a non-null pointer \a p to a temporary reference sorted array \a x.
+ * Returns a reference to the left-hand reference sorted array.
+ *
+ * A pointer to the template argument type V must be statically castable to T*.
  * \ingroup array_insertion_operators
  */
-template <class T, class A> inline
-ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>&& x, const T* p )
+template <class T, class A, class V> inline
+ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>&& x, const V* p )
 {
-   x.Add( p );
+   x.Add( static_cast<const T*>( p ) );
    return x;
 }
 
 /*!
- * Adds a reference sorted array \a x2 to another reference sorted array \a x1.
- * Returns a reference to the left-hand reference sorted array \a x1.
+ * Adds a reference sorted array \a x2 to a reference sorted array \a x1.
+ * Returns a reference to the left-hand reference sorted array.
  * \ingroup array_insertion_operators
  */
 template <class T, class A> inline
@@ -1463,8 +1498,8 @@ ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>& x1, const Ref
 }
 
 /*!
- * Adds a reference sorted array \a x2 to another reference sorted array \a x1.
- * Returns a reference to the left-hand reference sorted array \a x1.
+ * Adds a reference sorted array \a x2 to a temporary reference sorted array
+ * \a x1. Returns a reference to the left-hand reference sorted array.
  * \ingroup array_insertion_operators
  */
 template <class T, class A> inline
@@ -1476,7 +1511,7 @@ ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>&& x1, const Re
 
 /*!
  * Adds a reference array \a x2 to a reference sorted array \a x1. Returns a
- * reference to the left-hand reference sorted array \a x1.
+ * reference to the left-hand reference sorted array.
  * \ingroup array_insertion_operators
  */
 template <class T, class A> inline
@@ -1487,60 +1522,12 @@ ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>& x1, const Ref
 }
 
 /*!
- * Adds a reference array \a x2 to a reference sorted array \a x1. Returns a
- * reference to the left-hand reference sorted array \a x1.
+ * Adds a reference array \a x2 to a temporary reference sorted array \a x1.
+ * Returns a reference to the left-hand reference sorted array.
  * \ingroup array_insertion_operators
  */
 template <class T, class A> inline
 ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>&& x1, const ReferenceArray<T,A>& x2 )
-{
-   x1.Add( x2 );
-   return x1;
-}
-
-/*!
- * Adds an indirect sorted array \a x2 to a reference sorted array \a x1.
- * Returns a reference to the left-hand reference sorted array \a x1.
- * \ingroup array_insertion_operators
- */
-template <class T, class A> inline
-ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>& x1, const IndirectSortedArray<T,A>& x2 )
-{
-   x1.Add( x2 );
-   return x1;
-}
-
-/*!
- * Adds an indirect sorted array \a x2 to a reference sorted array \a x1.
- * Returns a reference to the left-hand reference sorted array \a x1.
- * \ingroup array_insertion_operators
- */
-template <class T, class A> inline
-ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>&& x1, const IndirectSortedArray<T,A>& x2 )
-{
-   x1.Add( x2 );
-   return x1;
-}
-
-/*!
- * Adds an indirect array \a x2 to a reference sorted array \a x1. Returns a
- * reference to the left-hand reference sorted array \a x1.
- * \ingroup array_insertion_operators
- */
-template <class T, class A> inline
-ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>& x1, const IndirectArray<T,A>& x2 )
-{
-   x1.Add( x2 );
-   return x1;
-}
-
-/*!
- * Adds an indirect array \a x2 to a reference sorted array \a x1. Returns a
- * reference to the left-hand reference sorted array \a x1.
- * \ingroup array_insertion_operators
- */
-template <class T, class A> inline
-ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>&& x1, const IndirectArray<T,A>& x2 )
 {
    x1.Add( x2 );
    return x1;
@@ -1553,4 +1540,4 @@ ReferenceSortedArray<T,A>& operator <<( ReferenceSortedArray<T,A>&& x1, const In
 #endif   // __PCL_ReferenceSortedArray_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ReferenceSortedArray.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ReferenceSortedArray.h - Released 2017-06-28T11:58:36Z

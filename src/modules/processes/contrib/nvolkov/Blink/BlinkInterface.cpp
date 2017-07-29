@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.02.0225
+// Standard Blink Process Module Version 01.02.02.0244
 // ----------------------------------------------------------------------------
-// BlinkInterface.cpp - Released 2016/04/11 10:12:47 UTC
+// BlinkInterface.cpp - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
-// Copyright (c) 2011-2016 Nikolay Volkov
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2017 Nikolay Volkov
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -187,10 +187,10 @@ BlinkInterface::FileData::FileData( FileFormatInstance& file,
       m_fsData = file.FormatSpecificData();
 
    if ( m_format->CanStoreKeywords() )
-      file.Extract( m_keywords );
+      file.ReadFITSKeywords( m_keywords );
 
    if ( m_format->CanStoreICCProfiles() )
-      file.Extract( m_profile );
+      file.ReadICCProfile( m_profile );
 #if debug
    Console().WriteLn( String().Format( "FileData End") );
 #endif
@@ -1055,29 +1055,25 @@ void BlinkInterface::UpdateFileNumbers()
    GUI->Files_TreeBox.EnableHeaderSorting();
 }
 
-void BlinkInterface::FileAdd()
+void BlinkInterface::AddFiles( const StringList& files )
 {
-   OpenFileDialog d;
-   d.LoadImageFilters();
-   d.EnableMultipleSelections();
-   d.SetCaption( "Blink/FileOpen: Select Image Files" );
-   if ( d.Execute() )
+   if ( !files.IsEmpty() )
    {
       Console().Show();
-      Console().WriteLn( String().Format( "<end><cbr><br>* Blink: Loading %u file(s)", d.FileNames().Length() ) );
+      Console().WriteLn( String().Format( "<end><cbr><br>* Blink: Loading %u file(s)", files.Length() ) );
 
       GUI->Files_TreeBox.DisableUpdates();
 
       ElapsedTime timer;  // to calculate execution time
 
-      for ( size_type i = 0; i < d.FileNames().Length(); i++ )
+      for ( const String& file : files )
       {
-         if ( !m_blink.Add( d.FileNames()[i] ) )  // add the file to BlinkData
-            continue;                             // skip the file on error
+         if ( !m_blink.Add( file ) )  // add the file to BlinkData
+            continue;                 // skip the file on error
 
          TreeBox::Node* node = new TreeBox::Node( GUI->Files_TreeBox ); // add new item in Files_TreeBox
          node->Check();                                                 // check new file items
-         node->SetText( 0, File::ExtractName( d.FileNames()[i] ) );     // show only the file name
+         node->SetText( 0, File::ExtractName( file ) );                 // show only the file name
          node->SetText( 1, String( GUI->Files_TreeBox.NumberOfChildren()-1 ) ); // Store file #
 
          ProcessEvents();
@@ -1086,6 +1082,7 @@ void BlinkInterface::FileAdd()
       //GUI->Files_TreeBox.AdjustToContents(); ### don't do this, since it resizes the whole interface!
       GUI->Files_TreeBox.AdjustColumnWidthToContents( 0 );
       GUI->Files_TreeBox.AdjustColumnWidthToContents( 1 );
+
       UpdateFileNumbers();
       GUI->Files_TreeBox.EnableUpdates();
 
@@ -1094,6 +1091,16 @@ void BlinkInterface::FileAdd()
 
       Init();
    }
+}
+
+void BlinkInterface::FileAdd()
+{
+   OpenFileDialog d;
+   d.LoadImageFilters();
+   d.EnableMultipleSelections();
+   d.SetCaption( "Blink/FileOpen: Select Image Files" );
+   if ( d.Execute() )
+      AddFiles( d.FileNames() );
 }
 
 void BlinkInterface::FileCopyTo()
@@ -1730,6 +1737,29 @@ void BlinkInterface::__FilePanelHideButton_Click( Button& sender, bool /*checked
    }
 }
 
+void BlinkInterface::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+{
+   if ( sender == GUI->Files_TreeBox.Viewport() )
+      wantsFiles = true;
+}
+
+void BlinkInterface::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+{
+   if ( sender == GUI->Files_TreeBox.Viewport() )
+   {
+      StringList inputFiles;
+      bool recursive = IsControlOrCmdPressed();
+      for ( const String& item : files )
+         if ( File::Exists( item ) )
+            inputFiles << item;
+         else if ( File::DirectoryExists( item ) )
+            inputFiles << FileFormat::SupportedImageFiles( item, true/*toRead*/, false/*toWrite*/, recursive );
+
+      inputFiles.Sort();
+      AddFiles( inputFiles );
+   }
+}
+
 void BlinkInterface::__Show( Control& /*sender*/ )
 {
    // If necessary, generate the preview bitmap
@@ -1862,9 +1892,9 @@ String BlinkInterface::RowToStringFileNumber( const int row ) //Convert fileNumb
                               String( #a ) + '.' + #b + '.' + #c + '.' + #d
 
 #define PrintableVersion()    PrintableVersion_1( MODULE_VERSION_MAJOR,       \
-                                                MODULE_VERSION_MINOR,       \
-                                                MODULE_VERSION_REVISION,    \
-                                                MODULE_VERSION_BUILD )
+                                                  MODULE_VERSION_MINOR,       \
+                                                  MODULE_VERSION_REVISION,    \
+                                                  MODULE_VERSION_BUILD )
 
 FileFormatInstance BlinkInterface::CreateImageFile( int index, const String& history, const String& dir )
 {
@@ -1899,11 +1929,11 @@ FileFormatInstance BlinkInterface::CreateImageFile( int index, const String& his
          keywords.Add( FITSHeaderKeyword( "COMMENT", IsoString(), "Processed with Blink module " + PrintableVersion() ) );
          keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(), history ) );
       }
-      outputFile.Embed( keywords );
+      outputFile.WriteFITSKeywords( keywords );
    }
 
    if ( fd.m_format->CanStoreICCProfiles() )
-      outputFile.Embed( fd.m_profile );
+      outputFile.WriteICCProfile( fd.m_profile );
 
    return outputFile;
 }
@@ -2025,6 +2055,8 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
    Files_TreeBox.OnNodeUpdated( (TreeBox::node_event_handler)&BlinkInterface::__Files_NodeUpdated, w );
    Files_TreeBox.OnMouseWheel( (Control::mouse_wheel_event_handler)&BlinkInterface::__Files_MouseWheel, w );
    Files_TreeBox.OnNodeDoubleClicked( (TreeBox::node_event_handler)&BlinkInterface::__Files_NodeDoubleClicked, w );
+   Files_TreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler)&BlinkInterface::__FileDrag, w );
+   Files_TreeBox.Viewport().OnFileDrop( (Control::file_drop_event_handler)&BlinkInterface::__FileDrop, w );
 
    FileAdd_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/folder-open.png" ) ) );
    FileAdd_Button.SetScaledFixedSize( 22, 22 );
@@ -2150,4 +2182,4 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BlinkInterface.cpp - Released 2016/04/11 10:12:47 UTC
+// EOF BlinkInterface.cpp - Released 2017-05-02T09:43:01Z

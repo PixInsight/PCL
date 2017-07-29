@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/IndirectArray.h - Released 2016/02/21 20:22:12 UTC
+// pcl/IndirectArray.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/IndirectArray.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Array_h
 #include <pcl/Array.h>
-#endif
-
-#ifndef __PCL_Indirect_h
 #include <pcl/Indirect.h>
-#endif
 
 namespace pcl
 {
@@ -79,8 +69,22 @@ namespace pcl
  * \class IndirectArray
  * \brief Generic dynamic array of pointers to objects.
  *
- * ### TODO: Write a detailed description for %IndirectArray.
+ * %IndirectArray is a generic, finite ordered sequence of pointers to objects,
+ * implemented as a reference-counted, dynamic array of pointers to T
+ * instances. The type A provides dynamic allocation for contiguous sequences
+ * of void* (StandardAllocator is used by default).
  *
+ * In the PixInsight/PCL platform, dynamic arrays of pointers to objects are
+ * powerful building blocks for the implementation of flexible data structures,
+ * including heterogeneous containers.
+ *
+ * Unlike ReferenceArray, %IndirectArray can contain null pointers because it
+ * does not require dereferencing pointers. Actually, %IndirectArray by itself
+ * does not need to know anything about the objects pointed to by its contained
+ * pointers, and precisely here lies its flexibility as a generic container.
+ *
+ * \sa IndirectSortedArray, ReferenceArray, ReferenceSortedArray, Array,
+ * SortedArray, ReferenceCounter
  * \ingroup dynamic_arrays
  */
 template <class T, class A = StandardAllocator>
@@ -757,6 +761,64 @@ public:
    }
 
    /*!
+    * Appends a contiguous sequence of \a n null pointers to this indirect
+    * array. This operation is equivalent to:
+    *
+    * \code Grow( End(), n ) \endcode
+    *
+    * Returns an iterator pointing to the first newly created array element, or
+    * End() if \a n is zero.
+    */
+   iterator Expand( size_type n = 1 )
+   {
+      return Grow( ConstEnd(), n );
+   }
+
+   /*!
+    * Removes a contiguous trailing sequence of \a n existing pointers from
+    * this indirect array. This operation is equivalent to:
+    *
+    * \code Truncate( End() - n ) \endcode
+    *
+    * If the specified count \a n is greater than or equal to the length of
+    * this array, this function calls Clear() to yield an empty array.
+    *
+    * Only pointers are removed by this function; the pointed objects are not
+    * affected in any way.
+    */
+   void Shrink( size_type n = 1 )
+   {
+      if ( n < Length() )
+         Truncate( ConstEnd() - n );
+      else
+         Clear();
+   }
+
+   /*!
+    * Resizes this indirect array to the specified length \a n, either by
+    * appending null pointers, or by removing existing trailing pointers.
+    * This operation is equivalent to:
+    *
+    * \code
+    * if ( n > Length() )
+    *    Expand( n - Length() );
+    * else
+    *    Shrink( Length() - n );
+    * \endcode
+    *
+    * When the array length is reduced, only pointers are removed by this
+    * function; the pointed objects are not affected in any way.
+    */
+   void Resize( size_type n )
+   {
+      size_type l = Length();
+      if ( n > l )
+         Expand( n - l );
+      else
+         Shrink( l - n );
+   }
+
+   /*!
     * Inserts a copy of the sequence of pointers contained by the indirect
     * array \a x at the specified location \a i in this indirect array.
     *
@@ -923,6 +985,24 @@ public:
    {
       m_array.Remove( (array_iterator)const_cast<iterator>( i ),
                       (array_iterator)const_cast<iterator>( j ) );
+   }
+
+   /*!
+    * Removes a trailing sequence of contiguous pointers from the specified
+    * iterator of this array. This operation is equivalent to:
+    *
+    * \code Remove( i, End() ) \endcode
+    *
+    * If the specified iterator is located at or after the end of this array,
+    * this function does nothing. Otherwise the iterator is constrained to stay
+    * in the range [Begin(),End()) of existing array elements.
+    *
+    * Only pointers are removed by this function; the pointed objects are not
+    * affected in any way.
+    */
+   void Truncate( const_iterator i )
+   {
+      m_array.Truncate( (array_iterator)const_cast<iterator>( i ) );
    }
 
    /*!
@@ -1662,16 +1742,13 @@ public:
                return s;
          s.Append( S( **i ) );
          if ( ++i < End() )
-         {
-            S p( separator );
             do
                if ( *i != nullptr )
                {
-                  s.Append( p );
+                  s.Append( separator );
                   s.Append( S( **i ) );
                }
             while ( ++i < End() );
-         }
       }
       return s;
    }
@@ -1877,31 +1954,35 @@ bool operator <( const IndirectArray<T,A>& x1, const IndirectArray<T,A>& x2 )
 
 /*!
  * Appends a pointer \a p to an indirect array \a x. Returns a reference to the
- * indirect array.
+ * left-hand indirect array.
+ *
+ * A pointer to the template argument type V must be statically castable to T*.
  * \ingroup array_insertion_operators
  */
-template <class T, class A> inline
-IndirectArray<T,A>& operator <<( IndirectArray<T,A>& x, const T* p )
+template <class T, class A, class V> inline
+IndirectArray<T,A>& operator <<( IndirectArray<T,A>& x, const V* p )
 {
-   x.Append( p );
+   x.Append( static_cast<const T*>( p ) );
    return x;
 }
 
 /*!
- * Appends a pointer \a p to an indirect array \a x. Returns a reference to the
- * indirect array.
+ * Appends a pointer \a p to a temporary indirect array \a x. Returns a
+ * reference to the left-hand indirect array.
+ *
+ * A pointer to the template argument type V must be statically castable to T*.
  * \ingroup array_insertion_operators
  */
-template <class T, class A> inline
-IndirectArray<T,A>& operator <<( IndirectArray<T,A>&& x, const T* p )
+template <class T, class A, class V> inline
+IndirectArray<T,A>& operator <<( IndirectArray<T,A>&& x, const V* p )
 {
-   x.Append( p );
+   x.Append( static_cast<const T*>( p ) );
    return x;
 }
 
 /*!
  * Appends an indirect array \a x2 to an indirect array \a x1. Returns a
- * reference to the left-hand indirect array \a x1.
+ * reference to the left-hand indirect array.
  * \ingroup array_insertion_operators
  */
 template <class T, class A> inline
@@ -1912,8 +1993,8 @@ IndirectArray<T,A>& operator <<( IndirectArray<T,A>& x1, const IndirectArray<T,A
 }
 
 /*!
- * Appends an indirect array \a x2 to an indirect array \a x1. Returns a
- * reference to the left-hand indirect array \a x1.
+ * Appends an indirect array \a y to a temporary indirect array \a x. Returns a
+ * reference to the left-hand indirect array.
  * \ingroup array_insertion_operators
  */
 template <class T, class A> inline
@@ -1930,4 +2011,4 @@ IndirectArray<T,A>& operator <<( IndirectArray<T,A>&& x1, const IndirectArray<T,
 #endif  // __PCL_IndirectArray_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/IndirectArray.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/IndirectArray.h - Released 2017-06-28T11:58:36Z

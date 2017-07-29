@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/FITSHeaderKeyword.h - Released 2016/02/21 20:22:12 UTC
+// pcl/FITSHeaderKeyword.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/FITSHeaderKeyword.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_String_h
-#include <pcl/String.h>
-#endif
-
-#ifndef __PCL_Array_h
 #include <pcl/Array.h>
-#endif
+#include <pcl/String.h>
 
 namespace pcl
 {
@@ -211,6 +201,25 @@ public:
    }
 
    /*!
+    * If this keyword has a string value without leading and trailing quotes,
+    * this member function adds them, as required by the FITS standard. Returns
+    * true if the value was fixed, false if the value was not changed.
+    */
+   bool FixValueDelimiters()
+   {
+      double dum;
+      if ( !IsNull() )
+         if ( !IsString() )
+            if ( !IsBoolean() )
+               if ( !IsNumeric() || !value.TryToDouble( dum ) )
+               {
+                  value.EnsureSingleQuoted();
+                  return true;
+               }
+      return false;
+   }
+
+   /*!
     * Trims leading and trailing spaces in the name, value and comment
     * components of this %FITS header keyword.
     */
@@ -277,4 +286,4 @@ inline bool operator <( const FITSHeaderKeyword& h1, const FITSHeaderKeyword& h2
 #endif   // __PCL_FITSHeaderKeyword_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FITSHeaderKeyword.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/FITSHeaderKeyword.h - Released 2017-06-28T11:58:36Z

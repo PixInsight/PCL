@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Arguments.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Arguments.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -181,8 +181,8 @@ static void SearchDirectory_Recursive( StringList& fileNames, const String& file
          if ( info.IsDirectory() && info.name != "." && info.name != ".." )
             directories.Add( info.name );
 
-      for ( StringList::const_iterator i = directories.Begin(); i != directories.End(); ++i )
-         SearchDirectory_Recursive( fileNames, fileDir + '/' + *i + '/' + wildSpec, true );
+      for ( const String& dir : directories )
+         SearchDirectory_Recursive( fileNames, fileDir + '/' + dir + '/' + wildSpec, true );
    }
 }
 
@@ -271,11 +271,11 @@ ArgumentList ExtractArguments( const StringList& argv, argument_item_mode mode, 
    // The list of extracted arguments
    ArgumentList arguments;
 
-   for ( StringList::const_iterator i = argv.Begin(); i != argv.End(); ++i )
+   for ( const String& token : argv )
    {
-      if ( i->StartsWith( '-' ) )
+      if ( token.StartsWith( '-' ) )
       {
-         Argument arg( i->At( 1 ) );
+         Argument arg( token.At( 1 ) );
 
          if ( recursiveSearchArgs && arg.Id() == s_recursiveSearchArg )
          {
@@ -292,13 +292,13 @@ ArgumentList ExtractArguments( const StringList& argv, argument_item_mode mode, 
       else
       {
          if ( noItems )
-            throw ParseError( "Non-parametric arguments are not allowed", *i  );
+            throw ParseError( "Non-parametric arguments are not allowed", token );
 
          StringList items;
 
          if ( itemsAsFiles )
          {
-            String fileName = *i;
+            String fileName = token;
             if ( fileName.StartsWith( '\"' ) )
                fileName.Delete( 0 );
             if ( fileName.EndsWith( '\"' ) )
@@ -306,7 +306,7 @@ ArgumentList ExtractArguments( const StringList& argv, argument_item_mode mode, 
 
             fileName.Trim();
             if ( fileName.IsEmpty() )
-               throw ParseError( "Empty path specification", *i );
+               throw ParseError( "Empty path specification", token );
 
             fileName = File::FullPath( fileName );
 
@@ -322,7 +322,7 @@ ArgumentList ExtractArguments( const StringList& argv, argument_item_mode mode, 
          }
          else if ( itemsAsViews )
          {
-            String viewId = *i;
+            String viewId = token;
 
             if ( !allowWildcards )
                if ( viewId.HasWildcards() )
@@ -367,9 +367,9 @@ ArgumentList ExtractArguments( const StringList& argv, argument_item_mode mode, 
             }
          }
          else
-            items.Add( *i );
+            items.Add( token );
 
-         Argument arg( *i, items );
+         Argument arg( token, items );
          arguments.Add( arg );
       }
    }
@@ -423,4 +423,4 @@ String ReplaceEnvironmentVariables( const String& s0 )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Arguments.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Arguments.cpp - Released 2017-06-28T11:58:42Z

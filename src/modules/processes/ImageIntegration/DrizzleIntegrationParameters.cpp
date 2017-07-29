@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.15.00.0398
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationParameters.cpp - Released 2016/11/13 17:30:54 UTC
+// DrizzleIntegrationParameters.cpp - Released 2017-05-05T08:37:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -68,6 +68,8 @@ DZKernelFunction*           TheDZKernelFunctionParameter = nullptr;
 DZKernelGridSize*           TheDZKernelGridSizeParameter = nullptr;
 DZOriginX*                  TheDZOriginXParameter = nullptr;
 DZOriginY*                  TheDZOriginYParameter = nullptr;
+DZEnableCFA*                TheDZEnableCFAParameter = nullptr;
+DZCFAPattern*               TheDZCFAPatternParameter = nullptr;
 DZEnableRejection*          TheDZEnableRejectionParameter = nullptr;
 DZEnableImageWeighting*     TheDZEnableImageWeightingParameter = nullptr;
 DZEnableSurfaceSplines*     TheDZEnableSurfaceSplinesParameter = nullptr;
@@ -376,6 +378,35 @@ double DZOriginY::MinimumValue() const
 double DZOriginY::MaximumValue() const
 {
    return 1.00;
+}
+
+// ----------------------------------------------------------------------------
+
+DZEnableCFA::DZEnableCFA( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheDZEnableCFAParameter = this;
+}
+
+IsoString DZEnableCFA::Id() const
+{
+   return "enableCFA";
+}
+
+bool DZEnableCFA::DefaultValue() const
+{
+   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+DZCFAPattern::DZCFAPattern( MetaProcess* P ) : MetaString( P )
+{
+   TheDZCFAPatternParameter = this;
+}
+
+IsoString DZCFAPattern::Id() const
+{
+   return "cfaPattern";
 }
 
 // ----------------------------------------------------------------------------
@@ -1279,4 +1310,4 @@ bool DZImageOutputData::IsReadOnly() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationParameters.cpp - Released 2016/11/13 17:30:54 UTC
+// EOF DrizzleIntegrationParameters.cpp - Released 2017-05-05T08:37:32Z

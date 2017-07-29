@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/CodeEditor.h - Released 2016/02/21 20:22:12 UTC
+// pcl/CodeEditor.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,23 +54,14 @@
 
 /// \file pcl/CodeEditor.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Flags_h
 #include <pcl/Flags.h>
-#endif
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_AutoPointer_h
 #include <pcl/AutoPointer.h>
-#endif
-
-#ifndef __PCL_Control_h
 #include <pcl/Control.h>
-#endif
 
 #endif   // !__PCL_BUILDING_PIXINSIGHT_APPLICATION
 
@@ -80,7 +71,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace FindMode
+ * \namespace pcl::FindMode
  * \brief Flags to control text find and replacement operations.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -103,12 +94,7 @@ namespace FindMode
       WholeWords     = 0x00000040,  // Search for whole words
       SelectionOnly  = 0x00000100,  // Replace within the current selection
       Incremental    = 0x00000200,  // Perform an incremental find operation
-
-#if defined( _MSC_VER ) && _MSC_VER >= 1700 // VC++ >= 2012
-      Default        = 96
-#else
       Default        = CaseSensitive|WholeWords
-#endif
    };
 }
 
@@ -537,10 +523,10 @@ public:
     * editor. The selection coordinates are stored in the returned rectangle as
     * follows:
     *
-    * \li Rect::y0   Starting line of the current text selection.
-    * \li Rect::x0   Starting column of the current text selection.
-    * \li Rect::y1   Ending line of the current text selection.
-    * \li Rect::x1   Ending column of the current text selection.
+    * \li Rect::y0 - Starting line of the current text selection.
+    * \li Rect::x0 - Starting column of the current text selection.
+    * \li Rect::y1 - Ending line of the current text selection.
+    * \li Rect::x1 - Ending column of the current text selection.
     */
    Rect Selection() const;
 
@@ -905,4 +891,4 @@ private:
 #endif   // __PCL_CodeEditor_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/CodeEditor.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/CodeEditor.h - Released 2017-06-28T11:58:36Z

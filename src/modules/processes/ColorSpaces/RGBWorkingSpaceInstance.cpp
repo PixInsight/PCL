@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0298
+// Standard ColorSpaces Process Module Version 01.01.00.0317
 // ----------------------------------------------------------------------------
-// RGBWorkingSpaceInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// RGBWorkingSpaceInstance.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -51,13 +51,13 @@
 // ----------------------------------------------------------------------------
 
 #include "RGBWorkingSpaceInstance.h"
-#include "RGBWorkingSpaceProcess.h"
 #include "RGBWorkingSpaceParameters.h"
+#include "RGBWorkingSpaceProcess.h"
 
-#include <pcl/RGBColorSystem.h>
-#include <pcl/View.h>
 #include <pcl/ImageWindow.h>
+#include <pcl/RGBColorSystem.h>
 #include <pcl/StdStatus.h>
+#include <pcl/View.h>
 
 namespace pcl
 {
@@ -65,32 +65,38 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 RGBWorkingSpaceInstance::RGBWorkingSpaceInstance( const MetaProcess* P ) :
-ProcessImplementation( P ),
-Y( RGBColorSystem::sRGB.LuminanceCoefficients() ),
-x( RGBColorSystem::sRGB.ChromaticityXCoordinates() ),
-y( RGBColorSystem::sRGB.ChromaticityYCoordinates() ),
-gamma( RGBColorSystem::sRGB.Gamma() ),
-sRGB( true ),
-applyGlobalRGBWS( false )
+   ProcessImplementation( P ),
+   Y( RGBColorSystem::sRGB.LuminanceCoefficients() ),
+   x( RGBColorSystem::sRGB.ChromaticityXCoordinates() ),
+   y( RGBColorSystem::sRGB.ChromaticityYCoordinates() ),
+   gamma( RGBColorSystem::sRGB.Gamma() ),
+   sRGB( true ),
+   applyGlobalRGBWS( false )
 {
 }
 
+// ----------------------------------------------------------------------------
+
 RGBWorkingSpaceInstance::RGBWorkingSpaceInstance( const RGBWorkingSpaceInstance& p ) :
-ProcessImplementation( p )
+   ProcessImplementation( p )
 {
    Assign( p );
 }
 
+// ----------------------------------------------------------------------------
+
 RGBWorkingSpaceInstance::RGBWorkingSpaceInstance( const MetaProcess* P, const RGBColorSystem& rgbws ) :
-ProcessImplementation( P ),
-Y( rgbws.LuminanceCoefficients() ),
-x( rgbws.ChromaticityXCoordinates() ),
-y( rgbws.ChromaticityYCoordinates() ),
-gamma( rgbws.Gamma() ),
-sRGB( rgbws.IsSRGB() ),
-applyGlobalRGBWS( false )
+   ProcessImplementation( P ),
+   Y( rgbws.LuminanceCoefficients() ),
+   x( rgbws.ChromaticityXCoordinates() ),
+   y( rgbws.ChromaticityYCoordinates() ),
+   gamma( rgbws.Gamma() ),
+   sRGB( rgbws.IsSRGB() ),
+   applyGlobalRGBWS( false )
 {
 }
+
+// ----------------------------------------------------------------------------
 
 bool RGBWorkingSpaceInstance::Validate( String& info )
 {
@@ -111,10 +117,12 @@ bool RGBWorkingSpaceInstance::Validate( String& info )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void RGBWorkingSpaceInstance::Assign( const ProcessImplementation& p )
 {
    const RGBWorkingSpaceInstance* t = dynamic_cast<const RGBWorkingSpaceInstance*>( &p );
-   if ( t != 0 )
+   if ( t != nullptr )
    {
       Y = t->Y;
       x = t->x;
@@ -125,15 +133,21 @@ void RGBWorkingSpaceInstance::Assign( const ProcessImplementation& p )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool RGBWorkingSpaceInstance::IsMaskable( const View&, const ImageWindow& /*mask*/ ) const
 {
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 UndoFlags RGBWorkingSpaceInstance::UndoMode( const View& ) const
 {
    return UndoFlag::RGBWS;
 }
+
+// ----------------------------------------------------------------------------
 
 bool RGBWorkingSpaceInstance::CanExecuteOn( const View& v, String& whyNot ) const
 {
@@ -143,9 +157,10 @@ bool RGBWorkingSpaceInstance::CanExecuteOn( const View& v, String& whyNot ) cons
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool RGBWorkingSpaceInstance::ExecuteOn( View& view )
 {
@@ -158,11 +173,14 @@ bool RGBWorkingSpaceInstance::ExecuteOn( View& view )
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool RGBWorkingSpaceInstance::CanExecuteGlobal( String& whyNot ) const
 {
-   whyNot.Clear();
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool RGBWorkingSpaceInstance::ExecuteGlobal()
 {
@@ -174,6 +192,8 @@ bool RGBWorkingSpaceInstance::ExecuteGlobal()
    ImageWindow::SetGlobalRGBWS( rgbws );
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void* RGBWorkingSpaceInstance::LockParameter( const MetaParameter* p, size_type tableRow )
 {
@@ -189,20 +209,27 @@ void* RGBWorkingSpaceInstance::LockParameter( const MetaParameter* p, size_type 
       return &sRGB;
    if ( p == TheRGBWSApplyGlobalParameter )
       return &applyGlobalRGBWS;
-   return 0;
+
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool RGBWorkingSpaceInstance::AllocateParameter( size_type length, const MetaParameter* p, size_type tableRow )
 {
    if ( p == TheRGBWSChannelTableParameter )
       return true;
+
    return false;
 }
+
+// ----------------------------------------------------------------------------
 
 size_type RGBWorkingSpaceInstance::ParameterLength( const MetaParameter* p, size_type /*tableRow*/ ) const
 {
    if ( p == TheRGBWSChannelTableParameter )
       return 3;
+
    return 0;
 }
 
@@ -211,4 +238,4 @@ size_type RGBWorkingSpaceInstance::ParameterLength( const MetaParameter* p, size
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RGBWorkingSpaceInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF RGBWorkingSpaceInstance.cpp - Released 2017-05-02T09:43:00Z

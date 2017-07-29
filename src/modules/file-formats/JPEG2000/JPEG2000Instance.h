@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard JPEG2000 File Format Module Version 01.00.01.0279
+// Standard JPEG2000 File Format Module Version 01.00.02.0299
 // ----------------------------------------------------------------------------
-// JPEG2000Instance.h - Released 2016/02/21 20:22:34 UTC
+// JPEG2000Instance.h - Released 2017-05-02T09:42:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG2000 PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -55,9 +55,9 @@
 
 #include <pcl/FileFormatImplementation.h>
 
-//PCL_BEGIN_LOCAL // Uncomment these *_LOCAL macros if using JasPer as a static library
+PCL_BEGIN_LOCAL // Comment out these *_LOCAL macros if using JasPer as a dynamic library
 #include <jasper/jasper.h>
-//PCL_END_LOCAL
+PCL_END_LOCAL
 
 namespace pcl
 {
@@ -124,7 +124,7 @@ public:
    virtual void Close();
 
    virtual void* FormatSpecificData() const;
-   virtual String ImageProperties() const;
+   virtual String ImageFormatInfo() const;
 
    virtual void ReadImage( Image& );
    virtual void ReadImage( DImage& );
@@ -148,19 +148,19 @@ public:
 protected:
 
    // Parameters of the image being read/written
-   String               path;       // current file path
-   ImageOptions         options;    // format-independent options
-   JPEG2000ImageOptions jp2Options; // format-specific options
+   String               m_path;       // current file path
+   ImageOptions         m_options;    // format-independent options
+   JPEG2000ImageOptions m_jp2Options; // format-specific options
 
    // JasPer objects
-   jas_stream_t*        jp2Stream;
-   jas_image_t*         jp2Image;
+   jas_stream_t*        m_jp2Stream = nullptr;
+   jas_image_t*         m_jp2Image = nullptr;
 
    // Embedded ICC profile, JP2 format only.
-   jas_cmprof_t*        jp2CMProfile; // JasPer's color management, incl. ICC profile
+   jas_cmprof_t*        m_jp2CMProfile = nullptr; // JasPer's color management, incl. ICC profile
 
    // Did us query options to the user?
-   bool                 queriedOptions;
+   bool                 m_queriedOptions = false;
 
    void CreateImage( const ImageInfo& );
 
@@ -180,8 +180,8 @@ public:
    JP2Instance( const JP2Format* );
    virtual ~JP2Instance();
 
-   virtual void Extract( ICCProfile& );
-   virtual void Embed( const ICCProfile& );
+   virtual ICCProfile ReadICCProfile();
+   virtual void WriteICCProfile( const ICCProfile& );
 
 private:
 
@@ -198,4 +198,4 @@ private:
 #endif   // __JPEG2000Instance_h
 
 // ----------------------------------------------------------------------------
-// EOF JPEG2000Instance.h - Released 2016/02/21 20:22:34 UTC
+// EOF JPEG2000Instance.h - Released 2017-05-02T09:42:51Z

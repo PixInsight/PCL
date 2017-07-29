@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/String.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/String.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,6 +58,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <time.h>
 #include <errno.h>
 
 /*
@@ -1693,8 +1694,8 @@ IsoString& IsoString::ToDecodedHTMLSpecialChars()
 
 // ----------------------------------------------------------------------------
 
-template <class T> static
-void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const T& separator, const T& str )
+template <class T, class S> static
+void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator, const T& str )
 {
    try
    {
@@ -1756,15 +1757,25 @@ void String::ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const St
    pcl::ParseSexagesimal( sign, s1, s2, s3, separator, *this );
 }
 
+void String::ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const
+{
+   pcl::ParseSexagesimal( sign, s1, s2, s3, separators, *this );
+}
+
 void IsoString::ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator ) const
 {
    pcl::ParseSexagesimal( sign, s1, s2, s3, separator, *this );
 }
 
+void IsoString::ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const
+{
+   pcl::ParseSexagesimal( sign, s1, s2, s3, separators, *this );
+}
+
 // ----------------------------------------------------------------------------
 
-template <class T> static
-bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const T& separator, const T& str )
+template <class T, class S> static
+bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator, const T& str )
 {
    Array<T> tokens;
    str.Break( tokens, separator, true/*trim*/ );
@@ -1826,9 +1837,19 @@ bool String::TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const
    return pcl::TryParseSexagesimal( sign, s1, s2, s3, separator, *this );
 }
 
+bool String::TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const
+{
+   return pcl::TryParseSexagesimal( sign, s1, s2, s3, separators, *this );
+}
+
 bool IsoString::TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator ) const
 {
    return pcl::TryParseSexagesimal( sign, s1, s2, s3, separator, *this );
+}
+
+bool IsoString::TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const
+{
+   return pcl::TryParseSexagesimal( sign, s1, s2, s3, separators, *this );
 }
 
 // ----------------------------------------------------------------------------
@@ -1858,9 +1879,9 @@ T ToSexagesimal( int sign, double s1, double s2, double s3, const SexagesimalCon
             s1 += 1;
          }
       }
-      tokens << T().Format( "%.0lf", s1 )
-             << T().Format( "%02.0lf", s2 )
-             << T().Format( "%0*.*lf", (options.precision > 0) ? 3+options.precision : 2, options.precision, s3 );
+      tokens << T().Format( "%.0f", s1 )
+             << T().Format( "%02.0f", s2 )
+             << T().Format( "%0*.*f", (options.precision > 0) ? 3+options.precision : 2, options.precision, s3 );
       break;
 
    case 2:
@@ -1870,12 +1891,12 @@ T ToSexagesimal( int sign, double s1, double s2, double s3, const SexagesimalCon
          s2 = 0;
          s1 += 1;
       }
-      tokens << T().Format( "%.0lf", s1 )
-             << T().Format( "%0*.*lf", (options.precision > 0) ? 3+options.precision : 2, options.precision, s2 );
+      tokens << T().Format( "%.0f", s1 )
+             << T().Format( "%0*.*f", (options.precision > 0) ? 3+options.precision : 2, options.precision, s2 );
       break;
 
    case 1:
-      tokens << T().Format( "%.*lf", options.precision, s1 + (s2 + s3/60)/60 );
+      tokens << T().Format( "%.*f", options.precision, s1 + (s2 + s3/60)/60 );
       break;
    }
 
@@ -2283,7 +2304,65 @@ IsoString IsoString::ToISO8601DateTime( int year, int month, int day, double day
 
 // ----------------------------------------------------------------------------
 
+template <class T> static
+T CurrentUTCISO8601DateTime( const ISO8601ConversionOptions& options )
+{
+   time_t now = ::time( nullptr );
+   tm ut;
+   {
+      static Mutex mutex;
+      volatile AutoLock lock( mutex );
+      ut = *::gmtime( &now );
+   }
+   return T::ToISO8601DateTime( ut.tm_year+1900, ut.tm_mon+1, ut.tm_mday,
+                                (ut.tm_hour + (ut.tm_min + ut.tm_sec/60.0)/60)/24/*dayf*/,
+                                0/*tz*/,
+                                options );
+}
+
+String String::CurrentUTCISO8601DateTime( const ISO8601ConversionOptions& options )
+{
+   return pcl::CurrentUTCISO8601DateTime<String>( options );
+}
+
+IsoString IsoString::CurrentUTCISO8601DateTime( const ISO8601ConversionOptions& options )
+{
+   return pcl::CurrentUTCISO8601DateTime<IsoString>( options );
+}
+
+
+// ----------------------------------------------------------------------------
+
+template <class T> static
+T CurrentLocalISO8601DateTime( const ISO8601ConversionOptions& options )
+{
+   time_t now = ::time( nullptr );
+   tm ut, lt;
+   {
+      static Mutex mutex;
+      volatile AutoLock lock( mutex );
+      ut = *::gmtime( &now );
+      lt = *::localtime( &now );
+   }
+   return T::ToISO8601DateTime( lt.tm_year+1900, lt.tm_mon+1, lt.tm_mday,
+                                (lt.tm_hour + (lt.tm_min + lt.tm_sec/60.0)/60)/24/*dayf*/,
+                                ::difftime( ::mktime( &lt ), ::mktime( &ut ) )/3600/*tz*/,
+                                options );
+}
+
+String String::CurrentLocalISO8601DateTime( const ISO8601ConversionOptions& options )
+{
+   return pcl::CurrentLocalISO8601DateTime<String>( options );
+}
+
+IsoString IsoString::CurrentLocalISO8601DateTime( const ISO8601ConversionOptions& options )
+{
+   return pcl::CurrentLocalISO8601DateTime<IsoString>( options );
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/String.cpp - Released 2017-06-28T11:58:42Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/QuadTree.h - Released 2016/02/21 20:22:12 UTC
+// pcl/QuadTree.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/QuadTree.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Array_h
 #include <pcl/Array.h>
-#endif
-
-#ifndef __PCL_Rectangle_h
 #include <pcl/Rectangle.h>
-#endif
-
-#ifndef __PCL_Vector_h
 #include <pcl/Vector.h>
-#endif
 
 namespace pcl
 {
@@ -442,23 +432,23 @@ private:
       double x2 = (rect.x0 + rect.x1)/2;
       double y2 = (rect.y0 + rect.y1)/2;
       point_list nw, ne, sw, se;
-      for ( typename point_list::const_iterator i = points.Begin(); i != points.End(); ++i )
+      for ( const point& p : points )
       {
-         component x = (*i)[0];
-         component y = (*i)[1];
+         component x = p[0];
+         component y = p[1];
          if ( x <= x2 )
          {
             if ( y <= y2 )
-               nw.Add( *i );
+               nw.Add( p );
             else
-               sw.Add( *i );
+               sw.Add( p );
          }
          else
          {
             if ( y <= y2 )
-               ne.Add( *i );
+               ne.Add( p );
             else
-               se.Add( *i );
+               se.Add( p );
          }
       }
 
@@ -558,23 +548,23 @@ private:
                double x2 = (rect.x0 + rect.x1)/2;
                double y2 = (rect.y0 + rect.y1)/2;
                point_list nw, ne, sw, se;
-               for ( typename point_list::const_iterator i = leaf->points.Begin(); i != leaf->points.End(); ++i )
+               for ( const point& p : leaf->points )
                {
-                  component x = (*i)[0];
-                  component y = (*i)[1];
+                  component x = p[0];
+                  component y = p[1];
                   if ( x <= x2 )
                   {
                      if ( y <= y2 )
-                        nw.Add( *i );
+                        nw.Add( p );
                      else
-                        sw.Add( *i );
+                        sw.Add( p );
                   }
                   else
                   {
                      if ( y <= y2 )
-                        ne.Add( *i );
+                        ne.Add( p );
                      else
-                        se.Add( *i );
+                        se.Add( p );
                   }
                }
 
@@ -736,4 +726,4 @@ private:
 #endif   // __PCL_QuadTree_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/QuadTree.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/QuadTree.h - Released 2017-06-28T11:58:36Z

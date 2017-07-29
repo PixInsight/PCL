@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/MultiVector.h - Released 2016/02/21 20:22:12 UTC
+// pcl/MultiVector.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/MultiVector.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Array_h
 #include <pcl/Array.h>
-#endif
-
-#ifndef __PCL_Vector_h
 #include <pcl/Vector.h>
-#endif
 
 namespace pcl
 {
@@ -89,8 +79,8 @@ namespace pcl
  *
  * Some typical applications of multivectors include:
  *
- * \li Implementation of more sophisticated mathematical objects and structures,
- * such as tensors.
+ * \li Implementation of more sophisticated mathematical objects and
+ * structures, such as tensors.
  *
  * \li Matrices where rows (or equivalently, columns) have to be manipulated
  * as independent structures. For example, to swap two rows of a GenericMatrix
@@ -368,7 +358,7 @@ public:
 #ifndef __PCL_NO_MULTIVECTOR_INSTANTIATE
 
 /*!
- * \defgroup multivector_types Predefined Multivector Types
+ * \defgroup multivector_types Multivector Types
  */
 
 /*!
@@ -420,4 +410,4 @@ typedef DMultiVector               MultiVector;
 #endif   // __PCL_MultiVector_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MultiVector.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/MultiVector.h - Released 2017-06-28T11:58:36Z

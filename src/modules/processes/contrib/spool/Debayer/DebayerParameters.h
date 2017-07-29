@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.04.03.0213
+// Standard Debayer Process Module Version 01.06.00.0267
 // ----------------------------------------------------------------------------
-// DebayerParameters.h - Released 2016/02/21 20:22:43 UTC
+// DebayerParameters.h - Released 2017-07-06T19:14:49Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,12 +66,17 @@ class DebayerBayerPatternParameter : public MetaEnumeration
 {
 public:
 
-   enum { RGGB,
+   enum { Auto,
+          RGGB,
           BGGR,
           GBRG,
           GRBG,
+          GRGB,
+          GBGR,
+          RGBG,
+          BGRG,
           NumberOfItems,
-          Default = RGGB };
+          Default = Auto };
 
    DebayerBayerPatternParameter( MetaProcess* );
 
@@ -134,7 +139,7 @@ public:
 
    enum { KSigma,
           MRS,
-          NumberOfNoiseEvaluationAlgorithms,
+          NumberOfItems,
           Default = MRS };
 
    DebayerNoiseEvaluationAlgorithm( MetaProcess* );
@@ -162,6 +167,255 @@ public:
 
 extern DebayerShowImages* TheDebayerShowImagesParameter;
 
+// ----------------------------------------------------------------------------
+
+class DebayerCFASourceFilePath : public MetaString
+{
+public:
+
+   DebayerCFASourceFilePath( MetaProcess* );
+
+   virtual IsoString Id() const;
+};
+
+extern DebayerCFASourceFilePath* TheDebayerCFASourceFilePathParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerTargetItems : public MetaTable
+{
+public:
+
+   DebayerTargetItems( MetaProcess* );
+
+   virtual IsoString Id() const;
+};
+
+extern DebayerTargetItems* TheDebayerTargetItemsParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerTargetEnabled : public MetaBoolean
+{
+public:
+
+   DebayerTargetEnabled( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern DebayerTargetEnabled* TheDebayerTargetEnabledParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerTargetImage : public MetaString
+{
+public:
+
+   DebayerTargetImage( MetaTable* );
+
+   virtual IsoString Id() const;
+};
+
+extern DebayerTargetImage* TheDebayerTargetImageParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerNoGUIMessages : public MetaBoolean
+{
+public:
+
+   DebayerNoGUIMessages( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern DebayerNoGUIMessages* TheDebayerNoGUIMessagesParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerInputHints : public MetaString
+{
+public:
+
+   DebayerInputHints( MetaProcess* );
+
+   virtual IsoString Id() const;
+};
+
+extern DebayerInputHints* TheDebayerInputHintsParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOutputHints : public MetaString
+{
+public:
+
+   DebayerOutputHints( MetaProcess* );
+
+   virtual IsoString Id() const;
+};
+
+extern DebayerOutputHints* TheDebayerOutputHintsParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOutputDirectory : public MetaString
+{
+public:
+
+   DebayerOutputDirectory( MetaProcess* );
+
+   virtual IsoString Id() const;
+};
+
+extern DebayerOutputDirectory* TheDebayerOutputDirectoryParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOutputExtension : public MetaString
+{
+public:
+
+   DebayerOutputExtension( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual String DefaultValue() const;
+};
+
+extern DebayerOutputExtension* TheDebayerOutputExtensionParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOutputPrefix : public MetaString
+{
+public:
+
+   DebayerOutputPrefix( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual String DefaultValue() const;
+};
+
+extern DebayerOutputPrefix* TheDebayerOutputPrefixParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOutputPostfix : public MetaString
+{
+public:
+
+   DebayerOutputPostfix( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual String DefaultValue() const;
+};
+
+extern DebayerOutputPostfix* TheDebayerOutputPostfixParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOverwriteExistingFiles : public MetaBoolean
+{
+public:
+
+   DebayerOverwriteExistingFiles( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern DebayerOverwriteExistingFiles* TheDebayerOverwriteExistingFilesParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOnError : public MetaEnumeration
+{
+public:
+
+   enum { Continue,
+          Abort,
+          AskUser,
+          NumberOfErrorPolicies,
+          Default = Continue };
+
+   DebayerOnError( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
+};
+
+extern DebayerOnError* TheDebayerOnErrorParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerUseFileThreads : public MetaBoolean
+{
+public:
+
+   DebayerUseFileThreads( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern DebayerUseFileThreads* TheDebayerUseFileThreadsParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerFileThreadOverload : public MetaFloat
+{
+public:
+
+   DebayerFileThreadOverload( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern DebayerFileThreadOverload* TheDebayerFileThreadOverloadParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerMaxFileReadThreads : public MetaInt32
+{
+public:
+
+   DebayerMaxFileReadThreads( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern DebayerMaxFileReadThreads* TheDebayerMaxFileReadThreadsParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerMaxFileWriteThreads : public MetaInt32
+{
+public:
+
+   DebayerMaxFileWriteThreads( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern DebayerMaxFileWriteThreads* TheDebayerMaxFileWriteThreadsParameter;
+
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 class DebayerOutputImage : public MetaString
@@ -312,6 +566,170 @@ public:
 extern DebayerNoiseAlgorithmB* TheDebayerNoiseAlgorithmBParameter;
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+class DebayerOutputFileData : public MetaTable
+{
+public:
+
+   DebayerOutputFileData( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern DebayerOutputFileData* TheDebayerOutputFileDataParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOutputFilePath : public MetaString
+{
+public:
+
+   DebayerOutputFilePath( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern DebayerOutputFilePath* TheDebayerOutputFilePathParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOutputFileNoiseEstimateR : public MetaFloat
+{
+public:
+
+   DebayerOutputFileNoiseEstimateR( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual bool ScientificNotation() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern DebayerOutputFileNoiseEstimateR* TheDebayerOutputFileNoiseEstimateRParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOutputFileNoiseEstimateG : public MetaFloat
+{
+public:
+
+   DebayerOutputFileNoiseEstimateG( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual bool ScientificNotation() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern DebayerOutputFileNoiseEstimateG* TheDebayerOutputFileNoiseEstimateGParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOutputFileNoiseEstimateB : public MetaFloat
+{
+public:
+
+   DebayerOutputFileNoiseEstimateB( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual bool ScientificNotation() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern DebayerOutputFileNoiseEstimateB* TheDebayerOutputFileNoiseEstimateBParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOutputFileNoiseFractionR : public MetaFloat
+{
+public:
+
+   DebayerOutputFileNoiseFractionR( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern DebayerOutputFileNoiseFractionR* TheDebayerOutputFileNoiseFractionRParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOutputFileNoiseFractionG : public MetaFloat
+{
+public:
+
+   DebayerOutputFileNoiseFractionG( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern DebayerOutputFileNoiseFractionG* TheDebayerOutputFileNoiseFractionGParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOutputFileNoiseFractionB : public MetaFloat
+{
+public:
+
+   DebayerOutputFileNoiseFractionB( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern DebayerOutputFileNoiseFractionB* TheDebayerOutputFileNoiseFractionBParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOutputFileNoiseAlgorithmR : public MetaString
+{
+public:
+
+   DebayerOutputFileNoiseAlgorithmR( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern DebayerOutputFileNoiseAlgorithmR* TheDebayerOutputFileNoiseAlgorithmRParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOutputFileNoiseAlgorithmG : public MetaString
+{
+public:
+
+   DebayerOutputFileNoiseAlgorithmG( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern DebayerOutputFileNoiseAlgorithmG* TheDebayerOutputFileNoiseAlgorithmGParameter;
+
+// ----------------------------------------------------------------------------
+
+class DebayerOutputFileNoiseAlgorithmB : public MetaString
+{
+public:
+
+   DebayerOutputFileNoiseAlgorithmB( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern DebayerOutputFileNoiseAlgorithmB* TheDebayerOutputFileNoiseAlgorithmBParameter;
+
+// ----------------------------------------------------------------------------
 
 PCL_END_LOCAL
 
@@ -320,4 +738,4 @@ PCL_END_LOCAL
 #endif   // __DebayerParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF DebayerParameters.h - Released 2016/02/21 20:22:43 UTC
+// EOF DebayerParameters.h - Released 2017-07-06T19:14:49Z

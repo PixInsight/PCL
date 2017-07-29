@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Compression.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Compression.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,7 +57,9 @@
 #include <pcl/StringList.h>
 #include <pcl/Thread.h>
 
-#include <pcl/api/APIInterface.h>
+#include <lz4/lz4.h>
+#include <lz4/lz4hc.h>
+#include <zlib/zlib.h>
 
 namespace pcl
 {
@@ -97,13 +99,14 @@ public:
       double dt = 0;
 
       ByteArray S;
-      if ( m_compression.ByteShufflingEnabled() && m_compression.ItemSize() > 1 )
-      {
-         T.Reset();
-         S = Compression::Shuffle( m_data, size, m_compression.ItemSize() );
-         dt += T();
-         m_data = S.Begin();
-      }
+      if ( m_compression.ByteShufflingEnabled() )
+         if ( m_compression.ItemSize() > 1 )
+         {
+            T.Reset();
+            S = Compression::Shuffle( m_data, size, m_compression.ItemSize() );
+            dt += T();
+            m_data = S.Begin();
+         }
 
       int numberOfThreads = m_compression.IsParallelProcessingEnabled() ?
                Min( m_compression.MaxProcessors(), pcl::Thread::NumberOfThreads( m_numberOfSubblocks + 1, 1 ) ) : 1;
@@ -143,8 +146,8 @@ public:
       threads.Destroy();
 
       size_type compressedSize = 0;
-      for ( Compression::subblock_list::const_iterator i = subblocks.Begin(); i != subblocks.End(); ++i )
-         compressedSize += i->compressedData.Length();
+      for ( const Compression::Subblock& subblock : subblocks )
+         compressedSize += subblock.compressedData.Length();
       compressedSize += subblocks.Size() + sizeof( Compression::subblock_list );
 
       if ( perf != nullptr )
@@ -208,7 +211,7 @@ private:
                      }
                   }
 
-                  // Sub-block too small to be compressed, or data not compressible.
+                  // Subblock too small to be compressed, or data not compressible.
                   subblock.compressedData = ByteArray( uncompressedBegin, uncompressedBegin + subblock.uncompressedSize );
 
          __nextBlock:
@@ -274,11 +277,11 @@ public:
          return 0;
 
       size_type uncompressedSize = 0;
-      for ( Compression::subblock_list::const_iterator i = subblocks.Begin(); i != subblocks.End(); ++i )
+      for ( const Compression::Subblock& subblock : subblocks )
       {
-         if ( i->compressedData.IsEmpty() || i->uncompressedSize == 0 )
+         if ( subblock.compressedData.IsEmpty() || subblock.uncompressedSize == 0 )
             m_compression.Throw( "Invalid compressed subblock data." );
-         uncompressedSize += i->uncompressedSize;
+         uncompressedSize += subblock.uncompressedSize;
       }
       if ( maxSize < uncompressedSize )
          m_compression.Throw( String().Format( "Insufficient uncompression buffer length (required %llu, available %llu)",
@@ -297,7 +300,7 @@ public:
          Compression::subblock_list::const_iterator begin = subblocks.At( i*subblocksPerThread );
          Compression::subblock_list::const_iterator end = (j < numberOfThreads) ? subblocks.At( j*subblocksPerThread ) : subblocks.End();
 
-         threads.Add( new DecompressionThread( *this, offset, begin, end ) );
+         threads << new DecompressionThread( *this, offset, begin, end );
 
          if ( j < numberOfThreads )
             for ( Compression::subblock_list::const_iterator i = begin; i != end; ++i )
@@ -325,18 +328,19 @@ public:
       if ( !m_errors.IsEmpty() )
          m_compression.Throw( String().ToSeparated( m_errors, '\n' ) );
 
-      if ( m_compression.ByteShufflingEnabled() && m_compression.ItemSize() > 1 )
-      {
-         T.Reset();
-         Compression::InPlaceUnshuffle( m_uncompressedData, uncompressedSize, m_compression.ItemSize() );
-         dt += T();
-      }
+      if ( m_compression.ByteShufflingEnabled() )
+         if ( m_compression.ItemSize() > 1 )
+         {
+            T.Reset();
+            Compression::InPlaceUnshuffle( m_uncompressedData, uncompressedSize, m_compression.ItemSize() );
+            dt += T();
+         }
 
       if ( perf != nullptr )
       {
          size_type compressedSize = 0;
-         for ( Compression::subblock_list::const_iterator i = subblocks.Begin(); i != subblocks.End(); ++i )
-            compressedSize += i->compressedData.Length();
+         for ( const Compression::Subblock& subblock : subblocks )
+            compressedSize += subblock.compressedData.Length();
          compressedSize += subblocks.Size() + sizeof( Compression::subblock_list );
 
          perf->sizeReduction = double( uncompressedSize - compressedSize )/uncompressedSize;
@@ -384,7 +388,7 @@ private:
                {
                   uint64 checksum = i->compressedData.Hash64();
                   if ( i->checksum != checksum )
-                     throw String().Format( "Sub-block checksum mismatch (offset=%llu, expected %llx, got %llx)",
+                     throw String().Format( "Subblock checksum mismatch (offset=%llu, expected %llx, got %llx)",
                                             m_offset+totalSize, i->checksum, checksum );
                }
 
@@ -403,7 +407,7 @@ private:
                }
                else
                {
-                  // Sub-block too small to be compressed, or data not compressible.
+                  // Subblock too small to be compressed, or data not compressible.
                   ::memcpy( E.m_uncompressedData+m_offset+totalSize, i->compressedData.Begin(), i->uncompressedSize );
                }
 
@@ -463,187 +467,278 @@ void Compression::Throw( const String& errorMessage ) const
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
-#ifdef _MSC_VER // shut up, stupid!
+#ifdef _MSC_VER // shut up!
 PCL_WARNINGS_DISABLE_SIZE_T_TO_INT_LOSS
 #endif
 
+// ----------------------------------------------------------------------------
+
 int ZLibCompression::MaxCompressionLevel() const
 {
-   return (*API->Compression->ZLibMaxCompressionLevel)();
+   return Z_BEST_COMPRESSION;
 }
+
+// ----------------------------------------------------------------------------
 
 int ZLibCompression::DefaultCompressionLevel() const
 {
-   return (*API->Compression->ZLibDefaultCompressionLevel)();
+   return 6;
 }
+
+// ----------------------------------------------------------------------------
 
 size_type ZLibCompression::MinBlockSize() const
 {
-   return (*API->Compression->ZLibMinUncompressedBlockSize)();
+   return 64u;
 }
+
+// ----------------------------------------------------------------------------
 
 size_type ZLibCompression::MaxBlockSize() const
 {
-   return (*API->Compression->ZLibMaxUncompressedBlockSize)();
+   return uint32_max - 1;
 }
+
+// ----------------------------------------------------------------------------
 
 size_type ZLibCompression::MaxCompressedBlockSize( size_type size ) const
 {
-   return (*API->Compression->ZLibMaxCompressedBlockSize)( uint32( size ) );
+   return ::compressBound( uint32( size ) );
 }
+
+// ----------------------------------------------------------------------------
 
 size_type ZLibCompression::CompressBlock( void* outputData, size_type maxOutputSize,
                                           const void* inputData, size_type inputSize, int level ) const
 {
-   uint32 outputSize( maxOutputSize );
-   if ( (*API->Compression->ZLibCompressBlock)( outputData, &outputSize, inputData, uint32( inputSize ), level ) != api_false )
-      return outputSize;
-   return 0;
+   try
+   {
+      if ( inputData == nullptr )
+         throw Error( "Null input buffer." );
+      if ( outputData == nullptr )
+         throw Error( "Null output buffer." );
+      if ( inputSize >= uint32_max )
+         throw Error( "Invalid input size." );
+      if ( maxOutputSize > uint32_max )
+         throw Error( "Invalid maximum output size." );
+
+      unsigned long outputSize = uint32( maxOutputSize );
+      int result = ::compress2( (uint8*)outputData, &outputSize,
+                                (const uint8*)inputData, uint32( inputSize ),
+                                Range( level, Z_BEST_SPEED, Z_BEST_COMPRESSION ) );
+      return (result == Z_OK) ? outputSize : 0;
+   }
+   catch ( const Exception& x )
+   {
+      throw Error( "ZLibCompression::CompressBlock(): " + x.Message() );
+   }
 }
+
+// ----------------------------------------------------------------------------
 
 size_type ZLibCompression::UncompressBlock( void* outputData, size_type maxOutputSize,
                                             const void* inputData, size_type inputSize ) const
 {
-   uint32 outputSize( maxOutputSize );
-   if ( (*API->Compression->ZLibUncompressBlock)( outputData, &outputSize, inputData, uint32( inputSize ) ) != api_false )
-      return outputSize;
-   return 0;
+   try
+   {
+      if ( inputData == nullptr )
+         throw Error( "Null input buffer." );
+      if ( outputData == nullptr )
+         throw Error( "Null output buffer." );
+      if ( inputSize > uint32_max )
+         throw Error( "Invalid input size." );
+      if ( maxOutputSize > uint32_max )
+         throw Error( "Invalid maximum output size." );
+
+      unsigned long outputSize = uint32( maxOutputSize );
+      int result = ::uncompress( (uint8*)outputData, &outputSize,
+                                 (const uint8*)inputData, uint32( inputSize ) );
+      return (result == Z_OK) ? outputSize : 0;
+   }
+   catch ( const Exception& x )
+   {
+      throw Error( "ZLibCompression::UncompressBlock(): " + x.Message() );
+   }
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 int LZ4Compression::MaxCompressionLevel() const
 {
-   return (*API->Compression->LZ4MaxCompressionLevel)();
+   return 64;
 }
+
+// ----------------------------------------------------------------------------
 
 int LZ4Compression::DefaultCompressionLevel() const
 {
-   return (*API->Compression->LZ4DefaultCompressionLevel)();
+   return 64;
 }
+
+// ----------------------------------------------------------------------------
 
 size_type LZ4Compression::MinBlockSize() const
 {
-   return (*API->Compression->LZ4MinUncompressedBlockSize)();
+   return 64u;
 }
+
+// ----------------------------------------------------------------------------
 
 size_type LZ4Compression::MaxBlockSize() const
 {
-   return (*API->Compression->LZ4MaxUncompressedBlockSize)();
+   return LZ4_MAX_INPUT_SIZE;
 }
+
+// ----------------------------------------------------------------------------
 
 size_type LZ4Compression::MaxCompressedBlockSize( size_type size ) const
 {
-   return (*API->Compression->LZ4MaxCompressedBlockSize)( uint32( size ) );
+   return (size <= LZ4_MAX_INPUT_SIZE) ? ::LZ4_compressBound( int( size ) ) : 0;
 }
+
+// ----------------------------------------------------------------------------
 
 size_type LZ4Compression::CompressBlock( void* outputData, size_type maxOutputSize,
-                                           const void* inputData, size_type inputSize, int level ) const
+                                         const void* inputData, size_type inputSize, int level ) const
 {
-   uint32 outputSize( maxOutputSize );
-   if ( (*API->Compression->LZ4CompressBlock)( outputData, &outputSize, inputData, uint32( inputSize ), level ) != api_false )
-      return outputSize;
-   return 0;
+   try
+   {
+      if ( inputData == nullptr )
+         throw Error( "Null input buffer." );
+      if ( outputData == nullptr )
+         throw Error( "Null output buffer." );
+      if ( inputSize > LZ4_MAX_INPUT_SIZE )
+         throw Error( "Invalid input size." );
+      if ( maxOutputSize > int32_max )
+         throw Error( "Invalid maximum output size." );
+
+      int result = ::LZ4_compress_fast( (const char*)inputData, (char*)outputData,
+                                        int( inputSize ), int( maxOutputSize ),
+                                        65 - Range( level, 1, 64 )/*acceleration*/ );
+      return (result > 0) ? uint32( result ) : 0;
+   }
+   catch ( const Exception& x )
+   {
+      throw Error( "LZ4Compression::CompressBlock(): " + x.Message() );
+   }
 }
+
+// ----------------------------------------------------------------------------
 
 size_type LZ4Compression::UncompressBlock( void* outputData, size_type maxOutputSize,
-                                             const void* inputData, size_type inputSize ) const
+                                           const void* inputData, size_type inputSize ) const
 {
-   uint32 outputSize( maxOutputSize );
-   if ( (*API->Compression->LZ4UncompressBlock)( outputData, &outputSize, inputData, uint32( inputSize ) ) != api_false )
-      return outputSize;
-   return 0;
+   try
+   {
+      if ( inputData == nullptr )
+         throw Error( "Null input buffer." );
+      if ( outputData == nullptr )
+         throw Error( "Null output buffer." );
+      if ( inputSize > int32_max )
+         throw Error( "Invalid input size." );
+      if ( maxOutputSize > int32_max )
+         throw Error( "Invalid maximum output size." );
+
+      int result = ::LZ4_decompress_safe( (const char*)inputData, (char*)outputData,
+                                          int( inputSize ), int( maxOutputSize ) );
+      return (result > 0) ? uint32( result ) : 0;
+   }
+   catch ( const Exception& x )
+   {
+      throw Error( "LZ4Compression::UncompressBlock(): " + x.Message() );
+   }
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 int LZ4HCCompression::MaxCompressionLevel() const
 {
-   return (*API->Compression->LZ4HCMaxCompressionLevel)();
-}
-
-int LZ4HCCompression::DefaultCompressionLevel() const
-{
-   return (*API->Compression->LZ4HCDefaultCompressionLevel)();
-}
-
-size_type LZ4HCCompression::MinBlockSize() const
-{
-   return (*API->Compression->LZ4HCMinUncompressedBlockSize)();
-}
-
-size_type LZ4HCCompression::MaxBlockSize() const
-{
-   return (*API->Compression->LZ4HCMaxUncompressedBlockSize)();
-}
-
-size_type LZ4HCCompression::MaxCompressedBlockSize( size_type size ) const
-{
-   return (*API->Compression->LZ4HCMaxCompressedBlockSize)( uint32( size ) );
-}
-
-size_type LZ4HCCompression::CompressBlock( void* outputData, size_type maxOutputSize,
-                                           const void* inputData, size_type inputSize, int level ) const
-{
-   uint32 outputSize( maxOutputSize );
-   if ( (*API->Compression->LZ4HCCompressBlock)( outputData, &outputSize, inputData, uint32( inputSize ), level ) != api_false )
-      return outputSize;
-   return 0;
-}
-
-size_type LZ4HCCompression::UncompressBlock( void* outputData, size_type maxOutputSize,
-                                             const void* inputData, size_type inputSize ) const
-{
-   uint32 outputSize( maxOutputSize );
-   if ( (*API->Compression->LZ4HCUncompressBlock)( outputData, &outputSize, inputData, uint32( inputSize ) ) != api_false )
-      return outputSize;
-   return 0;
+   return 16;
 }
 
 // ----------------------------------------------------------------------------
 
-int BloscLZCompression::MaxCompressionLevel() const
+int LZ4HCCompression::DefaultCompressionLevel() const
 {
-   return (*API->Compression->BloscLZMaxCompressionLevel)();
+   return 9;
 }
 
-int BloscLZCompression::DefaultCompressionLevel() const
+// ----------------------------------------------------------------------------
+
+size_type LZ4HCCompression::MinBlockSize() const
 {
-   return (*API->Compression->BloscLZDefaultCompressionLevel)();
+   return 64u;
 }
 
-size_type BloscLZCompression::MinBlockSize() const
+// ----------------------------------------------------------------------------
+
+size_type LZ4HCCompression::MaxBlockSize() const
 {
-   return (*API->Compression->BloscLZMinUncompressedBlockSize)();
+   return LZ4_MAX_INPUT_SIZE;
 }
 
-size_type BloscLZCompression::MaxBlockSize() const
+// ----------------------------------------------------------------------------
+
+size_type LZ4HCCompression::MaxCompressedBlockSize( size_type size ) const
 {
-   return (*API->Compression->BloscLZMaxUncompressedBlockSize)();
+   return (size <= LZ4_MAX_INPUT_SIZE) ? ::LZ4_compressBound( int( size ) ) : 0;
 }
 
-size_type BloscLZCompression::MaxCompressedBlockSize( size_type size ) const
+// ----------------------------------------------------------------------------
+
+size_type LZ4HCCompression::CompressBlock( void* outputData, size_type maxOutputSize,
+                                           const void* inputData, size_type inputSize, int level ) const
 {
-   return (*API->Compression->BloscLZMaxCompressedBlockSize)( uint32( size ) );
+   try
+   {
+      if ( inputData == nullptr )
+         throw Error( "Null input buffer." );
+      if ( outputData == nullptr )
+         throw Error( "Null output buffer." );
+      if ( inputSize > LZ4_MAX_INPUT_SIZE )
+         throw Error( "Invalid input size." );
+      if ( maxOutputSize > int32_max )
+         throw Error( "Invalid maximum output size." );
+
+      int result = ::LZ4_compress_HC( (const char*)inputData, (char*)outputData,
+                                      int( inputSize ), int( maxOutputSize ),
+                                      Range( level, 1, 16 ) );
+      return (result > 0) ? uint32( result ) : 0;
+   }
+   catch ( const Exception& x )
+   {
+      throw Error( "LZ4HCCompression::CompressBlock(): " + x.Message() );
+   }
 }
 
-size_type BloscLZCompression::CompressBlock( void* outputData, size_type maxOutputSize,
-                                             const void* inputData, size_type inputSize, int level ) const
-{
-   uint32 outputSize( maxOutputSize );
-   if ( (*API->Compression->BloscLZCompressBlock)( outputData, &outputSize, inputData, uint32( inputSize ), level ) != api_false )
-      return outputSize;
-   return 0;
-}
+// ----------------------------------------------------------------------------
 
-size_type BloscLZCompression::UncompressBlock( void* outputData, size_type maxOutputSize,
-                                               const void* inputData, size_type inputSize ) const
+size_type LZ4HCCompression::UncompressBlock( void* outputData, size_type maxOutputSize,
+                                             const void* inputData, size_type inputSize ) const
 {
-   uint32 outputSize( maxOutputSize );
-   if ( (*API->Compression->BloscLZUncompressBlock)( outputData, &outputSize, inputData, uint32( inputSize ) ) != api_false )
-      return outputSize;
-   return 0;
+   try
+   {
+      if ( inputData == nullptr )
+         throw Error( "Null input buffer." );
+      if ( outputData == nullptr )
+         throw Error( "Null output buffer." );
+      if ( inputSize > int32_max )
+         throw Error( "Invalid input size." );
+      if ( maxOutputSize > int32_max )
+         throw Error( "Invalid maximum output size." );
+
+      int result = ::LZ4_decompress_safe( (const char*)inputData, (char*)outputData,
+                                          int( inputSize ), int( maxOutputSize ) );
+      return (result > 0) ? uint32( result ) : 0;
+   }
+   catch ( const Exception& x )
+   {
+      throw Error( "LZ4HCCompression::UncompressBlock(): " + x.Message() );
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -651,4 +746,4 @@ size_type BloscLZCompression::UncompressBlock( void* outputData, size_type maxOu
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Compression.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Compression.cpp - Released 2017-06-28T11:58:42Z

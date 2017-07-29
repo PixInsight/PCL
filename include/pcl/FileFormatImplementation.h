@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/FileFormatImplementation.h - Released 2016/02/21 20:22:12 UTC
+// pcl/FileFormatImplementation.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,45 +56,18 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_AutoPointer_h
 #include <pcl/AutoPointer.h>
-#endif
-
-#ifndef __PCL_MetaFileFormat_h
-#include <pcl/MetaFileFormat.h>
-#endif
-
-#ifndef __PCL_ImageVariant_h
-#include <pcl/ImageVariant.h>
-#endif
-
-#ifndef __PCL_ImageDescription_h
-#include <pcl/ImageDescription.h>
-#endif
-
-#ifndef __PCL_FITSHeaderKeyword_h
-#include <pcl/FITSHeaderKeyword.h>
-#endif
-
-#ifndef __PCL_ICCProfile_h
-#include <pcl/ICCProfile.h>
-#endif
-
-#ifndef __PCL_RGBColorSystem_h
-#include <pcl/RGBColorSystem.h>
-#endif
-
-#ifndef __PCL_DisplayFunction_h
-#include <pcl/DisplayFunction.h>
-#endif
-
-#ifndef __PCL_ColorFilterArray_h
 #include <pcl/ColorFilterArray.h>
-#endif
+#include <pcl/DisplayFunction.h>
+#include <pcl/FITSHeaderKeyword.h>
+#include <pcl/ICCProfile.h>
+#include <pcl/ImageDescription.h>
+#include <pcl/ImageVariant.h>
+#include <pcl/MetaFileFormat.h>
+#include <pcl/PropertyDescription.h>
+#include <pcl/RGBColorSystem.h>
 
 namespace pcl
 {
@@ -137,6 +110,22 @@ public:
     * Destroys a file format instance.
     */
    virtual ~FileFormatImplementation();
+
+   /*
+    * FileFormatImplementation instances (e.g., image files) are unique.
+    */
+
+   /*!
+    * Copy constructor. This constructor is disabled because file format
+    * instances represent unique objects (e.g., files or I/O streams).
+    */
+   FileFormatImplementation( const FileFormatImplementation& x ) = delete;
+
+   /*!
+    * Copy assignment. This operator is disabled because file format instances
+    * represent unique objects (e.g., files or I/O streams).
+    */
+   FileFormatImplementation& operator =( const FileFormatImplementation& ) = delete;
 
    /*!
     * Returns a pointer to the \e metaformat of this file format instance.
@@ -224,7 +213,7 @@ public:
 
    /*!
     * Returns a <em>format-specific data block</em> for the current image in
-    * this file, or zero if no such data have been retrieved.
+    * this file, or nullptr if no such data have been retrieved.
     *
     * See SetFormatSpecificData() for a description of format specific data
     * functionality in PCL.
@@ -242,71 +231,21 @@ public:
     *
     * \note The default implementation returns an empty string.
     */
-   virtual String ImageProperties() const
+   virtual String ImageFormatInfo() const
    {
       return String();
    }
 
    /*!
-    * Extraction of embedded %FITS keywords for the current image in this file.
-    *
-    * If the current image embeds FITS keywords, they must be appended to the
-    * specified \a keywords list.
-    */
-   virtual void Extract( FITSKeywordArray& keywords );
-
-   /*!
-    * Extraction of an embedded ICC profile for the current image in this file.
-    *
-    * If the current image embeds an ICC profile, it should be assigned to the
-    * specified \a icc object.
-    */
-   virtual void Extract( ICCProfile& icc );
-
-   /*!
-    * Extraction of an embedded thumbnail for the current image in this file.
-    *
-    * If the current image embeds a thumbnail image, it should be assigned to
-    * the specified \a thumbnail 8-bit integer image.
-    */
-   virtual void Extract( pcl::UInt8Image& thumbnail );
-
-   /*!
-    * Returns a description of all data properties associated with the current
-    * image in this file. For each data property, the returned array provides
-    * information on the unique identifier of a property and its data type.
-    *
-    * Returns an empty array if there are no properties stored for the current
-    * image in this file.
+    * Extraction of the ICC color profile associated with the current image in
+    * this file. If no ICC color profile is defined for the current image, this
+    * function should return a null (empty) %ICCProfile object.
     *
     * This member function will never be called if the underlying file format
-    * does not support data properties. See FileFormat::CanStoreProperties().
+    * does not support storage of ICC color profiles. See
+    * FileFormat::CanStoreICCProfiles().
     */
-   virtual ImagePropertyDescriptionArray Properties();
-
-   /*!
-    * Extraction of a data property with the specified unique identifier.
-    *
-    * If no property with the specified identifier exists associated with the
-    * current image in this file, an invalid Variant object should be returned.
-    *
-    * This member function will never be called if the underlying file format
-    * does not support data properties. See FileFormat::CanStoreProperties().
-    */
-   virtual Variant ReadProperty( const IsoString& property );
-
-   /*!
-    * Specifies a data property to be embedded in the next image written or
-    * created in this file.
-    *
-    * \param property   Unique identifier of the data property.
-    *
-    * \param value      Property value.
-    *
-    * This member function will never be called if the underlying file format
-    * does not support data properties. See FileFormat::CanStoreProperties().
-    */
-   virtual void WriteProperty( const IsoString& property, const Variant& value );
+   virtual ICCProfile ReadICCProfile();
 
    /*!
     * Extraction of the RGB working space associated with the current image in
@@ -317,13 +256,7 @@ public:
     * does not support storage of RGB working spaces. See
     * FileFormat::CanStoreRGBWS().
     */
-   virtual RGBColorSystem ReadRGBWS();
-
-   /*!
-    * Specifies the parameters of an RGB working space that will be embedded in
-    * the next image written or created in this file.
-    */
-   virtual void WriteRGBWS( const RGBColorSystem& rgbws );
+   virtual RGBColorSystem ReadRGBWorkingSpace();
 
    /*!
     * Extraction of the display function associated with the current image in
@@ -338,12 +271,6 @@ public:
    virtual DisplayFunction ReadDisplayFunction();
 
    /*!
-    * Specifies a display function that will be embedded in the next image
-    * written or created in this file.
-    */
-   virtual void WriteDisplayFunction( const DisplayFunction& df );
-
-   /*!
     * Extraction of the color filter array (CFA) for the current image in this
     * file. If no CFA is defined for the current image, this function should
     * return an empty CFA (see ColorFilterArray's default constructor).
@@ -355,10 +282,78 @@ public:
    virtual ColorFilterArray ReadColorFilterArray();
 
    /*!
-    * Specifies a color filter array (CFA) that will be embedded in the next
-    * image written or created in this file.
+    * Extraction of the embedded thumbnail for the current image in this file.
+    * If the current image does not embed a thumbnail image, this function
+    * should return an empty 8-bit integer image.
     */
-   virtual void WriteColorFilterArray( const ColorFilterArray& cfa );
+   virtual UInt8Image ReadThumbnail();
+
+   /*!
+    * Extraction of the list of embedded %FITS keywords for the current image
+    * in this file. If the current image embeds no %FITS keywords, this
+    * function should return an empty array.
+    */
+   virtual FITSKeywordArray ReadFITSKeywords();
+
+   /*!
+    * Returns a description of all data properties associated with this file.
+    * For each data property, the returned array provides information on the
+    * unique identifier of a property and its data type.
+    *
+    * Returns an empty array if there are no properties stored for this file.
+    *
+    * This member function will never be called if the underlying file format
+    * does not support data properties. See FileFormat::CanStoreProperties().
+    *
+    * \note Don't confuse this member function with ImageProperties(). This
+    * function returns information on the properties of the \e whole image
+    * file, while %ImageProperties() provides the properties of the currently
+    * selected image.
+    */
+   virtual PropertyDescriptionArray Properties();
+
+   /*!
+    * Extraction of a data property with the specified unique identifier.
+    *
+    * If no property with the specified identifier exists associated with this
+    * file, an invalid Variant object should be returned.
+    *
+    * This member function will never be called if the underlying file format
+    * does not support data properties. See FileFormat::CanStoreProperties().
+    *
+    * \note Don't confuse this member function with ReadImageProperty(). This
+    * function returns the value of a given property of the \e whole image
+    * file, while %ReadImageProperty() returns the value of a property of the
+    * currently selected image.
+    */
+   virtual Variant ReadProperty( const IsoString& property );
+
+   /*!
+    * Returns a description of all data properties associated with the current
+    * image in this file. For each data property, the returned array provides
+    * information on the unique identifier of a property and its data type.
+    *
+    * Returns an empty array if there are no properties stored for the current
+    * image in this file.
+    *
+    * This member function will never be called if the underlying file format
+    * does not support data properties for individual images. See
+    * FileFormat::CanStoreImageProperties().
+    */
+   virtual PropertyDescriptionArray ImageProperties();
+
+   /*!
+    * Extraction of a data property of the current image with the specified
+    * unique identifier.
+    *
+    * If no property with the specified identifier exists associated with the
+    * current image in this file, an invalid Variant object should be returned.
+    *
+    * This member function will never be called if the underlying file format
+    * does not support data properties for individual images. See
+    * FileFormat::CanStoreImageProperties().
+    */
+   virtual Variant ReadImageProperty( const IsoString& property );
 
    /*!
     * Reads the current image in 32-bit floating point format.
@@ -404,39 +399,39 @@ public:
     * true in the metaformat class for this file instance; otherwise this
     * member function will never be called.
     */
-   virtual void Read( pcl::Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void ReadSamples( pcl::Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Incremental read in 64-bit floating point sample format.
     *
     * This is an overloaded member function for the DImage type; see
-    * Read( Image::sample*, int, int, int, int ) for a full description.
+    * ReadSamples( Image::sample*, int, int, int, int ) for a full description.
     */
-   virtual void Read( pcl::DImage::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void ReadSamples( pcl::DImage::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Incremental read in 8-bit unsigned integer sample format.
     *
     * This is an overloaded member function for the UInt8Image type; see
-    * Read( Image::sample*, int, int, int, int ) for a full description.
+    * ReadSamples( Image::sample*, int, int, int, int ) for a full description.
     */
-   virtual void Read( UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void ReadSamples( UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Incremental read in 16-bit unsigned integer sample format.
     *
     * This is an overloaded member function for the UInt16Image type; see
-    * Read( Image::sample*, int, int, int, int ) for a full description.
+    * ReadSamples( Image::sample*, int, int, int, int ) for a full description.
     */
-   virtual void Read( UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void ReadSamples( UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Incremental read in 32-bit unsigned integer sample format.
     *
     * This is an overloaded member function for the UInt32Image type; see
-    * Read( Image::sample*, int, int, int, int ) for a full description.
+    * ReadSamples( Image::sample*, int, int, int, int ) for a full description.
     */
-   virtual void Read( UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void ReadSamples( UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Returns true iff the last file read operation was \e inexact.
@@ -593,22 +588,70 @@ public:
    virtual void SetFormatSpecificData( const void* data );
 
    /*!
-    * Specifies a set of %FITS \a keywords to be embedded in the next image
-    * written or created in this file.
-    */
-   virtual void Embed( const FITSKeywordArray& keywords );
-
-   /*!
     * Specifies an ICC profile to be embedded in the next image written or
     * created in this file.
     */
-   virtual void Embed( const ICCProfile& icc );
+   virtual void WriteICCProfile( const ICCProfile& icc );
+
+   /*!
+    * Specifies the parameters of an RGB working space that will be embedded in
+    * the next image written or created in this file.
+    */
+   virtual void WriteRGBWorkingSpace( const RGBColorSystem& rgbws );
+
+   /*!
+    * Specifies a display function that will be embedded in the next image
+    * written or created in this file.
+    */
+   virtual void WriteDisplayFunction( const DisplayFunction& df );
+
+   /*!
+    * Specifies a color filter array (CFA) that will be embedded in the next
+    * image written or created in this file.
+    */
+   virtual void WriteColorFilterArray( const ColorFilterArray& cfa );
 
    /*!
     * Specifies a thumbnail \a image to be embedded in the next image written
     * or created in this file.
     */
-   virtual void Embed( const pcl::UInt8Image& image );
+   virtual void WriteThumbnail( const pcl::UInt8Image& image );
+
+   /*!
+    * Specifies a set of %FITS \a keywords to be embedded in the next image
+    * written or created in this file.
+    */
+   virtual void WriteFITSKeywords( const FITSKeywordArray& keywords );
+
+   /*!
+    * Specifies a data property to be embedded in this file.
+    *
+    * \param property   Unique identifier of the data property.
+    *
+    * \param value      Property value.
+    *
+    * This member function will never be called if the underlying file format
+    * does not support data properties. See FileFormat::CanStoreProperties().
+    *
+    * \note Don't confuse this member function with WriteImageProperty(). This
+    * function defines a property for the \e whole file, while
+    * %WriteImageProperty() defines a property of the currently selected image.
+    */
+   virtual void WriteProperty( const IsoString& property, const Variant& value );
+
+   /*!
+    * Specifies a data property to be embedded in the next image written or
+    * created in this file.
+    *
+    * \param property   Unique identifier of the data property.
+    *
+    * \param value      Property value.
+    *
+    * This member function will never be called if the underlying file format
+    * does not support data properties for individual images. See
+    * FileFormat::CanStoreImageProperties().
+    */
+   virtual void WriteImageProperty( const IsoString& property, const Variant& value );
 
    /*!
     * Writes a 32-bit floating point image to this file.
@@ -650,6 +693,15 @@ public:
    virtual void CreateImage( const ImageInfo& info );
 
    /*!
+    * Closes the image that has been created by a previous call to
+    * CreateImage().
+    *
+    * \note This member function must be reimplemented by all derived classes
+    * supporting incremental write operations.
+    */
+   virtual void CloseImage();
+
+   /*!
     * Incremental write of 32-bit floating point pixel samples.
     *
     * \param buffer     Address of the source sample buffer.
@@ -668,39 +720,39 @@ public:
     * true in the metaformat class for this file instance; otherwise this
     * member function will never be called.
     */
-   virtual void Write( const pcl::Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void WriteSamples( const pcl::Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Incremental write of a 64-bit floating point image.
     *
     * This is an overloaded member function for the DImage type; see
-    * Write( const Image::sample*, int, int, int ) for a full description.
+    * WriteSamples( const Image::sample*, int, int, int ) for a full description.
     */
-   virtual void Write( const pcl::DImage::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void WriteSamples( const pcl::DImage::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Incremental write of an 8-bit unsigned integer image.
     *
     * This is an overloaded member function for the UInt8Image type; see
-    * Write( const Image::sample*, int, int, int ) for a full description.
+    * WriteSamples( const Image::sample*, int, int, int ) for a full description.
     */
-   virtual void Write( const UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void WriteSamples( const UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Incremental write of a 16-bit unsigned integer image.
     *
     * This is an overloaded member function for the UInt16Image type; see
-    * Write( const Image::sample*, int, int, int ) for a full description.
+    * WriteSamples( const Image::sample*, int, int, int ) for a full description.
     */
-   virtual void Write( const UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void WriteSamples( const UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Incremental write of a 32-bit unsigned integer image.
     *
     * This is an overloaded member function for the UInt32Image type; see
-    * Write( const Image::sample*, int, int, int ) for a full description.
+    * WriteSamples( const Image::sample*, int, int, int ) for a full description.
     */
-   virtual void Write( const UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void WriteSamples( const UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Returns true iff the last file write operation in this file was \e lossy.
@@ -721,42 +773,25 @@ public:
 
 protected:
 
+   /*
+    * The file format to which this instance belongs.
+    */
    const MetaFileFormat* meta;
 
 private:
 
    /*
-    * FileFormatImplementation instances (e.g., image files) are unique.
-    */
-   FileFormatImplementation( const FileFormatImplementation& x ) = delete;
-   void operator =( const FileFormatImplementation& ) = delete;
-
-   /*
     * Internal stuff to automate low-level C API communication.
     */
-
    AutoPointer<FileFormatImplementationPrivate> m_data;
 
    ImageDescriptionArray m_description; // used exclusively by FileFormatDispatcher
 
    void BeginPrivate();
 
-   void BeginKeywordExtraction();
-   size_type NumberOfKeywords() const;
-   bool GetNextKeyword( FITSHeaderKeyword& ) const;
-   void EndKeywordExtraction();
-
    void BeginICCProfileExtraction();
    const ICCProfile& GetICCProfile() const;
    void EndICCProfileExtraction();
-
-   void BeginThumbnailExtraction();
-   const UInt8Image& GetThumbnail() const;
-   void EndThumbnailExtraction();
-
-   void BeginPropertyExtraction();
-   const Variant& GetImageProperty( const IsoString& );
-   void EndPropertyExtraction();
 
    void BeginRGBWSExtraction();
    const RGBColorSystem& GetRGBWS() const;
@@ -770,21 +805,26 @@ private:
    const ColorFilterArray& GetColorFilterArray() const;
    void EndColorFilterArrayExtraction();
 
-   void BeginKeywordEmbedding();
-   void AddKeyword( const FITSHeaderKeyword& );
-   void EndKeywordEmbedding();
+   void BeginThumbnailExtraction();
+   const UInt8Image& GetThumbnail() const;
+   void EndThumbnailExtraction();
+
+   void BeginKeywordExtraction();
+   size_type NumberOfKeywords() const;
+   bool GetNextKeyword( FITSHeaderKeyword& ) const;
+   void EndKeywordExtraction();
+
+   void BeginPropertyExtraction();
+   const Variant& GetProperty( const IsoString& );
+   void EndPropertyExtraction();
+
+   void BeginImagePropertyExtraction();
+   const Variant& GetImageProperty( const IsoString& );
+   void EndImagePropertyExtraction();
 
    void BeginICCProfileEmbedding();
    void SetICCProfile( const ICCProfile& );
    void EndICCProfileEmbedding();
-
-   void BeginThumbnailEmbedding();
-   void SetThumbnail( const UInt8Image& );
-   void EndThumbnailEmbedding();
-
-   void BeginPropertyEmbedding();
-   void SetImageProperty( const IsoString&, const Variant& );
-   void EndPropertyEmbedding();
 
    void BeginRGBWSEmbedding();
    void SetRGBWS( const RGBColorSystem& );
@@ -798,6 +838,22 @@ private:
    void SetColorFilterArray( const ColorFilterArray& );
    void EndColorFilterArrayEmbedding();
 
+   void BeginThumbnailEmbedding();
+   void SetThumbnail( const UInt8Image& );
+   void EndThumbnailEmbedding();
+
+   void BeginKeywordEmbedding();
+   void AddKeyword( const FITSHeaderKeyword& );
+   void EndKeywordEmbedding();
+
+   void BeginPropertyEmbedding();
+   void SetProperty( const IsoString&, const Variant& );
+   void EndPropertyEmbedding();
+
+   void BeginImagePropertyEmbedding();
+   void SetImageProperty( const IsoString&, const Variant& );
+   void EndImagePropertyEmbedding();
+
    friend class FileFormatDispatcher;
 };
 
@@ -810,4 +866,4 @@ private:
 #endif   // __PCL_FileFormat_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormatImplementation.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/FileFormatImplementation.h - Released 2017-06-28T11:58:36Z

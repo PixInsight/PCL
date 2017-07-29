@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0272
+// Standard ImageCalibration Process Module Version 01.04.00.0300
 // ----------------------------------------------------------------------------
-// SuperbiasInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// SuperbiasInterface.cpp - Released 2017-05-17T17:41:56Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,7 +59,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-SuperbiasInterface* TheSuperbiasInterface = 0;
+SuperbiasInterface* TheSuperbiasInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -68,36 +68,48 @@ SuperbiasInterface* TheSuperbiasInterface = 0;
 // ----------------------------------------------------------------------------
 
 SuperbiasInterface::SuperbiasInterface() :
-ProcessInterface(), m_instance( TheSuperbiasProcess ), GUI( 0 )
+   m_instance( TheSuperbiasProcess )
 {
    TheSuperbiasInterface = this;
 }
 
+// ----------------------------------------------------------------------------
+
 SuperbiasInterface::~SuperbiasInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString SuperbiasInterface::Id() const
 {
    return "Superbias";
 }
 
+// ----------------------------------------------------------------------------
+
 MetaProcess* SuperbiasInterface::Process() const
 {
    return TheSuperbiasProcess;
 }
+
+// ----------------------------------------------------------------------------
 
 const char** SuperbiasInterface::IconImageXPM() const
 {
    return SuperbiasIcon_XPM;
 }
 
+// ----------------------------------------------------------------------------
+
 void SuperbiasInterface::ApplyInstance() const
 {
    m_instance.LaunchOnCurrentView();
 }
+
+// ----------------------------------------------------------------------------
 
 void SuperbiasInterface::ResetInstance()
 {
@@ -105,9 +117,11 @@ void SuperbiasInterface::ResetInstance()
    ImportProcess( defaultInstance );
 }
 
+// ----------------------------------------------------------------------------
+
 bool SuperbiasInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned&/*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "Superbias" );
@@ -118,28 +132,31 @@ bool SuperbiasInterface::Launch( const MetaProcess& P, const ProcessImplementati
    return &P == TheSuperbiasProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* SuperbiasInterface::NewProcess() const
 {
    return new SuperbiasInstance( m_instance );
 }
 
+// ----------------------------------------------------------------------------
+
 bool SuperbiasInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const SuperbiasInstance* r = dynamic_cast<const SuperbiasInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a Superbias instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const SuperbiasInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a Superbias instance.";
+   return false;
 }
+
+// ----------------------------------------------------------------------------
 
 bool SuperbiasInterface::RequiresInstanceValidation() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool SuperbiasInterface::ImportProcess( const ProcessImplementation& p )
 {
@@ -181,11 +198,15 @@ void SuperbiasInterface::__ComboBoxItemSelected( ComboBox& sender, int itemIndex
       }
 }
 
+// ----------------------------------------------------------------------------
+
 void SuperbiasInterface::__SpinBoxValueUpdated( SpinBox& sender, int value )
 {
    if ( sender == GUI->MultiscaleLayers_SpinBox )
       m_instance.p_multiscaleLayers = value;
 }
+
+// ----------------------------------------------------------------------------
 
 void SuperbiasInterface::__ButtonClicked( Button& sender, bool checked )
 {
@@ -296,4 +317,4 @@ SuperbiasInterface::GUIData::GUIData( SuperbiasInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SuperbiasInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF SuperbiasInterface.cpp - Released 2017-05-17T17:41:56Z

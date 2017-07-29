@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0346
 // ----------------------------------------------------------------------------
-// ResampleProcess.cpp - Released 2016/11/17 18:14:58 UTC
+// ResampleProcess.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -83,6 +83,7 @@ ResampleProcess::ResampleProcess() : MetaProcess()
    TheRSInterpolationAlgorithmParameter = new InterpolationAlgorithm( this );
    TheRSClampingThresholdParameter = new ClampingThreshold( this );
    TheRSSmoothnessParameter = new Smoothness( this );
+   TheRSNoGUIMessagesParameter = new NoGUIMessages( this );
 }
 
 IsoString ResampleProcess::Id() const
@@ -131,4 +132,4 @@ ProcessImplementation* ResampleProcess::Clone( const ProcessImplementation& p ) 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ResampleProcess.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF ResampleProcess.cpp - Released 2017-05-02T09:43:00Z

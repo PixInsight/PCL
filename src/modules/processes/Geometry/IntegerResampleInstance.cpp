@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0346
 // ----------------------------------------------------------------------------
-// IntegerResampleInstance.cpp - Released 2016/11/17 18:14:58 UTC
+// IntegerResampleInstance.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -70,7 +70,8 @@ IntegerResampleInstance::IntegerResampleInstance( const MetaProcess* P ) :
    p_downsampleMode( TheIRDownsamplingModeParameter->Default ),
    p_resolution( TheIRXResolutionParameter->DefaultValue(), TheIRYResolutionParameter->DefaultValue() ),
    p_metric( TheIRMetricResolutionParameter->DefaultValue() ),
-   p_forceResolution( TheIRForceResolutionParameter->DefaultValue() )
+   p_forceResolution( TheIRForceResolutionParameter->DefaultValue() ),
+   p_noGUIMessages( TheIRNoGUIMessagesParameter->DefaultValue() )
 {
 }
 
@@ -90,6 +91,7 @@ void IntegerResampleInstance::Assign( const ProcessImplementation& p )
       p_resolution      = x->p_resolution;
       p_metric          = x->p_metric;
       p_forceResolution = x->p_forceResolution;
+      p_noGUIMessages   = x->p_noGUIMessages;
    }
 }
 
@@ -111,13 +113,12 @@ bool IntegerResampleInstance::CanExecuteOn( const View& v, pcl::String& whyNot )
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
 bool IntegerResampleInstance::BeforeExecution( View& view )
 {
-   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id() );
+   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
 }
 
 void IntegerResampleInstance::GetNewSizes( int& width, int& height ) const
@@ -197,6 +198,8 @@ void* IntegerResampleInstance::LockParameter( const MetaParameter* p, size_type 
       return &p_metric;
    if ( p == TheIRForceResolutionParameter )
       return &p_forceResolution;
+   if ( p == TheIRNoGUIMessagesParameter )
+      return &p_noGUIMessages;
    return nullptr;
 }
 
@@ -205,4 +208,4 @@ void* IntegerResampleInstance::LockParameter( const MetaParameter* p, size_type 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IntegerResampleInstance.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF IntegerResampleInstance.cpp - Released 2017-05-02T09:43:00Z

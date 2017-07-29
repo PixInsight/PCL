@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Fourier Process Module Version 01.00.04.0191
+// Standard Fourier Process Module Version 01.00.04.0210
 // ----------------------------------------------------------------------------
-// FourierTransformInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// FourierTransformInterface.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Fourier PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,7 +58,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-FourierTransformInterface* TheFourierTransformInterface = 0;
+FourierTransformInterface* TheFourierTransformInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -67,15 +67,15 @@ FourierTransformInterface* TheFourierTransformInterface = 0;
 // ----------------------------------------------------------------------------
 
 FourierTransformInterface::FourierTransformInterface() :
-ProcessInterface(), instance( TheFourierTransformProcess ), GUI( 0 )
+   instance( TheFourierTransformProcess )
 {
    TheFourierTransformInterface = this;
 }
 
 FourierTransformInterface::~FourierTransformInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString FourierTransformInterface::Id() const
@@ -106,7 +106,7 @@ void FourierTransformInterface::ResetInstance()
 
 bool FourierTransformInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "FourierTransform" );
@@ -124,16 +124,10 @@ ProcessImplementation* FourierTransformInterface::NewProcess() const
 
 bool FourierTransformInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const FourierTransformInstance* r = dynamic_cast<const FourierTransformInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not a FourierTransform instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const FourierTransformInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a FourierTransform instance.";
+   return false;
 }
 
 bool FourierTransformInterface::RequiresInstanceValidation() const
@@ -202,4 +196,4 @@ FourierTransformInterface::GUIData::GUIData( FourierTransformInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FourierTransformInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF FourierTransformInterface.cpp - Released 2017-05-02T09:43:00Z

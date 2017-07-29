@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0247
+// Standard StarGenerator Process Module Version 01.01.00.0266
 // ----------------------------------------------------------------------------
-// StarDatabase.h - Released 2016/02/21 20:22:43 UTC
+// StarDatabase.h - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,14 +53,11 @@
 #ifndef __StarDatabase_h
 #define __StarDatabase_h
 
-#include <pcl/Math.h>
-#include <pcl/File.h>
 #include <pcl/ByteArray.h>
+#include <pcl/File.h>
+#include <pcl/Math.h>
 #include <pcl/Matrix.h>
-
-#ifndef J2000
-#define J2000 2451545.0
-#endif
+#include <pcl/TimePoint.h>
 
 //
 // PPMX extreme values
@@ -103,7 +100,7 @@ public:
 
    void SetEpoch( double t )
    {
-      double T = (t - J2000)/36525;
+      double T = TimePoint( t ).CenturiesSinceJ2000();
 
       double cd = Cos( Rad( dec ) );
       if ( cd > 1e-10 )
@@ -129,7 +126,8 @@ public:
 
    typedef Array<Star>  star_list;
 
-   StarDatabase( const String& fileName = String(), double ep = J2000 ) : epoch( ep )
+   StarDatabase( const String& fileName = String(), TimePoint ep = TimePoint::J2000() ) :
+      epoch( ep.JD() )
    {
       if ( !fileName.IsEmpty() )
          Open( fileName );
@@ -214,7 +212,7 @@ public:
                   }
                }
 
-            if ( epoch != J2000 )
+            if ( epoch != TimePoint::J2000() )
                for ( star_list::iterator i = stars.Begin(); i != stars.End(); ++i )
                   i->SetEpoch( epoch );
          }
@@ -245,4 +243,4 @@ private:
 #endif   // __StarDatabase_h
 
 // ----------------------------------------------------------------------------
-// EOF StarDatabase.h - Released 2016/02/21 20:22:43 UTC
+// EOF StarDatabase.h - Released 2017-05-02T09:43:01Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0298
+// Standard ColorSpaces Process Module Version 01.01.00.0317
 // ----------------------------------------------------------------------------
-// RGBWorkingSpaceInterface.h - Released 2016/02/21 20:22:42 UTC
+// RGBWorkingSpaceInterface.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,13 +53,12 @@
 #ifndef __RGBWorkingSpaceInterface_h
 #define __RGBWorkingSpaceInterface_h
 
-#include <pcl/ProcessInterface.h>
-
-#include <pcl/Sizer.h>
-#include <pcl/SectionBar.h>
-#include <pcl/NumericControl.h>
-#include <pcl/PushButton.h>
 #include <pcl/CheckBox.h>
+#include <pcl/NumericControl.h>
+#include <pcl/ProcessInterface.h>
+#include <pcl/PushButton.h>
+#include <pcl/SectionBar.h>
+#include <pcl/Sizer.h>
 #include <pcl/ViewList.h>
 
 #include "RGBWorkingSpaceInstance.h"
@@ -67,8 +66,6 @@
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// RGBWorkingSpaceInterface
 // ----------------------------------------------------------------------------
 
 class RGBWorkingSpaceInterface : public ProcessInterface
@@ -87,8 +84,6 @@ public:
    virtual void TrackViewUpdated( bool active );
    virtual void ResetInstance();
 
-   virtual void Initialize();
-
    virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
 
    virtual ProcessImplementation* NewProcess() const;
@@ -105,8 +100,6 @@ public:
 
    virtual bool WantsGlobalNotifications() const;
    virtual void GlobalRGBWSUpdated();
-
-   // -------------------------------------------------------------------------
 
 private:
 
@@ -163,13 +156,10 @@ private:
          CheckBox          ApplyGlobalRGBWS_CheckBox;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
 
-   //
-   // GUI Event Handlers
-   //
    void __ViewList_ViewSelected( ViewList& sender, View& view );
    void __LuminanceCoefficient_ValueUpdated( NumericEdit& sender, double value );
    void __ChromaticityCoordinate_ValueUpdated( NumericEdit& sender, double value );
@@ -178,6 +168,8 @@ private:
    void __sRGBGamma_ButtonClick( Button& sender, bool checked );
    void __LoadRGBWS_ButtonClick( Button& sender, bool checked );
    void __ApplyGlobalRGBWS_ButtonClick( Button& sender, bool checked );
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
 
    friend struct GUIData;
 };
@@ -195,4 +187,4 @@ PCL_END_LOCAL
 #endif   // __RGBWorkingSpaceInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF RGBWorkingSpaceInterface.h - Released 2016/02/21 20:22:42 UTC
+// EOF RGBWorkingSpaceInterface.h - Released 2017-05-02T09:43:00Z

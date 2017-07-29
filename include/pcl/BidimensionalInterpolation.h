@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/BidimensionalInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// pcl/BidimensionalInterpolation.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/BidimensionalInterpolation.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Exception_h
 #include <pcl/Exception.h>
-#endif
 
 namespace pcl
 {
@@ -86,10 +79,12 @@ public:
    /*!
     * Constructs a %BidimensionalInterpolation object.
     */
-   BidimensionalInterpolation() :
-      m_data( nullptr ), m_width( 0 ), m_height( 0 ), m_fillValue( T( 0 ) ), m_fillBorder( false )
-   {
-   }
+   BidimensionalInterpolation() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   BidimensionalInterpolation( const BidimensionalInterpolation& ) = default;
 
    /*!
     * Destroys a %BidimensionalInterpolation object.
@@ -102,12 +97,14 @@ public:
    /*!
     * Initializes a new interpolation.
     *
-    * \param data    Two-dimensional matrix of function values.
+    * \param data    Two-dimensional matrix of function values stored in
+    *                row-order. Must remain valid and accessible while this
+    *                object is used to compute interpolated function values.
     *
-    * \param width   Horizontal dimension (most rapidly varying dimension) of
+    * \param width   Horizontal dimension (most rapidly varying coordinate) of
     *                the data array.
     *
-    * \param height  Vertical dimension (most slowly varying dimension) of the
+    * \param height  Vertical dimension (most slowly varying coordinate) of the
     *                data array.
     */
    virtual void Initialize( const T* data, int width, int height )
@@ -122,7 +119,7 @@ public:
    }
 
    /*!
-    * Returns an interpolated function value at \a x, \a y location.
+    * Returns an interpolated function value at \a x, \a y coordinates.
     */
    virtual double operator()( double x, double y ) const = 0;
 
@@ -222,11 +219,11 @@ public:
 
 protected:
 
-   const T* m_data;           // functional data being interpolated
-   int      m_width;          // width of the data table
-   int      m_height;         // height of the data table
-   double   m_fillValue;      // fill value, when m_fillBorder = true
-   bool     m_fillBorder : 1; // don't apply Neumann boundary conditions
+   const T* m_data       = nullptr; // functional data being interpolated
+   int      m_width      = 0;       // width of the data table
+   int      m_height     = 0;       // height of the data table
+   double   m_fillValue  = 0;       // fill value, when m_fillBorder = true
+   bool     m_fillBorder = false;   // don't apply Neumann boundary conditions
 };
 
 // ----------------------------------------------------------------------------
@@ -236,4 +233,4 @@ protected:
 #endif  // __PCL_BidimensionalInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/BidimensionalInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/BidimensionalInterpolation.h - Released 2017-06-28T11:58:36Z

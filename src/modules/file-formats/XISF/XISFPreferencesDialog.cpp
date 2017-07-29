@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.06.0107
+// Standard XISF File Format Module Version 01.00.09.0135
 // ----------------------------------------------------------------------------
-// XISFPreferencesDialog.cpp - Released 2016/07/05 10:44:57 UTC
+// XISFPreferencesDialog.cpp - Released 2017-05-02T09:42:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -50,7 +50,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include "XISF.h" // for XISFEngineBase::CompressionLevelForMethod()
 #include "XISFPreferencesDialog.h"
 
 namespace pcl
@@ -278,14 +277,14 @@ void XISFPreferencesDialog::Button_Click( Button& sender, bool checked )
       IgnoreFITSKeywords_CheckBox.SetChecked( defaultOptions.ignoreFITSKeywords );
       ImportFITSKeywords_CheckBox.SetChecked( defaultOptions.importFITSKeywords );
 
-      CompressionCodec_ComboBox.SetCurrentItem( CompressionMethodToComboBoxItem( defaultOptions.compressionMethod ) );
+      CompressionCodec_ComboBox.SetCurrentItem( CompressionCodecToComboBoxItem( defaultOptions.compressionCodec ) );
       CompressionLevel_SpinBox.SetValue( defaultOptions.compressionLevel );
-      CompressionShuffle_CheckBox.SetChecked( options.compressionMethod == XISF_COMPRESSION_NONE ||
-                                              XISFEngineBase::CompressionUsesByteShuffle( options.compressionMethod ) );
-      DataCompression_GroupBox.SetChecked( options.compressionMethod != XISF_COMPRESSION_NONE );
+      CompressionShuffle_CheckBox.SetChecked( options.compressionCodec == XISFCompression::None ||
+                                              XISF::CompressionUsesByteShuffle( options.compressionCodec ) );
+      DataCompression_GroupBox.SetChecked( options.compressionCodec != XISFCompression::None );
 
-      Checksums_ComboBox.SetCurrentItem( ChecksumMethodToComboBoxItem( defaultOptions.checksumMethod ) );
-      Security_GroupBox.SetChecked( options.checksumMethod != XISF_CHECKSUM_NONE );
+      Checksums_ComboBox.SetCurrentItem( ChecksumAlgorithmToComboBoxItem( defaultOptions.checksumAlgorithm ) );
+      Security_GroupBox.SetChecked( options.checksumAlgorithm != XISFChecksum::None );
 
       AlignmentSize_SpinBox.SetValue( defaultOptions.blockAlignmentSize );
       MaxInlineSize_SpinBox.SetValue( defaultOptions.maxInlineBlockSize );
@@ -334,4 +333,4 @@ void XISFPreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFPreferencesDialog.cpp - Released 2016/07/05 10:44:57 UTC
+// EOF XISFPreferencesDialog.cpp - Released 2017-05-02T09:42:51Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/TreeBox.h - Released 2016/02/21 20:22:12 UTC
+// pcl/TreeBox.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,37 +56,15 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_AutoPointer_h
 #include <pcl/AutoPointer.h>
-#endif
-
-#ifndef __PCL_ScrollBox_h
-#include <pcl/ScrollBox.h>
-#endif
-
-#ifndef __PCL_TextAlign_h
-#include <pcl/TextAlign.h>
-#endif
-
-#ifndef __PCL_Bitmap_h
 #include <pcl/Bitmap.h>
-#endif
-
-#ifndef __PCL_Font_h
 #include <pcl/Font.h>
-#endif
-
-#ifndef __PCL_IndirectArray_h
 #include <pcl/IndirectArray.h>
-#endif
-
-#ifndef __PCL_SortedArray_h
+#include <pcl/ScrollBox.h>
 #include <pcl/SortedArray.h>
-#endif
+#include <pcl/TextAlign.h>
 
 namespace pcl
 {
@@ -95,7 +73,7 @@ namespace pcl
 
 /*!
  * \class TreeBox
- * \brief Client-side interface to a PixInsight %TreeBox control.
+ * \brief Client-side interface to a PixInsight %TreeBox control
  *
  * ### TODO: Write a detailed description for %TreeBox.
  */
@@ -104,8 +82,8 @@ class PCL_CLASS TreeBox : public ScrollBox
 public:
 
    /*!
-    * \class Node
-    * \brief Client-side interface to a PixInsight %TreeBox node.
+    * \class pcl::TreeBox::Node
+    * \brief Client-side interface to a PixInsight %TreeBox node
     *
     * ### TODO: Write a detailed description for %TreeBox::Node.
     */
@@ -117,6 +95,17 @@ public:
        */
       Node();
 
+      /*
+       * ### N.B.: If we define a default parameter value index=-1 for the
+       * following constructor (as expected), the static member function Null()
+       * cannot be compiled with g++ 4.9.x. The compiler issues the error:
+       *
+       *    no matching function for call to
+       *    'pcl::TreeBox::Node::Node(pcl::TreeBox::Node)'
+       *
+       * which is obviously incorrect and looks like an obscure compiler bug.
+       * Note that the same problem exists with g++ 4.8.x (at least).
+       */
       /*! #
        */
       Node( Node& parent, int index );
@@ -134,6 +123,7 @@ public:
        */
       static Node Null()
       {
+         // ### See note above for Node::Node( Node&, int ).
          return Node( nullptr );
       }
 
@@ -189,9 +179,9 @@ public:
 
       /*! #
        */
-      void Add( Node* n )
+      void Add( Node* node )
       {
-         Insert( NumberOfChildren(), n );
+         Insert( NumberOfChildren(), node );
       }
 
       /*! #
@@ -343,6 +333,13 @@ public:
        * \internal
        */
       Node( void* h ) : UIObject( h )
+      {
+      }
+
+      /*!
+       * \internal
+       */
+      Node( std::nullptr_t ) : UIObject( nullptr )
       {
       }
 
@@ -947,9 +944,7 @@ protected:
    /*!
     * \internal
     */
-   TreeBox( void* h ) : ScrollBox( h, nullptr )
-   {
-   }
+   TreeBox( void* );
 
    friend class Node;
    friend class TreeBoxEventDispatcher;
@@ -964,4 +959,4 @@ protected:
 #endif   // __PCL_TreeBox_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/TreeBox.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/TreeBox.h - Released 2017-06-28T11:58:36Z

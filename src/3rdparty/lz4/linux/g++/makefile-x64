@@ -1,0 +1,62 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
+######################################################################
+# Generated on .... 2017-06-07T15:42:33.817Z
+# Project id ...... lz4
+# Project type .... StaticLibrary
+# Platform ........ Linux/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/3rdparty/lz4/linux/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/liblz4-pxi.a
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../lz4.c \
+../../lz4hc.c
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/lz4.o \
+./x64/Release/lz4hc.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/lz4.d \
+./x64/Release/lz4hc.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/liblz4-pxi.a: $(OBJ_FILES)
+	ar r $(OBJ_DIR)/liblz4-pxi.a $(OBJ_FILES)
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/liblz4-pxi.a
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/liblz4-pxi.a $(PCLLIBDIR64)
+
+./x64/Release/%.o: ../../%.c
+	gcc -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

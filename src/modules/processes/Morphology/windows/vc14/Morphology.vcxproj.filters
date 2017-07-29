@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+######################################################################
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
+######################################################################
+# Generated on .... 2017-06-07T15:42:58.416Z
+# Project id ...... Morphology
+# Project type .... Module
+# Platform ........ Windows/vc14
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Additional preprocessor definitions:
+# _CRT_SECURE_NO_WARNINGS
+######################################################################
+-->
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>falsefalsefalsefalsefalsefalsefalsefalse-falsefalsefalsefalse-4falsefalsefalse-falsefalsefalsefalse-falsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalse</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>falsefalsefalsefalsefalsefalsefalsefalse-falsefalsefalsefalse-4falsefalsefalse-falsefalsefalsefalse-falsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalse</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Image Files">
+      <UniqueIdentifier>falsefalsefalsefalsefalsefalsefalsefalse-falsefalsefalsefalse-4falsefalsefalse-falsefalsefalsefalse-falsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalsefalse</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\MorphologicalTransformationInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MorphologicalTransformationInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MorphologicalTransformationParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MorphologicalTransformationProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MorphologyModule.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Structure.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\StructureManagerDialog.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\MorphologicalTransformationInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MorphologicalTransformationInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MorphologicalTransformationParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MorphologicalTransformationProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MorphologyModule.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Structure.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\StructureManagerDialog.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\MorphologicalTransformationIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\add_structure.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\delete_all_structures.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\delete_structure.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\paint_clear.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\paint_set.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\pen_cursor.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\redo_structure.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\replace_structure.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\reset_structure.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\show_all_ways.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\undo_structure.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\way_add.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\way_circular.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\way_clear.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\way_clear_all.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\way_delete.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\way_diagonal.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\way_diamond.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\way_invert.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\way_orthogonal.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\way_restore.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\way_rotate.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\way_set.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\way_set_all.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\way_store.png">
+        <Filter>Image Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

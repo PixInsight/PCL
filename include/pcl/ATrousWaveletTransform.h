@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ATrousWaveletTransform.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ATrousWaveletTransform.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,29 +54,13 @@
 
 /// \file pcl/ATrousWaveletTransform.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_AutoPointer_h
 #include <pcl/AutoPointer.h>
-#endif
-
-#ifndef __PCL_RedundantMultiscaleTransform_h
-#include <pcl/RedundantMultiscaleTransform.h>
-#endif
-
-#ifndef __PCL_KernelFilter_h
 #include <pcl/KernelFilter.h>
-#endif
-
-#ifndef __PCL_SeparableFilter_h
+#include <pcl/RedundantMultiscaleTransform.h>
 #include <pcl/SeparableFilter.h>
-#endif
 
 namespace pcl
 {
@@ -131,6 +115,8 @@ class InterlacedTransformation;
  *
  * The last layer, at index N, is the large-scale residual layer. Pixels in the
  * residual layer image can only be positive or zero real values.
+ *
+ * \ingroup multiscale_transforms
  *
  * \note The StarletTransform class is an alias for %ATrousWaveletTransform.
  */
@@ -432,14 +418,14 @@ public:
    /*!
     * Move constructor.
     */
-#ifdef _MSC_VER
+#ifndef _MSC_VER
+   ATrousWaveletTransform( ATrousWaveletTransform&& ) = default;
+#else
    ATrousWaveletTransform( ATrousWaveletTransform&& x ) :
       RedundantMultiscaleTransform( std::move( x ) ),
       m_scalingFunction( std::move( x.m_scalingFunction ) )
    {
    }
-#else
-   ATrousWaveletTransform( ATrousWaveletTransform&& ) = default;
 #endif
 
    /*!
@@ -703,6 +689,8 @@ private:
  * transform</em> since the early publications of Mallat, Starck and Murtagh in
  * the 90's, is now known "officially" as <em>starlet transform</em>, at least
  * since 2010's <em>%Sparse %Image and %Signal %Processing</em> book.
+ *
+ * \ingroup multiscale_transforms
  */
 typedef ATrousWaveletTransform   StarletTransform;
 
@@ -713,4 +701,4 @@ typedef ATrousWaveletTransform   StarletTransform;
 #endif   // __PCL_ATrousWaveletTransform_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ATrousWaveletTransform.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ATrousWaveletTransform.h - Released 2017-06-28T11:58:36Z

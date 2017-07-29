@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Version.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Version.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -73,12 +73,12 @@ int Version::Minor()
 
 int Version::Release()
 {
-   return 1;
+   return 6;
 }
 
 int Version::Build()
 {
-   return 784;
+   return 853;
 }
 
 int Version::BetaRelease()
@@ -88,13 +88,13 @@ int Version::BetaRelease()
 
 String Version::LanguageCode()
 {
-   return "eng";  // ISO 639.2 language code
+   return "eng";  // ISO 639.2
 }
 
 String Version::AsString()
 {
    String v = String().Format( "PCL %02d.%02d.%02d.%04d", Major(), Minor(), Release(), Build() );
-   if ( BetaRelease() != 0 )
+   if ( BetaRelease() > 0 )
       v.Append( String().Format( " beta %d", BetaRelease() ) );
    return v;
 }
@@ -121,29 +121,30 @@ static void Initialize()
       volatile AutoLock lock( s_mutex );
       if ( s_initialized.Load() == 0 )
       {
-         uint32 M, m, r, b, beta, conf, le;
-         char lang[ 8 ];
-
-         (*API->Global->GetPixInsightVersion)( &M, &m, &r, &b, &beta, &conf, &le, lang );
-
-         s_major = int( M );
-         s_minor = int( m );
-         s_release = int( r );
-         s_build = int( b );
-         s_beta = int( beta );
-         s_confidential = conf != 0;
-         s_le = le != 0;
-         s_language = lang;
-
-#if ( PCL_API_Version >= 0x0126 )
-         char16_type* s = (*API->Global->GetPixInsightCodename)( ModuleHandle() );
-         if ( s != nullptr )
+         if ( API != nullptr )
          {
-            s_codename = String( s );
-            if ( Module != nullptr )
-               Module->Deallocate( s );
+            uint32 M, m, r, b, beta, conf, le;
+            char lang[ 8 ];
+
+            (*API->Global->GetPixInsightVersion)( &M, &m, &r, &b, &beta, &conf, &le, lang );
+            s_major = int( M );
+            s_minor = int( m );
+            s_release = int( r );
+            s_build = int( b );
+            s_beta = int( beta );
+            s_confidential = conf != 0;
+            s_le = le != 0;
+            s_language = lang;
+
+            char16_type* s = (*API->Global->GetPixInsightCodename)( ModuleHandle() );
+            if ( s != nullptr )
+            {
+               s_codename = String( s );
+               if ( Module != nullptr )
+                  Module->Deallocate( s );
+            }
          }
-#endif
+
          s_initialized.Store( 1 );
       }
    }
@@ -194,7 +195,7 @@ bool PixInsightVersion::LE()
 String PixInsightVersion::LanguageCode()
 {
    Initialize();
-   return s_language;  // ISO 639.2 language code
+   return s_language;  // ISO 639.2
 }
 
 String PixInsightVersion::Codename()
@@ -222,4 +223,4 @@ String PixInsightVersion::AsString( bool withCodename )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Version.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Version.cpp - Released 2017-06-28T11:58:42Z

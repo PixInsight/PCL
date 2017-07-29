@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Math.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Math.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,71 +54,34 @@
 
 /// \file pcl/Math.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Memory_h
 #include <pcl/Memory.h>
-#endif
-
-#ifndef __PCL_Utility_h
-#include <pcl/Utility.h>
-#endif
-
-#ifndef __PCL_Selection_h
 #include <pcl/Selection.h>
-#endif
-
-#ifndef __PCL_Sort_h
 #include <pcl/Sort.h>
-#endif
+#include <pcl/Utility.h>
 
-#ifndef __cstdlib
-# include <cstdlib>
-# ifndef __cstdlib
-#  define __cstdlib
-# endif
-#endif
-
-#ifndef __cmath
 # include <cmath>
-# ifndef __cmath
-#  define __cmath
-# endif
-#endif
+# include <cstdlib>
 
 #ifdef _MSC_VER
-# ifndef __intrin_h
 #  include <intrin.h> // for __cpuid()
-#  ifndef __intrin_h
-#   define __intrin_h
-#  endif
-# endif
 #endif
 
 #if defined( __x86_64__ ) || defined( _M_X64 ) || defined( __PCL_MACOSX )
-# define __PCL_HAVE_SSE2   1
-# ifndef __emmintrin_h
+#  define __PCL_HAVE_SSE2   1
 #  include <emmintrin.h>
-#  ifndef __emmintrin_h
-#   define __emmintrin_h
-#  endif
-# endif
 #endif
 
 // GCC 4.2 doesn't have sincos() on Mac OS X and FreeBSD
 // MSVC doesn't have sincos() on Windows
 #if !defined( __PCL_MACOSX ) && !defined( __PCL_FREEBSD ) && !defined( __PCL_WINDOWS )
-# define __PCL_HAVE_SINCOS 1
+#  define __PCL_HAVE_SINCOS 1
 #endif
 
 #ifdef __PCL_QT_INTERFACE
-#include <QtWidgets/QtWidgets>
+#  include <QtWidgets/QtWidgets>
 #endif
 
 namespace pcl
@@ -1194,6 +1157,50 @@ template <typename T> inline T Pow10( T x )
 {
    int i = TruncInt( x );
    return (i == x) ? Pow10I<T>()( i ) : T( std::pow( 10, x ) );
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * Bitwise rotate left function: Rotates \a x to the left by \a n bits.
+ *
+ * The template argument T must be an unsigned arithmetic type (uint8, uint16,
+ * uint32 or uint64). The bit count \a n must be smaller than the number of
+ * bits required to store an instance of T; for example, if T is uint32, \a n
+ * must be in the range [0,31].
+ *
+ * \ingroup mathematical_functions
+ */
+template <typename T> inline T RotL( T x, uint32 n )
+{
+   static_assert( std::is_unsigned<T>::value,
+                  "RotL() can only be used for unsigned scalar types" );
+   const uint8 mask = 8*sizeof( x ) - 1;
+   const uint8 r = uint8( n & mask );
+   return (x << r) | (x >> ((-r) & mask));
+   // Or, equivalently but less optimized:
+   //return (x << r) | (x >> (1+mask-r));
+}
+
+/*!
+ * Bitwise rotate right function: Rotates \a x to the right by \a n bits.
+ *
+ * The template argument T must be an unsigned arithmetic type (uint8, uint16,
+ * uint32 or uint64). The bit count \a n must be smaller than the number of
+ * bits required to store an instance of T; for example, if T is uint32, \a n
+ * must be in the range [0,31].
+ *
+ * \ingroup mathematical_functions
+ */
+template <typename T> inline T RotR( T x, uint32 n )
+{
+   static_assert( std::is_unsigned<T>::value,
+                  "RotR() can only be used for unsigned scalar types" );
+   const uint8 mask = 8*sizeof( x ) - 1;
+   const uint8 r = uint8( n & mask );
+   return (x >> r) | (x << ((-r) & mask));
+   // Or, equivalently but less optimized:
+   //return (x >> r) | (x << (1+mask-r));
 }
 
 // ----------------------------------------------------------------------------
@@ -2550,6 +2557,54 @@ template <typename T, class BP> inline double Median( T* i, T* j, BP p )
 #undef MEAN
 
 /*!
+ * Returns the median value of a sequence [i,j) without altering its order of
+ * elements (non-destructive median).
+ *
+ * This function generates a temporary duplicate of the input sequence, then
+ * calls Median( T*, T* ) to find the median value.
+ *
+ * \ingroup statistical_functions
+ */
+template <typename T> inline double NondestructiveMedian( const T* i, const T* j )
+{
+   distance_type n = j - i;
+   if ( n < 2 )
+      return 0;
+   double* d = new double[ n ];
+   double* p = d;
+   for ( const T* f = i; f < j; ++f, ++p )
+      *p = double( *f );
+   double m = pcl::Median( d, d+n );
+   delete [] d;
+   return m;
+}
+
+/*!
+ * Returns the median value of a sequence [i,j) without altering its order of
+ * elements (non-destructive median). Element comparison is given by a binary
+ * predicate \a p such that p( a, b ) is true for any pair a, b of elements
+ * such that a precedes b.
+ *
+ * This function generates a temporary duplicate of the input sequence, then
+ * calls Median( T*, T*, BP ) to find the median value.
+ *
+ * \ingroup statistical_functions
+ */
+template <typename T, class BP> inline double NondestructiveMedian( const T* i, const T* j, BP p )
+{
+   distance_type n = j - i;
+   if ( n < 2 )
+      return 0;
+   double* d = new double[ n ];
+   double* t = d;
+   for ( const T* f = i; f < j; ++f, ++t )
+      *t = double( *f );
+   double m = pcl::Median( d, d+n, p );
+   delete [] d;
+   return m;
+}
+
+/*!
  * Returns the average absolute deviation of the values in a sequence [i,j)
  * with respect to the specified \a center value.
  *
@@ -2692,6 +2747,8 @@ template <typename T> inline double StableAvgDev( const T* i, const T* j )
  *
  * \note To make the MAD estimator consistent with the standard deviation of
  * a normal distribution, it must be multiplied by the constant 1.4826.
+ *
+ * \ingroup statistical_functions
  */
 template <typename T> inline double MAD( const T* i, const T* j, double center )
 {
@@ -2717,6 +2774,8 @@ template <typename T> inline double MAD( const T* i, const T* j, double center )
  *
  * \note To make the MAD estimator consistent with the standard deviation of
  * a normal distribution, it must be multiplied by the constant 1.4826.
+ *
+ * \ingroup statistical_functions
  */
 template <typename T> inline double MAD( const T* i, const T* j )
 {
@@ -2754,23 +2813,23 @@ template <typename T> inline double MAD( const T* i, const T* j )
  * implementation does not apply it (it uses c=1 implicitly), for
  * consistency with other implementations of scale estimators.
  *
- * \note This is a \e destructive algorithm: it may alter the initial order of
- * items in the specified [x,xn) sequence.
- *
- * \ingroup statistical_functions
- *
  * \b References
  *
  * P.J. Rousseeuw and C. Croux (1993), <em>Alternatives to the Median Absolute
  * Deviation,</em> Journal of the American Statistical Association, Vol. 88,
  * pp. 1273-1283.
+ *
+ * \note This is a \e destructive algorithm: it may alter the initial order of
+ * items in the specified [x,xn) sequence.
+ *
+ * \ingroup statistical_functions
  */
 template <typename T> double Sn( T* x, T* xn )
 {
    /*
-    * NB: In the code below, lines commented with an asterisk (*) have been
-    * modified with respect to the FORTRAN original to account for
-    * zero-based array indices.
+    * N.B.: In the code below, lines commented with an asterisk (*) have been
+    * modified with respect to the FORTRAN original to account for zero-based
+    * array indices.
     */
 
    distance_type n = xn - x;
@@ -2915,7 +2974,8 @@ template <typename T> double Sn( T* x, T* xn )
    return sn;
 }
 
-/*
+/*!
+ * \internal
  * Auxiliary routine for Qn().
  *
  * Algorithm to compute the weighted high median in O(n) time.
@@ -3000,16 +3060,16 @@ inline double __pcl_whimed__( double* a, distance_type* iw, distance_type n,
  * implementation does not apply it (it uses c=1 implicitly), for consistency
  * with other implementations of scale estimators.
  *
- * \note This is a \e destructive algorithm: it may alter the initial order of
- * items in the specified [x,xn) sequence.
- *
- * \ingroup statistical_functions
- *
  * \b References
  *
  * P.J. Rousseeuw and C. Croux (1993), <em>Alternatives to the Median Absolute
  * Deviation,</em> Journal of the American Statistical Association, Vol. 88,
  * pp. 1273-1283.
+ *
+ * \note This is a \e destructive algorithm: it may alter the initial order of
+ * items in the specified [x,xn) sequence.
+ *
+ * \ingroup statistical_functions
  */
 template <typename T> double Qn( T* x, T* xn )
 {
@@ -3324,45 +3384,45 @@ inline uint64 Hash64( const void* data, size_type size, uint64 seed = 0 )
       {
          v1 += *(uint64*)p * PRIME64_2;
          p += 8;
-         v1 = RotL64( v1, 31 );
+         v1 = RotL( v1, 31 );
          v1 *= PRIME64_1;
          v2 += *(uint64*)p * PRIME64_2;
          p += 8;
-         v2 = RotL64( v2, 31 );
+         v2 = RotL( v2, 31 );
          v2 *= PRIME64_1;
          v3 += *(uint64*)p * PRIME64_2;
          p += 8;
-         v3 = RotL64( v3, 31 );
+         v3 = RotL( v3, 31 );
          v3 *= PRIME64_1;
          v4 += *(uint64*)p * PRIME64_2;
          p += 8;
-         v4 = RotL64( v4, 31 );
+         v4 = RotL( v4, 31 );
          v4 *= PRIME64_1;
       }
       while ( p <= limit );
 
-      h64 = RotL64( v1, 1 ) + RotL64( v2, 7 ) + RotL64( v3, 12 ) + RotL64( v4, 18 );
+      h64 = RotL( v1, 1 ) + RotL( v2, 7 ) + RotL( v3, 12 ) + RotL( v4, 18 );
 
       v1 *= PRIME64_2;
-      v1 = RotL64( v1, 31 );
+      v1 = RotL( v1, 31 );
       v1 *= PRIME64_1;
       h64 ^= v1;
       h64 = h64 * PRIME64_1 + PRIME64_4;
 
       v2 *= PRIME64_2;
-      v2 = RotL64( v2, 31 );
+      v2 = RotL( v2, 31 );
       v2 *= PRIME64_1;
       h64 ^= v2;
       h64 = h64 * PRIME64_1 + PRIME64_4;
 
       v3 *= PRIME64_2;
-      v3 = RotL64( v3, 31 );
+      v3 = RotL( v3, 31 );
       v3 *= PRIME64_1;
       h64 ^= v3;
       h64 = h64 * PRIME64_1 + PRIME64_4;
 
       v4 *= PRIME64_2;
-      v4 = RotL64( v4, 31 );
+      v4 = RotL( v4, 31 );
       v4 *= PRIME64_1;
       h64 ^= v4;
       h64 = h64 * PRIME64_1 + PRIME64_4;
@@ -3378,24 +3438,24 @@ inline uint64 Hash64( const void* data, size_type size, uint64 seed = 0 )
    {
       uint64 k1 = *(uint64*)p;
       k1 *= PRIME64_2;
-      k1 = RotL64( k1, 31 );
+      k1 = RotL( k1, 31 );
       k1 *= PRIME64_1;
       h64 ^= k1;
-      h64 = RotL64( h64, 27 ) * PRIME64_1 + PRIME64_4;
+      h64 = RotL( h64, 27 ) * PRIME64_1 + PRIME64_4;
       p += 8;
    }
 
    if ( p+4 <= end )
    {
       h64 ^= (uint64)(*(uint32*)p) * PRIME64_1;
-      h64 = RotL64( h64, 23 ) * PRIME64_2 + PRIME64_3;
+      h64 = RotL( h64, 23 ) * PRIME64_2 + PRIME64_3;
       p += 4;
    }
 
    while ( p < end )
    {
       h64 ^= *p * PRIME64_5;
-      h64 = RotL64( h64, 11 ) * PRIME64_1;
+      h64 = RotL( h64, 11 ) * PRIME64_1;
       ++p;
    }
 
@@ -3471,25 +3531,25 @@ inline uint32 Hash32( const void* data, size_type size, uint32 seed = 0 )
       do
       {
          v1 += *(uint32*)p * PRIME32_2;
-         v1 = RotL32( v1, 13 );
+         v1 = RotL( v1, 13 );
          v1 *= PRIME32_1;
          p += 4;
          v2 += *(uint32*)p * PRIME32_2;
-         v2 = RotL32( v2, 13 );
+         v2 = RotL( v2, 13 );
          v2 *= PRIME32_1;
          p += 4;
          v3 += *(uint32*)p * PRIME32_2;
-         v3 = RotL32( v3, 13 );
+         v3 = RotL( v3, 13 );
          v3 *= PRIME32_1;
          p += 4;
          v4 += *(uint32*)p * PRIME32_2;
-         v4 = RotL32( v4, 13 );
+         v4 = RotL( v4, 13 );
          v4 *= PRIME32_1;
          p += 4;
       }
       while ( p <= limit );
 
-      h32 = RotL32( v1, 1 ) + RotL32( v2, 7 ) + RotL32( v3, 12 ) + RotL32( v4, 18 );
+      h32 = RotL( v1, 1 ) + RotL( v2, 7 ) + RotL( v3, 12 ) + RotL( v4, 18 );
    }
    else
    {
@@ -3501,14 +3561,14 @@ inline uint32 Hash32( const void* data, size_type size, uint32 seed = 0 )
    while ( p+4 <= end )
    {
       h32 += *(uint32*)p * PRIME32_3;
-      h32  = RotL32( h32, 17 ) * PRIME32_4 ;
+      h32  = RotL( h32, 17 ) * PRIME32_4 ;
       p+=4;
    }
 
    while ( p < end )
    {
       h32 += *p * PRIME32_5;
-      h32 = RotL32( h32, 11 ) * PRIME32_1 ;
+      h32 = RotL( h32, 11 ) * PRIME32_1 ;
       ++p;
    }
 
@@ -3534,4 +3594,4 @@ inline uint32 Hash32( const void* data, size_type size, uint32 seed = 0 )
 #endif   // __PCL_Math_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Math.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Math.h - Released 2017-06-28T11:58:36Z

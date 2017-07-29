@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/APIException.h - Released 2016/02/21 20:22:12 UTC
+// pcl/APIException.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -52,13 +52,9 @@
 #ifndef __PCL_API_APIException_h
 #define __PCL_API_APIException_h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Exception_h
 #include <pcl/Exception.h>
-#endif
 
 namespace pcl
 {
@@ -79,16 +75,14 @@ class PCL_CLASS APIError : public Error
 {
 public:
 
-   APIError() : Error(), apiErrorCode( 0 )
+   APIError()
    {
       GetAPIErrorCode();
    }
 
-   APIError( const pcl::APIError& x ) : Error( x ), apiErrorCode( x.apiErrorCode )
-   {
-   }
+   APIError( const pcl::APIError& ) = default;
 
-   APIError( const String& s ) : Error( s ), apiErrorCode( 0 )
+   APIError( const String& s ) : Error( s )
    {
       GetAPIErrorCode();
    }
@@ -102,9 +96,9 @@ public:
 
 private:
 
-   void GetAPIErrorCode();
+   uint32 apiErrorCode = 0;
 
-   uint32 apiErrorCode;
+   void GetAPIErrorCode();
 };
 
 // ----------------------------------------------------------------------------
@@ -118,7 +112,7 @@ public:
    }
 
    APIFunctionError( const String& funcId ) :
-   pcl::APIError( funcId + "(): Low-level API function error" )
+      pcl::APIError( funcId + "(): Low-level API function error" )
    {
    }
 };
@@ -130,4 +124,4 @@ public:
 #endif   // __PCL_API_APIException_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/APIException.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/APIException.h - Released 2017-06-28T11:58:36Z

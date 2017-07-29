@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0199
+// Standard INDIClient Process Module Version 01.00.15.0203
 // ----------------------------------------------------------------------------
-// INDIMountInstance.h - Released 2016/06/20 17:47:31 UTC
+// INDIMountInstance.h - Released 2017-05-02T09:43:01Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2016 Klaus Kretzschmar
+// Copyright (c) 2014-2017 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -55,9 +55,14 @@
 
 #include <pcl/MetaParameter.h>
 #include <pcl/ProcessImplementation.h>
+#include <pcl/Array.h>
+
+#include "Alignment.h"
 
 namespace pcl
 {
+
+
 
 // ----------------------------------------------------------------------------
 
@@ -89,23 +94,44 @@ public:
    void GetCurrentCoordinates();
    void GetTargetCoordinates( double& ra, double& dec ) const;
 
+   void AddSyncDataPoint(const SyncDataPoint& syncDataPoint);
+
+   static void loadSyncData(Array<SyncDataPoint>& syncDataList, String syncDataFile);
+
 private:
 
            String   p_deviceName;
            pcl_enum p_command;
            pcl_enum p_slewRate;
+           pcl_enum p_alignmentMethod;
+           pcl_enum p_pierSide;
            double   p_targetRA;
            double   p_targetDec;
            pcl_bool p_computeApparentPosition;
+           pcl_bool p_enableAlignmentCorrection;
+           String   p_alignmentFile;
+           int32    p_alignmentConfig;
 
            double   o_currentLST;
            double   o_currentRA;
            double   o_currentDec;
    mutable double   o_apparentTargetRA;
    mutable double   o_apparentTargetDec;
+   	   	   double   o_geographicLatitude;
+   	   	   double   o_syncLST;
+   	   	   double   o_syncCelestialRA;
+  	   	   double   o_syncCelestialDEC;
+  	   	   double   o_syncTelescopeRA;
+  	   	   double   o_syncTelescopeDEC;
+
+
+
+
+   Array<SyncDataPoint>  syncDataArray;
 
    friend class INDIMountInterface;
    friend class AbstractINDIMountExecution;
+
 };
 
 // ----------------------------------------------------------------------------
@@ -118,6 +144,7 @@ public:
       m_instance( instance ),
       m_running( false ),
       m_aborted( false )
+
    {
    }
 
@@ -163,6 +190,8 @@ protected:
 private:
 
    bool m_running, m_aborted;
+
+   void ApplyPointingModelCorrection(AlignmentModel* aModel, double& targetRA, double& targetDec);
 };
 
 // ----------------------------------------------------------------------------
@@ -172,4 +201,4 @@ private:
 #endif   // __INDIMountInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInstance.h - Released 2016/06/20 17:47:31 UTC
+// EOF INDIMountInstance.h - Released 2017-05-02T09:43:01Z

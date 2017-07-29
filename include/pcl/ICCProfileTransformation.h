@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ICCProfileTransformation.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ICCProfileTransformation.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,25 +54,12 @@
 
 /// \file pcl/ICCProfileTransformation.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_ImageTransformation_h
-#include <pcl/ImageTransformation.h>
-#endif
-
-#ifndef __PCL_Array_h
 #include <pcl/Array.h>
-#endif
-
-#ifndef __PCL_ICCProfile_h
-#include <pcl/ICCProfile.h>
-#endif
-
-#ifndef __PCL_Color_h
 #include <pcl/Color.h>
-#endif
+#include <pcl/ICCProfile.h>
+#include <pcl/ImageTransformation.h>
 
 // ----------------------------------------------------------------------------
 
@@ -89,30 +76,6 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace ICCRenderingIntent
- * \brief ICC rendering intents
- *
- * <table border="1" cellpadding="4" cellspacing="0">
- * <tr><td>ICCRenderingIntent::Perceptual</td>           <td>Perceptual rendering intent (photographic images)</td></tr>
- * <tr><td>ICCRenderingIntent::Saturation</td>           <td>Saturation rendering intent (graphics)</td></tr>
- * <tr><td>ICCRenderingIntent::RelativeColorimetric</td> <td>Relative colorimetric rendering intent (match white points)</td></tr>
- * <tr><td>ICCRenderingIntent::AbsoluteColorimetric</td> <td>Absolute colorimetric rendering intent (proofing)</td></tr>
- * </table>
- */
-namespace ICCRenderingIntent
-{
-   enum value_type
-   {
-      Perceptual,
-      Saturation,
-      RelativeColorimetric,
-      AbsoluteColorimetric
-   };
-}
-
-// ----------------------------------------------------------------------------
-
-/*!
  * \class ICCProfileTransformation
  * \brief Conversion of pixel values between ICC profile color spaces
  *
@@ -124,6 +87,7 @@ namespace ICCRenderingIntent
  * transformations, multiprofile transformations, and device proofing
  * transformations with out-of-gamut checks.
  *
+ * \ingroup color_management
  * \sa ICCProfile, ImageTransformation
  */
 class PCL_CLASS ICCProfileTransformation : public ImageTransformation
@@ -217,7 +181,16 @@ public:
       return *this;
    }
 
+   /*!
+    * Copy constructor. This constructor is disabled because ICC color profile
+    * transformations are unique objects.
+    */
    ICCProfileTransformation( const ICCProfileTransformation& ) = delete;
+
+   /*!
+    * Copy assignment. This operator is disabled because ICC color profile
+    * transformations are unique objects.
+    */
    ICCProfileTransformation& operator =( const ICCProfileTransformation& ) = delete;
 
    /*!
@@ -455,6 +428,7 @@ public:
    }
 
    /*!
+    * \internal
     * Returns the low-level handle that this %ICCProfileTransformation object
     * serves as a high-level interface to.
     *
@@ -645,6 +619,7 @@ protected:
  * Target profile = The ICC profile describing the display device where we'll
  * preview the result (usually a monitor).
  *
+ * \ingroup color_management
  * \sa ICCProfileTransformation, ICCProfile
  */
 class PCL_CLASS ICCProofingTransformation : public ICCProfileTransformation
@@ -761,7 +736,7 @@ public:
    }
 
    /*!
-    * Returns true iff <em>gamut check</em> has been enabled for this color
+    * Returns true iff <em>gamut checking</em> has been enabled for this color
     * transformation. When gamut check is enabled, out-of-gamut colors in the
     * final rendition are automatically replaced by the current <em>gamut
     * warning color</em> (see the SetGamutWarningColor() member function).
@@ -804,7 +779,7 @@ public:
     *
     * Note that since this is a static member function, the current gamut
     * warning color is a global setting that affects all proofing
-    * transformations.
+    * transformations performed by the calling module.
     */
    static void SetGamutWarningColor( RGBA color );
 };
@@ -816,4 +791,4 @@ public:
 #endif   // __PCL_ICCProfileTransformation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ICCProfileTransformation.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ICCProfileTransformation.h - Released 2017-06-28T11:58:36Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ToolButton.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ToolButton.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,13 +56,9 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Button_h
 #include <pcl/Button.h>
-#endif
 
 namespace pcl
 {
@@ -127,4 +123,4 @@ public:
 #endif   // __PCL_ToolButton_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ToolButton.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ToolButton.h - Released 2017-06-28T11:58:36Z

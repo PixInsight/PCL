@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0346
 // ----------------------------------------------------------------------------
-// DynamicCropInstance.cpp - Released 2016/11/17 18:14:58 UTC
+// DynamicCropInstance.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -85,15 +85,20 @@ DynamicCropInstance::DynamicCropInstance( const MetaProcess* P ) :
    p_fillColor( TheDCFillRedParameter->DefaultValue(),
                 TheDCFillGreenParameter->DefaultValue(),
                 TheDCFillBlueParameter->DefaultValue(),
-                TheDCFillAlphaParameter->DefaultValue() )
+                TheDCFillAlphaParameter->DefaultValue() ),
+   p_noGUIMessages( TheDCNoGUIMessagesParameter->DefaultValue() )
 {
 }
+
+// ----------------------------------------------------------------------------
 
 DynamicCropInstance::DynamicCropInstance( const DynamicCropInstance& x ) :
    ProcessImplementation( x )
 {
    Assign( x );
 }
+
+// ----------------------------------------------------------------------------
 
 void DynamicCropInstance::Assign( const ProcessImplementation& p )
 {
@@ -114,18 +119,25 @@ void DynamicCropInstance::Assign( const ProcessImplementation& p )
       p_metric            = x->p_metric;
       p_forceResolution   = x->p_forceResolution;
       p_fillColor         = x->p_fillColor;
+      p_noGUIMessages     = x->p_noGUIMessages;
    }
 }
+
+// ----------------------------------------------------------------------------
 
 bool DynamicCropInstance::IsMaskable( const View&, const ImageWindow& ) const
 {
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 UndoFlags DynamicCropInstance::UndoMode( const View& ) const
 {
    return UndoFlag::PixelData | UndoFlag::Keywords | (p_forceResolution ? UndoFlag::Resolution : 0);
 }
+
+// ----------------------------------------------------------------------------
 
 bool DynamicCropInstance::CanExecuteOn( const View& v, String& whyNot ) const
 {
@@ -135,13 +147,14 @@ bool DynamicCropInstance::CanExecuteOn( const View& v, String& whyNot ) const
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool DynamicCropInstance::BeforeExecution( View& view )
 {
-   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id() );
+   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
 }
 
 // ----------------------------------------------------------------------------
@@ -448,6 +461,8 @@ private:
    };
 };
 
+// ----------------------------------------------------------------------------
+
 bool DynamicCropInstance::ExecuteOn( View& view )
 {
    if ( !view.IsMainView() )
@@ -534,6 +549,8 @@ void* DynamicCropInstance::LockParameter( const MetaParameter* p, size_type /*ta
       return p_fillColor.At( 2 );
    if ( p == TheDCFillAlphaParameter )
       return p_fillColor.At( 3 );
+   if ( p == TheDCNoGUIMessagesParameter )
+      return &p_noGUIMessages;
    return nullptr;
 }
 
@@ -542,4 +559,4 @@ void* DynamicCropInstance::LockParameter( const MetaParameter* p, size_type /*ta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropInstance.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF DynamicCropInstance.cpp - Released 2017-05-02T09:43:00Z

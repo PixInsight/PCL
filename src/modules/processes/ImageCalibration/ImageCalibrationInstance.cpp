@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0272
+// Standard ImageCalibration Process Module Version 01.04.00.0300
 // ----------------------------------------------------------------------------
-// ImageCalibrationInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// ImageCalibrationInstance.cpp - Released 2017-05-17T17:41:56Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -247,7 +247,6 @@ bool ImageCalibrationInstance::CanExecuteGlobal( String& whyNot ) const
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
@@ -845,11 +844,12 @@ static void EvaluateNoise( FVector& noiseEstimates, FVector& noiseFractions, Str
 
 struct OutputFileData
 {
-   FileFormat*      format = nullptr;  // the file format of retrieved data
-   const void*      fsData = nullptr;  // format-specific data
-   ImageOptions     options;           // currently used for resolution only
-   FITSKeywordArray keywords;          // FITS keywords
-   ICCProfile       profile;           // ICC profile
+   AutoPointer<FileFormat> format;           // the file format of retrieved data
+   const void*             fsData = nullptr; // format-specific data
+   ImageOptions            options;          // currently used for resolution only
+   PropertyArray           properties;       // image properties
+   FITSKeywordArray        keywords;         // FITS keywords
+   ICCProfile              profile;          // ICC profile
 
    OutputFileData() = default;
 
@@ -860,24 +860,25 @@ struct OutputFileData
       if ( format->UsesFormatSpecificData() )
          fsData = file.FormatSpecificData();
 
+      if ( format->CanStoreImageProperties() )
+         properties = file.ReadImageProperties();
+
       if ( format->CanStoreKeywords() )
-         file.Extract( keywords );
+         file.ReadFITSKeywords( keywords );
 
       if ( format->CanStoreICCProfiles() )
-         file.Extract( profile );
+         file.ReadICCProfile( profile );
    }
 
    ~OutputFileData()
    {
-      if ( format != nullptr )
+      if ( format )
       {
          if ( fsData != nullptr )
          {
             format->DisposeFormatSpecificData( const_cast<void*>( fsData ) );
             fsData = nullptr;
          }
-         delete format;
-         format = nullptr;
       }
    }
 };
@@ -954,14 +955,6 @@ public:
    {
    }
 
-   virtual ~CalibrationThread()
-   {
-      if ( m_target != nullptr )
-         delete m_target, m_target = nullptr;
-      if ( m_outputData != nullptr )
-         delete m_outputData, m_outputData = nullptr;
-   }
-
    virtual void Run()
    {
       try
@@ -1029,7 +1022,7 @@ public:
 
    const Image* TargetImage() const
    {
-      return m_target;
+      return m_target.Pointer();
    }
 
    String TargetPath() const
@@ -1054,11 +1047,11 @@ public:
 
 private:
 
-   Image*          m_target;        // The image being calibrated. It belongs to this thread.
-   OutputFileData* m_outputData;    // Target image parameters and embedded m_data. It belongs to this thread.
-   String          m_targetPath;    // File path of this m_target image
-   int             m_subimageIndex; // >= 0 in case of a multiple image; = 0 otherwise
-   bool            m_success : 1;   // The thread completed execution successfully
+   AutoPointer<Image>          m_target;        // The image being calibrated. It belongs to this thread.
+   AutoPointer<OutputFileData> m_outputData;    // Target image parameters and embedded m_data. It belongs to this thread.
+   String                      m_targetPath;    // File path of this m_target image
+   int                         m_subimageIndex; // >= 0 in case of a multiple image; = 0 otherwise
+   bool                        m_success : 1;   // The thread completed execution successfully
 
    const CalibrationThreadData& m_data;
 };
@@ -1185,13 +1178,13 @@ void ImageCalibrationInstance::SubtractPedestal( Image* image, FileFormatInstanc
       {
          IsoString keyName( (pedestalMode == ICPedestalMode::Keyword) ? "PEDESTAL" : pedestalKeyword );
          FITSKeywordArray keywords;
-         if ( !file.Extract( keywords ) )
+         if ( !file.ReadFITSKeywords( keywords ) )
             break;
          double d = 0;
-         for ( FITSKeywordArray::const_iterator i = keywords.Begin(); i != keywords.End(); ++i )
-            if ( !i->name.CompareIC( keyName ) )
-               if ( i->IsNumeric() )
-                  if ( i->GetNumericValue( d ) ) // GetNumericValue() sets d=0 if keyword can't be converted
+         for ( const FITSHeaderKeyword& keyword : keywords )
+            if ( !keyword.name.CompareIC( keyName ) )
+               if ( keyword.IsNumeric() )
+                  if ( keyword.GetNumericValue( d ) ) // GetNumericValue() sets d=0 if keyword can't be converted
                      break;
          if ( d != 0 )
          {
@@ -1281,8 +1274,7 @@ Image* ImageCalibrationInstance::LoadCalibrationFrame( const String& filePath, b
  * calibrate all subimages loaded from the file.
  */
 thread_list
-ImageCalibrationInstance::LoadTargetFrame( const String& filePath,
-                                           const CalibrationThreadData& threadData )
+ImageCalibrationInstance::LoadTargetFrame( const String& filePath, const CalibrationThreadData& threadData )
 {
    Console console;
 
@@ -1293,7 +1285,7 @@ ImageCalibrationInstance::LoadTargetFrame( const String& filePath,
     * Find out an installed file format that can read image files with the
     * specified extension ...
     */
-   FileFormat format( File::ExtractExtension( filePath ), true, false );
+   FileFormat format( File::ExtractExtension( filePath ), true/*read*/, false/*write*/ );
 
    /*
     * ... and create a format instance (usually a disk file) to access this
@@ -1346,7 +1338,7 @@ ImageCalibrationInstance::LoadTargetFrame( const String& filePath,
 
          /*
           * Retrieve metadata and auxiliary data structures that must be
-          * preserved in the output image (e.g., FITS header keywords).
+          * preserved in the output image (properties, header keywords, etc).
           */
          OutputFileData* outputData = new OutputFileData( file, images[j].options );
 
@@ -1466,7 +1458,11 @@ void ImageCalibrationInstance::WriteCalibratedImage( const CalibrationThread* t 
     * Find an installed file format able to write files with the
     * specified extension ...
     */
-   FileFormat outputFormat( fileExtension, false, true );
+   FileFormat outputFormat( fileExtension, false/*read*/, true/*write*/ );
+
+   if ( outputFormat.IsDeprecated() )
+      console.WarningLn( "** Warning: Deprecated file format: " + outputFormat.Name() );
+
    FileFormatInstance outputFile( outputFormat );
 
    /*
@@ -1526,124 +1522,134 @@ void ImageCalibrationInstance::WriteCalibratedImage( const CalibrationThread* t 
     * File formats often use format-specific data.
     * Keep track of private data structures.
     */
-   if ( data.fsData != 0 )
+   if ( data.fsData != nullptr )
       if ( outputFormat.UsesFormatSpecificData() && outputFormat.ValidateFormatSpecificData( data.fsData ) )
          outputFile.SetFormatSpecificData( data.fsData );
 
    /*
+    * Set image properties.
+    */
+   if ( !data.properties.IsEmpty() )
+      if ( outputFormat.CanStoreImageProperties() )
+      {
+         outputFile.WriteImageProperties( data.properties );
+         if ( !outputFormat.SupportsViewProperties() )
+            console.WarningLn( "** Warning: The output format cannot store view properties; existing properties have been stored as BLOB data." );
+      }
+      else
+         console.WarningLn( "** Warning: The output format cannot store image properties; existing properties will be lost." );
+
+   /*
     * Add FITS header keywords and preserve existing ones, if possible.
-    * NB: A COMMENT or HISTORY keyword cannot have a value; these keywords have
-    * only the name and comment components.
+    * N.B.: A COMMENT or HISTORY keyword cannot have a value; these keywords
+    * have only the name and comment components.
     */
    if ( outputFormat.CanStoreKeywords() )
    {
       FITSKeywordArray keywords = data.keywords;
 
-      keywords.Add( FITSHeaderKeyword( "COMMENT", IsoString(), "Calibration with " + PixInsightVersion::AsString() ) );
-      keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(), "Calibration with " + Module->ReadableVersion() ) );
-      keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(), "Calibration with ImageCalibration process" ) );
+      keywords << FITSHeaderKeyword( "COMMENT", IsoString(), "Calibration with " + PixInsightVersion::AsString() )
+               << FITSHeaderKeyword( "HISTORY", IsoString(), "Calibration with " + Module->ReadableVersion() )
+               << FITSHeaderKeyword( "HISTORY", IsoString(), "Calibration with ImageCalibration process" );
 
       if ( !inputHints.IsEmpty() )
-         keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       "ImageCalibration.inputHints: " + IsoString( inputHints ) ) );
+         keywords << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    "ImageCalibration.inputHints: " + IsoString( inputHints ) );
       if ( !outputHints.IsEmpty() )
-         keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       "ImageCalibration.outputHints: " + IsoString( outputHints ) ) );
+         keywords << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    "ImageCalibration.outputHints: " + IsoString( outputHints ) );
 
-      keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       "ImageCalibration.overscan.enabled: " + IsoString( bool( overscan.enabled ) ) ) );
+      keywords << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    "ImageCalibration.overscan.enabled: " + IsoString( bool( overscan.enabled ) ) );
       if ( overscan.enabled )
       {
          const Rect& r = overscan.imageRect;
-         keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       IsoString().Format( "ImageCalibration.overscan.imageRect: {%d,%d,%d,%d}",
-                                                           r.x0, r.y0, r.x1, r.y1 ) ) );
+         keywords << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    IsoString().Format( "ImageCalibration.overscan.imageRect: {%d,%d,%d,%d}",
+                                                        r.x0, r.y0, r.x1, r.y1 ) );
          for ( int i = 0; i < 4; ++i )
             if ( overscan.overscan[i].enabled )
             {
                const Rect& s = overscan.overscan[i].sourceRect;
                const Rect& t = overscan.overscan[i].targetRect;
-               keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       IsoString().Format( "ImageCalibration.overscan[%d].sourceRect: {%d,%d,%d,%d}",
-                                                           i, s.x0, s.y0, s.x1, s.y1 ) ) );
-               keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       IsoString().Format( "ImageCalibration.overscan[%d].targetRect: {%d,%d,%d,%d}",
-                                                           i, t.x0, t.y0, t.x1, t.y1 ) ) );
+               keywords << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    IsoString().Format( "ImageCalibration.overscan[%d].sourceRect: {%d,%d,%d,%d}",
+                                                        i, s.x0, s.y0, s.x1, s.y1 ) )
+                        << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    IsoString().Format( "ImageCalibration.overscan[%d].targetRect: {%d,%d,%d,%d}",
+                                                        i, t.x0, t.y0, t.x1, t.y1 ) );
             }
       }
 
-      keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       "ImageCalibration.masterBias.enabled: " + IsoString( bool( masterBias.enabled ) ) ) );
+      keywords << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    "ImageCalibration.masterBias.enabled: " + IsoString( bool( masterBias.enabled ) ) );
       if ( masterBias.enabled )
-      {
-         keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       "ImageCalibration.masterBias.fileName: " +
-                                       File::ExtractNameAndExtension( masterBias.path ).To7BitASCII() ) );
-         keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       "ImageCalibration.masterBias.calibrate: " + IsoString( bool( calibrateBias ) ) ) );
-      }
+         keywords << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    "ImageCalibration.masterBias.fileName: " +
+                                    File::ExtractNameAndExtension( masterBias.path ).To7BitASCII() )
+                  << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    "ImageCalibration.masterBias.calibrate: " + IsoString( bool( calibrateBias ) ) );
 
-      keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       "ImageCalibration.masterDark.enabled: " + IsoString( bool( masterDark.enabled ) ) ) );
+      keywords << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    "ImageCalibration.masterDark.enabled: " + IsoString( bool( masterDark.enabled ) ) );
       if ( masterDark.enabled )
       {
-         keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       "ImageCalibration.masterDark.fileName: " +
-                                       File::ExtractNameAndExtension( masterDark.path ).To7BitASCII() ) );
-         keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       "ImageCalibration.masterDark.calibrate: " + IsoString( bool( calibrateDark ) ) ) );
+         keywords << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    "ImageCalibration.masterDark.fileName: " +
+                                    File::ExtractNameAndExtension( masterDark.path ).To7BitASCII() )
+                  << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    "ImageCalibration.masterDark.calibrate: " + IsoString( bool( calibrateDark ) ) );
          if ( optimizeDarks )
          {
             IsoString darkScalingFactors = IsoString().Format( "ImageCalibration.masterDark.scalingFactors: %.3f", t->K[0] );
             for ( int i = 1; i < t->K.Length(); ++i )
                darkScalingFactors.AppendFormat( " %.3f", t->K[i] );
-            keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(), darkScalingFactors ) );
+            keywords << FITSHeaderKeyword( "HISTORY", IsoString(), darkScalingFactors );
 
             if ( darkOptimizationThreshold > 0 )
-               keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       IsoString().Format( "ImageCalibration.masterDark.optimizationThreshold: %.5f", darkOptimizationThreshold ) ) );
-
-            keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       IsoString().Format( "ImageCalibration.masterDark.optimizationLow: %.4f", darkOptimizationLow ) ) );
+               keywords << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    IsoString().Format( "ImageCalibration.masterDark.optimizationThreshold: %.5f", darkOptimizationThreshold ) )
+                        << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    IsoString().Format( "ImageCalibration.masterDark.optimizationLow: %.4f", darkOptimizationLow ) );
 
             if ( darkOptimizationWindow > 0 )
-               keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       IsoString().Format( "ImageCalibration.masterDark.optimizationWindow: %d px", darkOptimizationWindow ) ) );
+               keywords << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    IsoString().Format( "ImageCalibration.masterDark.optimizationWindow: %d px", darkOptimizationWindow ) );
          }
       }
 
-      keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       "ImageCalibration.masterFlat.enabled: " + IsoString( bool( masterFlat.enabled ) ) ) );
+      keywords << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    "ImageCalibration.masterFlat.enabled: " + IsoString( bool( masterFlat.enabled ) ) );
       if ( masterFlat.enabled )
       {
-         keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       "ImageCalibration.masterFlat.fileName: " +
-                                       File::ExtractNameAndExtension( masterFlat.path ).To7BitASCII() ) );
-         keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       "ImageCalibration.masterFlat.calibrate: " + IsoString( bool( calibrateFlat ) ) ) );
+         keywords << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    "ImageCalibration.masterFlat.fileName: " +
+                                    File::ExtractNameAndExtension( masterFlat.path ).To7BitASCII() )
+                  << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    "ImageCalibration.masterFlat.calibrate: " + IsoString( bool( calibrateFlat ) ) );
 
          IsoString flatScalingFactors = IsoString().Format( "ImageCalibration.masterFlat.scalingFactors: %.6f", t->CalibrationData().fScale[0] );
          for ( int i = 1; i < t->CalibrationData().fScale.Length(); ++i )
             flatScalingFactors.AppendFormat( " %.6f", t->CalibrationData().fScale[i] );
-         keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(), flatScalingFactors ) );
+         keywords << FITSHeaderKeyword( "HISTORY", IsoString(), flatScalingFactors );
       }
 
       if ( evaluateNoise )
@@ -1658,25 +1664,23 @@ void ImageCalibrationInstance::WriteCalibratedImage( const CalibrationThread* t 
             else
                ++i;
 
-         keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(), "Noise evaluation with " + Module->ReadableVersion() ) );
+         keywords << FITSHeaderKeyword( "HISTORY", IsoString(), "Noise evaluation with " + Module->ReadableVersion() );
 
          IsoString noiseEstimates = IsoString().Format( "ImageCalibration.noiseEstimates: %.3e", t->noiseEstimates[0] );
          for ( int i = 1; i < t->noiseEstimates.Length(); ++i )
             noiseEstimates.AppendFormat( " %.3e", t->noiseEstimates[i] );
-         keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(), noiseEstimates ) );
+         keywords << FITSHeaderKeyword( "HISTORY", IsoString(), noiseEstimates );
 
          for ( int i = 0; i < t->noiseEstimates.Length(); ++i )
-         {
-            keywords.Add( FITSHeaderKeyword( IsoString().Format( "NOISE%02d", i ),
-                                             IsoString().Format( "%.3e", t->noiseEstimates[i] ),
-                                             IsoString().Format( "Gaussian noise estimate, channel #%d", i ) ) );
-            keywords.Add( FITSHeaderKeyword( IsoString().Format( "NOISEF%02d", i ),
-                                             IsoString().Format( "%.3f", t->noiseFractions[i] ),
-                                             IsoString().Format( "Fraction of noise pixels, channel #%d", i ) ) );
-            keywords.Add( FITSHeaderKeyword( IsoString().Format( "NOISEA%02d", i ),
-                                             IsoString( t->noiseAlgorithms[i] ),
-                                             IsoString().Format( "Noise evaluation algorithm, channel #%d", i ) ) );
-         }
+            keywords << FITSHeaderKeyword( IsoString().Format( "NOISE%02d", i ),
+                                           IsoString().Format( "%.3e", t->noiseEstimates[i] ),
+                                           IsoString().Format( "Gaussian noise estimate, channel #%d", i ) )
+                     << FITSHeaderKeyword( IsoString().Format( "NOISEF%02d", i ),
+                                           IsoString().Format( "%.3f", t->noiseFractions[i] ),
+                                           IsoString().Format( "Fraction of noise pixels, channel #%d", i ) )
+                     << FITSHeaderKeyword( IsoString().Format( "NOISEA%02d", i ),
+                                           IsoString( t->noiseAlgorithms[i] ),
+                                           IsoString().Format( "Noise evaluation algorithm, channel #%d", i ) );
       }
 
       if ( outputPedestal != 0 )
@@ -1691,15 +1695,15 @@ void ImageCalibrationInstance::WriteCalibratedImage( const CalibrationThread* t 
             else
                ++i;
 
-         keywords.Add( FITSHeaderKeyword( "HISTORY",
-                                       IsoString(),
-                                       IsoString().Format( "ImageCalibration.outputPedestal: %d", outputPedestal ) ) );
-         keywords.Add( FITSHeaderKeyword( "PEDESTAL",
-                                       IsoString( outputPedestal ),
-                                       "Value in DN added to enforce positivity" ) );
+         keywords << FITSHeaderKeyword( "HISTORY",
+                                    IsoString(),
+                                    IsoString().Format( "ImageCalibration.outputPedestal: %d", outputPedestal ) )
+                  << FITSHeaderKeyword( "PEDESTAL",
+                                    IsoString( outputPedestal ),
+                                    "Value in DN added to enforce positivity" );
       }
 
-      outputFile.Embed( keywords );
+      outputFile.WriteFITSKeywords( keywords );
    }
    else
    {
@@ -1711,7 +1715,7 @@ void ImageCalibrationInstance::WriteCalibratedImage( const CalibrationThread* t 
     */
    if ( data.profile.IsProfile() )
       if ( outputFormat.CanStoreICCProfiles() )
-         outputFile.Embed( data.profile );
+         outputFile.WriteICCProfile( data.profile );
       else
          console.WarningLn( "** Warning: The output format cannot store color profiles - original ICC profile not embedded." );
 
@@ -2811,4 +2815,4 @@ size_type ImageCalibrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF ImageCalibrationInstance.cpp - Released 2017-05-17T17:41:56Z

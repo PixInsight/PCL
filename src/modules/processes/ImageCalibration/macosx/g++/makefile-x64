@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.101
-# Copyright (C) 2009-2015 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Fri, 18 Mar 2016 13:16:52 GMT
+# Generated on .... 2017-06-07T15:42:56.414Z
 # Project id ...... ImageCalibration
 # Project type .... Module
 # Platform ........ MacOSX/g++
@@ -28,6 +28,10 @@ SRC_FILES= \
 ../../ImageCalibrationModule.cpp \
 ../../ImageCalibrationParameters.cpp \
 ../../ImageCalibrationProcess.cpp \
+../../LocalNormalizationInstance.cpp \
+../../LocalNormalizationInterface.cpp \
+../../LocalNormalizationParameters.cpp \
+../../LocalNormalizationProcess.cpp \
 ../../SuperbiasInstance.cpp \
 ../../SuperbiasInterface.cpp \
 ../../SuperbiasParameters.cpp \
@@ -47,6 +51,10 @@ OBJ_FILES= \
 ./x64/Release/ImageCalibrationModule.o \
 ./x64/Release/ImageCalibrationParameters.o \
 ./x64/Release/ImageCalibrationProcess.o \
+./x64/Release/LocalNormalizationInstance.o \
+./x64/Release/LocalNormalizationInterface.o \
+./x64/Release/LocalNormalizationParameters.o \
+./x64/Release/LocalNormalizationProcess.o \
 ./x64/Release/SuperbiasInstance.o \
 ./x64/Release/SuperbiasInterface.o \
 ./x64/Release/SuperbiasParameters.o \
@@ -66,6 +74,10 @@ DEP_FILES= \
 ./x64/Release/ImageCalibrationModule.d \
 ./x64/Release/ImageCalibrationParameters.d \
 ./x64/Release/ImageCalibrationProcess.d \
+./x64/Release/LocalNormalizationInstance.d \
+./x64/Release/LocalNormalizationInterface.d \
+./x64/Release/LocalNormalizationParameters.d \
+./x64/Release/LocalNormalizationProcess.d \
 ./x64/Release/SuperbiasInstance.d \
 ./x64/Release/SuperbiasInterface.d \
 ./x64/Release/SuperbiasParameters.d \
@@ -78,7 +90,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/ImageCalibration-pxm.dylib: $(OBJ_FILES)
-	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -stdlib=libc++ -Wl,-dead_strip -dynamiclib -install_name @executable_path/ImageCalibration-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/ImageCalibration-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi
+	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.9 -stdlib=libc++ -Wl,-dead_strip -dynamiclib -install_name @executable_path/ImageCalibration-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/ImageCalibration-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi -llz4-pxi -lzlib-pxi -lRFC6234-pxi -llcms-pxi -lcminpack-pxi
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
@@ -91,6 +103,6 @@ post-build:
 	codesign --deep -s pleiades -f -v --timestamp $(PCLBINDIR64)/ImageCalibration-pxm.dylib
 
 ./x64/Release/%.o: ../../%.cpp
-	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.9 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

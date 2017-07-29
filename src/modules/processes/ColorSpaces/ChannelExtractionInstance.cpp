@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0298
+// Standard ColorSpaces Process Module Version 01.01.00.0317
 // ----------------------------------------------------------------------------
-// ChannelExtractionInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// ChannelExtractionInstance.cpp - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,24 +66,27 @@ namespace pcl
 
 ChannelExtractionInstance::ChannelExtractionInstance( const MetaProcess* P ) :
    ProcessImplementation( P ),
-   colorSpace( ColorSpaceId::Default ),
-   sampleFormat( ChannelSampleFormat::Default )
+   p_colorSpace( ColorSpaceId::Default ),
+   p_sampleFormat( ChannelSampleFormat::Default )
 {
    for ( int i = 0; i < 3; ++i )
    {
-      channelEnabled[i] = true;
-      channelId[i] = String( TheChannelIdExtractionParameter->DefaultValue() );
+      p_channelEnabled[i] = true;
+      p_channelId[i] = String( TheChannelIdExtractionParameter->DefaultValue() );
    }
 }
 
+// ----------------------------------------------------------------------------
+
 ChannelExtractionInstance::ChannelExtractionInstance( const ChannelExtractionInstance& x ) :
    ProcessImplementation( x ),
-   colorSpace( x.colorSpace ), sampleFormat( x.sampleFormat )
+   p_colorSpace( x.p_colorSpace ),
+   p_sampleFormat( x.p_sampleFormat )
 {
    for ( int i = 0; i < 3; ++i )
    {
-      channelEnabled[i] = x.channelEnabled[i];
-      channelId[i] = x.channelId[i];
+      p_channelEnabled[i] = x.p_channelEnabled[i];
+      p_channelId[i] = x.p_channelId[i];
    }
 }
 
@@ -94,13 +97,13 @@ bool ChannelExtractionInstance::Validate( pcl::String& info )
    int n = 0;
    for ( int i = 0; i < 3; ++i )
    {
-      if ( !channelId[i].IsEmpty() && !channelId[i].IsValidIdentifier() )
+      if ( !p_channelId[i].IsEmpty() && !p_channelId[i].IsValidIdentifier() )
       {
-         info = "Invalid image identifier: " + channelId[i];
+         info = "Invalid image identifier: " + p_channelId[i];
          return false;
       }
 
-      if ( channelEnabled[i] )
+      if ( p_channelEnabled[i] )
          ++n;
    }
 
@@ -118,15 +121,15 @@ bool ChannelExtractionInstance::Validate( pcl::String& info )
 void ChannelExtractionInstance::Assign( const ProcessImplementation& p )
 {
    const ChannelExtractionInstance* x = dynamic_cast<const ChannelExtractionInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
-      colorSpace = x->colorSpace;
-      sampleFormat = x->sampleFormat;
+      p_colorSpace = x->p_colorSpace;
+      p_sampleFormat = x->p_sampleFormat;
 
       for ( int i = 0; i < 3; ++i )
       {
-         channelEnabled[i] = x->channelEnabled[i];
-         channelId[i] = x->channelId[i];
+         p_channelEnabled[i] = x->p_channelEnabled[i];
+         p_channelId[i] = x->p_channelId[i];
       }
    }
 }
@@ -161,7 +164,6 @@ bool ChannelExtractionInstance::CanExecuteOn( const View& v, String& whyNot ) co
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
@@ -189,6 +191,10 @@ static void ExtractChannels( const GenericImage<P>& img, const View& view,
       bool metric;
       view.Window().GetResolution( xRes, yRes, metric );
 
+      FITSKeywordArray keywords = view.Window().Keywords();
+
+      PropertyArray properties = view.GetStorableProperties();
+
       for ( int i = 0; i < 3; ++i )
          if ( E.IsChannelEnabled( i ) )
          {
@@ -196,12 +202,16 @@ static void ExtractChannels( const GenericImage<P>& img, const View& view,
             if ( id.IsEmpty() )
                id = baseId + '_' + ColorSpaceId::ChannelId( E.ColorSpace(), i );
 
-            targetWindow[i] = ImageWindow( img.Width(), img.Height(), 1, P1::BitsPerSample(), P1::IsFloatSample(), false, true, id );
+            targetWindow[i] = ImageWindow( img.Width(), img.Height(), 1,
+                                           P1::BitsPerSample(), P1::IsFloatSample(),
+                                           false/*color*/, true/*initialProcessing*/, id );
             if ( targetWindow[i].IsNull() )
                throw Error( "ChannelExtraction: Unable to create target image: " + id );
 
             targetWindow[i].SetRGBWS( rgbws );
             targetWindow[i].SetResolution( xRes, yRes, metric );
+            targetWindow[i].SetKeywords( keywords );
+            targetWindow[i].MainView().SetProperties( properties, true/*notify*/, ViewPropertyAttribute::Storable );
 
             targetImage[i] = targetWindow[i].MainView().Image();
             if ( !targetImage[i] )
@@ -211,7 +221,7 @@ static void ExtractChannels( const GenericImage<P>& img, const View& view,
             ++numberOfTargets;
          }
 
-      if ( numberOfTargets == 0 )
+      if ( numberOfTargets == 0 ) // ?!
          return;
 
       bool isLightness = (E.ColorSpace() == ColorSpaceId::CIELab || E.ColorSpace() == ColorSpaceId::CIELch) &&
@@ -334,6 +344,8 @@ static void ExtractChannels( const GenericImage<P>& img, const View& view,
    }
 }
 
+// ----------------------------------------------------------------------------
+
 template <class P>
 #ifdef __GNUC__
 __attribute__((noinline))
@@ -360,6 +372,8 @@ static void ExtractChannels( const GenericImage<P>& img, const View& view, const
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool ChannelExtractionInstance::ExecuteOn( View& view )
 {
    AutoViewLock lock( view, false/*lock*/ );
@@ -382,7 +396,7 @@ bool ChannelExtractionInstance::ExecuteOn( View& view )
    if ( view.IsPreview() )
       baseId.Prepend( view.Window().MainView().Id() + '_' );
 
-   if ( sampleFormat == ChannelSampleFormat::SameAsSource )
+   if ( p_sampleFormat == ChannelSampleFormat::SameAsSource )
    {
       if ( image.IsFloatSample() )
          switch ( image.BitsPerSample() )
@@ -443,23 +457,26 @@ bool ChannelExtractionInstance::ExecuteOn( View& view )
 void* ChannelExtractionInstance::LockParameter( const MetaParameter* p, size_type tableRow )
 {
    if ( p == TheColorSpaceIdExtractionParameter )
-      return &colorSpace;
+      return &p_colorSpace;
    if ( p == TheChannelEnabledExtractionParameter )
-      return channelEnabled+tableRow;
+      return p_channelEnabled+tableRow;
    if ( p == TheChannelIdExtractionParameter )
-      return channelId[tableRow].Begin();
+      return p_channelId[tableRow].Begin();
    if ( p == TheChannelSampleFormatExtractionParameter )
-      return &sampleFormat;
-   return 0;
+      return &p_sampleFormat;
+
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ChannelExtractionInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {
    if ( p == TheChannelIdExtractionParameter )
    {
-      channelId[tableRow].Clear();
+      p_channelId[tableRow].Clear();
       if ( sizeOrLength > 0 )
-         channelId[tableRow].SetLength( sizeOrLength );
+         p_channelId[tableRow].SetLength( sizeOrLength );
       return true;
    }
 
@@ -469,12 +486,15 @@ bool ChannelExtractionInstance::AllocateParameter( size_type sizeOrLength, const
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 size_type ChannelExtractionInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
    if ( p == TheChannelIdExtractionParameter )
-      return channelId[tableRow].Length();
+      return p_channelId[tableRow].Length();
    if ( p == TheChannelTableExtractionParameter )
       return 3;
+
    return 0;
 }
 
@@ -483,4 +503,4 @@ size_type ChannelExtractionInstance::ParameterLength( const MetaParameter* p, si
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ChannelExtractionInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ChannelExtractionInstance.cpp - Released 2017-05-02T09:43:00Z

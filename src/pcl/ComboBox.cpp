@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ComboBox.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/ComboBox.cpp - Released 2017-06-28T11:58:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,10 +58,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-
-#ifdef _MSC_VER
-#  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
-#endif
 
 ComboBox::ComboBox( Control& parent ) :
    Control( (*API->ComboBox->CreateComboBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) )
@@ -311,7 +307,7 @@ void ComboBox::OnItemSelected( item_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->ComboBox->SetComboBoxItemSelectedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? ComboBoxEventDispatcher::ItemSelected : 0 ) == api_false )
+                  (f != nullptr) ? ComboBoxEventDispatcher::ItemSelected : nullptr ) == api_false )
       throw APIFunctionError( "SetComboBoxItemSelectedEventRoutine" );
    m_handlers->onItemSelected = f;
 }
@@ -320,7 +316,7 @@ void ComboBox::OnItemHighlighted( item_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->ComboBox->SetComboBoxItemHighlightedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? ComboBoxEventDispatcher::ItemHighlighted : 0 ) == api_false )
+                  (f != nullptr) ? ComboBoxEventDispatcher::ItemHighlighted : nullptr ) == api_false )
       throw APIFunctionError( "SetComboBoxItemHighlightedEventRoutine" );
    m_handlers->onItemHighlighted = f;
 }
@@ -329,7 +325,7 @@ void ComboBox::OnEditTextUpdated( edit_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->ComboBox->SetComboBoxEditTextUpdatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? ComboBoxEventDispatcher::EditTextUpdated : 0 ) == api_false )
+                  (f != nullptr) ? ComboBoxEventDispatcher::EditTextUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetComboBoxEditTextUpdatedEventRoutine" );
    m_handlers->onEditTextUpdated = f;
 }
@@ -341,4 +337,4 @@ void ComboBox::OnEditTextUpdated( edit_event_handler f, Control& receiver )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ComboBox.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/ComboBox.cpp - Released 2017-06-28T11:58:42Z

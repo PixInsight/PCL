@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/String.h - Released 2016/02/21 20:22:12 UTC
+// pcl/String.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,68 +54,23 @@
 
 /// \file pcl/String.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Container_h
-#include <pcl/Container.h>
-#endif
-
-#ifndef __PCL_Allocator_h
 #include <pcl/Allocator.h>
-#endif
-
-#ifndef __PCL_StdAlloc_h
-#include <pcl/StdAlloc.h>
-#endif
-
-#ifndef __PCL_Iterator_h
-#include <pcl/Iterator.h>
-#endif
-
-#ifndef __PCL_ReferenceCounter_h
-#include <pcl/ReferenceCounter.h>
-#endif
-
-#ifndef __PCL_CharTraits_h
-#include <pcl/CharTraits.h>
-#endif
-
-#ifndef __PCL_Utility_h
-#include <pcl/Utility.h>
-#endif
-
-#ifndef __PCL_Sort_h
-#include <pcl/Sort.h>
-#endif
-
-#ifndef __PCL_Math_h
-#include <pcl/Math.h>
-#endif
-
-#ifndef __PCL_Flags_h
-#include <pcl/Flags.h>
-#endif
-
-#ifndef __PCL_Atomic_h
 #include <pcl/Atomic.h>
-#endif
-
-#ifndef __PCL_ByteArray_h
 #include <pcl/ByteArray.h>
-#endif
+#include <pcl/CharTraits.h>
+#include <pcl/Container.h>
+#include <pcl/Flags.h>
+#include <pcl/Iterator.h>
+#include <pcl/Math.h>
+#include <pcl/ReferenceCounter.h>
+#include <pcl/Sort.h>
+#include <pcl/StdAlloc.h>
+#include <pcl/Utility.h>
 
-#ifndef __stdarg_h
 #include <stdarg.h>
-#ifndef __stdarg_h
-#define __stdarg_h
-#endif
-#endif
 
 #ifndef __PCL_NO_STRING_COMPLEX
 #  include <pcl/Complex.h>
@@ -125,12 +80,7 @@
 #  ifndef _MSC_VER
 #    define _GLIBCXX_USE_WCHAR_T  1
 #  endif
-#  ifndef __ostream_h
-#    include <ostream>
-#    ifndef __ostream_h
-#      define __ostream_h
-#    endif
-#  endif
+#  include <ostream>
 #endif
 
 #ifdef __PCL_QT_INTERFACE
@@ -145,16 +95,13 @@
 #  define PCL_QDATETIME_FMT_STR                 "yyyy/MM/dd hh:mm:ss"
 #endif
 
-#define PCL_STRING8_TEMPLATE_IMP    GenericString<char, IsoCharTraits, StandardAllocator>
-#define PCL_STRING16_TEMPLATE_IMP   GenericString<char16_type, CharTraits, StandardAllocator>
-
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace RandomizationOption
+ * \namespace pcl::RandomizationOption
  * \brief     String randomization options
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -186,7 +133,7 @@ namespace RandomizationOption
 };
 
 /*!
- * \class RandomizationOptions
+ * \class pcl::RandomizationOptions
  * \brief A collection of string randomization options.
  */
 typedef Flags<RandomizationOption::mask_type>  RandomizationOptions;
@@ -246,18 +193,18 @@ struct PCL_CLASS SexagesimalConversionOptions
    /*!
     * Default constructor.
     */
-   SexagesimalConversionOptions( unsigned _items = 3,
-                                 unsigned _precision = 2,
-                                 bool _sign = false,
-                                 unsigned _width = 0,
-                                 char _separator = ':',
-                                 char _padding = ' ' ) :
-      items( _items ),
-      precision( _precision ),
-      sign( _sign ),
-      width( _width ),
-      separator( _separator ),
-      padding( _padding )
+   SexagesimalConversionOptions( unsigned items_     = 3,
+                                 unsigned precision_ = 2,
+                                 bool     sign_      = false,
+                                 unsigned width_     = 0,
+                                 char     separator_ = ':',
+                                 char     padding_   = ' ' ) :
+      items( items_ ),
+      precision( precision_ ),
+      sign( sign_ ),
+      width( width_ ),
+      separator( separator_ ),
+      padding( padding_ )
    {
    }
 
@@ -293,13 +240,13 @@ struct ISO8601ConversionOptions
 
    /*!
     * Number of decimal digits for the last represented time item. The default
-    * value is two decimal digits.
+    * value is three decimal digits.
     */
    unsigned precision : 4;
 
    /*!
     * Whether to append a time zone specifier to the ISO 8601 representation.
-    * The default value is false.
+    * The default value is true.
     */
    bool     timeZone  : 1;
 
@@ -312,14 +259,14 @@ struct ISO8601ConversionOptions
    /*!
     * Default constructor.
     */
-   ISO8601ConversionOptions( unsigned _timeItems = 3,
-                             unsigned _precision = 2,
-                             bool     _timeZone = false,
-                             bool     _zuluTime = true ) :
-      timeItems( _timeItems ),
-      precision( _precision ),
-      timeZone( _timeZone ),
-      zuluTime( _zuluTime )
+   ISO8601ConversionOptions( unsigned timeItems_ = 3,
+                             unsigned precision_ = 3,
+                             bool     timeZone_  = true,
+                             bool     zuluTime_  = true ) :
+      timeItems( timeItems_ ),
+      precision( precision_ ),
+      timeZone( timeZone_ ),
+      zuluTime( zuluTime_ )
    {
    }
 
@@ -340,15 +287,17 @@ struct ISO8601ConversionOptions
  * \class GenericString
  * \brief Generic string.
  *
- * %GenericString represents a string of characters of type T, whose
- * fundamental behavior is specified by an instantiation R of GenericCharTraits
- * for a character type T (typically GenericCharTraits, or a derived class such
- * as CharTraits or IsoCharTraits), and where A provides dynamic allocation for
- * contiguous sequences of elements of type T (StandardAllocator is used by
- * default).
+ * %GenericString is a finite ordered sequence of characters implemented as a
+ * reference-counted, dynamic array of T objects, whose fundamental behavior is
+ * specified by an instantiation R of GenericCharTraits for the character type
+ * T (typically GenericCharTraits, or a derived class such as CharTraits or
+ * IsoCharTraits), and where A provides dynamic allocation for contiguous
+ * sequences of elements of type T (StandardAllocator is used by default).
  *
- * In the PixInsight platform, all dynamically allocated strings have been
- * implemented as instantiations of the %GenericString template class.
+ * On the PixInsight platform, all dynamically allocated strings have been
+ * implemented as two instantiations of the %GenericString template class,
+ * namely the String (UTF-16 string) and IsoString (UTF-8 or ISO/IEC-8859-1
+ * string) classes.
  *
  * \sa String, IsoString, CharTraits, IsoCharTraits
  */
@@ -426,7 +375,7 @@ public:
    /*!
     * Constructs an empty string.
     */
-   GenericString() : m_data( nullptr )
+   GenericString()
    {
       m_data = Data::New();
    }
@@ -451,7 +400,7 @@ public:
     * Constructs a string with a copy of the null-terminated character sequence
     * stored in the specified array \a t.
     */
-   GenericString( const_c_string t ) : m_data( nullptr )
+   GenericString( const_c_string t )
    {
       size_type len = R::Length( t );
       if ( len > 0 )
@@ -480,7 +429,7 @@ public:
     * contains null characters. Since this constructor does not have to scan
     * for a terminating character, it is potentially more efficient.
     */
-   GenericString( const_iterator i, const_iterator j ) : m_data( nullptr )
+   GenericString( const_iterator i, const_iterator j )
    {
       if ( i < j )
       {
@@ -496,7 +445,7 @@ public:
     * Constructs a string with a copy of at most \a n characters stored in the
     * null-terminated sequence \a t, starting from its \a i-th character.
     */
-   GenericString( const_c_string t, size_type i, size_type n ) : m_data( nullptr )
+   GenericString( const_c_string t, size_type i, size_type n )
    {
       size_type len = R::Length( t );
       if ( i < len && (n = pcl::Min( n, len-i )) > 0 )
@@ -511,7 +460,7 @@ public:
    /*!
     * Constructs a string with \a n copies of a character \a c.
     */
-   GenericString( char_type c, size_type n = 1 ) : m_data( nullptr )
+   GenericString( char_type c, size_type n = 1 )
    {
       if ( n > 0 )
       {
@@ -797,6 +746,7 @@ public:
     */
    char_type& operator *()
    {
+      EnsureUnique();
       return *m_data->string;
    }
 
@@ -938,6 +888,22 @@ public:
    const_reverse_iterator ReverseEnd() const
    {
       return (m_data->string < m_data->end) ? m_data->string-1 : nullptr;
+   }
+
+   /*!
+    * Returns the zero-based character index corresponding to a valid iterator
+    * \a i in this string. This is equivalent to \a i - Begin().
+    *
+    * The specified iterator must be posterior to or located at the starting
+    * iterator of this string, as returned by Begin(). However, for performance
+    * reasons this condition is neither enforced nor verified. If an invalid
+    * iterator is specified, then this function, as well as any subsequent use
+    * of the returned character index, may invoke undefined behavior.
+    */
+   size_type IndexAt( const_iterator i ) const
+   {
+      PCL_PRECONDITION( i >= m_data->string )
+      return i - m_data->string;
    }
 
 #ifndef __PCL_NO_STL_COMPATIBLE_ITERATORS
@@ -1509,6 +1475,23 @@ public:
    }
 
    /*!
+    * Inserts a copy of the character sequence defined by the range [p,q) at
+    * the index \a i in this string.
+    *
+    * If \a p is greater than or equal to \a q, calling this member function
+    * has no effect.
+    */
+   void Insert( size_type i, const_iterator p, const_iterator q )
+   {
+      if ( p < q )
+      {
+         size_type n = q - p;
+         UninitializedGrow( i, n ); // -> 0 <= i <= len
+         R::Copy( m_data->string+i, p, n );
+      }
+   }
+
+   /*!
     * Inserts a null-terminated character sequence \a t at the index \a i in
     * this string.
     */
@@ -1568,6 +1551,18 @@ public:
    }
 
    /*!
+    * Appends a copy of the character sequence defined by the range [i,j) to
+    * this string.
+    *
+    * If \a i is greater than or equal to \a j, calling this member function
+    * has no effect.
+    */
+   void Append( const_iterator i, const_iterator j )
+   {
+      Insert( maxPos, i, j );
+   }
+
+   /*!
     * Appends a copy of the first \a n characters of a null-terminated
     * character sequence \a t to this string.
     */
@@ -1610,6 +1605,15 @@ public:
    void Add( const GenericString<T,R1,A1>& s )
    {
       Append( s );
+   }
+
+   /*!
+    * A synonym for Append( const_iterator, const_iterator ), provided for
+    * compatibility with PCL container classes.
+    */
+   void Add( const_iterator i, const_iterator j )
+   {
+      Append( i, j );
    }
 
    /*!
@@ -1668,6 +1672,18 @@ public:
    {
       Prepend( s );
       return *this;
+   }
+
+   /*!
+    * Inserts a copy of the character sequence defined by the range [i,j) at
+    * the beginning of this string.
+    *
+    * If \a i is greater than or equal to \a j, calling this member function
+    * has no effect.
+    */
+   void Prepend( const_iterator i, const_iterator j )
+   {
+      Insert( 0, i, j );
    }
 
    /*!
@@ -2307,6 +2323,75 @@ public:
                break;
 
             i = j + 1;
+         }
+      }
+      return count;
+   }
+
+   /*!
+    * Gets a sequence of \e tokens (substrings) extracted from this string.
+    *
+    * \param[out] list  The list of extracted tokens. Must be a reference to a
+    *                container, such as Array or List, or a derived class.
+    *                Typically, this parameter is a reference to a StringList.
+    *
+    * \param ca      An array of token separator characters. Tokens will be
+    *                separated by instances of any character included in this
+    *                array. The template argument S must have type conversion
+    *                semantics to the character type of this string class
+    *                (char_type). If this array is empty, calling this function
+    *                has no effect and zero is returned.
+    *
+    * \param trim    True to \e trim the extracted tokens. If this parameter is
+    *                true, existing leading and trailing whitespace characters
+    *                will be removed from each extracted token.
+    *
+    * \param i       Starting character index.
+    *
+    * Returns the number of tokens extracted and added to the list.
+    */
+   template <class C, typename S>
+   size_type Break( C& list, const Array<S>& ca, bool trim = false, size_type i = 0 ) const
+   {
+      size_type count = 0;
+      if ( !ca.IsEmpty() )
+      {
+         size_type len = Length();
+         if ( i < len )
+         {
+            for ( ;; )
+            {
+               size_type j = i;
+               for ( const_iterator p = m_data->string + i; j < len; ++j, ++p )
+                  for ( auto c : ca )
+                     if ( *p == char_type( c ) )
+                        break;
+
+               GenericString t;
+               if ( i < j )
+               {
+                  const_iterator l = m_data->string + i;
+                  size_type m = j - i;
+                  if ( trim )
+                  {
+                     const_iterator r = l + m;
+                     l = R::SearchTrimLeft( l, r );
+                     m = R::SearchTrimRight( l, r ) - l;
+                  }
+                  if ( m > 0 )
+                  {
+                     t.m_data->Allocate( m );
+                     R::Copy( t.m_data->string, l, m );
+                  }
+               }
+               list.Add( t );
+               ++count;
+
+               if ( j == len )
+                  break;
+
+               i = j + 1;
+            }
          }
       }
       return count;
@@ -3064,12 +3149,117 @@ public:
    }
 
    /*!
+    * Ensures that this string is enclosed by a leading and a trailing instance
+    * of the specified character \a c. If this string is already enclosed by
+    * \a c, this function does nothing.
+    * \sa Enclosed()
+    */
+   void EnsureEnclosed( char_type c )
+   {
+      int encloseLeft = 1;
+      int encloseRight = 1;
+      size_type len = Length();
+      if ( len > 0 )
+      {
+         if ( *m_data->string == c )
+            encloseLeft = 0;
+         if ( *(m_data->end-1) == c )
+            if ( len > 1 )
+               encloseRight = 0;
+            else
+               encloseLeft = 0;
+      }
+      size_type n = len + encloseLeft + encloseRight;
+      if ( n > len )
+      {
+         if ( !IsUnique() || m_data->ShouldReallocate( n ) )
+         {
+            Data* newData = Data::New( n );
+            R::Copy( newData->string + encloseLeft, m_data->string, len );
+            DetachFromData();
+            m_data = newData;
+         }
+         else
+         {
+            m_data->SetLength( n );
+            R::CopyOverlapped( m_data->string + encloseLeft, m_data->string, len );
+         }
+
+         if ( encloseLeft )
+            *m_data->string = c;
+         if ( encloseRight )
+            *(m_data->end-1) = c;
+      }
+   }
+
+   /*!
+    * Returns a duplicate of this string enclosed by the specified character.
+    * If this string is already enclosed by \a c, this function returns an
+    * unmodified copy.
+    * \sa EnsureEnclosed()
+    */
+   GenericString Enclosed( char_type c ) const
+   {
+      GenericString s( *this );
+      s.EnsureEnclosed( c );
+      return s;
+   }
+
+   /*!
+    * Ensures that this string is enclosed by a leading and a trailing instance
+    * of the single quote character ('). If this string is already single
+    * quoted, this function does nothing.
+    * \sa SingleQuoted()
+    */
+   void EnsureSingleQuoted()
+   {
+      EnsureEnclosed( R::SingleQuote() );
+   }
+
+   /*!
+    * Returns a duplicate of this string enclosed by single quote characters
+    * ('). If this string is already single quoted, this function returns an
+    * unmodified copy.
+    * \sa EnsureSingleQuoted()
+    */
+   GenericString SingleQuoted() const
+   {
+      GenericString s( *this );
+      s.EnsureSingleQuoted();
+      return s;
+   }
+
+   /*!
+    * Ensures that this string is enclosed by a leading and a trailing instance
+    * of the double quote character ("). If this string is already double
+    * quoted, this function does nothing.
+    * \sa DoubleQuoted()
+    */
+   void EnsureDoubleQuoted()
+   {
+      EnsureEnclosed( R::DoubleQuote() );
+   }
+
+   /*!
+    * Returns a duplicate of this string enclosed by double quote characters
+    * ("). If this string is already double quoted, this function returns an
+    * unmodified copy.
+    * \sa EnsureDoubleQuoted()
+    */
+   GenericString DoubleQuoted() const
+   {
+      GenericString s( *this );
+      s.EnsureDoubleQuoted();
+      return s;
+   }
+
+   /*!
     * Unquotes this string.
     *
-    * If the string starts and ends with single quote
-    * characters, the result is the same string with the quotes removed and its
-    * length decremented by two. The same happens if the string starts and ends
-    * with double quote characters.
+    * If the string starts and ends with single quote characters, the result is
+    * the same string with the quotes removed and its length decremented by
+    * two. The same happens if the string starts and ends with double quote
+    * characters.
     *
     * If the string does not start and end with the same quote character, this
     * function has no effect.
@@ -3718,212 +3908,6 @@ public:
    }
 
    /*!
-    * Replaces the contents of this string with a sequence of tokens extracted
-    * from a container \a c, separated with the specified \a separator
-    * character. Returns a reference to this string.
-    *
-    * The container type C must have separated list generation semantics. All
-    * iterable PCL containers such as Array, Vector, etc. provide the necessary
-    * ToSeparated member functions.
-    */
-   template <class C>
-   GenericString& ToSeparated( const C& c, char_type separator )
-   {
-      Clear();
-      return c.ToSeparated( *this, separator );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of tokens extracted
-    * from a container \a c, separated with the specified \a separator
-    * character, and built using an \a append binary function. Returns a
-    * reference to this string.
-    *
-    * The binary function must be of the form:
-    *
-    * \code void append( GenericString& s1, const GenericString& s2 ); \endcode
-    *
-    * where \a s2 is being appended to \a s1.
-    *
-    * The container type C must have separated list generation semantics. All
-    * iterable PCL containers such as Array, Vector, etc. provide the necessary
-    * ToSeparated member functions.
-    */
-   template <class C, class AF>
-   GenericString& ToSeparated( const C& c, char_type separator, AF append )
-   {
-      Clear();
-      return c.ToSeparated( *this, separator, append );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of tokens extracted
-    * from a container \a c, separated with the specified \a separator string.
-    * Returns a reference to this string.
-    *
-    * The container type C must have separated list generation semantics. All
-    * iterable PCL containers such as Array, Vector, etc. provide the necessary
-    * ToSeparated member functions.
-    */
-   template <class C>
-   GenericString& ToSeparated( const C& c, const GenericString& separator )
-   {
-      Clear();
-      return c.ToSeparated( *this, separator );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of tokens extracted
-    * from a container \a c, separated with the specified \a separator string,
-    * and built using an \a append binary function. Returns a reference to this
-    * string.
-    *
-    * The binary function must be of the form:
-    *
-    * \code void append( GenericString& s1, const GenericString& s2 ); \endcode
-    *
-    * where \a s2 is being appended to \a s1.
-    *
-    * The container type C must have separated list generation semantics. All
-    * iterable PCL containers such as Array, Vector, etc. provide the necessary
-    * ToSeparated member functions.
-    */
-   template <class C, class AF>
-   GenericString& ToSeparated( const C& c, const GenericString& separator, AF append )
-   {
-      Clear();
-      return c.ToSeparated( *this, separator, append );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of tokens extracted
-    * from a container \a c, separated with the specified \a separator
-    * null-terminated string. Returns a reference to this string.
-    *
-    * The container type C must have separated list generation semantics. All
-    * iterable PCL containers such as Array, Vector, etc. provide the necessary
-    * ToSeparated member functions.
-    */
-   template <class C>
-   GenericString& ToSeparated( const C& c, const_c_string separator )
-   {
-      Clear();
-      return c.ToSeparated( *this, separator );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of tokens extracted
-    * from a container \a c, separated with the specified \a separator
-    * null-terminated string, and built using an \a append binary function.
-    * Returns a reference to this string.
-    *
-    * The binary function must be of the form:
-    *
-    * \code void append( GenericString& s1, const GenericString& s2 ); \endcode
-    *
-    * where \a s2 is being appended to \a s1.
-    *
-    * The container type C must have separated list generation semantics. All
-    * iterable PCL containers such as Array, Vector, etc. provide the necessary
-    * ToSeparated member functions.
-    */
-   template <class C, class AF>
-   GenericString& ToSeparated( const C& c, const_c_string separator, AF append )
-   {
-      Clear();
-      return c.ToSeparated( *this, separator, append );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of comma-separated
-    * tokens extracted from a container \a c. Returns a reference to this
-    * string.
-    *
-    * This member function is equivalent to:
-    *
-    * \code ToSeparated( c, char_type( ',' ) ); \endcode
-    */
-   template <class C>
-   GenericString& ToCommaSeparated( const C& c )
-   {
-      return ToSeparated( c, R::Comma() );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of space-separated
-    * tokens extracted from a container \a c. Returns a reference to this
-    * string.
-    *
-    * This member function is equivalent to:
-    *
-    * \code ToSeparated( c, char_type( ' ' ) ); \endcode
-    */
-   template <class C>
-   GenericString& ToSpaceSeparated( const C& c )
-   {
-      return ToSeparated( c, R::Blank() );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of
-    * tabulator-separated tokens extracted from a container \a c. Returns a
-    * reference to this string.
-    *
-    * This member function is equivalent to:
-    *
-    * \code ToSeparated( c, char_type( '\t' ) ); \endcode
-    */
-   template <class C>
-   GenericString& ToTabSeparated( const C& c )
-   {
-      return ToSeparated( c, R::Tab() );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of
-    * new line-separated tokens extracted from a container \a c. Returns a
-    * reference to this string.
-    *
-    * This member function is equivalent to:
-    *
-    * \code ToSeparated( c, char_type( '\n' ) ); \endcode
-    */
-   template <class C>
-   GenericString& ToNewLineSeparated( const C& c )
-   {
-      return ToSeparated( c, R::LF() );
-   }
-
-   /*!
-    * Replaces the contents of this string with a sequence of
-    * null-separated tokens extracted from a container \a c. Returns a
-    * reference to this string.
-    *
-    * This member function is equivalent to:
-    *
-    * \code ToSeparated( c, char_type( '\0' ) ); \endcode
-    */
-   template <class C>
-   GenericString& ToNullSeparated( const C& c )
-   {
-      return ToSeparated( c, R::Null() );
-   }
-
-   /*!
-    * Replaces the contents of this string with a hyphenated sequence of tokens
-    * extracted from a container \a c. Returns a reference to this string.
-    *
-    * This member function is equivalent to:
-    *
-    * \code ToSeparated( c, char_type( '-' ) ); \endcode
-    */
-   template <class C>
-   GenericString& ToHyphenated( const C& c )
-   {
-      return ToSeparated( c, R::Hyphen() );
-   }
-
-   /*!
     * Returns true iff this string can be interpreted as a numeric literal:
     *
     * \li The string is not empty.
@@ -4285,14 +4269,14 @@ protected:
                      Data* newData = Data::New( newLen );
                      size_type targetIndex = 0;
                      size_type sourceIndex = 0;
-                     for ( Array<size_type>::const_iterator p = P.Begin(); p != P.End(); ++p )
+                     for ( size_type p : P )
                      {
-                        size_type n = *p - sourceIndex;
+                        size_type n = p - sourceIndex;
                         if ( n > 0 )
                            R::Copy( newData->string+targetIndex, m_data->string+sourceIndex, n );
                         R::Copy( newData->string+targetIndex+n, t2, n2 );
                         targetIndex += n + n2;
-                        sourceIndex = *p + n1;
+                        sourceIndex = p + n1;
                      }
                      if ( sourceIndex < len )
                         R::Copy( newData->string+targetIndex, m_data->string+sourceIndex, len-sourceIndex );
@@ -4309,7 +4293,8 @@ protected:
 
    /*!
     * \internal
-    * Substring search primitive algorithm.
+    * \class pcl::GenericString::SearchEngine
+    * \brief Substring search primitive algorithm
     *
     * Implements the Boyer-Moore substring search algorithm (mismatched
     * character heuristic).
@@ -4323,7 +4308,7 @@ protected:
     * searching algorithm,</em> Communcations of the ACM Vol. 20 No. 10,
     * pp 762-772.
     */
-   class SearchEngine
+   class PCL_CLASS SearchEngine
    {
    public:
 
@@ -4593,11 +4578,11 @@ protected:
    // -------------------------------------------------------------------------
 
    /*!
-    * \class Data
     * \internal
-    * Reference-counted string data structure.
+    * \class pcl::GenericString::Data
+    * \brief Reference-counted string data structure
     */
-   class Data : public ReferenceCounter
+   class PCL_CLASS Data : public ReferenceCounter
    {
    private:
 
@@ -4608,25 +4593,21 @@ protected:
 
    public:
 
-      iterator  string;   //!< Beginning of the null-terminated string
-      iterator  end;      //!< End of the string
-      iterator  capacity; //!< End of the allocated block or link in free list
-      allocator alloc;    //!< The allocator object
+      iterator  string   = nullptr; //!< Beginning of the null-terminated string
+      iterator  end      = nullptr; //!< End of the string
+      iterator  capacity = nullptr; //!< End of the allocated block or link in free list
+      allocator alloc;              //!< The allocator object
 
       /*!
        * Constructs an empty string data structure.
        */
-      Data() : ReferenceCounter(), alloc( A() )
-      {
-         Reset();
-      }
+      Data() = default;
 
       /*!
        * Constructs a string of \a len characters.
        */
-      Data( size_type len ) : ReferenceCounter(), alloc( A() )
+      Data( size_type len )
       {
-         Reset();
          Allocate( len );
       }
 
@@ -4634,9 +4615,8 @@ protected:
        * Constructs a string of \a len characters and space allocated for a
        * maximum of \a total characters (plus terminating null).
        */
-      Data( size_type len, size_type total ) : ReferenceCounter(), alloc( A() )
+      Data( size_type len, size_type total )
       {
-         Reset();
          Allocate( len, total );
       }
 
@@ -4864,7 +4844,7 @@ protected:
    /*
     * The reference-counted string data.
     */
-   Data* m_data;
+   Data* m_data = nullptr;
 };
 
 #ifndef __PCL_NO_STRING_FREE_LIST
@@ -4889,14 +4869,14 @@ void Swap( GenericString<T,R,A>& s1, GenericString<T,R,A>& s2 )
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup generic_string_relational_ops Generic String Relational Operators
+ * \defgroup genericstring_relational_ops GenericString Relational Operators
  */
 
 // ----------------------------------------------------------------------------
 
 /*!
  * Returns true iff two strings \a s1 and \a s2 are equal.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
 bool operator ==( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>& s2 )
@@ -4909,7 +4889,7 @@ bool operator ==( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>
  * performs a character-to-character, locale-unaware comparison of numeric
  * character values. See GenericString<>::CompareCodePoints() for more
  * information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
 bool operator  <( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>& s2 )
@@ -4922,7 +4902,7 @@ bool operator  <( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>
  * This function performs a character-to-character, locale-unaware comparison
  * of numeric character values. See GenericString<>::CompareCodePoints() for
  * more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
 bool operator <=( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>& s2 )
@@ -4935,7 +4915,7 @@ bool operator <=( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>
  * function performs a character-to-character, locale-unaware comparison of
  * numeric character values. See GenericString<>::CompareCodePoints() for more
  * information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
 bool operator  >( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>& s2 )
@@ -4948,7 +4928,7 @@ bool operator  >( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>
  * This function performs a character-to-character, locale-unaware comparison
  * of numeric character values. See GenericString<>::CompareCodePoints() for
  * more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
 bool operator >=( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>& s2 )
@@ -4960,7 +4940,7 @@ bool operator >=( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>
 
 /*!
  * Returns true iff a string \a s1 is equal to a null-terminated string \a t2.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator ==( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::const_c_string t2 )
@@ -4973,7 +4953,7 @@ bool operator ==( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
  * This function performs a character-to-character, locale-unaware comparison
  * of numeric character values. See GenericString<>::CompareCodePoints() for
  * more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  <( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::const_c_string t2 )
@@ -4986,7 +4966,7 @@ bool operator  <( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
  * string \a t2. This function performs a character-to-character,
  * locale-unaware comparison of numeric character values. See
  * GenericString<>::CompareCodePoints() for more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator <=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::const_c_string t2 )
@@ -4999,7 +4979,7 @@ bool operator <=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
  * \a t2. This function performs a character-to-character, locale-unaware
  * comparison of numeric character values. See
  * GenericString<>::CompareCodePoints() for more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  >( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::const_c_string t2 )
@@ -5012,7 +4992,7 @@ bool operator  >( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
  * null-terminated string \a t2. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator >=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::const_c_string t2 )
@@ -5024,7 +5004,7 @@ bool operator >=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
 
 /*!
  * Returns true iff a null-terminated string \a t1 is equal to a string \a s2.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator ==( typename GenericString<T,R,A>::const_c_string t1, const GenericString<T,R,A>& s2 )
@@ -5037,7 +5017,7 @@ bool operator ==( typename GenericString<T,R,A>::const_c_string t1, const Generi
  * This function performs a character-to-character, locale-unaware comparison
  * of numeric character values. See GenericString<>::CompareCodePoints() for
  * more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  <( typename GenericString<T,R,A>::const_c_string t1, const GenericString<T,R,A>& s2 )
@@ -5050,7 +5030,7 @@ bool operator  <( typename GenericString<T,R,A>::const_c_string t1, const Generi
  * string \a s2. This function performs a character-to-character,
  * locale-unaware comparison of numeric character values. See
  * GenericString<>::CompareCodePoints() for more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator <=( typename GenericString<T,R,A>::const_c_string t1, const GenericString<T,R,A>& s2 )
@@ -5063,7 +5043,7 @@ bool operator <=( typename GenericString<T,R,A>::const_c_string t1, const Generi
  * \a s2. This function performs a character-to-character, locale-unaware
  * comparison of numeric character values. See
  * GenericString<>::CompareCodePoints() for more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  >( typename GenericString<T,R,A>::const_c_string t1, const GenericString<T,R,A>& s2 )
@@ -5076,7 +5056,7 @@ bool operator  >( typename GenericString<T,R,A>::const_c_string t1, const Generi
  * a string \a s2. This function performs a character-to-character,
  * locale-unaware comparison of numeric character values. See
  * GenericString<>::CompareCodePoints() for more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator >=( typename GenericString<T,R,A>::const_c_string t1, const GenericString<T,R,A>& s2 )
@@ -5088,7 +5068,7 @@ bool operator >=( typename GenericString<T,R,A>::const_c_string t1, const Generi
 
 /*!
  * Returns true iff a string \a s1 is equal to a character \a c2.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator ==( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::char_type c2 )
@@ -5101,7 +5081,7 @@ bool operator ==( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
  * function performs a character-to-character, locale-unaware comparison of
  * numeric character values. See GenericString<>::CompareCodePoints() for more
  * information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  <( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::char_type c2 )
@@ -5114,7 +5094,7 @@ bool operator  <( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
  * This function performs a character-to-character, locale-unaware comparison
  * of numeric character values. See GenericString<>::CompareCodePoints() for
  * more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator <=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::char_type c2 )
@@ -5127,7 +5107,7 @@ bool operator <=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
  * function performs a character-to-character, locale-unaware comparison of
  * numeric character values. See GenericString<>::CompareCodePoints() for more
  * information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  >( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::char_type c2 )
@@ -5140,7 +5120,7 @@ bool operator  >( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
  * \a c2. This function performs a character-to-character, locale-unaware
  * comparison of numeric character values. See
  * GenericString<>::CompareCodePoints() for more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator >=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::char_type c2 )
@@ -5152,7 +5132,7 @@ bool operator >=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
 
 /*!
  * Returns true iff a character \a c1 is equal to a string \a s2.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator ==( typename GenericString<T,R,A>::char_type c1, const GenericString<T,R,A>& s2 )
@@ -5165,7 +5145,7 @@ bool operator ==( typename GenericString<T,R,A>::char_type c1, const GenericStri
  * function performs a character-to-character, locale-unaware comparison of
  * numeric character values. See GenericString<>::CompareCodePoints() for more
  * information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  <( typename GenericString<T,R,A>::char_type c1, const GenericString<T,R,A>& s2 )
@@ -5178,7 +5158,7 @@ bool operator  <( typename GenericString<T,R,A>::char_type c1, const GenericStri
  * This function performs a character-to-character, locale-unaware comparison
  * of numeric character values. See GenericString<>::CompareCodePoints() for
  * more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator <=( typename GenericString<T,R,A>::char_type c1, const GenericString<T,R,A>& s2 )
@@ -5191,7 +5171,7 @@ bool operator <=( typename GenericString<T,R,A>::char_type c1, const GenericStri
  * function performs a character-to-character, locale-unaware comparison of
  * numeric character values. See GenericString<>::CompareCodePoints() for more
  * information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  >( typename GenericString<T,R,A>::char_type c1, const GenericString<T,R,A>& s2 )
@@ -5204,7 +5184,7 @@ bool operator  >( typename GenericString<T,R,A>::char_type c1, const GenericStri
  * \a s2. This function performs a character-to-character, locale-unaware
  * comparison of numeric character values. See
  * GenericString<>::CompareCodePoints() for more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator >=( typename GenericString<T,R,A>::char_type c1, const GenericString<T,R,A>& s2 )
@@ -5216,7 +5196,7 @@ bool operator >=( typename GenericString<T,R,A>::char_type c1, const GenericStri
 
 /*!
  * \class IsoString
- * \brief Eight-bit string (ISO/IEC-8859-1 or UTF-8 string).
+ * \brief Eight-bit string (ISO/IEC-8859-1 or UTF-8 string)
  *
  * %IsoString derives from a template instantiation of GenericString for the
  * \c char type. On the PixInsight platform, %IsoString represents a dynamic
@@ -5226,14 +5206,15 @@ bool operator >=( typename GenericString<T,R,A>::char_type c1, const GenericStri
  *
  * \sa String
  */
-class PCL_CLASS IsoString : public PCL_STRING8_TEMPLATE_IMP
+class PCL_CLASS IsoString : public GenericString<char, IsoCharTraits, StandardAllocator>
 {
 public:
 
    /*!
     * Base class of %IsoString.
     */
-   typedef PCL_STRING8_TEMPLATE_IMP             string_base;
+   typedef GenericString<char, IsoCharTraits, StandardAllocator>
+                                                string_base;
 
    /*!
     * Represents a character pertaining to an %IsoString object.
@@ -5290,7 +5271,8 @@ public:
     * \note This type must be defined as the same template instantiation used
     * for the String class.
     */
-   typedef PCL_STRING16_TEMPLATE_IMP            ustring_base;
+   typedef GenericString<char16_type, CharTraits, StandardAllocator>
+                                                ustring_base;
 
    /*!
     * Represents a Unicode (UTF-16) character.
@@ -5536,7 +5518,7 @@ public:
    explicit
    IsoString( double x ) : string_base()
    {
-      (void)Format( "%.16lg", x );
+      (void)Format( "%.16g", x );
    }
 
    /*!
@@ -5572,7 +5554,7 @@ public:
    explicit
    IsoString( Complex<double>& x ) : string_base()
    {
-      (void)Format( "{%.16lg,%.16lg}", x.Real(), x.Imag() );
+      (void)Format( "{%.16g,%.16g}", x.Real(), x.Imag() );
    }
 
    /*!
@@ -5820,6 +5802,28 @@ public:
 
    // -------------------------------------------------------------------------
 
+   IsoString Enclosed( char_type c ) const
+   {
+      return string_base::Enclosed( c );
+   }
+
+   IsoString SingleQuoted() const
+   {
+      return string_base::SingleQuoted();
+   }
+
+   IsoString DoubleQuoted() const
+   {
+      return string_base::DoubleQuoted();
+   }
+
+   IsoString Unquoted() const
+   {
+      return string_base::Unquoted();
+   }
+
+   // -------------------------------------------------------------------------
+
    IsoString CaseFolded() const
    {
       return string_base::CaseFolded();
@@ -5855,88 +5859,223 @@ public:
 
    // -------------------------------------------------------------------------
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * character. Returns a reference to this string.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C>
    IsoString& ToSeparated( const C& c, char_type separator )
    {
-      (void)string_base::ToSeparated( c, separator );
-      return *this;
+      Clear();
+      return c.ToSeparated( *this, separator );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * character, and built using an \a append binary function. Returns a
+    * reference to this string.
+    *
+    * The binary function must be of the form:
+    *
+    * \code void append( IsoString& s, char c ); \endcode
+    *
+    * where \a c is being appended to \a s.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C, class AF>
    IsoString& ToSeparated( const C& c, char_type separator, AF append )
    {
-      (void)string_base::ToSeparated( c, separator, append );
-      return *this;
+      Clear();
+      return c.ToSeparated( *this, separator, append );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator string.
+    * Returns a reference to this string.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C>
    IsoString& ToSeparated( const C& c, const IsoString& separator )
    {
-      (void)string_base::ToSeparated( c, separator );
-      return *this;
+      Clear();
+      return c.ToSeparated( *this, separator );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator string,
+    * and built using an \a append binary function. Returns a reference to this
+    * string.
+    *
+    * The binary function must be of the form:
+    *
+    * \code void append( IsoString& s1, const IsoString& s2 ); \endcode
+    *
+    * where \a s2 is being appended to \a s1.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C, class AF>
    IsoString& ToSeparated( const C& c, const IsoString& separator, AF append )
    {
-      (void)string_base::ToSeparated( c, separator, append );
-      return *this;
+      Clear();
+      return c.ToSeparated( *this, separator, append );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * null-terminated string. Returns a reference to this string.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C>
    IsoString& ToSeparated( const C& c, const_c_string separator )
    {
-      (void)string_base::ToSeparated( c, separator );
-      return *this;
+      return ToSeparated( c, IsoString( separator ) );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * null-terminated string, and built using an \a append binary function.
+    * Returns a reference to this string.
+    *
+    * The binary function must be of the form:
+    *
+    * \code void append( IsoString& s1, const char* s2 ); \endcode
+    *
+    * where \a s2 is being appended to \a s1.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C, class AF>
    IsoString& ToSeparated( const C& c, const_c_string separator, AF append )
    {
-      (void)string_base::ToSeparated( c, separator, append );
-      return *this;
+      return ToSeparated( c, IsoString( separator ), append );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of comma-separated
+    * tokens extracted from a container \a c. Returns a reference to this
+    * string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, ',' ); \endcode
+    */
    template <class C>
    IsoString& ToCommaSeparated( const C& c )
    {
-      (void)string_base::ToCommaSeparated( c );
-      return *this;
+      return ToSeparated( c, IsoCharTraits::Comma() );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of colon-separated
+    * tokens extracted from a container \a c. Returns a reference to this
+    * string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, ':' ); \endcode
+    */
+   template <class C>
+   IsoString& ToColonSeparated( const C& c )
+   {
+      return ToSeparated( c, IsoCharTraits::Colon() );
+   }
+
+   /*!
+    * Replaces the contents of this string with a sequence of space-separated
+    * tokens extracted from a container \a c. Returns a reference to this
+    * string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, ' ' ); \endcode
+    */
    template <class C>
    IsoString& ToSpaceSeparated( const C& c )
    {
-      (void)string_base::ToSpaceSeparated( c );
-      return *this;
+      return ToSeparated( c, IsoCharTraits::Blank() );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of
+    * tabulator-separated tokens extracted from a container \a c. Returns a
+    * reference to this string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, '\t' ); \endcode
+    */
    template <class C>
    IsoString& ToTabSeparated( const C& c )
    {
-      (void)string_base::ToTabSeparated( c );
-      return *this;
+      return ToSeparated( c, IsoCharTraits::Tab() );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of new line
+    * separated tokens extracted from a container \a c. Returns a reference to
+    * this string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, '\n' ); \endcode
+    */
    template <class C>
    IsoString& ToNewLineSeparated( const C& c )
    {
-      (void)string_base::ToNewLineSeparated( c );
-      return *this;
+      return ToSeparated( c, IsoCharTraits::LF() );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of null-separated
+    * tokens extracted from a container \a c. Returns a reference to this
+    * string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, '\0' ); \endcode
+    */
    template <class C>
    IsoString& ToNullSeparated( const C& c )
    {
-      (void)string_base::ToNullSeparated( c );
-      return *this;
+      return ToSeparated( c, IsoCharTraits::Null() );
    }
 
+   /*!
+    * Replaces the contents of this string with a hyphenated sequence of tokens
+    * extracted from a container \a c. Returns a reference to this string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, '-' ); \endcode
+    */
    template <class C>
    IsoString& ToHyphenated( const C& c )
    {
-      (void)string_base::ToHyphenated( c );
-      return *this;
+      return ToSeparated( c, IsoCharTraits::Hyphen() );
    }
 
    // -------------------------------------------------------------------------
@@ -6646,10 +6785,33 @@ public:
       return sign*(s1 + (s2 + s3/60)/60);
    }
 
-   template <class S>
-   double SexagesimalToDouble( const S& separator ) const
+   double SexagesimalToDouble( char separator ) const
    {
       return SexagesimalToDouble( IsoString( separator ) );
+   }
+
+   double SexagesimalToDouble( const ustring_base& separator ) const
+   {
+      return SexagesimalToDouble( IsoString( separator ) );
+   }
+
+   /*!
+    * Evaluates this string as a sexagesimal numeric literal representation
+    * with the specified set of \a separators, and returns the result as a
+    * \c double value.
+    *
+    * This function is identical to SexagesimalToDouble( const IsoString& ),
+    * but a set of separator characters is specified as a dynamic array. Any
+    * occurrence of a character contained by \a separators will be valid as a
+    * token separator.
+    *
+    * \sa TrySexagesimalToDouble( double&, const Array<>& )
+    */
+   double SexagesimalToDouble( const Array<char_type>& separators ) const
+   {
+      int sign, s1, s2; double s3;
+      ParseSexagesimal( sign, s1, s2, s3, separators );
+      return sign*(s1 + (s2 + s3/60)/60);
    }
 
    /*!
@@ -6679,10 +6841,36 @@ public:
       return false;
    }
 
-   template <class S>
-   bool TrySexagesimalToDouble( double& value, const S& separator ) const
+   bool TrySexagesimalToDouble( double& value, char separator ) const
    {
       return TrySexagesimalToDouble( value, IsoString( separator ) );
+   }
+
+   bool TrySexagesimalToDouble( double& value, const ustring_base& separator ) const
+   {
+      return TrySexagesimalToDouble( value, IsoString( separator ) );
+   }
+
+   /*!
+    * Attempts to evaluate this string as a sexagesimal numeric literal with
+    * the specified set of \a separators.
+    *
+    * This function is identical to
+    * TrySexagesimalToDouble( double&, const IsoString& ), but a set of
+    * separator characters is specified as a dynamic array. Any occurrence of a
+    * character contained by \a separators will be valid as a token separator.
+    *
+    * \sa SexagesimalToDouble( const Array<>& )
+    */
+   bool TrySexagesimalToDouble( double& value, const Array<char_type>& separators ) const
+   {
+      int sign, s1, s2; double s3;
+      if ( TryParseSexagesimal( sign, s1, s2, s3, separators ) )
+      {
+         value = sign*(s1 + (s2 + s3/60)/60);
+         return true;
+      }
+      return false;
    }
 
    /*!
@@ -6712,11 +6900,30 @@ public:
     */
    void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator = ':' ) const;
 
-   template <class S>
-   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator ) const
+   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, char separator ) const
    {
       ParseSexagesimal( sign, s1, s2, s3, IsoString( separator ) );
    }
+
+   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const ustring_base& separator ) const
+   {
+      ParseSexagesimal( sign, s1, s2, s3, IsoString( separator ) );
+   }
+
+   /*!
+    * Evaluates this string as a sexagesimal numeric literal representation,
+    * using the specified set of \a separators, and stores the resulting
+    * components in the specified \a sign, \a s1, \a s2 and \a s3 variables.
+    *
+    * This function is identical to
+    * ParseSexagesimal( int&, int&, int&, double&, const IsoString& ), but a
+    * set of separator characters is specified as a dynamic array. Any
+    * occurrence of a character contained by \a separators will be valid as a
+    * token separator.
+    *
+    * \sa TryParseSexagesimal( int&, int&, int&, double&, const Array<>& )
+    */
+   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
 
    /*!
     * Attempts to evaluate this string as a sexagesimal numeric literal
@@ -6733,11 +6940,29 @@ public:
     */
    bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator = ':' ) const;
 
-   template <class S>
-   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator ) const
+   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, char separator ) const
    {
       return TryParseSexagesimal( sign, s1, s2, s3, IsoString( separator ) );
    }
+
+   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const ustring_base& separator ) const
+   {
+      return TryParseSexagesimal( sign, s1, s2, s3, IsoString( separator ) );
+   }
+
+   /*!
+    * Attempts to evaluate this string as a sexagesimal numeric literal
+    * representation, using the specified set of \a separators.
+    *
+    * This function is identical to
+    * TryParseSexagesimal( int&, int&, int&, double&, const IsoString& ), but a
+    * set of separator characters is specified as a dynamic array. Any
+    * occurrence of a character contained by \a separators will be valid as a
+    * token separator.
+    *
+    * \sa ParseSexagesimal( int&, int&, int&, double&, const Array<>& )
+    */
+   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
 
    /*!
     * Returns a sexagesimal ASCII representation of the specified components
@@ -6797,7 +7022,7 @@ public:
     * from integer parts exclusively by the full stop or dot character ('.',
     * ASCII code point 46(10) = 2E(16)).
     *
-    * \sa TryParseISO8601DateTime()
+    * \sa TryParseISO8601DateTime(), TimePoint::FromString()
     */
    void ParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz ) const;
 
@@ -6812,7 +7037,7 @@ public:
     * format, this function returns \c false and does not change any of the
     * passed variables. This function does not throw any exception.
     *
-    * \sa ParseISO8601DateTime()
+    * \sa ParseISO8601DateTime(), TimePoint::TryFromString()
     */
    bool TryParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz ) const;
 
@@ -6835,10 +7060,36 @@ public:
     * \param options Optional settings to control the representation of date
     *                and time in ISO 8601 format.
     *
-    * \sa ParseISO8601DateTime(), ISO8601ConversionOptions
+    * \sa CurrentUTCISO8601DateTime(), CurrentLocalISO8601DateTime(),
+    *     ParseISO8601DateTime(), ISO8601ConversionOptions,
+    *     TimePoint::ToIsoString()
     */
    static IsoString ToISO8601DateTime( int year, int month, int day, double dayf, double tz = 0,
                                        const ISO8601ConversionOptions& options = ISO8601ConversionOptions() );
+
+   /*!
+    * Returns an ASCII representation of the current UTC date and time in ISO
+    * 8601 extended format.
+    *
+    * \param options Optional settings to control the representation of date
+    *                and time in ISO 8601 format.
+    *
+    * \sa CurrentLocalISO8601DateTime(), ToISO8601DateTime(),
+    *     ISO8601ConversionOptions, TimePoint::Now()
+    */
+   static IsoString CurrentUTCISO8601DateTime( const ISO8601ConversionOptions& options = ISO8601ConversionOptions() );
+
+   /*!
+    * Returns an ASCII representation of the current local date and time in ISO
+    * 8601 extended format.
+    *
+    * \param options Optional settings to control the representation of date
+    *                and time in ISO 8601 format.
+    *
+    * \sa CurrentUTCISO8601DateTime(), ToISO8601DateTime(),
+    *     ISO8601ConversionOptions
+    */
+   static IsoString CurrentLocalISO8601DateTime( const ISO8601ConversionOptions& options = ISO8601ConversionOptions() );
 
    /*!
     * Returns an hex-encoded string for a binary \a data block of the specified
@@ -7275,7 +7526,7 @@ inline std::ostream& operator <<( std::ostream& o, const IsoString& s )
 
 /*!
  * \class String
- * \brief Unicode (UTF-16) string.
+ * \brief Unicode (UTF-16) string
  *
  * %String derives from an instantiation of GenericString for \c char16_type.
  * It represents a dynamic string of characters in <em>16-bit Unicode
@@ -7283,14 +7534,15 @@ inline std::ostream& operator <<( std::ostream& o, const IsoString& s )
  *
  * \sa IsoString
  */
-class PCL_CLASS String : public PCL_STRING16_TEMPLATE_IMP
+class PCL_CLASS String : public GenericString<char16_type, CharTraits, StandardAllocator>
 {
 public:
 
    /*!
     * Base class of %String.
     */
-   typedef PCL_STRING16_TEMPLATE_IMP            string_base;
+   typedef GenericString<char16_type, CharTraits, StandardAllocator>
+                                                string_base;
 
    /*!
     * Represents a character pertaining to a %String object.
@@ -7349,7 +7601,8 @@ public:
     * \note This type must be defined as the same template instantiation used
     * for the IsoString class.
     */
-   typedef PCL_STRING8_TEMPLATE_IMP             string8_base;
+   typedef GenericString<char, IsoCharTraits, StandardAllocator>
+                                                string8_base;
 
    /*!
     * Represents an 8-bit character (ISO/IEC-8859-1, ASCII or UTF-8).
@@ -7627,7 +7880,7 @@ public:
    explicit
    String( double x ) : string_base()
    {
-      (void)Format( L"%.16lg", x );
+      (void)Format( L"%.16g", x );
    }
 
    /*!
@@ -7661,7 +7914,7 @@ public:
    explicit
    String( Complex<double>& x ) : string_base()
    {
-      (void)Format( L"{%.16lg,%.16lg}", x.Real(), x.Imag() );
+      (void)Format( L"{%.16g,%.16g}", x.Real(), x.Imag() );
    }
 
    /*!
@@ -7995,6 +8248,11 @@ public:
       string_base::Insert( i, s );
    }
 
+   void Insert( size_type i, const_iterator p, const_iterator q )
+   {
+      string_base::Insert( i, p, q );
+   }
+
    void Insert( size_type i, const_iterator t )
    {
       string_base::Insert( i, t );
@@ -8079,8 +8337,6 @@ public:
          for ( iterator r = m_data->string+i, s = r+n; r < s; ++r, ++p )
             *r = char_type( uint8( *p ) );
       }
-      else
-         Clear();
    }
 
    void Insert( size_type i, char8_type c, size_type n = 1 )
@@ -8099,6 +8355,11 @@ public:
    {
       Append( s );
       return *this;
+   }
+
+   void Append( const_iterator i, const_iterator j )
+   {
+      string_base::Append( i, j );
    }
 
    void Append( const_iterator t )
@@ -8207,6 +8468,11 @@ public:
       Append( s );
    }
 
+   void Add( const_iterator i, const_iterator j )
+   {
+      Append( i, j );
+   }
+
    void Add( const_iterator t )
    {
       Append( t );
@@ -8273,6 +8539,11 @@ public:
    {
       Prepend( s );
       return *this;
+   }
+
+   void Prepend( const_iterator i, const_iterator j )
+   {
+      string_base::Prepend( i, j );
    }
 
    void Prepend( const_iterator t )
@@ -9334,9 +9605,53 @@ public:
    }
 
    template <class C>
-   size_type Break( C& list, char8_type s, bool trim = false, size_type i = 0 ) const
+   size_type Break( C& list, char_type c, bool trim = false, size_type i = 0 ) const
    {
-      return string_base::Break( list, char_type( s ), trim, i );
+      return string_base::Break( list, c, trim, i );
+   }
+
+   template <class C>
+   size_type Break( C& list, char8_type c, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::Break( list, char_type( c ), trim, i );
+   }
+
+   template <class C, typename S>
+   size_type Break( C& list, const Array<S>& ca, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::Break( list, ca, trim, i );
+   }
+
+   // -------------------------------------------------------------------------
+
+   template <class C>
+   size_type BreakIC( C& list, const String& s, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::BreakIC( list, s, trim, i );
+   }
+
+   template <class C>
+   size_type BreakIC( C& list, const string8_base& s, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::BreakIC( list, String( s ), trim, i );
+   }
+
+   template <class C>
+   size_type BreakIC( C& list, const_c_string8 s, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::BreakIC( list, String( s ), trim, i );
+   }
+
+   template <class C>
+   size_type BreakIC( C& list, char_type c, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::BreakIC( list, c, trim, i );
+   }
+
+   template <class C>
+   size_type BreakIC( C& list, char8_type c, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::BreakIC( list, char_type( c ), trim, i );
    }
 
    // -------------------------------------------------------------------------
@@ -9371,6 +9686,28 @@ public:
    String CenterJustified( size_type width, char_type fill = CharTraits::Blank() ) const
    {
       return string_base::CenterJustified( width, fill );
+   }
+
+   // -------------------------------------------------------------------------
+
+   String Enclosed( char_type c ) const
+   {
+      return string_base::Enclosed( c );
+   }
+
+   String SingleQuoted() const
+   {
+      return string_base::SingleQuoted();
+   }
+
+   String DoubleQuoted() const
+   {
+      return string_base::DoubleQuoted();
+   }
+
+   String Unquoted() const
+   {
+      return string_base::Unquoted();
    }
 
    // -------------------------------------------------------------------------
@@ -9410,116 +9747,261 @@ public:
 
    // -------------------------------------------------------------------------
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * character. Returns a reference to this string.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C>
    String& ToSeparated( const C& c, char_type separator )
    {
-      (void)string_base::ToSeparated( c, separator );
-      return *this;
+      Clear();
+      return c.ToSeparated( *this, separator );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * character, and built using an \a append binary function. Returns a
+    * reference to this string.
+    *
+    * The binary function must be of the form:
+    *
+    * \code void append( String& s, char16_type c ); \endcode
+    *
+    * where \a c is being appended to \a s.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C, class AF>
    String& ToSeparated( const C& c, char_type separator, AF append )
    {
-      (void)string_base::ToSeparated( c, separator, append );
-      return *this;
+      Clear();
+      return c.ToSeparated( *this, separator, append );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator string.
+    * Returns a reference to this string.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C>
    String& ToSeparated( const C& c, const String& separator )
    {
-      (void)string_base::ToSeparated( c, separator );
-      return *this;
+      Clear();
+      return c.ToSeparated( *this, separator );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator string,
+    * and built using an \a append binary function. Returns a reference to this
+    * string.
+    *
+    * The binary function must be of the form:
+    *
+    * \code void append( String& s1, const String& s2 ); \endcode
+    *
+    * where \a s2 is being appended to \a s1.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C, class AF>
    String& ToSeparated( const C& c, const String& separator, AF append )
    {
-      (void)string_base::ToSeparated( c, separator, append );
-      return *this;
+      Clear();
+      return c.ToSeparated( *this, separator, append );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * null-terminated string. Returns a reference to this string.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C>
-   String& ToSeparated( const C& c, char8_type separator )
+   String& ToSeparated( const C& c, const_c_string separator )
    {
-      (void)string_base::ToSeparated( c, separator );
-      return *this;
+      return ToSeparated( c, String( separator ) );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * null-terminated string, and built using an \a append binary function.
+    * Returns a reference to this string.
+    *
+    * The binary function must be of the form:
+    *
+    * \code void append( String& s1, const char16_type* s2 ); \endcode
+    *
+    * where \a s2 is being appended to \a s1.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C, class AF>
-   String& ToSeparated( const C& c, char8_type separator, AF append )
+   String& ToSeparated( const C& c, const_c_string separator, AF append )
    {
-      (void)string_base::ToSeparated( c, separator, append );
-      return *this;
+      return ToSeparated( c, String( separator ), append );
    }
 
-   template <class C>
-   String& ToSeparated( const C& c, const string8_base& separator )
-   {
-      (void)string_base::ToSeparated( c, separator );
-      return *this;
-   }
-
-   template <class C, class AF>
-   String& ToSeparated( const C& c, const string8_base& separator, AF append )
-   {
-      (void)string_base::ToSeparated( c, separator, append );
-      return *this;
-   }
-
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * null-terminated 8-bit string (const char*). Returns a reference to this
+    * string.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C>
    String& ToSeparated( const C& c, const_c_string8 separator )
    {
-      (void)string_base::ToSeparated( c, separator );
-      return *this;
+      return ToSeparated( c, String( separator ) );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of tokens extracted
+    * from a container \a c, separated with the specified \a separator
+    * null-terminated 8-bit string (const char*), and built using an \a append
+    * binary function. Returns a reference to this string.
+    *
+    * The binary function must be of the form:
+    *
+    * \code void append( String& s1, const char* s2 ); \endcode
+    *
+    * where \a s2 is being appended to \a s1.
+    *
+    * The container type C must have separated list generation semantics. All
+    * iterable PCL containers such as Array, Vector, etc. provide the necessary
+    * ToSeparated member functions.
+    */
    template <class C, class AF>
    String& ToSeparated( const C& c, const_c_string8 separator, AF append )
    {
-      (void)string_base::ToSeparated( c, separator, append );
-      return *this;
+      return ToSeparated( c, String( separator ), append );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of comma-separated
+    * tokens extracted from a container \a c. Returns a reference to this
+    * string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, char16_type( ',' ) ); \endcode
+    */
    template <class C>
    String& ToCommaSeparated( const C& c )
    {
-      (void)string_base::ToCommaSeparated( c );
-      return *this;
+      return ToSeparated( c, CharTraits::Comma() );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of colon-separated
+    * tokens extracted from a container \a c. Returns a reference to this
+    * string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, char16_type( ':' ) ); \endcode
+    */
+   template <class C>
+   String& ToColonSeparated( const C& c )
+   {
+      return ToSeparated( c, CharTraits::Colon() );
+   }
+
+   /*!
+    * Replaces the contents of this string with a sequence of space-separated
+    * tokens extracted from a container \a c. Returns a reference to this
+    * string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, char16_type( ' ' ) ); \endcode
+    */
    template <class C>
    String& ToSpaceSeparated( const C& c )
    {
-      (void)string_base::ToSpaceSeparated( c );
-      return *this;
+      return ToSeparated( c, CharTraits::Blank() );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of
+    * tabulator-separated tokens extracted from a container \a c. Returns a
+    * reference to this string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, char16_type( '\t' ) ); \endcode
+    */
    template <class C>
    String& ToTabSeparated( const C& c )
    {
-      (void)string_base::ToTabSeparated( c );
-      return *this;
+      return ToSeparated( c, CharTraits::Tab() );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of new line
+    * separated tokens extracted from a container \a c. Returns a reference to
+    * this string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, char16_type( '\n' ) ); \endcode
+    */
    template <class C>
    String& ToNewLineSeparated( const C& c )
    {
-      (void)string_base::ToNewLineSeparated( c );
-      return *this;
+      return ToSeparated( c, CharTraits::LF() );
    }
 
+   /*!
+    * Replaces the contents of this string with a sequence of null-separated
+    * tokens extracted from a container \a c. Returns a reference to this
+    * string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, char16_type( '\0' ) ); \endcode
+    */
    template <class C>
    String& ToNullSeparated( const C& c )
    {
-      (void)string_base::ToNullSeparated( c );
-      return *this;
+      return ToSeparated( c, CharTraits::Null() );
    }
 
+   /*!
+    * Replaces the contents of this string with a hyphenated sequence of tokens
+    * extracted from a container \a c. Returns a reference to this string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, char16_type( '-' ) ); \endcode
+    */
    template <class C>
    String& ToHyphenated( const C& c )
    {
-      (void)string_base::ToHyphenated( c );
-      return *this;
+      return ToSeparated( c, CharTraits::Hyphen() );
    }
 
    // -------------------------------------------------------------------------
@@ -10431,10 +10913,23 @@ public:
       return sign*(s1 + (s2 + s3/60)/60);
    }
 
-   template <class S>
-   double SexagesimalToDouble( const S& separator ) const
+   /*!
+    * Evaluates this string as a sexagesimal numeric literal representation
+    * with the specified set of \a separators, and returns the result as a
+    * \c double value.
+    *
+    * This function is identical to SexagesimalToDouble( const String& ), but a
+    * set of separator characters is specified as a dynamic array. Any
+    * occurrence of a character contained by \a separators will be valid as a
+    * token separator.
+    *
+    * \sa TrySexagesimalToDouble( double&, const Array<>& )
+    */
+   double SexagesimalToDouble( const Array<char_type>& separators ) const
    {
-      return SexagesimalToDouble( String( separator ) );
+      int sign, s1, s2; double s3;
+      ParseSexagesimal( sign, s1, s2, s3, separators );
+      return sign*(s1 + (s2 + s3/60)/60);
    }
 
    /*!
@@ -10464,10 +10959,26 @@ public:
       return false;
    }
 
-   template <class S>
-   bool TrySexagesimalToDouble( double& value, const S& separator ) const
+   /*!
+    * Attempts to evaluate this string as a sexagesimal numeric literal with
+    * the specified set of \a separators.
+    *
+    * This function is identical to
+    * TrySexagesimalToDouble( double&, const String& ), but a set of separator
+    * characters is specified as a dynamic array. Any occurrence of a character
+    * contained by \a separators will be valid as a token separator.
+    *
+    * \sa SexagesimalToDouble( const Array<>& )
+    */
+   bool TrySexagesimalToDouble( double& value, const Array<char_type>& separators ) const
    {
-      return TrySexagesimalToDouble( value, String( separator ) );
+      int sign, s1, s2; double s3;
+      if ( TryParseSexagesimal( sign, s1, s2, s3, separators ) )
+      {
+         value = sign*(s1 + (s2 + s3/60)/60);
+         return true;
+      }
+      return false;
    }
 
    /*!
@@ -10497,11 +11008,20 @@ public:
     */
    void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const String& separator = ':' ) const;
 
-   template <class S>
-   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator ) const
-   {
-      ParseSexagesimal( sign, s1, s2, s3, String( separator ) );
-   }
+   /*!
+    * Evaluates this string as a sexagesimal numeric literal representation,
+    * using the specified set of \a separators, and stores the resulting
+    * components in the specified \a sign, \a s1, \a s2 and \a s3 variables.
+    *
+    * This function is identical to
+    * ParseSexagesimal( int&, int&, int&, double&, const String& ), but a set
+    * of separator characters is specified as a dynamic array. Any occurrence
+    * of a character contained by \a separators will be valid as a token
+    * separator.
+    *
+    * \sa TryParseSexagesimal( int&, int&, int&, double&, const Array<>& )
+    */
+   void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
 
    /*!
     * Attempts to evaluate this string as a sexagesimal numeric literal
@@ -10518,11 +11038,19 @@ public:
     */
    bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const String& separator = ':' ) const;
 
-   template <class S>
-   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator ) const
-   {
-      return TryParseSexagesimal( sign, s1, s2, s3, String( separator ) );
-   }
+   /*!
+    * Attempts to evaluate this string as a sexagesimal numeric literal
+    * representation, using the specified set of \a separators.
+    *
+    * This function is identical to
+    * TryParseSexagesimal( int&, int&, int&, double&, const String& ), but a
+    * set of separator characters is specified as a dynamic array. Any
+    * occurrence of a character contained by \a separators will be valid as a
+    * token separator.
+    *
+    * \sa ParseSexagesimal( int&, int&, int&, double&, const Array<>& )
+    */
+   bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
 
    /*!
     * Returns a sexagesimal ASCII representation of the specified components
@@ -10582,7 +11110,7 @@ public:
     * from integer parts exclusively by the full stop or dot character ('.',
     * ASCII code point 46(10) = 2E(16)).
     *
-    * \sa TryParseISO8601DateTime()
+    * \sa TryParseISO8601DateTime(), TimePoint::FromString()
     */
    void ParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz ) const;
 
@@ -10597,7 +11125,7 @@ public:
     * format, this function returns \c false and does not change any of the
     * passed variables. This function does not throw any exception.
     *
-    * \sa ParseISO8601DateTime()
+    * \sa ParseISO8601DateTime(), TimePoint::TryFromString()
     */
    bool TryParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz ) const;
 
@@ -10620,10 +11148,36 @@ public:
     * \param options Optional settings to control the representation of date
     *                and time in ISO 8601 format.
     *
-    * \sa ParseISO8601DateTime(), ISO8601ConversionOptions
+    * \sa CurrentUTCISO8601DateTime(), CurrentLocalISO8601DateTime(),
+    *     ParseISO8601DateTime(), ISO8601ConversionOptions,
+    *     TimePoint::ToString()
     */
    static String ToISO8601DateTime( int year, int month, int day, double dayf, double tz = 0,
                                     const ISO8601ConversionOptions& options = ISO8601ConversionOptions() );
+
+   /*!
+    * Returns an ASCII representation of the current UTC date and time in ISO
+    * 8601 extended format.
+    *
+    * \param options Optional settings to control the representation of date
+    *                and time in ISO 8601 format.
+    *
+    * \sa CurrentLocalISO8601DateTime(), ToISO8601DateTime(),
+    *     ISO8601ConversionOptions, TimePoint::Now()
+    */
+   static String CurrentUTCISO8601DateTime( const ISO8601ConversionOptions& options = ISO8601ConversionOptions() );
+
+   /*!
+    * Returns an ASCII representation of the current local date and time in ISO
+    * 8601 extended format.
+    *
+    * \param options Optional settings to control the representation of date
+    *                and time in ISO 8601 format.
+    *
+    * \sa CurrentUTCISO8601DateTime(), ToISO8601DateTime(),
+    *     ISO8601ConversionOptions
+    */
+   static String CurrentLocalISO8601DateTime( const ISO8601ConversionOptions& options = ISO8601ConversionOptions() );
 
    /*!
     * Generates a string of \a n random 16-bit code points, with character
@@ -11467,12 +12021,12 @@ inline String& operator <<( String&& s1, String::char8_type c2 )
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup string_relational_operators String Relational Operators
+ * \defgroup string_relational_ops String Relational Operators
  */
 
 /*!
  * Equality operator.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator ==( const String& s1, const wchar_t* t2 )
 {
@@ -11483,7 +12037,7 @@ inline bool operator ==( const String& s1, const wchar_t* t2 )
  * <em>Less than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  <( const String& s1, const wchar_t* t2 )
 {
@@ -11494,7 +12048,7 @@ inline bool operator  <( const String& s1, const wchar_t* t2 )
  * <em>Less than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator <=( const String& s1, const wchar_t* t2 )
 {
@@ -11505,7 +12059,7 @@ inline bool operator <=( const String& s1, const wchar_t* t2 )
  * <em>Greater than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  >( const String& s1, const wchar_t* t2 )
 {
@@ -11516,7 +12070,7 @@ inline bool operator  >( const String& s1, const wchar_t* t2 )
  * <em>Greater than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator >=( const String& s1, const wchar_t* t2 )
 {
@@ -11527,7 +12081,7 @@ inline bool operator >=( const String& s1, const wchar_t* t2 )
 
 /*!
  * Equality operator.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator ==( const wchar_t* t1, const String& s2 )
 {
@@ -11538,7 +12092,7 @@ inline bool operator ==( const wchar_t* t1, const String& s2 )
  * <em>Less than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  <( const wchar_t* t1, const String& s2 )
 {
@@ -11549,7 +12103,7 @@ inline bool operator  <( const wchar_t* t1, const String& s2 )
  * <em>Less than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator <=( const wchar_t* t1, const String& s2 )
 {
@@ -11560,7 +12114,7 @@ inline bool operator <=( const wchar_t* t1, const String& s2 )
  * <em>Greater than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  >( const wchar_t* t1, const String& s2 )
 {
@@ -11571,7 +12125,7 @@ inline bool operator  >( const wchar_t* t1, const String& s2 )
  * <em>Greater than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator >=( const wchar_t* t1, const String& s2 )
 {
@@ -11582,7 +12136,7 @@ inline bool operator >=( const wchar_t* t1, const String& s2 )
 
 /*!
  * Equality operator.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator ==( const String& s1, wchar_t c2 )
 {
@@ -11593,7 +12147,7 @@ inline bool operator ==( const String& s1, wchar_t c2 )
  * <em>Less than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  <( const String& s1, wchar_t c2 )
 {
@@ -11604,7 +12158,7 @@ inline bool operator  <( const String& s1, wchar_t c2 )
  * <em>Less than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator <=( const String& s1, wchar_t c2 )
 {
@@ -11615,7 +12169,7 @@ inline bool operator <=( const String& s1, wchar_t c2 )
  * <em>Greater than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  >( const String& s1, wchar_t c2 )
 {
@@ -11626,7 +12180,7 @@ inline bool operator  >( const String& s1, wchar_t c2 )
  * <em>Greater than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator >=( const String& s1, wchar_t c2 )
 {
@@ -11637,7 +12191,7 @@ inline bool operator >=( const String& s1, wchar_t c2 )
 
 /*!
  * Equality operator.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator ==( wchar_t c1, const String& s2 )
 {
@@ -11648,7 +12202,7 @@ inline bool operator ==( wchar_t c1, const String& s2 )
  * <em>Less than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  <( wchar_t c1, const String& s2 )
 {
@@ -11659,7 +12213,7 @@ inline bool operator  <( wchar_t c1, const String& s2 )
  * <em>Less than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator <=( wchar_t c1, const String& s2 )
 {
@@ -11670,7 +12224,7 @@ inline bool operator <=( wchar_t c1, const String& s2 )
  * <em>Greater than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  >( wchar_t c1, const String& s2 )
 {
@@ -11681,7 +12235,7 @@ inline bool operator  >( wchar_t c1, const String& s2 )
  * <em>Greater than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator >=( wchar_t c1, const String& s2 )
 {
@@ -11692,7 +12246,7 @@ inline bool operator >=( wchar_t c1, const String& s2 )
 
 /*!
  * Equality operator.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator ==( const String& s1, String::const_c_string8 t2 )
 {
@@ -11703,7 +12257,7 @@ inline bool operator ==( const String& s1, String::const_c_string8 t2 )
  * <em>Less than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  <( const String& s1, String::const_c_string8 t2 )
 {
@@ -11714,7 +12268,7 @@ inline bool operator  <( const String& s1, String::const_c_string8 t2 )
  * <em>Less than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator <=( const String& s1, String::const_c_string8 t2 )
 {
@@ -11725,7 +12279,7 @@ inline bool operator <=( const String& s1, String::const_c_string8 t2 )
  * <em>Greater than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  >( const String& s1, String::const_c_string8 t2 )
 {
@@ -11736,7 +12290,7 @@ inline bool operator  >( const String& s1, String::const_c_string8 t2 )
  * <em>Greater than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator >=( const String& s1, String::const_c_string8 t2 )
 {
@@ -11747,7 +12301,7 @@ inline bool operator >=( const String& s1, String::const_c_string8 t2 )
 
 /*!
  * Equality operator.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator ==( String::const_c_string8 t1, const String& s2 )
 {
@@ -11758,7 +12312,7 @@ inline bool operator ==( String::const_c_string8 t1, const String& s2 )
  * <em>Less than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  <( String::const_c_string8 t1, const String& s2 )
 {
@@ -11769,7 +12323,7 @@ inline bool operator  <( String::const_c_string8 t1, const String& s2 )
  * <em>Less than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator <=( String::const_c_string8 t1, const String& s2 )
 {
@@ -11780,7 +12334,7 @@ inline bool operator <=( String::const_c_string8 t1, const String& s2 )
  * <em>Greater than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  >( String::const_c_string8 t1, const String& s2 )
 {
@@ -11791,7 +12345,7 @@ inline bool operator  >( String::const_c_string8 t1, const String& s2 )
  * <em>Greater than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator >=( String::const_c_string8 t1, const String& s2 )
 {
@@ -11802,7 +12356,7 @@ inline bool operator >=( String::const_c_string8 t1, const String& s2 )
 
 /*!
  * Equality operator.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator ==( const String& s1, String::char8_type c2 )
 {
@@ -11813,7 +12367,7 @@ inline bool operator ==( const String& s1, String::char8_type c2 )
  * <em>Less than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  <( const String& s1, String::char8_type c2 )
 {
@@ -11824,7 +12378,7 @@ inline bool operator  <( const String& s1, String::char8_type c2 )
  * <em>Less than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator <=( const String& s1, String::char8_type c2 )
 {
@@ -11835,7 +12389,7 @@ inline bool operator <=( const String& s1, String::char8_type c2 )
  * <em>Greater than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  >( const String& s1, String::char8_type c2 )
 {
@@ -11846,7 +12400,7 @@ inline bool operator  >( const String& s1, String::char8_type c2 )
  * <em>Greater than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator >=( const String& s1, String::char8_type c2 )
 {
@@ -11857,7 +12411,7 @@ inline bool operator >=( const String& s1, String::char8_type c2 )
 
 /*!
  * Equality operator.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator ==( String::char8_type c1, const String& s2 )
 {
@@ -11868,7 +12422,7 @@ inline bool operator ==( String::char8_type c1, const String& s2 )
  * <em>Less than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  <( String::char8_type c1, const String& s2 )
 {
@@ -11879,7 +12433,7 @@ inline bool operator  <( String::char8_type c1, const String& s2 )
  * <em>Less than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator <=( String::char8_type c1, const String& s2 )
 {
@@ -11890,7 +12444,7 @@ inline bool operator <=( String::char8_type c1, const String& s2 )
  * <em>Greater than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  >( String::char8_type c1, const String& s2 )
 {
@@ -11901,7 +12455,7 @@ inline bool operator  >( String::char8_type c1, const String& s2 )
  * <em>Greater than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator >=( String::char8_type c1, const String& s2 )
 {
@@ -11936,4 +12490,4 @@ inline std::ostream& operator <<( std::ostream& o, const String& s )
 #endif   // __PCL_String_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/String.h - Released 2017-06-28T11:58:36Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard Flux Process Module Version 01.00.01.0135
+// Standard Flux Process Module Version 01.00.01.0154
 // ----------------------------------------------------------------------------
-// FluxCalibrationInstance.h - Released 2016/03/14 10:07:00 UTC
+// FluxCalibrationInstance.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -55,14 +55,12 @@
 
 #include "FluxCalibrationParameters.h"
 
+#include <pcl/MetaParameter.h>
 #include <pcl/ProcessImplementation.h>
-#include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
 
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// FluxCalibrationInstance
 // ----------------------------------------------------------------------------
 
 class FluxCalibrationInstance : public ProcessImplementation
@@ -138,4 +136,4 @@ private:
 #endif   // __FluxCalibrationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF FluxCalibrationInstance.h - Released 2016/03/14 10:07:00 UTC
+// EOF FluxCalibrationInstance.h - Released 2017-05-02T09:43:00Z

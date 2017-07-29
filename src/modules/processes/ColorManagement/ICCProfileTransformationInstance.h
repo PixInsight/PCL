@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0823
 // ----------------------------------------------------------------------------
-// Standard ColorManagement Process Module Version 01.00.00.0284
+// Standard ColorManagement Process Module Version 01.00.00.0303
 // ----------------------------------------------------------------------------
-// ICCProfileTransformationInstance.h - Released 2016/02/21 20:22:42 UTC
+// ICCProfileTransformationInstance.h - Released 2017-05-02T09:43:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorManagement PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,14 +53,12 @@
 #ifndef __ICCProfileTransformationInstance_h
 #define __ICCProfileTransformationInstance_h
 
+#include <pcl/MetaParameter.h> // pcl_bool, pcl_enum
 #include <pcl/ProcessImplementation.h>
-#include <pcl/MetaParameter.h> // for pcl_bool and pcl_enum
 
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// ICCProfileTransformationInstance
 // ----------------------------------------------------------------------------
 
 class ICCProfileTransformationInstance : public ProcessImplementation
@@ -84,8 +82,6 @@ public:
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
 
-   // -------------------------------------------------------------------------
-
 private:
 
    String   targetProfile;
@@ -105,4 +101,4 @@ private:
 #endif   // __ICCProfileTransformationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF ICCProfileTransformationInstance.h - Released 2016/02/21 20:22:42 UTC
+// EOF ICCProfileTransformationInstance.h - Released 2017-05-02T09:43:00Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/Cursor.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Cursor.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/Cursor.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_UIObject_h
-#include <pcl/UIObject.h>
-#endif
-
-#ifndef __PCL_Point_h
 #include <pcl/Point.h>
-#endif
+#include <pcl/UIObject.h>
 
 namespace pcl
 {
@@ -72,7 +65,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace StdCursor
+ * \namespace pcl::StdCursor
  * \brief Standard cursor shapes available in the PixInsight core application
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -301,4 +294,4 @@ private:
 #endif   // __PCL_Cursor_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Cursor.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Cursor.h - Released 2017-06-28T11:58:36Z

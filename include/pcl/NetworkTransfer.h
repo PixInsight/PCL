@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/NetworkTransfer.h - Released 2016/02/21 20:22:12 UTC
+// pcl/NetworkTransfer.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,17 +56,10 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_UIObject_h
-#include <pcl/UIObject.h>
-#endif
-
-#ifndef __PCL_Control_h
 #include <pcl/Control.h>
-#endif
+#include <pcl/UIObject.h>
 
 namespace pcl
 {
@@ -114,6 +107,18 @@ public:
    virtual ~NetworkTransfer()
    {
    }
+
+   /*!
+    * Copy constructor. This constructor is disabled because %NetworkTransfer
+    * represents unique server-side objects.
+    */
+   NetworkTransfer( const NetworkTransfer& ) = delete;
+
+   /*!
+    * Copy assignment. This operator is disabled because %NetworkTransfer
+    * represents unique server-side objects.
+    */
+   NetworkTransfer& operator =( const NetworkTransfer& ) = delete;
 
    /*!
     * Ensures that the server-side object managed by this instance is uniquely
@@ -219,6 +224,38 @@ public:
     * internal error occurs, this function throws an Error exception.
     */
    void SetSSL( bool useSSL = true, bool forceSSL = true, bool verifyPeer = true, bool verifyHost = true );
+
+   /*!
+    * Define a set of custom HTTP headers.
+    *
+    * \param nlsHeaders A newline-separated list of custom HTTP headers. To
+    *                   remove all custom headers and return to the default set
+    *                   of HTTP headers, specify an empty string.
+    *
+    * The specified list of custom headers will replace any previously defined
+    * list, if one was set by calling this function.
+    *
+    * To disable an HTTP header, specify an empty header value (no characters
+    * after the ':'). For example:
+    *
+    * "User-Agent:"
+    *
+    * To define a custom header without a value, include no ':' separator and
+    * end the header with a semicolon:
+    *
+    * "CustomHeader;"
+    *
+    * Example:
+    *
+    * \code
+    * NetworkTransfer N;
+    * N.SetURL( "http://foo-bar.com/" );
+    * N.SetCustomHTTPHeaders( "Content-Type: text/plain\nMyCustomHeader: 1" );
+    * N.OnUploadDataRequested( MyUploadDataFunc, receiver );
+    * N.Upload();
+    * \endcode
+    */
+   void SetCustomHTTPHeaders( const String& nlsHeaders );
 
    /*!
     * Sets the connection timeout for this %NetworkTransfer object.
@@ -333,6 +370,13 @@ public:
     * included in the URL returned by this function.
     */
    String URL() const;
+
+   /*!
+    * Returns the newline-separated list of custom HTTP headers defined for
+    * this object, or an empty string if no custom headers have been defined.
+    * Custom HTTP headers are defined by calling SetCustomHTTPHeaders().
+    */
+   String CustomHTTPHeaders() const;
 
    /*!
     * Returns the URL of the proxy server used in the last network transfer
@@ -539,15 +583,15 @@ public:
 
 private:
 
-   download_event_handler onDownloadDataAvailable;
-   upload_event_handler   onUploadDataRequested;
-   progress_event_handler onTransferProgress;
+   download_event_handler onDownloadDataAvailable = nullptr;
+   upload_event_handler   onUploadDataRequested   = nullptr;
+   progress_event_handler onTransferProgress      = nullptr;
 
-   NetworkTransfer( void* );
+   NetworkTransfer( void* h ) : UIObject( h )
+   {
+   }
+
    virtual void* CloneHandle() const;
-
-   NetworkTransfer( const NetworkTransfer& ) = delete;
-   void operator =( const NetworkTransfer& ) = delete;
 
    friend class NetworkTransferEventDispatcher;
 };
@@ -561,4 +605,4 @@ private:
 #endif   // __PCL_NetworkTransfer_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/NetworkTransfer.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/NetworkTransfer.h - Released 2017-06-28T11:58:36Z

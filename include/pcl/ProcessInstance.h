@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ProcessInstance.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ProcessInstance.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,21 +56,11 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Variant_h
-#include <pcl/Variant.h>
-#endif
-
-#ifndef __PCL_Process_h
 #include <pcl/Process.h>
-#endif
-
-#ifndef __PCL_ProcessParameter_h
 #include <pcl/ProcessParameter.h>
-#endif
+#include <pcl/Variant.h>
 
 namespace pcl
 {
@@ -318,8 +308,7 @@ public:
     */
    bool ExecuteOn( ImageVariant& image, const IsoString& hints = IsoString() );
 
-   template <class S>
-   bool ExecuteOn( ImageVariant& image, const S& hints )
+   bool ExecuteOn( ImageVariant& image, const IsoString::ustring_base& hints )
    {
       return ExecuteOn( image, IsoString( hints ) );
    }
@@ -464,8 +453,7 @@ public:
     */
    static ProcessInstance FromIcon( const IsoString& iconId );
 
-   template <class S>
-   static ProcessInstance FromIcon( const S& iconId )
+   static ProcessInstance FromIcon( const IsoString::ustring_base& iconId )
    {
       return FromIcon( IsoString( iconId ) );
    }
@@ -483,8 +471,7 @@ public:
     */
    static IsoStringList IconsByProcessId( const IsoString& processId );
 
-   template <class S>
-   static IsoStringList IconsByProcessId( const S& processId )
+   static IsoStringList IconsByProcessId( const IsoString::ustring_base& processId )
    {
       return IconsByProcessId( IsoString( processId ) );
    }
@@ -544,8 +531,7 @@ public:
       return ParameterValue( ProcessParameter( ParentProcess(), parameterId ), rowIndex );
    }
 
-   template <class S>
-   Variant ParameterValue( const S& parameterId, size_type rowIndex = ~size_type( 0 ) ) const
+   Variant ParameterValue( const IsoString::ustring_base& parameterId, size_type rowIndex = ~size_type( 0 ) ) const
    {
       return ParameterValue( IsoString( parameterId ), rowIndex );
    }
@@ -606,14 +592,12 @@ public:
     * behaves exactly like
     * SetParameterValue( const Variant&, const ProcessParameter&, size_type )
     */
-   bool SetParameterValue( const Variant& value,
-                           const IsoString& parameterId, size_type rowIndex = ~size_type( 0 ) )
+   bool SetParameterValue( const Variant& value, const IsoString& parameterId, size_type rowIndex = ~size_type( 0 ) )
    {
       return SetParameterValue( value, ProcessParameter( ParentProcess(), parameterId ), rowIndex );
    }
 
-   template <class S>
-   bool SetParameterValue( const Variant& value, const S& parameterId, size_type rowIndex = ~size_type( 0 ) )
+   bool SetParameterValue( const Variant& value, const IsoString::ustring_base& parameterId, size_type rowIndex = ~size_type( 0 ) )
    {
       return SetParameterValue( value, IsoString( parameterId ), rowIndex );
    }
@@ -642,8 +626,7 @@ public:
       return TableRowCount( ProcessParameter( ParentProcess(), tableId ) );
    }
 
-   template <class S>
-   size_type TableRowCount( const S& tableId ) const
+   size_type TableRowCount( const IsoString::ustring_base& tableId ) const
    {
       return TableRowCount( IsoString( tableId ) );
    }
@@ -684,8 +667,7 @@ public:
       return AllocateTableRows( ProcessParameter( ParentProcess(), tableId ), rowCount );
    }
 
-   template <class S>
-   bool AllocateTableRows( const S& tableId, size_type rowCount )
+   bool AllocateTableRows( const IsoString::ustring_base& tableId, size_type rowCount )
    {
       return AllocateTableRows( IsoString( tableId ), rowCount );
    }
@@ -696,9 +678,14 @@ private:
    {
    }
 
+   ProcessInstance( const void* h ) : UIObject( h )
+   {
+   }
+
    virtual void* CloneHandle() const;
 
    friend class ProcessInstancePrivate;
+   friend class InterfaceDispatcher;
    friend class InternalIconEnumerator;
 };
 
@@ -711,4 +698,4 @@ private:
 #endif   // __PCL_ProcessInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessInstance.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ProcessInstance.h - Released 2017-06-28T11:58:36Z

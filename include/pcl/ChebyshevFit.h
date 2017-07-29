@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.06.0853
 // ----------------------------------------------------------------------------
-// pcl/ChebyshevFit.h - Released 2016/06/30 18:03:15 UTC
+// pcl/ChebyshevFit.h - Released 2017-06-28T11:58:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,25 +54,12 @@
 
 /// \file pcl/ChebyshevFit.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Constants_h
 #include <pcl/Constants.h>
-#endif
-
-#ifndef __PCL_MultiVector_h
-#include <pcl/MultiVector.h>
-#endif
-
-#ifndef __PCL_Exception_h
-#include <pcl/Exception.h>
-#endif
-
-#ifndef __PCL_ErrorHandler_h
 #include <pcl/ErrorHandler.h>
-#endif
+#include <pcl/Exception.h>
+#include <pcl/MultiVector.h>
 
 namespace pcl
 {
@@ -232,17 +219,38 @@ public:
    /*!
     * Move constructor.
     */
+#ifndef _MSC_VER
    GenericChebyshevFit( GenericChebyshevFit&& ) = default;
+#else
+   GenericChebyshevFit( GenericChebyshevFit&& x ) :
+      dx( x.dx ),
+      x0( x.x0 ),
+      c( std::move( x.c ) ),
+      m( std::move( x.m ) )
+   {
+   }
+#endif
 
    /*!
-    * Copy assignment operator.
+    * Copy assignment operator. Returns a reference to this object.
     */
    GenericChebyshevFit& operator =( const GenericChebyshevFit& ) = default;
 
    /*!
-    * Move assignment operator.
+    * Move assignment operator. Returns a reference to this object.
     */
+#ifndef _MSC_VER
    GenericChebyshevFit& operator =( GenericChebyshevFit&& ) = default;
+#else
+   GenericChebyshevFit& operator =( GenericChebyshevFit&& x )
+   {
+      dx = x.dx;
+      x0 = x.x0;
+      c = std::move( x.c );
+      m = std::move( x.m );
+      return *this;
+   }
+#endif
 
    /*!
     * Returns the lower bound of this Chebyshev fit. This is the smallest value
@@ -707,7 +715,7 @@ private:
 #ifndef __PCL_NO_CHEBYSHEV_FIT_INSTANTIATE
 
 /*!
- * \defgroup chebyshev_fit_types Predefined Chebyshev Fit Types
+ * \defgroup chebyshev_fit_types Chebyshev Fit Types
  */
 
 /*!
@@ -884,4 +892,4 @@ typedef F80ScalarChebyshevFit                         LDScalarChebyshevFit;
 #endif  // __PCL_ChebyshevFit_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ChebyshevFit.h - Released 2016/06/30 18:03:15 UTC
+// EOF pcl/ChebyshevFit.h - Released 2017-06-28T11:58:36Z

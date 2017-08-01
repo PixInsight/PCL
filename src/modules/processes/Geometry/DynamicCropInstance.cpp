@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0369
+// Standard Geometry Process Module Version 01.02.01.0377
 // ----------------------------------------------------------------------------
-// DynamicCropInstance.cpp - Released 2017-07-18T16:14:18Z
+// DynamicCropInstance.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -190,7 +190,7 @@ public:
 
       if ( !(crop || rotate || data.m_scale) ) // identity transform ?
       {
-         Console().WriteLn( "<end><cbr>&lt;* Identity *&gt;" );
+         Console().WriteLn( "<end><cbr>&lt;* identity *&gt;" );
          return;
       }
 
@@ -559,4 +559,4 @@ void* DynamicCropInstance::LockParameter( const MetaParameter* p, size_type /*ta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropInstance.cpp - Released 2017-07-18T16:14:18Z
+// EOF DynamicCropInstance.cpp - Released 2017-08-01T14:26:58Z

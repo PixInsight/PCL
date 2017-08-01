@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0394
+// Standard Image Process Module Version 01.02.09.0402
 // ----------------------------------------------------------------------------
-// NewImageProcess.cpp - Released 2017-07-18T16:14:18Z
+// NewImageProcess.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -379,4 +379,4 @@ int NewImageProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF NewImageProcess.cpp - Released 2017-07-18T16:14:18Z
+// EOF NewImageProcess.cpp - Released 2017-08-01T14:26:58Z

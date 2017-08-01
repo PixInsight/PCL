@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.00.0323
+// Standard ImageCalibration Process Module Version 01.04.01.0332
 // ----------------------------------------------------------------------------
-// ImageCalibrationInterface.h - Released 2017-07-18T16:14:18Z
+// ImageCalibrationInterface.h - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -339,4 +339,4 @@ PCL_END_LOCAL
 #endif   // __ImageCalibrationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationInterface.h - Released 2017-07-18T16:14:18Z
+// EOF ImageCalibrationInterface.h - Released 2017-08-01T14:26:58Z

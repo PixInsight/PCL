@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0289
+// Standard StarGenerator Process Module Version 01.01.00.0297
 // ----------------------------------------------------------------------------
-// StarGeneratorModule.cpp - Released 2017-07-18T16:14:19Z
+// StarGeneratorModule.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     01
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0289
+#define MODULE_VERSION_BUILD     0297
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     7
-#define MODULE_RELEASE_DAY       18
+#define MODULE_RELEASE_MONTH     8
+#define MODULE_RELEASE_DAY       1
 
 #include "StarGeneratorModule.h"
 #include "StarGeneratorProcess.h"
@@ -153,4 +153,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF StarGeneratorModule.cpp - Released 2017-07-18T16:14:19Z
+// EOF StarGeneratorModule.cpp - Released 2017-08-01T14:26:58Z

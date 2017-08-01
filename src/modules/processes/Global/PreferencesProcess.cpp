@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0370
+// Standard Global Process Module Version 01.02.07.0378
 // ----------------------------------------------------------------------------
-// PreferencesProcess.cpp - Released 2017-07-18T16:14:18Z
+// PreferencesProcess.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -365,4 +365,4 @@ int PreferencesProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesProcess.cpp - Released 2017-07-18T16:14:18Z
+// EOF PreferencesProcess.cpp - Released 2017-08-01T14:26:58Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0369
+// Standard Geometry Process Module Version 01.02.01.0377
 // ----------------------------------------------------------------------------
-// GeometryModule.cpp - Released 2017-07-18T16:14:18Z
+// GeometryModule.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     02
 #define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0369
+#define MODULE_VERSION_BUILD     0377
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     7
-#define MODULE_RELEASE_DAY       18
+#define MODULE_RELEASE_MONTH     8
+#define MODULE_RELEASE_DAY       1
 
 #include <pcl/Console.h>
 #include <pcl/ImageWindow.h>
@@ -302,4 +302,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF GeometryModule.cpp - Released 2017-07-18T16:14:18Z
+// EOF GeometryModule.cpp - Released 2017-08-01T14:26:58Z

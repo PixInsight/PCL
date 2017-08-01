@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ColorManagement Process Module Version 01.00.00.0326
+// Standard ColorManagement Process Module Version 01.00.00.0334
 // ----------------------------------------------------------------------------
-// AssignICCProfileInstance.cpp - Released 2017-07-18T16:14:18Z
+// AssignICCProfileInstance.cpp - Released 2017-08-01T14:26:57Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorManagement PixInsight module.
 //
@@ -136,6 +136,8 @@ bool AssignICCProfileInstance::ExecuteOn( View& view )
 
    AutoViewLock lock( view );
 
+   Console console;
+
    ImageWindow w = view.Window();
 
    if ( mode == AssignMode::LeaveUntagged || mode == AssignMode::AssignDefaultProfile )
@@ -143,15 +145,15 @@ bool AssignICCProfileInstance::ExecuteOn( View& view )
       ICCProfile icc;
       w.GetICCProfile( icc );
 
-      Console().Write( "<end><cbr>Previous ICC profile: " );
+      console.Write( "<end><cbr>Previous ICC profile: " );
 
       if ( icc.IsProfile() )
       {
          w.DeleteICCProfile();
-         Console().WriteLn( "<raw>" + icc.Description() + "</raw>" );
+         console.WriteLn( "<raw>" + icc.Description() + "</raw>" );
       }
       else
-         Console().WriteLn( "&lt;* none *&gt;" );
+         console.WriteLn( "&lt;* none *&gt;" );
    }
 
    if ( mode != AssignMode::LeaveUntagged )
@@ -209,8 +211,8 @@ bool AssignICCProfileInstance::ExecuteOn( View& view )
 
       w.SetICCProfile( targetICC );
 
-      Console().WriteLn( "<end><cbr>Profile assigned: <raw>" + targetICC.Description() + "</raw>" );
-      Console().WriteLn( "Profile path: <raw>" + targetICC.FilePath() + "</raw>" );
+      console.WriteLn( "<end><cbr>Profile assigned: <raw>" + targetICC.Description() + "</raw>" );
+      console.WriteLn( "Profile path: <raw>" + targetICC.FilePath() + "</raw>" );
    }
 
    return true;
@@ -255,4 +257,4 @@ size_type AssignICCProfileInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AssignICCProfileInstance.cpp - Released 2017-07-18T16:14:18Z
+// EOF AssignICCProfileInstance.cpp - Released 2017-08-01T14:26:57Z

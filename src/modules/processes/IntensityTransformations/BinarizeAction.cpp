@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0397
+// Standard IntensityTransformations Process Module Version 01.07.01.0405
 // ----------------------------------------------------------------------------
-// BinarizeAction.cpp - Released 2017-07-18T16:14:18Z
+// BinarizeAction.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -87,4 +87,4 @@ bool BinarizeAction::IsEnabled( ActionInfo info ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BinarizeAction.cpp - Released 2017-07-18T16:14:18Z
+// EOF BinarizeAction.cpp - Released 2017-08-01T14:26:58Z

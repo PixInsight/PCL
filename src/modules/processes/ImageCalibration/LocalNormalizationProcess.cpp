@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.00.0323
+// Standard ImageCalibration Process Module Version 01.04.01.0332
 // ----------------------------------------------------------------------------
-// LocalNormalizationProcess.cpp - Released 2017-07-18T16:14:18Z
+// LocalNormalizationProcess.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -60,7 +60,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-//#include "LocalNormalizationIcon.xpm"
+#include "LocalNormalizationIcon.xpm"
 
 // ----------------------------------------------------------------------------
 
@@ -77,6 +77,8 @@ LocalNormalizationProcess::LocalNormalizationProcess() : MetaProcess()
    new LNBackgroundRejectionLimit( this );
    new LNReferenceRejectionThreshold( this );
    new LNTargetRejectionThreshold( this );
+   new LNHotPixelFilterRadius( this );
+   new LNNoiseReductionFilterRadius( this );
    new LNReferencePathOrViewId( this );
    new LNReferenceIsView( this );
    new LNTargetItems( this );
@@ -88,7 +90,7 @@ LocalNormalizationProcess::LocalNormalizationProcess() : MetaProcess()
    new LNGenerateNormalizationData( this );
    new LNShowBackgroundModels( this );
    new LNShowRejectionMaps( this );
-   new LNShowNormalizationFunctions( this );
+   new LNPlotNormalizationFunctions( this );
    new LNNoGUIMessages( this );
    new LNOutputDirectory( this );
    new LNOutputExtension( this );
@@ -100,6 +102,11 @@ LocalNormalizationProcess::LocalNormalizationProcess() : MetaProcess()
    new LNFileThreadOverload( this );
    new LNMaxFileReadThreads( this );
    new LNMaxFileWriteThreads( this );
+   new LNGraphSize( this );
+   new LNGraphTextSize( this );
+   new LNGraphTitleSize( this );
+   new LNGraphTransparent( this );
+   new LNGraphOutputDirectory( this );
 }
 
 // ----------------------------------------------------------------------------
@@ -134,7 +141,7 @@ String LocalNormalizationProcess::Description() const
 
 const char** LocalNormalizationProcess::IconImageXPM() const
 {
-   return nullptr; //LocalNormalizationIcon_XPM;
+   return LocalNormalizationIcon_XPM;
 }
 // ----------------------------------------------------------------------------
 
@@ -162,4 +169,4 @@ ProcessImplementation* LocalNormalizationProcess::Clone( const ProcessImplementa
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LocalNormalizationProcess.cpp - Released 2017-07-18T16:14:18Z
+// EOF LocalNormalizationProcess.cpp - Released 2017-08-01T14:26:58Z

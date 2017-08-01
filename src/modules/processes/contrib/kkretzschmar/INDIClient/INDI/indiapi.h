@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0209
+// Standard INDIClient Process Module Version 01.00.15.0217
 // ----------------------------------------------------------------------------
-// indiapi.h - Released 2017-07-18T16:14:19Z
+// indiapi.h - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -443,4 +443,4 @@ typedef struct _IBLOBVectorProperty {	/* BLOB vector property descriptor */
 #endif
 
 // ----------------------------------------------------------------------------
-// EOF indiapi.h - Released 2017-07-18T16:14:19Z
+// EOF indiapi.h - Released 2017-08-01T14:26:58Z

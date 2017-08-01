@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.00.0323
+// Standard ImageCalibration Process Module Version 01.04.01.0332
 // ----------------------------------------------------------------------------
-// LocalNormalizationInterface.h - Released 2017-07-18T16:14:18Z
+// LocalNormalizationInterface.h - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -116,19 +116,27 @@ private:
             SpinBox           Scale_SpinBox;
          HorizontalSizer   Rejection_Sizer;
             CheckBox          Rejection_CheckBox;
+         HorizontalSizer   HotPixelFilterRadius_Sizer;
+            Label             HotPixelFilterRadius_Label;
+            SpinBox           HotPixelFilterRadius_SpinBox;
+         HorizontalSizer   NoiseReductionFilterRadius_Sizer;
+            Label             NoiseReductionFilterRadius_Label;
+            SpinBox           NoiseReductionFilterRadius_SpinBox;
          NumericControl    BackgroundRejectionLimit_NumericControl;
          NumericControl    ReferenceRejectionThreshold_NumericControl;
          NumericControl    TargetRejectionThreshold_NumericControl;
          HorizontalSizer   GenerateNormalizedImages_Sizer;
-            CheckBox          GenerateNormalizedImages_CheckBox;
+            Label             GenerateNormalizedImages_Label;
+            ComboBox          GenerateNormalizedImages_ComboBox;
          HorizontalSizer   GenerateNormalizationData_Sizer;
             CheckBox          GenerateNormalizationData_CheckBox;
          HorizontalSizer   ShowBackgroundModels_Sizer;
             CheckBox          ShowBackgroundModels_CheckBox;
          HorizontalSizer   ShowRejectionMaps_Sizer;
             CheckBox          ShowRejectionMaps_CheckBox;
-         HorizontalSizer   ShowNormalizationFunctions_Sizer;
-            CheckBox          ShowNormalizationFunctions_CheckBox;
+         HorizontalSizer   PlotNormalizationFunctions_Sizer;
+            Label             PlotNormalizationFunctions_Label;
+            ComboBox          PlotNormalizationFunctions_ComboBox;
 
       SectionBar        TargetImages_SectionBar;
       Control           TargetImages_Control;
@@ -211,4 +219,4 @@ PCL_END_LOCAL
 #endif   // __LocalNormalizationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF LocalNormalizationInterface.h - Released 2017-07-18T16:14:18Z
+// EOF LocalNormalizationInterface.h - Released 2017-08-01T14:26:58Z

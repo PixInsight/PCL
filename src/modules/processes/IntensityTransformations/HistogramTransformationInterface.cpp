@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0397
+// Standard IntensityTransformations Process Module Version 01.07.01.0405
 // ----------------------------------------------------------------------------
-// HistogramTransformationInterface.cpp - Released 2017-07-18T16:14:18Z
+// HistogramTransformationInterface.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -535,32 +535,33 @@ void HistogramTransformationInterface::UpdateReadout( const View& v, const DPoin
 
    if ( m_readoutMode != NormalReadout )
    {
-      int i0, i1;
+      int i0, r0, i1;
       if ( v.IsColor() )
       {
-         i0 = (m_channel == 3) ? 0 : m_channel;
+         i0 = r0 = (m_channel == 3) ? 0 : m_channel;
          i1 = (m_channel == 3) ? 3 : m_channel+1;
       }
       else
       {
          i0 = (m_channel == 4) ? 4 : 3;
+         r0 = (m_channel == 4) ? 4 : 0;
          i1 = i0 + 1;
       }
 
-      for ( int i = i0; i < i1; ++i )
+      for ( int i = i0, r = r0; i < i1; ++i, ++r )
       {
-         double r = m_inputReadouts[i];
+         double x = m_inputReadouts[r];
 
          switch ( m_readoutMode )
          {
          case BlackPointReadout :
-            m_instance.SetShadowsClipping( i, Min( r, m_instance.HighlightsClipping( i ) ) );
+            m_instance.SetShadowsClipping( i, Min( x, m_instance.HighlightsClipping( i ) ) );
             break;
          case MidtonesReadout :
-            m_instance.SetMidtonesBalance( i, r );
+            m_instance.SetMidtonesBalance( i, x );
             break;
          case WhitePointReadout :
-            m_instance.SetHighlightsClipping( i, Max( r, m_instance.ShadowsClipping( i ) ) );
+            m_instance.SetHighlightsClipping( i, Max( x, m_instance.ShadowsClipping( i ) ) );
             break;
          default:
             break;
@@ -3106,4 +3107,4 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HistogramTransformationInterface.cpp - Released 2017-07-18T16:14:18Z
+// EOF HistogramTransformationInterface.cpp - Released 2017-08-01T14:26:58Z

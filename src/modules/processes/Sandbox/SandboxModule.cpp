@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Sandbox Process Module Version 01.00.02.0253
+// Standard Sandbox Process Module Version 01.00.02.0261
 // ----------------------------------------------------------------------------
-// SandboxModule.cpp - Released 2017-07-18T16:14:19Z
+// SandboxModule.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Sandbox PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  02
-#define MODULE_VERSION_BUILD     0253
+#define MODULE_VERSION_BUILD     0261
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     7
-#define MODULE_RELEASE_DAY       18
+#define MODULE_RELEASE_MONTH     8
+#define MODULE_RELEASE_DAY       1
 
 #include "SandboxModule.h"
 #include "SandboxProcess.h"
@@ -179,4 +179,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF SandboxModule.cpp - Released 2017-07-18T16:14:19Z
+// EOF SandboxModule.cpp - Released 2017-08-01T14:26:58Z

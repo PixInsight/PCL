@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.00.0323
+// Standard ImageCalibration Process Module Version 01.04.01.0332
 // ----------------------------------------------------------------------------
-// LocalNormalizationInterface.cpp - Released 2017-07-18T16:14:18Z
+// LocalNormalizationInterface.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -71,7 +71,7 @@ LocalNormalizationInterface* TheLocalNormalizationInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
-// #include "LocalNormalizationIcon.xpm"
+#include "LocalNormalizationIcon.xpm"
 
 // ----------------------------------------------------------------------------
 
@@ -107,7 +107,7 @@ MetaProcess* LocalNormalizationInterface::Process() const
 
 const char** LocalNormalizationInterface::IconImageXPM() const
 {
-   return nullptr; //LocalNormalizationIcon_XPM;
+   return LocalNormalizationIcon_XPM;
 }
 
 // ----------------------------------------------------------------------------
@@ -203,6 +203,12 @@ void LocalNormalizationInterface::UpdateGeneralParameterControls()
 
    GUI->Rejection_CheckBox.SetChecked( m_instance.p_rejection );
 
+   GUI->HotPixelFilterRadius_SpinBox.SetValue( m_instance.p_hotPixelFilterRadius );
+   GUI->HotPixelFilterRadius_SpinBox.Enable( m_instance.p_rejection );
+
+   GUI->NoiseReductionFilterRadius_SpinBox.SetValue( m_instance.p_noiseReductionFilterRadius );
+   GUI->NoiseReductionFilterRadius_SpinBox.Enable( m_instance.p_rejection );
+
    GUI->BackgroundRejectionLimit_NumericControl.SetValue( m_instance.p_backgroundRejectionLimit );
    GUI->BackgroundRejectionLimit_NumericControl.Enable( m_instance.p_rejection );
 
@@ -212,14 +218,16 @@ void LocalNormalizationInterface::UpdateGeneralParameterControls()
    GUI->TargetRejectionThreshold_NumericControl.SetValue( m_instance.p_targetRejectionThreshold );
    GUI->TargetRejectionThreshold_NumericControl.Enable( m_instance.p_rejection );
 
-   GUI->GenerateNormalizedImages_CheckBox.SetChecked( m_instance.p_generateNormalizedImages );
+   GUI->GenerateNormalizedImages_ComboBox.SetCurrentItem( m_instance.p_generateNormalizedImages );
+
    GUI->GenerateNormalizationData_CheckBox.SetChecked( m_instance.p_generateNormalizationData );
+
    GUI->ShowBackgroundModels_CheckBox.SetChecked( m_instance.p_showBackgroundModels );
 
    GUI->ShowRejectionMaps_CheckBox.SetChecked( m_instance.p_showRejectionMaps );
    GUI->ShowRejectionMaps_CheckBox.Enable( m_instance.p_rejection );
 
-   GUI->ShowNormalizationFunctions_CheckBox.SetChecked( m_instance.p_showNormalizationFunctions );
+   GUI->PlotNormalizationFunctions_ComboBox.SetCurrentItem( m_instance.p_plotNormalizationFunctions );
 }
 
 // ----------------------------------------------------------------------------
@@ -379,6 +387,14 @@ void LocalNormalizationInterface::e_ItemSelected( ComboBox& sender, int itemInde
          GUI->ReferenceImage_Edit.SetText( m_instance.p_referencePathOrViewId = String() );
       }
    }
+   else if ( sender == GUI->GenerateNormalizedImages_ComboBox )
+   {
+      m_instance.p_generateNormalizedImages = itemIndex;
+   }
+   else if ( sender == GUI->PlotNormalizationFunctions_ComboBox )
+   {
+      m_instance.p_plotNormalizationFunctions = itemIndex;
+   }
    else if ( sender == GUI->OnError_ComboBox )
    {
       m_instance.p_onError = itemIndex;
@@ -417,21 +433,9 @@ void LocalNormalizationInterface::e_Click( Button& sender, bool checked )
       m_instance.p_rejection = checked;
       UpdateGeneralParameterControls();
    }
-   else if ( sender == GUI->GenerateNormalizedImages_CheckBox )
-   {
-      m_instance.p_generateNormalizedImages = checked;
-      if ( !m_instance.p_generateNormalizedImages )
-         if ( !m_instance.p_generateNormalizationData )
-            m_instance.p_generateNormalizationData = true;
-      UpdateGeneralParameterControls();
-   }
    else if ( sender == GUI->GenerateNormalizationData_CheckBox )
    {
       m_instance.p_generateNormalizationData = checked;
-      if ( !m_instance.p_generateNormalizationData )
-         if ( !m_instance.p_generateNormalizedImages )
-            m_instance.p_generateNormalizedImages = true;
-      UpdateGeneralParameterControls();
    }
    else if ( sender == GUI->ShowBackgroundModels_CheckBox )
    {
@@ -440,10 +444,6 @@ void LocalNormalizationInterface::e_Click( Button& sender, bool checked )
    else if ( sender == GUI->ShowRejectionMaps_CheckBox )
    {
       m_instance.p_showRejectionMaps = checked;
-   }
-   else if ( sender == GUI->ShowNormalizationFunctions_CheckBox )
-   {
-      m_instance.p_showNormalizationFunctions = checked;
    }
    else if ( sender == GUI->AddFiles_PushButton )
    {
@@ -587,6 +587,10 @@ void LocalNormalizationInterface::e_SpinValueUpdated( SpinBox& sender, int value
 {
    if ( sender == GUI->Scale_SpinBox )
       m_instance.p_scale = value;
+   else if ( sender == GUI->HotPixelFilterRadius_SpinBox )
+      m_instance.p_hotPixelFilterRadius = value;
+   else if ( sender == GUI->NoiseReductionFilterRadius_SpinBox )
+      m_instance.p_noiseReductionFilterRadius = value;
 }
 
 // ----------------------------------------------------------------------------
@@ -684,7 +688,7 @@ void LocalNormalizationInterface::e_ViewDrop( Control& sender, const Point& pos,
 LocalNormalizationInterface::GUIData::GUIData( LocalNormalizationInterface& w )
 {
    pcl::Font fnt = w.Font();
-   int labelWidth1 = fnt.Width( String( "Reference threshold:" ) + 'T' );
+   int labelWidth1 = fnt.Width( String( "Reference threshold:" ) + 'M' );
    int editWidth1 = fnt.Width( String( '0', 12 ) );
    int editWidth2 = fnt.Width( String( 'M', 5 ) );
    int ui4 = w.LogicalPixelsToPhysical( 4 );
@@ -692,8 +696,11 @@ LocalNormalizationInterface::GUIData::GUIData( LocalNormalizationInterface& w )
    //
 
    const char* referenceToolTip = "<p>Normalization reference image.</p>"
-      "<p>Local normalization functions will be calculated for each target image with respect to the "
-      "reference image. The reference image will not be modified in any way during the normalization process.</p>";
+      "<p>Local normalization functions will be calculated for each target image with respect to the reference image, "
+      "which will be acquired either from an image view, or from an existing disk file.</p>"
+      "<p><b>Important:</b> For execution in the global context (batch procedure), if the reference image refers to a disk"
+      "file that will be part of an image integration task, it must also be included in the target images list. Otherwise no "
+      ".xnml file and/or normalized image will be generated for the reference image.</p>";
 
    ReferenceImage_Label.SetText( "Reference image:" );
    ReferenceImage_Label.SetFixedWidth( labelWidth1 );
@@ -733,8 +740,10 @@ LocalNormalizationInterface::GUIData::GUIData( LocalNormalizationInterface& w )
       "<p>To better understand the role of this parameter, suppose we applied the algorithm at the scale of one pixel. The "
       "result would be an exact copy of the reference image. On the other hand, if we applied the algorithm at a scale similar "
       "to the size of the whole image, the result would be a <i>global normalization</i>: a single linear function would be "
-      "applied for normalization of the target image. The default scale is 128 pixels, which is quite appropriate for most "
-      "digital images. Suitable scales are normally in the range from 100 to 500 pixels.</p>";
+      "applied for normalization of the target image.</p>"
+      "<p>The default scale is 128 pixels, which is quite appropriate for most digital images. Suitable scales are generally "
+      "in the range from 64 to 256 pixels. Although the value of this parameter can be freely set in the range from 32 to "
+      "65536 pixels, the current implementation is optimized for multiples of 32 pixels: 32, 64, 96, 128, 160, 192, etc.</p>";
 
    Scale_Label.SetText( "Scale:" );
    Scale_Label.SetFixedWidth( labelWidth1 );
@@ -742,6 +751,7 @@ LocalNormalizationInterface::GUIData::GUIData( LocalNormalizationInterface& w )
    Scale_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
    Scale_SpinBox.SetRange( int( TheLNScaleParameter->MinimumValue() ), int( TheLNScaleParameter->MaximumValue() ) );
+   Scale_SpinBox.SetStepSize( 32 );
    Scale_SpinBox.SetMinWidth( editWidth1 );
    Scale_SpinBox.SetToolTip( scaleTip );
    Scale_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&LocalNormalizationInterface::e_SpinValueUpdated, w );
@@ -754,15 +764,63 @@ LocalNormalizationInterface::GUIData::GUIData( LocalNormalizationInterface& w )
    //
 
    Rejection_CheckBox.SetText( "Outlier rejection" );
-   Rejection_CheckBox.SetToolTip( "<p>The local normalization functions are sensitive to differences between the reference "
-      "and target images caused by spurious image features, such as plane and satellite trails, cosmic rays, etc. This option "
-      "should normally be enabled to detect and reject outlier image structures prior to calculation of local normalization "
-      "functions.</p>" );
+   Rejection_CheckBox.SetToolTip( "<p>The implemented local normalization algorithms are sensitive to differences between the "
+      "reference and target images caused by spurious image features, such as hot pixels, plane and satellite trails, cosmic rays, etc.</p>"
+      "<p>Under normal working conditions, this option should be enabled to detect and reject outlier image structures prior to "
+      "calculation of local normalization functions.</p>" );
    Rejection_CheckBox.OnClick( (Button::click_event_handler)&LocalNormalizationInterface::e_Click, w );
 
    Rejection_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    Rejection_Sizer.Add( Rejection_CheckBox );
    Rejection_Sizer.AddStretch();
+
+   //
+
+   const char* hotPixelFilterRadiusToolTip =
+   "<p>Size of the hot pixel removal filter.</p>"
+   "<p>This is the radius in pixels of a median filter applied for robust outlier rejection. A median filter is very efficient "
+   "to remove hot pixels, cold pixels, and similar small-scale outlier image structures that can contaminate the local "
+   "normalization functions, degrading their accuracy, or even introducing artifacts in extreme cases.</p>"
+   "<p>To disable hot pixel removal (not recommended), set this parameter to zero. The default value is two pixels.</p>";
+
+   HotPixelFilterRadius_Label.SetText( "Hot pixel removal:" );
+   HotPixelFilterRadius_Label.SetFixedWidth( labelWidth1 );
+   HotPixelFilterRadius_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   HotPixelFilterRadius_Label.SetToolTip( hotPixelFilterRadiusToolTip );
+
+   HotPixelFilterRadius_SpinBox.SetRange( int( TheLNHotPixelFilterRadiusParameter->MinimumValue() ), int( TheLNHotPixelFilterRadiusParameter->MaximumValue() ) );
+   HotPixelFilterRadius_SpinBox.SetToolTip( hotPixelFilterRadiusToolTip );
+   HotPixelFilterRadius_SpinBox.SetFixedWidth( editWidth2 );
+   HotPixelFilterRadius_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&LocalNormalizationInterface::e_SpinValueUpdated, w );
+
+   HotPixelFilterRadius_Sizer.SetSpacing( 4 );
+   HotPixelFilterRadius_Sizer.Add( HotPixelFilterRadius_Label );
+   HotPixelFilterRadius_Sizer.Add( HotPixelFilterRadius_SpinBox );
+   HotPixelFilterRadius_Sizer.AddStretch();
+
+   //
+
+   const char* noiseReductionFilterRadiusToolTip =
+   "<p>Size of the noise reduction filter.</p>"
+   "<p>This is the radius in pixels of a Gaussian convolution filter applied for noise reduction. Noise reduction is disabled "
+   "by default; it is only necessary for images suffering from severe noise, especially images with clipped histograms and similar "
+   "artifacts. Increasing this parameter should not be necessary for well calibrated images.</p>";
+
+   NoiseReductionFilterRadius_Label.SetText( "Noise reduction:" );
+   NoiseReductionFilterRadius_Label.SetFixedWidth( labelWidth1 );
+   NoiseReductionFilterRadius_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   NoiseReductionFilterRadius_Label.SetToolTip( noiseReductionFilterRadiusToolTip );
+
+   NoiseReductionFilterRadius_SpinBox.SetRange( int( TheLNNoiseReductionFilterRadiusParameter->MinimumValue() ), int( TheLNNoiseReductionFilterRadiusParameter->MaximumValue() ) );
+   NoiseReductionFilterRadius_SpinBox.SetStepSize( 5 );
+   NoiseReductionFilterRadius_SpinBox.SetToolTip( noiseReductionFilterRadiusToolTip );
+   NoiseReductionFilterRadius_SpinBox.SetFixedWidth( editWidth2 );
+   NoiseReductionFilterRadius_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&LocalNormalizationInterface::e_SpinValueUpdated, w );
+
+   NoiseReductionFilterRadius_Sizer.SetSpacing( 4 );
+   NoiseReductionFilterRadius_Sizer.Add( NoiseReductionFilterRadius_Label );
+   NoiseReductionFilterRadius_Sizer.Add( NoiseReductionFilterRadius_SpinBox );
+   NoiseReductionFilterRadius_Sizer.AddStretch();
 
    //
 
@@ -774,10 +832,11 @@ LocalNormalizationInterface::GUIData::GUIData( LocalNormalizationInterface& w )
    BackgroundRejectionLimit_NumericControl.SetRange( TheLNBackgroundRejectionLimitParameter->MinimumValue(), TheLNBackgroundRejectionLimitParameter->MaximumValue() );
    BackgroundRejectionLimit_NumericControl.SetPrecision( TheLNBackgroundRejectionLimitParameter->Precision() );
    BackgroundRejectionLimit_NumericControl.edit.SetFixedWidth( editWidth1 );
-   BackgroundRejectionLimit_NumericControl.SetToolTip( "<p>LocalNormalization computes a model of the <i>local background</i> "
-      "for the reference and target images. This model is used, among other tasks, for classification of small-scale image "
-      "structures to detect potential outliers. This parameter is the minimum relative difference with respect to the local "
-      "background, in absolute value, for a structure to be considered as significant.</p>"
+   BackgroundRejectionLimit_NumericControl.SetToolTip( "<p>LocalNormalization computes an initial, approximate model of the "
+      "<i>local background</i> for the reference and target images. This model is used, among other tasks, for classification "
+      "of small-scale image structures to detect potential outliers.</p>"
+      "<p>This parameter is the minimum relative difference with respect to the approximate local background, in absolute value, "
+      "for a structure to be considered as significant.</p>"
       "<p>Increase this parameter to force a stronger outlier rejection. Decrease it to relax the outlier detection algorithm. "
       "The default value of 0.05 is a good option in most cases. For difficult cases where the images are very noisy and/or "
       "there are large outliers such as plane trails, you can use the <i>show rejection maps</i> option to evaluate outlier "
@@ -798,9 +857,7 @@ LocalNormalizationInterface::GUIData::GUIData( LocalNormalizationInterface& w )
       "background, in absolute value, for a structure to be classified as a potential outlier in the reference image. See the "
       "<i>background limit</i> parameter for more information on the local background and its role for local normalization.</p>"
       "<p>Increase this parameter to relax the outlier rejection algorithm with respect to the reference image. Decrease it to "
-      "strengthen outlier rejection. Note that the default value of 0.5 is twice the default value of <i>target threshold</i>, "
-      "under the assumption that the selected reference image is better, in terms of presence of spurious data, than all of the "
-      "target images.</p>" );
+      "strengthen outlier rejection. The default value is 0.5.</p>" );
    ReferenceRejectionThreshold_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&LocalNormalizationInterface::e_EditValueUpdated, w );
 
    //
@@ -821,20 +878,34 @@ LocalNormalizationInterface::GUIData::GUIData( LocalNormalizationInterface& w )
 
    //
 
-   GenerateNormalizedImages_CheckBox.SetText( "Generate normalized images" );
-   GenerateNormalizedImages_CheckBox.SetToolTip( "<p>Enable this option to apply the local normalization functions to generate "
-      "normalized images. This includes newly created image files for global execution, as well as modifying the target image for "
-      "view execution.</p>"
-      "<p>This option is disabled by default because local normalization functions, stored in .xnml files, are normally used by the "
-      "ImageIntegration and DrizzleIntegration processes for normalization in the pixel rejection and/or integration output tasks. "
-      "This means that the normalization functions can be applied internally by these processes, so writing normalized images is "
-      "normally not necessary.</p>"
-      "<p>Enabling this option can be useful for testing purposes, or for applications of local normalization different from "
-      "integration of astronomical images.</p>" );
-   GenerateNormalizedImages_CheckBox.OnClick( (Button::click_event_handler)&LocalNormalizationInterface::e_Click, w );
+   const char* generateNormalizedImagesToolTip = "<p>This parameter defines when to apply the local normalization functions to "
+      "generate normalized images. This includes newly created image files for global execution, as well as modifying the target "
+      "image for view execution.</p>"
+      "<p>This option is set to <i>view execution only</i> by default because local normalization functions, stored in .xnml files, "
+      "can be used by the ImageIntegration and DrizzleIntegration processes for normalization in the pixel rejection and/or "
+      "integration output tasks. This means that the normalization functions can be applied internally by these processes, so "
+      "writing normalized images to disk files is generally not necessary. For view execution, however, inspecting the transformed "
+      "image is often necessary for testing purposes (although graphs can be even more informative).</p>"
+      "<p>Generation of normalized image files during batch execution can also be useful in difficult cases, for example when the "
+      "data set includes strong light pollution gradients and large artifacts, such as plane trails. In these cases you may want "
+      "to inspect locally normalized images manually with analysis tools such as Blink. Normalized images may also be necessary for "
+      "applications of local normalization different from integration of astronomical images.</p>";
 
-   GenerateNormalizedImages_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
-   GenerateNormalizedImages_Sizer.Add( GenerateNormalizedImages_CheckBox );
+   GenerateNormalizedImages_Label.SetText( "Apply normalization:" );
+   GenerateNormalizedImages_Label.SetFixedWidth( labelWidth1 );
+   GenerateNormalizedImages_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   GenerateNormalizedImages_Label.SetToolTip( generateNormalizedImagesToolTip );
+
+   GenerateNormalizedImages_ComboBox.AddItem( "Disabled" );
+   GenerateNormalizedImages_ComboBox.AddItem( "Always" );
+   GenerateNormalizedImages_ComboBox.AddItem( "View execution only" );
+   GenerateNormalizedImages_ComboBox.AddItem( "Global execution only" );
+   GenerateNormalizedImages_ComboBox.SetToolTip( generateNormalizedImagesToolTip );
+   GenerateNormalizedImages_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&LocalNormalizationInterface::e_ItemSelected, w );
+
+   GenerateNormalizedImages_Sizer.SetSpacing( 4 );
+   GenerateNormalizedImages_Sizer.Add( GenerateNormalizedImages_Label );
+   GenerateNormalizedImages_Sizer.Add( GenerateNormalizedImages_ComboBox );
    GenerateNormalizedImages_Sizer.AddStretch();
 
    //
@@ -881,19 +952,32 @@ LocalNormalizationInterface::GUIData::GUIData( LocalNormalizationInterface& w )
 
    //
 
-   ShowNormalizationFunctions_CheckBox.SetText( "Show normalization functions" );
-   ShowNormalizationFunctions_CheckBox.SetToolTip( "<p>Generate floating point images with rescaled representations of the local "
-      "normalization matrices. This option is only applicable to execution on views, and is always ignored when LocalNormalization "
-      "is executed in the global context (that is, as a batch procedure).</p>"
-      "<p>When this option is enabled, two images are generated to represent the parameters of the two-dimensional linear normalization "
-      "function: one for the scaling coefficients (or slopes), and another for the zero offsets (or Y-intercepts). These images can be "
-      "useful for evaluation and testing purposes. For example, they can be used to generate three-dimensional graph representations "
-      "of the local normalization function.</p>" );
-   ShowNormalizationFunctions_CheckBox.OnClick( (Button::click_event_handler)&LocalNormalizationInterface::e_Click, w );
+   const char* plotNormalizationFunctionsToolTip = "<p>Generate graphical representations of the local normalization function matrices. "
+      "This option is only applicable to execution on views; it is always ignored when LocalNormalization is executed in the global context "
+      "(that is, as a batch procedure).</p>"
+      "<p>When this option is enabled, two images are generated for each image channel with graphs representing the parameters of the "
+      "two-dimensional surface linear normalization function: one for the scaling coefficients (or slopes), and another for the zero offsets "
+      "(or Y-intercepts). These graphs, besides being beautiful, can be outstandingly useful for evaluation and testing purposes.</p>"
+      "<p>The <i>lines 3D</i> mode is the fastest option, but also the less accurate because of potential artifacts caused by crossing grid "
+      "lines. The <i>palette 3D</i> and <i>map 3D</i> modes generate high-quality, smooth and accurate renditions, but require more computation "
+      "time. The default option is <i>palette 3D</i>.</p>";
 
-   ShowNormalizationFunctions_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
-   ShowNormalizationFunctions_Sizer.Add( ShowNormalizationFunctions_CheckBox );
-   ShowNormalizationFunctions_Sizer.AddStretch();
+   PlotNormalizationFunctions_Label.SetText( "Plot functions:" );
+   PlotNormalizationFunctions_Label.SetFixedWidth( labelWidth1 );
+   PlotNormalizationFunctions_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   PlotNormalizationFunctions_Label.SetToolTip( plotNormalizationFunctionsToolTip );
+
+   PlotNormalizationFunctions_ComboBox.AddItem( "Disabled" );
+   PlotNormalizationFunctions_ComboBox.AddItem( "Lines 3D" );
+   PlotNormalizationFunctions_ComboBox.AddItem( "Palette 3D" );
+   PlotNormalizationFunctions_ComboBox.AddItem( "Map 3D" );
+   PlotNormalizationFunctions_ComboBox.SetToolTip( plotNormalizationFunctionsToolTip );
+   PlotNormalizationFunctions_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&LocalNormalizationInterface::e_ItemSelected, w );
+
+   PlotNormalizationFunctions_Sizer.SetSpacing( 4 );
+   PlotNormalizationFunctions_Sizer.Add( PlotNormalizationFunctions_Label );
+   PlotNormalizationFunctions_Sizer.Add( PlotNormalizationFunctions_ComboBox );
+   PlotNormalizationFunctions_Sizer.AddStretch();
 
    //
 
@@ -901,6 +985,8 @@ LocalNormalizationInterface::GUIData::GUIData( LocalNormalizationInterface& w )
    GeneralParameters_Sizer.Add( ReferenceImage_Sizer );
    GeneralParameters_Sizer.Add( Scale_Sizer );
    GeneralParameters_Sizer.Add( Rejection_Sizer );
+   GeneralParameters_Sizer.Add( HotPixelFilterRadius_Sizer );
+   GeneralParameters_Sizer.Add( NoiseReductionFilterRadius_Sizer );
    GeneralParameters_Sizer.Add( BackgroundRejectionLimit_NumericControl );
    GeneralParameters_Sizer.Add( ReferenceRejectionThreshold_NumericControl );
    GeneralParameters_Sizer.Add( TargetRejectionThreshold_NumericControl );
@@ -908,7 +994,7 @@ LocalNormalizationInterface::GUIData::GUIData( LocalNormalizationInterface& w )
    GeneralParameters_Sizer.Add( GenerateNormalizationData_Sizer );
    GeneralParameters_Sizer.Add( ShowBackgroundModels_Sizer );
    GeneralParameters_Sizer.Add( ShowRejectionMaps_Sizer );
-   GeneralParameters_Sizer.Add( ShowNormalizationFunctions_Sizer );
+   GeneralParameters_Sizer.Add( PlotNormalizationFunctions_Sizer );
 
    //
 
@@ -1142,4 +1228,4 @@ LocalNormalizationInterface::GUIData::GUIData( LocalNormalizationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LocalNormalizationInterface.cpp - Released 2017-07-18T16:14:18Z
+// EOF LocalNormalizationInterface.cpp - Released 2017-08-01T14:26:58Z

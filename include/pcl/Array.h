@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// pcl/Array.h - Released 2017-07-18T16:13:52Z
+// pcl/Array.h - Released 2017-08-01T14:23:31Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -2121,4 +2121,4 @@ Array<T,A>& operator <<( Array<T,A>&& x1, const Array<T,A>& x2 )
 #endif  // __PCL_Array_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Array.h - Released 2017-07-18T16:13:52Z
+// EOF pcl/Array.h - Released 2017-08-01T14:23:31Z

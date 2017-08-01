@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0369
+// Standard Geometry Process Module Version 01.02.01.0377
 // ----------------------------------------------------------------------------
-// IntegerResampleInstance.cpp - Released 2017-07-18T16:14:18Z
+// IntegerResampleInstance.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -134,12 +134,14 @@ bool IntegerResampleInstance::ExecuteOn( View& view )
 
    AutoViewLock lock( view );
 
+   Console console;
+
    ImageWindow window = view.Window();
    ImageVariant image = view.Image();
 
    if ( !image.IsComplexSample() )
       if ( p_zoomFactor == 1 || p_zoomFactor == 0 || p_zoomFactor == -1 )
-         Console().WriteLn( "<end><cbr>&lt;* Identity *&gt;" );
+         console.WriteLn( "<end><cbr>&lt;* identity *&gt;" );
       else
       {
          IntegerResample I( p_zoomFactor, static_cast<IntegerResample::downsample_mode>( p_downsampleMode ) );
@@ -164,7 +166,7 @@ bool IntegerResampleInstance::ExecuteOn( View& view )
 
          DeleteAstrometryMetadataAndPreviewsAndMask( window );
 
-         Console().EnableAbort();
+         console.EnableAbort();
 
          StandardStatus status;
          image.SetStatusCallback( &status );
@@ -174,8 +176,8 @@ bool IntegerResampleInstance::ExecuteOn( View& view )
 
    if ( p_forceResolution )
    {
-      Console().WriteLn( String().Format( "Setting resolution: h:%.3f, v:%.3f, u:px/%s",
-                                          p_resolution.x, p_resolution.y, p_metric ? "cm" : "inch" ) );
+      console.WriteLn( String().Format( "<end><cbr>Setting resolution: h:%.3f, v:%.3f, u:px/%s",
+                                        p_resolution.x, p_resolution.y, p_metric ? "cm" : "inch" ) );
       window.SetResolution( p_resolution.x, p_resolution.y, p_metric );
    }
 
@@ -208,4 +210,4 @@ void* IntegerResampleInstance::LockParameter( const MetaParameter* p, size_type 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IntegerResampleInstance.cpp - Released 2017-07-18T16:14:18Z
+// EOF IntegerResampleInstance.cpp - Released 2017-08-01T14:26:58Z

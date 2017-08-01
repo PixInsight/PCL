@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0369
+// Standard Geometry Process Module Version 01.02.01.0377
 // ----------------------------------------------------------------------------
-// DynamicCropInterface.cpp - Released 2017-07-18T16:14:18Z
+// DynamicCropInterface.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -882,28 +882,109 @@ void DynamicCropInterface::UpdateResize( DPoint& p, unsigned modifiers )
       double rw = w/h;
       double rh = h/w;
 
+      bool resizeTop = m_flags.bits.resizeTop;
+      bool resizeBottom = m_flags.bits.resizeBottom;
+
       if ( m_flags.bits.resizeLeft )
       {
-         m_center.x += d2.x;
-         w -= d.x;
-         h = rh*w;
+         if ( resizeTop )
+         {
+            if ( Abs( d.x ) < Abs( d.y ) )
+            {
+               h -= d.y;
+               m_center.y += d2.y;
+               w = rw*h;
+               m_center.x -= 0.5*(w - m_width);
+            }
+            else
+            {
+               w -= d.x;
+               m_center.x += d2.x;
+               h = rh*w;
+               m_center.y -= 0.5*(h - m_height);
+            }
+            resizeTop = false;
+         }
+         else if ( resizeBottom )
+         {
+            if ( Abs( d.x ) < Abs( d.y ) )
+            {
+               h += d.y;
+               m_center.y += d2.y;
+               w = rw*h;
+               m_center.x -= 0.5*(w - m_width);
+            }
+            else
+            {
+               w -= d.x;
+               m_center.x += d2.x;
+               h = rh*w;
+               m_center.y += 0.5*(h - m_height);
+            }
+            resizeBottom = false;
+         }
+         else
+         {
+            m_center.x += d2.x;
+            w -= d.x;
+            h = rh*w;
+         }
       }
 
-      if ( m_flags.bits.resizeTop )
+      if ( m_flags.bits.resizeRight )
+      {
+         if ( resizeTop )
+         {
+            if ( Abs( d.x ) < Abs( d.y ) )
+            {
+               h -= d.y;
+               m_center.y += d2.y;
+               w = rw*h;
+               m_center.x += 0.5*(w - m_width);
+            }
+            else
+            {
+               w += d.x;
+               m_center.x += d2.x;
+               h = rh*w;
+               m_center.y -= 0.5*(h - m_height);
+            }
+            resizeTop = false;
+         }
+         else if ( resizeBottom )
+         {
+            if ( Abs( d.x ) < Abs( d.y ) )
+            {
+               h += d.y;
+               m_center.y += d2.y;
+               w = rw*h;
+               m_center.x += 0.5*(w - m_width);
+            }
+            else
+            {
+               w += d.x;
+               m_center.x += d2.x;
+               h = rh*w;
+               m_center.y += 0.5*(h - m_height);
+            }
+            resizeBottom = false;
+         }
+         else
+         {
+            m_center.x += d2.x;
+            w += d.x;
+            h = rh*w;
+         }
+      }
+
+      if ( resizeTop )
       {
          m_center.y += d2.y;
          h -= d.y;
          w = rw*h;
       }
 
-      if ( m_flags.bits.resizeRight )
-      {
-         m_center.x += d2.x;
-         w += d.x;
-         h = rh*w;
-      }
-
-      if ( m_flags.bits.resizeBottom )
+      if ( resizeBottom )
       {
          m_center.y += d2.y;
          h += d.y;
@@ -2318,4 +2399,4 @@ DynamicCropInterface::GUIData::GUIData( DynamicCropInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropInterface.cpp - Released 2017-07-18T16:14:18Z
+// EOF DynamicCropInterface.cpp - Released 2017-08-01T14:26:58Z

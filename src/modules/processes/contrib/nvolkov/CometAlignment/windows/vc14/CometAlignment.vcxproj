@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-07-18T16:09:29.168Z
+# Generated on .... 2017-08-01T15:57:27.269Z
 # Project id ...... CometAlignment
 # Project type .... Module
 # Platform ........ Windows/vc14
@@ -33,7 +33,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{4793F156-935C-4C8A-8C1D-24CF9489DABC}</ProjectGuid>
+    <ProjectGuid>{C10655C7-328C-4D8A-A9FD-211BE255642B}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>

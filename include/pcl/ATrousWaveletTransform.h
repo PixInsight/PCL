@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// pcl/ATrousWaveletTransform.h - Released 2017-07-18T16:13:52Z
+// pcl/ATrousWaveletTransform.h - Released 2017-08-01T14:23:31Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -573,7 +573,7 @@ public:
     * of pixel values with the \a low, \a high and \a image parameters. The
     * standard deviation of the noise will only be computed for those pixels
     * whose values in the specified \a image pertain to the range
-    * ]<em>low</em>,<em>high</em>[, that is, for every pixel with value \a v in
+    * (<em>low</em>,<em>high</em>), that is, for every pixel with value \a v in
     * \a image such that the condition \a low < \e v < \a high is true.
     *
     * The specified \a image must be compatible with the wavelet transform. In
@@ -701,4 +701,4 @@ typedef ATrousWaveletTransform   StarletTransform;
 #endif   // __PCL_ATrousWaveletTransform_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ATrousWaveletTransform.h - Released 2017-07-18T16:13:52Z
+// EOF pcl/ATrousWaveletTransform.h - Released 2017-08-01T14:23:31Z

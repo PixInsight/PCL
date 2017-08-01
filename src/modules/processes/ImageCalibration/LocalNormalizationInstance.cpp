@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.00.0323
+// Standard ImageCalibration Process Module Version 01.04.01.0332
 // ----------------------------------------------------------------------------
-// LocalNormalizationInstance.cpp - Released 2017-07-18T16:14:18Z
+// LocalNormalizationInstance.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -54,18 +54,25 @@
 #include "LocalNormalizationParameters.h"
 #include "OutputFileData.h"
 
+#include <pcl/ATrousWaveletTransform.h>
 #include <pcl/AutoViewLock.h>
 #include <pcl/Console.h>
 #include <pcl/ErrorHandler.h>
+#include <pcl/ExternalProcess.h>
+#include <pcl/GaussianFilter.h>
+#include <pcl/GlobalSettings.h>
 #include <pcl/ImageWindow.h>
 #include <pcl/LocalNormalizationData.h>
 #include <pcl/MessageBox.h>
 #include <pcl/MetaModule.h>
+#include <pcl/MultiscaleMedianTransform.h>
 #include <pcl/MorphologicalTransformation.h>
 #include <pcl/PixelInterpolation.h>
 #include <pcl/Resample.h>
+#include <pcl/SeparableConvolution.h>
 #include <pcl/StdStatus.h>
 #include <pcl/SurfacePolynomial.h>
+#include <pcl/SurfaceSpline.h>
 #include <pcl/Version.h>
 #include <pcl/View.h>
 
@@ -81,15 +88,17 @@ LocalNormalizationInstance::LocalNormalizationInstance( const MetaProcess* P ) :
    p_backgroundRejectionLimit( TheLNBackgroundRejectionLimitParameter->DefaultValue() ),
    p_referenceRejectionThreshold( TheLNReferenceRejectionThresholdParameter->DefaultValue() ),
    p_targetRejectionThreshold( TheLNTargetRejectionThresholdParameter->DefaultValue() ),
+   p_hotPixelFilterRadius( TheLNHotPixelFilterRadiusParameter->DefaultValue() ),
+   p_noiseReductionFilterRadius( TheLNNoiseReductionFilterRadiusParameter->DefaultValue() ),
    p_referencePathOrViewId( TheLNReferencePathOrViewIdParameter->DefaultValue() ),
    p_referenceIsView( TheLNReferenceIsViewParameter->DefaultValue() ),
    p_inputHints( TheLNInputHintsParameter->DefaultValue() ),
    p_outputHints( TheLNOutputHintsParameter->DefaultValue() ),
-   p_generateNormalizedImages( TheLNGenerateNormalizedImagesParameter->DefaultValue() ),
+   p_generateNormalizedImages( LNGenerateNormalizedImages::Default ),
    p_generateNormalizationData( TheLNGenerateNormalizationDataParameter->DefaultValue() ),
    p_showBackgroundModels( TheLNShowBackgroundModelsParameter->DefaultValue() ),
    p_showRejectionMaps( TheLNShowRejectionMapsParameter->DefaultValue() ),
-   p_showNormalizationFunctions( TheLNShowNormalizationFunctionsParameter->DefaultValue() ),
+   p_plotNormalizationFunctions( LNPlotNormalizationFunctions::Default ),
    p_noGUIMessages( TheLNNoGUIMessagesParameter->DefaultValue() ),
    p_outputDirectory( TheLNOutputDirectoryParameter->DefaultValue() ),
    p_outputExtension( TheLNOutputExtensionParameter->DefaultValue() ),
@@ -100,7 +109,12 @@ LocalNormalizationInstance::LocalNormalizationInstance( const MetaProcess* P ) :
    p_useFileThreads( TheLNUseFileThreadsParameter->DefaultValue() ),
    p_fileThreadOverload( TheLNFileThreadOverloadParameter->DefaultValue() ),
    p_maxFileReadThreads( TheLNMaxFileReadThreadsParameter->DefaultValue() ),
-   p_maxFileWriteThreads( TheLNMaxFileWriteThreadsParameter->DefaultValue() )
+   p_maxFileWriteThreads( TheLNMaxFileWriteThreadsParameter->DefaultValue() ),
+   p_graphSize( TheLNGraphSizeParameter->DefaultValue() ),
+   p_graphTextSize( TheLNGraphTextSizeParameter->DefaultValue() ),
+   p_graphTitleSize( TheLNGraphTitleSizeParameter->DefaultValue() ),
+   p_graphTransparent( TheLNGraphTransparentParameter->DefaultValue() ),
+   p_graphOutputDirectory( TheLNGraphOutputDirectoryParameter->DefaultValue() )
 {
 }
 
@@ -124,6 +138,8 @@ void LocalNormalizationInstance::Assign( const ProcessImplementation& p )
       p_backgroundRejectionLimit    = x->p_backgroundRejectionLimit;
       p_referenceRejectionThreshold = x->p_referenceRejectionThreshold;
       p_targetRejectionThreshold    = x->p_targetRejectionThreshold;
+      p_hotPixelFilterRadius        = x->p_hotPixelFilterRadius;
+      p_noiseReductionFilterRadius  = x->p_noiseReductionFilterRadius;
       p_referencePathOrViewId       = x->p_referencePathOrViewId;
       p_referenceIsView             = x->p_referenceIsView;
       p_targets                     = x->p_targets;
@@ -133,7 +149,7 @@ void LocalNormalizationInstance::Assign( const ProcessImplementation& p )
       p_generateNormalizationData   = x->p_generateNormalizationData;
       p_showBackgroundModels        = x->p_showBackgroundModels;
       p_showRejectionMaps           = x->p_showRejectionMaps;
-      p_showNormalizationFunctions  = x->p_showNormalizationFunctions;
+      p_plotNormalizationFunctions  = x->p_plotNormalizationFunctions;
       p_noGUIMessages               = x->p_noGUIMessages;
       p_outputDirectory             = x->p_outputDirectory;
       p_outputExtension             = x->p_outputExtension;
@@ -145,6 +161,11 @@ void LocalNormalizationInstance::Assign( const ProcessImplementation& p )
       p_fileThreadOverload          = x->p_fileThreadOverload;
       p_maxFileReadThreads          = x->p_maxFileReadThreads;
       p_maxFileWriteThreads         = x->p_maxFileWriteThreads;
+      p_graphSize                   = x->p_graphSize;
+      p_graphTextSize               = x->p_graphTextSize;
+      p_graphTitleSize              = x->p_graphTitleSize;
+      p_graphTransparent            = x->p_graphTransparent;
+      p_graphOutputDirectory        = x->p_graphOutputDirectory;
    }
 }
 
@@ -152,7 +173,8 @@ void LocalNormalizationInstance::Assign( const ProcessImplementation& p )
 
 bool LocalNormalizationInstance::IsHistoryUpdater( const View& view ) const
 {
-   return p_generateNormalizedImages;
+   return p_generateNormalizedImages == LNGenerateNormalizedImages::ViewExecutionOnly ||
+          p_generateNormalizedImages == LNGenerateNormalizedImages::Always;
 }
 
 // ----------------------------------------------------------------------------
@@ -163,6 +185,46 @@ UndoFlags LocalNormalizationInstance::UndoMode( const View& view ) const
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+static void RunGnuplot( const String& gnuFilePath )
+{
+   Console console;
+
+   String gnuplotPath = PixInsightSettings::GlobalString( "Application/BinDirectory" ) + "/gnuplot";
+#ifdef __PCL_WINDOWS
+   gnuplotPath << ".exe";
+#endif
+   if ( !File::Exists( gnuplotPath ) )
+      throw Error( "The gnuplot executable does not exist: " + gnuplotPath );
+
+   ExternalProcess P;
+   P.Start( gnuplotPath, StringList() << gnuFilePath );
+   if ( !P.WaitForStarted() )
+      throw Error( "Unable to launch gnuplot executable: " + gnuplotPath );
+
+   Module->ProcessEvents();
+
+   console.Write( "<end><cbr>Running gnuplot:  " );
+   for ( int n = 0; !P.WaitForFinished( 250 ); ++n )
+   {
+      console.Write( String( "<end>\b" ) + "-/|\\"[n%4] );
+      Module->ProcessEvents();
+      if ( console.AbortRequested() )
+      {
+         console.NoteLn( "<end><cbr>* Abort requested - killing process." );
+         P.Kill();
+         throw ProcessAborted();
+      }
+   }
+   console.WriteLn( "<end>\bdone" );
+
+   if ( P.HasCrashed() )
+      throw Error( "The gnuplot executable has crashed: " + gnuplotPath );
+   if ( P.ExitCode() != 0 )
+      throw Error( "Gnuplot rendering failed. Exit code = " + String( P.ExitCode() ) );
+}
+
 // ----------------------------------------------------------------------------
 
 class LocalNormalizationThread : public Thread
@@ -209,7 +271,7 @@ public:
 
          Build();
 
-         if ( m_instance.p_generateNormalizedImages )
+         if ( GeneratesNormalizedImages() )
             Apply();
 
          WriteOutputData();
@@ -232,6 +294,19 @@ public:
          ClearConsoleOutputText();
          console.Write( text );
       }
+   }
+
+   bool ExecutedOnView() const
+   {
+      return m_targetFilePath.IsEmpty();
+   }
+
+   bool GeneratesNormalizedImages() const
+   {
+      return m_instance.p_generateNormalizedImages == LNGenerateNormalizedImages::Always ||
+             m_instance.p_generateNormalizedImages == (ExecutedOnView() ?
+                                    LNGenerateNormalizedImages::ViewExecutionOnly :
+                                    LNGenerateNormalizedImages::GlobalExecutionOnly);
    }
 
    String TargetFilePath() const
@@ -262,9 +337,11 @@ private:
          String                      m_targetFilePath;
          OutputFileData              m_fileData;
          ImageVariant                m_targetImage;
-         DImage                      m_A;
-         DImage                      m_B;
+         Image                       m_RB;
+         DImage                      m_A1;
+         DImage                      m_A0;
          String                      m_outputFilePath;
+         StatusMonitor               m_monitor;
          String                      m_errorInfo;
          bool                        m_success = false;
 
@@ -276,7 +353,7 @@ private:
       ImageWindow window( 1, 1, 1, P::BitsPerSample(), P::IsFloatSample(), false/*color*/, true/*processing*/, id );
       window.MainView().Image().CopyImage( image );
       window.Show();
-      window.ZoomToFit();
+      window.ZoomToFit( false/*zoomIn*/ );
    }
 
    // -------------------------------------------------------------------------
@@ -313,25 +390,27 @@ private:
       int                     m_endRow;
    };
 
-   background_models FixZero( Image& image, int delta = 64, int sampleSize = 32 )
+   background_models FixZero( Image& image, int delta = 40 )   // N
    {
       const int w  = image.Width();
       const int h  = image.Height();
-      const int d2 = delta >> 1;
-      const int s2 = sampleSize >> 1;
+      const int dx = RoundInt( w/Ceil( double( w )/delta ) );
+      const int dy = RoundInt( h/Ceil( double( h )/delta ) );
+      const int dx2 = dx >> 1;
+      const int dy2 = dy >> 1;
 
       background_models B;
 
       image.SetRangeClipping( 0, 0.92 );
 
-      for ( int c = 0; c < image.NumberOfNominalChannels(); ++c )
+      for ( int c = 0; c < image.NumberOfChannels(); ++c )
       {
          Array<double> X0, Y0, Z0;
-         for ( int y = d2; y < h; y += delta )
-            for ( int x = d2; x < w; x += delta )
+         for ( int y = dy2; y < h; y += dy )
+            for ( int x = dx2; x < w; x += dx )
                if ( image( x, y, c ) != 0 )
                {
-                  double z = image.Median( Rect( x-s2, y-s2, x+s2+1, y+s2+1 ), c, c, 1 );
+                  double z = image.Median( Rect( x-dx2, y-dy2, x+dx2+1, y+dy2+1 ), c, c, 1 );
                   if ( 1 + z != 1 )
                   {
                      X0 << x;
@@ -378,6 +457,8 @@ private:
          threads.Destroy();
 
          B << P;
+
+         m_monitor += image.NumberOfPixels();
       }
 
       return B;
@@ -389,11 +470,13 @@ private:
    {
    public:
 
-      RejectThread( const LocalNormalizationInstance& instance,
+      RejectThread( AbstractImage::ThreadData& data,
+                    const LocalNormalizationInstance& instance,
                     UInt8Image& Rr, UInt8Image& Tr,
                     const Image& R, const Image& T,
                     const background_model& Rz, const background_model& Tz,
                     int channel, int startRow, int endRow ) :
+         m_data( data ),
          m_instance( instance ),
          m_Rr( Rr ),
          m_Tr( Tr ),
@@ -409,6 +492,8 @@ private:
 
       virtual void Run()
       {
+         INIT_THREAD_MONITOR()
+
          Image::const_sample_iterator r( m_R, m_channel );
          Image::const_sample_iterator t( m_T, m_channel );
          UInt8Image::sample_iterator rr( m_Rr );
@@ -426,11 +511,14 @@ private:
                double tk = Abs( *t - tb )/tb;
                *rr = tk < m_instance.p_backgroundRejectionLimit && rk > m_instance.p_referenceRejectionThreshold;
                *tr = rk < m_instance.p_backgroundRejectionLimit && tk > m_instance.p_targetRejectionThreshold;
+
+               UPDATE_THREAD_MONITOR( 65536 )
             }
       }
 
    private:
 
+            AbstractImage::ThreadData&  m_data;
       const LocalNormalizationInstance& m_instance;
             UInt8Image&                 m_Rr;
             UInt8Image&                 m_Tr;
@@ -443,20 +531,26 @@ private:
             int                         m_endRow;
    };
 
-   void Reject( Image& T, Image& R )
+   void Reject( Image& T, Image& R )   // 9*N
    {
+      /*
+       * Setup rejection map images if requested.
+       */
       UInt8Image Rmap, Tmap;
       bool haveMaps = false;
       if ( m_instance.p_rejection )
          if ( m_instance.p_showRejectionMaps )
-            if ( m_targetFilePath.IsEmpty() )
+            if ( ExecutedOnView() )
             {
                Rmap.AllocateData( R.Width(), R.Height(), R.NumberOfNominalChannels(), R.ColorSpace() ).Fill( uint8( 0 ) );
                Tmap.AllocateData( T.Width(), T.Height(), T.NumberOfNominalChannels(), T.ColorSpace() ).Fill( uint8( 0 ) );
                haveMaps = true;
             }
 
-      for ( int c = 0; c < R.NumberOfNominalChannels(); ++c )
+      /*
+       * Initial exclusion of black pixel samples.
+       */
+      for ( int c = 0; c < R.NumberOfChannels(); ++c )
       {
          UInt8Image::sample_iterator rm( Rmap, c );
          UInt8Image::sample_iterator tm( Tmap, c );
@@ -476,53 +570,61 @@ private:
          }
       }
 
-      background_models Rz = FixZero( R );
-      background_models Tz = FixZero( T );
+      /*
+       * Initial approximate background models and replacement of black pixels.
+       */
+      background_models Rz = FixZero( R );   // N
+      background_models Tz = FixZero( T );   // N
 
-      if ( m_instance.p_showBackgroundModels )
-         if ( m_targetFilePath.IsEmpty() )
-         {
-            Image Rb( R.Width(), R.Height(), R.ColorSpace() );
-            Image Tb( T.Width(), T.Height(), T.ColorSpace() );
-            for ( int c = 0; c < T.NumberOfNominalChannels(); ++c )
-            {
-               Image::sample_iterator r( Rb, c );
-               Image::sample_iterator t( Tb, c );
-               for ( int y = 0; y < T.Height(); ++y )
-                  for ( int x = 0; x < T.Width(); ++x, ++r, ++t )
-                  {
-                     *r = Range( Rz[c]( x, y ), 0.0, 1.0 );
-                     *t = Range( Tz[c]( x, y ), 0.0, 1.0 );
-                  }
-            }
-            CreateImageWindow( Rb, "LN_bmodel_r" );
-            CreateImageWindow( Tb, "LN_bmodel_t" );
-         }
+      /*
+       * Optional hot/cold pixel removal.
+       */
+      if ( m_instance.p_hotPixelFilterRadius > 0 ) // 2*N
+      {
+         MorphologicalTransformation M;
+         M.SetOperator( MedianFilter() );
+         if ( m_instance.p_hotPixelFilterRadius > 1 )
+            M.SetStructure( CircularStructure( 2*m_instance.p_hotPixelFilterRadius + 1 ) );
+         else
+            M.SetStructure( BoxStructure( 3 ) );
 
+         M >> R; m_monitor += R.NumberOfSamples();
+         M >> T; m_monitor += R.NumberOfSamples();
+      }
+      else
+         m_monitor += 2*R.NumberOfSamples();
+
+      /*
+       * Optional noise reduction.
+       */
+      if ( m_instance.p_noiseReductionFilterRadius > 0 ) // 2*N
+      {
+         SeparableConvolution C( GaussianFilter( 2*m_instance.p_noiseReductionFilterRadius + 1 ).AsSeparableFilter() );
+         C >> R; m_monitor += R.NumberOfSamples();
+         C >> T; m_monitor += R.NumberOfSamples();
+      }
+      else
+         m_monitor += 2*R.NumberOfSamples();
+
+      /*
+       * Outlier rejection.
+       */
       if ( m_instance.p_rejection )
       {
-         for ( int c = 0; c < T.NumberOfNominalChannels(); ++c )
+         for ( int c = 0; c < T.NumberOfChannels(); ++c )   // N
          {
             UInt8Image Rr( R.Width(), R.Height() );
             UInt8Image Tr( T.Width(), T.Height() );
 
             int numberOfThreads = Thread::NumberOfThreads( R.Height(), 4 );
             int rowsPerThread = R.Height()/numberOfThreads;
+            AbstractImage::ThreadData data( m_monitor, T.NumberOfPixels() );
             ReferenceArray<RejectThread> threads;
             for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
-               threads << new RejectThread( m_instance, Rr, Tr, R, T, Rz[c], Tz[c], c,
+               threads << new RejectThread( data, m_instance, Rr, Tr, R, T, Rz[c], Tz[c], c,
                                     i*rowsPerThread,
                                     (j < numberOfThreads) ? j*rowsPerThread : R.Height() );
-            if ( numberOfThreads > 1 )
-            {
-               for ( int i = 0; i < numberOfThreads; ++i )
-                  threads[i].Start( ThreadPriority::DefaultMax, i );
-               for ( int i = 0; i < numberOfThreads; ++i )
-                  threads[i].Wait();
-            }
-            else
-               threads[0].Run();
-
+            AbstractImage::RunThreads( threads, data );
             threads.Destroy();
 
             MorphologicalTransformation M( DilationFilter(), BoxStructure( 3 ) );
@@ -553,8 +655,8 @@ private:
             }
          }
 
-         FixZero( R );
-         FixZero( T );
+         FixZero( R );  // N
+         FixZero( T );  // N
 
          if ( haveMaps )
          {
@@ -562,9 +664,194 @@ private:
             CreateImageWindow( Tmap, "LN_rmap_t" );
          }
       }
+      else
+         m_monitor += 3*R.NumberOfSamples();
    }
 
    // -------------------------------------------------------------------------
+
+   Image Background( const Image& image, int scalePx ) // N
+   {
+      // Accelerated multiscale median transform with linear scaling
+      MultiscaleMedianTransform M( Max( 1, RoundInt( scalePx/32.0 ) ), 16 );
+      //M.DisableMultiwayStructures();
+      for ( int i = 0; i < M.NumberOfLayers(); ++i )
+         M.DisableLayer( i );
+      M << image;
+      m_monitor += image.NumberOfSamples();
+      return M[M.NumberOfLayers()];
+   }
+
+   // -------------------------------------------------------------------------
+
+   static int TicsDelta( int size )
+   {
+      int x = size/8;
+      return x - x%TruncInt( Pow10I<double>()( TruncInt( Log( double( x ) ) ) ) );
+   }
+
+   void Plot( int component )
+   {
+      const DImage& image = (component == 0) ? m_A0 : m_A1;
+      const String fileSuffix = (component == 0) ? "_a0" : "_a1";
+      const IsoString windowSuffix = (component == 0) ? "_offset" : "_scale";
+      const IsoString titleComponent = (component == 0) ? "Offset" : "Scale";
+      const String tmpDir = File::SystemTempDirectory();
+      const double sx = double( image.Width() )/m_referenceImage.Width();
+      const double sy = double( image.Height() )/m_referenceImage.Height();
+      const double gridStep = Max( m_referenceImage.Width(), m_referenceImage.Height() )/64;
+      const int xGridSize = RoundInt( m_referenceImage.Width()/gridStep );
+      const int yGridSize = RoundInt( m_referenceImage.Height()/gridStep );
+
+      for ( int c = 0; c < image.NumberOfChannels(); ++c )
+      {
+         Module->ProcessEvents();
+
+         BicubicBSplineInterpolation<double> A;
+         A.Initialize( image[c], image.Width(), image.Height() );
+         IsoString text;
+         for ( int x = 0, n = 0; x < xGridSize; ++x )
+            for ( int y = 0; y < yGridSize; ++y, ++n )
+            {
+               double nx = x*gridStep;
+               double ny = y*gridStep;
+               text << IsoString( nx ) << ' ' << IsoString( ny ) << ' ' << IsoString( A( sx*nx, sy*ny ) ) << '\n';
+            }
+         String datFilePath = tmpDir + "/ln" + fileSuffix + ".dat";
+         File::WriteTextFile( datFilePath, text );
+
+         String outputDir = m_instance.p_graphOutputDirectory.Trimmed();
+         if ( outputDir.IsEmpty() )
+            outputDir = tmpDir;
+         else
+         {
+            if ( !File::DirectoryExists( outputDir ) )
+            {
+               Console console;
+               console.WarningLn( "** Warning: The specified graph output directory does not exist: <raw>" + outputDir + "</raw>" );
+               console.WarningLn( "Will use the system temp directory instead: <raw>" + tmpDir + "</raw>" );
+            }
+         }
+         if ( !outputDir.EndsWith( '/' ) )
+            outputDir << '/';
+
+         String gnuFilePath = tmpDir + '/' + "ln" + fileSuffix + ".gnu";
+         String svgFilePath = outputDir + "ln" + fileSuffix + ".svg";
+
+         text.Clear();
+         text << "set terminal svg size ";
+         if ( m_instance.p_plotNormalizationFunctions == LNPlotNormalizationFunctions::Map3D )
+         {
+            if ( m_referenceImage.Width() >= m_referenceImage.Height() )
+               text << IsoString( m_instance.p_graphSize ) << ','
+                    << IsoString( RoundInt( m_referenceImage.Height()*double( m_instance.p_graphSize )/m_referenceImage.Width() ) );
+            else
+               text << IsoString( RoundInt( m_referenceImage.Width()*double( m_instance.p_graphSize )/m_referenceImage.Height() ) ) << ','
+                    << IsoString( m_instance.p_graphSize );
+         }
+         else
+            text << IsoString( m_instance.p_graphSize ) << ',' << IsoString( m_instance.p_graphSize );
+         text << " font \"helvetica," << IsoString( m_instance.p_graphTextSize ) << "\" enhanced";
+         if ( !m_instance.p_graphTransparent )
+            text << " background \"#FFFFFF\"";
+         text << '\n';
+
+         text << "set samples " << IsoString( xGridSize ) << "," << IsoString( yGridSize ) << '\n'
+              << "set isosamples " << IsoString( xGridSize ) << "," << IsoString( yGridSize ) << '\n'
+              << "set dgrid3d " << IsoString( xGridSize ) << "," << IsoString( yGridSize ) << '\n'
+              << "set xyplane 0\n"
+              << "set hidden3d\n"
+              << "set margins 0,0,0,0\n"
+              << "set yrange [] reverse\n"
+              << "set xtics 0," << IsoString( TicsDelta( m_referenceImage.Width() ) ) << "," << IsoString( m_referenceImage.Width()-1 ) << '\n'
+              << "set ytics 0," << IsoString( TicsDelta( m_referenceImage.Height() ) ) << "," << IsoString( m_referenceImage.Height()-1 ) << '\n';
+
+         if ( m_instance.p_plotNormalizationFunctions != LNPlotNormalizationFunctions::Map3D )
+            text << "set xtics offset character 0,-0.25\n"
+                 << "set ytics offset character 1.75\n"
+                 << "set border 895\n";
+
+         if ( m_instance.p_plotNormalizationFunctions != LNPlotNormalizationFunctions::Line3D )
+            text << "set pm3d interpolate 0,0\n";
+
+         if ( m_instance.p_plotNormalizationFunctions == LNPlotNormalizationFunctions::Map3D )
+            text << "set view map scale 1\n";
+
+         text << "set grid xtics ytics ztics\n"
+              << "set contour base\n"
+              << "set title \"Local Normalization " << titleComponent << " Component, Channel " << IsoString( c ) << '\"'
+                  << " font \"helvetica," << IsoString( m_instance.p_graphTitleSize ) << "\" offset character 0,0.5\n"
+              << "unset key\n"
+              << "set output \"" << svgFilePath.ToUTF8() << "\"\n"
+              << "splot \"" << datFilePath.ToUTF8() << "\" using 1:2:3 with ";
+
+         if ( m_instance.p_plotNormalizationFunctions == LNPlotNormalizationFunctions::Line3D )
+            text << "lines lc rgbcolor \"#E00000\"\n";
+         else
+            text << "pm3d\n";
+
+         File::WriteTextFile( gnuFilePath, text );
+
+         RunGnuplot( gnuFilePath );
+
+         {
+            Bitmap bmp( svgFilePath );
+            UInt8Image image;
+            image.AllocateData( bmp.Width(), bmp.Height(), m_instance.p_graphTransparent ? 4 : 3, ColorSpace::RGB );
+            image.Blend( bmp );
+            CreateImageWindow( image, "LN" + windowSuffix );
+         }
+      }
+   }
+
+   // -------------------------------------------------------------------------
+
+   class BuildThread : public Thread
+   {
+   public:
+
+      BuildThread( AbstractImage::ThreadData& data,
+                   const Image& R, const Image& T, const Image& RB, const Image& TB,
+                   DImage& A0, DImage& A1, distance_type start, distance_type end ) :
+         m_data( data ),
+         m_R( R ), m_T( T ), m_RB( RB ), m_TB( TB ),
+         m_A0( A0 ), m_A1( A1 ),
+         m_start( start ), m_end( end )
+      {
+      }
+
+      virtual void Run()
+      {
+         INIT_THREAD_MONITOR()
+
+         for ( int c = 0; c < m_R.NumberOfChannels(); ++c )
+         {
+            Image::const_sample_iterator r( m_R, c ), t( m_T, c ), rb( m_RB, c ), tb( m_TB, c );
+            DImage::sample_iterator a0( m_A0, c ), a1( m_A1, c );
+            r += m_start; t += m_start; rb += m_start; tb += m_start;
+            a0 += m_start; a1 += m_start;
+            for ( distance_type p = m_start; p < m_end; ++p, ++r, ++t, ++rb, ++tb, ++a0, ++a1 )
+            {
+               *a0 = *rb - *tb;
+               *a1 = (*r  - *a0) / *t;
+
+               UPDATE_THREAD_MONITOR( 65536 )
+            }
+         }
+      }
+
+   private:
+
+            AbstractImage::ThreadData& m_data;
+      const Image&                     m_R;
+      const Image&                     m_T;
+      const Image&                     m_RB;
+      const Image&                     m_TB;
+            DImage&                    m_A0;
+            DImage&                    m_A1;
+            distance_type              m_start;
+            distance_type              m_end;
+   };
 
    template <class P1, class P2>
    void Build( const GenericImage<P1>& target, const GenericImage<P2>& reference )
@@ -572,58 +859,67 @@ private:
       if ( target.Bounds() != reference.Bounds() || target.NumberOfNominalChannels() != reference.NumberOfNominalChannels() )
          throw Error( "LocalNormalizationThread::Build(): Internal error: Incompatible image geometries." );
 
-      BicubicFilterPixelInterpolation BF( m_instance.p_scale << 1, m_instance.p_scale << 1, CubicBSplineFilter() );
-      Resample S( BF, 1.0/m_instance.p_scale );
+      reference.SelectNominalChannels();
+      target.SelectNominalChannels();
 
       Image R = reference;
       Image T = target;
 
-      Reject( T, R );
+      reference.ResetSelections();
+      target.ResetSelections();
 
-      Image R2 = R;
-      R2.Multiply( R2 );
-      S >> R;
-      S >> R2;
+      StandardStatus status;
+      m_monitor.SetCallback( &status );
+      m_monitor.Initialize( "Building local normalization functions", 15*R.NumberOfSamples() );
 
-      Image T2 = T;
-      T2.Multiply( T2 );
-      S >> T;
-      S >> T2;
+      Reject( T, R ); // 9*N
 
-      m_A.AllocateData( R.Width(), R.Height(), R.NumberOfNominalChannels() );
-      m_B.AllocateData( R.Width(), R.Height(), R.NumberOfNominalChannels() );
+      Image RB = Background( R, m_instance.p_scale ); // N
+      Image TB = Background( T, m_instance.p_scale ); // N
 
-      for ( int c = 0; c < R.NumberOfNominalChannels(); ++c )
-      {
-         DImage::sample_iterator a( m_A, c ), b( m_B, c );
-         for ( Image::const_sample_iterator r( R, c ), t( T, c ), r2( R2, c ), t2( T2, c ); r; ++r, ++t, ++r2, ++t2, ++a, ++b )
+      if ( m_instance.p_showBackgroundModels )
+         if ( ExecutedOnView() )
          {
-            double n = Sqrt( *r2 - *r * *r );
-            if ( 1 + n != 1 )
-            {
-               double d = Sqrt( *t2 - *t * *t );
-               if ( 1 + d != 1 )
-               {
-                  *a = n/d;
-                  *b = *r - *a * *t;
-                  continue;
-               }
-            }
-
-            *a = 1;
-            *b = 0;
+            CreateImageWindow( RB, "LN_background_r" );
+            CreateImageWindow( TB, "LN_background_t" );
          }
+
+      m_A0.AllocateData( R.Width(), R.Height(), R.NumberOfChannels() );
+      m_A1.AllocateData( R.Width(), R.Height(), R.NumberOfChannels() );
+
+      int numberOfThreads = Thread::NumberOfThreads( R.NumberOfPixels(), 256 );
+      int pixelsPerThread = R.NumberOfPixels()/numberOfThreads;
+      AbstractImage::ThreadData data( m_monitor, R.NumberOfSamples() );
+      ReferenceArray<BuildThread> threads;
+      for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
+         threads << new BuildThread( data, R, T, RB, TB, m_A0, m_A1,
+                                     i*pixelsPerThread,
+                                     (j < numberOfThreads) ? j*pixelsPerThread : R.NumberOfPixels() );
+      AbstractImage::RunThreads( threads, data ); // N
+      threads.Destroy();
+
+      {
+         MorphologicalTransformation M;
+         M.SetOperator( MedianFilter() );
+         M.SetStructure( BoxStructure( 3 ) );
+         M >> m_A1; m_monitor += m_A1.NumberOfSamples(); // N
       }
 
-      if ( m_instance.p_showNormalizationFunctions )
-         if ( m_targetFilePath.IsEmpty() )
+      {
+         BicubicFilterPixelInterpolation BF( m_instance.p_scale, m_instance.p_scale, CubicBSplineFilter() );
+         Resample R( BF, 2.0/m_instance.p_scale );
+         R.EnableUnclippedInterpolation();
+         R >> m_A0; m_monitor += m_A0.NumberOfSamples(); // N
+         R >> m_A1; m_monitor += m_A1.NumberOfSamples(); // N
+      }
+
+      m_monitor.Complete();
+
+      if ( m_instance.p_plotNormalizationFunctions != LNPlotNormalizationFunctions::DontPlot )
+         if ( ExecutedOnView() )
          {
-            DImage A( m_A );
-            DImage B( m_B );
-            A.Rescale();
-            B.Rescale();
-            CreateImageWindow( A, "LN_scale" );
-            CreateImageWindow( B, "LN_zero_offset" );
+            Plot( 0 );
+            Plot( 1 );
          }
    }
 
@@ -670,12 +966,12 @@ private:
    public:
 
       ApplyThread( AbstractImage::ThreadData& data,
-                   GenericImage<P>& target, const DImage& A, const DImage& B,
+                   GenericImage<P>& target, const DImage& A0, const DImage& A1,
                    int startRow, int endRow ) :
          m_data( data ),
          m_target( target ),
-         m_A( A ),
-         m_B( B ),
+         m_A0( A0 ),
+         m_A1( A1 ),
          m_startRow( startRow ),
          m_endRow( endRow )
       {
@@ -685,15 +981,15 @@ private:
       {
          INIT_THREAD_MONITOR()
 
-         double sx = double( m_A.Width() )/m_target.Width();
-         double sy = double( m_A.Height() )/m_target.Height();
+         double sx = double( m_A1.Width() )/m_target.Width();
+         double sy = double( m_A1.Height() )/m_target.Height();
 
          for ( int c = 0; c < m_target.NumberOfNominalChannels(); ++c )
          {
-            BicubicBSplineInterpolation<double> A;
-            A.Initialize( m_A[c], m_A.Width(), m_A.Height() );
-            BicubicBSplineInterpolation<double> B;
-            B.Initialize( m_B[c], m_B.Width(), m_B.Height() );
+            BicubicBSplineInterpolation<double> A0;
+            A0.Initialize( m_A0[c], m_A0.Width(), m_A0.Height() );
+            BicubicBSplineInterpolation<double> A1;
+            A1.Initialize( m_A1[c], m_A1.Width(), m_A1.Height() );
 
             typename GenericImage<P>::sample_iterator t( m_target, c );
             t.MoveBy( 0, m_startRow );
@@ -705,7 +1001,7 @@ private:
                   {
                      double f; P::FromSample( f, *t );
                      double xs = sx*x;
-                     *t = P::ToSample( Range( A( xs, ys )*f + B( xs, ys ), 0.0, 1.0 ) );
+                     *t = P::ToSample( Range( A0( xs, ys ) + A1( xs, ys )*f, 0.0, 1.0 ) );
 
                      UPDATE_THREAD_MONITOR( 65536 )
                   }
@@ -717,8 +1013,8 @@ private:
 
             AbstractImage::ThreadData& m_data;
             GenericImage<P>&           m_target;
-      const DImage&                    m_A;
-      const DImage&                    m_B;
+      const DImage&                    m_A0;
+      const DImage&                    m_A1;
             int                        m_startRow;
             int                        m_endRow;
    };
@@ -736,7 +1032,7 @@ private:
       AbstractImage::ThreadData data( monitor, target.NumberOfSamples() );
       ReferenceArray<ApplyThread<P> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
-         threads << new ApplyThread<P>( data, target, m_A, m_B,
+         threads << new ApplyThread<P>( data, target, m_A0, m_A1,
                               i*rowsPerThread,
                               (j < numberOfThreads) ? j*rowsPerThread : target.Height() );
       AbstractImage::RunThreads( threads, data );
@@ -772,7 +1068,7 @@ private:
 
       Console console;
       console.WriteLn( "<end><cbr>Loading target file:" );
-      console.WriteLn( m_targetFilePath );
+      console.WriteLn( "<raw>" + m_targetFilePath + "</raw>" );
 
       FileFormat format( File::ExtractExtension( m_targetFilePath ), true/*read*/, false/*write*/ );
       FileFormatInstance file( format );
@@ -852,14 +1148,14 @@ private:
          data.SetTargetFilePath( m_targetFilePath );
          data.SetNormalizationScale( m_instance.p_scale );
          data.SetReferenceDimensions( m_referenceImage.Width(), m_referenceImage.Height() );
-         data.SetNormalizationMatrices( m_A, m_B );
+         data.SetNormalizationMatrices( m_A1, m_A0 );
          {
             volatile AutoLockCounter lock( mutex, count, m_instance.p_maxFileWriteThreads );
             data.SerializeToFile( xnmlFilePath );
          }
       }
 
-      if ( m_instance.p_generateNormalizedImages )
+      if ( GeneratesNormalizedImages() )
       {
          String fileExtension = m_instance.p_outputExtension.Trimmed();
          if ( fileExtension.IsEmpty() )
@@ -988,14 +1284,15 @@ bool LocalNormalizationInstance::CanExecuteOn( const View& view, String& whyNot 
       return false;
    }
 
-   if ( !p_generateNormalizedImages )
-      if ( !p_showBackgroundModels )
-         if ( !p_showRejectionMaps )
-            if ( !p_showNormalizationFunctions )
-            {
-               whyNot = "No process operation has been defined.";
-               return false;
-            }
+   if ( p_generateNormalizedImages != LNGenerateNormalizedImages::Always )
+      if ( p_generateNormalizedImages != LNGenerateNormalizedImages::ViewExecutionOnly )
+         if ( !p_showBackgroundModels )
+            if ( !p_showRejectionMaps )
+               if ( p_plotNormalizationFunctions == LNPlotNormalizationFunctions::DontPlot )
+               {
+                  whyNot = "No process operation has been defined applicable to view execution.";
+                  return false;
+               }
 
    return true;
 }
@@ -1007,7 +1304,7 @@ static void LoadReferenceImage( ImageVariant& image, const String& path, const S
    Console console;
 
    console.WriteLn( "<end><cbr>Loading reference image:" );
-   console.WriteLn( path );
+   console.WriteLn( "<raw>" + path + "</raw>" );
 
    FileFormat format( File::ExtractExtension( path ), true/*read*/, false/*write*/ );
    FileFormatInstance file( format );
@@ -1069,12 +1366,15 @@ bool LocalNormalizationInstance::ExecuteOn( View& view )
    else
       LoadReferenceImage( referenceImage, p_referencePathOrViewId, p_inputHints );
 
-   if ( p_scale > Min( referenceImage.Width(), referenceImage.Height() ) )
-      throw Error( "The normalization scale is larger than the dimensions of the image: " + p_referencePathOrViewId );
+   if ( Min( referenceImage.Width(), referenceImage.Height() ) < 2*p_scale )
+      throw Error( "Insufficient image dimensions for the selected normalization scale: " + p_referencePathOrViewId );
+
+   if ( Min( referenceImage.Width(), referenceImage.Height() ) < 256 )
+      throw Error( "Image too small for local normalization; at least 256 pixels are required." );
 
    AutoViewLock targetLock( view, false/*lock*/ );
    if ( !view.IsPreview() || referenceView.IsNull() || view.Window() != referenceView.Window() )
-      if ( p_generateNormalizedImages )
+      if ( IsHistoryUpdater( view ) )
          targetLock.Lock();
       else
          targetLock.LockForWrite();
@@ -1105,12 +1405,13 @@ bool LocalNormalizationInstance::CanExecuteGlobal( String& whyNot ) const
       return false;
    }
 
-   if ( !p_generateNormalizedImages )
-      if ( !p_generateNormalizationData )
-      {
-         whyNot = "No process operation has been defined.";
-         return false;
-      }
+   if ( p_generateNormalizedImages != LNGenerateNormalizedImages::Always )
+      if ( p_generateNormalizedImages != LNGenerateNormalizedImages::GlobalExecutionOnly )
+         if ( !p_generateNormalizationData )
+         {
+            whyNot = "No process operation has been defined applicable to global execution.";
+            return false;
+         }
 
    return true;
 }
@@ -1166,8 +1467,11 @@ bool LocalNormalizationInstance::ExecuteGlobal()
       else
          LoadReferenceImage( referenceImage, p_referencePathOrViewId, p_inputHints );
 
-      if ( p_scale > Min( referenceImage.Width(), referenceImage.Height() ) )
-         throw Error( "The normalization scale is larger than the dimensions of the image: " + p_referencePathOrViewId );
+      if ( Min( referenceImage.Width(), referenceImage.Height() ) < 2*p_scale )
+         throw Error( "Insufficient image dimensions for the selected normalization scale: " + p_referencePathOrViewId );
+
+      if ( Min( referenceImage.Width(), referenceImage.Height() ) < 256 )
+         throw Error( "Image too small for local normalization; at least 256 pixels are required." );
 
       console.WriteLn( String().Format( "<end><cbr><br>Normalization of %u target files.", p_targets.Length() ) );
 
@@ -1402,6 +1706,10 @@ void* LocalNormalizationInstance::LockParameter( const MetaParameter* p, size_ty
       return &p_referenceRejectionThreshold;
    if ( p == TheLNTargetRejectionThresholdParameter )
       return &p_targetRejectionThreshold;
+   if ( p == TheLNHotPixelFilterRadiusParameter )
+      return &p_hotPixelFilterRadius;
+   if ( p == TheLNNoiseReductionFilterRadiusParameter )
+      return &p_noiseReductionFilterRadius;
    if ( p == TheLNReferencePathOrViewIdParameter )
       return p_referencePathOrViewId.Begin();
    if ( p == TheLNReferenceIsViewParameter )
@@ -1422,8 +1730,8 @@ void* LocalNormalizationInstance::LockParameter( const MetaParameter* p, size_ty
       return &p_showBackgroundModels;
    if ( p == TheLNShowRejectionMapsParameter )
       return &p_showRejectionMaps;
-   if ( p == TheLNShowNormalizationFunctionsParameter )
-      return &p_showNormalizationFunctions;
+   if ( p == TheLNPlotNormalizationFunctionsParameter )
+      return &p_plotNormalizationFunctions;
    if ( p == TheLNNoGUIMessagesParameter )
       return &p_noGUIMessages;
    if ( p == TheLNOutputDirectoryParameter )
@@ -1446,6 +1754,16 @@ void* LocalNormalizationInstance::LockParameter( const MetaParameter* p, size_ty
       return &p_maxFileReadThreads;
    if ( p == TheLNMaxFileWriteThreadsParameter )
       return &p_maxFileWriteThreads;
+   if ( p == TheLNGraphSizeParameter )
+      return &p_graphSize;
+   if ( p == TheLNGraphTextSizeParameter )
+      return &p_graphTextSize;
+   if ( p == TheLNGraphTitleSizeParameter )
+      return &p_graphTitleSize;
+   if ( p == TheLNGraphTransparentParameter )
+      return &p_graphTransparent;
+   if ( p == TheLNGraphOutputDirectoryParameter )
+      return p_graphOutputDirectory.Begin();
 
    return nullptr;
 }
@@ -1508,6 +1826,12 @@ bool LocalNormalizationInstance::AllocateParameter( size_type sizeOrLength, cons
       if ( sizeOrLength > 0 )
          p_outputPostfix.SetLength( sizeOrLength );
    }
+   else if ( p == TheLNGraphOutputDirectoryParameter )
+   {
+      p_graphOutputDirectory.Clear();
+      if ( sizeOrLength > 0 )
+         p_graphOutputDirectory.SetLength( sizeOrLength );
+   }
    else
       return false;
 
@@ -1536,6 +1860,8 @@ size_type LocalNormalizationInstance::ParameterLength( const MetaParameter* p, s
       return p_outputPrefix.Length();
    if ( p == TheLNOutputPostfixParameter )
       return p_outputPostfix.Length();
+   if ( p == TheLNGraphOutputDirectoryParameter )
+      return p_graphOutputDirectory.Length();
 
    return 0;
 }
@@ -1545,4 +1871,4 @@ size_type LocalNormalizationInstance::ParameterLength( const MetaParameter* p, s
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LocalNormalizationInstance.cpp - Released 2017-07-18T16:14:18Z
+// EOF LocalNormalizationInstance.cpp - Released 2017-08-01T14:26:58Z

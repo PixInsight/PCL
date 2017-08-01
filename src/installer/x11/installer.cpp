@@ -7,7 +7,7 @@
 // ----------------------------------------------------------------------------
 // This file is part of PixInsight X11 UNIX/Linux Installer
 // ----------------------------------------------------------------------------
-// 2017/06/30 07:57:32 UTC
+// 2017/08/01 15:56:43 UTC
 // installer.cpp
 // ----------------------------------------------------------------------------
 // Copyright (c) 2013-2017 Pleiades Astrophoto S.L.
@@ -986,8 +986,8 @@ bool PixInsightX11Installer::IsPixInsightInstallation( const String& dirPath )
       return false;
    if ( !File::Exists( dirPath + "/bin/PixInsight" ) )
       return false;
-   if ( !File::Exists( dirPath + "/EULA_en_US.txt" ) )
-      return false;
+//    if ( !File::Exists( dirPath + "/doc/licenses/EULA_en_US.txt" ) )
+//       return false;
    return true;
 }
 
@@ -1076,5 +1076,5 @@ int main( int argc, const char** argv )
 }
 
 // ----------------------------------------------------------------------------
-// 2017/06/30 07:57:32 UTC
+// 2017/08/01 15:56:43 UTC
 // installer.cpp

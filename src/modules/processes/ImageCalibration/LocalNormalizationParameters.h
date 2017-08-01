@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.00.0323
+// Standard ImageCalibration Process Module Version 01.04.01.0332
 // ----------------------------------------------------------------------------
-// LocalNormalizationParameters.h - Released 2017-07-18T16:14:18Z
+// LocalNormalizationParameters.h - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -144,6 +144,38 @@ extern LNTargetRejectionThreshold* TheLNTargetRejectionThresholdParameter;
 
 // ----------------------------------------------------------------------------
 
+class LNHotPixelFilterRadius : public MetaInt32
+{
+public:
+
+   LNHotPixelFilterRadius( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern LNHotPixelFilterRadius* TheLNHotPixelFilterRadiusParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNNoiseReductionFilterRadius : public MetaInt32
+{
+public:
+
+   LNNoiseReductionFilterRadius( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern LNNoiseReductionFilterRadius* TheLNNoiseReductionFilterRadiusParameter;
+
+// ----------------------------------------------------------------------------
+
 class LNReferencePathOrViewId : public MetaString
 {
 public:
@@ -237,14 +269,24 @@ extern LNOutputHints* TheLNOutputHintsParameter;
 
 // ----------------------------------------------------------------------------
 
-class LNGenerateNormalizedImages : public MetaBoolean
+class LNGenerateNormalizedImages : public MetaEnumeration
 {
 public:
+
+   enum { Never,
+          Always,
+          ViewExecutionOnly,
+          GlobalExecutionOnly,
+          NumberOfModes,
+          Default = ViewExecutionOnly };
 
    LNGenerateNormalizedImages( MetaProcess* );
 
    virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
 };
 
 extern LNGenerateNormalizedImages* TheLNGenerateNormalizedImagesParameter;
@@ -293,17 +335,27 @@ extern LNShowRejectionMaps* TheLNShowRejectionMapsParameter;
 
 // ----------------------------------------------------------------------------
 
-class LNShowNormalizationFunctions : public MetaBoolean
+class LNPlotNormalizationFunctions : public MetaEnumeration
 {
 public:
 
-   LNShowNormalizationFunctions( MetaProcess* );
+   enum { DontPlot,
+          Line3D,
+          Palette3D,
+          Map3D,
+          NumberOfModes,
+          Default = Palette3D };
+
+   LNPlotNormalizationFunctions( MetaProcess* );
 
    virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
 };
 
-extern LNShowNormalizationFunctions* TheLNShowNormalizationFunctionsParameter;
+extern LNPlotNormalizationFunctions* TheLNPlotNormalizationFunctionsParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -476,6 +528,82 @@ extern LNMaxFileWriteThreads* TheLNMaxFileWriteThreadsParameter;
 
 // ----------------------------------------------------------------------------
 
+class LNGraphSize : public MetaInt32
+{
+public:
+
+   LNGraphSize( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern LNGraphSize* TheLNGraphSizeParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNGraphTextSize : public MetaInt32
+{
+public:
+
+   LNGraphTextSize( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern LNGraphTextSize* TheLNGraphTextSizeParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNGraphTitleSize : public MetaInt32
+{
+public:
+
+   LNGraphTitleSize( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern LNGraphTitleSize* TheLNGraphTitleSizeParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNGraphTransparent : public MetaBoolean
+{
+public:
+
+   LNGraphTransparent( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern LNGraphTransparent* TheLNGraphTransparentParameter;
+
+// ----------------------------------------------------------------------------
+
+class LNGraphOutputDirectory : public MetaString
+{
+public:
+
+   LNGraphOutputDirectory( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual String DefaultValue() const;
+};
+
+extern LNGraphOutputDirectory* TheLNGraphOutputDirectoryParameter;
+
+// ----------------------------------------------------------------------------
+
 PCL_END_LOCAL
 
 } // pcl
@@ -483,4 +611,4 @@ PCL_END_LOCAL
 #endif   // __LocalNormalizationParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF LocalNormalizationParameters.h - Released 2017-07-18T16:14:18Z
+// EOF LocalNormalizationParameters.h - Released 2017-08-01T14:26:58Z

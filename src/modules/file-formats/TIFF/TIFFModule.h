@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard TIFF File Format Module Version 01.00.07.0339
+// Standard TIFF File Format Module Version 01.00.07.0347
 // ----------------------------------------------------------------------------
-// TIFFModule.h - Released 2017-07-18T16:14:10Z
+// TIFFModule.h - Released 2017-08-01T14:26:50Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
@@ -84,4 +84,4 @@ public:
 #endif   // __TIFFModule_h
 
 // ----------------------------------------------------------------------------
-// EOF TIFFModule.h - Released 2017-07-18T16:14:10Z
+// EOF TIFFModule.h - Released 2017-08-01T14:26:50Z

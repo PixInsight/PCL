@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.06.00.0273
+// Standard Debayer Process Module Version 01.06.00.0281
 // ----------------------------------------------------------------------------
-// DebayerParameters.cpp - Released 2017-07-18T16:14:19Z
+// DebayerParameters.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
@@ -1048,4 +1048,4 @@ bool DebayerOutputFileNoiseAlgorithmB::IsReadOnly() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DebayerParameters.cpp - Released 2017-07-18T16:14:19Z
+// EOF DebayerParameters.cpp - Released 2017-08-01T14:26:58Z

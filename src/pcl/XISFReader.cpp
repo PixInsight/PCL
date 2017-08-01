@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// pcl/XISFReader.cpp - Released 2017-07-18T16:14:00Z
+// pcl/XISFReader.cpp - Released 2017-08-01T14:23:38Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -1851,7 +1851,9 @@ private:
 
    void GetPropertyFromFITSKeyword( XISFInputPropertyBlockArray& properties, const FITSHeaderKeyword& keyword, const XMLElement& element )
    {
-      IsoString kname = keyword.name.Uppercase(); // just in case!
+      IsoString kname = keyword.name.Trimmed().Uppercase(); // just in case!
+      if ( kname.IsEmpty() )
+         return;
 
       /*
        * Do not import irrelevant or mechanic FITS keywords.
@@ -1893,7 +1895,11 @@ private:
 
       XISFInputPropertyBlock property;
 
-      property.id = "FITS:" + kname;
+      property.id = "FITS:";
+      if ( !IsoCharTraits::IsStartingSymbolDigit( kname[0] ) )
+         property.id << '_';
+      for ( char c : kname )
+         property.id << (IsoCharTraits::IsSymbolDigit( c ) ? c : '_');
 
       /*
        * HISTORY and COMMENT keywords are special in that they don't have a
@@ -2983,4 +2989,4 @@ XMLDocument* XISFReader::ExtractHeader( const String& path, XMLParserOptions opt
 } //pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/XISFReader.cpp - Released 2017-07-18T16:14:00Z
+// EOF pcl/XISFReader.cpp - Released 2017-08-01T14:23:38Z

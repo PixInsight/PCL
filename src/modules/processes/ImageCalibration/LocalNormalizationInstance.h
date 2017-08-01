@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.00.0323
+// Standard ImageCalibration Process Module Version 01.04.01.0332
 // ----------------------------------------------------------------------------
-// LocalNormalizationInstance.h - Released 2017-07-18T16:14:18Z
+// LocalNormalizationInstance.h - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -110,6 +110,8 @@ private:
    float       p_backgroundRejectionLimit;
    float       p_referenceRejectionThreshold;
    float       p_targetRejectionThreshold;
+   int32       p_hotPixelFilterRadius;
+   int32       p_noiseReductionFilterRadius;
 
    // Working images
    String      p_referencePathOrViewId;
@@ -121,11 +123,11 @@ private:
    String      p_outputHints;
 
    // Working modes
-   pcl_bool    p_generateNormalizedImages;  // apply to target images
+   pcl_enum    p_generateNormalizedImages;  // apply to target images
    pcl_bool    p_generateNormalizationData; // generate .xnml files
    pcl_bool    p_showBackgroundModels;
    pcl_bool    p_showRejectionMaps;
-   pcl_bool    p_showNormalizationFunctions;
+   pcl_enum    p_plotNormalizationFunctions;
    pcl_bool    p_noGUIMessages;
 
    // Output images
@@ -142,6 +144,13 @@ private:
    int32       p_maxFileReadThreads;
    int32       p_maxFileWriteThreads;
 
+   // Graph options
+   int32       p_graphSize;
+   int32       p_graphTextSize;
+   int32       p_graphTitleSize;
+   pcl_bool    p_graphTransparent;
+   String      p_graphOutputDirectory;
+
    void ApplyErrorPolicy();
 
    friend class LocalNormalizationThread;
@@ -155,4 +164,4 @@ private:
 #endif   // __LocalNormalizationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF LocalNormalizationInstance.h - Released 2017-07-18T16:14:18Z
+// EOF LocalNormalizationInstance.h - Released 2017-08-01T14:26:58Z

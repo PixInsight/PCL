@@ -1,0 +1,248 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.07.0873
+// ----------------------------------------------------------------------------
+// Standard ImageCalibration Process Module Version 01.04.01.0332
+// ----------------------------------------------------------------------------
+// LocalNormalizationIcon.xpm - Released 2017-08-01T14:26:58Z
+// ----------------------------------------------------------------------------
+// This file is part of the standard ImageCalibration PixInsight module.
+//
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
+
+/* XPM */
+static const char *LocalNormalizationIcon_XPM[]={
+"24 24 166 2",
+"Qt c None",
+".a c #1b1a17",
+".# c #020202",
+"#g c #121aff",
+"#h c #1722ff",
+"#t c #1d2bff",
+"#s c #1e23f3",
+"#w c #2024f4",
+"#Z c #2428f7",
+"#u c #2b3eff",
+"#v c #3249ff",
+"#f c #4041f5",
+"#E c #4142f5",
+"#i c #4344f5",
+"#F c #4362ff",
+"#H c #4445f5",
+"#U c #4646f4",
+"aw c #4b4b4a",
+"#q c #4c4c4b",
+"#G c #4d70ff",
+"aj c #4e4e4d",
+".1 c #50504e",
+"#z c #505050",
+"#m c #51504e",
+"#d c #525252",
+".Q c #555554",
+".8 c #565656",
+"#K c #5881ff",
+"ar c #595959",
+"am c #5a5a5a",
+"aa c #5b5b59",
+"#y c #5b5b5a",
+"#A c #5c5b55",
+"#l c #5d5d5d",
+"az c #606060",
+".U c #626262",
+"ad c #636363",
+".I c #656564",
+"av c #656565",
+"ay c #666665",
+"#L c #6796ff",
+".0 c #6a6a6a",
+"#c c #6b6b6b",
+"#8 c #6e6d6b",
+"ai c #6e6e6e",
+"as c #706d64",
+"#p c #72716c",
+"#r c #747175",
+"#k c #747474",
+"#e c #787479",
+".P c #787878",
+"aC c #7a7973",
+".B c #7a7a7a",
+"#b c #7c7c7c",
+"al c #7d7d7d",
+"#N c #7eb8ff",
+"## c #7f7e7c",
+"ap c #7f7f7e",
+"#a c #7f7f7f",
+".u c #80807f",
+".C c #828076",
+".o c #85847e",
+"aq c #858585",
+"au c #868686",
+"#x c #888588",
+".T c #888888",
+".Z c #898989",
+"#6 c #8a868a",
+".H c #8a8a8a",
+"#2 c #8c8b86",
+".7 c #90908e",
+".n c #909090",
+"ak c #929291",
+"#Y c #949194",
+".X c #959595",
+"#j c #999699",
+"at c #9a988f",
+".t c #9c9c9c",
+"ag c #9d9d9d",
+".O c #9e9e9e",
+".R c #a1a1a0",
+".A c #a1a1a1",
+".4 c #a49ee4",
+"#M c #a59fe4",
+"#P c #a6a0e4",
+"ac c #a6a6a4",
+".Y c #a6a6a6",
+"#O c #a7a1e3",
+"#1 c #a7a7a7",
+"#Q c #a8a2e3",
+"aD c #a9a490",
+"an c #a9a491",
+"ah c #a9a9a9",
+".m c #aaaaaa",
+".V c #aca794",
+".S c #adadad",
+".L c #aeaeae",
+".s c #afafaf",
+".G c #b1b1b1",
+".9 c #b2ac98",
+".l c #b2b2b1",
+"a# c #b2b2b2",
+"#X c #b3b2ad",
+".x c #b3b3b2",
+"#5 c #b4b3b1",
+"ae c #b6b09c",
+"aJ c #b7b19c",
+"#0 c #b7b4b6",
+".r c #b7b6b1",
+"#7 c #b8b4b7",
+"aF c #b9b39e",
+".v c #bab5a1",
+".D c #bbb9b0",
+".N c #c1c1c1",
+"aG c #c5bfa7",
+".z c #c6c6c6",
+".E c #c7c7c7",
+"aI c #c8c2aa",
+"af c #c8c3b0",
+".M c #cbcbcb",
+".W c #ccc6b2",
+".K c #cdc8b5",
+".i c #d1cbb6",
+"#B c #d2cbb1",
+"a. c #d2ccb8",
+".F c #d3d3d3",
+".d c #d4ceb9",
+".y c #d4d4d4",
+"#J c #d5cddc",
+".3 c #d6cedc",
+".k c #d6d1be",
+".5 c #d7cfdc",
+"#R c #d8d0db",
+".e c #d8d2ba",
+"ab c #d9d1db",
+"#o c #d9d2b8",
+"#3 c #dad3b9",
+"ax c #ded6bb",
+".h c #ded8c0",
+".J c #e0d8bd",
+"aA c #e5ddc0",
+"aE c #e6dec1",
+"ao c #e6dec3",
+"#W c #e7e0c6",
+".p c #e8e0c3",
+"aB c #e9e1c4",
+"#I c #ebe3c5",
+".j c #ebe3c6",
+".w c #ebe4c8",
+"#C c #ece4c6",
+"#n c #eee6c7",
+"#9 c #efe7c8",
+".c c #f0e8cb",
+".q c #f0e8cc",
+"#. c #f1e9cb",
+"#S c #f2eacc",
+"#4 c #f5edcf",
+"#D c #f7eecf",
+"aH c #f8efcf",
+".f c #f9f0d0",
+"#T c #f9f0d1",
+"#V c #faf1d2",
+".g c #fbf2d2",
+".2 c #fdf4d3",
+".6 c #fef5d4",
+".b c #fff6d5",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt",
+"Qt.#.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.#Qt",
+"Qt.a.b.b.c.d.e.f.b.b.b.b.b.b.b.b.g.h.i.j.b.b.aQt",
+"Qt.a.b.k.l.m.n.o.p.b.b.b.b.b.b.q.r.s.t.u.v.b.aQt",
+"Qt.a.w.x.y.z.A.B.C.b.b.b.b.b.b.D.E.F.G.H.I.J.aQt",
+"Qt.a.K.L.M.N.O.P.Q.f.b.b.b.b.g.R.N.M.S.T.U.V.aQt",
+"Qt.a.W.X.Y.A.Z.0.1.2.3.4.4.5.6.7.A.Y.X.P.8.9.aQt",
+"Qt.a#.###a#b#c#d#e#f#g#h#h#g#i#j#b#a#k#l#m#n.aQt",
+"Qt.a.b#o#p.8#q#r#s#t#u#v#v#u#t#w#x#y#z#A#B.b.aQt",
+"Qt.a.b.b.b#C#D#E#t#v#F#G#G#F#v#t#H#D#I.b.b.b.aQt",
+"Qt.a.b.b.b.b#J#g#u#F#K#L#L#K#F#u#g.5.b.b.b.b.aQt",
+"Qt.a.b.b.b.b#M#h#v#G#L#N#N#L#G#v#h#O.b.b.b.b.aQt",
+"Qt.a.b.b.b.b#P#h#v#G#L#N#N#L#G#v#h#Q.b.b.b.b.aQt",
+"Qt.a.b.b.b.b.3#g#u#F#K#L#L#K#F#u#g#R.b.b.b.b.aQt",
+"Qt.a.b.b.b#S#T#i#t#v#F#G#G#F#v#t#U#V#..b.b.b.aQt",
+"Qt.a.b#W#X.A.H#Y#w#t#u#v#v#u#t#Z#0#1.X#2#3.b.aQt",
+"Qt.a#4#5.M.N.O.P#6#H#g#h#h#g#U#7.N.M.S.T#8#9.aQt",
+"Qt.aa.a#.y.z.A.Baa.2#R#P#Pab.6ac.E.F.G.Hadae.aQt",
+"Qt.aafag.sah.naiaj.f.b.b.b.b.gak.m.s.talaman.aQt",
+"Qt.aaoap.Zaq#karas.b.b.b.b.b.batau.Z#bavawax.aQt",
+"Qt.a.b.vayaz#d#AaA.b.b.b.b.b.baBaC.UarawaD.b.aQt",
+"Qt.a.b.baEaFaGaH.b.b.b.b.b.b.b.b.faIaJaA.b.b.aQt",
+"Qt.#.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.#Qt",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt"};
+
+// ----------------------------------------------------------------------------
+// EOF LocalNormalizationIcon.xpm - Released 2017-08-01T14:26:58Z

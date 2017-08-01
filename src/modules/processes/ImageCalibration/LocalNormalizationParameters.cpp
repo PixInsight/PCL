@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.00.0323
+// Standard ImageCalibration Process Module Version 01.04.01.0332
 // ----------------------------------------------------------------------------
-// LocalNormalizationParameters.cpp - Released 2017-07-18T16:14:18Z
+// LocalNormalizationParameters.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -62,6 +62,8 @@ LNRejection*                   TheLNRejectionParameter = nullptr;
 LNBackgroundRejectionLimit*    TheLNBackgroundRejectionLimitParameter = nullptr;
 LNReferenceRejectionThreshold* TheLNReferenceRejectionThresholdParameter = nullptr;
 LNTargetRejectionThreshold*    TheLNTargetRejectionThresholdParameter = nullptr;
+LNHotPixelFilterRadius*        TheLNHotPixelFilterRadiusParameter = nullptr;
+LNNoiseReductionFilterRadius*  TheLNNoiseReductionFilterRadiusParameter = nullptr;
 LNReferencePathOrViewId*       TheLNReferencePathOrViewIdParameter = nullptr;
 LNReferenceIsView*             TheLNReferenceIsViewParameter = nullptr;
 LNTargetItems*                 TheLNTargetItemsParameter = nullptr;
@@ -73,7 +75,7 @@ LNGenerateNormalizedImages*    TheLNGenerateNormalizedImagesParameter = nullptr;
 LNGenerateNormalizationData*   TheLNGenerateNormalizationDataParameter = nullptr;
 LNShowBackgroundModels*        TheLNShowBackgroundModelsParameter = nullptr;
 LNShowRejectionMaps*           TheLNShowRejectionMapsParameter = nullptr;
-LNShowNormalizationFunctions*  TheLNShowNormalizationFunctionsParameter = nullptr;
+LNPlotNormalizationFunctions*  TheLNPlotNormalizationFunctionsParameter = nullptr;
 LNNoGUIMessages*               TheLNNoGUIMessagesParameter = nullptr;
 LNOutputDirectory*             TheLNOutputDirectoryParameter = nullptr;
 LNOutputExtension*             TheLNOutputExtensionParameter = nullptr;
@@ -85,6 +87,11 @@ LNUseFileThreads*              TheLNUseFileThreadsParameter = nullptr;
 LNFileThreadOverload*          TheLNFileThreadOverloadParameter = nullptr;
 LNMaxFileReadThreads*          TheLNMaxFileReadThreadsParameter = nullptr;
 LNMaxFileWriteThreads*         TheLNMaxFileWriteThreadsParameter = nullptr;
+LNGraphSize*                   TheLNGraphSizeParameter = nullptr;
+LNGraphTextSize*               TheLNGraphTextSizeParameter = nullptr;
+LNGraphTitleSize*              TheLNGraphTitleSizeParameter = nullptr;
+LNGraphTransparent*            TheLNGraphTransparentParameter = nullptr;
+LNGraphOutputDirectory*        TheLNGraphOutputDirectoryParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -213,7 +220,7 @@ int LNTargetRejectionThreshold::Precision() const
 
 double LNTargetRejectionThreshold::DefaultValue() const
 {
-   return 0.250;
+   return 0.500;
 }
 
 double LNTargetRejectionThreshold::MinimumValue() const
@@ -224,6 +231,60 @@ double LNTargetRejectionThreshold::MinimumValue() const
 double LNTargetRejectionThreshold::MaximumValue() const
 {
    return 1;
+}
+
+// ----------------------------------------------------------------------------
+
+LNHotPixelFilterRadius::LNHotPixelFilterRadius( MetaProcess* p ) : MetaInt32( p )
+{
+   TheLNHotPixelFilterRadiusParameter = this;
+}
+
+IsoString LNHotPixelFilterRadius::Id() const
+{
+   return "hotPixelFilterRadius";
+}
+
+double LNHotPixelFilterRadius::DefaultValue() const
+{
+   return 2;
+}
+
+double LNHotPixelFilterRadius::MinimumValue() const
+{
+   return 0;
+}
+
+double LNHotPixelFilterRadius::MaximumValue() const
+{
+   return 4;
+}
+
+// ----------------------------------------------------------------------------
+
+LNNoiseReductionFilterRadius::LNNoiseReductionFilterRadius( MetaProcess* p ) : MetaInt32( p )
+{
+   TheLNNoiseReductionFilterRadiusParameter = this;
+}
+
+IsoString LNNoiseReductionFilterRadius::Id() const
+{
+   return "noiseReductionFilterRadius";
+}
+
+double LNNoiseReductionFilterRadius::DefaultValue() const
+{
+   return 0;
+}
+
+double LNNoiseReductionFilterRadius::MinimumValue() const
+{
+   return 0;
+}
+
+double LNNoiseReductionFilterRadius::MaximumValue() const
+{
+   return 24;
 }
 
 // ----------------------------------------------------------------------------
@@ -322,7 +383,7 @@ IsoString LNOutputHints::Id() const
 
 // ----------------------------------------------------------------------------
 
-LNGenerateNormalizedImages::LNGenerateNormalizedImages( MetaProcess* P ) : MetaBoolean( P )
+LNGenerateNormalizedImages::LNGenerateNormalizedImages( MetaProcess* p ) : MetaEnumeration( p )
 {
    TheLNGenerateNormalizedImagesParameter = this;
 }
@@ -332,9 +393,31 @@ IsoString LNGenerateNormalizedImages::Id() const
    return "generateNormalizedImages";
 }
 
-bool LNGenerateNormalizedImages::DefaultValue() const
+size_type LNGenerateNormalizedImages::NumberOfElements() const
 {
-   return false;
+   return NumberOfModes;
+}
+
+IsoString LNGenerateNormalizedImages::ElementId( size_type i ) const
+{
+   switch ( i )
+   {
+   case Never:               return "GenerateNormalizedImages_Never";
+   case Always:              return "GenerateNormalizedImages_Always";
+   default:
+   case ViewExecutionOnly:   return "GenerateNormalizedImages_ViewExecutionOnly";
+   case GlobalExecutionOnly: return "GenerateNormalizedImages_GlobalExecutionOnly";
+   }
+}
+
+int LNGenerateNormalizedImages::ElementValue( size_type i ) const
+{
+   return int( i );
+}
+
+size_type LNGenerateNormalizedImages::DefaultValueIndex() const
+{
+   return size_type( Default );
 }
 
 // ----------------------------------------------------------------------------
@@ -390,19 +473,41 @@ bool LNShowRejectionMaps::DefaultValue() const
 
 // ----------------------------------------------------------------------------
 
-LNShowNormalizationFunctions::LNShowNormalizationFunctions( MetaProcess* P ) : MetaBoolean( P )
+LNPlotNormalizationFunctions::LNPlotNormalizationFunctions( MetaProcess* p ) : MetaEnumeration( p )
 {
-   TheLNShowNormalizationFunctionsParameter = this;
+   TheLNPlotNormalizationFunctionsParameter = this;
 }
 
-IsoString LNShowNormalizationFunctions::Id() const
+IsoString LNPlotNormalizationFunctions::Id() const
 {
-   return "showNormalizationFunctions";
+   return "plotNormalizationFunctions";
 }
 
-bool LNShowNormalizationFunctions::DefaultValue() const
+size_type LNPlotNormalizationFunctions::NumberOfElements() const
 {
-   return false;
+   return NumberOfModes;
+}
+
+IsoString LNPlotNormalizationFunctions::ElementId( size_type i ) const
+{
+   switch ( i )
+   {
+   case DontPlot:  return "PlotNormalizationFunctions_DontPlot";
+   case Line3D:    return "PlotNormalizationFunctions_Line3D";
+   default:
+   case Palette3D: return "PlotNormalizationFunctions_Palette3D";
+   case Map3D:     return "PlotNormalizationFunctions_Map3D";
+   }
+}
+
+int LNPlotNormalizationFunctions::ElementValue( size_type i ) const
+{
+   return int( i );
+}
+
+size_type LNPlotNormalizationFunctions::DefaultValueIndex() const
+{
+   return size_type( Default );
 }
 
 // ----------------------------------------------------------------------------
@@ -645,7 +750,122 @@ double LNMaxFileWriteThreads::MaximumValue() const
 
 // ----------------------------------------------------------------------------
 
+LNGraphSize::LNGraphSize( MetaProcess* p ) : MetaInt32( p )
+{
+   TheLNGraphSizeParameter = this;
+}
+
+IsoString LNGraphSize::Id() const
+{
+   return "graphSize";
+}
+
+double LNGraphSize::DefaultValue() const
+{
+   return 800;
+}
+
+double LNGraphSize::MinimumValue() const
+{
+   return 256;
+}
+
+double LNGraphSize::MaximumValue() const
+{
+   return 8192;
+}
+
+// ----------------------------------------------------------------------------
+
+LNGraphTextSize::LNGraphTextSize( MetaProcess* p ) : MetaInt32( p )
+{
+   TheLNGraphTextSizeParameter = this;
+}
+
+IsoString LNGraphTextSize::Id() const
+{
+   return "graphTextSize";
+}
+
+double LNGraphTextSize::DefaultValue() const
+{
+   return 12;
+}
+
+double LNGraphTextSize::MinimumValue() const
+{
+   return 8;
+}
+
+double LNGraphTextSize::MaximumValue() const
+{
+   return 64;
+}
+
+// ----------------------------------------------------------------------------
+
+LNGraphTitleSize::LNGraphTitleSize( MetaProcess* p ) : MetaInt32( p )
+{
+   TheLNGraphTitleSizeParameter = this;
+}
+
+IsoString LNGraphTitleSize::Id() const
+{
+   return "graphTitleSize";
+}
+
+double LNGraphTitleSize::DefaultValue() const
+{
+   return 18;
+}
+
+double LNGraphTitleSize::MinimumValue() const
+{
+   return 8;
+}
+
+double LNGraphTitleSize::MaximumValue() const
+{
+   return 64;
+}
+
+// ----------------------------------------------------------------------------
+
+LNGraphTransparent::LNGraphTransparent( MetaProcess* p ) : MetaBoolean( p )
+{
+   TheLNGraphTransparentParameter = this;
+}
+
+IsoString LNGraphTransparent::Id() const
+{
+   return "graphTransparent";
+}
+
+bool LNGraphTransparent::DefaultValue() const
+{
+   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+LNGraphOutputDirectory::LNGraphOutputDirectory( MetaProcess* P ) : MetaString( P )
+{
+   TheLNGraphOutputDirectoryParameter = this;
+}
+
+IsoString LNGraphOutputDirectory::Id() const
+{
+   return "graphOutputDirectory";
+}
+
+String LNGraphOutputDirectory::DefaultValue() const
+{
+   return String(); // use TMPDIR by default
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LocalNormalizationParameters.cpp - Released 2017-07-18T16:14:18Z
+// EOF LocalNormalizationParameters.cpp - Released 2017-08-01T14:26:58Z

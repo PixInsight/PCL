@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0869
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0369
+// Standard Geometry Process Module Version 01.02.01.0377
 // ----------------------------------------------------------------------------
-// RotationInstance.cpp - Released 2017-07-18T16:14:18Z
+// RotationInstance.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -143,6 +143,8 @@ bool RotationInstance::ExecuteOn( View& view )
 
    AutoViewLock lock( view );
 
+   Console console;
+
    ImageWindow window = view.Window();
    ImageVariant image = view.Image();
 
@@ -152,13 +154,13 @@ bool RotationInstance::ExecuteOn( View& view )
    double degrees = Round( Deg( p_angle ), 4 );
    if ( degrees == 0 )
    {
-      Console().WriteLn( "<end><cbr>&lt;* Identity *&gt;" );
+      console.WriteLn( "<end><cbr>&lt;* identity *&gt;" );
       return true;
    }
 
    DeleteAstrometryMetadataAndPreviewsAndMask( window );
 
-   Console().EnableAbort();
+   console.EnableAbort();
 
    StandardStatus status;
    image.SetStatusCallback( &status );
@@ -231,4 +233,4 @@ void* RotationInstance::LockParameter( const MetaParameter* p, size_type /*table
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RotationInstance.cpp - Released 2017-07-18T16:14:18Z
+// EOF RotationInstance.cpp - Released 2017-08-01T14:26:58Z

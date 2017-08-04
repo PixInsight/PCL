@@ -705,7 +705,7 @@ private:
                           : GetAreaOfIntersectionOfQuadAndRect( area, dropRect, sourceP0, sourceP1, sourceP2, sourceP3, m_kernel ) )
                      {
                         Point q;
-                        if ( m_data.rejection || m_data.engine.m_instance.p_enableLocalNormalization )
+                        if ( m_data.rejection || m_data.engine.m_hasLocalNormalization )
                            q = (m_data.splines ? m_data.Ginv( p ) : m_data.Hinv( p )).RoundedToInt();
 
                         for ( int c = 0; c < m_data.engine.m_numberOfChannels; ++c )
@@ -1462,7 +1462,7 @@ void DrizzleIntegrationEngine::Perform()
                   console.NoteLn( "* Local normalization data will not be used." );
             }
 
-            m_hasLocalNormalization = m_localNormalization.HasInterpolations();
+            m_hasLocalNormalization = m_instance.p_enableLocalNormalization && m_localNormalization.HasInterpolations();
             if ( m_instance.p_enableLocalNormalization )
                if ( !m_hasLocalNormalization )
                   console.WarningLn( "** Warning: Local normalization data not available." );
@@ -1616,7 +1616,7 @@ void DrizzleIntegrationEngine::Perform()
             threadData.dropDelta1 = 1 - threadData.dropDelta0;
             threadData.splines = threadData.G.IsValid();
             threadData.rejection = m_instance.p_enableRejection && m_decoder.HasRejectionData();
-            if ( threadData.rejection )
+            if ( threadData.rejection || m_hasLocalNormalization )
             {
                threadData.Hinv = threadData.H.Inverse();
                if ( threadData.splines )
@@ -1653,11 +1653,12 @@ void DrizzleIntegrationEngine::Perform()
             console.WriteLn( String().Format( "<end><cbr>Input data    : %.3f", inputData ) );
             console.WriteLn( String().Format( "<end><cbr>Output data   : %.3f", outputData ) );
 
-            for ( int i = 0; i < m_numberOfChannels && i < 3; ++i )
-            {
-               m_instance.o_output.totalRejectedLow[i] += m_decoder.RejectionLowCount()[i];
-               m_instance.o_output.totalRejectedHigh[i] += m_decoder.RejectionHighCount()[i];
-            }
+            if ( m_decoder.HasRejectionData() )
+               for ( int i = 0; i < m_numberOfChannels && i < 3; ++i )
+               {
+                  m_instance.o_output.totalRejectedLow[i] += m_decoder.RejectionLowCount()[i];
+                  m_instance.o_output.totalRejectedHigh[i] += m_decoder.RejectionHighCount()[i];
+               }
 
             DrizzleIntegrationInstance::OutputData::ImageData imageData( filePath );
             for ( int i = 0; i < m_numberOfChannels && i < 3; ++i )
@@ -1666,8 +1667,11 @@ void DrizzleIntegrationEngine::Perform()
                imageData.location[i] = m_decoder.Location()[i];
                imageData.referenceLocation[i] = m_decoder.ReferenceLocation()[i];
                imageData.scale[i] = m_decoder.Scale()[i];
-               imageData.rejectedLow[i] = m_decoder.RejectionLowCount()[i];
-               imageData.rejectedHigh[i] = m_decoder.RejectionHighCount()[i];
+               if ( m_decoder.HasRejectionData() )
+               {
+                  imageData.rejectedLow[i] = m_decoder.RejectionLowCount()[i];
+                  imageData.rejectedHigh[i] = m_decoder.RejectionHighCount()[i];
+               }
             }
             imageData.outputData = outputData;
             m_instance.o_output.imageData << imageData;

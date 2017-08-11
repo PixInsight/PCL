@@ -405,8 +405,8 @@ public:
       ReferenceArray<GridInitializationThread<P> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new GridInitializationThread<P>( *this, S,
-                                                       i*rowsPerThread,
-                                                       (j < numberOfThreads) ? j*rowsPerThread : rows ) );
+                                 i*rowsPerThread,
+                                 (j < numberOfThreads) ? j*rowsPerThread : rows ) );
       int n = 0;
       for ( GridInitializationThread<P>& thread : threads )
          thread.Start( ThreadPriority::DefaultMax, n++ );
@@ -639,8 +639,8 @@ public:
       ReferenceArray<GridInitializationThread<T> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new GridInitializationThread<T>( *this, S,
-                                                       i*rowsPerThread,
-                                                       (j < numberOfThreads) ? j*rowsPerThread : rows ) );
+                                 i*rowsPerThread,
+                                 (j < numberOfThreads) ? j*rowsPerThread : rows ) );
       int n = 0;
       for ( GridInitializationThread<T>& thread : threads )
          thread.Start( ThreadPriority::DefaultMax, n++ );

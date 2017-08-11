@@ -117,7 +117,7 @@ protected:
  * implementations with much higher efficiency.
  *
  * \sa PointSurfaceSpline, GridInterpolation, PointGridInterpolation,
- * SurfacePolynomial
+ * ShepardInterpolation, SurfacePolynomial
  */
 template <typename T>
 class PCL_CLASS SurfaceSpline : private SurfaceSplineBase

@@ -225,10 +225,10 @@ public:
          component x = points[0][0];
          component y = points[0][1];
          rectangle rect( x, y, x, y );
-         for ( typename point_list::const_iterator i = points.Begin(); ++i != points.End(); )
+         for ( const point& p : points )
          {
-            x = (*i)[0];
-            y = (*i)[1];
+            x = p[0];
+            y = p[1];
             if ( x < rect.x0 )
                rect.x0 = x;
             if ( y < rect.y0 )
@@ -344,14 +344,13 @@ private:
 
    struct Node
    {
-      rectangle rect; // rectangular region
-      Node*     nw;   // north-west
-      Node*     ne;   // north-east
-      Node*     sw;   // south-west
-      Node*     se;   // south-east
+      rectangle rect;         // rectangular region
+      Node*     nw = nullptr; // north-west
+      Node*     ne = nullptr; // north-east
+      Node*     sw = nullptr; // south-west
+      Node*     se = nullptr; // south-east
 
-      Node( const rectangle& r = rectangle( 0.0 ) ) :
-         rect( r ), nw( nullptr ), ne( nullptr ), sw( nullptr ), se( nullptr )
+      Node( const rectangle& r = rectangle( 0.0 ) ) : rect( r )
       {
       }
 
@@ -369,9 +368,13 @@ private:
       bool Includes( const point& p ) const
       {
          component x = p[0];
-         component y = p[1];
-         return x >= rect.x0 && x <= rect.x1 &&
-                y >= rect.y0 && y <= rect.y1;
+         if ( x >= rect.x0 )
+            if ( x <= rect.x1 )
+            {
+               component y = p[1];
+               return y >= rect.y0 && y <= rect.y1;
+            }
+         return false;
       }
    };
 
@@ -381,34 +384,11 @@ private:
 
       LeafNode( const rectangle& r, const point_list& p ) : Node( r ), points( p )
       {
-         points.Sort( Lexicographically );
       }
 
       int Length() const
       {
          return int( points.Length() );
-      }
-
-      int Find( component x ) const
-      {
-         int i = 0;
-         for ( int j = Length(); i < j; )
-         {
-            int m = (i + j) >> 1;
-            if ( x < points[m][0] )
-               j = m;
-            else
-               i = m+1;
-         }
-         for ( int l = i; --l >= 0 && points[l][0] == x; --i ) {}
-         return i;
-      }
-
-      static bool Lexicographically( const point& a, const point& b )
-      {
-         component ax = a[0], ay = a[1];
-         component bx = b[0], by = b[1];
-         return (ax != bx) ? ax < bx : ay < by;
       }
    };
 
@@ -439,16 +419,16 @@ private:
          if ( x <= x2 )
          {
             if ( y <= y2 )
-               nw.Add( p );
+               nw << p;
             else
-               sw.Add( p );
+               sw << p;
          }
          else
          {
             if ( y <= y2 )
-               ne.Add( p );
+               ne << p;
             else
-               se.Add( p );
+               se << p;
          }
       }
 
@@ -461,7 +441,8 @@ private:
       if ( node->IsLeaf() )
       {
          delete node;
-         return nullptr;
+         m_length += points.Length();
+         return new LeafNode( rect, points );
       }
 
       return node;
@@ -474,12 +455,17 @@ private:
             if ( node->IsLeaf() )
             {
                const LeafNode* leaf = static_cast<const LeafNode*>( node );
-               for ( int i = leaf->Find( rect.x0 ), j = leaf->Find( rect.x1 ); i < j; ++i )
+               for ( const point& p : leaf->points )
                {
-                  const point& p = leaf->points[i];
-                  component y = p[1];
-                  if ( y >= rect.y0 && y <= rect.y1 )
-                     found.Add( p );
+                  component x = p[0];
+                  if ( x >= rect.x0 )
+                     if ( x <= rect.x1 )
+                     {
+                        component y = p[1];
+                        if ( y >= rect.y0 )
+                           if ( y <= rect.y1 )
+                              found << p;
+                     }
                }
             }
             else
@@ -499,12 +485,17 @@ private:
             if ( node->IsLeaf() )
             {
                const LeafNode* leaf = static_cast<const LeafNode*>( node );
-               for ( int i = leaf->Find( rect.x0 ), j = leaf->Find( rect.x1 ); i < j; ++i )
+               for ( const point& p : leaf->points )
                {
-                  const point& p = leaf->points[i];
-                  component y = p[1];
-                  if ( y >= rect.y0 && y <= rect.y1 )
-                     callback( p, data );
+                  component x = p[0];
+                  if ( x >= rect.x0 )
+                     if ( x <= rect.x1 )
+                     {
+                        component y = p[1];
+                        if ( y >= rect.y0 )
+                           if ( y <= rect.y1 )
+                              callback( p, data );
+                     }
                }
             }
             else
@@ -537,11 +528,7 @@ private:
          {
             LeafNode* leaf = static_cast<LeafNode*>( node );
             if ( leaf->Length() < m_bucketCapacity )
-            {
-               typename point_list::iterator i =
-                  pcl::InsertionPoint( leaf->points.Begin(), leaf->points.End(), pt, LeafNode::Lexicographically );
-               leaf->points.Insert( i, pt );
-            }
+               leaf->points << pt;
             else
             {
                rectangle rect = leaf->rect;
@@ -555,32 +542,32 @@ private:
                   if ( x <= x2 )
                   {
                      if ( y <= y2 )
-                        nw.Add( p );
+                        nw << p;
                      else
-                        sw.Add( p );
+                        sw << p;
                   }
                   else
                   {
                      if ( y <= y2 )
-                        ne.Add( p );
+                        ne << p;
                      else
-                        se.Add( p );
+                        se << p;
                   }
                }
 
                if ( x <= x2 )
                {
                   if ( y <= y2 )
-                     nw.Add( pt );
+                     nw << pt;
                   else
-                     sw.Add( pt );
+                     sw << pt;
                }
                else
                {
                   if ( y <= y2 )
-                     ne.Add( pt );
+                     ne << pt;
                   else
-                     se.Add( pt );
+                     se << pt;
                }
 
                delete leaf;
@@ -629,21 +616,31 @@ private:
             if ( node->IsLeaf() )
             {
                LeafNode* leaf = static_cast<LeafNode*>( node );
-               for ( int i = leaf->Find( rect.x0 ), j = leaf->Find( rect.x1 ); --j >= i; )
+               point_list points;
+               for ( const point& p : leaf->points )
                {
-                  component y = leaf->points[i][1];
-                  if ( y >= rect.y0 && y <= rect.y1 )
-                  {
-                     leaf->points.Remove( leaf->points.At( i ) );
-                     --m_length;
-                  }
+                  component x = p[0];
+                  if ( x >= rect.x0 )
+                     if ( x <= rect.x1 )
+                     {
+                        component y = p[1];
+                        if ( y >= rect.y0 )
+                           if ( y <= rect.y1 )
+                           {
+                              --m_length;
+                              continue;
+                           }
+                     }
+                  points << p;
                }
 
-               if ( leaf->points.IsEmpty() )
+               if ( points.IsEmpty() )
                {
                   delete leaf;
                   node = nullptr;
                }
+               else
+                  leaf->points = points;
             }
             else
             {
@@ -665,27 +662,27 @@ private:
    {
       if ( node != nullptr )
          if ( node->Includes( pt ) )
-         {
             if ( node->IsLeaf() )
             {
                LeafNode* leaf = static_cast<LeafNode*>( node );
                component x = pt[0];
                component y = pt[1];
-               for ( int i = leaf->Find( x ); i < leaf->Length() && leaf->points[i][0] == x; ++i )
-                  if ( leaf->points[i][1] == y )
-                  {
-                     int j = i;
-                     while ( ++j < leaf->Length() && leaf->points[j][0] == x && leaf->points[j][1] == y ) {}
-                     leaf->points.Remove( leaf->points.At( i ), leaf->points.At( j ) );
-                     m_length -= j - i;
-                     break;
-                  }
+               point_list points;
+               for ( const point& p : leaf->points )
+               {
+                  if ( p[0] == x )
+                     if ( p[1] == y )
+                        continue;
+                  points << p;
+               }
 
-               if ( leaf->points.IsEmpty() )
+               if ( points.IsEmpty() )
                {
                   delete leaf;
                   node = nullptr;
                }
+               else
+                  leaf->points = points;
             }
             else
             {
@@ -700,7 +697,6 @@ private:
                   node = nullptr;
                }
             }
-         }
    }
 
    void DestroyTree( Node* node )

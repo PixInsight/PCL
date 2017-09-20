@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ArcsinhStretch Process Module Version 00.00.01.0104
+// Standard ArcsinhStretch Process Module Version 00.00.01.0112
 // ----------------------------------------------------------------------------
-// ArcsinhStretchModule.h 
+// ArcsinhStretchModule.h - Released 2017-09-20T13:03:37Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ArcsinhStretch PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2017 Mark Shelley
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -84,4 +84,4 @@ public:
 #endif   // __ArcsinhStretchModule_h
 
 // ----------------------------------------------------------------------------
-// EOF ArcsinhStretchModule.h - Released 2016/02/21 20:22:43 UTC
+// EOF ArcsinhStretchModule.h - Released 2017-09-20T13:03:37Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ArcsinhStretch Process Module Version 00.00.01.0104
+// Standard ArcsinhStretch Process Module Version 00.00.01.0112
 // ----------------------------------------------------------------------------
-// ArcsinhStretchProcess.cpp 
+// ArcsinhStretchProcess.cpp - Released 2017-09-20T13:03:37Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ArcsinhStretch PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2017 Mark Shelley
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -69,7 +69,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ArcsinhStretchProcess* TheArcsinhStretchProcess = 0;
+ArcsinhStretchProcess* TheArcsinhStretchProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -78,9 +78,9 @@ ArcsinhStretchProcess::ArcsinhStretchProcess() : MetaProcess()
    TheArcsinhStretchProcess = this;
 
    // Instantiate process parameters
-   new ArcsinhStretch(this);
-   new ArcsinhStretchBlackPoint(this);
-   new ArcsinhStretchProtectHighlights(this);
+   new ArcsinhStretch( this );
+   new ArcsinhStretchBlackPoint( this );
+   new ArcsinhStretchProtectHighlights( this );
    new ArcsinhStretchUseRgbws( this );
    new ArcsinhStretchPreviewClipped( this );
 }
@@ -96,14 +96,14 @@ IsoString ArcsinhStretchProcess::Id() const
 
 IsoString ArcsinhStretchProcess::Category() const
 {
-   return IsoString(); // No category
+   return "IntensityTransformations";
 }
 
 // ----------------------------------------------------------------------------
 
 uint32 ArcsinhStretchProcess::Version() const
 {
-   return 0x100; // required
+   return 0x100;
 }
 
 // ----------------------------------------------------------------------------
@@ -112,7 +112,7 @@ String ArcsinhStretchProcess::Description() const
 {
    return
    "<html>"
-   "<p>ArcsinhStretch.  Apply hyperbolic arcsine stretch to the image intensity while preserving the original colour.</p>"
+   "<p>ArcsinhStretch. Apply hyperbolic arcsine stretch to the image intensity while preserving the original color.</p>"
    "</html>";
 }
 
@@ -120,7 +120,7 @@ String ArcsinhStretchProcess::Description() const
 
 const char** ArcsinhStretchProcess::IconImageXPM() const
 {
-   return 0; // ArcsinhStretchIcon_XPM; ---> put a nice icon here
+   return nullptr; // ArcsinhStretchIcon_XPM; ---> put a nice icon here
 }
 // ----------------------------------------------------------------------------
 
@@ -140,7 +140,7 @@ ProcessImplementation* ArcsinhStretchProcess::Create() const
 ProcessImplementation* ArcsinhStretchProcess::Clone( const ProcessImplementation& p ) const
 {
    const ArcsinhStretchInstance* instPtr = dynamic_cast<const ArcsinhStretchInstance*>( &p );
-   return (instPtr != 0) ? new ArcsinhStretchInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new ArcsinhStretchInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -241,4 +241,4 @@ int ArcsinhStretchProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ArcsinhStretchProcess.cpp 
+// EOF ArcsinhStretchProcess.cpp - Released 2017-09-20T13:03:37Z

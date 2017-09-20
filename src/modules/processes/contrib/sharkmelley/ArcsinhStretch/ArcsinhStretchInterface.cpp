@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ArcsinhStretch Process Module Version 00.00.01.0104
+// Standard ArcsinhStretch Process Module Version 00.00.01.0112
 // ----------------------------------------------------------------------------
-// ArcsinhStretchInterface.cpp 
+// ArcsinhStretchInterface.cpp - Released 2017-09-20T13:03:37Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ArcsinhStretch PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2017 Mark Shelley
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,13 +56,14 @@
 
 #include <pcl/MuteStatus.h>
 #include <pcl/RealTimePreview.h>
+#include <pcl/Vector.h>
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-ArcsinhStretchInterface* TheArcsinhStretchInterface = 0;
+ArcsinhStretchInterface* TheArcsinhStretchInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -71,107 +72,138 @@ ArcsinhStretchInterface* TheArcsinhStretchInterface = 0;
 // ----------------------------------------------------------------------------
 
 ArcsinhStretchInterface::ArcsinhStretchInterface() :
-ProcessInterface(), instance(TheArcsinhStretchProcess), m_realTimeThread(0), GUI(0)
+   ProcessInterface(),
+   instance( TheArcsinhStretchProcess )
 {
    TheArcsinhStretchInterface = this;
 }
 
+// ----------------------------------------------------------------------------
+
 ArcsinhStretchInterface::~ArcsinhStretchInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
-//This function enables the real time preview button on the dialog 
+// ----------------------------------------------------------------------------
+
 InterfaceFeatures ArcsinhStretchInterface::Features() const
 {
-	return InterfaceFeature::Default | InterfaceFeature::RealTimeButton;
+   return InterfaceFeature::Default | InterfaceFeature::RealTimeButton;
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString ArcsinhStretchInterface::Id() const
 {
    return "ArcsinhStretch";
 }
 
+// ----------------------------------------------------------------------------
+
 MetaProcess* ArcsinhStretchInterface::Process() const
 {
    return TheArcsinhStretchProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 const char** ArcsinhStretchInterface::IconImageXPM() const
 {
-   return 0; // ArcsinhStretchIcon_XPM; ---> put a nice icon here
+   return nullptr; // ArcsinhStretchIcon_XPM; ---> put a nice icon here
 }
+
+// ----------------------------------------------------------------------------
 
 void ArcsinhStretchInterface::ApplyInstance() const
 {
    instance.LaunchOnCurrentView();
 }
+
+// ----------------------------------------------------------------------------
+
 bool ArcsinhStretchInterface::WantsRealTimePreviewNotifications() const
 {
-	return true;
+   return true;
 }
-void ArcsinhStretchInterface::RealTimePreviewOwnerChanged(ProcessInterface& iface)
+
+// ----------------------------------------------------------------------------
+
+void ArcsinhStretchInterface::RealTimePreviewOwnerChanged( ProcessInterface& iface )
 {
-	if (GUI != 0)
-	{
-		GUI->EstimateBlackPoint_Button.Enable(iface == *this && IsRealTimePreviewActive());
-		GUI->ParameterPreviewClipped_CheckBox.Enable(iface == *this && IsRealTimePreviewActive());
-	}
+   if ( GUI != nullptr )
+   {
+      bool ownedByMe = iface == *this && IsRealTimePreviewActive();
+      GUI->EstimateBlackPoint_Button.Enable( ownedByMe );
+      GUI->ParameterPreviewClipped_CheckBox.Enable( ownedByMe );
+   }
 }
+
+// ----------------------------------------------------------------------------
+
 void ArcsinhStretchInterface::RealTimePreviewUpdated(bool active)
 {
-	if (GUI != 0)
-		if (active)
-			RealTimePreview::SetOwner(*this); // implicitly updates the real time preview
-		else
-			RealTimePreview::SetOwner(ProcessInterface::Null());
+   if ( GUI != nullptr )
+      if ( active )
+         RealTimePreview::SetOwner( *this ); // implicitly updates the real time preview
+      else
+         RealTimePreview::SetOwner( ProcessInterface::Null() );
 }
+
+// ----------------------------------------------------------------------------
 
 void ArcsinhStretchInterface::ResetInstance()
 {
    ArcsinhStretchInstance defaultInstance( TheArcsinhStretchProcess );
    ImportProcess( defaultInstance );
-
    UpdateRealTimePreview();
 }
 
+// ----------------------------------------------------------------------------
+
 bool ArcsinhStretchInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "ArcsinhStretch" );
-	  UpdateSliderControls();
-	  UpdateControls();
+      UpdateSliderControls();
+      UpdateControls();
    }
 
    dynamic = false;
    return &P == TheArcsinhStretchProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* ArcsinhStretchInterface::NewProcess() const
 {
    return new ArcsinhStretchInstance( instance );
 }
 
+// ----------------------------------------------------------------------------
+
 bool ArcsinhStretchInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
    const ArcsinhStretchInstance* r = dynamic_cast<const ArcsinhStretchInstance*>( &p );
-   if ( r == 0 )
+   if ( r == nullptr )
    {
       whyNot = "Not a ArcsinhStretch instance.";
       return false;
    }
-
-   whyNot.Clear();
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ArcsinhStretchInterface::RequiresInstanceValidation() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ArcsinhStretchInterface::ImportProcess( const ProcessImplementation& p )
 {
@@ -180,223 +212,219 @@ bool ArcsinhStretchInterface::ImportProcess( const ProcessImplementation& p )
    UpdateControls();
    return true;
 }
-bool ArcsinhStretchInterface::RequiresRealTimePreviewUpdate(const UInt16Image&, const View&, int zoomLevel) const
-{
-	return true;
-}
+
 // ----------------------------------------------------------------------------
 
-ArcsinhStretchInterface::RealTimeThread::RealTimeThread() : Thread(), m_instance(TheArcsinhStretchProcess)
+bool ArcsinhStretchInterface::RequiresRealTimePreviewUpdate( const UInt16Image&, const View&, int zoomLevel ) const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+ArcsinhStretchInterface::RealTimeThread::RealTimeThread() :
+   m_instance( TheArcsinhStretchProcess )
 {
 }
 
-void ArcsinhStretchInterface::RealTimeThread::Reset(const UInt16Image& image, const ArcsinhStretchInstance& instance)
+// ----------------------------------------------------------------------------
+
+void ArcsinhStretchInterface::RealTimeThread::Reset( const UInt16Image& image, const ArcsinhStretchInstance& instance )
 {
-	image.ResetSelections();
-	m_image.Assign(image);
-	m_instance.Assign(instance);
+   image.ResetSelections();
+   m_image.Assign( image );
+   m_instance.Assign( instance );
 }
+
+// ----------------------------------------------------------------------------
 
 void ArcsinhStretchInterface::RealTimeThread::Run()
 {
-	MuteStatus status;
-	m_image.SetStatusCallback(&status);
-	m_instance.Preview(m_image);
-	m_image.ResetSelections();
+   MuteStatus status;
+   m_image.SetStatusCallback( &status );
+   m_instance.Preview( m_image );
+   m_image.ResetSelections();
 }
-bool ArcsinhStretchInterface::GenerateRealTimePreview(UInt16Image& image, const View&, int zoomLevel, String&) const
+
+// ----------------------------------------------------------------------------
+
+bool ArcsinhStretchInterface::GenerateRealTimePreview( UInt16Image& image, const View&, int zoomLevel, String& ) const
 {
-	m_preview_blackpoint_level = image.MinimumPixelValue() / 65536.0;  //m_preview_blackpoint_level is mutable, which allows it to be changed within this const function
-	m_realTimeThread = new RealTimeThread;
+   m_preview_blackpoint_level = double( image.MinimumPixelValue() )/image.MaximumPixelValue(); // mutable m_preview_blackpoint_level
 
-	//Generate a histogram of values
-	int histogram[65535];
-	for (int i = 0; i < 65536; i++)
-		histogram[i] = 0;
+   // Generate a histogram of pixel sample values
+   UI64Vector histogram( uint64( 0 ), uint16_max+1 );
+   for ( int c = 0; c < image.NumberOfNominalChannels(); ++c )
+      for ( UInt16Image::const_sample_iterator i( image, c ); i; ++i )
+         ++histogram[*i];
 
-	size_type numChannels = image.NumberOfNominalChannels();
-	int xDim = image.Width();
-	int yDim = image.Height();
-	for (int ix = 0; ix < xDim; ix++)
-	{
-		for (int iy = 0; iy < yDim; iy++)
-		{
-			Point point = Point(ix, iy);
-			double intensity = 0;
-			for (int ich = 0; ich < numChannels; ich++)
-			{
-				intensity = image.Pixel(point, ich);
-				histogram[(int)intensity]++;
-			}
-		}
-	}
-	//Set the black point so that 2% of pixel values in the preview window become clipped to zero 
-	int sum = histogram[0];
-	int ihist = 0;
-	while (sum < xDim*yDim*numChannels / 50)
-	{
-		ihist++;
-		sum += histogram[ihist];
-	}
-	if (ihist == 0)
-		m_preview_blackpoint_level = 0.0;
-	else
-		m_preview_blackpoint_level = (ihist - 1) / 65536.0;
+   // Set the black point so that a 2% of pixel values in the preview window become clipped to zero
+   int ihist = 0;
+   for ( uint64 n2 = image.NumberOfNominalSamples()/50, sum = histogram[0]; sum < n2; sum += histogram[++ihist] ) {}
+   if ( ihist == 0 )
+      m_preview_blackpoint_level = 0.0;
+   else
+      m_preview_blackpoint_level = (ihist - 1)/65535.0;
 
+   m_realTimeThread = new RealTimeThread;
 
-	for (;;)
-	{
-		m_realTimeThread->Reset(image, instance);
-		m_realTimeThread->Start();
+   for ( ;; )
+   {
+      m_realTimeThread->Reset( image, instance );
+      m_realTimeThread->Start();
 
-		while (m_realTimeThread->IsActive())
-		{
-			ProcessEvents();
+      while ( m_realTimeThread->IsActive() )
+      {
+         ProcessEvents();
 
-			if (!IsRealTimePreviewActive())
-			{
-				m_realTimeThread->Abort();
-				m_realTimeThread->Wait();
+         if ( !IsRealTimePreviewActive() )
+         {
+            m_realTimeThread->Abort();
+            m_realTimeThread->Wait();
+            return false;
+         }
+      }
 
-				delete m_realTimeThread;
-				m_realTimeThread = 0;
-				return false;
-			}
-		}
-
-		if (!m_realTimeThread->IsAborted())
-		{
-			image.Assign(m_realTimeThread->m_image);
-
-			delete m_realTimeThread;
-			m_realTimeThread = 0;
-			return true;
-		}
-	}
+      if ( !m_realTimeThread->IsAborted() )
+      {
+         image.Assign( m_realTimeThread->m_image );
+         return true;
+      }
+   }
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void ArcsinhStretchInterface::UpdateControls()
 {
-	
-	GUI->Stretch_NumericEdit.SetValue(instance.p_stretch);
-	GUI->BlackPoint_NumericEdit.SetValue(instance.p_blackpoint);
-    GUI->ParameterProtectHighlights_CheckBox.SetChecked( instance.p_protectHighlights );
-    GUI->ParameterUseRgbws_CheckBox.SetChecked(instance.p_useRgbws);
-    GUI->ParameterPreviewClipped_CheckBox.SetChecked(instance.p_previewClipped);
+   GUI->Stretch_NumericControl.SetValue( instance.p_stretch );
+   GUI->BlackPoint_NumericControl.SetValue( instance.p_blackpoint );
+   GUI->ParameterProtectHighlights_CheckBox.SetChecked( instance.p_protectHighlights );
+   GUI->ParameterUseRgbws_CheckBox.SetChecked( instance.p_useRgbws );
+   GUI->ParameterPreviewClipped_CheckBox.SetChecked( instance.p_previewClipped );
 }
+
+// ----------------------------------------------------------------------------
+
 void ArcsinhStretchInterface::UpdateSliderControls()
 {
-	GUI->FineAdjust_Slider.SetValue(500);  // Centre of the range 0-1000 
-	GUI->BlackPoint_Slider.SetValue(instance.p_blackpoint * 10000);		 //In the range 0-2000 since max(p_blackpoint) = 0.2
-	GUI->Stretch_Slider.SetValue(log10(instance.p_stretch)*1000.0/3.0);  //In the range 0-1000
-
-
+   GUI->FineAdjust_Slider.SetValue( 500 ); // Centre of the range 0-1000
 }
+
+// ----------------------------------------------------------------------------
 
 void ArcsinhStretchInterface::UpdateRealTimePreview()
 {
-	if (IsRealTimePreviewActive())
-	{
-		if (m_realTimeThread != 0)
-			m_realTimeThread->Abort();
-		GUI->UpdateRealTimePreview_Timer.Start();
-	}
+   if ( IsRealTimePreviewActive() )
+   {
+      if ( m_realTimeThread.IsValid() )
+         m_realTimeThread->Abort();
+      GUI->UpdateRealTimePreview_Timer.Start();
+   }
 }
+
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void ArcsinhStretchInterface::__RealValueUpdated( NumericEdit& sender, double value )
 {
-	if (sender == GUI->Stretch_NumericEdit)
-	{
-		instance.p_stretch = value;
-	}
-	if (sender == GUI->BlackPoint_NumericEdit)
-	{
-		instance.p_blackpoint = value;
-	}
+   if ( sender == GUI->Stretch_NumericControl )
+      instance.p_stretch = value;
+   if ( sender == GUI->BlackPoint_NumericControl )
+      instance.p_blackpoint = value;
 
-	UpdateSliderControls();
-	UpdateRealTimePreview();
+   UpdateSliderControls();
+   UpdateRealTimePreview();
 
 }
 
-void ArcsinhStretchInterface::__SliderValueUpdated(Slider& sender, int value)
-{
-	if (sender == GUI->BlackPoint_Slider)
-	{
-		instance.p_coarse = value * 100;  //value is in the range 0-2000
-		instance.p_blackpoint = (instance.p_coarse) / 1000000.0;  // In the range 0-0.2
-	}
-	else if (sender == GUI->Stretch_Slider)
-		instance.p_stretch = Pow10(3.0*value / 1000.0); //value is in the range 0-1000
-	else if (sender == GUI->FineAdjust_Slider)
-	{
-		instance.p_blackpoint = instance.p_blackpointBeforeAdjustment + (value - 500.0) / 1000000.0;  //value is in the range 0-1000
-		if (instance.p_blackpoint < 0.0) instance.p_blackpointBeforeAdjustment -= instance.p_blackpoint;
-		GUI->BlackPoint_Slider.SetValue(instance.p_blackpoint*10000);  // In the range 0-0.2
-	}
+// ----------------------------------------------------------------------------
 
-	UpdateControls();
-	UpdateRealTimePreview();
-}
-void ArcsinhStretchInterface::__FineAdjustSliderEnter(Control& sender)
+void ArcsinhStretchInterface::__SliderValueUpdated( Slider& sender, int value )
 {
-	__FineAdjustSliderGetFocus(sender);
-}
-void ArcsinhStretchInterface::__FineAdjustSliderLeave(Control& sender)
-{
-	__FineAdjustSliderLoseFocus(sender);
-}
-void ArcsinhStretchInterface::__FineAdjustSliderMousePress(Control& sender, const pcl::Point &pos, int button, unsigned buttons, unsigned modifiers)
-{
-	__FineAdjustSliderGetFocus(sender);
-}
-void ArcsinhStretchInterface::__FineAdjustSliderMouseRelease(Control& sender, const pcl::Point &pos, int button, unsigned buttons, unsigned modifiers)
-{
-	__FineAdjustSliderLoseFocus(sender);
-}
-void ArcsinhStretchInterface::__FineAdjustSliderLoseFocus(Control& sender)
-{
-	GUI->FineAdjust_Slider.SetValue(500);  //Set it to the halfway point
+   if ( sender == GUI->FineAdjust_Slider )
+   {
+      instance.p_blackpoint = instance.m_blackpointBeforeAdjustment + double( value - 500 )/1000000; // value is in the range 0-1000
+      if ( instance.p_blackpoint < 0 )
+         instance.m_blackpointBeforeAdjustment -= instance.p_blackpoint;
+      UpdateControls();
+      UpdateRealTimePreview();
+   }
 }
 
-void ArcsinhStretchInterface::__FineAdjustSliderGetFocus(Control& sender)
+// ----------------------------------------------------------------------------
+
+void ArcsinhStretchInterface::__FineAdjustSliderEnter( Control& sender )
 {
-	instance.p_blackpointBeforeAdjustment = instance.p_blackpoint;
+   __FineAdjustSliderGetFocus( sender );
 }
 
+// ----------------------------------------------------------------------------
+
+void ArcsinhStretchInterface::__FineAdjustSliderLeave( Control& sender )
+{
+   __FineAdjustSliderLoseFocus( sender );
+}
+
+// ----------------------------------------------------------------------------
+
+void ArcsinhStretchInterface::__FineAdjustSliderMousePress( Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
+{
+   __FineAdjustSliderGetFocus( sender );
+}
+
+// ----------------------------------------------------------------------------
+
+void ArcsinhStretchInterface::__FineAdjustSliderMouseRelease( Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
+{
+   __FineAdjustSliderLoseFocus( sender );
+}
+
+// ----------------------------------------------------------------------------
+
+void ArcsinhStretchInterface::__FineAdjustSliderLoseFocus( Control& sender )
+{
+   GUI->FineAdjust_Slider.SetValue( 500 ); // Set it to the halfway point
+}
+
+// ----------------------------------------------------------------------------
+
+void ArcsinhStretchInterface::__FineAdjustSliderGetFocus( Control& sender )
+{
+   instance.m_blackpointBeforeAdjustment = instance.p_blackpoint;
+}
+
+// ----------------------------------------------------------------------------
 
 void ArcsinhStretchInterface::__ItemClicked( Button& sender, bool checked )
 {
    if ( sender == GUI->ParameterProtectHighlights_CheckBox )
       instance.p_protectHighlights = checked;
-   if (sender == GUI->ParameterUseRgbws_CheckBox)
-	   instance.p_useRgbws = checked;
-   if (sender == GUI->ParameterPreviewClipped_CheckBox)
-	   instance.p_previewClipped = checked;
-   if (sender == GUI->EstimateBlackPoint_Button)
+   if ( sender == GUI->ParameterUseRgbws_CheckBox )
+      instance.p_useRgbws = checked;
+   if ( sender == GUI->ParameterPreviewClipped_CheckBox )
+      instance.p_previewClipped = checked;
+   if ( sender == GUI->EstimateBlackPoint_Button )
    {
-	   instance.p_blackpoint = m_preview_blackpoint_level;
-	   GUI->BlackPoint_NumericEdit.SetValue(instance.p_blackpoint);
-	   UpdateSliderControls();
+      instance.p_blackpoint = m_preview_blackpoint_level;
+      GUI->BlackPoint_NumericControl.SetValue( instance.p_blackpoint );
+      UpdateSliderControls();
    }
 
    UpdateRealTimePreview();
-
 }
 
+// ----------------------------------------------------------------------------
 
-
-void ArcsinhStretchInterface::__UpdateRealTimePreview_Timer(Timer& sender)
+void ArcsinhStretchInterface::__UpdateRealTimePreview_Timer( Timer& sender )
 {
-	if (m_realTimeThread != 0)
-		if (m_realTimeThread->IsActive())
-			return;
-
-	if (IsRealTimePreviewActive())
-		RealTimePreview::Update();
+   if ( m_realTimeThread.IsValid() )
+      if ( m_realTimeThread->IsActive() )
+         return;
+   if ( IsRealTimePreviewActive() )
+      RealTimePreview::Update();
 }
 
 // ----------------------------------------------------------------------------
@@ -405,117 +433,121 @@ ArcsinhStretchInterface::GUIData::GUIData( ArcsinhStretchInterface& w )
 {
    pcl::Font fnt = w.Font();
    int labelWidth1 = fnt.Width( String( "XXXXXXX XXXXXXX" ) ); // the longest label text
-   int editWidth1 = fnt.Width( String( '0', 9) );
+   int editWidth1 = fnt.Width( String( '0', 9 ) );
 
-   Stretch_NumericEdit.label.SetText("Stretch Factor:");
-   Stretch_NumericEdit.label.SetFixedWidth(labelWidth1);
-   Stretch_NumericEdit.edit.SetFixedWidth(editWidth1);
-   Stretch_NumericEdit.SetReal();
-   Stretch_NumericEdit.SetRange(TheArcsinhStretchParameter->MinimumValue(), TheArcsinhStretchParameter->MaximumValue());
-   Stretch_NumericEdit.SetPrecision(TheArcsinhStretchParameter->Precision());
-   Stretch_NumericEdit.SetToolTip("<p>Multiplier applied to faintest detail above background level.</p><p> On slider use Up/Dn arrows, PgUp/PgDn and mouse wheel for fine adjustment.</p>");
-   Stretch_NumericEdit.OnValueUpdated((NumericEdit::value_event_handler)&ArcsinhStretchInterface::__RealValueUpdated, w);
+   //
 
-   Stretch_Slider.SetScaledMinWidth(250);  // Physical width of slider in pixels
-   Stretch_Slider.SetRange(0, 1000);      // Resolution of slider value  //Do not change without examining the chain of consequences i.e. UpdateSliderControls and __SliderValueUpdated
-   Stretch_Slider.SetStepSize(1);
-   Stretch_Slider.SetToolTip("<p>Multiplier applied to faintest detail above black point.</p><p> Use Up/Dn arrows, PgUp/PgDn and mouse wheel for fine adjustment.</p>");
-   Stretch_Slider.OnValueUpdated((Slider::value_event_handler)&ArcsinhStretchInterface::__SliderValueUpdated, w);
+   Stretch_NumericControl.label.SetText( "Stretch factor:" );
+   Stretch_NumericControl.label.SetFixedWidth( labelWidth1 );
+   Stretch_NumericControl.slider.SetScaledMinWidth( 250 );
+   Stretch_NumericControl.slider.SetRange( 1, 1000 );
+   Stretch_NumericControl.SetReal();
+   Stretch_NumericControl.SetRange( TheArcsinhStretchParameter->MinimumValue(), TheArcsinhStretchParameter->MaximumValue() );
+   Stretch_NumericControl.SetPrecision( TheArcsinhStretchParameter->Precision() );
+   Stretch_NumericControl.SetToolTip( "<p>Multiplier applied to the faintest detail above the background level.</p>" );
+   Stretch_NumericControl.edit.SetFixedWidth( editWidth1 );
+   Stretch_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&ArcsinhStretchInterface::__RealValueUpdated, w );
 
-   BlackPoint_NumericEdit.label.SetText("Black Point:");
-   BlackPoint_NumericEdit.label.SetFixedWidth(labelWidth1);
-   BlackPoint_NumericEdit.SetReal();
-   BlackPoint_NumericEdit.SetRange(TheArcsinhStretchBlackPointParameter->MinimumValue(), TheArcsinhStretchBlackPointParameter->MaximumValue());
-   BlackPoint_NumericEdit.SetPrecision(TheArcsinhStretchBlackPointParameter->Precision());
-   BlackPoint_NumericEdit.SetToolTip("<p>Constant value to subtract from the image. It is assumed that background extraction and/or neutralisation has previously been performed on the image.</p>On sliders use Up/Dn arrows, PgUp/PgDn and mouse wheel for fine adjustment.</p>");
-   BlackPoint_NumericEdit.edit.SetFixedWidth(editWidth1);
-   BlackPoint_NumericEdit.OnValueUpdated((NumericEdit::value_event_handler)&ArcsinhStretchInterface::__RealValueUpdated, w);
+   //
 
-   BlackPoint_Slider.SetScaledMinWidth(250);
-   BlackPoint_Slider.SetRange(0, 2000);  //Do not change without examining the chain of consequences i.e. UpdateSliderControls and __SliderValueUpdated
-   BlackPoint_Slider.SetStepSize(1);
-   BlackPoint_Slider.SetToolTip("<p>Constant value to subtract from the image. It is assumed that background extraction and/or neutralisation has previously been performed on the image.</p> <p> Use Up/Dn arrows, PgUp/PgDn and mouse wheel for fine adjustment.</p>");
-   BlackPoint_Slider.OnValueUpdated((Slider::value_event_handler)&ArcsinhStretchInterface::__SliderValueUpdated, w);
+   BlackPoint_NumericControl.label.SetText( "Black point:" );
+   BlackPoint_NumericControl.label.SetFixedWidth( labelWidth1 );
+   BlackPoint_NumericControl.slider.SetScaledMinWidth( 250 );
+   BlackPoint_NumericControl.slider.SetRange( 0, 2000 );
+   BlackPoint_NumericControl.SetReal();
+   BlackPoint_NumericControl.SetRange( TheArcsinhStretchBlackPointParameter->MinimumValue(), TheArcsinhStretchBlackPointParameter->MaximumValue() );
+   BlackPoint_NumericControl.SetPrecision( TheArcsinhStretchBlackPointParameter->Precision() );
+   BlackPoint_NumericControl.SetToolTip( "<p>Constant value to subtract from the image. "
+      "It is assumed that background extraction and/or neutralization has previously been performed on the image.</p>" );
+   BlackPoint_NumericControl.edit.SetFixedWidth( editWidth1 );
+   BlackPoint_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&ArcsinhStretchInterface::__RealValueUpdated, w );
 
-   FineAdjust_Slider.SetScaledMinWidth(250);
-   FineAdjust_Slider.SetRange(0,1000);  //Do not change without examining the chain of consequences i.e. UpdateSliderControls and __SliderValueUpdated
-   FineAdjust_Slider.SetStepSize(1);
-   FineAdjust_Slider.SetToolTip("<p>Black point fine adjustment slider with re-centring. The slider re-centres after being used so the next adjustment can be up or down.</p> <p> Up/Dn Arrows, PgUp/PgDn and mouse wheel for fine adjustment</p>");
-   FineAdjust_Slider.OnValueUpdated((Slider::value_event_handler)&ArcsinhStretchInterface::__SliderValueUpdated, w);
-   FineAdjust_Slider.OnEnter((Control::event_handler)&ArcsinhStretchInterface::__FineAdjustSliderEnter, w);  //This allows us to re-centre the slider 
-   FineAdjust_Slider.OnLeave((Control::event_handler)&ArcsinhStretchInterface::__FineAdjustSliderLeave, w);  //This allows us to re-centre the slider 
+   //
 
-   ParameterProtectHighlights_CheckBox.SetText( "Protect highlights during stretch" );
-   ParameterProtectHighlights_CheckBox.SetToolTip( "<p>Scale image to prevent values exceeding 1.0 during stretch - to prevent highlight clipping.</p>" );
+   FineAdjust_Slider.SetScaledMinWidth( 250 );
+   FineAdjust_Slider.SetRange( 0, 1000 ); // Do not change without examining the chain of consequences i.e. UpdateSliderControls and __SliderValueUpdated
+   FineAdjust_Slider.SetStepSize( 1 );
+   FineAdjust_Slider.SetToolTip( "<p>Black point fine adjustment slider with re-centering. "
+      "The slider re-centers after being used so the next adjustment can be up or down.</p>" );
+   FineAdjust_Slider.OnValueUpdated( (Slider::value_event_handler)&ArcsinhStretchInterface::__SliderValueUpdated, w );
+   FineAdjust_Slider.OnEnter( (Control::event_handler)&ArcsinhStretchInterface::__FineAdjustSliderEnter, w ); // This allows us to re-centre the slider
+   FineAdjust_Slider.OnLeave( (Control::event_handler)&ArcsinhStretchInterface::__FineAdjustSliderLeave, w ); // This allows us to re-centre the slider
+
+   FineAdjust_Sizer.AddUnscaledSpacing( labelWidth1 + w.LogicalPixelsToPhysical( 4 ) );
+   FineAdjust_Sizer.Add( FineAdjust_Slider, 100 );
+
+   //
+
+   BlackPoint_Sizer.Add( BlackPoint_NumericControl );
+   BlackPoint_Sizer.AddSpacing( 2 );
+   BlackPoint_Sizer.Add( FineAdjust_Sizer );
+
+   //
+
+   ParameterProtectHighlights_CheckBox.SetText( "Protect highlights" );
+   ParameterProtectHighlights_CheckBox.SetToolTip( "<p>Scale the image to prevent values exceeding 1.0 during stretch - to prevent highlight clipping.</p>" );
    ParameterProtectHighlights_CheckBox.OnClick( (pcl::Button::click_event_handler)&ArcsinhStretchInterface::__ItemClicked, w );
 
-   ParameterProtectHighlights_Sizer.AddUnscaledSpacing(labelWidth1 + w.LogicalPixelsToPhysical(4));
-   ParameterProtectHighlights_Sizer.Add(ParameterProtectHighlights_CheckBox);
+   ParameterProtectHighlights_Sizer.AddUnscaledSpacing( labelWidth1 + w.LogicalPixelsToPhysical( 4 ) );
+   ParameterProtectHighlights_Sizer.Add( ParameterProtectHighlights_CheckBox );
    ParameterProtectHighlights_Sizer.AddStretch();
 
-   ParameterUseRgbws_CheckBox.SetText("Use RGB Working Space");
-   ParameterUseRgbws_CheckBox.SetToolTip("<p>Use RGB Working Space to calculate luminance from RGB components.  Otherwise R, G and B and equally weighted in the luminance calculation.</p>");
-   ParameterUseRgbws_CheckBox.OnClick((pcl::Button::click_event_handler)&ArcsinhStretchInterface::__ItemClicked, w);
+   //
 
-   ParameterUseRgbws_Sizer.AddUnscaledSpacing(labelWidth1 + w.LogicalPixelsToPhysical(4));
-   ParameterUseRgbws_Sizer.Add(ParameterUseRgbws_CheckBox);
+   ParameterUseRgbws_CheckBox.SetText( "Use RGB working space" );
+   ParameterUseRgbws_CheckBox.SetToolTip( "<p>Use the RGB Working Space of the image to calculate luminance from RGB components. "
+      "Otherwise R, G and B and equally weighted in the luminance calculation.</p>" );
+   ParameterUseRgbws_CheckBox.OnClick( (pcl::Button::click_event_handler)&ArcsinhStretchInterface::__ItemClicked, w );
+
+   ParameterUseRgbws_Sizer.AddUnscaledSpacing( labelWidth1 + w.LogicalPixelsToPhysical( 4 ) );
+   ParameterUseRgbws_Sizer.Add( ParameterUseRgbws_CheckBox );
    ParameterUseRgbws_Sizer.AddStretch();
 
-   ParameterPreviewClipped_CheckBox.SetText("Highlight values clipped to zero");
-   ParameterPreviewClipped_CheckBox.SetToolTip("<p>Preview window will highlight values that become clipped to zero when black point is set.  Otherwise preview window shows values truncated to the usual [0,1] range.</p>");
-   ParameterPreviewClipped_CheckBox.OnClick((pcl::Button::click_event_handler)&ArcsinhStretchInterface::__ItemClicked, w);
+   //
 
-   Stretch_Sizer.SetMargin(8);
-   Stretch_Sizer.SetSpacing(6);
-   Stretch_Sizer.Add(Stretch_NumericEdit,40);
-   Stretch_Sizer.Add(Stretch_Slider,60);
+   ParameterPreviewClipped_CheckBox.SetText( "Highlight values clipped to zero" );
+   ParameterPreviewClipped_CheckBox.SetToolTip( "<p>The real-time preview will highlight values that become clipped to zero "
+      "when the black point is set. Otherwise the real-time preview shows values truncated to the [0,1] range.</p>" );
+   ParameterPreviewClipped_CheckBox.OnClick( (pcl::Button::click_event_handler)&ArcsinhStretchInterface::__ItemClicked, w );
 
-   BlackPointSliders_Sizer.Add(BlackPoint_Slider);
-   BlackPointSliders_Sizer.Add(FineAdjust_Slider);
-
-   BlackPoint_Sizer.SetMargin(8);
-   BlackPoint_Sizer.SetSpacing(6);
-   BlackPoint_Sizer.Add(BlackPoint_NumericEdit, 40);
-   BlackPoint_Sizer.Add(BlackPointSliders_Sizer, 60);
+   //
 
    Global_Sizer.SetMargin( 8 );
    Global_Sizer.SetSpacing( 6 );
-   Global_Sizer.Add(Stretch_Sizer);
-
-   Global_Sizer.Add(BlackPoint_Sizer);
+   Global_Sizer.Add( Stretch_NumericControl );
+   Global_Sizer.Add( BlackPoint_Sizer );
    Global_Sizer.Add( ParameterProtectHighlights_Sizer );
-   Global_Sizer.Add(ParameterUseRgbws_Sizer);
+   Global_Sizer.Add( ParameterUseRgbws_Sizer );
 
-   int labelWidth = fnt.Width(String("Estimate Black Point")); 
-   EstimateBlackPoint_Button.SetMinWidth(labelWidth);  
-   EstimateBlackPoint_Button.SetText("Estimate Black Point");
-   EstimateBlackPoint_Button.SetToolTip("<p>Auto-estimate the black point level. The black point is set to a level that allows 2% of values found in the real-time preview window to become clipped to zero.</p>");
-   EstimateBlackPoint_Button.OnClick((pcl::Button::click_event_handler)&ArcsinhStretchInterface::__ItemClicked, w);
+   int labelWidth = fnt.Width( "Estimate Black Point" );
+   EstimateBlackPoint_Button.SetMinWidth( labelWidth );
+   EstimateBlackPoint_Button.SetText( "Estimate Black Point" );
+   EstimateBlackPoint_Button.SetToolTip( "<p>Auto-estimate the black point level. The black point is set to a level that allows a "
+      "2% of the values found in the real-time preview to become clipped to zero.</p>" );
+   EstimateBlackPoint_Button.OnClick( (pcl::Button::click_event_handler)&ArcsinhStretchInterface::__ItemClicked, w );
 
-   PreviewControls_Sizer.SetMargin(8);
-   PreviewControls_Sizer.SetSpacing(20);
-   PreviewControls_Sizer.Add(EstimateBlackPoint_Button, 50, Align::Center);
-   PreviewControls_Sizer.Add(ParameterPreviewClipped_CheckBox, 50, Align::Center);
+   PreviewControls_Sizer.SetMargin( 6 );
+   PreviewControls_Sizer.SetSpacing( 32 );
+   PreviewControls_Sizer.Add( EstimateBlackPoint_Button );
+   PreviewControls_Sizer.Add( ParameterPreviewClipped_CheckBox );
 
-   PreviewControlsGroupBox.SetTitle("Preview Window");
-   PreviewControlsGroupBox.SetToolTip("<p>Tools that operate only on active real time preview window.</p>");
-   PreviewControlsGroupBox.SetSizer(PreviewControls_Sizer);
+   PreviewControlsGroupBox.SetTitle( "Real-Time Preview" );
+   PreviewControlsGroupBox.SetToolTip( "<p>Tools that operate only on the real-time preview.</p>" );
+   PreviewControlsGroupBox.SetSizer( PreviewControls_Sizer );
 
    // Disable until a preview is activated
    EstimateBlackPoint_Button.Disable();
    ParameterPreviewClipped_CheckBox.Disable();
 
-   Global_Sizer.Add(PreviewControlsGroupBox);
-   
+   Global_Sizer.Add( PreviewControlsGroupBox );
 
    w.SetSizer( Global_Sizer );
    w.AdjustToContents();
    w.SetFixedSize();
 
    UpdateRealTimePreview_Timer.SetSingleShot();
-   UpdateRealTimePreview_Timer.SetInterval(0.025);
-   UpdateRealTimePreview_Timer.OnTimer((Timer::timer_event_handler)&ArcsinhStretchInterface::__UpdateRealTimePreview_Timer, w);
-
+   UpdateRealTimePreview_Timer.SetInterval( 0.025 );
+   UpdateRealTimePreview_Timer.OnTimer( (Timer::timer_event_handler)&ArcsinhStretchInterface::__UpdateRealTimePreview_Timer, w );
 }
 
 // ----------------------------------------------------------------------------
@@ -523,4 +555,4 @@ ArcsinhStretchInterface::GUIData::GUIData( ArcsinhStretchInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ArcsinhStretchInterface.cpp 
+// EOF ArcsinhStretchInterface.cpp - Released 2017-09-20T13:03:37Z

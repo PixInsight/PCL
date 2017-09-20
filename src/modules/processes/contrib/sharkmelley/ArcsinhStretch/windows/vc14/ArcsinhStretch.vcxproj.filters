@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-09-02T20:31:35.542Z
+# Generated on .... 2017-09-20T09:18:14.903Z
 # Project id ...... ArcsinhStretch
 # Project type .... Module
 # Platform ........ Windows/vc14
@@ -13,10 +13,13 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>31054c9d-25f2-4fc9-98dd-c4522743e9fe</UniqueIdentifier>
+      <UniqueIdentifier>a90595b9-4497-49cd-b9c4-94ccff6a055e</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>fc126fa2-14f9-43f1-a343-217d813d7443</UniqueIdentifier>
+      <UniqueIdentifier>6a1c6020-006f-43bf-b07f-b163df28877f</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Image Files">
+      <UniqueIdentifier>34f88eb5-59f6-4ccc-99dd-bb260a1c1858</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -52,5 +55,22 @@
     <ClInclude Include="..\..\ArcsinhStretchProcess.h">
         <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Documentation\Images\ArcsinhStretch.jpg">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\Documentation\Images\EstimateBlackPoint.jpg">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\Documentation\Images\Stretch300.jpg">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\Documentation\Images\Stretch50.jpg">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\Documentation\Images\ThreeIterations.jpg">
+        <Filter>Image Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

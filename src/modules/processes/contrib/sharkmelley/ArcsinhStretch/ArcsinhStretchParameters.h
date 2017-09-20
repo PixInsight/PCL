@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ArcsinhStretch Process Module Version 00.00.01.0104
+// Standard ArcsinhStretch Process Module Version 00.00.01.0112
 // ----------------------------------------------------------------------------
-// ArcsinhStretchs.h 
+// ArcsinhStretchParameters.h - Released 2017-09-20T13:03:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ArcsinhStretch PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2017 Mark Shelley
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -85,19 +85,18 @@ class ArcsinhStretchBlackPoint : public MetaFloat
 {
 public:
 
-	ArcsinhStretchBlackPoint(MetaProcess*);
+   ArcsinhStretchBlackPoint(MetaProcess*);
 
-	virtual IsoString Id() const;
+   virtual IsoString Id() const;
 
-	virtual int Precision() const;
+   virtual int Precision() const;
 
-	virtual double DefaultValue() const;
-	virtual double MinimumValue() const;
-	virtual double MaximumValue() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
 };
 
 extern ArcsinhStretchBlackPoint* TheArcsinhStretchBlackPointParameter;
-
 
 // ----------------------------------------------------------------------------
 
@@ -105,11 +104,11 @@ class ArcsinhStretchProtectHighlights : public MetaBoolean
 {
 public:
 
-	ArcsinhStretchProtectHighlights(MetaProcess*);
+   ArcsinhStretchProtectHighlights(MetaProcess*);
 
-	virtual IsoString Id() const;
+   virtual IsoString Id() const;
 
-	virtual bool DefaultValue() const;
+   virtual bool DefaultValue() const;
 };
 
 extern ArcsinhStretchProtectHighlights* TheArcsinhStretchProtectHighlightsParameter;
@@ -120,7 +119,7 @@ class ArcsinhStretchUseRgbws : public MetaBoolean
 {
 public:
 
-	ArcsinhStretchUseRgbws(MetaProcess*);
+   ArcsinhStretchUseRgbws(MetaProcess*);
 
    virtual IsoString Id() const;
 
@@ -135,15 +134,14 @@ class ArcsinhStretchPreviewClipped : public MetaBoolean
 {
 public:
 
-	ArcsinhStretchPreviewClipped(MetaProcess*);
+   ArcsinhStretchPreviewClipped(MetaProcess*);
 
-	virtual IsoString Id() const;
+   virtual IsoString Id() const;
 
-	virtual bool DefaultValue() const;
+   virtual bool DefaultValue() const;
 };
 
 extern ArcsinhStretchPreviewClipped* TheArcsinhStretchPreviewClippedParameter;
-
 
 // ----------------------------------------------------------------------------
 
@@ -154,4 +152,4 @@ PCL_END_LOCAL
 #endif   // __ArcsinhStretchs_h
 
 // ----------------------------------------------------------------------------
-// EOF ArcsinhStretchs.h 
+// EOF ArcsinhStretchParameters.h - Released 2017-09-20T13:03:36Z

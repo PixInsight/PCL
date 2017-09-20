@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ArcsinhStretch Process Module Version 00.00.01.0104
+// Standard ArcsinhStretch Process Module Version 00.00.01.0112
 // ----------------------------------------------------------------------------
-// ArcsinhStretchModule.cpp 
+// ArcsinhStretchModule.cpp - Released 2017-09-20T13:03:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ArcsinhStretch PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2017 Mark Shelley
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     00
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0104
+#define MODULE_VERSION_BUILD     0112
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     8
-#define MODULE_RELEASE_DAY       31
+#define MODULE_RELEASE_MONTH     9
+#define MODULE_RELEASE_DAY       20
 
 #include "ArcsinhStretchModule.h"
 #include "ArcsinhStretchProcess.h"
@@ -73,6 +73,8 @@ ArcsinhStretchModule::ArcsinhStretchModule() : MetaModule()
 {
 }
 
+// ----------------------------------------------------------------------------
+
 const char* ArcsinhStretchModule::Version() const
 {
    return PCL_MODULE_VERSION( MODULE_VERSION_MAJOR,
@@ -82,35 +84,49 @@ const char* ArcsinhStretchModule::Version() const
                               MODULE_VERSION_LANGUAGE );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString ArcsinhStretchModule::Name() const
 {
    return "ArcsinhStretch";
 }
 
+// ----------------------------------------------------------------------------
+
 String ArcsinhStretchModule::Description() const
 {
-   return "ArcsinhStretch module.  Apply hyperbolic arcsine stretch"; 
+   return "ArcsinhStretch module. Apply hyperbolic arcsine stretch.";
 }
+
+// ----------------------------------------------------------------------------
 
 String ArcsinhStretchModule::Company() const
 {
-   return "";
+   return String();
 }
+
+// ----------------------------------------------------------------------------
 
 String ArcsinhStretchModule::Author() const
 {
    return "Mark Shelley";
 }
 
+// ----------------------------------------------------------------------------
+
 String ArcsinhStretchModule::Copyright() const
 {
    return "Copyright (c) 2017 Mark Shelley";
 }
 
+// ----------------------------------------------------------------------------
+
 String ArcsinhStretchModule::TradeMarks() const
 {
-   return "";
+   return String();
 }
+
+// ----------------------------------------------------------------------------
 
 String ArcsinhStretchModule::OriginalFileName() const
 {
@@ -128,6 +144,8 @@ String ArcsinhStretchModule::OriginalFileName() const
 #endif
 }
 
+// ----------------------------------------------------------------------------
+
 void ArcsinhStretchModule::GetReleaseDate( int& year, int& month, int& day ) const
 {
    year  = MODULE_RELEASE_YEAR;
@@ -139,43 +157,18 @@ void ArcsinhStretchModule::GetReleaseDate( int& year, int& month, int& day ) con
 
 } // pcl
 
-// ----------------------------------------------------------------------------
-// PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
-//
-// Module installation routine.
-//
-// If this routine is defined as a public symbol in a module, the PixInsight
-// core application will call it just after loading and initializing the module
-// shared object or dynamic-link library.
-//
-// The mode argument specifies the kind of installation being performed by the
-// core application. See the pcl::InstallMode namespace for more information.
-// ----------------------------------------------------------------------------
-
 PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 {
-   /*
-    * When the PixInsight application installs this module, we just have to
-    * instantiate the meta objects describing it.
-    */
    new pcl::ArcsinhStretchModule;
 
-   /*
-    * The mode argument tells us what kind of installation is being requested
-    * by the PixInsight application. Incomplete installation requests only need
-    * module descriptions.
-    */
    if ( mode == pcl::InstallMode::FullInstall )
    {
       new pcl::ArcsinhStretchProcess;
       new pcl::ArcsinhStretchInterface;
    }
 
-   /*
-    * Return zero to signal successful installation
-    */
    return 0;
 }
 
 // ----------------------------------------------------------------------------
-// EOF ArcsinhStretchModule.cpp 
+// EOF ArcsinhStretchModule.cpp - Released 2017-09-20T13:03:36Z

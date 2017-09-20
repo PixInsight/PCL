@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ArcsinhStretch Process Module Version 00.00.01.0104
+// Standard ArcsinhStretch Process Module Version 00.00.01.0112
 // ----------------------------------------------------------------------------
-// ArcsinhStretchInstance.h 
+// ArcsinhStretchInstance.h - Released 2017-09-20T13:03:37Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ArcsinhStretch PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2017 Mark Shelley
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,7 +53,7 @@
 #ifndef __ArcsinhStretchInstance_h
 #define __ArcsinhStretchInstance_h
 
-#include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
+#include <pcl/MetaParameter.h>
 #include <pcl/ProcessImplementation.h>
 
 namespace pcl
@@ -77,19 +77,17 @@ public:
 
    void Preview(UInt16Image&) const;
 
-
 private:
 
-   float p_stretch;
-   float p_blackpoint;
-   float p_blackpointBeforeAdjustment;
-   float p_coarse;
-   float p_fine;
-
-   // Use only pcl_bool for Boolean parameters - NEVER use bool
-   pcl_bool p_protectHighlights; 
+   float    p_stretch;
+   float    p_blackpoint;
+   float    p_coarse;
+   float    p_fine;
+   pcl_bool p_protectHighlights;
    pcl_bool p_useRgbws;
-   pcl_bool p_previewClipped;  
+   pcl_bool p_previewClipped;
+
+   float    m_blackpointBeforeAdjustment;
 
    friend class ArcsinhStretchEngine;
    friend class ArcsinhStretchProcess;
@@ -98,10 +96,9 @@ private:
 
 // ----------------------------------------------------------------------------
 
-
 } // pcl
 
 #endif   // __ArcsinhStretchInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF ArcsinhStretchInstance.h 
+// EOF ArcsinhStretchInstance.h - Released 2017-09-20T13:03:37Z

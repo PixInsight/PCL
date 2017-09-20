@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ArcsinhStretch Process Module Version 00.00.01.0104
+// Standard ArcsinhStretch Process Module Version 00.00.01.0112
 // ----------------------------------------------------------------------------
-// ArcsinhStretchs.cpp 
+// ArcsinhStretchParameters.cpp - Released 2017-09-20T13:03:37Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ArcsinhStretch PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2017 Mark Shelley
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,103 +57,103 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-	ArcsinhStretch*    TheArcsinhStretchParameter = 0;
-	ArcsinhStretchBlackPoint*    TheArcsinhStretchBlackPointParameter = 0;
-	ArcsinhStretchProtectHighlights*  TheArcsinhStretchProtectHighlightsParameter = 0;
-	ArcsinhStretchUseRgbws*  TheArcsinhStretchUseRgbwsParameter = 0;
-	ArcsinhStretchPreviewClipped*   TheArcsinhStretchPreviewClippedParameter = 0;
+ArcsinhStretch*                  TheArcsinhStretchParameter = nullptr;
+ArcsinhStretchBlackPoint*        TheArcsinhStretchBlackPointParameter = nullptr;
+ArcsinhStretchProtectHighlights* TheArcsinhStretchProtectHighlightsParameter = nullptr;
+ArcsinhStretchUseRgbws*          TheArcsinhStretchUseRgbwsParameter = nullptr;
+ArcsinhStretchPreviewClipped*    TheArcsinhStretchPreviewClippedParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
-ArcsinhStretch::ArcsinhStretch(MetaProcess* P) : MetaFloat(P)
+ArcsinhStretch::ArcsinhStretch( MetaProcess* P ) : MetaFloat( P )
 {
-	TheArcsinhStretchParameter = this;
+   TheArcsinhStretchParameter = this;
 }
 
 IsoString ArcsinhStretch::Id() const
 {
-	return "Stretch";
+   return "stretch";
 }
 
 int ArcsinhStretch::Precision() const
 {
-	return 2;
+   return 2;
 }
 
 double ArcsinhStretch::DefaultValue() const
 {
-	return 1;
+   return 1;
 }
 
 double ArcsinhStretch::MinimumValue() const
 {
-	return 1;
+   return 1;
 }
 
 double ArcsinhStretch::MaximumValue() const
 {
-	return 1000;
+   return 1000;
 }
 
 // ----------------------------------------------------------------------------
 
-ArcsinhStretchBlackPoint::ArcsinhStretchBlackPoint(MetaProcess* P) : MetaFloat(P)
+ArcsinhStretchBlackPoint::ArcsinhStretchBlackPoint( MetaProcess* P ) : MetaFloat( P )
 {
-	TheArcsinhStretchBlackPointParameter = this;
+   TheArcsinhStretchBlackPointParameter = this;
 }
 
 IsoString ArcsinhStretchBlackPoint::Id() const
 {
-	return "BlackPoint";
+   return "blackPoint";
 }
 
 int ArcsinhStretchBlackPoint::Precision() const
 {
-	return 6;
+   return 6;
 }
 
 double ArcsinhStretchBlackPoint::DefaultValue() const
 {
-	return 0;
+   return 0;
 }
 
 double ArcsinhStretchBlackPoint::MinimumValue() const
 {
-	return 0;
+   return 0;
 }
 
 double ArcsinhStretchBlackPoint::MaximumValue() const
 {
-	return 0.2;
+   return 0.2;
 }
 
 // ----------------------------------------------------------------------------
 
-ArcsinhStretchProtectHighlights::ArcsinhStretchProtectHighlights(MetaProcess* P) : MetaBoolean(P)
+ArcsinhStretchProtectHighlights::ArcsinhStretchProtectHighlights( MetaProcess* P ) : MetaBoolean( P )
 {
-	TheArcsinhStretchProtectHighlightsParameter = this;
+   TheArcsinhStretchProtectHighlightsParameter = this;
 }
 
 IsoString ArcsinhStretchProtectHighlights::Id() const
 {
-	return "ProtectHighlights";
+   return "protectHighlights";
 }
 
 bool ArcsinhStretchProtectHighlights::DefaultValue() const
 {
-	return false;
+   return false;
 }
 
 // ----------------------------------------------------------------------------
 
-ArcsinhStretchUseRgbws::ArcsinhStretchUseRgbws(MetaProcess* P) : MetaBoolean(P)
+ArcsinhStretchUseRgbws::ArcsinhStretchUseRgbws( MetaProcess* P ) : MetaBoolean( P )
 {
    TheArcsinhStretchUseRgbwsParameter = this;
 }
 
 IsoString ArcsinhStretchUseRgbws::Id() const
 {
-   return "UseRgbws";
+   return "useRGBWS";
 }
 
 bool ArcsinhStretchUseRgbws::DefaultValue() const
@@ -163,19 +163,19 @@ bool ArcsinhStretchUseRgbws::DefaultValue() const
 
 // ----------------------------------------------------------------------------
 
-ArcsinhStretchPreviewClipped::ArcsinhStretchPreviewClipped(MetaProcess* P) : MetaBoolean(P)
+ArcsinhStretchPreviewClipped::ArcsinhStretchPreviewClipped( MetaProcess* P ) : MetaBoolean( P )
 {
-	TheArcsinhStretchPreviewClippedParameter = this;
+   TheArcsinhStretchPreviewClippedParameter = this;
 }
 
 IsoString ArcsinhStretchPreviewClipped::Id() const
 {
-	return "PreviewClipped";
+   return "previewClipped";
 }
 
 bool ArcsinhStretchPreviewClipped::DefaultValue() const
 {
-	return true;
+   return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -183,4 +183,4 @@ bool ArcsinhStretchPreviewClipped::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ArcsinhStretchs.cpp 
+// EOF ArcsinhStretchParameters.cpp - Released 2017-09-20T13:03:37Z

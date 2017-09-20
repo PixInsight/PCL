@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ArcsinhStretch Process Module Version 00.00.01.0104
+// Standard ArcsinhStretch Process Module Version 00.00.01.0112
 // ----------------------------------------------------------------------------
-// ArcsinhStretchInterface.h 
+// ArcsinhStretchInterface.h - Released 2017-09-20T13:03:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ArcsinhStretch PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2017 Mark Shelley
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -61,9 +61,9 @@
 #include <pcl/Label.h>
 #include <pcl/NumericControl.h>
 #include <pcl/ProcessInterface.h>
+#include <pcl/PushButton.h>
 #include <pcl/Sizer.h>
 #include <pcl/SpinBox.h>
-#include <pcl/PushButton.h>
 #include <pcl/Thread.h>
 #include <pcl/Timer.h>
 
@@ -85,12 +85,12 @@ public:
    virtual MetaProcess* Process() const;
    virtual const char** IconImageXPM() const;
 
-   virtual InterfaceFeatures Features() const;   
+   virtual InterfaceFeatures Features() const;
 
    virtual bool WantsRealTimePreviewNotifications() const;
    virtual void RealTimePreviewOwnerChanged(ProcessInterface& iface);
    virtual void RealTimePreviewUpdated(bool active);
-   
+
    virtual void ApplyInstance() const;
    virtual void ResetInstance();
 
@@ -114,17 +114,17 @@ private:
    {
    public:
 
-	   UInt16Image m_image;
+      UInt16Image m_image;
 
-	   RealTimeThread();
+      RealTimeThread();
 
-	   void Reset(const UInt16Image&, const ArcsinhStretchInstance&);
+      void Reset(const UInt16Image&, const ArcsinhStretchInstance&);
 
-	   virtual void Run();
+      virtual void Run();
 
    private:
 
-	   ArcsinhStretchInstance m_instance;
+      ArcsinhStretchInstance m_instance;
    };
 
    struct GUIData
@@ -132,50 +132,44 @@ private:
       GUIData( ArcsinhStretchInterface& );
 
       VerticalSizer     Global_Sizer;
-	  HorizontalSizer   Stretch_Sizer;
-	  NumericEdit       Stretch_NumericEdit;
-	  Slider            Stretch_Slider;
-	  HorizontalSizer   BlackPoint_Sizer;
-	  NumericEdit       BlackPoint_NumericEdit;
-	  VerticalSizer     BlackPointSliders_Sizer;
-	  Slider            BlackPoint_Slider;
-	  Slider			FineAdjust_Slider;
-	  HorizontalSizer   ParameterProtectHighlights_Sizer;
-	  HorizontalSizer   ParameterUseRgbws_Sizer;
-	  CheckBox          ParameterProtectHighlights_CheckBox;
-	  CheckBox          ParameterUseRgbws_CheckBox;
-	  GroupBox			PreviewControlsGroupBox;
-	  HorizontalSizer   PreviewControls_Sizer;
-      PushButton		EstimateBlackPoint_Button;
-	  CheckBox          ParameterPreviewClipped_CheckBox;
+         NumericControl    Stretch_NumericControl;
+         VerticalSizer     BlackPoint_Sizer;
+            NumericControl    BlackPoint_NumericControl;
+            HorizontalSizer   FineAdjust_Sizer;
+               Slider            FineAdjust_Slider;
+         HorizontalSizer   ParameterProtectHighlights_Sizer;
+            CheckBox          ParameterProtectHighlights_CheckBox;
+         HorizontalSizer   ParameterUseRgbws_Sizer;
+            CheckBox          ParameterUseRgbws_CheckBox;
+         GroupBox          PreviewControlsGroupBox;
+         HorizontalSizer   PreviewControls_Sizer;
+            PushButton        EstimateBlackPoint_Button;
+            CheckBox          ParameterPreviewClipped_CheckBox;
 
-		Timer UpdateRealTimePreview_Timer;
+      Timer UpdateRealTimePreview_Timer;
    };
 
-   GUIData* GUI;
-   mutable double m_preview_blackpoint_level = 0;  // Mutable allows a const function to change this value.  It's a hack to persist a value derived from the preview image.  
+   GUIData* GUI = nullptr;
+   mutable AutoPointer<RealTimeThread> m_realTimeThread;
+   mutable double m_preview_blackpoint_level = 0;
 
    void UpdateControls();
    void UpdateSliderControls();
    void UpdateRealTimePreview();
 
    // Event Handlers
-
    void __RealValueUpdated( NumericEdit& sender, double value );
-   void __SliderValueUpdated(Slider& sender, int value);
+   void __SliderValueUpdated( Slider& sender, int value );
    void __ItemClicked( Button& sender, bool checked );
-   void __UpdateRealTimePreview_Timer(Timer&);
-   void __FineAdjustSliderEnter(Control& sender);
-   void __FineAdjustSliderLeave(Control& sender);
-   void __FineAdjustSliderGetFocus(Control& sender);
-   void __FineAdjustSliderLoseFocus(Control& sender);
-   void __FineAdjustSliderMousePress(Control& sender, const pcl::Point &pos, int button, unsigned buttons, unsigned modifiers);
-   void __FineAdjustSliderMouseRelease(Control& sender, const pcl::Point &pos, int button, unsigned buttons, unsigned modifiers);
+   void __UpdateRealTimePreview_Timer( Timer& );
+   void __FineAdjustSliderEnter( Control& sender );
+   void __FineAdjustSliderLeave( Control& sender );
+   void __FineAdjustSliderGetFocus( Control& sender );
+   void __FineAdjustSliderLoseFocus( Control& sender );
+   void __FineAdjustSliderMousePress( Control& sender, const pcl::Point &pos, int button, unsigned buttons, unsigned modifiers );
+   void __FineAdjustSliderMouseRelease( Control& sender, const pcl::Point &pos, int button, unsigned buttons, unsigned modifiers );
 
    friend struct GUIData;
-
-   mutable RealTimeThread* m_realTimeThread;
-
 };
 
 // ----------------------------------------------------------------------------
@@ -191,4 +185,4 @@ PCL_END_LOCAL
 #endif   // __ArcsinhStretchInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF ArcsinhStretchInterface.h 
+// EOF ArcsinhStretchInterface.h - Released 2017-09-20T13:03:36Z

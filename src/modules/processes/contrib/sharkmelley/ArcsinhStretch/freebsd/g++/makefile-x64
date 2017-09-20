@@ -2,14 +2,14 @@
 # PixInsight Makefile Generator Script v1.104
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-09-02T20:31:34.614Z
+# Generated on .... 2017-09-20T09:18:14.465Z
 # Project id ...... ArcsinhStretch
 # Project type .... Module
 # Platform ........ FreeBSD/g++
 # Configuration ... Release/x64
 ######################################################################
 
-OBJ_DIR="$(PCLSRCDIR)/modules/processes/ArcsinhStretch/freebsd/g++/x64/Release"
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/contrib/sharkmelley/ArcsinhStretch/freebsd/g++/x64/Release"
 
 .PHONY: all
 all: $(OBJ_DIR)/ArcsinhStretch-pxm.so

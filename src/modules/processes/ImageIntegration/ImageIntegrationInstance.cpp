@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.16.00.0441
+// Standard ImageIntegration Process Module Version 01.16.00.0445
 // ----------------------------------------------------------------------------
-// ImageIntegrationInstance.cpp - Released 2017-08-01T14:26:58Z
+// ImageIntegrationInstance.cpp - Released 2017-10-02T07:41:53Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -611,10 +611,12 @@ public:
                   frameType = String( value );
                else if ( k.name == "FILTER" || k.name == "INSFLNAM" )
                   filterName = String( value );
+               else if ( k.name == "PEDESTAL" )
+                  pedestal = value.ToDouble();
                else if ( k.name == "EXPTIME" || k.name == "EXPOSURE" )
-                  expTime = value.ToDouble();
+                  expTime = Round( value.ToDouble(), 3 ); // 1 ms
                else if ( k.name == "CCD-TEMP" )
-                  sensorTemp = value.ToDouble();
+                  sensorTemp = Round( value.ToDouble(), 1 ); // 0.1 C
                else if ( k.name == "PIXSIZE1" )
                   xPixSize = value.ToDouble();
                else if ( k.name == "PIXSIZE2" )
@@ -5348,4 +5350,4 @@ size_type ImageIntegrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF ImageIntegrationInstance.cpp - Released 2017-10-02T07:41:53Z

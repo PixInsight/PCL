@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ArcsinhStretch Process Module Version 00.00.01.0112
+// Standard ArcsinhStretch Process Module Version 00.00.01.0114
 // ----------------------------------------------------------------------------
-// ArcsinhStretchModule.cpp - Released 2017-09-20T13:03:36Z
+// ArcsinhStretchModule.cpp - Released 2017-10-05T14:31:27Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ArcsinhStretch PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     00
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0112
+#define MODULE_VERSION_BUILD     0114
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     9
-#define MODULE_RELEASE_DAY       20
+#define MODULE_RELEASE_MONTH     10
+#define MODULE_RELEASE_DAY       5
 
 #include "ArcsinhStretchModule.h"
 #include "ArcsinhStretchProcess.h"
@@ -171,4 +171,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF ArcsinhStretchModule.cpp - Released 2017-09-20T13:03:36Z
+// EOF ArcsinhStretchModule.cpp - Released 2017-10-05T14:31:27Z

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ArcsinhStretch Process Module Version 00.00.01.0112
+// Standard ArcsinhStretch Process Module Version 00.00.01.0114
 // ----------------------------------------------------------------------------
-// ArcsinhStretchProcess.cpp - Released 2017-09-20T13:03:37Z
+// ArcsinhStretchProcess.cpp - Released 2017-10-05T14:31:27Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ArcsinhStretch PixInsight module.
 //
@@ -241,4 +241,4 @@ int ArcsinhStretchProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ArcsinhStretchProcess.cpp - Released 2017-09-20T13:03:37Z
+// EOF ArcsinhStretchProcess.cpp - Released 2017-10-05T14:31:27Z

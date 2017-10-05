@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ArcsinhStretch Process Module Version 00.00.01.0112
+// Standard ArcsinhStretch Process Module Version 00.00.01.0114
 // ----------------------------------------------------------------------------
-// ArcsinhStretchInterface.cpp - Released 2017-09-20T13:03:37Z
+// ArcsinhStretchInterface.cpp - Released 2017-10-05T14:31:27Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ArcsinhStretch PixInsight module.
 //
@@ -445,6 +445,7 @@ ArcsinhStretchInterface::GUIData::GUIData( ArcsinhStretchInterface& w )
    Stretch_NumericControl.SetRange( TheArcsinhStretchParameter->MinimumValue(), TheArcsinhStretchParameter->MaximumValue() );
    Stretch_NumericControl.SetPrecision( TheArcsinhStretchParameter->Precision() );
    Stretch_NumericControl.SetToolTip( "<p>Multiplier applied to the faintest detail above the background level.</p>" );
+   Stretch_NumericControl.EnableExponentialResponse();
    Stretch_NumericControl.edit.SetFixedWidth( editWidth1 );
    Stretch_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&ArcsinhStretchInterface::__RealValueUpdated, w );
 
@@ -555,4 +556,4 @@ ArcsinhStretchInterface::GUIData::GUIData( ArcsinhStretchInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ArcsinhStretchInterface.cpp - Released 2017-09-20T13:03:37Z
+// EOF ArcsinhStretchInterface.cpp - Released 2017-10-05T14:31:27Z

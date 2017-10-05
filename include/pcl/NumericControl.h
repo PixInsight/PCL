@@ -339,6 +339,63 @@ public:
    {
    }
 
+   /*!
+    * Returns true if the slider component of this %NumericControl has
+    * exponential response. Returns false if the slider has the default linear
+    * response.
+    *
+    * When exponential response is enabled, the slider defines control values
+    * following an exponential growth function of the form:
+    *
+    * y = (1 + y0)*Exp( k*x ) - 1
+    *
+    * where y is the current control value, y0 is the minimum allowed control
+    * value (as returned by LowerBound()), x is the current slider position
+    * normalized to the [0,1] range, and k is an automatically calculated
+    * exponential growth factor given by:
+    *
+    * k = Ln( y1/(1 + y0) )
+    *
+    * where y1 is the maximum allowed control value, as returned by
+    * UpperBound().
+    *
+    * Exponential slider response is useful for %NumericControl objects used to
+    * define parameters with very large numeric ranges, such as [0,500] or
+    * [0,1000] for example. For such large ranges, one normally wants to
+    * provide finer control for low parameter values, which is impossible with
+    * a linear slider response. The exponential slider response feature is
+    * disabled by default, that is, sliders have linear response by default.
+    *
+    * \sa EnableExponentialResponse(), DisableExponentialResponse()
+    */
+   bool IsExponentialResponse() const
+   {
+      return m_exponential;
+   }
+
+   /*!
+    * Enables the exponential slider response feature. See
+    * IsExponentialResponse() for detailed information.
+    *
+    * \sa IsExponentialResponse(), DisableExponentialResponse()
+    */
+   void EnableExponentialResponse( bool enable = true )
+   {
+      m_exponential = enable;
+      UpdateControls();
+   }
+
+   /*!
+    * Disables the exponential slider response feature. See
+    * IsExponentialResponse() for detailed information.
+    *
+    * \sa IsExponentialResponse(), EnableExponentialResponse()
+    */
+   void DisableExponentialResponse( bool disable = true )
+   {
+      EnableExponentialResponse( !disable );
+   }
+
 protected:
 
    virtual void UpdateControls();
@@ -346,6 +403,13 @@ protected:
    virtual void ValueUpdated( Slider&, int );
    virtual void KeyPressed( Control&, int, unsigned, bool& );
    virtual void GetFocus( Control& );
+
+private:
+
+   bool m_exponential : 1;
+
+   double SliderValueToControl( int ) const;
+   int ControlValueToSlider( double ) const;
 };
 
 // ----------------------------------------------------------------------------

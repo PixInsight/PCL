@@ -331,7 +331,9 @@ void NumericEdit::MousePress( Control& sender, const pcl::Point& pos, int button
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-NumericControl::NumericControl( Control& parent ) : NumericEdit( parent )
+NumericControl::NumericControl( Control& parent ) :
+   NumericEdit( parent ),
+   m_exponential( false )
 {
    sizer.Add( slider, 100 );
 
@@ -350,30 +352,48 @@ NumericControl::NumericControl( Control& parent ) : NumericEdit( parent )
 
 // ----------------------------------------------------------------------------
 
-void NumericControl::UpdateControls()
+double NumericControl::SliderValueToControl( int sliderValue ) const
 {
-   NumericEdit::UpdateControls();
-
-   int minSliderValue, maxSliderValue;
-   slider.GetRange( minSliderValue, maxSliderValue );
-   slider.SetValue( minSliderValue
-      + RoundInt( (m_value - m_lowerBound)/(m_upperBound - m_lowerBound)*(maxSliderValue - minSliderValue) ) );
+   int sliderMinValue, sliderMaxValue;
+   slider.GetRange( sliderMinValue, sliderMaxValue );
+   double sliderDelta = sliderMaxValue - sliderMinValue;
+   double sliderNormValue = (sliderValue - sliderMinValue)/sliderDelta;
+   return Range( Round( m_exponential ?
+                              (1 + m_lowerBound)*Exp( Ln( m_upperBound/(1 + m_lowerBound) )*sliderNormValue ) - 1 :
+                              m_lowerBound + (m_upperBound - m_lowerBound)*sliderNormValue,
+                        m_real ? Max( 0, TruncInt( Log( sliderDelta ) ) ) : 0 ), m_lowerBound, m_upperBound );
 }
 
 // ----------------------------------------------------------------------------
 
-void NumericControl::ValueUpdated( Slider& sender, int v )
+int NumericControl::ControlValueToSlider( double value ) const
 {
-   int minSliderValue, maxSliderValue;
-   sender.GetRange( minSliderValue, maxSliderValue );
-   double d = maxSliderValue - minSliderValue;
-   double newValue = Round( m_lowerBound + (m_upperBound - m_lowerBound)*((v - minSliderValue)/d),
-                            m_real ? Max( 0, TruncInt( Log( d ) ) ) : 0 );
+   int sliderMinValue, sliderMaxValue;
+   slider.GetRange( sliderMinValue, sliderMaxValue );
+   double sliderDelta = sliderMaxValue - sliderMinValue;
+   return Range( RoundInt( sliderMinValue + sliderDelta*(m_exponential ?
+                              Ln( (1 + value)/(1 + m_lowerBound) )/Ln( m_upperBound/(1 + m_lowerBound) ) :
+                              (value - m_lowerBound)/(m_upperBound - m_lowerBound)) ),
+                 sliderMinValue, sliderMaxValue );
+}
+
+// ----------------------------------------------------------------------------
+
+void NumericControl::UpdateControls()
+{
+   NumericEdit::UpdateControls();
+   slider.SetValue( ControlValueToSlider( m_value ) );
+}
+
+// ----------------------------------------------------------------------------
+
+void NumericControl::ValueUpdated( Slider& sender, int value )
+{
+   double newValue = SliderValueToControl( value );
    if ( newValue != m_value )
    {
       m_value = newValue;
       edit.SetText( ValueAsString() );
-
       if ( !m_handlers.IsNull() )
          if ( m_handlers->onValueUpdated != nullptr )
             (m_handlers->onValueUpdatedReceiver->*m_handlers->onValueUpdated)( *this, m_value );
@@ -422,11 +442,11 @@ void NumericControl::KeyPressed( Control& sender, int key, unsigned modifiers, b
       return;
    }
 
-   int minSliderValue, maxSliderValue;
-   slider.GetRange( minSliderValue, maxSliderValue );
+   int sliderMinValue, sliderMaxValue;
+   slider.GetRange( sliderMinValue, sliderMaxValue );
    int sliderValue = slider.Value();
    int newSliderValue = RoundInt( sliderValue + double( slider.MaxValue() - slider.MinValue() )/delta );
-   newSliderValue = Range( newSliderValue, minSliderValue, maxSliderValue );
+   newSliderValue = Range( newSliderValue, sliderMinValue, sliderMaxValue );
    if ( newSliderValue != sliderValue )
    {
       slider.SetValue( newSliderValue );

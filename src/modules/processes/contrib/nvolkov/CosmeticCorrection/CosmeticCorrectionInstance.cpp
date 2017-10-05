@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard CosmeticCorrection Process Module Version 01.02.05.0199
+// Standard CosmeticCorrection Process Module Version 01.02.05.0201
 // ----------------------------------------------------------------------------
-// CosmeticCorrectionInstance.cpp - Released 2017-08-01T14:26:58Z
+// CosmeticCorrectionInstance.cpp - Released 2017-10-02T10:08:47Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
@@ -331,39 +331,71 @@ namespace pcl
         return &MT;
     }
 
-    struct FileData
-    {
-        FileFormat* format = nullptr;  // the file format of retrieved data
-        const void* fsData = nullptr;  // format-specific data
-        ImageOptions options;          // currently used for resolution only
-        FITSKeywordArray keywords;     // FITS keywords
-        ICCProfile profile;            // ICC profile
+   struct FileData
+   {
+      FileFormat*      format = nullptr; // the file format of retrieved data
+      const void*      fsData = nullptr; // format-specific data
+      ImageOptions     options;          // currently used for resolution only
+      PropertyArray    properties;       // image properties
+      FITSKeywordArray keywords;         // FITS keywords
+      ICCProfile       profile;          // ICC profile
 
-        FileData() = default;
+      FileData() = default;
 
-        FileData(FileFormatInstance& file, const ImageOptions & o) : options(o)
-        {
-            format = new FileFormat( file.Format() );
-            if ( format->UsesFormatSpecificData() )
-                fsData = file.FormatSpecificData();
+      FileData( FileFormatInstance& file, const ImageOptions& o ) : options( o )
+      {
+         format = new FileFormat( file.Format() );
 
-            if ( format->CanStoreKeywords() )
-                file.ReadFITSKeywords( keywords );
+         if ( format->UsesFormatSpecificData() )
+            fsData = file.FormatSpecificData();
 
-            if ( format->CanStoreICCProfiles() )
-                file.ReadICCProfile( profile );
-        }
+         if ( format->CanStoreImageProperties() )
+            properties = file.ReadImageProperties();
 
-        ~FileData()
-        {
-            if (format != nullptr)
-            {
-                if (fsData != nullptr)
-                    format->DisposeFormatSpecificData(const_cast<void*> (fsData)), fsData = nullptr;
-                delete format, format = nullptr;
-            }
-        }
-    };
+         if ( format->CanStoreKeywords() )
+            file.ReadFITSKeywords( keywords );
+
+         if ( format->CanStoreICCProfiles() )
+            file.ReadICCProfile( profile );
+      }
+
+      FileData( const FileData& ) = delete;
+
+      FileData( FileData&& x ) :
+         format( x.format ),
+         fsData( x.fsData ),
+         options( std::move( x.options ) ),
+         properties( std::move( x.properties ) ),
+         keywords( std::move( x.keywords ) ),
+         profile( std::move( x.profile ) )
+      {
+         x.format = nullptr;
+         x.fsData = nullptr;
+      }
+
+      ~FileData()
+      {
+         if ( format != nullptr )
+         {
+            if ( fsData != nullptr )
+               format->DisposeFormatSpecificData( const_cast<void*>( fsData ) ), fsData = nullptr;
+            delete format, format = nullptr;
+         }
+      }
+
+      FileData& operator =( const FileData& ) = delete;
+
+      FileData& operator =( FileData&& x )
+      {
+         format = x.format; x.format = nullptr;
+         fsData = x.fsData; x.fsData = nullptr;
+         options = std::move( x.options );
+         properties = std::move( x.properties );
+         keywords = std::move( x.keywords );
+         profile = std::move( x.profile );
+         return *this;
+      }
+   };
 
     inline Image* LoadImageFile(FileFormatInstance& file, int index = 0)
     {
@@ -905,41 +937,56 @@ namespace pcl
          return outputFilePath;
     }
 
-    void CosmeticCorrectionInstance::SaveImage(const CCThread* t)
-    {
-        Console console;
-        String outputFilePath = OutputFilePath(t->TargetPath(), t->SubimageIndex());
-        console.WriteLn("Create " + outputFilePath);
+   void CosmeticCorrectionInstance::SaveImage( const CCThread* t )
+   {
+      Console console;
+      String outputFilePath = OutputFilePath( t->TargetPath(), t->SubimageIndex() );
+      console.WriteLn( "<end><cbr>Create file: " + outputFilePath );
 
-        FileFormat outputFormat( File::ExtractExtension( outputFilePath ), false, true);
-        FileFormatInstance outputFile(outputFormat);
-        if (!outputFile.Create(outputFilePath)) throw CaughtException();
-        const FileData& inputData = t->GetFileData();
-        outputFile.SetOptions(inputData.options);
-        if (inputData.fsData != 0)
-            if (outputFormat.ValidateFormatSpecificData(inputData.fsData))
-                outputFile.SetFormatSpecificData(inputData.fsData);
+      FileFormat outputFormat( File::ExtractExtension( outputFilePath ), false/*read*/, true/*write*/ );
+      FileFormatInstance outputFile( outputFormat );
+      if ( !outputFile.Create( outputFilePath ) )
+         throw CaughtException();
 
-        FITSKeywordArray keywords = inputData.keywords;
-        keywords.Add(FITSHeaderKeyword("COMMENT", IsoString(), "CosmeticCorrection with " + PixInsightVersion::AsString()));
-        keywords.Add(FITSHeaderKeyword("HISTORY", IsoString(), CosmeticCorrectionModule::ReadableVersion()));
-        keywords.Add(FITSHeaderKeyword("HISTORY", IsoString(), "CosmeticCorrection. Total corrected pixels " + IsoString(t->Count()) ));
-        outputFile.WriteFITSKeywords( keywords );
+      const FileData& inputData = t->GetFileData();
 
-        if (inputData.profile.IsProfile()) outputFile.WriteICCProfile( inputData.profile );
+      outputFile.SetOptions( inputData.options );
 
-        if (!outputFile.WriteImage(*t->TargetImage())) throw CaughtException();
+      if ( inputData.fsData != nullptr )
+         if ( outputFormat.UsesFormatSpecificData() )
+            if ( outputFormat.ValidateFormatSpecificData( inputData.fsData ) )
+               outputFile.SetFormatSpecificData( inputData.fsData );
 
-        console.WriteLn("Close file.");
-        if ( !outputFile.Close() )
-           throw CaughtException();
+      if ( !inputData.properties.IsEmpty() )
+         if ( outputFormat.CanStoreImageProperties() )
+            outputFile.WriteImageProperties( inputData.properties );
+         else
+            console.WarningLn( "** Warning: The output format cannot store image properties - existing properties not embedded." );
 
-#if debug
-//        ShowImage(*t->TargetImage());
-#endif
+      if ( outputFormat.CanStoreKeywords() )
+      {
+         FITSKeywordArray keywords = inputData.keywords;
+         keywords << FITSHeaderKeyword( "COMMENT", IsoString(), "CosmeticCorrection with " + PixInsightVersion::AsString() )
+                  << FITSHeaderKeyword( "HISTORY", IsoString(), CosmeticCorrectionModule::ReadableVersion() )
+                  << FITSHeaderKeyword( "HISTORY", IsoString(), "CosmeticCorrection: Total corrected pixels = " + IsoString( t->Count() ) );
+         outputFile.WriteFITSKeywords( keywords );
+      }
+      else if ( !inputData.keywords.IsEmpty() )
+         console.WarningLn( "** Warning: The output format cannot store FITS keywords - existing keywords not embedded." );
 
-    }
+      if ( inputData.profile.IsProfile() )
+         if ( outputFormat.CanStoreICCProfiles() )
+            outputFile.WriteICCProfile( inputData.profile );
+         else
+            console.WarningLn( "** Warning: The output format cannot store ICC profiles - existing profile not embedded." );
 
+      if ( !outputFile.WriteImage( *t->TargetImage() ) || !outputFile.Close() )
+         throw CaughtException();
+
+// #if debug
+//       ShowImage( *t->TargetImage() );
+// #endif
+   }
 
     // ----------------------------------------------------------------------------
 
@@ -1260,4 +1307,4 @@ namespace pcl
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CosmeticCorrectionInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF CosmeticCorrectionInstance.cpp - Released 2017-10-02T10:08:47Z

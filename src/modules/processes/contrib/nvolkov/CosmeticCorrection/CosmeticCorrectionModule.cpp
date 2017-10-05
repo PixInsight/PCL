@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard CosmeticCorrection Process Module Version 01.02.05.0199
+// Standard CosmeticCorrection Process Module Version 01.02.05.0201
 // ----------------------------------------------------------------------------
-// CosmeticCorrectionModule.cpp - Released 2017-08-01T14:26:58Z
+// CosmeticCorrectionModule.cpp - Released 2017-10-02T10:08:47Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
@@ -54,12 +54,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     02
 #define MODULE_VERSION_REVISION  05
-#define MODULE_VERSION_BUILD     0199
+#define MODULE_VERSION_BUILD     0201
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     8
-#define MODULE_RELEASE_DAY       1
+#define MODULE_RELEASE_MONTH     10
+#define MODULE_RELEASE_DAY       2
 
 #include "CosmeticCorrectionModule.h"
 #include "CosmeticCorrectionProcess.h"
@@ -166,4 +166,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF CosmeticCorrectionModule.cpp - Released 2017-08-01T14:26:58Z
+// EOF CosmeticCorrectionModule.cpp - Released 2017-10-02T10:08:47Z

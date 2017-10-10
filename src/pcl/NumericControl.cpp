@@ -352,6 +352,25 @@ NumericControl::NumericControl( Control& parent ) :
 
 // ----------------------------------------------------------------------------
 
+void NumericControl::SetRange( double lr, double ur )
+{
+   if ( lr < 0 || ur < 0 )
+      m_exponential = false;
+   NumericEdit::SetRange( lr, ur );
+}
+
+// ----------------------------------------------------------------------------
+
+void NumericControl::EnableExponentialResponse( bool enable )
+{
+   if ( enable && m_lowerBound < 0 )
+      throw Error( "NumericControl: Exponential slider response unavailable for negative lower bound." );
+   m_exponential = enable;
+   UpdateControls();
+}
+
+// ----------------------------------------------------------------------------
+
 double NumericControl::SliderValueToControl( int sliderValue ) const
 {
    int sliderMinValue, sliderMaxValue;
@@ -359,7 +378,7 @@ double NumericControl::SliderValueToControl( int sliderValue ) const
    double sliderDelta = sliderMaxValue - sliderMinValue;
    double sliderNormValue = (sliderValue - sliderMinValue)/sliderDelta;
    return Range( Round( m_exponential ?
-                              (1 + m_lowerBound)*Exp( Ln( m_upperBound/(1 + m_lowerBound) )*sliderNormValue ) - 1 :
+                              (1 + m_lowerBound)*Exp( Ln( (1 + m_upperBound)/(1 + m_lowerBound) )*sliderNormValue ) - 1:
                               m_lowerBound + (m_upperBound - m_lowerBound)*sliderNormValue,
                         m_real ? Max( 0, TruncInt( Log( sliderDelta ) ) ) : 0 ), m_lowerBound, m_upperBound );
 }
@@ -372,7 +391,7 @@ int NumericControl::ControlValueToSlider( double value ) const
    slider.GetRange( sliderMinValue, sliderMaxValue );
    double sliderDelta = sliderMaxValue - sliderMinValue;
    return Range( RoundInt( sliderMinValue + sliderDelta*(m_exponential ?
-                              Ln( (1 + value)/(1 + m_lowerBound) )/Ln( m_upperBound/(1 + m_lowerBound) ) :
+                              Ln( (1 + value)/(1 + m_lowerBound) )/Ln( (1 + m_upperBound)/(1 + m_lowerBound) ) :
                               (value - m_lowerBound)/(m_upperBound - m_lowerBound)) ),
                  sliderMinValue, sliderMaxValue );
 }

@@ -159,9 +159,17 @@ public:
       return m_upperBound;
    }
 
-   /*! #
+   /*!
+    * Sets the range of allowed control values.
+    *
+    * \param lower   Minimum allowed control value, or lower bound.
+    *
+    * \param upper   Maximum allowed control value, or upper bound.
+    *
+    * If the specified lower and upper bounds are not sorted in ascending
+    * order, this member function will swap them automatically.
     */
-   void SetRange( double lr, double ur );
+   virtual void SetRange( double lower, double upper );
 
    /*! #
     */
@@ -340,6 +348,21 @@ public:
    }
 
    /*!
+    * Sets the range of allowed control values.
+    *
+    * \param lower   Minimum allowed control value, or lower bound.
+    *
+    * \param upper   Maximum allowed control value, or upper bound.
+    *
+    * If the specified lower and upper bounds are not sorted in ascending
+    * order, this member function will swap them automatically.
+    *
+    * If the resulting lower bound is negative, the exponential slider response
+    * feature will be implicitly disabled.
+    */
+   virtual void SetRange( double lower, double upper );
+
+   /*!
     * Returns true if the slider component of this %NumericControl has
     * exponential response. Returns false if the slider has the default linear
     * response.
@@ -354,7 +377,7 @@ public:
     * normalized to the [0,1] range, and k is an automatically calculated
     * exponential growth factor given by:
     *
-    * k = Ln( y1/(1 + y0) )
+    * k = Ln( (1 + y1)/(1 + y0) )
     *
     * where y1 is the maximum allowed control value, as returned by
     * UpperBound().
@@ -365,6 +388,10 @@ public:
     * provide finer control for low parameter values, which is impossible with
     * a linear slider response. The exponential slider response feature is
     * disabled by default, that is, sliders have linear response by default.
+    *
+    * The exponential slider response feature is only available for controls
+    * where the minimum allowed value (given by LowerBound()) is greater than
+    * or equal to zero.
     *
     * \sa EnableExponentialResponse(), DisableExponentialResponse()
     */
@@ -377,13 +404,13 @@ public:
     * Enables the exponential slider response feature. See
     * IsExponentialResponse() for detailed information.
     *
+    * If the minimum allowed control value is negative, this member function
+    * throws an Error exception: The exponential slider response feature can
+    * only be enabled when LowerBound() &ge; 0.
+    *
     * \sa IsExponentialResponse(), DisableExponentialResponse()
     */
-   void EnableExponentialResponse( bool enable = true )
-   {
-      m_exponential = enable;
-      UpdateControls();
-   }
+   void EnableExponentialResponse( bool enable = true );
 
    /*!
     * Disables the exponential slider response feature. See

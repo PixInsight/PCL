@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0377
+// Standard Geometry Process Module Version 01.02.02.0379
 // ----------------------------------------------------------------------------
-// IntegerResampleInstance.cpp - Released 2017-08-01T14:26:58Z
+// IntegerResampleInstance.cpp - Released 2017-10-16T10:07:46Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -75,11 +75,15 @@ IntegerResampleInstance::IntegerResampleInstance( const MetaProcess* P ) :
 {
 }
 
+// ----------------------------------------------------------------------------
+
 IntegerResampleInstance::IntegerResampleInstance( const IntegerResampleInstance& x ) :
    ProcessImplementation( x )
 {
    Assign( x );
 }
+
+// ----------------------------------------------------------------------------
 
 void IntegerResampleInstance::Assign( const ProcessImplementation& p )
 {
@@ -95,19 +99,25 @@ void IntegerResampleInstance::Assign( const ProcessImplementation& p )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool IntegerResampleInstance::IsMaskable( const View&, const ImageWindow& ) const
 {
    return false;
 }
+
+// ----------------------------------------------------------------------------
 
 UndoFlags IntegerResampleInstance::UndoMode( const View& ) const
 {
    return UndoFlag::PixelData | UndoFlag::Keywords | (p_forceResolution ? UndoFlag::Resolution : 0);
 }
 
-bool IntegerResampleInstance::CanExecuteOn( const View& v, pcl::String& whyNot ) const
+// ----------------------------------------------------------------------------
+
+bool IntegerResampleInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) const
 {
-   if ( v.IsPreview() )
+   if ( view.IsPreview() )
    {
       whyNot = "IntegerResample cannot be executed on previews.";
       return false;
@@ -116,10 +126,16 @@ bool IntegerResampleInstance::CanExecuteOn( const View& v, pcl::String& whyNot )
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool IntegerResampleInstance::BeforeExecution( View& view )
 {
-   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
+   if ( p_zoomFactor > 1 || p_zoomFactor < -1 )
+      return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
+   return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void IntegerResampleInstance::GetNewSizes( int& width, int& height ) const
 {
@@ -127,10 +143,12 @@ void IntegerResampleInstance::GetNewSizes( int& width, int& height ) const
    R.GetNewSizes( width, height );
 }
 
+// ----------------------------------------------------------------------------
+
 bool IntegerResampleInstance::ExecuteOn( View& view )
 {
    if ( !view.IsMainView() )
-      return false;  // should not happen!
+      return false;
 
    AutoViewLock lock( view );
 
@@ -140,9 +158,7 @@ bool IntegerResampleInstance::ExecuteOn( View& view )
    ImageVariant image = view.Image();
 
    if ( !image.IsComplexSample() )
-      if ( p_zoomFactor == 1 || p_zoomFactor == 0 || p_zoomFactor == -1 )
-         console.WriteLn( "<end><cbr>&lt;* identity *&gt;" );
-      else
+      if ( p_zoomFactor > 1 || p_zoomFactor < -1 )
       {
          IntegerResample I( p_zoomFactor, static_cast<IntegerResample::downsample_mode>( p_downsampleMode ) );
 
@@ -161,7 +177,7 @@ bool IntegerResampleInstance::ExecuteOn( View& view )
 
             uint64 sz = uint64( width )*uint64( height )*image.NumberOfChannels()*image.BytesPerSample();
             if ( sz > uint64( uint32_max-256 ) )
-               throw Error( "IntegerResample: Invalid operation: Target image dimensions would exceed four gigabytes" );
+               throw Error( "IntegerResample: Invalid operation: The resulting image would require more than 4 GiB" );
          }
 
          DeleteAstrometryMetadataAndPreviewsAndMask( window );
@@ -172,6 +188,10 @@ bool IntegerResampleInstance::ExecuteOn( View& view )
          image.SetStatusCallback( &status );
 
          I >> image;
+      }
+      else
+      {
+         console.WriteLn( "<end><cbr>&lt;* identity *&gt;" );
       }
 
    if ( p_forceResolution )
@@ -210,4 +230,4 @@ void* IntegerResampleInstance::LockParameter( const MetaParameter* p, size_type 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IntegerResampleInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF IntegerResampleInstance.cpp - Released 2017-10-16T10:07:46Z

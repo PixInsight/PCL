@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0377
+// Standard Geometry Process Module Version 01.02.02.0379
 // ----------------------------------------------------------------------------
-// IntegerResampleProcess.h - Released 2017-08-01T14:26:58Z
+// IntegerResampleProcess.h - Released 2017-10-16T10:07:46Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -94,4 +94,4 @@ PCL_END_LOCAL
 #endif   // __IntegerResampleProcess_h
 
 // ----------------------------------------------------------------------------
-// EOF IntegerResampleProcess.h - Released 2017-08-01T14:26:58Z
+// EOF IntegerResampleProcess.h - Released 2017-10-16T10:07:46Z

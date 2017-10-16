@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0377
+// Standard Geometry Process Module Version 01.02.02.0379
 // ----------------------------------------------------------------------------
-// RotationInstance.cpp - Released 2017-08-01T14:26:58Z
+// RotationInstance.cpp - Released 2017-10-16T10:07:46Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -82,11 +82,15 @@ RotationInstance::RotationInstance( const MetaProcess* P ) :
 {
 }
 
+// ----------------------------------------------------------------------------
+
 RotationInstance::RotationInstance( const RotationInstance& x ) :
    ProcessImplementation( x )
 {
    Assign( x );
 }
+
+// ----------------------------------------------------------------------------
 
 void RotationInstance::Assign( const ProcessImplementation& p )
 {
@@ -103,15 +107,21 @@ void RotationInstance::Assign( const ProcessImplementation& p )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool RotationInstance::IsMaskable( const View&, const ImageWindow& ) const
 {
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 UndoFlags RotationInstance::UndoMode( const View& ) const
 {
    return UndoFlag::PixelData | UndoFlag::Keywords;
 }
+
+// ----------------------------------------------------------------------------
 
 bool RotationInstance::CanExecuteOn( const View& v, String& whyNot ) const
 {
@@ -124,10 +134,16 @@ bool RotationInstance::CanExecuteOn( const View& v, String& whyNot ) const
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool RotationInstance::BeforeExecution( View& view )
 {
-   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
+   if ( Round( Deg( p_angle ), 4 ) != 0 )
+      return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
+   return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void RotationInstance::GetNewSizes( int& width, int& height ) const
 {
@@ -135,6 +151,8 @@ void RotationInstance::GetNewSizes( int& width, int& height ) const
    Rotation R( I, p_angle );
    R.GetNewSizes( width, height );
 }
+
+// ----------------------------------------------------------------------------
 
 bool RotationInstance::ExecuteOn( View& view )
 {
@@ -194,7 +212,7 @@ bool RotationInstance::ExecuteOn( View& view )
       T.GetNewSizes( width, height );
       uint64 sz = uint64( width )*uint64( height )*image.NumberOfChannels()*image.BytesPerSample();
       if ( sz > uint64( uint32_max-256 ) )
-         throw Error( "Rotation: Invalid operation: Target image dimensions would exceed four gigabytes" );
+         throw Error( "Rotation: Invalid operation: The resulting image would require more than 4 GiB" );
    }
 
    T.SetFillValues( p_fillColor );
@@ -202,6 +220,8 @@ bool RotationInstance::ExecuteOn( View& view )
 
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void* RotationInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
 {
@@ -233,4 +253,4 @@ void* RotationInstance::LockParameter( const MetaParameter* p, size_type /*table
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RotationInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF RotationInstance.cpp - Released 2017-10-16T10:07:46Z

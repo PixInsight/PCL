@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0377
+// Standard Geometry Process Module Version 01.02.02.0379
 // ----------------------------------------------------------------------------
-// ChannelMatchInstance.cpp - Released 2017-08-01T14:26:58Z
+// ChannelMatchInstance.cpp - Released 2017-10-16T10:07:46Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -76,11 +76,15 @@ ChannelMatchInstance::ChannelMatchInstance( const MetaProcess* P ) :
    }
 }
 
+// ----------------------------------------------------------------------------
+
 ChannelMatchInstance::ChannelMatchInstance( const ChannelMatchInstance& x ) :
    ProcessImplementation( x )
 {
    Assign( x );
 }
+
+// ----------------------------------------------------------------------------
 
 void ChannelMatchInstance::Assign( const ProcessImplementation& p )
 {
@@ -93,6 +97,8 @@ void ChannelMatchInstance::Assign( const ProcessImplementation& p )
          p_channelFactor[i] = x->p_channelFactor[i];
       }
 }
+
+// ----------------------------------------------------------------------------
 
 bool ChannelMatchInstance::CanExecuteOn( const View& v, String& whyNot ) const
 {
@@ -110,6 +116,8 @@ bool ChannelMatchInstance::CanExecuteOn( const View& v, String& whyNot ) const
 
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ChannelMatchInstance::Validate( String& info )
 {
@@ -267,12 +275,16 @@ void* ChannelMatchInstance::LockParameter( const MetaParameter* p, size_type tab
    return nullptr;
 }
 
+// ----------------------------------------------------------------------------
+
 bool ChannelMatchInstance::AllocateParameter( size_type length, const MetaParameter* p, size_type tableRow )
 {
    if ( p == TheCMChannelsParameter )
       return true;
    return false;
 }
+
+// ----------------------------------------------------------------------------
 
 size_type ChannelMatchInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
@@ -286,4 +298,4 @@ size_type ChannelMatchInstance::ParameterLength( const MetaParameter* p, size_ty
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ChannelMatchInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF ChannelMatchInstance.cpp - Released 2017-10-16T10:07:46Z

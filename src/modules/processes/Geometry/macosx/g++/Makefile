@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.104
+# PixInsight Makefile Generator Script v1.105
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-08-01T15:57:19.851Z
+# Generated on .... 2017-10-12T08:12:29.118Z
 # Project id ...... Geometry
 # Project type .... Module
 # Platform ........ MacOSX/g++

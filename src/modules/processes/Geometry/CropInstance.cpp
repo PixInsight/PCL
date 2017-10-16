@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0377
+// Standard Geometry Process Module Version 01.02.02.0379
 // ----------------------------------------------------------------------------
-// CropInstance.cpp - Released 2017-08-01T14:26:58Z
+// CropInstance.cpp - Released 2017-10-16T10:07:46Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -79,11 +79,15 @@ CropInstance::CropInstance( const MetaProcess* P ) :
 {
 }
 
+// ----------------------------------------------------------------------------
+
 CropInstance::CropInstance( const CropInstance& x ) :
    ProcessImplementation( x )
 {
    Assign( x );
 }
+
+// ----------------------------------------------------------------------------
 
 void CropInstance::Assign( const ProcessImplementation& p )
 {
@@ -100,15 +104,21 @@ void CropInstance::Assign( const ProcessImplementation& p )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool CropInstance::IsMaskable( const View&, const ImageWindow& ) const
 {
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 UndoFlags CropInstance::UndoMode( const View& ) const
 {
    return UndoFlag::PixelData | UndoFlag::Keywords | (p_forceResolution ? UndoFlag::Resolution : 0);
 }
+
+// ----------------------------------------------------------------------------
 
 bool CropInstance::CanExecuteOn( const View& v, String& whyNot ) const
 {
@@ -121,10 +131,16 @@ bool CropInstance::CanExecuteOn( const View& v, String& whyNot ) const
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool CropInstance::BeforeExecution( View& view )
 {
-   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
+   if ( p_margins != 0.0 )
+      return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
+   return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void CropInstance::GetNewSizes( int& w, int& h ) const
 {
@@ -135,62 +151,66 @@ void CropInstance::GetNewSizes( int& w, int& h ) const
    C.GetNewSizes( w, h );
 }
 
+// ----------------------------------------------------------------------------
+
 bool CropInstance::ExecuteOn( View& view )
 {
    if ( !view.IsMainView() )
-      return false;  // should not happen!
-
-   Console console;
-
-   if ( p_margins == 0.0 )
-   {
-      console.WriteLn( "<end><cbr>&lt;* identity *&gt;" );
-      return true;
-   }
+      return false;
 
    AutoViewLock lock( view );
 
+   Console console;
+
    ImageWindow window = view.Window();
-   ImageVariant image = view.Image();
 
-   Crop C( p_margins );
-   C.SetMode( static_cast<Crop::crop_mode>( p_mode ) );
-   C.SetResolution( p_resolution.x, p_resolution.y );
-   C.SetMetricResolution( p_metric );
-   C.SetFillValues( p_fillColor );
-
-   // Dimensions of target image
-   int w0 = image.Width();
-   int h0 = image.Height();
-
-   // Dimensions of transformed image
-   int width = w0, height = h0;
-   C.GetNewSizes( width, height );
-
-   if ( width < 1 || height < 1 )
-      throw Error( "Crop: Invalid operation: Null target image dimensions" );
-
-   // On 32-bit systems, make sure the resulting image requires less than 4 GB.
-   if ( sizeof( void* ) == sizeof( uint32 ) )
+   if ( p_margins != 0.0 )
    {
-      uint64 sz = uint64( width )*uint64( height )*image.NumberOfChannels()*image.BytesPerSample();
-      if ( sz > uint64( uint32_max-256 ) )
-         throw Error( "Crop: Invalid operation: Target image dimensions would exceed four gigabytes" );
+      ImageVariant image = view.Image();
+
+      Crop C( p_margins );
+      C.SetMode( static_cast<Crop::crop_mode>( p_mode ) );
+      C.SetResolution( p_resolution.x, p_resolution.y );
+      C.SetMetricResolution( p_metric );
+      C.SetFillValues( p_fillColor );
+
+      // Dimensions of target image
+      int w0 = image.Width();
+      int h0 = image.Height();
+
+      // Dimensions of transformed image
+      int width = w0, height = h0;
+      C.GetNewSizes( width, height );
+
+      if ( width < 1 || height < 1 )
+         throw Error( "Crop: Invalid operation: Null target image dimensions" );
+
+      // On 32-bit systems, make sure the resulting image requires less than 4 GiB.
+      if ( sizeof( void* ) == sizeof( uint32 ) )
+      {
+         uint64 sz = uint64( width )*uint64( height )*image.NumberOfChannels()*image.BytesPerSample();
+         if ( sz > uint64( uint32_max-256 ) )
+            throw Error( "Crop: Invalid operation: The resulting image would require more than 4 GiB" );
+      }
+
+      DeleteAstrometryMetadataAndPreviewsAndMask( window );
+
+      console.EnableAbort();
+
+      StandardStatus status;
+      image.SetStatusCallback( &status );
+
+      C >> image;
    }
-
-   DeleteAstrometryMetadataAndPreviewsAndMask( window );
-
-   console.EnableAbort();
-
-   StandardStatus status;
-   image.SetStatusCallback( &status );
-
-   C >> image;
+   else
+   {
+      console.WriteLn( "<end><cbr>&lt;* identity *&gt;" );
+   }
 
    if ( p_forceResolution )
    {
       console.WriteLn( String().Format( "<end><cbr>Setting resolution: h:%.3f, v:%.3f, u:px/%s",
-                                        p_resolution.x, p_resolution.y, p_metric ? "cm" : "inch" ) );
+                                       p_resolution.x, p_resolution.y, p_metric ? "cm" : "inch" ) );
       window.SetResolution( p_resolution.x, p_resolution.y, p_metric );
    }
 
@@ -237,4 +257,4 @@ void* CropInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CropInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF CropInstance.cpp - Released 2017-10-16T10:07:46Z

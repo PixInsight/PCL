@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0377
+// Standard Geometry Process Module Version 01.02.02.0379
 // ----------------------------------------------------------------------------
-// ResampleInstance.cpp - Released 2017-08-01T14:26:58Z
+// ResampleInstance.cpp - Released 2017-10-16T10:07:46Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -81,11 +81,15 @@ ResampleInstance::ResampleInstance( const MetaProcess* P ) :
 {
 }
 
+// ----------------------------------------------------------------------------
+
 ResampleInstance::ResampleInstance( const ResampleInstance& x ) :
    ProcessImplementation( x )
 {
    Assign( x );
 }
+
+// ----------------------------------------------------------------------------
 
 void ResampleInstance::Assign( const ProcessImplementation& p )
 {
@@ -105,15 +109,21 @@ void ResampleInstance::Assign( const ProcessImplementation& p )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool ResampleInstance::IsMaskable( const View&, const ImageWindow& ) const
 {
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 UndoFlags ResampleInstance::UndoMode( const View& ) const
 {
    return UndoFlag::PixelData | UndoFlag::Keywords | (p_forceResolution ? UndoFlag::Resolution : 0);
 }
+
+// ----------------------------------------------------------------------------
 
 bool ResampleInstance::CanExecuteOn( const View& v, String& whyNot ) const
 {
@@ -126,10 +136,22 @@ bool ResampleInstance::CanExecuteOn( const View& v, String& whyNot ) const
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool ResampleInstance::BeforeExecution( View& view )
 {
-   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
+   ImageVariant image = view.Image();
+   int currentWidth = image.Width();
+   int currentHeight = image.Height();
+   int newWidth = currentWidth;
+   int newHeight = currentHeight;
+   GetNewSizes( newWidth, newHeight );
+   if ( Max( 1, newWidth ) != currentWidth || Max( 1, newHeight ) != currentHeight )
+      return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
+   return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void ResampleInstance::GetNewSizes( int& width, int& height ) const
 {
@@ -141,6 +163,8 @@ void ResampleInstance::GetNewSizes( int& width, int& height ) const
    S.SetMetricResolution( p_metric );
    S.GetNewSizes( width, height );
 }
+
+// ----------------------------------------------------------------------------
 
 bool ResampleInstance::ExecuteOn( View& view )
 {
@@ -166,37 +190,38 @@ bool ResampleInstance::ExecuteOn( View& view )
       width = Max( 1, width );
       height = Max( 1, height );
 
-      if ( width == w0 && height == h0 )
+      if ( width != w0 || height != h0 )
+      {
+         /*
+          * On 32-bit systems, make sure the resulting image requires less than 4 GiB.
+          */
+         if ( sizeof( void* ) == sizeof( uint32 ) )
+         {
+            uint64 sz = uint64( width )*uint64( height )*image.NumberOfChannels()*image.BytesPerSample();
+            if ( sz > uint64( uint32_max-256 ) )
+               throw Error( "Resample: Invalid operation: The resulting image would require more than 4 GiB" );
+         }
+
+         AutoPointer<PixelInterpolation> interpolation( NewInterpolation(
+            p_interpolation, width, height, w0, h0, false, p_clampingThreshold, p_smoothness, image ) );
+
+         DeleteAstrometryMetadataAndPreviewsAndMask( window );
+
+         console.EnableAbort();
+
+         StandardStatus status;
+         image.SetStatusCallback( &status );
+
+         Resample S( *interpolation, p_size.x, p_size.y );
+         S.SetSizes( width, height );
+         S.SetMode( ResizeMode::AbsolutePixels );
+         S.SetAbsMode( AbsoluteResizeMode::ForceWidthAndHeight );
+         S >> image;
+      }
+      else
       {
          console.WriteLn( "<end><cbr>&lt;* identity *&gt;" );
-         return true;
       }
-
-      /*
-       * On 32-bit systems, make sure the resulting image requires less than 4 GB.
-       */
-      if ( sizeof( void* ) == sizeof( uint32 ) )
-      {
-         uint64 sz = uint64( width )*uint64( height )*image.NumberOfChannels()*image.BytesPerSample();
-         if ( sz > uint64( uint32_max-256 ) )
-            throw Error( "Resample: Invalid operation: Target image dimensions would exceed four gigabytes" );
-      }
-
-      AutoPointer<PixelInterpolation> interpolation( NewInterpolation(
-         p_interpolation, width, height, w0, h0, false, p_clampingThreshold, p_smoothness, image ) );
-
-      DeleteAstrometryMetadataAndPreviewsAndMask( window );
-
-      console.EnableAbort();
-
-      StandardStatus status;
-      image.SetStatusCallback( &status );
-
-      Resample S( *interpolation, p_size.x, p_size.y );
-      S.SetSizes( width, height );
-      S.SetMode( ResizeMode::AbsolutePixels );
-      S.SetAbsMode( AbsoluteResizeMode::ForceWidthAndHeight );
-      S >> image;
    }
 
    if ( p_forceResolution )
@@ -245,4 +270,4 @@ void* ResampleInstance::LockParameter( const MetaParameter* p, size_type /*table
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ResampleInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF ResampleInstance.cpp - Released 2017-10-16T10:07:46Z

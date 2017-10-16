@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0377
+// Standard Geometry Process Module Version 01.02.02.0379
 // ----------------------------------------------------------------------------
-// DynamicCropInstance.cpp - Released 2017-08-01T14:26:58Z
+// DynamicCropInstance.cpp - Released 2017-10-16T10:07:46Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -154,7 +154,17 @@ bool DynamicCropInstance::CanExecuteOn( const View& v, String& whyNot ) const
 
 bool DynamicCropInstance::BeforeExecution( View& view )
 {
-   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
+   ImageVariant image = view.Image();
+   int currentWidth = image.Width();
+   int currentHeight = image.Height();
+   int newWidth = Max( 1, RoundInt( p_scaleX*p_width*currentWidth ) );
+   int newHeight = Max( 1, RoundInt( p_scaleY*p_height*currentHeight ) );
+   bool crop = newWidth != currentWidth || newHeight != currentHeight || p_center != 0.5;
+   bool rotate = p_angle != 0;
+   bool scale = p_scaleX != 1 || p_scaleY != 1;
+   if ( crop || rotate || scale )
+      return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
+   return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -181,7 +191,7 @@ public:
       {
          uint64 sz = uint64( data.m_width )*uint64( data.m_height )*image.NumberOfChannels()*image.BytesPerSample();
          if ( sz > uint64( uint32_max-256 ) )
-            throw Error( "DynamicCrop: Invalid operation: Target image dimensions would exceed four gigabytes" );
+            throw Error( "DynamicCrop: Invalid operation: The resulting image would require more than 4 GiB" );
       }
 
       bool crop = data.m_width != data.m_sourceWidth || data.m_height != data.m_sourceHeight || C.p_center != 0.5;
@@ -559,4 +569,4 @@ void* DynamicCropInstance::LockParameter( const MetaParameter* p, size_type /*ta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF DynamicCropInstance.cpp - Released 2017-10-16T10:07:46Z

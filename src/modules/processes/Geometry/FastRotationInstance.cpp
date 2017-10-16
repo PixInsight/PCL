@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0377
+// Standard Geometry Process Module Version 01.02.02.0379
 // ----------------------------------------------------------------------------
-// FastRotationInstance.cpp - Released 2017-08-01T14:26:58Z
+// FastRotationInstance.cpp - Released 2017-10-16T10:07:46Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -71,12 +71,16 @@ FastRotationInstance::FastRotationInstance( const MetaProcess* m, int r ) :
 {
 }
 
+// ----------------------------------------------------------------------------
+
 FastRotationInstance::FastRotationInstance( const FastRotationInstance& x ) :
    ProcessImplementation( x ),
    p_mode( x.p_mode ),
    p_noGUIMessages( x.p_noGUIMessages )
 {
 }
+
+// ----------------------------------------------------------------------------
 
 void FastRotationInstance::Assign( const ProcessImplementation& p )
 {
@@ -88,15 +92,21 @@ void FastRotationInstance::Assign( const ProcessImplementation& p )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool FastRotationInstance::IsMaskable( const View&, const ImageWindow& ) const
 {
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 UndoFlags FastRotationInstance::UndoMode( const View& ) const
 {
    return UndoFlag::PixelData | UndoFlag::Keywords;
 }
+
+// ----------------------------------------------------------------------------
 
 bool FastRotationInstance::CanExecuteOn( const View& v, String& whyNot ) const
 {
@@ -109,15 +119,19 @@ bool FastRotationInstance::CanExecuteOn( const View& v, String& whyNot ) const
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool FastRotationInstance::BeforeExecution( View& view )
 {
    return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
 }
 
+// ----------------------------------------------------------------------------
+
 bool FastRotationInstance::ExecuteOn( View& view )
 {
    if ( !view.IsMainView() )
-      return false;  // should not happen!
+      return false;
 
    AutoViewLock lock( view );
 
@@ -173,4 +187,4 @@ void* FastRotationInstance::LockParameter( const MetaParameter* p, size_type /*t
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FastRotationInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF FastRotationInstance.cpp - Released 2017-10-16T10:07:46Z

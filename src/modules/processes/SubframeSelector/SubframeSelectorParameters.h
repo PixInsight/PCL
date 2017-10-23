@@ -43,7 +43,7 @@
 // PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
 // CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
 // EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
-// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR STargetFERVICES; AND LOSS OF USE,
 // DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
@@ -62,132 +62,43 @@ PCL_BEGIN_LOCAL
 
 // ----------------------------------------------------------------------------
 
-class SSTargetFrames : public MetaTable
+class SSSubframes : public MetaTable
 {
 public:
 
-   SSTargetFrames( MetaProcess* );
+   SSSubframes( MetaProcess* );
 
    virtual IsoString Id() const;
 };
 
-extern SSTargetFrames* TheSSTargetFramesParameter;
+extern SSSubframes* TheSSSubframesParameter;
 
 // ----------------------------------------------------------------------------
 
-class SSTargetFrameEnabled : public MetaBoolean
+class SSSubframeEnabled : public MetaBoolean
 {
 public:
 
-   SSTargetFrameEnabled( MetaTable* );
+   SSSubframeEnabled( MetaTable* );
 
    virtual IsoString Id() const;
    virtual bool DefaultValue() const;
 };
 
-extern SSTargetFrameEnabled* TheSSTargetFrameEnabledParameter;
+extern SSSubframeEnabled* TheSSSubframeEnabledParameter;
 
 // ----------------------------------------------------------------------------
 
-class SSTargetFramePath : public MetaString
+class SSSubframePath : public MetaString
 {
 public:
 
-   SSTargetFramePath( MetaTable* );
+   SSSubframePath( MetaTable* );
 
    virtual IsoString Id() const;
 };
 
-extern SSTargetFramePath* TheSSTargetFramePathParameter;
-
-// ----------------------------------------------------------------------------
-
-class SubframeSelectorParameterOne : public MetaFloat
-{
-public:
-
-   SubframeSelectorParameterOne( MetaProcess* );
-
-   virtual IsoString Id() const;
-
-   virtual int Precision() const;
-
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
-};
-
-extern SubframeSelectorParameterOne* TheSubframeSelectorParameterOneParameter;
-
-// ----------------------------------------------------------------------------
-
-class SubframeSelectorParameterTwo : public MetaInt32
-{
-public:
-
-   SubframeSelectorParameterTwo( MetaProcess* );
-
-   virtual IsoString Id() const;
-
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
-};
-
-extern SubframeSelectorParameterTwo* TheSubframeSelectorParameterTwoParameter;
-
-// ----------------------------------------------------------------------------
-
-class SubframeSelectorParameterThree : public MetaBoolean
-{
-public:
-
-   SubframeSelectorParameterThree( MetaProcess* );
-
-   virtual IsoString Id() const;
-
-   virtual bool DefaultValue() const;
-};
-
-extern SubframeSelectorParameterThree* TheSubframeSelectorParameterThreeParameter;
-
-// ----------------------------------------------------------------------------
-
-class SubframeSelectorParameterFour : public MetaEnumeration
-{
-public:
-
-   enum { FirstItem,
-          SecondItem,
-          ThirdItem,
-          NumberOfItems,
-          Default = FirstItem };
-
-   SubframeSelectorParameterFour( MetaProcess* );
-
-   virtual IsoString Id() const;
-
-   virtual size_type NumberOfElements() const;
-   virtual IsoString ElementId( size_type ) const;
-   virtual int ElementValue( size_type ) const;
-   virtual size_type DefaultValueIndex() const;
-};
-
-extern SubframeSelectorParameterFour* TheSubframeSelectorParameterFourParameter;
-
-// ----------------------------------------------------------------------------
-
-class SubframeSelectorParameterFive : public MetaString
-{
-public:
-
-   SubframeSelectorParameterFive( MetaProcess* );
-
-   virtual IsoString Id() const;
-   virtual size_type MinLength() const;
-};
-
-extern SubframeSelectorParameterFive* TheSubframeSelectorParameterFiveParameter;
+extern SSSubframePath* TheSSSubframePathParameter;
 
 // ----------------------------------------------------------------------------
 

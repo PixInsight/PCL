@@ -58,8 +58,7 @@
 #include <pcl/FileDialog.h>
 #include <pcl/FileFormat.h>
 #include <pcl/ViewList.h>
-#include <pcl/GlobalSettings.h>
-#include <pcl/ErrorHandler.h>
+#include <pcl/ProcessInterface.h>
 
 #define IMAGELIST_MINHEIGHT( fnt )  (8*fnt.Height() + 2)
 
@@ -108,9 +107,9 @@ const char** SubframeSelectorInterface::IconImageXPM() const
    return nullptr; // SubframeSelectorIcon_XPM; ---> put a nice icon here
 }
 
-void SubframeSelectorInterface::ApplyInstance() const
+InterfaceFeatures SubframeSelectorInterface::Features() const
 {
-   instance.LaunchOnCurrentView();
+   return InterfaceFeature::DefaultGlobal;
 }
 
 void SubframeSelectorInterface::ResetInstance()
@@ -166,23 +165,18 @@ bool SubframeSelectorInterface::ImportProcess( const ProcessImplementation& p )
 
 void SubframeSelectorInterface::UpdateControls()
 {
-   UpdateTargetImagesList();
-   GUI->ParameterOne_NumericControl.SetValue( instance.p_one );
-   GUI->ParameterTwo_SpinBox.SetValue( instance.p_two );
-   GUI->ParameterThree_CheckBox.SetChecked( instance.p_three );
-   GUI->ParameterFour_ComboBox.SetCurrentItem( instance.p_four );
-   GUI->ParameterFive_Edit.SetText( instance.p_five );
+   UpdateSubframeImagesList();
 }
 
 // ----------------------------------------------------------------------------
 
-void SubframeSelectorInterface::UpdateTargetImageItem( size_type i )
+void SubframeSelectorInterface::UpdateSubframeImageItem( size_type i )
 {
-   TreeBox::Node* node = GUI->TargetImages_TreeBox[i];
+   TreeBox::Node* node = GUI->SubframeImages_TreeBox[i];
    if ( node == nullptr )
       return;
 
-   const SubframeSelectorInstance::ImageItem& item = instance.targetFrames[i];
+   const SubframeSelectorInstance::ImageItem& item = instance.subframes[i];
 
    node->SetText( 0, String( i+1 ) );
    node->SetAlignment( 0, TextAlign::Right );
@@ -198,36 +192,36 @@ void SubframeSelectorInterface::UpdateTargetImageItem( size_type i )
 
 // ----------------------------------------------------------------------------
 
-void SubframeSelectorInterface::UpdateTargetImagesList()
+void SubframeSelectorInterface::UpdateSubframeImagesList()
 {
-   int currentIdx = GUI->TargetImages_TreeBox.ChildIndex( GUI->TargetImages_TreeBox.CurrentNode() );
+   int currentIdx = GUI->SubframeImages_TreeBox.ChildIndex( GUI->SubframeImages_TreeBox.CurrentNode() );
 
-   GUI->TargetImages_TreeBox.DisableUpdates();
-   GUI->TargetImages_TreeBox.Clear();
+   GUI->SubframeImages_TreeBox.DisableUpdates();
+   GUI->SubframeImages_TreeBox.Clear();
 
-   for ( size_type i = 0; i < instance.targetFrames.Length(); ++i )
+   for ( size_type i = 0; i < instance.subframes.Length(); ++i )
    {
-      new TreeBox::Node( GUI->TargetImages_TreeBox );
-      UpdateTargetImageItem( i );
+      new TreeBox::Node( GUI->SubframeImages_TreeBox );
+      UpdateSubframeImageItem( i );
    }
 
-   GUI->TargetImages_TreeBox.AdjustColumnWidthToContents( 0 );
-   GUI->TargetImages_TreeBox.AdjustColumnWidthToContents( 1 );
-   GUI->TargetImages_TreeBox.AdjustColumnWidthToContents( 2 );
+   GUI->SubframeImages_TreeBox.AdjustColumnWidthToContents( 0 );
+   GUI->SubframeImages_TreeBox.AdjustColumnWidthToContents( 1 );
+   GUI->SubframeImages_TreeBox.AdjustColumnWidthToContents( 2 );
 
-   if ( !instance.targetFrames.IsEmpty() )
-      if ( currentIdx >= 0 && currentIdx < GUI->TargetImages_TreeBox.NumberOfChildren() )
-         GUI->TargetImages_TreeBox.SetCurrentNode( GUI->TargetImages_TreeBox[currentIdx] );
+   if ( !instance.subframes.IsEmpty() )
+      if ( currentIdx >= 0 && currentIdx < GUI->SubframeImages_TreeBox.NumberOfChildren() )
+         GUI->SubframeImages_TreeBox.SetCurrentNode( GUI->SubframeImages_TreeBox[currentIdx] );
 
-   GUI->TargetImages_TreeBox.EnableUpdates();
+   GUI->SubframeImages_TreeBox.EnableUpdates();
 }
 
 // ----------------------------------------------------------------------------
 
-void SubframeSelectorInterface::UpdateImageSelectionButtons()
+void SubframeSelectorInterface::UpdateSubframeImageSelectionButtons()
 {
-   bool hasItems = GUI->TargetImages_TreeBox.NumberOfChildren() > 0;
-   bool hasSelection = hasItems && GUI->TargetImages_TreeBox.HasSelectedTopLevelNodes();
+   bool hasItems = GUI->SubframeImages_TreeBox.NumberOfChildren() > 0;
+   bool hasSelection = hasItems && GUI->SubframeImages_TreeBox.HasSelectedTopLevelNodes();
 
    GUI->SelectAll_PushButton.Enable( hasItems );
    GUI->InvertSelection_PushButton.Enable( hasItems );
@@ -242,13 +236,13 @@ void SubframeSelectorInterface::UpdateImageSelectionButtons()
 void SubframeSelectorInterface::__ToggleSection( SectionBar& sender, Control& section, bool start )
 {
    if ( start )
-      GUI->TargetImages_TreeBox.SetFixedHeight();
+      GUI->SubframeImages_TreeBox.SetFixedHeight();
    else
    {
-      GUI->TargetImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( Font() ) );
-      GUI->TargetImages_TreeBox.SetMaxHeight( int_max );
+      GUI->SubframeImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( Font() ) );
+      GUI->SubframeImages_TreeBox.SetMaxHeight( int_max );
 
-      if ( GUI->TargetImages_Control.IsVisible() )
+      if ( GUI->SubframeImages_Control.IsVisible() )
          SetVariableHeight();
       else
          SetFixedHeight();
@@ -257,25 +251,25 @@ void SubframeSelectorInterface::__ToggleSection( SectionBar& sender, Control& se
 
 // ----------------------------------------------------------------------------
 
-void SubframeSelectorInterface::__TargetImages_CurrentNodeUpdated( TreeBox& sender,
-                                                                   TreeBox::Node& current,
-                                                                   TreeBox::Node& oldCurrent )
+void SubframeSelectorInterface::__SubframeImages_CurrentNodeUpdated( TreeBox &sender,
+                                                                     TreeBox::Node &current,
+                                                                     TreeBox::Node &oldCurrent )
 {
    // Actually do nothing (placeholder). Just perform a sanity check.
    int index = sender.ChildIndex( &current );
-   if ( index < 0 || size_type( index ) >= instance.targetFrames.Length() )
+   if ( index < 0 || size_type( index ) >= instance.subframes.Length() )
       throw Error( "SubframeSelectorInterface: *Warning* Corrupted interface structures" );
 }
 
 // ----------------------------------------------------------------------------
 
-void SubframeSelectorInterface::__TargetImages_NodeActivated( TreeBox& sender, TreeBox::Node& node, int col )
+void SubframeSelectorInterface::__SubframeImages_NodeActivated( TreeBox &sender, TreeBox::Node &node, int col )
 {
    int index = sender.ChildIndex( &node );
-   if ( index < 0 || size_type( index ) >= instance.targetFrames.Length() )
+   if ( index < 0 || size_type( index ) >= instance.subframes.Length() )
       throw Error( "SubframeSelectorInterface: *Warning* Corrupted interface structures" );
 
-   SubframeSelectorInstance::ImageItem& item = instance.targetFrames[index];
+   SubframeSelectorInstance::ImageItem& item = instance.subframes[index];
 
    switch ( col )
    {
@@ -285,7 +279,7 @@ void SubframeSelectorInterface::__TargetImages_NodeActivated( TreeBox& sender, T
    case 1:
       // Activate the item's checkmark: toggle item's enabled state.
       item.enabled = !item.enabled;
-      UpdateTargetImageItem( index );
+         UpdateSubframeImageItem( index );
       break;
    case 2:
       {
@@ -300,9 +294,9 @@ void SubframeSelectorInterface::__TargetImages_NodeActivated( TreeBox& sender, T
 
 // ----------------------------------------------------------------------------
 
-void SubframeSelectorInterface::__TargetImages_NodeSelectionUpdated( TreeBox& sender )
+void SubframeSelectorInterface::__SubframeImages_NodeSelectionUpdated( TreeBox &sender )
 {
-   UpdateImageSelectionButtons();
+   UpdateSubframeImageSelectionButtons();
 }
 
 // ----------------------------------------------------------------------------
@@ -315,58 +309,58 @@ static size_type TreeInsertionIndex( const TreeBox& tree )
 
 // ----------------------------------------------------------------------------
 
-void SubframeSelectorInterface::__TargetImages_Click( Button& sender, bool checked )
+void SubframeSelectorInterface::__SubframeImages_Click( Button &sender, bool checked )
 {
    if ( sender == GUI->AddFiles_PushButton )
    {
       OpenFileDialog d;
       d.EnableMultipleSelections();
       d.LoadImageFilters();
-      d.SetCaption( "SubframeSelector: Select Target Frames" );
+      d.SetCaption( "SubframeSelector: Select Subframes" );
 
       if ( d.Execute() )
       {
-         size_type i0 = TreeInsertionIndex( GUI->TargetImages_TreeBox );
+         size_type i0 = TreeInsertionIndex( GUI->SubframeImages_TreeBox );
          for ( StringList::const_iterator i = d.FileNames().Begin(); i != d.FileNames().End(); ++i )
-            instance.targetFrames.Insert( instance.targetFrames.At( i0++ ), SubframeSelectorInstance::ImageItem( *i ) );
-         UpdateTargetImagesList();
-         UpdateImageSelectionButtons();
+            instance.subframes.Insert( instance.subframes.At( i0++ ), SubframeSelectorInstance::ImageItem( *i ) );
+         UpdateSubframeImagesList();
+         UpdateSubframeImageSelectionButtons();
       }
    }
    else if ( sender == GUI->SelectAll_PushButton )
    {
-      GUI->TargetImages_TreeBox.SelectAllNodes();
-      UpdateImageSelectionButtons();
+      GUI->SubframeImages_TreeBox.SelectAllNodes();
+      UpdateSubframeImageSelectionButtons();
    }
    else if ( sender == GUI->InvertSelection_PushButton )
    {
-      for ( int i = 0, n = GUI->TargetImages_TreeBox.NumberOfChildren(); i < n; ++i )
-         GUI->TargetImages_TreeBox[i]->Select( !GUI->TargetImages_TreeBox[i]->IsSelected() );
-      UpdateImageSelectionButtons();
+      for ( int i = 0, n = GUI->SubframeImages_TreeBox.NumberOfChildren(); i < n; ++i )
+         GUI->SubframeImages_TreeBox[i]->Select( !GUI->SubframeImages_TreeBox[i]->IsSelected() );
+      UpdateSubframeImageSelectionButtons();
    }
    else if ( sender == GUI->ToggleSelected_PushButton )
    {
-      for ( int i = 0, n = GUI->TargetImages_TreeBox.NumberOfChildren(); i < n; ++i )
-         if ( GUI->TargetImages_TreeBox[i]->IsSelected() )
-            instance.targetFrames[i].enabled = !instance.targetFrames[i].enabled;
-      UpdateTargetImagesList();
-      UpdateImageSelectionButtons();
+      for ( int i = 0, n = GUI->SubframeImages_TreeBox.NumberOfChildren(); i < n; ++i )
+         if ( GUI->SubframeImages_TreeBox[i]->IsSelected() )
+            instance.subframes[i].enabled = !instance.subframes[i].enabled;
+      UpdateSubframeImagesList();
+      UpdateSubframeImageSelectionButtons();
    }
    else if ( sender == GUI->RemoveSelected_PushButton )
    {
       SubframeSelectorInstance::image_list newTargets;
-      for ( int i = 0, n = GUI->TargetImages_TreeBox.NumberOfChildren(); i < n; ++i )
-         if ( !GUI->TargetImages_TreeBox[i]->IsSelected() )
-            newTargets.Add( instance.targetFrames[i] );
-      instance.targetFrames = newTargets;
-      UpdateTargetImagesList();
-      UpdateImageSelectionButtons();
+      for ( int i = 0, n = GUI->SubframeImages_TreeBox.NumberOfChildren(); i < n; ++i )
+         if ( !GUI->SubframeImages_TreeBox[i]->IsSelected() )
+            newTargets.Add( instance.subframes[i] );
+      instance.subframes = newTargets;
+      UpdateSubframeImagesList();
+      UpdateSubframeImageSelectionButtons();
    }
    else if ( sender == GUI->Clear_PushButton )
    {
-      instance.targetFrames.Clear();
-      UpdateTargetImagesList();
-      UpdateImageSelectionButtons();
+      instance.subframes.Clear();
+      UpdateSubframeImagesList();
+      UpdateSubframeImageSelectionButtons();
    }
 }
 
@@ -374,7 +368,7 @@ void SubframeSelectorInterface::__TargetImages_Click( Button& sender, bool check
 
 void SubframeSelectorInterface::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
 {
-   if ( sender == GUI->TargetImages_TreeBox.Viewport() )
+   if ( sender == GUI->SubframeImages_TreeBox.Viewport() )
       wantsFiles = true;
 }
 
@@ -382,7 +376,7 @@ void SubframeSelectorInterface::__FileDrag( Control& sender, const Point& pos, c
 
 void SubframeSelectorInterface::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
 {
-   if ( sender == GUI->TargetImages_TreeBox.Viewport() )
+   if ( sender == GUI->SubframeImages_TreeBox.Viewport() )
    {
       StringList inputFiles;
       bool recursive = IsControlOrCmdPressed();
@@ -393,63 +387,13 @@ void SubframeSelectorInterface::__FileDrop( Control& sender, const Point& pos, c
             inputFiles << FileFormat::SupportedImageFiles( item, true/*toRead*/, false/*toWrite*/, recursive );
 
       inputFiles.Sort();
-      size_type i0 = TreeInsertionIndex( GUI->TargetImages_TreeBox );
+      size_type i0 = TreeInsertionIndex( GUI->SubframeImages_TreeBox );
       for ( const String& file : inputFiles )
-         instance.targetFrames.Insert( instance.targetFrames.At( i0++ ), SubframeSelectorInstance::ImageItem( file ) );
+         instance.subframes.Insert( instance.subframes.At( i0++ ), SubframeSelectorInstance::ImageItem( file ) );
 
-      UpdateTargetImagesList();
-      UpdateImageSelectionButtons();
+      UpdateSubframeImagesList();
+      UpdateSubframeImageSelectionButtons();
    }
-}
-
-// ----------------------------------------------------------------------------
-
-void SubframeSelectorInterface::__RealValueUpdated( NumericEdit& sender, double value )
-{
-   if ( sender == GUI->ParameterOne_NumericControl )
-      instance.p_one = value;
-}
-
-// ----------------------------------------------------------------------------
-
-void SubframeSelectorInterface::__IntegerValueUpdated( SpinBox& sender, int value )
-{
-   if ( sender == GUI->ParameterTwo_SpinBox )
-      instance.p_two = value;
-}
-
-// ----------------------------------------------------------------------------
-
-void SubframeSelectorInterface::__ItemClicked( Button& sender, bool checked )
-{
-   if ( sender == GUI->ParameterThree_CheckBox )
-      instance.p_three = checked;
-}
-
-// ----------------------------------------------------------------------------
-
-void SubframeSelectorInterface::__ItemSelected( ComboBox& sender, int itemIndex )
-{
-   if ( sender == GUI->ParameterFour_ComboBox )
-      instance.p_four = itemIndex;
-}
-
-// ----------------------------------------------------------------------------
-
-void SubframeSelectorInterface::__EditGetFocus( Control& sender )
-{
-   if ( sender == GUI->ParameterFive_Edit )
-   {
-      // If you need to do something when sender gets focus, do it here.
-   }
-}
-
-// ----------------------------------------------------------------------------
-
-void SubframeSelectorInterface::__EditCompleted( Edit& sender )
-{
-   if ( sender == GUI->ParameterFive_Edit )
-      instance.p_five = sender.Text();
 }
 
 // ----------------------------------------------------------------------------
@@ -457,165 +401,74 @@ void SubframeSelectorInterface::__EditCompleted( Edit& sender )
 SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 {
    pcl::Font fnt = w.Font();
-   int labelWidth1 = fnt.Width( String( "Three:" ) ); // the longest label text
-   int editWidth1 = fnt.Width( String( '0', 7 ) );
 
    //
 
-   TargetImages_SectionBar.SetTitle( "Target Frames" );
-   TargetImages_SectionBar.SetSection( TargetImages_Control );
-   TargetImages_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&SubframeSelectorInterface::__ToggleSection, w );
+   SubframeImages_SectionBar.SetTitle( "Subframes" );
+   SubframeImages_SectionBar.SetSection( SubframeImages_Control );
+   SubframeImages_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&SubframeSelectorInterface::__ToggleSection, w );
 
-   TargetImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
-   TargetImages_TreeBox.SetNumberOfColumns( 3 );
-   TargetImages_TreeBox.HideHeader();
-   TargetImages_TreeBox.EnableMultipleSelections();
-   TargetImages_TreeBox.DisableRootDecoration();
-   TargetImages_TreeBox.EnableAlternateRowColor();
-   TargetImages_TreeBox.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler)&SubframeSelectorInterface::__TargetImages_CurrentNodeUpdated, w );
-   TargetImages_TreeBox.OnNodeActivated( (TreeBox::node_event_handler)&SubframeSelectorInterface::__TargetImages_NodeActivated, w );
-   TargetImages_TreeBox.OnNodeSelectionUpdated( (TreeBox::tree_event_handler)&SubframeSelectorInterface::__TargetImages_NodeSelectionUpdated, w );
-   TargetImages_TreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler)&SubframeSelectorInterface::__FileDrag, w );
-   TargetImages_TreeBox.Viewport().OnFileDrop( (Control::file_drop_event_handler)&SubframeSelectorInterface::__FileDrop, w );
+   SubframeImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
+   SubframeImages_TreeBox.SetNumberOfColumns( 3 );
+   SubframeImages_TreeBox.HideHeader();
+   SubframeImages_TreeBox.EnableMultipleSelections();
+   SubframeImages_TreeBox.DisableRootDecoration();
+   SubframeImages_TreeBox.EnableAlternateRowColor();
+   SubframeImages_TreeBox.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler) &SubframeSelectorInterface::__SubframeImages_CurrentNodeUpdated, w );
+   SubframeImages_TreeBox.OnNodeActivated( (TreeBox::node_event_handler) &SubframeSelectorInterface::__SubframeImages_NodeActivated, w );
+   SubframeImages_TreeBox.OnNodeSelectionUpdated( (TreeBox::tree_event_handler) &SubframeSelectorInterface::__SubframeImages_NodeSelectionUpdated, w );
+   SubframeImages_TreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler)&SubframeSelectorInterface::__FileDrag, w );
+   SubframeImages_TreeBox.Viewport().OnFileDrop( (Control::file_drop_event_handler)&SubframeSelectorInterface::__FileDrop, w );
 
    AddFiles_PushButton.SetText( "Add Files" );
-   AddFiles_PushButton.SetToolTip( "<p>Add existing image files to the list of target frames.</p>" );
-   AddFiles_PushButton.OnClick( (Button::click_event_handler)&SubframeSelectorInterface::__TargetImages_Click, w );
+   AddFiles_PushButton.SetToolTip( "<p>Add existing image files to the list of subframes.</p>" );
+   AddFiles_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click, w );
 
    SelectAll_PushButton.SetText( "Select All" );
-   SelectAll_PushButton.SetToolTip( "<p>Select all target frames.</p>" );
-   SelectAll_PushButton.OnClick( (Button::click_event_handler)&SubframeSelectorInterface::__TargetImages_Click, w );
+   SelectAll_PushButton.SetToolTip( "<p>Select all subframes.</p>" );
+   SelectAll_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click, w );
 
    InvertSelection_PushButton.SetText( "Invert Selection" );
-   InvertSelection_PushButton.SetToolTip( "<p>Invert the current selection of target frames.</p>" );
-   InvertSelection_PushButton.OnClick( (Button::click_event_handler)&SubframeSelectorInterface::__TargetImages_Click, w );
+   InvertSelection_PushButton.SetToolTip( "<p>Invert the current selection of subframes.</p>" );
+   InvertSelection_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click, w );
 
    ToggleSelected_PushButton.SetText( "Toggle Selected" );
-   ToggleSelected_PushButton.SetToolTip( "<p>Toggle the enabled/disabled state of currently selected target frames.</p>"
-      "<p>Disabled target frames will be ignored during the calibration process.</p>" );
-   ToggleSelected_PushButton.OnClick( (Button::click_event_handler)&SubframeSelectorInterface::__TargetImages_Click, w );
+   ToggleSelected_PushButton.SetToolTip( "<p>Toggle the enabled/disabled state of currently selected subframes.</p>"
+      "<p>Disabled subframes will be ignored during the measuring and output processes.</p>" );
+   ToggleSelected_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click, w );
 
    RemoveSelected_PushButton.SetText( "Remove Selected" );
-   RemoveSelected_PushButton.SetToolTip( "<p>Remove all currently selected target frames.</p>" );
-   RemoveSelected_PushButton.OnClick( (Button::click_event_handler)&SubframeSelectorInterface::__TargetImages_Click, w );
+   RemoveSelected_PushButton.SetToolTip( "<p>Remove all currently selected subframes.</p>" );
+   RemoveSelected_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click, w );
 
    Clear_PushButton.SetText( "Clear" );
-   Clear_PushButton.SetToolTip( "<p>Clear the list of target frames.</p>" );
-   Clear_PushButton.OnClick( (Button::click_event_handler)&SubframeSelectorInterface::__TargetImages_Click, w );
+   Clear_PushButton.SetToolTip( "<p>Clear the list of subframes.</p>" );
+   Clear_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click, w );
 
-   TargetButtons_Sizer.SetSpacing( 4 );
-   TargetButtons_Sizer.Add( AddFiles_PushButton );
-   TargetButtons_Sizer.Add( SelectAll_PushButton );
-   TargetButtons_Sizer.Add( InvertSelection_PushButton );
-   TargetButtons_Sizer.Add( ToggleSelected_PushButton );
-   TargetButtons_Sizer.Add( RemoveSelected_PushButton );
-   TargetButtons_Sizer.Add( Clear_PushButton );
-   TargetButtons_Sizer.AddStretch();
+   SubframeButtons_Sizer.SetSpacing( 4 );
+   SubframeButtons_Sizer.Add( AddFiles_PushButton );
+   SubframeButtons_Sizer.Add( SelectAll_PushButton );
+   SubframeButtons_Sizer.Add( InvertSelection_PushButton );
+   SubframeButtons_Sizer.Add( ToggleSelected_PushButton );
+   SubframeButtons_Sizer.Add( RemoveSelected_PushButton );
+   SubframeButtons_Sizer.Add( Clear_PushButton );
+   SubframeButtons_Sizer.AddStretch();
 
-   TargetImages_Sizer.SetSpacing( 4 );
-   TargetImages_Sizer.Add( TargetImages_TreeBox, 100 );
-   TargetImages_Sizer.Add( TargetButtons_Sizer );
+   SubframeImages_Sizer.SetSpacing( 4 );
+   SubframeImages_Sizer.Add( SubframeImages_TreeBox, 100 );
+   SubframeImages_Sizer.Add( SubframeButtons_Sizer );
 
-   TargetImages_Control.SetSizer( TargetImages_Sizer );
-   TargetImages_Control.AdjustToContents();
-
-   //
-
-   ParameterOne_NumericControl.label.SetText( "One:" );
-   ParameterOne_NumericControl.label.SetFixedWidth( labelWidth1 );
-   ParameterOne_NumericControl.slider.SetScaledMinWidth( 250 );
-   ParameterOne_NumericControl.slider.SetRange( 0, 100 );
-   ParameterOne_NumericControl.SetReal();
-   ParameterOne_NumericControl.SetRange( TheSubframeSelectorParameterOneParameter->MinimumValue(), TheSubframeSelectorParameterOneParameter->MaximumValue() );
-   ParameterOne_NumericControl.SetPrecision( TheSubframeSelectorParameterOneParameter->Precision() );
-   ParameterOne_NumericControl.SetToolTip( "<p>This is the first parameter.</p>" );
-   ParameterOne_NumericControl.edit.SetFixedWidth( editWidth1 );
-   ParameterOne_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&SubframeSelectorInterface::__RealValueUpdated, w );
-
-   //
-
-   ParameterTwo_Label.SetText( "Two:" );
-   ParameterTwo_Label.SetMinWidth( labelWidth1 );
-   ParameterTwo_Label.SetToolTip( "<p>This is the second parameter.</p>" );
-   ParameterTwo_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-
-   ParameterTwo_SpinBox.SetRange( int( TheSubframeSelectorParameterTwoParameter->MinimumValue() ), int( TheSubframeSelectorParameterTwoParameter->MaximumValue() ) );
-   ParameterTwo_SpinBox.SetFixedWidth( editWidth1 );
-   ParameterTwo_SpinBox.SetToolTip( "<p>This is the second parameter.</p>" );
-   ParameterTwo_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&SubframeSelectorInterface::__IntegerValueUpdated, w );
-
-   ParameterTwo_Sizer.SetSpacing( 4 );
-   ParameterTwo_Sizer.Add( ParameterTwo_Label );
-   ParameterTwo_Sizer.Add( ParameterTwo_SpinBox );
-   ParameterTwo_Sizer.AddStretch();
-
-   //
-
-   ParameterThree_CheckBox.SetText( "Three" );
-   ParameterThree_CheckBox.SetToolTip( "<p>This is the third parameter.</p>" );
-   ParameterThree_CheckBox.OnClick( (pcl::Button::click_event_handler)&SubframeSelectorInterface::__ItemClicked, w );
-
-   ParameterThree_Sizer.AddUnscaledSpacing( labelWidth1 + w.LogicalPixelsToPhysical( 4 ) );
-   ParameterThree_Sizer.Add( ParameterThree_CheckBox );
-   ParameterThree_Sizer.AddStretch();
-
-   //
-
-   ParameterFour_Label.SetText( "Four:" );
-   ParameterFour_Label.SetMinWidth( labelWidth1 );
-   ParameterFour_Label.SetToolTip( "<p>This is the fourth parameter.</p>" );
-   ParameterFour_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-
-   ParameterFour_ComboBox.AddItem( "First Item" );
-   ParameterFour_ComboBox.AddItem( "Second Item" );
-   ParameterFour_ComboBox.AddItem( "Third Item" );
-   ParameterFour_ComboBox.SetToolTip( "<p>This is the fourth parameter.</p>" );
-   ParameterFour_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&SubframeSelectorInterface::__ItemSelected, w );
-
-   ParameterFour_Sizer.SetSpacing( 4 );
-   ParameterFour_Sizer.Add( ParameterFour_Label );
-   ParameterFour_Sizer.Add( ParameterFour_ComboBox );
-   ParameterFour_Sizer.AddStretch();
-
-   //
-
-   ParameterFive_Label.SetText( "Five:" );
-   ParameterFive_Label.SetMinWidth( labelWidth1 );
-   ParameterFive_Label.SetToolTip( "<p>This is the fifth parameter.</p>" );
-   ParameterFive_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-
-   ParameterFive_Edit.SetMinWidth( editWidth1 );
-   ParameterFive_Edit.SetToolTip( "<p>This is the fifth parameter.</p>" );
-   ParameterFive_Edit.OnGetFocus( (Control::event_handler)&SubframeSelectorInterface::__EditGetFocus, w );
-   ParameterFive_Edit.OnEditCompleted( (Edit::edit_event_handler)&SubframeSelectorInterface::__EditCompleted, w );
-
-   ParameterFive_Sizer.SetSpacing( 4 );
-   ParameterFive_Sizer.Add( ParameterFive_Label );
-   ParameterFive_Sizer.Add( ParameterFive_Edit, 100 );
-
-   Parameters_Sizer.SetSpacing( 4 );
-   Parameters_Sizer.Add( ParameterOne_NumericControl );
-   Parameters_Sizer.Add( ParameterTwo_Sizer );
-   Parameters_Sizer.Add( ParameterThree_Sizer );
-   Parameters_Sizer.Add( ParameterFour_Sizer );
-   Parameters_Sizer.Add( ParameterFive_Sizer );
-   Parameters_Sizer.AddStretch();
-
-   Parameters_Control.SetSizer( Parameters_Sizer );
-   Parameters_Control.AdjustToContents();
+   SubframeImages_Control.SetSizer( SubframeImages_Sizer );
+   SubframeImages_Control.AdjustToContents();
 
    //
 
    Global_Sizer.SetMargin( 8 );
    Global_Sizer.SetSpacing( 6 );
-   Global_Sizer.Add( TargetImages_SectionBar );
-   Global_Sizer.Add( TargetImages_Control );
-   Global_Sizer.Add( Parameters_SectionBar );
-   Global_Sizer.Add( Parameters_Control );
+   Global_Sizer.Add( SubframeImages_SectionBar );
+   Global_Sizer.Add( SubframeImages_Control );
 
    w.SetSizer( Global_Sizer );
-
-   Parameters_Control.Hide();
 
    w.AdjustToContents();
 }

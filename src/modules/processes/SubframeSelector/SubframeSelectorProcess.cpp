@@ -55,11 +55,6 @@
 #include "SubframeSelectorParameters.h"
 #include "SubframeSelectorProcess.h"
 
-#include <pcl/Arguments.h>
-#include <pcl/Console.h>
-#include <pcl/Exception.h>
-#include <pcl/View.h>
-
 namespace pcl
 {
 
@@ -80,14 +75,9 @@ SubframeSelectorProcess::SubframeSelectorProcess() : MetaProcess()
    /*
     * Instantiate process parameters.
     */
-   new SSTargetFrames( this );
-   new SSTargetFrameEnabled( TheSSTargetFramesParameter );
-   new SSTargetFramePath( TheSSTargetFramesParameter );
-   new SubframeSelectorParameterOne( this );
-   new SubframeSelectorParameterTwo( this );
-   new SubframeSelectorParameterThree( this );
-   new SubframeSelectorParameterFour( this );
-   new SubframeSelectorParameterFive( this );
+   new SSSubframes( this );
+   new SSSubframeEnabled( TheSSSubframesParameter );
+   new SSSubframePath( TheSSSubframesParameter );
 }
 
 // ----------------------------------------------------------------------------
@@ -117,9 +107,12 @@ String SubframeSelectorProcess::Description() const
 {
    return
    "<html>"
-   "<p>SubframeSelector is just a starting point for development of PixInsight modules. It is an empty module that "
-   "does nothing but to provide the basic structure of a module with a process, a few parameters, and a "
-   "process interface.</p>"
+   "Facilitates subframe evaluation, selection and weighting based on several subframe "
+   "quality related measurements, including estimates of star profile <i>full width at "
+   "half maximum</i> (FWHM), star profile <i>eccentricity</i> and subframe "
+   "<i>signal to noise ratio weight</i>. Approved/rejected subframes may be copied/moved "
+   "to output directories for postprocessing. Subframe weights may be recorded in the "
+   "FITS header of the copies.<br/> "
    "</html>";
 }
 
@@ -148,96 +141,6 @@ ProcessImplementation* SubframeSelectorProcess::Clone( const ProcessImplementati
 {
    const SubframeSelectorInstance* instance = dynamic_cast<const SubframeSelectorInstance*>( &p );
    return (instance != nullptr) ? new SubframeSelectorInstance( *instance ) : nullptr;
-}
-
-// ----------------------------------------------------------------------------
-
-bool SubframeSelectorProcess::CanProcessCommandLines() const
-{
-   return true;
-}
-
-// ----------------------------------------------------------------------------
-
-static void ShowHelp()
-{
-   Console().Write(
-"<raw>"
-"Usage: SubframeSelector [<arg_list>] [<view_list>]"
-"\n"
-"\n--interface"
-"\n"
-"\n      Launches the interface of this process."
-"\n"
-"\n--help"
-"\n"
-"\n      Displays this help and exits."
-"</raw>" );
-}
-
-int SubframeSelectorProcess::ProcessCommandLine( const StringList& argv ) const
-{
-   ArgumentList arguments = ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
-
-   SubframeSelectorInstance instance( this );
-
-   bool launchInterface = false;
-   int count = 0;
-
-   for ( const Argument& arg : arguments )
-   {
-      if ( arg.IsNumeric() )
-      {
-         throw Error( "Unknown numeric argument: " + arg.Token() );
-      }
-      else if ( arg.IsString() )
-      {
-         throw Error( "Unknown string argument: " + arg.Token() );
-      }
-      else if ( arg.IsSwitch() )
-      {
-         throw Error( "Unknown switch argument: " + arg.Token() );
-      }
-      else if ( arg.IsLiteral() )
-      {
-         // These are standard parameters that all processes should provide.
-         if ( arg.Id() == "-interface" )
-            launchInterface = true;
-         else if ( arg.Id() == "-help" )
-         {
-            ShowHelp();
-            return 0;
-         }
-         else
-            throw Error( "Unknown argument: " + arg.Token() );
-      }
-      else if ( arg.IsItemList() )
-      {
-         ++count;
-
-         if ( arg.Items().IsEmpty() )
-            throw Error( "No view(s) found: " + arg.Token() );
-
-         for ( StringList::const_iterator j = arg.Items().Begin(); j != arg.Items().End(); ++j )
-         {
-            View v = View::ViewById( *j );
-            if ( v.IsNull() )
-               throw Error( "No such view: " + *j );
-            instance.LaunchOn( v );
-         }
-      }
-   }
-
-   if ( launchInterface )
-      instance.LaunchInterface();
-   else if ( count == 0 )
-   {
-      if ( ImageWindow::ActiveWindow().IsNull() )
-         throw Error( "There is no active image window." );
-      instance.LaunchOnCurrentView();
-   }
-
-   return 0;
 }
 
 // ----------------------------------------------------------------------------

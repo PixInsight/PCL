@@ -51,9 +51,9 @@
 // ----------------------------------------------------------------------------
 
 #define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     00
+#define MODULE_VERSION_MINOR     01
 #define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0261
+#define MODULE_VERSION_BUILD     0001
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017
@@ -94,7 +94,7 @@ quality related measurements, including estimates of star profile <i>full width 
 half maximum</i> (FWHM), star profile <i>eccentricity</i> and subframe \
 <i>signal to noise ratio weight</i>. Approved/rejected subframes may be copied/moved \
 to output directories for postprocessing. Subframe weights may be recorded in the \
-FITS header of the copies.<br/>"; // Replace with your own description
+FITS header of the copies.<br/>";
 }
 
 String SubframeSelectorModule::Company() const

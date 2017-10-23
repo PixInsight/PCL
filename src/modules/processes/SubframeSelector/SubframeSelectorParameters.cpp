@@ -57,186 +57,49 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-SSTargetFrames*              TheSSTargetFramesParameter = 0;
-SSTargetFrameEnabled*        TheSSTargetFrameEnabledParameter = 0;
-SSTargetFramePath*           TheSSTargetFramePathParameter = 0;
-
-SubframeSelectorParameterOne*   TheSubframeSelectorParameterOneParameter = nullptr;
-SubframeSelectorParameterTwo*   TheSubframeSelectorParameterTwoParameter = nullptr;
-SubframeSelectorParameterThree* TheSubframeSelectorParameterThreeParameter = nullptr;
-SubframeSelectorParameterFour*  TheSubframeSelectorParameterFourParameter = nullptr;
-SubframeSelectorParameterFive*  TheSubframeSelectorParameterFiveParameter = nullptr;
+SSSubframes*              TheSSSubframesParameter = 0;
+SSSubframeEnabled*        TheSSSubframeEnabledParameter = 0;
+SSSubframePath*           TheSSSubframePathParameter = 0;
 
 // ----------------------------------------------------------------------------
 
-SSTargetFrames::SSTargetFrames( MetaProcess* P ) : MetaTable( P )
+SSSubframes::SSSubframes( MetaProcess* P ) : MetaTable( P )
 {
-   TheSSTargetFramesParameter = this;
+   TheSSSubframesParameter = this;
 }
 
-IsoString SSTargetFrames::Id() const
+IsoString SSSubframes::Id() const
 {
-   return "targetFrames";
+   return "subframes";
 }
 
 // ----------------------------------------------------------------------------
 
-SSTargetFrameEnabled::SSTargetFrameEnabled( MetaTable* T ) : MetaBoolean( T )
+SSSubframeEnabled::SSSubframeEnabled( MetaTable* T ) : MetaBoolean( T )
 {
-   TheSSTargetFrameEnabledParameter = this;
+   TheSSSubframeEnabledParameter = this;
 }
 
-IsoString SSTargetFrameEnabled::Id() const
+IsoString SSSubframeEnabled::Id() const
 {
    return "enabled";
 }
 
-bool SSTargetFrameEnabled::DefaultValue() const
+bool SSSubframeEnabled::DefaultValue() const
 {
    return true;
 }
 
 // ----------------------------------------------------------------------------
 
-SSTargetFramePath::SSTargetFramePath( MetaTable* T ) : MetaString( T )
+SSSubframePath::SSSubframePath( MetaTable* T ) : MetaString( T )
 {
-   TheSSTargetFramePathParameter = this;
+   TheSSSubframePathParameter = this;
 }
 
-IsoString SSTargetFramePath::Id() const
+IsoString SSSubframePath::Id() const
 {
    return "path";
-}
-
-// ----------------------------------------------------------------------------
-
-SubframeSelectorParameterOne::SubframeSelectorParameterOne( MetaProcess* P ) : MetaFloat( P )
-{
-   TheSubframeSelectorParameterOneParameter = this;
-}
-
-IsoString SubframeSelectorParameterOne::Id() const
-{
-   return "sampleOne";
-}
-
-int SubframeSelectorParameterOne::Precision() const
-{
-   return 3;
-}
-
-double SubframeSelectorParameterOne::DefaultValue() const
-{
-   return 0;
-}
-
-double SubframeSelectorParameterOne::MinimumValue() const
-{
-   return 0;
-}
-
-double SubframeSelectorParameterOne::MaximumValue() const
-{
-   return 1;
-}
-
-// ----------------------------------------------------------------------------
-
-SubframeSelectorParameterTwo::SubframeSelectorParameterTwo( MetaProcess* P ) : MetaInt32( P )
-{
-   TheSubframeSelectorParameterTwoParameter = this;
-}
-
-IsoString SubframeSelectorParameterTwo::Id() const
-{
-   return "sampleTwo";
-}
-
-double SubframeSelectorParameterTwo::DefaultValue() const
-{
-   return 1;
-}
-
-double SubframeSelectorParameterTwo::MinimumValue() const
-{
-   return 1;
-}
-
-double SubframeSelectorParameterTwo::MaximumValue() const
-{
-   return 100;
-}
-
-// ----------------------------------------------------------------------------
-
-SubframeSelectorParameterThree::SubframeSelectorParameterThree( MetaProcess* P ) : MetaBoolean( P )
-{
-   TheSubframeSelectorParameterThreeParameter = this;
-}
-
-IsoString SubframeSelectorParameterThree::Id() const
-{
-   return "sampleThree";
-}
-
-bool SubframeSelectorParameterThree::DefaultValue() const
-{
-   return false;
-}
-
-// ----------------------------------------------------------------------------
-
-SubframeSelectorParameterFour::SubframeSelectorParameterFour( MetaProcess* P ) : MetaEnumeration( P )
-{
-   TheSubframeSelectorParameterFourParameter = this;
-}
-
-IsoString SubframeSelectorParameterFour::Id() const
-{
-   return "sampleFour";
-}
-
-size_type SubframeSelectorParameterFour::NumberOfElements() const
-{
-   return NumberOfItems;
-}
-
-IsoString SubframeSelectorParameterFour::ElementId( size_type i ) const
-{
-   switch ( i )
-   {
-   default:
-   case FirstItem:  return "FirstItem";
-   case SecondItem: return "SecondItem";
-   case ThirdItem:  return "ThirdItem";
-   }
-}
-
-int SubframeSelectorParameterFour::ElementValue( size_type i ) const
-{
-   return int( i );
-}
-
-size_type SubframeSelectorParameterFour::DefaultValueIndex() const
-{
-   return Default;
-}
-
-// ----------------------------------------------------------------------------
-
-SubframeSelectorParameterFive::SubframeSelectorParameterFive( MetaProcess* P ) : MetaString( P )
-{
-   TheSubframeSelectorParameterFiveParameter = this;
-}
-
-IsoString SubframeSelectorParameterFive::Id() const
-{
-   return "sampleFive";
-}
-
-size_type SubframeSelectorParameterFive::MinLength() const
-{
-   return 0;
 }
 
 // ----------------------------------------------------------------------------

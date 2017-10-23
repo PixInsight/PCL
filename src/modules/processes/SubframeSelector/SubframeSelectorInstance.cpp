@@ -53,10 +53,8 @@
 #include "SubframeSelectorInstance.h"
 #include "SubframeSelectorParameters.h"
 
-#include <pcl/AutoViewLock.h>
 #include <pcl/Console.h>
-#include <pcl/StdStatus.h>
-#include <pcl/View.h>
+#include <pcl/MetaModule.h>
 
 namespace pcl
 {
@@ -65,12 +63,7 @@ namespace pcl
 
 SubframeSelectorInstance::SubframeSelectorInstance( const MetaProcess* m ) :
    ProcessImplementation( m ),
-   targetFrames(),
-   p_one( TheSubframeSelectorParameterOneParameter->DefaultValue() ),
-   p_two( int32( TheSubframeSelectorParameterTwoParameter->DefaultValue() ) ),
-   p_three( TheSubframeSelectorParameterThreeParameter->DefaultValue() ),
-   p_four( SubframeSelectorParameterFour::Default ),
-   p_five( TheSubframeSelectorParameterFiveParameter->DefaultValue() )
+   subframes()
 {
 }
 
@@ -85,113 +78,119 @@ void SubframeSelectorInstance::Assign( const ProcessImplementation& p )
    const SubframeSelectorInstance* x = dynamic_cast<const SubframeSelectorInstance*>( &p );
    if ( x != nullptr )
    {
-      targetFrames   = x->targetFrames;
-      p_one          = x->p_one;
-      p_two          = x->p_two;
-      p_three        = x->p_three;
-      p_four         = x->p_four;
-      p_five         = x->p_five;
+        subframes   = x->subframes;
    }
 }
 
 bool SubframeSelectorInstance::CanExecuteOn( const View& view, String& whyNot ) const
 {
-   if ( targetFrames.IsEmpty() )
-   {
-      whyNot = "No target frames have been specified.";
-      return false;
+    whyNot = "SubframeSelector can only be executed in the global context.";
+    return false;
+}
+
+bool SubframeSelectorInstance::IsHistoryUpdater( const View& view ) const
+{
+    return false;
+}
+
+bool SubframeSelectorInstance::CanExecuteGlobal( String &whyNot ) const {
+   if ( subframes.IsEmpty()) {
+       whyNot = "No subframes have been specified.";
+       return false;
    }
-   if ( view.Image().IsComplexSample() )
-   {
-      whyNot = "SubframeSelector cannot be executed on complex images.";
-      return false;
-   }
+
    return true;
 }
 
-class SubframeSelectorEngine
-{
-public:
-
-   template <class P>
-   static void Apply( GenericImage<P>& image, const SubframeSelectorInstance& instance )
+bool SubframeSelectorInstance::ExecuteGlobal() {
+   /*
+    * Start with a general validation of working parameters.
+    */
    {
-      /*
-       * Your magic comes here...
-       */
-      Console().WriteLn( "<end><cbr>Ah, did I mention that I do just <em>nothing</em> at all? ;D" );
+       String why;
+       if ( !CanExecuteGlobal( why ))
+           throw Error( why );
+
+       for ( image_list::const_iterator i = subframes.Begin(); i != subframes.End(); ++i )
+           if ( i->enabled && !File::Exists( i->path ))
+               throw ("No such file exists on the local filesystem: " + i->path);
    }
-};
 
-bool SubframeSelectorInstance::ExecuteOn( View& view )
-{
-   AutoViewLock lock( view );
+   try {
 
-   ImageVariant image = view.Image();
-   if ( image.IsComplexSample() )
-      return false;
+       /*
+        * For all errors generated, we want a report on the console. This is
+        * customary in PixInsight for all batch processes.
+        */
+       Exception::EnableConsoleOutput();
+       Exception::DisableGUIOutput();
 
-   StandardStatus status;
-   image.SetStatusCallback( &status );
+       /*
+        * Allow the user to abort the calibration process.
+        */
+       Console console;
+       console.EnableAbort();
 
-   Console().EnableAbort();
+       Module->ProcessEvents();
 
-   if ( image.IsFloatSample() )
-      switch ( image.BitsPerSample() )
-      {
-      case 32: SubframeSelectorEngine::Apply( static_cast<Image&>( *image ), *this ); break;
-      case 64: SubframeSelectorEngine::Apply( static_cast<DImage&>( *image ), *this ); break;
-      }
-   else
-      switch ( image.BitsPerSample() )
-      {
-      case  8: SubframeSelectorEngine::Apply( static_cast<UInt8Image&>( *image ), *this ); break;
-      case 16: SubframeSelectorEngine::Apply( static_cast<UInt16Image&>( *image ), *this ); break;
-      case 32: SubframeSelectorEngine::Apply( static_cast<UInt32Image&>( *image ), *this ); break;
-      }
+       /*
+        * Begin subframe measuring process.
+        */
 
-   return true;
+       int succeeded = 0;
+       int failed = 0;
+       int skipped = 0;
+
+       /*
+        * Fail if no images have been calibrated.
+        */
+//       if ( succeeded == 0 ) {
+//           if ( failed == 0 )
+//               throw Error( "No images were measured: Empty target frames list? No enabled target frames?" );
+//           throw Error( "No image could be measured." );
+//       }
+
+       /*
+        * Write the final report to the console.
+        */
+       console.NoteLn(
+               String().Format( "<end><cbr><br>===== SubframeSelector: %u succeeded, %u failed, %u skipped =====",
+                                succeeded, failed, skipped ));
+       return true;
+   } // try
+
+   catch ( ... ) {
+       /*
+        * All breaking errors are caught here.
+        */
+       Exception::EnableGUIOutput( true );
+       throw;
+   }
 }
 
 void* SubframeSelectorInstance::LockParameter( const MetaParameter* p, size_type tableRow )
 {
-   if ( p == TheSSTargetFrameEnabledParameter )
-      return &targetFrames[tableRow].enabled;
-   if ( p == TheSSTargetFramePathParameter )
-      return targetFrames[tableRow].path.Begin();
-   if ( p == TheSubframeSelectorParameterOneParameter )
-      return &p_one;
-   if ( p == TheSubframeSelectorParameterTwoParameter )
-      return &p_two;
-   if ( p == TheSubframeSelectorParameterThreeParameter )
-      return &p_three;
-   if ( p == TheSubframeSelectorParameterFourParameter )
-      return &p_four;
-   if ( p == TheSubframeSelectorParameterFiveParameter )
-      return p_five.Begin();
+   if ( p == TheSSSubframeEnabledParameter )
+      return &subframes[tableRow].enabled;
+   if ( p == TheSSSubframePathParameter )
+      return subframes[tableRow].path.Begin();
 
    return nullptr;
 }
 
 bool SubframeSelectorInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {
-   if ( p == TheSSTargetFramesParameter )
+   if ( p == TheSSSubframesParameter )
    {
-      targetFrames.Clear();
+      subframes.Clear();
       if ( sizeOrLength > 0 )
-         targetFrames.Add( ImageItem(), sizeOrLength );
+         subframes.Add( ImageItem(), sizeOrLength );
    }
-   else if ( p == TheSSTargetFramePathParameter )
+   else if ( p == TheSSSubframePathParameter )
    {
-      targetFrames[tableRow].path.Clear();
+      subframes[tableRow].path.Clear();
       if ( sizeOrLength > 0 )
-         targetFrames[tableRow].path.SetLength( sizeOrLength );
-   }
-   if ( p == TheSubframeSelectorParameterFiveParameter )
-   {
-      p_five.Clear();
-      if ( sizeOrLength > 0 )
-         p_five.SetLength( sizeOrLength );
+         subframes[tableRow].path.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -201,12 +200,10 @@ bool SubframeSelectorInstance::AllocateParameter( size_type sizeOrLength, const 
 
 size_type SubframeSelectorInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
-   if ( p == TheSSTargetFramesParameter )
-      return targetFrames.Length();
-   if ( p == TheSSTargetFramePathParameter )
-      return targetFrames[tableRow].path.Length();
-   if ( p == TheSubframeSelectorParameterFiveParameter )
-      return p_five.Length();
+   if ( p == TheSSSubframesParameter )
+      return subframes.Length();
+   if ( p == TheSSSubframePathParameter )
+      return subframes[tableRow].path.Length();
 
    return 0;
 }

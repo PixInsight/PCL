@@ -84,7 +84,8 @@ public:
    virtual MetaProcess* Process() const;
    virtual const char** IconImageXPM() const;
 
-   virtual void ApplyInstance() const;
+   InterfaceFeatures Features() const;
+
    virtual void ResetInstance();
 
    virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
@@ -106,60 +107,37 @@ private:
 
       VerticalSizer     Global_Sizer;
 
-      SectionBar        TargetImages_SectionBar;
-      Control           TargetImages_Control;
-      HorizontalSizer   TargetImages_Sizer;
-         TreeBox           TargetImages_TreeBox;
-         VerticalSizer     TargetButtons_Sizer;
+      SectionBar        SubframeImages_SectionBar;
+      Control           SubframeImages_Control;
+      HorizontalSizer   SubframeImages_Sizer;
+         TreeBox           SubframeImages_TreeBox;
+         VerticalSizer     SubframeButtons_Sizer;
             PushButton        AddFiles_PushButton;
             PushButton        SelectAll_PushButton;
             PushButton        InvertSelection_PushButton;
             PushButton        ToggleSelected_PushButton;
             PushButton        RemoveSelected_PushButton;
             PushButton        Clear_PushButton;
-
-      SectionBar        Parameters_SectionBar;
-      Control           Parameters_Control;
-      VerticalSizer     Parameters_Sizer;
-         NumericControl    ParameterOne_NumericControl;
-         HorizontalSizer   ParameterTwo_Sizer;
-            Label             ParameterTwo_Label;
-            SpinBox           ParameterTwo_SpinBox;
-         HorizontalSizer   ParameterThree_Sizer;
-            CheckBox          ParameterThree_CheckBox;
-         HorizontalSizer   ParameterFour_Sizer;
-            Label             ParameterFour_Label;
-            ComboBox          ParameterFour_ComboBox;
-         HorizontalSizer   ParameterFive_Sizer;
-            Label             ParameterFive_Label;
-            Edit              ParameterFive_Edit;
    };
 
    GUIData* GUI = nullptr;
 
    void UpdateControls();
-   void UpdateTargetImageItem( size_type );
-   void UpdateTargetImagesList();
-   void UpdateImageSelectionButtons();
+   void UpdateSubframeImageItem( size_type );
+   void UpdateSubframeImagesList();
+   void UpdateSubframeImageSelectionButtons();
 
    // Event Handlers
 
    void __ToggleSection( SectionBar& sender, Control& section, bool start );
 
-   void __TargetImages_CurrentNodeUpdated( TreeBox& sender, TreeBox::Node& current, TreeBox::Node& oldCurrent );
-   void __TargetImages_NodeActivated( TreeBox& sender, TreeBox::Node& node, int col );
-   void __TargetImages_NodeSelectionUpdated( TreeBox& sender );
-   void __TargetImages_Click( Button& sender, bool checked );
+   void __SubframeImages_CurrentNodeUpdated( TreeBox &sender, TreeBox::Node &current, TreeBox::Node &oldCurrent );
+   void __SubframeImages_NodeActivated( TreeBox &sender, TreeBox::Node &node, int col );
+   void __SubframeImages_NodeSelectionUpdated( TreeBox &sender );
+   void __SubframeImages_Click( Button &sender, bool checked );
 
    void __FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
    void __FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
-
-   void __RealValueUpdated( NumericEdit& sender, double value );
-   void __IntegerValueUpdated( SpinBox& sender, int value );
-   void __ItemClicked( Button& sender, bool checked );
-   void __ItemSelected( ComboBox& sender, int itemIndex );
-   void __EditGetFocus( Control& sender );
-   void __EditCompleted( Edit& sender );
 
    friend struct GUIData;
 };

@@ -79,9 +79,6 @@ public:
 
    virtual ProcessImplementation* Create() const;
    virtual ProcessImplementation* Clone( const ProcessImplementation& ) const;
-
-   virtual bool CanProcessCommandLines() const;
-   virtual int ProcessCommandLine( const StringList& ) const;
 };
 
 // ----------------------------------------------------------------------------

@@ -70,8 +70,11 @@ public:
 
    virtual void Assign( const ProcessImplementation& );
 
-   virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
-   virtual bool ExecuteOn( View& );
+   virtual bool CanExecuteOn( const View&, String& whyNot ) const;
+   virtual bool IsHistoryUpdater( const View& v ) const;
+
+   virtual bool CanExecuteGlobal( String& whyNot ) const;
+   virtual bool ExecuteGlobal();
 
    virtual void* LockParameter( const MetaParameter*, size_type tableRow );
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
@@ -100,16 +103,9 @@ private:
 
    typedef Array<ImageItem>  image_list;
 
-   // The set of target frames to be calibrated
-   image_list      targetFrames;
+   // The set of subframes to measure
+   image_list      subframes;
 
-   float    p_one;   // Real parameters can be either float or double
-   int32    p_two;   // ONLY use intxx or uintxx - NEVER int, long, etc.
-   pcl_bool p_three; // ONLY pcl_bool for Boolean parameter - NEVER use bool
-   pcl_enum p_four;  // ONLY pcl_enum for enumerated parameters - NEVER use enum, int, etc.
-   String   p_five;  // String parameters must be UTF-16 strings
-
-   friend class SubframeSelectorEngine;
    friend class SubframeSelectorProcess;
    friend class SubframeSelectorInterface;
 };

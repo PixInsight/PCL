@@ -102,7 +102,141 @@ extern SSSubframePath* TheSSSubframePathParameter;
 
 // ----------------------------------------------------------------------------
 
-PCL_END_LOCAL
+class SSSubframeScale : public MetaFloat
+{
+public:
+
+   SSSubframeScale( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSSubframeScale* TheSSSubframeScaleParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSCameraGain : public MetaFloat
+{
+public:
+
+   SSCameraGain( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSCameraGain* TheSSCameraGainParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSCameraResolution : public MetaEnumeration
+{
+   public:
+
+   enum { Bits8,
+      Bits10,
+      Bits12,
+      Bits14,
+      Bits16,
+      NumberOfItems,
+      Default = Bits8 };
+
+   SSCameraResolution( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
+   IsoString ElementLabel( size_type) const;
+   int ElementData( size_type) const;
+};
+
+extern SSCameraResolution* TheSSCameraResolutionParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSSiteLocalMidnight : public MetaInt32
+{
+   public:
+
+   SSSiteLocalMidnight( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSSiteLocalMidnight* TheSSSiteLocalMidnightParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSScaleUnit : public MetaEnumeration
+{
+   public:
+
+   enum { ArcSeconds,
+      Pixel,
+      NumberOfItems,
+      Default = ArcSeconds };
+
+   SSScaleUnit( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
+   IsoString ElementLabel( size_type) const;
+   IsoString ElementData( size_type) const;
+};
+
+extern SSScaleUnit* TheSSScaleUnitParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSDataUnit : public MetaEnumeration
+{
+   public:
+
+   enum { Electron,
+      DataNumber,
+      NumberOfItems,
+      Default = Electron };
+
+   SSDataUnit( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
+   IsoString ElementLabel( size_type) const;
+   IsoString ElementData( size_type) const;
+};
+
+extern SSDataUnit* TheSSDataUnitParameter;
+
+// ----------------------------------------------------------------------------
+
+
+   PCL_END_LOCAL
 
 } // pcl
 

@@ -166,6 +166,7 @@ bool SubframeSelectorInterface::ImportProcess( const ProcessImplementation& p )
 void SubframeSelectorInterface::UpdateControls()
 {
    UpdateSubframeImagesList();
+   UpdateSystemParameters();
 }
 
 // ----------------------------------------------------------------------------
@@ -228,6 +229,18 @@ void SubframeSelectorInterface::UpdateSubframeImageSelectionButtons()
    GUI->ToggleSelected_PushButton.Enable( hasSelection );
    GUI->RemoveSelected_PushButton.Enable( hasSelection );
    GUI->Clear_PushButton.Enable( hasItems );
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::UpdateSystemParameters()
+{
+   GUI->SystemParameters_SubframeScale_Control.SetValue( instance.subframeScale );
+   GUI->SystemParameters_CameraGain_Control.SetValue( instance.cameraGain );
+   GUI->SystemParameters_CameraResolution_Control.SetCurrentItem( instance.cameraResolution );
+   GUI->SystemParameters_SiteLocalMidnight_Control.SetValue( instance.siteLocalMidnight );
+   GUI->SystemParameters_ScaleUnit_Control.SetCurrentItem( instance.scaleUnit );
+   GUI->SystemParameters_DataUnit_Control.SetCurrentItem( instance.dataUnit );
 }
 
 // ----------------------------------------------------------------------------
@@ -398,9 +411,40 @@ void SubframeSelectorInterface::__FileDrop( Control& sender, const Point& pos, c
 
 // ----------------------------------------------------------------------------
 
+void SubframeSelectorInterface::__RealValueUpdated( NumericEdit& sender, double value )
+{
+   if ( sender == GUI->SystemParameters_SubframeScale_Control )
+      instance.subframeScale = value;
+   if ( sender == GUI->SystemParameters_CameraGain_Control )
+      instance.cameraGain = value;
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::__IntegerValueUpdated( SpinBox& sender, int value )
+{
+   if ( sender == GUI->SystemParameters_SiteLocalMidnight_Control )
+      instance.siteLocalMidnight = value;
+}
+
+void SubframeSelectorInterface::__ItemSelected( ComboBox& sender, int itemIndex )
+{
+   if ( sender == GUI->SystemParameters_CameraResolution_Control )
+      instance.cameraResolution = itemIndex;
+   if ( sender == GUI->SystemParameters_ScaleUnit_Control )
+      instance.scaleUnit = itemIndex;
+   if ( sender == GUI->SystemParameters_DataUnit_Control )
+      instance.dataUnit = itemIndex;
+}
+
+// ----------------------------------------------------------------------------
+
 SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 {
    pcl::Font fnt = w.Font();
+
+   int currentLabelWidth = fnt.Width( String( "Site Local Midnight:" ) ); // the longest label text
+   int currentEditWidth = fnt.Width( String( '0', 7 ) ); // the longest edit text
 
    //
 
@@ -463,12 +507,138 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 
    //
 
+   SystemParameters_SectionBar.SetTitle( "System Parameters" );
+   SystemParameters_SectionBar.SetSection( SystemParameters_Control );
+   SystemParameters_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&SubframeSelectorInterface::__ToggleSection, w );
+
+   SystemParameters_SubframeScale_Label.SetText( "Subframe Scale:" );
+   SystemParameters_SubframeScale_Label.SetMinWidth( currentLabelWidth );
+   SystemParameters_SubframeScale_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   SystemParameters_SubframeScale_Control.slider.Hide();
+   SystemParameters_SubframeScale_Control.SetReal();
+   SystemParameters_SubframeScale_Control.SetRange( TheSSSubframeScaleParameter->MinimumValue(), TheSSSubframeScaleParameter->MaximumValue() );
+   SystemParameters_SubframeScale_Control.SetPrecision( TheSSSubframeScaleParameter->Precision() );
+   SystemParameters_SubframeScale_Control.SetToolTip( "TODO" ); // TODO
+   SystemParameters_SubframeScale_Control.OnValueUpdated( (NumericEdit::value_event_handler)&SubframeSelectorInterface::__RealValueUpdated, w );
+
+   SystemParameters_SubframeScale_Unit.SetText( "arcseconds / pixel" );
+   SystemParameters_SubframeScale_Unit.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   SystemParameters_SubframeScale_Sizer.SetSpacing( 4 );
+   SystemParameters_SubframeScale_Sizer.Add( SystemParameters_SubframeScale_Label );
+   SystemParameters_SubframeScale_Sizer.Add( SystemParameters_SubframeScale_Control );
+   SystemParameters_SubframeScale_Sizer.Add( SystemParameters_SubframeScale_Unit );
+   SystemParameters_SubframeScale_Sizer.AddStretch();
+
+   SystemParameters_CameraGain_Label.SetText( "Camera Gain:" );
+   SystemParameters_CameraGain_Label.SetMinWidth( currentLabelWidth );
+   SystemParameters_CameraGain_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   SystemParameters_CameraGain_Control.slider.Hide();
+   SystemParameters_CameraGain_Control.SetReal();
+   SystemParameters_CameraGain_Control.SetRange( TheSSCameraGainParameter->MinimumValue(), TheSSCameraGainParameter->MaximumValue() );
+   SystemParameters_CameraGain_Control.SetPrecision( TheSSCameraGainParameter->Precision() );
+   SystemParameters_CameraGain_Control.SetToolTip( "TODO" ); // TODO
+   SystemParameters_CameraGain_Control.OnValueUpdated( (NumericEdit::value_event_handler)&SubframeSelectorInterface::__RealValueUpdated, w );
+
+   SystemParameters_CameraGain_Unit.SetText( "electrons / Data Number" );
+   SystemParameters_CameraGain_Unit.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+
+   SystemParameters_CameraGain_Sizer.SetSpacing( 4 );
+   SystemParameters_CameraGain_Sizer.Add( SystemParameters_CameraGain_Label );
+   SystemParameters_CameraGain_Sizer.Add( SystemParameters_CameraGain_Control );
+   SystemParameters_CameraGain_Sizer.Add( SystemParameters_CameraGain_Unit );
+   SystemParameters_CameraGain_Sizer.AddStretch();
+
+   SystemParameters_CameraResolution_Label.SetText( "Camera Resolution:" );
+   SystemParameters_CameraResolution_Label.SetMinWidth( currentLabelWidth );
+   SystemParameters_CameraResolution_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   for ( int i = 0; i < TheSSCameraResolutionParameter->NumberOfElements(); ++i )
+      SystemParameters_CameraResolution_Control.AddItem( TheSSCameraResolutionParameter->ElementLabel( i ) );
+   SystemParameters_CameraResolution_Control.SetToolTip( "TODO" ); // TODO
+   SystemParameters_CameraResolution_Control.OnItemSelected( (ComboBox::item_event_handler)&SubframeSelectorInterface::__ItemSelected, w );
+
+   SystemParameters_CameraResolution_Sizer.SetSpacing( 4 );
+   SystemParameters_CameraResolution_Sizer.Add( SystemParameters_CameraResolution_Label );
+   SystemParameters_CameraResolution_Sizer.Add( SystemParameters_CameraResolution_Control );
+   SystemParameters_CameraResolution_Sizer.AddStretch();
+
+   SystemParameters_SiteLocalMidnight_Label.SetText( "Site Local Midnight:" );
+   SystemParameters_SiteLocalMidnight_Label.SetMinWidth( currentLabelWidth );
+   SystemParameters_SiteLocalMidnight_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   SystemParameters_SiteLocalMidnight_Control.SetRange( TheSSSiteLocalMidnightParameter->MinimumValue(), TheSSSiteLocalMidnightParameter->MaximumValue() );
+   SystemParameters_SiteLocalMidnight_Control.SetToolTip( "<p>This parameters specifies the Coordinated Universal Time (UTC) of local midnight "
+                                                          "at the site of target subframe observation, rounded to the nearest hour from 0 to "
+                                                          "23. If this time is unknown or varies by more than six hours, set this parameter "
+                                                          "to 24.</p> "
+                                                          "<p>This parameter and the value of the FITS keyword DATE-OBS (if available) are used to "
+                                                          "identify sequences of subframe observations that occurred during the same night for "
+                                                          "data presentation purposes.</p>" );
+   SystemParameters_SiteLocalMidnight_Control.OnValueUpdated( (SpinBox::value_event_handler)&SubframeSelectorInterface::__IntegerValueUpdated, w );
+
+   SystemParameters_SiteLocalMidnight_Unit.SetText( "hours (UTC)" );
+   SystemParameters_SiteLocalMidnight_Unit.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+
+   SystemParameters_SiteLocalMidnight_Sizer.SetSpacing( 4 );
+   SystemParameters_SiteLocalMidnight_Sizer.Add( SystemParameters_SiteLocalMidnight_Label );
+   SystemParameters_SiteLocalMidnight_Sizer.Add( SystemParameters_SiteLocalMidnight_Control );
+   SystemParameters_SiteLocalMidnight_Sizer.Add( SystemParameters_SiteLocalMidnight_Unit );
+   SystemParameters_SiteLocalMidnight_Sizer.AddStretch();
+
+   SystemParameters_ScaleUnit_Label.SetText( "Scale Unit:" );
+   SystemParameters_ScaleUnit_Label.SetMinWidth( currentLabelWidth );
+   SystemParameters_ScaleUnit_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   for ( int i = 0; i < TheSSScaleUnitParameter->NumberOfElements(); ++i )
+      SystemParameters_ScaleUnit_Control.AddItem( TheSSScaleUnitParameter->ElementLabel( i ) );
+   SystemParameters_ScaleUnit_Control.SetToolTip( "TODO" ); // TODO
+   SystemParameters_ScaleUnit_Control.OnItemSelected( (ComboBox::item_event_handler)&SubframeSelectorInterface::__ItemSelected, w );
+
+   SystemParameters_ScaleUnit_Sizer.SetSpacing( 4 );
+   SystemParameters_ScaleUnit_Sizer.Add( SystemParameters_ScaleUnit_Label );
+   SystemParameters_ScaleUnit_Sizer.Add( SystemParameters_ScaleUnit_Control );
+   SystemParameters_ScaleUnit_Sizer.AddStretch();
+
+   SystemParameters_DataUnit_Label.SetText( "Data Unit:" );
+   SystemParameters_DataUnit_Label.SetMinWidth( currentLabelWidth );
+   SystemParameters_DataUnit_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   for ( int i = 0; i < TheSSDataUnitParameter->NumberOfElements(); ++i )
+      SystemParameters_DataUnit_Control.AddItem( TheSSDataUnitParameter->ElementLabel( i ) );
+   SystemParameters_DataUnit_Control.SetToolTip( "TODO" ); // TODO
+   SystemParameters_DataUnit_Control.OnItemSelected( (ComboBox::item_event_handler)&SubframeSelectorInterface::__ItemSelected, w );
+
+   SystemParameters_DataUnit_Sizer.SetSpacing( 4 );
+   SystemParameters_DataUnit_Sizer.Add( SystemParameters_DataUnit_Label );
+   SystemParameters_DataUnit_Sizer.Add( SystemParameters_DataUnit_Control );
+   SystemParameters_DataUnit_Sizer.AddStretch();
+
+   SystemParameters_Sizer.SetSpacing( 4 );
+   SystemParameters_Sizer.Add( SystemParameters_SubframeScale_Sizer );
+   SystemParameters_Sizer.Add( SystemParameters_CameraGain_Sizer );
+   SystemParameters_Sizer.Add( SystemParameters_CameraResolution_Sizer );
+   SystemParameters_Sizer.Add( SystemParameters_SiteLocalMidnight_Sizer );
+   SystemParameters_Sizer.Add( SystemParameters_ScaleUnit_Sizer );
+   SystemParameters_Sizer.Add( SystemParameters_DataUnit_Sizer );
+
+   SystemParameters_Control.SetSizer( SystemParameters_Sizer );
+   SystemParameters_Control.AdjustToContents();
+
+   //
+
    Global_Sizer.SetMargin( 8 );
    Global_Sizer.SetSpacing( 6 );
    Global_Sizer.Add( SubframeImages_SectionBar );
    Global_Sizer.Add( SubframeImages_Control );
+   Global_Sizer.Add( SystemParameters_SectionBar );
+   Global_Sizer.Add( SystemParameters_Control );
 
    w.SetSizer( Global_Sizer );
+
+   SystemParameters_Control.Hide();
 
    w.AdjustToContents();
 }

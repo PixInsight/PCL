@@ -63,7 +63,13 @@ namespace pcl
 
 SubframeSelectorInstance::SubframeSelectorInstance( const MetaProcess* m ) :
    ProcessImplementation( m ),
-   subframes()
+   subframes(),
+   subframeScale( TheSSSubframeScaleParameter->DefaultValue() ),
+   cameraGain( TheSSCameraGainParameter->DefaultValue() ),
+   cameraResolution( SSCameraResolution::Default ),
+   siteLocalMidnight( TheSSSiteLocalMidnightParameter->DefaultValue() ),
+   scaleUnit( SSScaleUnit::Default ),
+   dataUnit( SSDataUnit::Default )
 {
 }
 
@@ -78,7 +84,13 @@ void SubframeSelectorInstance::Assign( const ProcessImplementation& p )
    const SubframeSelectorInstance* x = dynamic_cast<const SubframeSelectorInstance*>( &p );
    if ( x != nullptr )
    {
-        subframes   = x->subframes;
+      subframes         = x->subframes;
+      subframeScale     = x->subframeScale;
+      cameraGain        = x->cameraGain;
+      cameraResolution  = x->cameraResolution;
+      siteLocalMidnight = x->siteLocalMidnight;
+      scaleUnit         = x->scaleUnit;
+      dataUnit          = x->dataUnit;
    }
 }
 
@@ -174,6 +186,19 @@ void* SubframeSelectorInstance::LockParameter( const MetaParameter* p, size_type
       return &subframes[tableRow].enabled;
    if ( p == TheSSSubframePathParameter )
       return subframes[tableRow].path.Begin();
+
+   if ( p == TheSSSubframeScaleParameter )
+      return &subframeScale;
+   if ( p == TheSSCameraGainParameter )
+      return &cameraGain;
+   if ( p == TheSSCameraResolutionParameter )
+      return &cameraResolution;
+   if ( p == TheSSSiteLocalMidnightParameter )
+      return &siteLocalMidnight;
+   if ( p == TheSSScaleUnitParameter )
+      return &scaleUnit;
+   if ( p == TheSSDataUnitParameter )
+      return &dataUnit;
 
    return nullptr;
 }

@@ -118,6 +118,31 @@ private:
             PushButton        ToggleSelected_PushButton;
             PushButton        RemoveSelected_PushButton;
             PushButton        Clear_PushButton;
+
+      SectionBar        SystemParameters_SectionBar;
+      Control           SystemParameters_Control;
+      VerticalSizer     SystemParameters_Sizer;
+         HorizontalSizer   SystemParameters_SubframeScale_Sizer;
+            Label             SystemParameters_SubframeScale_Label;
+            NumericControl    SystemParameters_SubframeScale_Control;
+            Label             SystemParameters_SubframeScale_Unit;
+         HorizontalSizer   SystemParameters_CameraGain_Sizer;
+            Label             SystemParameters_CameraGain_Label;
+            NumericControl    SystemParameters_CameraGain_Control;
+            Label             SystemParameters_CameraGain_Unit;
+         HorizontalSizer   SystemParameters_CameraResolution_Sizer;
+            Label             SystemParameters_CameraResolution_Label;
+            ComboBox          SystemParameters_CameraResolution_Control;
+         HorizontalSizer   SystemParameters_SiteLocalMidnight_Sizer;
+            Label             SystemParameters_SiteLocalMidnight_Label;
+            SpinBox           SystemParameters_SiteLocalMidnight_Control;
+            Label             SystemParameters_SiteLocalMidnight_Unit;
+         HorizontalSizer   SystemParameters_ScaleUnit_Sizer;
+            Label             SystemParameters_ScaleUnit_Label;
+            ComboBox          SystemParameters_ScaleUnit_Control;
+         HorizontalSizer   SystemParameters_DataUnit_Sizer;
+            Label             SystemParameters_DataUnit_Label;
+            ComboBox          SystemParameters_DataUnit_Control;
    };
 
    GUIData* GUI = nullptr;
@@ -126,6 +151,7 @@ private:
    void UpdateSubframeImageItem( size_type );
    void UpdateSubframeImagesList();
    void UpdateSubframeImageSelectionButtons();
+   void UpdateSystemParameters();
 
    // Event Handlers
 
@@ -138,6 +164,10 @@ private:
 
    void __FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
    void __FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
+
+   void __RealValueUpdated( NumericEdit& sender, double value );
+   void __IntegerValueUpdated( SpinBox& sender, int value );
+   void __ItemSelected( ComboBox& sender, int itemIndex );
 
    friend struct GUIData;
 };

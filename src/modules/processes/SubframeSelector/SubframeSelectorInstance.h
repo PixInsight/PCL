@@ -104,7 +104,15 @@ private:
    typedef Array<ImageItem>  image_list;
 
    // The set of subframes to measure
-   image_list      subframes;
+   image_list     subframes;
+
+   // The settings for measurements and reporting
+   float          subframeScale;
+   float          cameraGain;
+   pcl_enum       cameraResolution;
+   int32          siteLocalMidnight;
+   pcl_enum       scaleUnit;
+   pcl_enum       dataUnit;
 
    friend class SubframeSelectorProcess;
    friend class SubframeSelectorInterface;

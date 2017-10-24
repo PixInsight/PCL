@@ -85,6 +85,12 @@ SubframeSelectorProcess::SubframeSelectorProcess() : MetaProcess()
    new SSSiteLocalMidnight( this );
    new SSScaleUnit( this );
    new SSDataUnit( this );
+
+   new SSMeasurements( this );
+   new SSMeasurementEnabled( TheSSMeasurementsParameter );
+   new SSMeasurementLocked( TheSSMeasurementsParameter );
+   new SSMeasurementPath( TheSSMeasurementsParameter );
+   new SSMeasurementFWHM( TheSSMeasurementsParameter );
 }
 
 // ----------------------------------------------------------------------------

@@ -143,6 +143,12 @@ private:
          HorizontalSizer   SystemParameters_DataUnit_Sizer;
             Label             SystemParameters_DataUnit_Label;
             ComboBox          SystemParameters_DataUnit_Control;
+
+      SectionBar        MeasurementImages_SectionBar;
+      Control           MeasurementImages_Control;
+      VerticalSizer     MeasurementImages_Sizer;
+         PushButton        MeasureSubframes_PushButton;
+         TreeBox           MeasurementImages_TreeBox;
    };
 
    GUIData* GUI = nullptr;
@@ -152,6 +158,8 @@ private:
    void UpdateSubframeImagesList();
    void UpdateSubframeImageSelectionButtons();
    void UpdateSystemParameters();
+   void UpdateMeasurementImageItem( size_type );
+   void UpdateMeasurementImagesList();
 
    // Event Handlers
 
@@ -162,12 +170,19 @@ private:
    void __SubframeImages_NodeSelectionUpdated( TreeBox &sender );
    void __SubframeImages_Click( Button &sender, bool checked );
 
-   void __FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
-   void __FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
+   void __SubframeImages_FileDrag( Control &sender, const Point &pos, const StringList &files, unsigned modifiers,
+                                   bool &wantsFiles );
+   void __SubframeImages_FileDrop( Control &sender, const Point &pos, const StringList &files, unsigned modifiers );
 
    void __RealValueUpdated( NumericEdit& sender, double value );
    void __IntegerValueUpdated( SpinBox& sender, int value );
    void __ItemSelected( ComboBox& sender, int itemIndex );
+
+   void __MeasurementImages_CurrentNodeUpdated( TreeBox &sender, TreeBox::Node &current, TreeBox::Node &oldCurrent );
+   void __MeasurementImages_NodeActivated( TreeBox &sender, TreeBox::Node &node, int col );
+   void __MeasurementImages_Click( Button &sender, bool checked );
+
+   void __MeasurementImages_FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
 
    friend struct GUIData;
 };

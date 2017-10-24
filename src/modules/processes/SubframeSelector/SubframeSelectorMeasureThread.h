@@ -6,7 +6,7 @@
 // ----------------------------------------------------------------------------
 // Standard SubframeSelector Process Module Version 01.00.02.0261
 // ----------------------------------------------------------------------------
-// SubframeSelectorInstance.h - Released 2017-08-01T14:26:58Z
+// SubframeSelectorMeasureThread.h - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SubframeSelector PixInsight module.
 //
@@ -50,89 +50,56 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#ifndef __SubframeSelectorInstance_h
-#define __SubframeSelectorInstance_h
+#ifndef __SubframeSelectorMeasureThread_h
+#define __SubframeSelectorMeasureThread_h
 
-#include "SubframeSelectorMeasureThread.h"
+#include "SubframeSelectorMeasureData.h"
 
-#include <pcl/MetaParameter.h> // pcl_bool, pcl_enum
 #include <pcl/ProcessImplementation.h>
+#include <pcl/MetaParameter.h> // pcl_bool, pcl_enum
+#include <pcl/AutoPointer.h>
+#include <pcl/FileFormat.h>
+#include <pcl/ICCProfile.h>
+#include <pcl/FileFormatInstance.h>
 
 namespace pcl
 {
 
-typedef IndirectArray<SubframeSelectorMeasureThread> thread_list;
+// ----------------------------------------------------------------------------
+
+struct MeasureThreadInputData
+{
+
+};
 
 // ----------------------------------------------------------------------------
 
-class SubframeSelectorInstance : public ProcessImplementation
+class SubframeSelectorMeasureThread : public Thread
 {
 public:
 
-   SubframeSelectorInstance( const MetaProcess* );
-   SubframeSelectorInstance( const SubframeSelectorInstance& );
+   SubframeSelectorMeasureThread( Image* subframe, MeasureData* outputData, const String& subframePath,
+                                  int subimageIndex, const MeasureThreadInputData& data );
 
-   virtual void Assign( const ProcessImplementation& );
-
-   virtual bool CanExecuteOn( const View&, String& whyNot ) const;
-   virtual bool IsHistoryUpdater( const View& v ) const;
-
-   virtual bool CanExecuteGlobal( String& whyNot ) const;
-   virtual bool ExecuteGlobal();
-
-   virtual void* LockParameter( const MetaParameter*, size_type tableRow );
-   virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
-   virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
+   virtual void Run();
+   const MeasureThreadInputData& MeasuringData() const;
+   const Image* SubframeImage() const;
+   String SubframePath() const;
+   const MeasureData& OutputData() const;
+   int SubimageIndex() const;
+   bool Success() const;
 
 private:
 
-   struct SubframeItem
-   {
-      pcl_bool enabled; // if disabled, skip (ignore) this image
-      String   path;    // absolute file path
+   AutoPointer<Image>         m_subframe;      // The image being measured. It belongs to this thread.
+   AutoPointer<MeasureData>   m_outputData;    // Target image parameters and embedded m_data. It belongs to this thread.
+   String                     m_subframePath;  // File path of this m_target image
+   int                        m_subimageIndex; // >= 0 in case of a multiple image; = 0 otherwise
+   bool                       m_success : 1;   // The thread completed execution successfully
 
-      SubframeItem( const String& p = String() ) :
-              enabled( true ),
-              path( p )
-      {
-      }
+   const MeasureThreadInputData& m_data;
 
-      SubframeItem( const SubframeItem& x ) :
-              enabled( x.enabled ),
-              path( x.path )
-      {
-      }
-
-      bool IsValid() const
-      {
-         return !enabled || !path.IsEmpty();
-      }
-   };
-
-   typedef Array<SubframeItem>  subframe_list;
-
-   typedef Array<MeasureData>  measured_list;
-
-   // The set of subframes to measure
-   subframe_list     subframes;
-
-   // The settings for measurements and reporting
-   float          subframeScale;
-   float          cameraGain;
-   pcl_enum       cameraResolution;
-   int32          siteLocalMidnight;
-   pcl_enum       scaleUnit;
-   pcl_enum       dataUnit;
-
-   // The set of measured subframes
-   measured_list     measures;
-
-   // Read a subframe file into a Thread
-   thread_list CreateThreadsForSubframe( const String& filePath, const MeasureThreadInputData& );
-
-   friend class SubframeSelectorProcess;
-   friend class SubframeSelectorInterface;
-   friend class SubframeSelectorMeasureThread;
+   friend class SubframeSelectorInstance;
 };
 
 // ----------------------------------------------------------------------------
@@ -140,7 +107,7 @@ private:
 
 } // pcl
 
-#endif   // __SubframeSelectorInstance_h
+#endif   // __SubframeSelectorMeasureThread_h
 
 // ----------------------------------------------------------------------------
-// EOF SubframeSelectorInstance.h - Released 2017-08-01T14:26:58Z
+// EOF SubframeSelectorMeasureThread.h - Released 2017-08-01T14:26:58Z

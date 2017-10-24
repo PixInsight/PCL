@@ -235,6 +235,79 @@ extern SSDataUnit* TheSSDataUnitParameter;
 
 // ----------------------------------------------------------------------------
 
+class SSMeasurements : public MetaTable
+{
+   public:
+
+   SSMeasurements( MetaProcess* );
+
+   virtual IsoString Id() const;
+};
+
+extern SSMeasurements* TheSSMeasurementsParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementEnabled : public MetaBoolean
+{
+   public:
+
+   SSMeasurementEnabled( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern SSMeasurementEnabled* TheSSMeasurementEnabledParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementLocked : public MetaBoolean
+{
+   public:
+
+   SSMeasurementLocked( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern SSMeasurementLocked* TheSSMeasurementLockedParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementPath : public MetaString
+{
+   public:
+
+   SSMeasurementPath( MetaTable* );
+
+   virtual IsoString Id() const;
+};
+
+extern SSMeasurementPath* TheSSMeasurementPathParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementFWHM : public MetaFloat
+{
+   public:
+
+   SSMeasurementFWHM( MetaTable* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSMeasurementFWHM* TheSSMeasurementFWHMParameter;
+
+// ----------------------------------------------------------------------------
+
 
    PCL_END_LOCAL
 

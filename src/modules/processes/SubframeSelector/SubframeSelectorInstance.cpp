@@ -55,9 +55,42 @@
 
 #include <pcl/Console.h>
 #include <pcl/MetaModule.h>
+#include <pcl/ErrorHandler.h>
 
 namespace pcl
 {
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// File Management Routines
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+static Image* LoadImageFile( FileFormatInstance& file, int index = 0 )
+{
+   // Select the image at index
+   if ( !file.SelectImage( index ) )
+      throw CaughtException();
+
+   // Create a shared image, 32-bit floating point
+   Image* image = new Image( (void*)0, 0, 0 );
+
+   // Read the image
+   if ( !file.ReadImage( *image ) )
+      throw CaughtException();
+
+   return image;
+}
+
+static String UniqueFilePath( const String& filePath )
+{
+   for ( unsigned u = 1; ; ++u )
+   {
+      String tryFilePath = File::AppendToName( filePath, '_' + String( u ) );
+      if ( !File::Exists( tryFilePath ) )
+         return tryFilePath;
+   }
+}
 
 // ----------------------------------------------------------------------------
 
@@ -69,7 +102,8 @@ SubframeSelectorInstance::SubframeSelectorInstance( const MetaProcess* m ) :
    cameraResolution( SSCameraResolution::Default ),
    siteLocalMidnight( TheSSSiteLocalMidnightParameter->DefaultValue() ),
    scaleUnit( SSScaleUnit::Default ),
-   dataUnit( SSDataUnit::Default )
+   dataUnit( SSDataUnit::Default ),
+   measures()
 {
 }
 
@@ -91,6 +125,7 @@ void SubframeSelectorInstance::Assign( const ProcessImplementation& p )
       siteLocalMidnight = x->siteLocalMidnight;
       scaleUnit         = x->scaleUnit;
       dataUnit          = x->dataUnit;
+      measures          = x->measures;
    }
 }
 
@@ -119,64 +154,341 @@ bool SubframeSelectorInstance::ExecuteGlobal() {
     * Start with a general validation of working parameters.
     */
    {
-       String why;
-       if ( !CanExecuteGlobal( why ))
-           throw Error( why );
+      String why;
+      if ( !CanExecuteGlobal( why ))
+         throw Error( why );
 
-       for ( image_list::const_iterator i = subframes.Begin(); i != subframes.End(); ++i )
-           if ( i->enabled && !File::Exists( i->path ))
-               throw ("No such file exists on the local filesystem: " + i->path);
+      for ( subframe_list::const_iterator i = subframes.Begin(); i != subframes.End(); ++i )
+         if ( i->enabled && !File::Exists( i->path ))
+            throw ("No such file exists on the local filesystem: " + i->path);
    }
 
    try {
 
-       /*
-        * For all errors generated, we want a report on the console. This is
-        * customary in PixInsight for all batch processes.
-        */
-       Exception::EnableConsoleOutput();
-       Exception::DisableGUIOutput();
+      // Reset measured values
+      measures.Clear();
 
-       /*
-        * Allow the user to abort the calibration process.
-        */
-       Console console;
-       console.EnableAbort();
+      /*
+       * For all errors generated, we want a report on the console. This is
+       * customary in PixInsight for all batch processes.
+       */
+      Exception::EnableConsoleOutput();
+      Exception::DisableGUIOutput();
 
-       Module->ProcessEvents();
+      /*
+       * Allow the user to abort the calibration process.
+       */
+      Console console;
+      console.EnableAbort();
 
-       /*
-        * Begin subframe measuring process.
-        */
+      Module->ProcessEvents();
 
-       int succeeded = 0;
-       int failed = 0;
-       int skipped = 0;
+      /*
+       * Begin subframe measuring process.
+       */
 
-       /*
-        * Fail if no images have been calibrated.
-        */
-//       if ( succeeded == 0 ) {
-//           if ( failed == 0 )
-//               throw Error( "No images were measured: Empty target frames list? No enabled target frames?" );
-//           throw Error( "No image could be measured." );
-//       }
+      int succeeded = 0;
+      int failed = 0;
+      int skipped = 0;
 
-       /*
-        * Write the final report to the console.
-        */
-       console.NoteLn(
-               String().Format( "<end><cbr><br>===== SubframeSelector: %u succeeded, %u failed, %u skipped =====",
-                                succeeded, failed, skipped ));
-       return true;
+      /*
+       * Running threads list. Note that IndirectArray<> initializes all item
+       * pointers to zero.
+       */
+      int numberOfThreads = Thread::NumberOfThreads( PCL_MAX_PROCESSORS, 1 );
+      thread_list runningThreads( Min( int( subframes.Length()), numberOfThreads ));
+
+      /*
+       * Waiting threads list. We use this list for temporary storage of
+       * measuring threads for multiple image files.
+       */
+      thread_list waitingThreads;
+
+      /*
+       * Flag to signal the beginning of the final waiting period, when there
+       * are no more pending images but there are still running threads.
+       */
+      bool waitingForFinished = false;
+
+      MeasureThreadInputData inputThreadData;
+
+      /*
+       * We'll work on a temporary duplicate of the subframes list. This
+       * allows us to modify the working list without altering the instance.
+       */
+      subframe_list subframes_copy( subframes );
+
+      console.WriteLn( String().Format( "<end><cbr><br>Measuring of %u subframes:", subframes.Length() ) );
+      console.WriteLn( String().Format( "* Using %u worker threads", runningThreads.Length() ) );
+
+      try
+      {
+         for ( ;; )
+         {
+            try
+            {
+               /*
+                * Thread watching loop.
+                */
+               thread_list::iterator i = 0;
+               size_type unused = 0;
+               for ( thread_list::iterator j = runningThreads.Begin(); j != runningThreads.End(); ++j )
+               {
+                  // Keep the GUI responsive
+                  Module->ProcessEvents();
+                  if ( console.AbortRequested() )
+                     throw ProcessAborted();
+
+                  if ( *j == nullptr )
+                  {
+                     /*
+                      * This is a free thread slot. Ignore it if we don't have
+                      * more pending images to feed in.
+                      */
+                     if ( subframes_copy.IsEmpty() && waitingThreads.IsEmpty() )
+                     {
+                        ++unused;
+                        continue;
+                     }
+                  }
+                  else
+                  {
+                     /*
+                      * This is an existing thread. If this thread is still
+                      * alive, wait for 0.1 seconds and then continue watching.
+                      */
+                     if ( (*j)->IsActive() )
+                     {
+                        pcl::Sleep( 100 );
+                        continue;
+                     }
+                  }
+
+                  /*
+                   * If we have a useful free thread slot, or a thread has just
+                   * finished, exit the watching loop and work it out.
+                   */
+                  i = j;
+                  break;
+               }
+
+               /*
+                * Keep watching while there is no useful free thread slots or a
+                * finished thread.
+                */
+               if ( i == 0 )
+                  if ( unused == runningThreads.Length() )
+                     break;
+                  else
+                     continue;
+
+               /*
+                * At this point we have found either a unused thread slot that
+                * we can reuse, or a thread that has just finished execution.
+                */
+               if ( *i != 0 )
+               {
+                  /*
+                   * This is a just-finished thread.
+                   */
+                  try
+                  {
+                     if ( !(*i)->Success() )
+                        throw Error( (*i)->ConsoleOutputText() );
+
+                     (*i)->FlushConsoleOutputText();
+                     // Write the calibrated image.
+//                     WriteCalibratedImage( *i ); // TODO
+
+                     // Dispose this calibration thread, since we are done with
+                     // it. NB: IndirectArray<T>::Delete() sets to zero the
+                     // pointer pointed to by the iterator, but does not remove
+                     // the array element.
+                     runningThreads.Delete( i );
+                  }
+                  catch ( ... )
+                  {
+                     // Ensure the thread is also destroyed in the event of
+                     // error; we'd enter an infinite loop otherwise!
+                     runningThreads.Delete( i );
+                     throw;
+                  }
+
+                  ++succeeded;
+               }
+
+               // Keep the GUI responsive
+               Module->ProcessEvents();
+               if ( console.AbortRequested() )
+                  throw ProcessAborted();
+
+               if ( !waitingThreads.IsEmpty() )
+               {
+                  /*
+                   * If there are threads waiting, pop the first one from the
+                   * waiting threads list and put it in the free thread slot
+                   * for immediate firing.
+                   */
+                  *i = *waitingThreads;
+                  waitingThreads.Remove( waitingThreads.Begin() );
+               }
+               else
+               {
+                  /*
+                   * If there are no more target frames to calibrate, simply
+                   * wait until all running threads terminate execution.
+                   */
+                  if ( subframes_copy.IsEmpty() )
+                  {
+                     bool someRunning = false;
+                     for ( thread_list::iterator j = runningThreads.Begin(); j != runningThreads.End(); ++j )
+                        if ( *j != 0 )
+                        {
+                           someRunning = true;
+                           break;
+                        }
+
+                     /*
+                      * If there are still running threads, continue waiting.
+                      */
+                     if ( someRunning )
+                     {
+                        if ( !waitingForFinished )
+                        {
+                           console.WriteLn( "<end><cbr><br>* Waiting for running tasks to terminate ..." );
+                           waitingForFinished = true;
+                        }
+
+                        continue;
+                     }
+
+                     /*
+                      * If there are no running threads, no waiting threads,
+                      * and no pending target frames, then we are done.
+                      */
+                     break;
+                  }
+
+                  /*
+                   * We still have pending work to do: Extract the next target
+                   * frame from the targets list, load and calibrate it.
+                   */
+                  SubframeItem item = *subframes_copy;
+                  subframes_copy.Remove( subframes_copy.Begin() );
+
+                  console.WriteLn( String().Format( "<end><cbr><br>Measuring subframe %u of %u",
+                                                    subframes.Length()-subframes_copy.Length(),
+                                                    subframes.Length() ) );
+                  if ( !item.enabled )
+                  {
+                     console.NoteLn( "* Skipping disabled target" );
+                     ++skipped;
+                     continue;
+                  }
+
+                  /*
+                   * Create a new thread for this subframe image, or if
+                   * this is a multiple-image file, a set of threads for all
+                   * subimages in this file.
+                   */
+                  thread_list threads = CreateThreadsForSubframe( item.path, inputThreadData );
+
+                  /*
+                   * Put the new thread --or the first thread if this is a
+                   * multiple-image file-- in the free slot.
+                   */
+                  *i = *threads;
+                  threads.Remove( threads.Begin() );
+
+                  /*
+                   * Add the rest of subimages in a multiple-image file to the
+                   * list of waiting threads.
+                   */
+                  if ( !threads.IsEmpty() )
+                     waitingThreads.Add( threads );
+               }
+
+               /*
+                * If we have produced a new thread, run it immediately. Note
+                * that we support thread CPU affinity, if it has been enabled
+                * on the platform via global preferences - hence the second
+                * argument to Thread::Start() below.
+                */
+               if ( *i != 0 )
+                  (*i)->Start( ThreadPriority::DefaultMax, i - runningThreads.Begin() );
+            } // try
+            catch ( ProcessAborted& )
+            {
+               /*
+                * The user has requested to abort the process.
+                */
+               throw;
+            }
+            catch ( ... )
+            {
+               /*
+                * The user has requested to abort the process.
+                */
+               if ( console.AbortRequested() )
+                  throw ProcessAborted();
+
+               /*
+                * Other errors handled according to the selected error policy.
+                */
+
+               ++failed;
+
+               try
+               {
+                  throw;
+               }
+               ERROR_HANDLER
+
+               console.ResetStatus();
+               console.EnableAbort();
+
+               console.NoteLn( "Abort on error." );
+               throw ProcessAborted();
+            }
+         } // for ( ;; )
+      } // try
+
+      catch ( ... )
+      {
+         console.NoteLn( "<end><cbr><br>* Waiting for running tasks to terminate ..." );
+         for ( thread_list::iterator i = runningThreads.Begin(); i != runningThreads.End(); ++i )
+            if ( *i != 0 ) (*i)->Abort();
+         for ( thread_list::iterator i = runningThreads.Begin(); i != runningThreads.End(); ++i )
+            if ( *i != 0 ) (*i)->Wait();
+         runningThreads.Destroy();
+         waitingThreads.Destroy();
+         throw;
+      }
+
+      /*
+       * Fail if no images have been measured.
+       */
+       if ( succeeded == 0 ) {
+           if ( failed == 0 )
+               throw Error( "No images were measured: Empty subframes list? No enabled subframes?" );
+           throw Error( "No image could be measured." );
+       }
+
+      /*
+       * Write the final report to the console.
+       */
+      console.NoteLn(
+              String().Format( "<end><cbr><br>===== SubframeSelector: %u succeeded, %u failed, %u skipped =====",
+                               succeeded, failed, skipped ));
+      return true;
    } // try
 
    catch ( ... ) {
-       /*
-        * All breaking errors are caught here.
-        */
-       Exception::EnableGUIOutput( true );
-       throw;
+      /*
+       * All breaking errors are caught here.
+       */
+      Exception::EnableGUIOutput( true );
+      throw;
    }
 }
 
@@ -200,6 +512,13 @@ void* SubframeSelectorInstance::LockParameter( const MetaParameter* p, size_type
    if ( p == TheSSDataUnitParameter )
       return &dataUnit;
 
+   if ( p == TheSSMeasurementEnabledParameter )
+      return &measures[tableRow].enabled;
+   if ( p == TheSSMeasurementLockedParameter )
+      return &measures[tableRow].locked;
+   if ( p == TheSSMeasurementPathParameter )
+      return measures[tableRow].path.Begin();
+
    return nullptr;
 }
 
@@ -209,13 +528,25 @@ bool SubframeSelectorInstance::AllocateParameter( size_type sizeOrLength, const 
    {
       subframes.Clear();
       if ( sizeOrLength > 0 )
-         subframes.Add( ImageItem(), sizeOrLength );
+         subframes.Add( SubframeItem(), sizeOrLength );
    }
    else if ( p == TheSSSubframePathParameter )
    {
       subframes[tableRow].path.Clear();
       if ( sizeOrLength > 0 )
          subframes[tableRow].path.SetLength( sizeOrLength );
+   }
+   else if ( p == TheSSMeasurementsParameter )
+   {
+      measures.Clear();
+      if ( sizeOrLength > 0 )
+         measures.Add( MeasureData(), sizeOrLength );
+   }
+   else if ( p == TheSSMeasurementPathParameter )
+   {
+      measures[tableRow].path.Clear();
+      if ( sizeOrLength > 0 )
+         measures[tableRow].path.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -230,7 +561,100 @@ size_type SubframeSelectorInstance::ParameterLength( const MetaParameter* p, siz
    if ( p == TheSSSubframePathParameter )
       return subframes[tableRow].path.Length();
 
+   if ( p == TheSSMeasurementsParameter )
+      return measures.Length();
+   if ( p == TheSSMeasurementPathParameter )
+      return measures[tableRow].path.Length();
+
    return 0;
+}
+
+// ----------------------------------------------------------------------------
+
+
+/*
+ * Read a subframe file. Returns a list of measuring threads ready to
+ * measure all subimages loaded from the file.
+ */
+thread_list
+SubframeSelectorInstance::CreateThreadsForSubframe( const String& filePath, const MeasureThreadInputData& threadData )
+{
+   Console console;
+
+   console.WriteLn( "<end><cbr>Loading subframe:" );
+   console.WriteLn( filePath );
+
+   /*
+    * Find out an installed file format that can read image files with the
+    * specified extension ...
+    */
+   FileFormat format( File::ExtractExtension( filePath ), true/*read*/, false/*write*/ );
+
+   /*
+    * ... and create a format instance (usually a disk file) to access this
+    * target image.
+    */
+   FileFormatInstance file( format );
+
+   /*
+    * Open the image file.
+    */
+   ImageDescriptionArray images;
+   if ( !file.Open( images, filePath, IsoString() ) )
+      throw CaughtException();
+
+   if ( images.IsEmpty() )
+      throw Error( filePath + ": Empty image file." );
+
+   /*
+    * Multiple-image file formats are supported and implemented in PixInsight
+    * (e.g.: XISF, FITS), so when we open a file, what we get is an array of
+    * images, usually consisting of a single image, but we must provide for a
+    * set of subimages.
+    */
+   thread_list threads;
+   try
+   {
+      for ( size_type j = 0; j < images.Length(); ++j )
+      {
+         if ( images.Length() > 1 )
+            console.WriteLn( String().Format( "* Subimage %u of %u", j+1, images.Length() ) );
+
+         AutoPointer<Image> subframe( LoadImageFile( file, j ) );
+
+         Module->ProcessEvents();
+
+         /*
+          * NB: At this point, LoadImageFile() has already called
+          * file.SelectImage().
+          */
+
+         /*
+          * Create a new calibration thread and add it to the thread list.
+          */
+         MeasureData* outputData = new MeasureData( filePath );
+         threads.Add( new SubframeSelectorMeasureThread( subframe,
+                                                         outputData,
+                                                         filePath,
+                                                         (images.Length() > 1) ? j + 1 : 0,
+                                                         threadData ));
+         // The thread owns the target image
+         subframe.Release();
+      }
+
+      /*
+       * Close the input stream.
+       */
+      if ( !file.Close() )
+         throw CaughtException();
+
+      return threads;
+   }
+   catch ( ... )
+   {
+      threads.Destroy();
+      throw;
+   }
 }
 
 // ----------------------------------------------------------------------------

@@ -167,6 +167,7 @@ void SubframeSelectorInterface::UpdateControls()
 {
    UpdateSubframeImagesList();
    UpdateSystemParameters();
+   UpdateMeasurementImagesList();
 }
 
 // ----------------------------------------------------------------------------
@@ -177,7 +178,7 @@ void SubframeSelectorInterface::UpdateSubframeImageItem( size_type i )
    if ( node == nullptr )
       return;
 
-   const SubframeSelectorInstance::ImageItem& item = instance.subframes[i];
+   const SubframeSelectorInstance::SubframeItem& item = instance.subframes[i];
 
    node->SetText( 0, String( i+1 ) );
    node->SetAlignment( 0, TextAlign::Right );
@@ -244,22 +245,104 @@ void SubframeSelectorInterface::UpdateSystemParameters()
 }
 
 // ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::UpdateMeasurementImageItem( size_type i )
+{
+   TreeBox::Node* node = GUI->SubframeImages_TreeBox[i];
+   if ( node == nullptr )
+      return;
+
+   const MeasureData& item = instance.measures[i];
+
+   node->SetText( 0, String( i+1 ) );
+   node->SetAlignment( 0, TextAlign::Right );
+
+   node->SetIcon( 1, Bitmap( ScaledResource( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
+   node->SetAlignment( 1, TextAlign::Left );
+
+   node->SetIcon( 2, Bitmap( ScaledResource( item.locked ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
+   node->SetAlignment( 2, TextAlign::Left );
+
+   node->SetIcon( 3, Bitmap( ScaledResource( ":/browser/document.png" ) ) );
+   node->SetText( 3, File::ExtractNameAndSuffix( item.path ) );
+   node->SetToolTip( 3, item.path );
+   node->SetAlignment( 3, TextAlign::Left );
+
+   node->SetText( 4, String().Format( "%.03f", item.fwhm ) );
+   node->SetAlignment( 4, TextAlign::Center );
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::UpdateMeasurementImagesList()
+{
+   int currentIdx = GUI->MeasurementImages_TreeBox.ChildIndex( GUI->MeasurementImages_TreeBox.CurrentNode() );
+
+   GUI->MeasurementImages_TreeBox.DisableUpdates();
+   GUI->MeasurementImages_TreeBox.Clear();
+
+   for ( size_type i = 0; i < instance.measures.Length(); ++i )
+   {
+      new TreeBox::Node( GUI->MeasurementImages_TreeBox );
+      UpdateMeasurementImageItem( i );
+   }
+
+   GUI->MeasurementImages_TreeBox.AdjustColumnWidthToContents( 0 );
+   GUI->MeasurementImages_TreeBox.AdjustColumnWidthToContents( 1 );
+   GUI->MeasurementImages_TreeBox.AdjustColumnWidthToContents( 2 );
+   GUI->MeasurementImages_TreeBox.AdjustColumnWidthToContents( 3 );
+   GUI->MeasurementImages_TreeBox.AdjustColumnWidthToContents( 4 );
+
+   if ( !instance.measures.IsEmpty() )
+      if ( currentIdx >= 0 && currentIdx < GUI->MeasurementImages_TreeBox.NumberOfChildren() )
+         GUI->MeasurementImages_TreeBox.SetCurrentNode( GUI->MeasurementImages_TreeBox[currentIdx] );
+
+   GUI->MeasurementImages_TreeBox.EnableUpdates();
+}
+
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void SubframeSelectorInterface::__ToggleSection( SectionBar& sender, Control& section, bool start )
 {
-   if ( start )
-      GUI->SubframeImages_TreeBox.SetFixedHeight();
-   else
+   if ( sender == GUI->SubframeImages_SectionBar )
    {
-      GUI->SubframeImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( Font() ) );
-      GUI->SubframeImages_TreeBox.SetMaxHeight( int_max );
-
-      if ( GUI->SubframeImages_Control.IsVisible() )
-         SetVariableHeight();
+      if ( start )
+         GUI->SubframeImages_TreeBox.SetFixedHeight();
       else
-         SetFixedHeight();
+      {
+         GUI->SubframeImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( Font() ) );
+         GUI->SubframeImages_TreeBox.SetMaxHeight( int_max );
+
+         if ( GUI->SubframeImages_Control.IsVisible() )
+            SetVariableHeight();
+         else
+            SetFixedHeight();
+      }
    }
+   else if ( sender == GUI->MeasurementImages_SectionBar )
+   {
+      if ( start )
+         GUI->MeasurementImages_TreeBox.SetFixedHeight();
+      else
+      {
+         GUI->MeasurementImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( Font() ) );
+         GUI->MeasurementImages_TreeBox.SetMaxHeight( int_max );
+
+         if ( GUI->MeasurementImages_Control.IsVisible() )
+            SetVariableHeight();
+         else
+            SetFixedHeight();
+      }
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+static size_type TreeInsertionIndex( const TreeBox& tree )
+{
+   const TreeBox::Node* n = tree.CurrentNode();
+   return (n != nullptr) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
 }
 
 // ----------------------------------------------------------------------------
@@ -282,7 +365,7 @@ void SubframeSelectorInterface::__SubframeImages_NodeActivated( TreeBox &sender,
    if ( index < 0 || size_type( index ) >= instance.subframes.Length() )
       throw Error( "SubframeSelectorInterface: *Warning* Corrupted interface structures" );
 
-   SubframeSelectorInstance::ImageItem& item = instance.subframes[index];
+   SubframeSelectorInstance::SubframeItem& item = instance.subframes[index];
 
    switch ( col )
    {
@@ -314,14 +397,6 @@ void SubframeSelectorInterface::__SubframeImages_NodeSelectionUpdated( TreeBox &
 
 // ----------------------------------------------------------------------------
 
-static size_type TreeInsertionIndex( const TreeBox& tree )
-{
-   const TreeBox::Node* n = tree.CurrentNode();
-   return (n != nullptr) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
-}
-
-// ----------------------------------------------------------------------------
-
 void SubframeSelectorInterface::__SubframeImages_Click( Button &sender, bool checked )
 {
    if ( sender == GUI->AddFiles_PushButton )
@@ -335,7 +410,7 @@ void SubframeSelectorInterface::__SubframeImages_Click( Button &sender, bool che
       {
          size_type i0 = TreeInsertionIndex( GUI->SubframeImages_TreeBox );
          for ( StringList::const_iterator i = d.FileNames().Begin(); i != d.FileNames().End(); ++i )
-            instance.subframes.Insert( instance.subframes.At( i0++ ), SubframeSelectorInstance::ImageItem( *i ) );
+            instance.subframes.Insert( instance.subframes.At( i0++ ), SubframeSelectorInstance::SubframeItem( *i ) );
          UpdateSubframeImagesList();
          UpdateSubframeImageSelectionButtons();
       }
@@ -361,7 +436,7 @@ void SubframeSelectorInterface::__SubframeImages_Click( Button &sender, bool che
    }
    else if ( sender == GUI->RemoveSelected_PushButton )
    {
-      SubframeSelectorInstance::image_list newTargets;
+      SubframeSelectorInstance::subframe_list newTargets;
       for ( int i = 0, n = GUI->SubframeImages_TreeBox.NumberOfChildren(); i < n; ++i )
          if ( !GUI->SubframeImages_TreeBox[i]->IsSelected() )
             newTargets.Add( instance.subframes[i] );
@@ -379,7 +454,8 @@ void SubframeSelectorInterface::__SubframeImages_Click( Button &sender, bool che
 
 // ----------------------------------------------------------------------------
 
-void SubframeSelectorInterface::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+void SubframeSelectorInterface::__SubframeImages_FileDrag( Control &sender, const Point &pos, const StringList &files,
+                                                           unsigned modifiers, bool &wantsFiles )
 {
    if ( sender == GUI->SubframeImages_TreeBox.Viewport() )
       wantsFiles = true;
@@ -387,7 +463,8 @@ void SubframeSelectorInterface::__FileDrag( Control& sender, const Point& pos, c
 
 // ----------------------------------------------------------------------------
 
-void SubframeSelectorInterface::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+void SubframeSelectorInterface::__SubframeImages_FileDrop( Control &sender, const Point &pos, const StringList &files,
+                                                           unsigned modifiers )
 {
    if ( sender == GUI->SubframeImages_TreeBox.Viewport() )
    {
@@ -402,7 +479,7 @@ void SubframeSelectorInterface::__FileDrop( Control& sender, const Point& pos, c
       inputFiles.Sort();
       size_type i0 = TreeInsertionIndex( GUI->SubframeImages_TreeBox );
       for ( const String& file : inputFiles )
-         instance.subframes.Insert( instance.subframes.At( i0++ ), SubframeSelectorInstance::ImageItem( file ) );
+         instance.subframes.Insert( instance.subframes.At( i0++ ), SubframeSelectorInstance::SubframeItem( file ) );
 
       UpdateSubframeImagesList();
       UpdateSubframeImageSelectionButtons();
@@ -439,6 +516,72 @@ void SubframeSelectorInterface::__ItemSelected( ComboBox& sender, int itemIndex 
 
 // ----------------------------------------------------------------------------
 
+void SubframeSelectorInterface::__MeasurementImages_CurrentNodeUpdated( TreeBox &sender,
+                                                                        TreeBox::Node &current,
+                                                                        TreeBox::Node &oldCurrent )
+{
+   // Actually do nothing (placeholder). Just perform a sanity check.
+   int index = sender.ChildIndex( &current );
+   if ( index < 0 || size_type( index ) >= instance.measures.Length() )
+      throw Error( "SubframeSelectorInterface: *Warning* Corrupted interface structures" );
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::__MeasurementImages_NodeActivated( TreeBox &sender, TreeBox::Node &node, int col )
+{
+   int index = sender.ChildIndex( &node );
+   if ( index < 0 || size_type( index ) >= instance.measures.Length() )
+      throw Error( "SubframeSelectorInterface: *Warning* Corrupted interface structures" );
+
+   MeasureData& item = instance.measures[index];
+
+   switch ( col )
+   {
+      case 0:
+         // Activate the item's index number: ignore.
+         break;
+      case 1:
+         // Activate the item's checkmark: toggle item's enabled state.
+         item.enabled = !item.enabled;
+         UpdateSubframeImageItem( index );
+      case 2:
+         // Activate the item's checkmark: toggle item's locked state.
+         item.locked = !item.locked;
+         UpdateSubframeImageItem( index );
+         break;
+      case 3:
+      {
+         // Activate the item's path: open the image.
+         Array<ImageWindow> windows = ImageWindow::Open( item.path, IsoString()/*id*/ );
+         for ( ImageWindow& window : windows )
+            window.Show();
+      }
+         break;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::__MeasurementImages_Click( Button &sender, bool checked )
+{
+   if ( sender == GUI->MeasureSubframes_PushButton )
+   {
+      // TODO
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::__MeasurementImages_FileDrag( Control &sender, const Point &pos, const StringList &files,
+                                                              unsigned modifiers, bool &wantsFiles )
+{
+   if ( sender == GUI->MeasurementImages_TreeBox.Viewport() )
+      wantsFiles = true;
+}
+
+// ----------------------------------------------------------------------------
+
 SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 {
    pcl::Font fnt = w.Font();
@@ -461,8 +604,8 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    SubframeImages_TreeBox.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler) &SubframeSelectorInterface::__SubframeImages_CurrentNodeUpdated, w );
    SubframeImages_TreeBox.OnNodeActivated( (TreeBox::node_event_handler) &SubframeSelectorInterface::__SubframeImages_NodeActivated, w );
    SubframeImages_TreeBox.OnNodeSelectionUpdated( (TreeBox::tree_event_handler) &SubframeSelectorInterface::__SubframeImages_NodeSelectionUpdated, w );
-   SubframeImages_TreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler)&SubframeSelectorInterface::__FileDrag, w );
-   SubframeImages_TreeBox.Viewport().OnFileDrop( (Control::file_drop_event_handler)&SubframeSelectorInterface::__FileDrop, w );
+   SubframeImages_TreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler) &SubframeSelectorInterface::__SubframeImages_FileDrag, w );
+   SubframeImages_TreeBox.Viewport().OnFileDrop( (Control::file_drop_event_handler) &SubframeSelectorInterface::__SubframeImages_FileDrop, w );
 
    AddFiles_PushButton.SetText( "Add Files" );
    AddFiles_PushButton.SetToolTip( "<p>Add existing image files to the list of subframes.</p>" );
@@ -629,12 +772,40 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 
    //
 
+   MeasurementImages_SectionBar.SetTitle( "Measurements" );
+   MeasurementImages_SectionBar.SetSection( MeasurementImages_Control );
+   MeasurementImages_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&SubframeSelectorInterface::__ToggleSection, w );
+
+   MeasurementImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
+   MeasurementImages_TreeBox.SetNumberOfColumns( 5 );
+   MeasurementImages_TreeBox.EnableMultipleSelections();
+   MeasurementImages_TreeBox.DisableRootDecoration();
+   MeasurementImages_TreeBox.EnableAlternateRowColor();
+   MeasurementImages_TreeBox.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler) &SubframeSelectorInterface::__MeasurementImages_CurrentNodeUpdated, w );
+   MeasurementImages_TreeBox.OnNodeActivated( (TreeBox::node_event_handler) &SubframeSelectorInterface::__MeasurementImages_NodeActivated, w );
+   MeasurementImages_TreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler) &SubframeSelectorInterface::__MeasurementImages_FileDrag, w );
+
+   MeasureSubframes_PushButton.SetText( "Measure" );
+   MeasureSubframes_PushButton.SetToolTip( "<p>Start the Measurement process.</p>" );
+   MeasureSubframes_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click, w );
+
+   MeasurementImages_Sizer.SetSpacing( 4 );
+   MeasurementImages_Sizer.Add( MeasureSubframes_PushButton );
+   MeasurementImages_Sizer.Add( MeasurementImages_TreeBox, 100 );
+
+   MeasurementImages_Control.SetSizer( MeasurementImages_Sizer );
+   MeasurementImages_Control.AdjustToContents();
+
+   //
+
    Global_Sizer.SetMargin( 8 );
    Global_Sizer.SetSpacing( 6 );
    Global_Sizer.Add( SubframeImages_SectionBar );
    Global_Sizer.Add( SubframeImages_Control );
    Global_Sizer.Add( SystemParameters_SectionBar );
    Global_Sizer.Add( SystemParameters_Control );
+   Global_Sizer.Add( MeasurementImages_SectionBar );
+   Global_Sizer.Add( MeasurementImages_Control );
 
    w.SetSizer( Global_Sizer );
 

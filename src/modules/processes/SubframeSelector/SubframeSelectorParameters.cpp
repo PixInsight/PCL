@@ -68,6 +68,12 @@ SSSiteLocalMidnight*      TheSSSiteLocalMidnightParameter = nullptr;
 SSScaleUnit*              TheSSScaleUnitParameter = nullptr;
 SSDataUnit*               TheSSDataUnitParameter = nullptr;
 
+SSMeasurements*              TheSSMeasurementsParameter = nullptr;
+SSMeasurementEnabled*        TheSSMeasurementEnabledParameter = nullptr;
+SSMeasurementLocked*         TheSSMeasurementLockedParameter = nullptr;
+SSMeasurementPath*           TheSSMeasurementPathParameter = nullptr;
+SSMeasurementFWHM*           TheSSMeasurementFWHMParameter = nullptr;
+
 // ----------------------------------------------------------------------------
 
 SSSubframes::SSSubframes( MetaProcess* P ) : MetaTable( P )
@@ -89,7 +95,7 @@ SSSubframeEnabled::SSSubframeEnabled( MetaTable* T ) : MetaBoolean( T )
 
 IsoString SSSubframeEnabled::Id() const
 {
-   return "enabled";
+   return "subframesEnabled";
 }
 
 bool SSSubframeEnabled::DefaultValue() const
@@ -106,7 +112,7 @@ SSSubframePath::SSSubframePath( MetaTable* T ) : MetaString( T )
 
 IsoString SSSubframePath::Id() const
 {
-   return "path";
+   return "subframesPath";
 }
 
 // ----------------------------------------------------------------------------
@@ -123,7 +129,7 @@ IsoString SSSubframeScale::Id() const
 
 int SSSubframeScale::Precision() const
 {
-   return 5;
+   return 4;
 }
 
 double SSSubframeScale::DefaultValue() const
@@ -155,7 +161,7 @@ IsoString SSCameraGain::Id() const
 
 int SSCameraGain::Precision() const
 {
-   return 5;
+   return 4;
 }
 
 double SSCameraGain::DefaultValue() const
@@ -378,6 +384,96 @@ double SSSiteLocalMidnight::MinimumValue() const
 double SSSiteLocalMidnight::MaximumValue() const
 {
    return 24;
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurements::SSMeasurements( MetaProcess* P ) : MetaTable( P )
+{
+   TheSSMeasurementsParameter = this;
+}
+
+IsoString SSMeasurements::Id() const
+{
+   return "measurements";
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementEnabled::SSMeasurementEnabled( MetaTable* T ) : MetaBoolean( T )
+{
+   TheSSMeasurementEnabledParameter = this;
+}
+
+IsoString SSMeasurementEnabled::Id() const
+{
+   return "measurementsEnabled";
+}
+
+bool SSMeasurementEnabled::DefaultValue() const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementLocked::SSMeasurementLocked( MetaTable* T ) : MetaBoolean( T )
+{
+   TheSSMeasurementLockedParameter = this;
+}
+
+IsoString SSMeasurementLocked::Id() const
+{
+   return "measurementsLocked";
+}
+
+bool SSMeasurementLocked::DefaultValue() const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementPath::SSMeasurementPath( MetaTable* T ) : MetaString( T )
+{
+   TheSSMeasurementPathParameter = this;
+}
+
+IsoString SSMeasurementPath::Id() const
+{
+   return "measurementsPath";
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementFWHM::SSMeasurementFWHM( MetaTable* T ) : MetaFloat( T )
+{
+   TheSSMeasurementFWHMParameter = this;
+}
+
+IsoString SSMeasurementFWHM::Id() const
+{
+   return "measurementsFWHM";
+}
+
+int SSMeasurementFWHM::Precision() const
+{
+   return 4;
+}
+
+double SSMeasurementFWHM::DefaultValue() const
+{
+   return 1;
+}
+
+double SSMeasurementFWHM::MinimumValue() const
+{
+   return 0.01;
+}
+
+double SSMeasurementFWHM::MaximumValue() const
+{
+   return 100.0;
 }
 
 // ----------------------------------------------------------------------------

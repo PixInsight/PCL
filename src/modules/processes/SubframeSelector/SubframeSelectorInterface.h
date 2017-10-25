@@ -182,8 +182,6 @@ private:
    void __MeasurementImages_NodeActivated( TreeBox &sender, TreeBox::Node &node, int col );
    void __MeasurementImages_Click( Button &sender, bool checked );
 
-   void __MeasurementImages_FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
-
    friend struct GUIData;
 };
 

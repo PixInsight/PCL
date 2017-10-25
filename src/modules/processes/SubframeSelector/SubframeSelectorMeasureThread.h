@@ -55,12 +55,15 @@
 
 #include "SubframeSelectorMeasureData.h"
 
+#include <pcl/ProcessParameter.h>
 #include <pcl/ProcessImplementation.h>
-#include <pcl/MetaParameter.h> // pcl_bool, pcl_enum
+#include <pcl/MetaParameter.h>
 #include <pcl/AutoPointer.h>
 #include <pcl/FileFormat.h>
 #include <pcl/ICCProfile.h>
 #include <pcl/FileFormatInstance.h>
+#include <pcl/Process.h>
+#include <pcl/ProcessInstance.h>
 
 namespace pcl
 {
@@ -78,12 +81,13 @@ class SubframeSelectorMeasureThread : public Thread
 {
 public:
 
-   SubframeSelectorMeasureThread( Image* subframe, MeasureData* outputData, const String& subframePath,
-                                  int subimageIndex, const MeasureThreadInputData& data );
+   SubframeSelectorMeasureThread( ImageWindow& subframe, MeasureData* outputData, const String& subframePath,
+                                  const MeasureThreadInputData& data );
 
    virtual void Run();
+
    const MeasureThreadInputData& MeasuringData() const;
-   const Image* SubframeImage() const;
+   const ImageWindow* SubframeImage() const;
    String SubframePath() const;
    const MeasureData& OutputData() const;
    int SubimageIndex() const;
@@ -91,7 +95,7 @@ public:
 
 private:
 
-   AutoPointer<Image>         m_subframe;      // The image being measured. It belongs to this thread.
+   ImageWindow               m_subframe;      // The image being measured. It belongs to this thread.
    AutoPointer<MeasureData>   m_outputData;    // Target image parameters and embedded m_data. It belongs to this thread.
    String                     m_subframePath;  // File path of this m_target image
    int                        m_subimageIndex; // >= 0 in case of a multiple image; = 0 otherwise

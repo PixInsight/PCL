@@ -6,7 +6,7 @@
 // ----------------------------------------------------------------------------
 // Standard SubframeSelector Process Module Version 01.00.02.0261
 // ----------------------------------------------------------------------------
-// SubframeSelectorInstance.h - Released 2017-08-01T14:26:58Z
+// SubframeSelectorUtils.cpp - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SubframeSelector PixInsight module.
 //
@@ -50,100 +50,58 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#ifndef __SubframeSelectorInstance_h
-#define __SubframeSelectorInstance_h
-
-#include "SubframeSelectorMeasureThread.h"
-
-#include <pcl/MetaParameter.h> // pcl_bool, pcl_enum
-#include <pcl/ProcessImplementation.h>
+#include <pcl/View.h>
+#include "SubframeSelectorUtils.h"
 
 namespace pcl
 {
 
-typedef IndirectArray<SubframeSelectorMeasureThread> thread_list;
-
 // ----------------------------------------------------------------------------
 
-class SubframeSelectorInstance : public ProcessImplementation
+IsoString SubframeSelectorUtils::UniqueViewID( const String& baseId )
 {
-public:
+   IsoString newId( baseId );
+   for ( int i = 1; !View::ViewById( newId ).IsNull(); ++i )
+      newId = String().Format( "%s_%02d", baseId, i );
+   return newId;
+}
 
-   SubframeSelectorInstance( const MetaProcess* );
-   SubframeSelectorInstance( const SubframeSelectorInstance& );
+IsoString SubframeSelectorUtils::FilterViewID( const String& baseId )
+{
+   if ( baseId.Size() == 0 )
+      return '_';
 
-   virtual void Assign( const ProcessImplementation& );
+   IsoString newId = "";
 
-   virtual bool CanExecuteOn( const View&, String& whyNot ) const;
-   virtual bool IsHistoryUpdater( const View& v ) const;
+   for ( int i = 0 ; i < baseId.Size() ; ++i )
+      if ( isalnum( baseId[i] ) || baseId[i] == '_' )
+         newId += baseId[i];
 
-   bool CanMeasure( String& whyNot ) const;
-   bool Measure();
+   if ( !isalpha( newId[0] ) )
+      newId.Insert( 0, '_' );
 
-   virtual bool CanExecuteGlobal( String& whyNot ) const;
-   virtual bool ExecuteGlobal();
+   return newId;
+}
 
-   virtual void* LockParameter( const MetaParameter*, size_type tableRow );
-   virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
-   virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
+IsoString SubframeSelectorUtils::CreateViewIDForFile( const String& filePath )
+{
+//   return UniqueViewID( FilterViewID( File::ExtractName( filePath ) ) );
+   return IsoString( File::ExtractName( filePath ) );
+}
 
-private:
-
-   struct SubframeItem
+String SubframeSelectorUtils::UniqueFilePath( const String& filePath )
+{
+   for ( unsigned u = 1; ; ++u )
    {
-      pcl_bool enabled; // if disabled, skip (ignore) this image
-      String   path;    // absolute file path
-
-      SubframeItem( const String& p = String() ) :
-              enabled( true ),
-              path( p )
-      {
-      }
-
-      SubframeItem( const SubframeItem& x ) :
-              enabled( x.enabled ),
-              path( x.path )
-      {
-      }
-
-      bool IsValid() const
-      {
-         return !enabled || !path.IsEmpty();
-      }
-   };
-
-   typedef Array<SubframeItem>  subframe_list;
-
-   typedef Array<MeasureData>  measured_list;
-
-   // The set of subframes to measure
-   subframe_list     subframes;
-
-   // The settings for measurements and reporting
-   float          subframeScale;
-   float          cameraGain;
-   pcl_enum       cameraResolution;
-   int32          siteLocalMidnight;
-   pcl_enum       scaleUnit;
-   pcl_enum       dataUnit;
-
-   // The set of measured subframes
-   measured_list     measures;
-
-   // Read a subframe file into a Thread
-   thread_list CreateThreadForSubframe( const String& filePath, const MeasureThreadInputData& );
-
-   friend class SubframeSelectorProcess;
-   friend class SubframeSelectorInterface;
-   friend class SubframeSelectorMeasureThread;
-};
+      String tryFilePath = File::AppendToName( filePath, '_' + String( u ) );
+      if ( !File::Exists( tryFilePath ) )
+         return tryFilePath;
+   }
+}
 
 // ----------------------------------------------------------------------------
-
 
 } // pcl
 
-#endif   // __SubframeSelectorInstance_h
-
 // ----------------------------------------------------------------------------
-// EOF SubframeSelectorInstance.h - Released 2017-08-01T14:26:58Z
+// EOF SubframeSelectorUtils.cpp - Released 2017-08-01T14:26:58Z

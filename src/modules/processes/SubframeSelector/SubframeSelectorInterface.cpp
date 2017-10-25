@@ -567,17 +567,8 @@ void SubframeSelectorInterface::__MeasurementImages_Click( Button &sender, bool 
 {
    if ( sender == GUI->MeasureSubframes_PushButton )
    {
-      // TODO
+      instance.Measure();
    }
-}
-
-// ----------------------------------------------------------------------------
-
-void SubframeSelectorInterface::__MeasurementImages_FileDrag( Control &sender, const Point &pos, const StringList &files,
-                                                              unsigned modifiers, bool &wantsFiles )
-{
-   if ( sender == GUI->MeasurementImages_TreeBox.Viewport() )
-      wantsFiles = true;
 }
 
 // ----------------------------------------------------------------------------
@@ -778,12 +769,16 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 
    MeasurementImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
    MeasurementImages_TreeBox.SetNumberOfColumns( 5 );
+   MeasurementImages_TreeBox.SetHeaderText( 0, "Index" );
+   MeasurementImages_TreeBox.SetHeaderText( 1, "Output" );
+   MeasurementImages_TreeBox.SetHeaderText( 2, "Lock" );
+   MeasurementImages_TreeBox.SetHeaderText( 3, "Name" );
+   MeasurementImages_TreeBox.SetHeaderText( 4, "FWHM" );
    MeasurementImages_TreeBox.EnableMultipleSelections();
    MeasurementImages_TreeBox.DisableRootDecoration();
    MeasurementImages_TreeBox.EnableAlternateRowColor();
    MeasurementImages_TreeBox.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler) &SubframeSelectorInterface::__MeasurementImages_CurrentNodeUpdated, w );
    MeasurementImages_TreeBox.OnNodeActivated( (TreeBox::node_event_handler) &SubframeSelectorInterface::__MeasurementImages_NodeActivated, w );
-   MeasurementImages_TreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler) &SubframeSelectorInterface::__MeasurementImages_FileDrag, w );
 
    MeasureSubframes_PushButton.SetText( "Measure" );
    MeasureSubframes_PushButton.SetToolTip( "<p>Start the Measurement process.</p>" );

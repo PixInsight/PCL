@@ -52,6 +52,7 @@
 
 #include "SubframeSelectorInstance.h"
 #include "SubframeSelectorParameters.h"
+#include "SubframeSelectorUtils.h"
 
 #include <pcl/Console.h>
 #include <pcl/MetaModule.h>
@@ -66,30 +67,14 @@ namespace pcl
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-static Image* LoadImageFile( FileFormatInstance& file, int index = 0 )
+static ImageWindow LoadImageFile( const String& filePath )
 {
-   // Select the image at index
-   if ( !file.SelectImage( index ) )
-      throw CaughtException();
-
-   // Create a shared image, 32-bit floating point
-   Image* image = new Image( (void*)0, 0, 0 );
-
-   // Read the image
-   if ( !file.ReadImage( *image ) )
-      throw CaughtException();
-
-   return image;
-}
-
-static String UniqueFilePath( const String& filePath )
-{
-   for ( unsigned u = 1; ; ++u )
-   {
-      String tryFilePath = File::AppendToName( filePath, '_' + String( u ) );
-      if ( !File::Exists( tryFilePath ) )
-         return tryFilePath;
-   }
+   Array<ImageWindow> imageWindows = ImageWindow::Open( filePath );
+//                                                        SubframeSelectorUtils::CreateViewIDForFile( filePath ) );
+//   24 for single images, 1+ result in API Error when showing
+//   if ( imageWindows.Size() != 1 )
+//      throw Error( String().Format( "Image Window incorrect length: 1 != %i : %s", imageWindows.Size(), filePath ) );
+   return imageWindows[0];
 }
 
 // ----------------------------------------------------------------------------
@@ -140,22 +125,22 @@ bool SubframeSelectorInstance::IsHistoryUpdater( const View& view ) const
     return false;
 }
 
-bool SubframeSelectorInstance::CanExecuteGlobal( String &whyNot ) const {
+bool SubframeSelectorInstance::CanMeasure( String &whyNot ) const {
    if ( subframes.IsEmpty()) {
-       whyNot = "No subframes have been specified.";
-       return false;
+      whyNot = "No subframes have been specified.";
+      return false;
    }
 
    return true;
 }
 
-bool SubframeSelectorInstance::ExecuteGlobal() {
+bool SubframeSelectorInstance::Measure() {
    /*
     * Start with a general validation of working parameters.
     */
    {
       String why;
-      if ( !CanExecuteGlobal( why ))
+      if ( !CanMeasure( why ))
          throw Error( why );
 
       for ( subframe_list::const_iterator i = subframes.Begin(); i != subframes.End(); ++i )
@@ -176,10 +161,10 @@ bool SubframeSelectorInstance::ExecuteGlobal() {
       Exception::DisableGUIOutput();
 
       /*
-       * Allow the user to abort the calibration process.
+       * Allow the user to abort the measurement process.
        */
       Console console;
-      console.EnableAbort();
+//      console.EnableAbort();
 
       Module->ProcessEvents();
 
@@ -387,25 +372,16 @@ bool SubframeSelectorInstance::ExecuteGlobal() {
                   }
 
                   /*
-                   * Create a new thread for this subframe image, or if
-                   * this is a multiple-image file, a set of threads for all
-                   * subimages in this file.
+                   * Create a new thread for this subframe image
                    */
-                  thread_list threads = CreateThreadsForSubframe( item.path, inputThreadData );
+                  thread_list threads = CreateThreadForSubframe( item.path, inputThreadData );
 
                   /*
-                   * Put the new thread --or the first thread if this is a
-                   * multiple-image file-- in the free slot.
+                   * Put the new thread in the free slot.
                    */
                   *i = *threads;
                   threads.Remove( threads.Begin() );
 
-                  /*
-                   * Add the rest of subimages in a multiple-image file to the
-                   * list of waiting threads.
-                   */
-                  if ( !threads.IsEmpty() )
-                     waitingThreads.Add( threads );
                }
 
                /*
@@ -444,8 +420,8 @@ bool SubframeSelectorInstance::ExecuteGlobal() {
                }
                ERROR_HANDLER
 
-               console.ResetStatus();
-               console.EnableAbort();
+//               console.ResetStatus();
+//               console.EnableAbort();
 
                console.NoteLn( "Abort on error." );
                throw ProcessAborted();
@@ -468,11 +444,11 @@ bool SubframeSelectorInstance::ExecuteGlobal() {
       /*
        * Fail if no images have been measured.
        */
-       if ( succeeded == 0 ) {
-           if ( failed == 0 )
-               throw Error( "No images were measured: Empty subframes list? No enabled subframes?" );
-           throw Error( "No image could be measured." );
-       }
+      if ( succeeded == 0 ) {
+         if ( failed == 0 )
+            throw Error( "No images were measured: Empty subframes list? No enabled subframes?" );
+         throw Error( "No image could be measured." );
+      }
 
       /*
        * Write the final report to the console.
@@ -489,6 +465,36 @@ bool SubframeSelectorInstance::ExecuteGlobal() {
        */
       Exception::EnableGUIOutput( true );
       throw;
+   }
+}
+
+bool SubframeSelectorInstance::CanExecuteGlobal( String &whyNot ) const {
+   if ( subframes.IsEmpty()) {
+       whyNot = "No subframes have been specified.";
+       return false;
+   }
+   if ( measures.IsEmpty()) {
+      whyNot = "No measurements have been made.";
+      return false;
+   }
+
+   return true;
+}
+
+bool SubframeSelectorInstance::ExecuteGlobal() {
+   /*
+    * Start with a general validation of working parameters.
+    */
+   {
+      String why;
+      if ( !CanExecuteGlobal( why ))
+         throw Error( why );
+
+      for ( subframe_list::const_iterator i = subframes.Begin(); i != subframes.End(); ++i )
+         if ( i->enabled && !File::Exists( i->path ))
+            throw ("No such file exists on the local filesystem: " + i->path);
+
+      return true;
    }
 }
 
@@ -577,84 +583,16 @@ size_type SubframeSelectorInstance::ParameterLength( const MetaParameter* p, siz
  * measure all subimages loaded from the file.
  */
 thread_list
-SubframeSelectorInstance::CreateThreadsForSubframe( const String& filePath, const MeasureThreadInputData& threadData )
+SubframeSelectorInstance::CreateThreadForSubframe( const String& filePath, const MeasureThreadInputData& threadData )
 {
-   Console console;
-
-   console.WriteLn( "<end><cbr>Loading subframe:" );
-   console.WriteLn( filePath );
-
-   /*
-    * Find out an installed file format that can read image files with the
-    * specified extension ...
-    */
-   FileFormat format( File::ExtractExtension( filePath ), true/*read*/, false/*write*/ );
-
-   /*
-    * ... and create a format instance (usually a disk file) to access this
-    * target image.
-    */
-   FileFormatInstance file( format );
-
-   /*
-    * Open the image file.
-    */
-   ImageDescriptionArray images;
-   if ( !file.Open( images, filePath, IsoString() ) )
-      throw CaughtException();
-
-   if ( images.IsEmpty() )
-      throw Error( filePath + ": Empty image file." );
-
-   /*
-    * Multiple-image file formats are supported and implemented in PixInsight
-    * (e.g.: XISF, FITS), so when we open a file, what we get is an array of
-    * images, usually consisting of a single image, but we must provide for a
-    * set of subimages.
-    */
    thread_list threads;
-   try
-   {
-      for ( size_type j = 0; j < images.Length(); ++j )
-      {
-         if ( images.Length() > 1 )
-            console.WriteLn( String().Format( "* Subimage %u of %u", j+1, images.Length() ) );
-
-         AutoPointer<Image> subframe( LoadImageFile( file, j ) );
-
-         Module->ProcessEvents();
-
-         /*
-          * NB: At this point, LoadImageFile() has already called
-          * file.SelectImage().
-          */
-
-         /*
-          * Create a new calibration thread and add it to the thread list.
-          */
-         MeasureData* outputData = new MeasureData( filePath );
-         threads.Add( new SubframeSelectorMeasureThread( subframe,
-                                                         outputData,
-                                                         filePath,
-                                                         (images.Length() > 1) ? j + 1 : 0,
-                                                         threadData ));
-         // The thread owns the target image
-         subframe.Release();
-      }
-
-      /*
-       * Close the input stream.
-       */
-      if ( !file.Close() )
-         throw CaughtException();
-
-      return threads;
-   }
-   catch ( ... )
-   {
-      threads.Destroy();
-      throw;
-   }
+   ImageWindow subframeWindow = LoadImageFile( filePath );
+   MeasureData *outputData = new MeasureData( filePath );
+   threads.Add( new SubframeSelectorMeasureThread( subframeWindow,
+                                                   outputData,
+                                                   filePath,
+                                                   threadData ));
+   return threads;
 }
 
 // ----------------------------------------------------------------------------

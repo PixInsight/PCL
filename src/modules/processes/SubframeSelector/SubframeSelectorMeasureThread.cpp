@@ -63,12 +63,11 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-SubframeSelectorMeasureThread::SubframeSelectorMeasureThread( Image* subframe, MeasureData* outputData, const String& subframePath,
-                                                              int subimageIndex, const MeasureThreadInputData& data ) :
+SubframeSelectorMeasureThread::SubframeSelectorMeasureThread( ImageWindow& subframe, MeasureData* outputData, const String& subframePath,
+                                                              const MeasureThreadInputData& data ) :
    m_subframe( subframe ),
    m_outputData( outputData ),
    m_subframePath( subframePath ),
-   m_subimageIndex( subimageIndex ),
    m_success( false ),
    m_data( data )
 {
@@ -79,14 +78,57 @@ void SubframeSelectorMeasureThread::Run()
    try
    {
       m_success = false;
-      m_subframe->Status().DisableInitialization();
-      Console().WriteLn( String().Format( "<end><cbr><br>Image Data: %u", m_subframe->BitsPerSample() ) );
+
+      Console().NoteLn( "<br><br>Measurements for: " + m_subframePath );
+
+      Console().WriteLn( "Accessing Main View" );
+      View subframeView = m_subframe.MainView();
+
+      IsoString key;
+      IsoString value;
+
+      Console().WriteLn( "Looking for process" );
+      Process starAlignmentProcess( IsoString( "StarAlignment" ) );
+      Console().WriteLn( "Creating instance" );
+      ProcessInstance starAlignment( starAlignmentProcess );
+      if ( starAlignment.IsNull() )
+         throw Error( "Couldn't instantiate the StarAlignment process: null" );
+
+//      Console().WriteLn( "Looking for mode" );
+//      ProcessParameter mode( starAlignmentProcess, "mode" );
+//      if ( mode.IsEnumeration() )
+//      {
+//         Console().WriteLn( "Checking mode default" );
+//         mode.DefaultValue();
+//         Console().WriteLn( "Checking mode options" );
+//         ProcessParameter::enumeration_element_list enums = mode.EnumerationElements();
+//         Console().WriteLn( "Printing mode options" );
+//         for ( int i = 0; i < enums.Size(); ++i ) {
+//            ProcessParameter::EnumerationElement modeEnum = enums[i];
+//            Console().WriteLn( String().Format( "Mode Id = '%s' Value = '%i'", modeEnum.id, modeEnum.value ) );
+//         }
+//      }
+
+      Console().WriteLn( "Setting mode" );
+      starAlignment.SetParameterValue( 5, IsoString( "mode" ), 0 );
+
+      starAlignment.SetParameterValue( subframeView.FullId(), IsoString( "referenceImage" ), 0);
+      starAlignment.SetParameterValue( false, IsoString( "referenceIsFile" ), 0);
+
+      Console().WriteLn( "Checking can execute" );
+      String whyNot;
+      if ( !starAlignment.CanExecuteOn( subframeView, whyNot ) )
+         throw Error( "Cannot execute StarAlignment instance on view <br/>"
+                 "Reason: " + whyNot );
+
+      Console().WriteLn( "Executing" );
+      if ( !starAlignment.ExecuteOn( subframeView ) )
+         throw CaughtException();
+
       m_success = true;
    }
    catch ( ... )
    {
-      ClearConsoleOutputText();
-      Console().WriteLn( "Thread error!" );
       try
       {
          throw;
@@ -100,9 +142,9 @@ const MeasureThreadInputData& SubframeSelectorMeasureThread::MeasuringData() con
    return m_data;
 }
 
-const Image* SubframeSelectorMeasureThread::SubframeImage() const
+const ImageWindow* SubframeSelectorMeasureThread::SubframeImage() const
 {
-   return m_subframe.Pointer();
+   return &m_subframe;
 }
 
 String SubframeSelectorMeasureThread::SubframePath() const

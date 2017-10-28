@@ -144,6 +144,44 @@ private:
             Label             SystemParameters_DataUnit_Label;
             ComboBox          SystemParameters_DataUnit_Control;
 
+      SectionBar        StarDetectorParameters_SectionBar;
+      Control           StarDetectorParameters_Control;
+      VerticalSizer     StarDetectorParameters_Sizer;
+         PushButton        StarDetectorTest_PushButton;
+         HorizontalSizer   StarDetectorParameters_StructureLayers_Sizer;
+            Label             StarDetectorParameters_StructureLayers_Label;
+            SpinBox           StarDetectorParameters_StructureLayers_Control;
+         HorizontalSizer   StarDetectorParameters_NoiseLayers_Sizer;
+            Label             StarDetectorParameters_NoiseLayers_Label;
+            SpinBox           StarDetectorParameters_NoiseLayers_Control;
+         HorizontalSizer   StarDetectorParameters_HotPixelFilterRadius_Sizer;
+            Label             StarDetectorParameters_HotPixelFilterRadius_Label;
+            SpinBox           StarDetectorParameters_HotPixelFilterRadius_Control;
+         HorizontalSizer   StarDetectorParameters_ApplyHotPixelFilter_Sizer;
+            Label             StarDetectorParameters_ApplyHotPixelFilter_Label;
+            CheckBox          StarDetectorParameters_ApplyHotPixelFilter_Control;
+         HorizontalSizer   StarDetectorParameters_NoiseReductionFilterRadius_Sizer;
+            Label             StarDetectorParameters_NoiseReductionFilterRadius_Label;
+            SpinBox           StarDetectorParameters_NoiseReductionFilterRadius_Control;
+         HorizontalSizer   StarDetectorParameters_Sensitivity_Sizer;
+            Label             StarDetectorParameters_Sensitivity_Label;
+            NumericControl    StarDetectorParameters_Sensitivity_Control;
+         HorizontalSizer   StarDetectorParameters_PeakResponse_Sizer;
+            Label             StarDetectorParameters_PeakResponse_Label;
+            NumericControl    StarDetectorParameters_PeakResponse_Control;
+         HorizontalSizer   StarDetectorParameters_MaxDistortion_Sizer;
+            Label             StarDetectorParameters_MaxDistortion_Label;
+            NumericControl    StarDetectorParameters_MaxDistortion_Control;
+         HorizontalSizer   StarDetectorParameters_UpperLimit_Sizer;
+            Label             StarDetectorParameters_UpperLimit_Label;
+            NumericControl    StarDetectorParameters_UpperLimit_Control;
+         HorizontalSizer   StarDetectorParameters_BackgroundExpansion_Sizer;
+            Label             StarDetectorParameters_BackgroundExpansion_Label;
+            SpinBox           StarDetectorParameters_BackgroundExpansion_Control;
+         HorizontalSizer   StarDetectorParameters_XYStretch_Sizer;
+            Label             StarDetectorParameters_XYStretch_Label;
+            NumericControl    StarDetectorParameters_XYStretch_Control;
+
       SectionBar        MeasurementImages_SectionBar;
       Control           MeasurementImages_Control;
       VerticalSizer     MeasurementImages_Sizer;
@@ -158,6 +196,7 @@ private:
    void UpdateSubframeImagesList();
    void UpdateSubframeImageSelectionButtons();
    void UpdateSystemParameters();
+   void UpdateStarDetectorParameters();
    void UpdateMeasurementImageItem( size_type );
    void UpdateMeasurementImagesList();
 
@@ -177,10 +216,11 @@ private:
    void __RealValueUpdated( NumericEdit& sender, double value );
    void __IntegerValueUpdated( SpinBox& sender, int value );
    void __ItemSelected( ComboBox& sender, int itemIndex );
+   void __CheckboxUpdated( Button& sender, Button::check_state state );
+   void __ButtonClicked( Button &sender, bool checked );
 
    void __MeasurementImages_CurrentNodeUpdated( TreeBox &sender, TreeBox::Node &current, TreeBox::Node &oldCurrent );
    void __MeasurementImages_NodeActivated( TreeBox &sender, TreeBox::Node &node, int col );
-   void __MeasurementImages_Click( Button &sender, bool checked );
 
    friend struct GUIData;
 };

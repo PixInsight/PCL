@@ -57,22 +57,34 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-SSSubframes*              TheSSSubframesParameter = nullptr;
-SSSubframeEnabled*        TheSSSubframeEnabledParameter = nullptr;
-SSSubframePath*           TheSSSubframePathParameter = nullptr;
+SSSubframes*                     TheSSSubframesParameter = nullptr;
+SSSubframeEnabled*               TheSSSubframeEnabledParameter = nullptr;
+SSSubframePath*                  TheSSSubframePathParameter = nullptr;
 
-SSSubframeScale*          TheSSSubframeScaleParameter = nullptr;
-SSCameraGain*             TheSSCameraGainParameter = nullptr;
-SSCameraResolution*       TheSSCameraResolutionParameter = nullptr;
-SSSiteLocalMidnight*      TheSSSiteLocalMidnightParameter = nullptr;
-SSScaleUnit*              TheSSScaleUnitParameter = nullptr;
-SSDataUnit*               TheSSDataUnitParameter = nullptr;
+SSSubframeScale*                 TheSSSubframeScaleParameter = nullptr;
+SSCameraGain*                    TheSSCameraGainParameter = nullptr;
+SSCameraResolution*              TheSSCameraResolutionParameter = nullptr;
+SSSiteLocalMidnight*             TheSSSiteLocalMidnightParameter = nullptr;
+SSScaleUnit*                     TheSSScaleUnitParameter = nullptr;
+SSDataUnit*                      TheSSDataUnitParameter = nullptr;
 
-SSMeasurements*              TheSSMeasurementsParameter = nullptr;
-SSMeasurementEnabled*        TheSSMeasurementEnabledParameter = nullptr;
-SSMeasurementLocked*         TheSSMeasurementLockedParameter = nullptr;
-SSMeasurementPath*           TheSSMeasurementPathParameter = nullptr;
-SSMeasurementFWHM*           TheSSMeasurementFWHMParameter = nullptr;
+SSStructureLayers*               TheSSStructureLayersParameter = nullptr;
+SSNoiseLayers*                   TheSSNoiseLayersParameter = nullptr;
+SSHotPixelFilterRadius*          TheSSHotPixelFilterRadiusParameter = nullptr;
+SSApplyHotPixelFilter*           TheSSApplyHotPixelFilterParameter = nullptr;
+SSNoiseReductionFilterRadius*    TheSSNoiseReductionFilterRadiusParameter = nullptr;
+SSSensitivity*                   TheSSSensitivityParameter = nullptr;
+SSPeakResponse*                  TheSSPeakResponseParameter = nullptr;
+SSMaxDistortion*                 TheSSMaxDistortionParameter = nullptr;
+SSUpperLimit*                    TheSSUpperLimitParameter = nullptr;
+SSBackgroundExpansion*           TheSSBackgroundExpansionParameter = nullptr;
+SSXYStretch*                     TheSSXYStretchParameter = nullptr;
+
+SSMeasurements*                  TheSSMeasurementsParameter = nullptr;
+SSMeasurementEnabled*            TheSSMeasurementEnabledParameter = nullptr;
+SSMeasurementLocked*             TheSSMeasurementLockedParameter = nullptr;
+SSMeasurementPath*               TheSSMeasurementPathParameter = nullptr;
+SSMeasurementFWHM*               TheSSMeasurementFWHMParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -247,6 +259,33 @@ size_type SSCameraResolution::DefaultValueIndex() const
 
 // ----------------------------------------------------------------------------
 
+SSSiteLocalMidnight::SSSiteLocalMidnight( MetaProcess* P ) : MetaInt32( P )
+{
+   TheSSSiteLocalMidnightParameter = this;
+}
+
+IsoString SSSiteLocalMidnight::Id() const
+{
+   return "siteLocalMidnight";
+}
+
+double SSSiteLocalMidnight::DefaultValue() const
+{
+   return 24;
+}
+
+double SSSiteLocalMidnight::MinimumValue() const
+{
+   return 0;
+}
+
+double SSSiteLocalMidnight::MaximumValue() const
+{
+   return 24;
+}
+
+// ----------------------------------------------------------------------------
+
 SSScaleUnit::SSScaleUnit( MetaProcess* P ) : MetaEnumeration( P )
 {
    TheSSScaleUnitParameter = this;
@@ -361,29 +400,400 @@ size_type SSDataUnit::DefaultValueIndex() const
 
 // ----------------------------------------------------------------------------
 
-SSSiteLocalMidnight::SSSiteLocalMidnight( MetaProcess* P ) : MetaInt32( P )
+SSStructureLayers::SSStructureLayers( MetaProcess* P ) : MetaInt32( P )
 {
-   TheSSSiteLocalMidnightParameter = this;
+   TheSSStructureLayersParameter = this;
 }
 
-IsoString SSSiteLocalMidnight::Id() const
+IsoString SSStructureLayers::Id() const
 {
-   return "siteLocalMidnight";
+   return "structureLayers";
 }
 
-double SSSiteLocalMidnight::DefaultValue() const
+double SSStructureLayers::DefaultValue() const
 {
-   return 24;
+   return 5;
 }
 
-double SSSiteLocalMidnight::MinimumValue() const
+double SSStructureLayers::MinimumValue() const
+{
+   return 1;
+}
+
+double SSStructureLayers::MaximumValue() const
+{
+   return 20;
+}
+
+IsoString SSStructureLayers::Tooltip() const
+{
+   return "<p>This parameter specifies the number of wavelet layers used for star detection. "
+           "With more wavelet layers larger stars and perhaps also some nonstellar objects will be detected. "
+           "Fewer wavelet layers favors detection of smaller, and hence more, stars.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSNoiseLayers::SSNoiseLayers( MetaProcess* P ) : MetaInt32( P )
+{
+   TheSSNoiseLayersParameter = this;
+}
+
+IsoString SSNoiseLayers::Id() const
+{
+   return "noiseLayers";
+}
+
+double SSNoiseLayers::DefaultValue() const
 {
    return 0;
 }
 
-double SSSiteLocalMidnight::MaximumValue() const
+double SSNoiseLayers::MinimumValue() const
 {
-   return 24;
+   return 0;
+}
+
+double SSNoiseLayers::MaximumValue() const
+{
+   return 20;
+}
+
+IsoString SSNoiseLayers::Tooltip() const
+{
+   return "<p>This parameter specifies the number of wavelet layers used for noise reduction. "
+           "Noise reduction prevents detection of bright noise structures as false stars, "
+           "including hot pixels and cosmic rays.</p> "
+           "<p>This parameter can also be used to control the sizes of the smallest detected "
+           "stars (increase to exclude more stars).</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSHotPixelFilterRadius::SSHotPixelFilterRadius( MetaProcess* P ) : MetaInt32( P )
+{
+   TheSSHotPixelFilterRadiusParameter = this;
+}
+
+IsoString SSHotPixelFilterRadius::Id() const
+{
+   return "hotPixelFilterRadius";
+}
+
+double SSHotPixelFilterRadius::DefaultValue() const
+{
+   return 1;
+}
+
+double SSHotPixelFilterRadius::MinimumValue() const
+{
+   return 0;
+}
+
+double SSHotPixelFilterRadius::MaximumValue() const
+{
+   return 20;
+}
+
+IsoString SSHotPixelFilterRadius::Tooltip() const
+{
+   return "<p>This parameter specifies the radius in pixels of median filter applied before star detection to remove hot pixels.</p>"
+           "<p>To disable hot pixel removal, set this parameter to zero.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSApplyHotPixelFilter::SSApplyHotPixelFilter( MetaProcess* T ) : MetaBoolean( T )
+{
+   TheSSApplyHotPixelFilterParameter = this;
+}
+
+IsoString SSApplyHotPixelFilter::Id() const
+{
+   return "applyHotPixelFilter";
+}
+
+bool SSApplyHotPixelFilter::DefaultValue() const
+{
+   return false;
+}
+
+IsoString SSApplyHotPixelFilter::Tooltip() const
+{
+   return "<p>Whether the hot pixel filter removal should be applied to the image used"
+           "for star detection, or only to the working image used to build the structure map.</p>"
+           "<p>By setting this parameter to true, the detection algorithm is completely"
+           "robust to hot pixels (of sizes not larger than hotPixelFilterRadius), but"
+           "it is also less sensitive, so less stars will in general be detected."
+           "With the default value of false, some hot pixels may be wrongly detected"
+           "as stars but the number of true stars detected will generally be larger.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSNoiseReductionFilterRadius::SSNoiseReductionFilterRadius( MetaProcess* P ) : MetaInt32( P )
+{
+   TheSSNoiseReductionFilterRadiusParameter = this;
+}
+
+IsoString SSNoiseReductionFilterRadius::Id() const
+{
+   return "noiseReductionFilterRadius";
+}
+
+double SSNoiseReductionFilterRadius::DefaultValue() const
+{
+   return 0;
+}
+
+double SSNoiseReductionFilterRadius::MinimumValue() const
+{
+   return 0;
+}
+
+double SSNoiseReductionFilterRadius::MaximumValue() const
+{
+   return 20;
+}
+
+IsoString SSNoiseReductionFilterRadius::Tooltip() const
+{
+   return "<p>Half size in pixels of a Gaussian convolution filter applied for noise"
+           "reduction. Useful for star detection in low-SNR images.</p>"
+           "<p>Setting the value of this parameter > 0 implies "
+           "Hot Pixel Filter To Detection Image.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSSensitivity::SSSensitivity( MetaProcess* P ) : MetaFloat( P )
+{
+   TheSSSensitivityParameter = this;
+}
+
+IsoString SSSensitivity::Id() const
+{
+   return "sensitivity";
+}
+
+int SSSensitivity::Precision() const
+{
+   return 4;
+}
+
+double SSSensitivity::DefaultValue() const
+{
+   return 0.1;
+}
+
+double SSSensitivity::MinimumValue() const
+{
+   return 0.0;
+}
+
+double SSSensitivity::MaximumValue() const
+{
+   return 1.0;
+}
+
+IsoString SSSensitivity::Tooltip() const
+{
+   return "<p>The sensitivity of the star detection algorithm is measured with respect to the "
+           "local background of each detected star.</p>"
+           "<p>Given a star with estimated brightness "
+           "s and local background b, sensitivity is the minimum value of (s - b) / b "
+           "necessary to trigger star detection.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSPeakResponse::SSPeakResponse( MetaProcess* P ) : MetaFloat( P )
+{
+   TheSSPeakResponseParameter = this;
+}
+
+IsoString SSPeakResponse::Id() const
+{
+   return "peakResponse";
+}
+
+int SSPeakResponse::Precision() const
+{
+   return 4;
+}
+
+double SSPeakResponse::DefaultValue() const
+{
+   return 0.8;
+}
+
+double SSPeakResponse::MinimumValue() const
+{
+   return 0.0;
+}
+
+double SSPeakResponse::MaximumValue() const
+{
+   return 1.0;
+}
+
+IsoString SSPeakResponse::Tooltip() const
+{
+   return "<p>If you decrease this parameter, stars will need to have more prominent "
+           "peaks to be detected by the star detection algorithm. By increasing "
+           "this parameter, the star detection algorithm will be more "
+           "permissive with relatively flat stars.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSMaxDistortion::SSMaxDistortion( MetaProcess* P ) : MetaFloat( P )
+{
+   TheSSMaxDistortionParameter = this;
+}
+
+IsoString SSMaxDistortion::Id() const
+{
+   return "maxDistortion";
+}
+
+int SSMaxDistortion::Precision() const
+{
+   return 4;
+}
+
+double SSMaxDistortion::DefaultValue() const
+{
+   return 0.5;
+}
+
+double SSMaxDistortion::MinimumValue() const
+{
+   return 0.0;
+}
+
+double SSMaxDistortion::MaximumValue() const
+{
+   return 1.0;
+}
+
+IsoString SSMaxDistortion::Tooltip() const
+{
+   return "<p>Star distortion is the fractional area of the star's bounding box "
+           "covered by the star. The distortion of a perfectly circular star "
+           "is about 0.75 (actually, π/4). Decrease this parameter to detect "
+           "stars with larger elongation.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSUpperLimit::SSUpperLimit( MetaProcess* P ) : MetaFloat( P )
+{
+   TheSSUpperLimitParameter = this;
+}
+
+IsoString SSUpperLimit::Id() const
+{
+   return "upperLimit";
+}
+
+int SSUpperLimit::Precision() const
+{
+   return 4;
+}
+
+double SSUpperLimit::DefaultValue() const
+{
+   return 1.0;
+}
+
+double SSUpperLimit::MinimumValue() const
+{
+   return 0.0;
+}
+
+double SSUpperLimit::MaximumValue() const
+{
+   return 100.0;
+}
+
+IsoString SSUpperLimit::Tooltip() const
+{
+   return "<p>Stars with peak values greater than this value won't be detected.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSBackgroundExpansion::SSBackgroundExpansion( MetaProcess* P ) : MetaInt32( P )
+{
+   TheSSBackgroundExpansionParameter = this;
+}
+
+IsoString SSBackgroundExpansion::Id() const
+{
+   return "backgroundExpansion";
+}
+
+double SSBackgroundExpansion::DefaultValue() const
+{
+   return 3;
+}
+
+double SSBackgroundExpansion::MinimumValue() const
+{
+   return 1;
+}
+
+double SSBackgroundExpansion::MaximumValue() const
+{
+   return 10;
+}
+
+IsoString SSBackgroundExpansion::Tooltip() const
+{
+   return "<p>Local background is evaluated for each star on an inflated rectangular region "
+           "around the star detection structure. "
+           "Background Expansion is the inflation distance in pixels.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSXYStretch::SSXYStretch( MetaProcess* P ) : MetaFloat( P )
+{
+   TheSSXYStretchParameter = this;
+}
+
+IsoString SSXYStretch::Id() const
+{
+   return "xyStrecth";
+}
+
+int SSXYStretch::Precision() const
+{
+   return 4;
+}
+
+double SSXYStretch::DefaultValue() const
+{
+   return 1.5;
+}
+
+double SSXYStretch::MinimumValue() const
+{
+   return 0.0;
+}
+
+double SSXYStretch::MaximumValue() const
+{
+   return 6.0;
+}
+
+IsoString SSXYStretch::Tooltip() const
+{
+   return "<p>Stretch factor for the barycenter search algorithm, in sigma units."
+           "Increase it to make the algorithm more robust to nearby structures, such"
+           "as multiple/crowded stars and small nebular features. However, too large"
+           "of a stretch factor will make the algorithm less accurate.</p>";
 }
 
 // ----------------------------------------------------------------------------

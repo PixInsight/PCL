@@ -167,6 +167,7 @@ void SubframeSelectorInterface::UpdateControls()
 {
    UpdateSubframeImagesList();
    UpdateSystemParameters();
+   UpdateStarDetectorParameters();
    UpdateMeasurementImagesList();
 }
 
@@ -242,6 +243,23 @@ void SubframeSelectorInterface::UpdateSystemParameters()
    GUI->SystemParameters_SiteLocalMidnight_Control.SetValue( instance.siteLocalMidnight );
    GUI->SystemParameters_ScaleUnit_Control.SetCurrentItem( instance.scaleUnit );
    GUI->SystemParameters_DataUnit_Control.SetCurrentItem( instance.dataUnit );
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::UpdateStarDetectorParameters()
+{
+   GUI->StarDetectorParameters_StructureLayers_Control.SetValue( instance.structureLayers );
+   GUI->StarDetectorParameters_NoiseLayers_Control.SetValue( instance.noiseLayers );
+   GUI->StarDetectorParameters_HotPixelFilterRadius_Control.SetValue( instance.hotPixelFilterRadius );
+   GUI->StarDetectorParameters_ApplyHotPixelFilter_Control.SetChecked( instance.applyHotPixelFilterToDetectionImage );
+   GUI->StarDetectorParameters_NoiseReductionFilterRadius_Control.SetValue( instance.noiseReductionFilterRadius );
+   GUI->StarDetectorParameters_Sensitivity_Control.SetValue( instance.sensitivity );
+   GUI->StarDetectorParameters_PeakResponse_Control.SetValue( instance.peakResponse );
+   GUI->StarDetectorParameters_MaxDistortion_Control.SetValue( instance.maxDistortion );
+   GUI->StarDetectorParameters_UpperLimit_Control.SetValue( instance.upperLimit );
+   GUI->StarDetectorParameters_BackgroundExpansion_Control.SetValue( instance.backgroundExpansion );
+   GUI->StarDetectorParameters_XYStretch_Control.SetValue( instance.xyStretch );
 }
 
 // ----------------------------------------------------------------------------
@@ -494,6 +512,16 @@ void SubframeSelectorInterface::__RealValueUpdated( NumericEdit& sender, double 
       instance.subframeScale = value;
    if ( sender == GUI->SystemParameters_CameraGain_Control )
       instance.cameraGain = value;
+   if ( sender == GUI->StarDetectorParameters_Sensitivity_Control )
+      instance.sensitivity = value;
+   if ( sender == GUI->StarDetectorParameters_PeakResponse_Control )
+      instance.peakResponse = value;
+   if ( sender == GUI->StarDetectorParameters_MaxDistortion_Control )
+      instance.maxDistortion = value;
+   if ( sender == GUI->StarDetectorParameters_UpperLimit_Control )
+      instance.upperLimit = value;
+   if ( sender == GUI->StarDetectorParameters_XYStretch_Control )
+      instance.xyStretch = value;
 }
 
 // ----------------------------------------------------------------------------
@@ -502,6 +530,17 @@ void SubframeSelectorInterface::__IntegerValueUpdated( SpinBox& sender, int valu
 {
    if ( sender == GUI->SystemParameters_SiteLocalMidnight_Control )
       instance.siteLocalMidnight = value;
+
+   if ( sender == GUI->StarDetectorParameters_StructureLayers_Control )
+      instance.structureLayers = value;
+   if ( sender == GUI->StarDetectorParameters_NoiseLayers_Control )
+      instance.noiseLayers = value;
+   if ( sender == GUI->StarDetectorParameters_HotPixelFilterRadius_Control )
+      instance.hotPixelFilterRadius = value;
+   if ( sender == GUI->StarDetectorParameters_NoiseReductionFilterRadius_Control )
+      instance.noiseReductionFilterRadius = value;
+   if ( sender == GUI->StarDetectorParameters_BackgroundExpansion_Control )
+      instance.backgroundExpansion = value;
 }
 
 void SubframeSelectorInterface::__ItemSelected( ComboBox& sender, int itemIndex )
@@ -512,6 +551,12 @@ void SubframeSelectorInterface::__ItemSelected( ComboBox& sender, int itemIndex 
       instance.scaleUnit = itemIndex;
    if ( sender == GUI->SystemParameters_DataUnit_Control )
       instance.dataUnit = itemIndex;
+}
+
+void SubframeSelectorInterface::__CheckboxUpdated( Button& sender, Button::check_state state )
+{
+   if ( sender == GUI->StarDetectorParameters_ApplyHotPixelFilter_Control )
+      instance.applyHotPixelFilterToDetectionImage = state == CheckState::Checked;
 }
 
 // ----------------------------------------------------------------------------
@@ -563,12 +608,12 @@ void SubframeSelectorInterface::__MeasurementImages_NodeActivated( TreeBox &send
 
 // ----------------------------------------------------------------------------
 
-void SubframeSelectorInterface::__MeasurementImages_Click( Button &sender, bool checked )
+void SubframeSelectorInterface::__ButtonClicked( Button &sender, bool checked )
 {
    if ( sender == GUI->MeasureSubframes_PushButton )
-   {
       instance.Measure();
-   }
+   if ( sender == GUI->StarDetectorTest_PushButton )
+      instance.TestStarDetector();
 }
 
 // ----------------------------------------------------------------------------
@@ -649,6 +694,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    SystemParameters_SubframeScale_Label.SetMinWidth( currentLabelWidth );
    SystemParameters_SubframeScale_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
+   SystemParameters_SubframeScale_Control.label.Hide();
    SystemParameters_SubframeScale_Control.slider.Hide();
    SystemParameters_SubframeScale_Control.SetReal();
    SystemParameters_SubframeScale_Control.SetRange( TheSSSubframeScaleParameter->MinimumValue(), TheSSSubframeScaleParameter->MaximumValue() );
@@ -669,6 +715,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    SystemParameters_CameraGain_Label.SetMinWidth( currentLabelWidth );
    SystemParameters_CameraGain_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
+   SystemParameters_CameraGain_Control.label.Hide();
    SystemParameters_CameraGain_Control.slider.Hide();
    SystemParameters_CameraGain_Control.SetReal();
    SystemParameters_CameraGain_Control.SetRange( TheSSCameraGainParameter->MinimumValue(), TheSSCameraGainParameter->MaximumValue() );
@@ -763,9 +810,198 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 
    //
 
+   currentLabelWidth = fnt.Width( String( "Background Expansion:" ) ); // the longest label text
+
+   StarDetectorParameters_SectionBar.SetTitle( "Star Detector Parameters" );
+   StarDetectorParameters_SectionBar.SetSection( StarDetectorParameters_Control );
+   StarDetectorParameters_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&SubframeSelectorInterface::__ToggleSection, w );
+
+   StarDetectorTest_PushButton.SetText( "Star Detector Preview" );
+   StarDetectorTest_PushButton.SetToolTip( "<p>Run the Star Detector on the first subframe and output the final map used to detect stars. Useful to check parameters and reduce noise influence.</p>" );
+   StarDetectorTest_PushButton.OnClick((Button::click_event_handler) & SubframeSelectorInterface::__ButtonClicked, w );
+
+   StarDetectorParameters_StructureLayers_Label.SetText( "Structure Layers:" );
+   StarDetectorParameters_StructureLayers_Label.SetMinWidth( currentLabelWidth );
+   StarDetectorParameters_StructureLayers_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   StarDetectorParameters_StructureLayers_Control.SetRange( TheSSStructureLayersParameter->MinimumValue(), TheSSStructureLayersParameter->MaximumValue() );
+   StarDetectorParameters_StructureLayers_Control.SetToolTip( TheSSStructureLayersParameter->Tooltip() );
+   StarDetectorParameters_StructureLayers_Control.OnValueUpdated( (SpinBox::value_event_handler)&SubframeSelectorInterface::__IntegerValueUpdated, w );
+
+   StarDetectorParameters_StructureLayers_Sizer.SetSpacing( 4 );
+   StarDetectorParameters_StructureLayers_Sizer.Add( StarDetectorParameters_StructureLayers_Label );
+   StarDetectorParameters_StructureLayers_Sizer.Add( StarDetectorParameters_StructureLayers_Control );
+   StarDetectorParameters_StructureLayers_Sizer.AddStretch();
+
+   StarDetectorParameters_NoiseLayers_Label.SetText( "Noise Layers:" );
+   StarDetectorParameters_NoiseLayers_Label.SetMinWidth( currentLabelWidth );
+   StarDetectorParameters_NoiseLayers_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   StarDetectorParameters_NoiseLayers_Control.SetRange( TheSSNoiseLayersParameter->MinimumValue(), TheSSNoiseLayersParameter->MaximumValue() );
+   StarDetectorParameters_NoiseLayers_Control.SetToolTip( TheSSNoiseLayersParameter->Tooltip() );
+   StarDetectorParameters_NoiseLayers_Control.OnValueUpdated( (SpinBox::value_event_handler)&SubframeSelectorInterface::__IntegerValueUpdated, w );
+
+   StarDetectorParameters_NoiseLayers_Sizer.SetSpacing( 4 );
+   StarDetectorParameters_NoiseLayers_Sizer.Add( StarDetectorParameters_NoiseLayers_Label );
+   StarDetectorParameters_NoiseLayers_Sizer.Add( StarDetectorParameters_NoiseLayers_Control );
+   StarDetectorParameters_NoiseLayers_Sizer.AddStretch();
+
+   StarDetectorParameters_HotPixelFilterRadius_Label.SetText( "Hot Pixel Filter:" );
+   StarDetectorParameters_HotPixelFilterRadius_Label.SetMinWidth( currentLabelWidth );
+   StarDetectorParameters_HotPixelFilterRadius_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   StarDetectorParameters_HotPixelFilterRadius_Control.SetRange( TheSSHotPixelFilterRadiusParameter->MinimumValue(), TheSSHotPixelFilterRadiusParameter->MaximumValue() );
+   StarDetectorParameters_HotPixelFilterRadius_Control.SetToolTip( TheSSHotPixelFilterRadiusParameter->Tooltip() );
+   StarDetectorParameters_HotPixelFilterRadius_Control.OnValueUpdated( (SpinBox::value_event_handler)&SubframeSelectorInterface::__IntegerValueUpdated, w );
+
+   StarDetectorParameters_HotPixelFilterRadius_Sizer.SetSpacing( 4 );
+   StarDetectorParameters_HotPixelFilterRadius_Sizer.Add( StarDetectorParameters_HotPixelFilterRadius_Label );
+   StarDetectorParameters_HotPixelFilterRadius_Sizer.Add( StarDetectorParameters_HotPixelFilterRadius_Control );
+   StarDetectorParameters_HotPixelFilterRadius_Sizer.AddStretch();
+
+   StarDetectorParameters_ApplyHotPixelFilter_Label.SetText( "Apply Hot Pixel Filter to Detection Image:" );
+   StarDetectorParameters_ApplyHotPixelFilter_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   StarDetectorParameters_ApplyHotPixelFilter_Control.SetToolTip( TheSSApplyHotPixelFilterParameter->Tooltip() );
+   StarDetectorParameters_ApplyHotPixelFilter_Control.OnCheck( (Button::check_event_handler)&SubframeSelectorInterface::__CheckboxUpdated, w );
+
+   StarDetectorParameters_ApplyHotPixelFilter_Sizer.SetSpacing( 4 );
+   StarDetectorParameters_ApplyHotPixelFilter_Sizer.Add( StarDetectorParameters_ApplyHotPixelFilter_Label );
+   StarDetectorParameters_ApplyHotPixelFilter_Sizer.Add( StarDetectorParameters_ApplyHotPixelFilter_Control );
+   StarDetectorParameters_ApplyHotPixelFilter_Sizer.AddStretch();
+
+   StarDetectorParameters_NoiseReductionFilterRadius_Label.SetText( "Noise Reduction Filter:" );
+   StarDetectorParameters_NoiseReductionFilterRadius_Label.SetMinWidth( currentLabelWidth );
+   StarDetectorParameters_NoiseReductionFilterRadius_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   StarDetectorParameters_NoiseReductionFilterRadius_Control.SetRange( TheSSNoiseReductionFilterRadiusParameter->MinimumValue(), TheSSNoiseReductionFilterRadiusParameter->MaximumValue() );
+   StarDetectorParameters_NoiseReductionFilterRadius_Control.SetToolTip( TheSSNoiseReductionFilterRadiusParameter->Tooltip() );
+   StarDetectorParameters_NoiseReductionFilterRadius_Control.OnValueUpdated( (SpinBox::value_event_handler)&SubframeSelectorInterface::__IntegerValueUpdated, w );
+
+   StarDetectorParameters_NoiseReductionFilterRadius_Sizer.SetSpacing( 4 );
+   StarDetectorParameters_NoiseReductionFilterRadius_Sizer.Add( StarDetectorParameters_NoiseReductionFilterRadius_Label );
+   StarDetectorParameters_NoiseReductionFilterRadius_Sizer.Add( StarDetectorParameters_NoiseReductionFilterRadius_Control );
+   StarDetectorParameters_NoiseReductionFilterRadius_Sizer.AddStretch();
+
+   StarDetectorParameters_Sensitivity_Label.SetText( "Sensitivity:" );
+   StarDetectorParameters_Sensitivity_Label.SetMinWidth( currentLabelWidth );
+   StarDetectorParameters_Sensitivity_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   StarDetectorParameters_Sensitivity_Control.label.Hide();
+   StarDetectorParameters_Sensitivity_Control.SetReal();
+   StarDetectorParameters_Sensitivity_Control.SetRange( TheSSSensitivityParameter->MinimumValue(), TheSSSensitivityParameter->MaximumValue() );
+   StarDetectorParameters_Sensitivity_Control.SetPrecision( TheSSSensitivityParameter->Precision() );
+   StarDetectorParameters_Sensitivity_Control.SetToolTip( TheSSSensitivityParameter->Tooltip() );
+   StarDetectorParameters_Sensitivity_Control.OnValueUpdated( (NumericEdit::value_event_handler)&SubframeSelectorInterface::__RealValueUpdated, w );
+
+   StarDetectorParameters_Sensitivity_Sizer.SetSpacing( 4 );
+   StarDetectorParameters_Sensitivity_Sizer.Add( StarDetectorParameters_Sensitivity_Label );
+   StarDetectorParameters_Sensitivity_Sizer.Add( StarDetectorParameters_Sensitivity_Control, 100 );
+   StarDetectorParameters_Sensitivity_Sizer.AddStretch();
+
+   StarDetectorParameters_PeakResponse_Label.SetText( "Peak Response:" );
+   StarDetectorParameters_PeakResponse_Label.SetMinWidth( currentLabelWidth );
+   StarDetectorParameters_PeakResponse_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   StarDetectorParameters_PeakResponse_Control.label.Hide();
+   StarDetectorParameters_PeakResponse_Control.SetReal();
+   StarDetectorParameters_PeakResponse_Control.SetRange( TheSSPeakResponseParameter->MinimumValue(), TheSSPeakResponseParameter->MaximumValue() );
+   StarDetectorParameters_PeakResponse_Control.SetPrecision( TheSSPeakResponseParameter->Precision() );
+   StarDetectorParameters_PeakResponse_Control.SetToolTip( TheSSPeakResponseParameter->Tooltip() );
+   StarDetectorParameters_PeakResponse_Control.OnValueUpdated( (NumericEdit::value_event_handler)&SubframeSelectorInterface::__RealValueUpdated, w );
+
+   StarDetectorParameters_PeakResponse_Sizer.SetSpacing( 4 );
+   StarDetectorParameters_PeakResponse_Sizer.Add( StarDetectorParameters_PeakResponse_Label );
+   StarDetectorParameters_PeakResponse_Sizer.Add( StarDetectorParameters_PeakResponse_Control, 100 );
+   StarDetectorParameters_PeakResponse_Sizer.AddStretch();
+
+   StarDetectorParameters_MaxDistortion_Label.SetText( "Max Distortion:" );
+   StarDetectorParameters_MaxDistortion_Label.SetMinWidth( currentLabelWidth );
+   StarDetectorParameters_MaxDistortion_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   StarDetectorParameters_MaxDistortion_Control.label.Hide();
+   StarDetectorParameters_MaxDistortion_Control.SetReal();
+   StarDetectorParameters_MaxDistortion_Control.SetRange( TheSSMaxDistortionParameter->MinimumValue(), TheSSMaxDistortionParameter->MaximumValue() );
+   StarDetectorParameters_MaxDistortion_Control.SetPrecision( TheSSMaxDistortionParameter->Precision() );
+   StarDetectorParameters_MaxDistortion_Control.SetToolTip( TheSSMaxDistortionParameter->Tooltip() );
+   StarDetectorParameters_MaxDistortion_Control.OnValueUpdated( (NumericEdit::value_event_handler)&SubframeSelectorInterface::__RealValueUpdated, w );
+
+   StarDetectorParameters_MaxDistortion_Sizer.SetSpacing( 4 );
+   StarDetectorParameters_MaxDistortion_Sizer.Add( StarDetectorParameters_MaxDistortion_Label );
+   StarDetectorParameters_MaxDistortion_Sizer.Add( StarDetectorParameters_MaxDistortion_Control, 100 );
+   StarDetectorParameters_MaxDistortion_Sizer.AddStretch();
+
+   StarDetectorParameters_UpperLimit_Label.SetText( "Upper Limit:" );
+   StarDetectorParameters_UpperLimit_Label.SetMinWidth( currentLabelWidth );
+   StarDetectorParameters_UpperLimit_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   StarDetectorParameters_UpperLimit_Control.label.Hide();
+   StarDetectorParameters_UpperLimit_Control.SetReal();
+   StarDetectorParameters_UpperLimit_Control.SetRange( TheSSUpperLimitParameter->MinimumValue(), TheSSUpperLimitParameter->MaximumValue() );
+   StarDetectorParameters_UpperLimit_Control.SetPrecision( TheSSUpperLimitParameter->Precision() );
+   StarDetectorParameters_UpperLimit_Control.SetToolTip( TheSSUpperLimitParameter->Tooltip() );
+   StarDetectorParameters_UpperLimit_Control.OnValueUpdated( (NumericEdit::value_event_handler)&SubframeSelectorInterface::__RealValueUpdated, w );
+
+   StarDetectorParameters_UpperLimit_Sizer.SetSpacing( 4 );
+   StarDetectorParameters_UpperLimit_Sizer.Add( StarDetectorParameters_UpperLimit_Label );
+   StarDetectorParameters_UpperLimit_Sizer.Add( StarDetectorParameters_UpperLimit_Control, 100 );
+   StarDetectorParameters_UpperLimit_Sizer.AddStretch();
+
+   StarDetectorParameters_BackgroundExpansion_Label.SetText( "Background Expansion:" );
+   StarDetectorParameters_BackgroundExpansion_Label.SetMinWidth( currentLabelWidth );
+   StarDetectorParameters_BackgroundExpansion_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   StarDetectorParameters_BackgroundExpansion_Control.SetRange( TheSSBackgroundExpansionParameter->MinimumValue(), TheSSBackgroundExpansionParameter->MaximumValue() );
+   StarDetectorParameters_BackgroundExpansion_Control.SetToolTip( TheSSBackgroundExpansionParameter->Tooltip() );
+   StarDetectorParameters_BackgroundExpansion_Control.OnValueUpdated( (SpinBox::value_event_handler)&SubframeSelectorInterface::__IntegerValueUpdated, w );
+
+   StarDetectorParameters_BackgroundExpansion_Sizer.SetSpacing( 4 );
+   StarDetectorParameters_BackgroundExpansion_Sizer.Add( StarDetectorParameters_BackgroundExpansion_Label );
+   StarDetectorParameters_BackgroundExpansion_Sizer.Add( StarDetectorParameters_BackgroundExpansion_Control );
+   StarDetectorParameters_BackgroundExpansion_Sizer.AddStretch();
+
+   StarDetectorParameters_XYStretch_Label.SetText( "XY Stretch:" );
+   StarDetectorParameters_XYStretch_Label.SetMinWidth( currentLabelWidth );
+   StarDetectorParameters_XYStretch_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   StarDetectorParameters_XYStretch_Control.label.Hide();
+   StarDetectorParameters_XYStretch_Control.SetReal();
+   StarDetectorParameters_XYStretch_Control.SetRange( TheSSXYStretchParameter->MinimumValue(), TheSSXYStretchParameter->MaximumValue() );
+   StarDetectorParameters_XYStretch_Control.SetPrecision( TheSSXYStretchParameter->Precision() );
+   StarDetectorParameters_XYStretch_Control.SetToolTip( TheSSXYStretchParameter->Tooltip() );
+   StarDetectorParameters_XYStretch_Control.OnValueUpdated( (NumericEdit::value_event_handler)&SubframeSelectorInterface::__RealValueUpdated, w );
+
+   StarDetectorParameters_XYStretch_Sizer.SetSpacing( 4 );
+   StarDetectorParameters_XYStretch_Sizer.Add( StarDetectorParameters_XYStretch_Label );
+   StarDetectorParameters_XYStretch_Sizer.Add( StarDetectorParameters_XYStretch_Control, 100 );
+   StarDetectorParameters_XYStretch_Sizer.AddStretch();
+
+   StarDetectorParameters_Sizer.SetSpacing( 4 );
+   StarDetectorParameters_Sizer.Add( StarDetectorTest_PushButton );
+   StarDetectorParameters_Sizer.Add( StarDetectorParameters_StructureLayers_Sizer );
+   StarDetectorParameters_Sizer.Add( StarDetectorParameters_NoiseLayers_Sizer );
+   StarDetectorParameters_Sizer.Add( StarDetectorParameters_HotPixelFilterRadius_Sizer );
+   StarDetectorParameters_Sizer.Add( StarDetectorParameters_ApplyHotPixelFilter_Sizer );
+   StarDetectorParameters_Sizer.Add( StarDetectorParameters_NoiseReductionFilterRadius_Sizer );
+   StarDetectorParameters_Sizer.Add( StarDetectorParameters_Sensitivity_Sizer );
+   StarDetectorParameters_Sizer.Add( StarDetectorParameters_PeakResponse_Sizer );
+   StarDetectorParameters_Sizer.Add( StarDetectorParameters_MaxDistortion_Sizer );
+   StarDetectorParameters_Sizer.Add( StarDetectorParameters_UpperLimit_Sizer );
+   StarDetectorParameters_Sizer.Add( StarDetectorParameters_BackgroundExpansion_Sizer );
+   StarDetectorParameters_Sizer.Add( StarDetectorParameters_XYStretch_Sizer );
+
+   StarDetectorParameters_Control.SetSizer( StarDetectorParameters_Sizer );
+   StarDetectorParameters_Control.AdjustToContents();
+
+   //
+
    MeasurementImages_SectionBar.SetTitle( "Measurements" );
    MeasurementImages_SectionBar.SetSection( MeasurementImages_Control );
    MeasurementImages_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&SubframeSelectorInterface::__ToggleSection, w );
+
+   MeasureSubframes_PushButton.SetText( "Measure" );
+   MeasureSubframes_PushButton.SetToolTip( "<p>Start the Measurement process.</p>" );
+   MeasureSubframes_PushButton.OnClick((Button::click_event_handler) & SubframeSelectorInterface::__ButtonClicked, w );
 
    MeasurementImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
    MeasurementImages_TreeBox.SetNumberOfColumns( 5 );
@@ -779,10 +1015,6 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    MeasurementImages_TreeBox.EnableAlternateRowColor();
    MeasurementImages_TreeBox.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler) &SubframeSelectorInterface::__MeasurementImages_CurrentNodeUpdated, w );
    MeasurementImages_TreeBox.OnNodeActivated( (TreeBox::node_event_handler) &SubframeSelectorInterface::__MeasurementImages_NodeActivated, w );
-
-   MeasureSubframes_PushButton.SetText( "Measure" );
-   MeasureSubframes_PushButton.SetToolTip( "<p>Start the Measurement process.</p>" );
-   MeasureSubframes_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click, w );
 
    MeasurementImages_Sizer.SetSpacing( 4 );
    MeasurementImages_Sizer.Add( MeasureSubframes_PushButton );
@@ -799,12 +1031,15 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    Global_Sizer.Add( SubframeImages_Control );
    Global_Sizer.Add( SystemParameters_SectionBar );
    Global_Sizer.Add( SystemParameters_Control );
+   Global_Sizer.Add( StarDetectorParameters_SectionBar );
+   Global_Sizer.Add( StarDetectorParameters_Control );
    Global_Sizer.Add( MeasurementImages_SectionBar );
    Global_Sizer.Add( MeasurementImages_Control );
 
    w.SetSizer( Global_Sizer );
 
    SystemParameters_Control.Hide();
+   StarDetectorParameters_Control.Hide();
 
    w.AdjustToContents();
 }

@@ -77,6 +77,9 @@ public:
    virtual bool CanExecuteOn( const View&, String& whyNot ) const;
    virtual bool IsHistoryUpdater( const View& v ) const;
 
+   bool CanTestStarDetector( String& whyNot ) const;
+   bool TestStarDetector();
+
    bool CanMeasure( String& whyNot ) const;
    bool Measure();
 
@@ -126,6 +129,19 @@ private:
    int32          siteLocalMidnight;
    pcl_enum       scaleUnit;
    pcl_enum       dataUnit;
+
+   // The settings for star detection
+   int32          structureLayers;
+   int32          noiseLayers;
+   int32          hotPixelFilterRadius;
+   pcl_bool       applyHotPixelFilterToDetectionImage;
+   int32          noiseReductionFilterRadius;
+   float          sensitivity;
+   float          peakResponse;
+   float          maxDistortion;
+   float          upperLimit;
+   int32          backgroundExpansion;
+   float          xyStretch;
 
    // The set of measured subframes
    measured_list     measures;

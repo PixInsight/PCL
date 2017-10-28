@@ -72,7 +72,19 @@ namespace pcl
 
 struct MeasureThreadInputData
 {
-
+   // The settings for star detection
+   pcl_bool       showStarDetectionMaps = false;
+   int32          structureLayers;
+   int32          noiseLayers;
+   int32          hotPixelFilterRadius;
+   pcl_bool       applyHotPixelFilterToDetectionImage;
+   int32          noiseReductionFilterRadius;
+   float          sensitivity;
+   float          peakResponse;
+   float          maxDistortion;
+   float          upperLimit;
+   int32          backgroundExpansion;
+   float          xyStretch;
 };
 
 // ----------------------------------------------------------------------------
@@ -81,7 +93,7 @@ class SubframeSelectorMeasureThread : public Thread
 {
 public:
 
-   SubframeSelectorMeasureThread( ImageWindow& subframe, MeasureData* outputData, const String& subframePath,
+   SubframeSelectorMeasureThread( ImageWindow& subframe, MeasureData& outputData, const String& subframePath,
                                   const MeasureThreadInputData& data );
 
    virtual void Run();
@@ -95,8 +107,8 @@ public:
 
 private:
 
-   ImageWindow               m_subframe;      // The image being measured. It belongs to this thread.
-   AutoPointer<MeasureData>   m_outputData;    // Target image parameters and embedded m_data. It belongs to this thread.
+   ImageWindow                m_subframe;      // The image being measured. It belongs to this thread.
+   MeasureData                m_outputData;    // Target image parameters and embedded m_data. It belongs to this thread.
    String                     m_subframePath;  // File path of this m_target image
    int                        m_subimageIndex; // >= 0 in case of a multiple image; = 0 otherwise
    bool                       m_success : 1;   // The thread completed execution successfully

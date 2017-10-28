@@ -53,6 +53,7 @@
 #include "SubframeSelectorInstance.h"
 #include "SubframeSelectorParameters.h"
 #include "SubframeSelectorUtils.h"
+#include "SubframeSelectorStarDetector.h"
 
 #include <pcl/Console.h>
 #include <pcl/MetaModule.h>
@@ -70,10 +71,8 @@ namespace pcl
 static ImageWindow LoadImageFile( const String& filePath )
 {
    Array<ImageWindow> imageWindows = ImageWindow::Open( filePath );
-//                                                        SubframeSelectorUtils::CreateViewIDForFile( filePath ) );
-//   24 for single images, 1+ result in API Error when showing
-//   if ( imageWindows.Size() != 1 )
-//      throw Error( String().Format( "Image Window incorrect length: 1 != %i : %s", imageWindows.Size(), filePath ) );
+   if ( imageWindows.Length() != 1 )
+      throw Error( String().Format( "Image Window incorrect length: 1 != %i : %s", imageWindows.Length(), filePath ) );
    return imageWindows[0];
 }
 
@@ -88,6 +87,17 @@ SubframeSelectorInstance::SubframeSelectorInstance( const MetaProcess* m ) :
    siteLocalMidnight( TheSSSiteLocalMidnightParameter->DefaultValue() ),
    scaleUnit( SSScaleUnit::Default ),
    dataUnit( SSDataUnit::Default ),
+   structureLayers( TheSSStructureLayersParameter->DefaultValue() ),
+   noiseLayers( TheSSNoiseLayersParameter->DefaultValue() ),
+   hotPixelFilterRadius( TheSSHotPixelFilterRadiusParameter->DefaultValue() ),
+   applyHotPixelFilterToDetectionImage( TheSSApplyHotPixelFilterParameter->DefaultValue() ),
+   noiseReductionFilterRadius( TheSSNoiseReductionFilterRadiusParameter->DefaultValue() ),
+   sensitivity( TheSSSensitivityParameter->DefaultValue() ),
+   peakResponse( TheSSPeakResponseParameter->DefaultValue() ),
+   maxDistortion( TheSSMaxDistortionParameter->DefaultValue() ),
+   upperLimit( TheSSUpperLimitParameter->DefaultValue() ),
+   backgroundExpansion( TheSSBackgroundExpansionParameter->DefaultValue() ),
+   xyStretch( TheSSXYStretchParameter->DefaultValue() ),
    measures()
 {
 }
@@ -103,14 +113,25 @@ void SubframeSelectorInstance::Assign( const ProcessImplementation& p )
    const SubframeSelectorInstance* x = dynamic_cast<const SubframeSelectorInstance*>( &p );
    if ( x != nullptr )
    {
-      subframes         = x->subframes;
-      subframeScale     = x->subframeScale;
-      cameraGain        = x->cameraGain;
-      cameraResolution  = x->cameraResolution;
-      siteLocalMidnight = x->siteLocalMidnight;
-      scaleUnit         = x->scaleUnit;
-      dataUnit          = x->dataUnit;
-      measures          = x->measures;
+      subframes                              = x->subframes;
+      subframeScale                          = x->subframeScale;
+      cameraGain                             = x->cameraGain;
+      cameraResolution                       = x->cameraResolution;
+      siteLocalMidnight                      = x->siteLocalMidnight;
+      scaleUnit                              = x->scaleUnit;
+      dataUnit                               = x->dataUnit;
+      structureLayers                        = x->structureLayers;
+      noiseLayers                            = x->noiseLayers;
+      hotPixelFilterRadius                   = x->hotPixelFilterRadius;
+      applyHotPixelFilterToDetectionImage    = x->applyHotPixelFilterToDetectionImage;
+      noiseReductionFilterRadius             = x->noiseReductionFilterRadius;
+      sensitivity                            = x->sensitivity;
+      peakResponse                           = x->peakResponse;
+      maxDistortion                          = x->maxDistortion;
+      upperLimit                             = x->upperLimit;
+      backgroundExpansion                    = x->backgroundExpansion;
+      xyStretch                              = x->xyStretch;
+      measures                               = x->measures;
    }
 }
 
@@ -123,6 +144,120 @@ bool SubframeSelectorInstance::CanExecuteOn( const View& view, String& whyNot ) 
 bool SubframeSelectorInstance::IsHistoryUpdater( const View& view ) const
 {
     return false;
+}
+
+bool SubframeSelectorInstance::CanTestStarDetector( String &whyNot ) const {
+   if ( subframes.IsEmpty()) {
+      whyNot = "No subframes have been specified.";
+      return false;
+   }
+
+   return true;
+}
+
+bool SubframeSelectorInstance::TestStarDetector() {
+   /*
+    * Start with a general validation of working parameters.
+    */
+   {
+      String why;
+      if ( !CanTestStarDetector( why ))
+         throw Error( why );
+
+      for ( subframe_list::const_iterator i = subframes.Begin(); i != subframes.End(); ++i )
+         if ( i->enabled && !File::Exists( i->path ))
+            throw ("No such file exists on the local filesystem: " + i->path);
+   }
+   Console console;
+
+   try {
+      /*
+       * For all errors generated, we want a report on the console. This is
+       * customary in PixInsight for all batch processes.
+       */
+      Exception::EnableConsoleOutput();
+      Exception::DisableGUIOutput();
+
+      console.Show();
+
+      Module->ProcessEvents();
+
+      MeasureThreadInputData inputThreadData;
+      inputThreadData.showStarDetectionMaps                 = true;
+      inputThreadData.structureLayers                       = structureLayers;
+      inputThreadData.noiseLayers                           = noiseLayers;
+      inputThreadData.hotPixelFilterRadius                  = hotPixelFilterRadius;
+      inputThreadData.noiseReductionFilterRadius            = noiseReductionFilterRadius;
+      inputThreadData.applyHotPixelFilterToDetectionImage   = applyHotPixelFilterToDetectionImage;
+      inputThreadData.sensitivity                           = sensitivity;
+      inputThreadData.peakResponse                          = peakResponse;
+      inputThreadData.maxDistortion                         = maxDistortion;
+      inputThreadData.upperLimit                            = upperLimit;
+      inputThreadData.backgroundExpansion                   = backgroundExpansion;
+      inputThreadData.xyStretch                             = xyStretch;
+
+      try
+      {
+         // Keep the GUI responsive
+         Module->ProcessEvents();
+         if ( console.AbortRequested() )
+            throw ProcessAborted();
+
+         /*
+          * Extract the first target
+          * frame from the targets list,
+          * load and calibrate it.
+          */
+         SubframeItem item = *subframes;
+
+         console.WriteLn( String().Format( "<end><cbr><br>Measuring subframe %u of %u", 1, subframes.Length() ) );
+         Module->ProcessEvents();
+
+         /*
+          * Create a new thread for this subframe image
+          */
+         thread_list threads = CreateThreadForSubframe( item.path, inputThreadData );
+         SubframeSelectorMeasureThread* thread = *threads;
+         thread->Run();
+
+         Module->ProcessEvents();
+
+         return true;
+
+      } // try
+      catch ( ProcessAborted& )
+      {
+         /*
+          * The user has requested to abort the process.
+          */
+         throw;
+      }
+      catch ( ... )
+      {
+         /*
+          * The user has requested to abort the process.
+          */
+         if ( console.AbortRequested() )
+            throw ProcessAborted();
+
+         try
+         {
+            throw;
+         }
+         ERROR_HANDLER
+
+         console.NoteLn( "Abort on error." );
+         throw ProcessAborted();
+      }
+   } // try
+
+   catch ( ... ) {
+      /*
+       * All breaking errors are caught here.
+       */
+      Exception::EnableGUIOutput( true );
+      throw;
+   }
 }
 
 bool SubframeSelectorInstance::CanMeasure( String &whyNot ) const {
@@ -148,6 +283,8 @@ bool SubframeSelectorInstance::Measure() {
             throw ("No such file exists on the local filesystem: " + i->path);
    }
 
+   Console console;
+
    try {
 
       // Reset measured values
@@ -160,11 +297,7 @@ bool SubframeSelectorInstance::Measure() {
       Exception::EnableConsoleOutput();
       Exception::DisableGUIOutput();
 
-      /*
-       * Allow the user to abort the measurement process.
-       */
-      Console console;
-//      console.EnableAbort();
+      console.Show();
 
       Module->ProcessEvents();
 
@@ -196,6 +329,17 @@ bool SubframeSelectorInstance::Measure() {
       bool waitingForFinished = false;
 
       MeasureThreadInputData inputThreadData;
+      inputThreadData.structureLayers                       = structureLayers;
+      inputThreadData.noiseLayers                           = noiseLayers;
+      inputThreadData.hotPixelFilterRadius                  = hotPixelFilterRadius;
+      inputThreadData.noiseReductionFilterRadius            = noiseReductionFilterRadius;
+      inputThreadData.applyHotPixelFilterToDetectionImage   = applyHotPixelFilterToDetectionImage;
+      inputThreadData.sensitivity                           = sensitivity;
+      inputThreadData.peakResponse                          = peakResponse;
+      inputThreadData.maxDistortion                         = maxDistortion;
+      inputThreadData.upperLimit                            = upperLimit;
+      inputThreadData.backgroundExpansion                   = backgroundExpansion;
+      inputThreadData.xyStretch                             = xyStretch;
 
       /*
        * We'll work on a temporary duplicate of the subframes list. This
@@ -420,9 +564,6 @@ bool SubframeSelectorInstance::Measure() {
                }
                ERROR_HANDLER
 
-//               console.ResetStatus();
-//               console.EnableAbort();
-
                console.NoteLn( "Abort on error." );
                throw ProcessAborted();
             }
@@ -518,12 +659,37 @@ void* SubframeSelectorInstance::LockParameter( const MetaParameter* p, size_type
    if ( p == TheSSDataUnitParameter )
       return &dataUnit;
 
+   if ( p == TheSSStructureLayersParameter )
+      return &structureLayers;
+   if ( p == TheSSNoiseLayersParameter )
+      return &noiseLayers;
+   if ( p == TheSSHotPixelFilterRadiusParameter )
+      return &hotPixelFilterRadius;
+   if ( p == TheSSApplyHotPixelFilterParameter )
+      return &applyHotPixelFilterToDetectionImage;
+   if ( p == TheSSNoiseReductionFilterRadiusParameter )
+      return &noiseReductionFilterRadius;
+   if ( p == TheSSSensitivityParameter )
+      return &sensitivity;
+   if ( p == TheSSPeakResponseParameter )
+      return &peakResponse;
+   if ( p == TheSSMaxDistortionParameter )
+      return &maxDistortion;
+   if ( p == TheSSUpperLimitParameter )
+      return &upperLimit;
+   if ( p == TheSSBackgroundExpansionParameter )
+      return &backgroundExpansion;
+   if ( p == TheSSXYStretchParameter )
+      return &xyStretch;
+
    if ( p == TheSSMeasurementEnabledParameter )
       return &measures[tableRow].enabled;
    if ( p == TheSSMeasurementLockedParameter )
       return &measures[tableRow].locked;
    if ( p == TheSSMeasurementPathParameter )
       return measures[tableRow].path.Begin();
+   if ( p == TheSSMeasurementFWHMParameter )
+      return &measures[tableRow].fwhm;
 
    return nullptr;
 }
@@ -587,7 +753,7 @@ SubframeSelectorInstance::CreateThreadForSubframe( const String& filePath, const
 {
    thread_list threads;
    ImageWindow subframeWindow = LoadImageFile( filePath );
-   MeasureData *outputData = new MeasureData( filePath );
+   MeasureData outputData( filePath );
    threads.Add( new SubframeSelectorMeasureThread( subframeWindow,
                                                    outputData,
                                                    filePath,

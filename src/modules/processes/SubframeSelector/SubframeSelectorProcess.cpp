@@ -86,6 +86,18 @@ SubframeSelectorProcess::SubframeSelectorProcess() : MetaProcess()
    new SSScaleUnit( this );
    new SSDataUnit( this );
 
+   new SSStructureLayers( this );
+   new SSNoiseLayers( this );
+   new SSHotPixelFilterRadius( this );
+   new SSApplyHotPixelFilter( this );
+   new SSNoiseReductionFilterRadius( this );
+   new SSSensitivity( this );
+   new SSPeakResponse( this );
+   new SSMaxDistortion( this );
+   new SSUpperLimit( this );
+   new SSBackgroundExpansion( this );
+   new SSXYStretch( this );
+
    new SSMeasurements( this );
    new SSMeasurementEnabled( TheSSMeasurementsParameter );
    new SSMeasurementLocked( TheSSMeasurementsParameter );

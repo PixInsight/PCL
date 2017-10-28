@@ -68,12 +68,12 @@ IsoString SubframeSelectorUtils::UniqueViewID( const String& baseId )
 
 IsoString SubframeSelectorUtils::FilterViewID( const String& baseId )
 {
-   if ( baseId.Size() == 0 )
+   if ( baseId.Length() == 0 )
       return '_';
 
    IsoString newId = "";
 
-   for ( int i = 0 ; i < baseId.Size() ; ++i )
+   for ( int i = 0 ; i < baseId.Length() ; ++i )
       if ( isalnum( baseId[i] ) || baseId[i] == '_' )
          newId += baseId[i];
 

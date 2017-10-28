@@ -235,6 +235,222 @@ extern SSDataUnit* TheSSDataUnitParameter;
 
 // ----------------------------------------------------------------------------
 
+class SSStructureLayers : public MetaInt32
+{
+   public:
+
+   SSStructureLayers( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSStructureLayers* TheSSStructureLayersParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSNoiseLayers : public MetaInt32
+{
+   public:
+
+   SSNoiseLayers( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSNoiseLayers* TheSSNoiseLayersParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSHotPixelFilterRadius : public MetaInt32
+{
+   public:
+
+   SSHotPixelFilterRadius( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSHotPixelFilterRadius* TheSSHotPixelFilterRadiusParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSApplyHotPixelFilter : public MetaBoolean
+{
+   public:
+
+   SSApplyHotPixelFilter( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSApplyHotPixelFilter* TheSSApplyHotPixelFilterParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSNoiseReductionFilterRadius : public MetaInt32
+{
+   public:
+
+   SSNoiseReductionFilterRadius( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSNoiseReductionFilterRadius* TheSSNoiseReductionFilterRadiusParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSSensitivity : public MetaFloat
+{
+   public:
+
+   SSSensitivity( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSSensitivity* TheSSSensitivityParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSPeakResponse : public MetaFloat
+{
+   public:
+
+   SSPeakResponse( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSPeakResponse* TheSSPeakResponseParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMaxDistortion : public MetaFloat
+{
+   public:
+
+   SSMaxDistortion( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSMaxDistortion* TheSSMaxDistortionParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSUpperLimit : public MetaFloat
+{
+   public:
+
+   SSUpperLimit( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSUpperLimit* TheSSUpperLimitParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSBackgroundExpansion : public MetaInt32
+{
+   public:
+
+   SSBackgroundExpansion( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSBackgroundExpansion* TheSSBackgroundExpansionParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSXYStretch : public MetaFloat
+{
+   public:
+
+   SSXYStretch( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSXYStretch* TheSSXYStretchParameter;
+
+// ----------------------------------------------------------------------------
+
 class SSMeasurements : public MetaTable
 {
    public:

@@ -119,8 +119,11 @@ private:
 
    typedef Array<MeasureData>  measured_list;
 
+   // Types of run methods
+   pcl_enum       routine;
+
    // The set of subframes to measure
-   subframe_list     subframes;
+   subframe_list  subframes;
 
    // The settings for measurements and reporting
    float          subframeScale;
@@ -142,6 +145,7 @@ private:
    float          upperLimit;
    int32          backgroundExpansion;
    float          xyStretch;
+   Rect           roi;
 
    // The set of measured subframes
    measured_list     measures;

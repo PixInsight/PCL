@@ -57,6 +57,8 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+SSRoutine*                       TheSSRoutineParameter = nullptr;
+
 SSSubframes*                     TheSSSubframesParameter = nullptr;
 SSSubframeEnabled*               TheSSSubframeEnabledParameter = nullptr;
 SSSubframePath*                  TheSSSubframePathParameter = nullptr;
@@ -79,12 +81,75 @@ SSMaxDistortion*                 TheSSMaxDistortionParameter = nullptr;
 SSUpperLimit*                    TheSSUpperLimitParameter = nullptr;
 SSBackgroundExpansion*           TheSSBackgroundExpansionParameter = nullptr;
 SSXYStretch*                     TheSSXYStretchParameter = nullptr;
+SSROIX0*                         TheSSROIX0Parameter = nullptr;
+SSROIY0*                         TheSSROIY0Parameter = nullptr;
+SSROIX1*                         TheSSROIX1Parameter = nullptr;
+SSROIY1*                         TheSSROIY1Parameter = nullptr;
 
 SSMeasurements*                  TheSSMeasurementsParameter = nullptr;
 SSMeasurementEnabled*            TheSSMeasurementEnabledParameter = nullptr;
 SSMeasurementLocked*             TheSSMeasurementLockedParameter = nullptr;
 SSMeasurementPath*               TheSSMeasurementPathParameter = nullptr;
 SSMeasurementFWHM*               TheSSMeasurementFWHMParameter = nullptr;
+
+// ----------------------------------------------------------------------------
+
+SSRoutine::SSRoutine( MetaProcess* P ) : MetaEnumeration( P )
+{
+   TheSSRoutineParameter = this;
+}
+
+IsoString SSRoutine::Id() const
+{
+   return "routine";
+}
+
+size_type SSRoutine::NumberOfElements() const
+{
+   return NumberOfItems;
+}
+
+IsoString SSRoutine::ElementId( size_type i ) const
+{
+   switch ( i )
+   {
+      default:
+      case MeasureSubframes:  return "MeasureSubframes";
+      case OutputSubframes: return "OutputSubframes";
+      case StarDetectionPreview:  return "StarDetectionPreview";
+   }
+}
+
+int SSRoutine::ElementValue( size_type i ) const
+{
+   return int( i );
+}
+
+IsoString SSRoutine::ElementLabel( size_type i ) const
+{
+   switch ( i )
+   {
+      default:
+      case MeasureSubframes:  return "Measure Subframes";
+      case OutputSubframes: return "Output Subframes";
+      case StarDetectionPreview:  return "Star Detection Preview";
+   }
+}
+
+size_type SSRoutine::DefaultValueIndex() const
+{
+   return Default;
+}
+
+IsoString SSRoutine::Tooltip() const
+{
+   return "<p><strong>Measure Subframes:</strong> Measures subframe parameters "
+           "and displays them for Approval and Weighting.</p>"
+           "<p><strong>Output Subframes:</strong> Uses Approval and Weighting "
+           "information to output subframes.</p>"
+           "<p><strong>Star Detection Preview:</strong> Outputs a Structure Map from "
+           "the Star Detector for the first subframe. Useful for tweaking Star Detector parameters.</p>";
+};
 
 // ----------------------------------------------------------------------------
 
@@ -794,6 +859,114 @@ IsoString SSXYStretch::Tooltip() const
            "Increase it to make the algorithm more robust to nearby structures, such"
            "as multiple/crowded stars and small nebular features. However, too large"
            "of a stretch factor will make the algorithm less accurate.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSROIX0::SSROIX0( MetaProcess* P ) : MetaInt32( P )
+{
+   TheSSROIX0Parameter = this;
+}
+
+IsoString SSROIX0::Id() const
+{
+   return "roiX0";
+}
+
+double SSROIX0::DefaultValue() const
+{
+   return 0;
+}
+
+double SSROIX0::MinimumValue() const
+{
+   return 0;
+}
+
+double SSROIX0::MaximumValue() const
+{
+   return int32_max;
+}
+
+// ----------------------------------------------------------------------------
+
+SSROIY0::SSROIY0( MetaProcess* P ) : MetaInt32( P )
+{
+   TheSSROIY0Parameter = this;
+}
+
+IsoString SSROIY0::Id() const
+{
+   return "roiY0";
+}
+
+double SSROIY0::DefaultValue() const
+{
+   return 0;
+}
+
+double SSROIY0::MinimumValue() const
+{
+   return 0;
+}
+
+double SSROIY0::MaximumValue() const
+{
+   return int32_max;
+}
+
+// ----------------------------------------------------------------------------
+
+SSROIX1::SSROIX1( MetaProcess* P ) : MetaInt32( P )
+{
+   TheSSROIX1Parameter = this;
+}
+
+IsoString SSROIX1::Id() const
+{
+   return "roiX1";
+}
+
+double SSROIX1::DefaultValue() const
+{
+   return 0;
+}
+
+double SSROIX1::MinimumValue() const
+{
+   return 0;
+}
+
+double SSROIX1::MaximumValue() const
+{
+   return int32_max;
+}
+
+// ----------------------------------------------------------------------------
+
+SSROIY1::SSROIY1( MetaProcess* P ) : MetaInt32( P )
+{
+   TheSSROIY1Parameter = this;
+}
+
+IsoString SSROIY1::Id() const
+{
+   return "roiY1";
+}
+
+double SSROIY1::DefaultValue() const
+{
+   return 0;
+}
+
+double SSROIY1::MinimumValue() const
+{
+   return 0;
+}
+
+double SSROIY1::MaximumValue() const
+{
+   return int32_max;
 }
 
 // ----------------------------------------------------------------------------

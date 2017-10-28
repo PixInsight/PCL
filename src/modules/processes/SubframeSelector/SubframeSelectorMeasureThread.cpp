@@ -80,19 +80,23 @@ void SubframeSelectorMeasureThread::Run()
    {
       m_success = false;
 
-      Console().NoteLn( "<br><br>Measurements for: " + m_subframePath );
+      Console().NoteLn( "Measuring: " + m_subframePath );
 
-      Console().WriteLn( "Accessing Main View" );
       View subframeView = m_subframe.MainView();
       ImageVariant subframe = subframeView.Image();
 
       if ( subframe.ColorSpace() != ColorSpace::Gray )
       {
-         Console().WriteLn( "Converting Main View to Grayscale" );
+         Console().WriteLn( "Converting to Grayscale" );
          subframe.SetColorSpace( ColorSpace::Gray );
       }
 
-      Console().NoteLn( "Running StarDetector" );
+      if ( m_data.roi.IsRect() ) {
+         Console().WriteLn( String().Format( "Cropping to: (%i, %i), (%i x %i)",
+                                             m_data.roi.x0, m_data.roi.y0, m_data.roi.Width(), m_data.roi.Height() ) );
+         subframe.CropTo( m_data.roi );
+      }
+
       SubframeSelectorStarDetector starDetector;
       starDetector.showStarDetectionMaps                 = m_data.showStarDetectionMaps;
       starDetector.structureLayers                       = m_data.structureLayers;
@@ -108,7 +112,7 @@ void SubframeSelectorMeasureThread::Run()
       starDetector.xyStretch                             = m_data.xyStretch;
       Array<Star> stars = starDetector.GetStars( subframe );
 
-      Console().NoteLn( String().Format( "Found stars: %i", stars.Length() ) );
+      Console().WriteLn( String().Format( "Detected star(s): %i", stars.Length() ) );
 
 //      IsoString key;
 //      IsoString value;
@@ -151,6 +155,7 @@ void SubframeSelectorMeasureThread::Run()
 //      if ( !starAlignment.ExecuteOn( subframeView ) )
 //         throw CaughtException();
 
+      subframe.Free();
       m_subframe.Close();
 
       m_success = true;

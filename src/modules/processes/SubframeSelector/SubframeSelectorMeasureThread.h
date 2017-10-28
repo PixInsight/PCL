@@ -85,6 +85,7 @@ struct MeasureThreadInputData
    float          upperLimit;
    int32          backgroundExpansion;
    float          xyStretch;
+   Rect           roi;
 };
 
 // ----------------------------------------------------------------------------

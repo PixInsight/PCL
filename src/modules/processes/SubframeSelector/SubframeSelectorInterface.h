@@ -65,6 +65,7 @@
 #include <pcl/ComboBox.h>
 #include <pcl/CheckBox.h>
 #include <pcl/Label.h>
+#include <pcl/GroupBox.h>
 
 #include "SubframeSelectorInstance.h"
 
@@ -107,6 +108,10 @@ private:
 
       VerticalSizer     Global_Sizer;
 
+      HorizontalSizer   Routine_Sizer;
+         Label             Routine_Label;
+         ComboBox          Routine_Control;
+
       SectionBar        SubframeImages_SectionBar;
       Control           SubframeImages_Control;
       HorizontalSizer   SubframeImages_Sizer;
@@ -123,11 +128,9 @@ private:
       Control           SystemParameters_Control;
       VerticalSizer     SystemParameters_Sizer;
          HorizontalSizer   SystemParameters_SubframeScale_Sizer;
-            Label             SystemParameters_SubframeScale_Label;
             NumericControl    SystemParameters_SubframeScale_Control;
             Label             SystemParameters_SubframeScale_Unit;
          HorizontalSizer   SystemParameters_CameraGain_Sizer;
-            Label             SystemParameters_CameraGain_Label;
             NumericControl    SystemParameters_CameraGain_Control;
             Label             SystemParameters_CameraGain_Unit;
          HorizontalSizer   SystemParameters_CameraResolution_Sizer;
@@ -147,7 +150,6 @@ private:
       SectionBar        StarDetectorParameters_SectionBar;
       Control           StarDetectorParameters_Control;
       VerticalSizer     StarDetectorParameters_Sizer;
-         PushButton        StarDetectorTest_PushButton;
          HorizontalSizer   StarDetectorParameters_StructureLayers_Sizer;
             Label             StarDetectorParameters_StructureLayers_Label;
             SpinBox           StarDetectorParameters_StructureLayers_Control;
@@ -163,29 +165,29 @@ private:
          HorizontalSizer   StarDetectorParameters_NoiseReductionFilterRadius_Sizer;
             Label             StarDetectorParameters_NoiseReductionFilterRadius_Label;
             SpinBox           StarDetectorParameters_NoiseReductionFilterRadius_Control;
-         HorizontalSizer   StarDetectorParameters_Sensitivity_Sizer;
-            Label             StarDetectorParameters_Sensitivity_Label;
-            NumericControl    StarDetectorParameters_Sensitivity_Control;
-         HorizontalSizer   StarDetectorParameters_PeakResponse_Sizer;
-            Label             StarDetectorParameters_PeakResponse_Label;
-            NumericControl    StarDetectorParameters_PeakResponse_Control;
-         HorizontalSizer   StarDetectorParameters_MaxDistortion_Sizer;
-            Label             StarDetectorParameters_MaxDistortion_Label;
-            NumericControl    StarDetectorParameters_MaxDistortion_Control;
-         HorizontalSizer   StarDetectorParameters_UpperLimit_Sizer;
-            Label             StarDetectorParameters_UpperLimit_Label;
-            NumericControl    StarDetectorParameters_UpperLimit_Control;
+         NumericControl    StarDetectorParameters_Sensitivity_Control;
+         NumericControl    StarDetectorParameters_PeakResponse_Control;
+         NumericControl    StarDetectorParameters_MaxDistortion_Control;
+         NumericControl    StarDetectorParameters_UpperLimit_Control;
          HorizontalSizer   StarDetectorParameters_BackgroundExpansion_Sizer;
             Label             StarDetectorParameters_BackgroundExpansion_Label;
             SpinBox           StarDetectorParameters_BackgroundExpansion_Control;
-         HorizontalSizer   StarDetectorParameters_XYStretch_Sizer;
-            Label             StarDetectorParameters_XYStretch_Label;
-            NumericControl    StarDetectorParameters_XYStretch_Control;
+         NumericControl    StarDetectorParameters_XYStretch_Control;
+         HorizontalSizer   StarDetectorParameters_ROIRow1_Sizer;
+            Label             StarDetectorParameters_ROIX0_Label;
+            SpinBox           StarDetectorParameters_ROIX0_Control;
+            Label             StarDetectorParameters_ROIY0_Label;
+            SpinBox           StarDetectorParameters_ROIY0_Control;
+         HorizontalSizer   StarDetectorParameters_ROIRow2_Sizer;
+            Label             StarDetectorParameters_ROIWidth_Label;
+            SpinBox           StarDetectorParameters_ROIWidth_Control;
+            Label             StarDetectorParameters_ROIHeight_Label;
+            SpinBox           StarDetectorParameters_ROIHeight_Control;
+            PushButton        StarDetectorParameters_ROISelectPreview_Button;
 
       SectionBar        MeasurementImages_SectionBar;
       Control           MeasurementImages_Control;
       VerticalSizer     MeasurementImages_Sizer;
-         PushButton        MeasureSubframes_PushButton;
          TreeBox           MeasurementImages_TreeBox;
    };
 
@@ -217,7 +219,9 @@ private:
    void __IntegerValueUpdated( SpinBox& sender, int value );
    void __ItemSelected( ComboBox& sender, int itemIndex );
    void __CheckboxUpdated( Button& sender, Button::check_state state );
-   void __ButtonClicked( Button &sender, bool checked );
+   void __ButtonClick( Button& sender, bool checked );
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
 
    void __MeasurementImages_CurrentNodeUpdated( TreeBox &sender, TreeBox::Node &current, TreeBox::Node &oldCurrent );
    void __MeasurementImages_NodeActivated( TreeBox &sender, TreeBox::Node &node, int col );

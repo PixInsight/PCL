@@ -62,6 +62,34 @@ PCL_BEGIN_LOCAL
 
 // ----------------------------------------------------------------------------
 
+class SSRoutine : public MetaEnumeration
+{
+   public:
+
+   enum { MeasureSubframes,
+      OutputSubframes,
+      StarDetectionPreview,
+      NumberOfItems,
+      Default = MeasureSubframes };
+
+   SSRoutine( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
+   IsoString ElementLabel( size_type) const;
+   int ElementData( size_type) const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSRoutine* TheSSRoutineParameter;
+
+// ----------------------------------------------------------------------------
+
 class SSSubframes : public MetaTable
 {
 public:
@@ -448,6 +476,71 @@ class SSXYStretch : public MetaFloat
 };
 
 extern SSXYStretch* TheSSXYStretchParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSROIX0 : public MetaInt32
+{
+   public:
+
+   SSROIX0( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSROIX0* TheSSROIX0Parameter;
+
+
+// ----------------------------------------------------------------------------
+
+class SSROIY0 : public MetaInt32
+{
+   public:
+
+   SSROIY0( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSROIY0* TheSSROIY0Parameter;
+
+// ----------------------------------------------------------------------------
+
+class SSROIX1 : public MetaInt32
+{
+   public:
+
+   SSROIX1( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSROIX1* TheSSROIX1Parameter;
+
+// ----------------------------------------------------------------------------
+
+class SSROIY1 : public MetaInt32
+{
+   public:
+
+   SSROIY1( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSROIY1* TheSSROIY1Parameter;
 
 // ----------------------------------------------------------------------------
 

@@ -80,6 +80,7 @@ static ImageWindow LoadImageFile( const String& filePath )
 
 SubframeSelectorInstance::SubframeSelectorInstance( const MetaProcess* m ) :
    ProcessImplementation( m ),
+   routine( SSRoutine::Default ),
    subframes(),
    subframeScale( TheSSSubframeScaleParameter->DefaultValue() ),
    cameraGain( TheSSCameraGainParameter->DefaultValue() ),
@@ -98,6 +99,7 @@ SubframeSelectorInstance::SubframeSelectorInstance( const MetaProcess* m ) :
    upperLimit( TheSSUpperLimitParameter->DefaultValue() ),
    backgroundExpansion( TheSSBackgroundExpansionParameter->DefaultValue() ),
    xyStretch( TheSSXYStretchParameter->DefaultValue() ),
+   roi ( 0 ),
    measures()
 {
 }
@@ -113,6 +115,7 @@ void SubframeSelectorInstance::Assign( const ProcessImplementation& p )
    const SubframeSelectorInstance* x = dynamic_cast<const SubframeSelectorInstance*>( &p );
    if ( x != nullptr )
    {
+      routine                                = x->routine;
       subframes                              = x->subframes;
       subframeScale                          = x->subframeScale;
       cameraGain                             = x->cameraGain;
@@ -131,6 +134,7 @@ void SubframeSelectorInstance::Assign( const ProcessImplementation& p )
       upperLimit                             = x->upperLimit;
       backgroundExpansion                    = x->backgroundExpansion;
       xyStretch                              = x->xyStretch;
+      roi                                    = x->roi;
       measures                               = x->measures;
    }
 }
@@ -178,8 +182,7 @@ bool SubframeSelectorInstance::TestStarDetector() {
       Exception::EnableConsoleOutput();
       Exception::DisableGUIOutput();
 
-      console.Show();
-
+      console.EnableAbort();
       Module->ProcessEvents();
 
       MeasureThreadInputData inputThreadData;
@@ -195,14 +198,10 @@ bool SubframeSelectorInstance::TestStarDetector() {
       inputThreadData.upperLimit                            = upperLimit;
       inputThreadData.backgroundExpansion                   = backgroundExpansion;
       inputThreadData.xyStretch                             = xyStretch;
+      inputThreadData.roi                                   = roi;
 
       try
       {
-         // Keep the GUI responsive
-         Module->ProcessEvents();
-         if ( console.AbortRequested() )
-            throw ProcessAborted();
-
          /*
           * Extract the first target
           * frame from the targets list,
@@ -213,11 +212,14 @@ bool SubframeSelectorInstance::TestStarDetector() {
          console.WriteLn( String().Format( "<end><cbr><br>Measuring subframe %u of %u", 1, subframes.Length() ) );
          Module->ProcessEvents();
 
-         /*
-          * Create a new thread for this subframe image
-          */
          thread_list threads = CreateThreadForSubframe( item.path, inputThreadData );
          SubframeSelectorMeasureThread* thread = *threads;
+
+         // Keep the GUI responsive, last chance to abort
+         Module->ProcessEvents();
+         if ( console.AbortRequested() )
+            throw ProcessAborted();
+
          thread->Run();
 
          Module->ProcessEvents();
@@ -245,6 +247,9 @@ bool SubframeSelectorInstance::TestStarDetector() {
             throw;
          }
          ERROR_HANDLER
+
+         console.ResetStatus();
+         console.EnableAbort();
 
          console.NoteLn( "Abort on error." );
          throw ProcessAborted();
@@ -297,8 +302,7 @@ bool SubframeSelectorInstance::Measure() {
       Exception::EnableConsoleOutput();
       Exception::DisableGUIOutput();
 
-      console.Show();
-
+      console.EnableAbort();
       Module->ProcessEvents();
 
       /*
@@ -340,6 +344,7 @@ bool SubframeSelectorInstance::Measure() {
       inputThreadData.upperLimit                            = upperLimit;
       inputThreadData.backgroundExpansion                   = backgroundExpansion;
       inputThreadData.xyStretch                             = xyStretch;
+      inputThreadData.roi                                   = roi;
 
       /*
        * We'll work on a temporary duplicate of the subframes list. This
@@ -564,6 +569,9 @@ bool SubframeSelectorInstance::Measure() {
                }
                ERROR_HANDLER
 
+               console.ResetStatus();
+               console.EnableAbort();
+
                console.NoteLn( "Abort on error." );
                throw ProcessAborted();
             }
@@ -610,16 +618,27 @@ bool SubframeSelectorInstance::Measure() {
 }
 
 bool SubframeSelectorInstance::CanExecuteGlobal( String &whyNot ) const {
-   if ( subframes.IsEmpty()) {
+   if ( subframes.IsEmpty())
+   {
        whyNot = "No subframes have been specified.";
        return false;
    }
-   if ( measures.IsEmpty()) {
-      whyNot = "No measurements have been made.";
-      return false;
+
+   if ( routine == SSRoutine::StarDetectionPreview )
+      return true;
+   else if ( routine == SSRoutine::MeasureSubframes )
+      return true;
+   else if ( routine == SSRoutine::OutputSubframes )
+   {
+      if ( measures.IsEmpty())
+      {
+         whyNot = "No measurements have been made.";
+         return false;
+      }
    }
 
-   return true;
+   whyNot = "Unknown routine.";
+   return false;
 }
 
 bool SubframeSelectorInstance::ExecuteGlobal() {
@@ -635,12 +654,24 @@ bool SubframeSelectorInstance::ExecuteGlobal() {
          if ( i->enabled && !File::Exists( i->path ))
             throw ("No such file exists on the local filesystem: " + i->path);
 
-      return true;
+      if ( routine == SSRoutine::StarDetectionPreview )
+         return TestStarDetector();
+
+      if ( routine == SSRoutine::MeasureSubframes )
+         return Measure();
+
+      if ( routine == SSRoutine::OutputSubframes )
+         throw Error("Unimplemented Routine: Output Subframes");
+
+      return false;
    }
 }
 
 void* SubframeSelectorInstance::LockParameter( const MetaParameter* p, size_type tableRow )
 {
+   if ( p == TheSSRoutineParameter )
+      return &routine;
+
    if ( p == TheSSSubframeEnabledParameter )
       return &subframes[tableRow].enabled;
    if ( p == TheSSSubframePathParameter )
@@ -681,6 +712,14 @@ void* SubframeSelectorInstance::LockParameter( const MetaParameter* p, size_type
       return &backgroundExpansion;
    if ( p == TheSSXYStretchParameter )
       return &xyStretch;
+   if ( p == TheSSROIX0Parameter )
+      return &roi.x0;
+   if ( p == TheSSROIY0Parameter )
+      return &roi.y0;
+   if ( p == TheSSROIX1Parameter )
+      return &roi.x1;
+   if ( p == TheSSROIY1Parameter )
+      return &roi.y1;
 
    if ( p == TheSSMeasurementEnabledParameter )
       return &measures[tableRow].enabled;

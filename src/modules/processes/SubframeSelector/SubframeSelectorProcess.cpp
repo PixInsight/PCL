@@ -75,6 +75,8 @@ SubframeSelectorProcess::SubframeSelectorProcess() : MetaProcess()
    /*
     * Instantiate process parameters.
     */
+   new SSRoutine( this );
+
    new SSSubframes( this );
    new SSSubframeEnabled( TheSSSubframesParameter );
    new SSSubframePath( TheSSSubframesParameter );
@@ -97,6 +99,10 @@ SubframeSelectorProcess::SubframeSelectorProcess() : MetaProcess()
    new SSUpperLimit( this );
    new SSBackgroundExpansion( this );
    new SSXYStretch( this );
+   new SSROIX0( this );
+   new SSROIY0( this );
+   new SSROIX1( this );
+   new SSROIY1( this );
 
    new SSMeasurements( this );
    new SSMeasurementEnabled( TheSSMeasurementsParameter );

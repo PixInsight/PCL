@@ -60,6 +60,8 @@
 #include <pcl/ViewList.h>
 #include <pcl/ProcessInterface.h>
 #include <pcl/PreviewSelectionDialog.h>
+#include <pcl/Console.h>
+#include <pcl/MetaModule.h>
 
 #define IMAGELIST_MINHEIGHT( fnt )  (8*fnt.Height() + 2)
 
@@ -160,6 +162,20 @@ bool SubframeSelectorInterface::ImportProcess( const ProcessImplementation& p )
    instance.Assign( p );
    UpdateControls();
    return true;
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::ClearMeasurements()
+{
+   instance.measures.Clear();
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::AddMeasurement( const SubframeSelectorInstance::MeasureItem& measure )
+{
+   instance.measures.Add( SubframeSelectorInstance::MeasureItem( measure ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -272,11 +288,11 @@ void SubframeSelectorInterface::UpdateStarDetectorParameters()
 
 void SubframeSelectorInterface::UpdateMeasurementImageItem( size_type i )
 {
-   TreeBox::Node* node = GUI->SubframeImages_TreeBox[i];
+   TreeBox::Node* node = GUI->MeasurementImages_TreeBox[i];
    if ( node == nullptr )
       return;
 
-   const MeasureData& item = instance.measures[i];
+   const SubframeSelectorInstance::MeasureItem& item = instance.measures[i];
 
    node->SetText( 0, String( i+1 ) );
    node->SetAlignment( 0, TextAlign::Right );
@@ -284,7 +300,7 @@ void SubframeSelectorInterface::UpdateMeasurementImageItem( size_type i )
    node->SetIcon( 1, Bitmap( ScaledResource( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
    node->SetAlignment( 1, TextAlign::Left );
 
-   node->SetIcon( 2, Bitmap( ScaledResource( item.locked ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
+   node->SetIcon( 2, Bitmap( ScaledResource( item.locked ? ":/file-explorer/read-only.png" : ":/file-explorer/read-write.png" ) ) );
    node->SetAlignment( 2, TextAlign::Left );
 
    node->SetIcon( 3, Bitmap( ScaledResource( ":/browser/document.png" ) ) );
@@ -337,11 +353,6 @@ void SubframeSelectorInterface::__ToggleSection( SectionBar& sender, Control& se
       {
          GUI->SubframeImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( Font() ) );
          GUI->SubframeImages_TreeBox.SetMaxHeight( int_max );
-
-         if ( GUI->SubframeImages_Control.IsVisible() )
-            SetVariableHeight();
-         else
-            SetFixedHeight();
       }
    }
    else if ( sender == GUI->MeasurementImages_SectionBar )
@@ -352,13 +363,13 @@ void SubframeSelectorInterface::__ToggleSection( SectionBar& sender, Control& se
       {
          GUI->MeasurementImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( Font() ) );
          GUI->MeasurementImages_TreeBox.SetMaxHeight( int_max );
-
-         if ( GUI->MeasurementImages_Control.IsVisible() )
-            SetVariableHeight();
-         else
-            SetFixedHeight();
       }
    }
+
+   if ( GUI->SubframeImages_Control.IsVisible() || GUI->MeasurementImages_Control.IsVisible() )
+      SetVariableHeight();
+   else
+      SetFixedHeight();
 }
 
 // ----------------------------------------------------------------------------
@@ -399,7 +410,7 @@ void SubframeSelectorInterface::__SubframeImages_NodeActivated( TreeBox &sender,
    case 1:
       // Activate the item's checkmark: toggle item's enabled state.
       item.enabled = !item.enabled;
-         UpdateSubframeImageItem( index );
+      UpdateSubframeImageItem( index );
       break;
    case 2:
       {
@@ -549,11 +560,11 @@ void SubframeSelectorInterface::__IntegerValueUpdated( SpinBox& sender, int valu
       instance.backgroundExpansion = value;
    if ( sender == GUI->StarDetectorParameters_ROIX0_Control )
       instance.roi.x0 = value;
-   else if ( sender == GUI->StarDetectorParameters_ROIY0_Control )
+   if ( sender == GUI->StarDetectorParameters_ROIY0_Control )
       instance.roi.y0 = value;
-   else if ( sender == GUI->StarDetectorParameters_ROIWidth_Control )
+   if ( sender == GUI->StarDetectorParameters_ROIWidth_Control )
       instance.roi.x1 = instance.roi.x0 + value;
-   else if ( sender == GUI->StarDetectorParameters_ROIHeight_Control )
+   if ( sender == GUI->StarDetectorParameters_ROIHeight_Control )
       instance.roi.y1 = instance.roi.y0 + value;
 }
 
@@ -639,7 +650,7 @@ void SubframeSelectorInterface::__MeasurementImages_NodeActivated( TreeBox &send
    if ( index < 0 || size_type( index ) >= instance.measures.Length() )
       throw Error( "SubframeSelectorInterface: *Warning* Corrupted interface structures" );
 
-   MeasureData& item = instance.measures[index];
+   SubframeSelectorInstance::MeasureItem& item = instance.measures[index];
 
    switch ( col )
    {
@@ -649,11 +660,13 @@ void SubframeSelectorInterface::__MeasurementImages_NodeActivated( TreeBox &send
       case 1:
          // Activate the item's checkmark: toggle item's enabled state.
          item.enabled = !item.enabled;
-         UpdateSubframeImageItem( index );
+         item.locked = true;
+         UpdateMeasurementImageItem( index );
+         break;
       case 2:
          // Activate the item's checkmark: toggle item's locked state.
          item.locked = !item.locked;
-         UpdateSubframeImageItem( index );
+         UpdateMeasurementImageItem( index );
          break;
       case 3:
       {

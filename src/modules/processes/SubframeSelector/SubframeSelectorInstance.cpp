@@ -54,6 +54,7 @@
 #include "SubframeSelectorParameters.h"
 #include "SubframeSelectorUtils.h"
 #include "SubframeSelectorStarDetector.h"
+#include "SubframeSelectorInterface.h"
 
 #include <pcl/Console.h>
 #include <pcl/MetaModule.h>
@@ -99,7 +100,7 @@ SubframeSelectorInstance::SubframeSelectorInstance( const MetaProcess* m ) :
    upperLimit( TheSSUpperLimitParameter->DefaultValue() ),
    backgroundExpansion( TheSSBackgroundExpansionParameter->DefaultValue() ),
    xyStretch( TheSSXYStretchParameter->DefaultValue() ),
-   roi ( 0 ),
+   roi( 0 ),
    measures()
 {
 }
@@ -288,12 +289,12 @@ bool SubframeSelectorInstance::Measure() {
             throw ("No such file exists on the local filesystem: " + i->path);
    }
 
+   // Reset measured values
+   measures.Clear();
+
    Console console;
 
    try {
-
-      // Reset measured values
-      measures.Clear();
 
       /*
        * For all errors generated, we want a report on the console. This is
@@ -431,8 +432,9 @@ bool SubframeSelectorInstance::Measure() {
                         throw Error( (*i)->ConsoleOutputText() );
 
                      (*i)->FlushConsoleOutputText();
-                     // Write the calibrated image.
-//                     WriteCalibratedImage( *i ); // TODO
+                     Module->ProcessEvents();
+
+                     CreateMeasureData( *i );
 
                      // Dispose this calibration thread, since we are done with
                      // it. NB: IndirectArray<T>::Delete() sets to zero the
@@ -605,6 +607,14 @@ bool SubframeSelectorInstance::Measure() {
       console.NoteLn(
               String().Format( "<end><cbr><br>===== SubframeSelector: %u succeeded, %u failed, %u skipped =====",
                                succeeded, failed, skipped ));
+
+      if ( TheSubframeSelectorInterface != nullptr )
+      {
+         TheSubframeSelectorInterface->ClearMeasurements();
+         for ( size_type i = 0; i < measures.Length(); ++i )
+            TheSubframeSelectorInterface->AddMeasurement( measures[i] );
+         TheSubframeSelectorInterface->UpdateMeasurementImagesList();
+      }
       return true;
    } // try
 
@@ -751,7 +761,7 @@ bool SubframeSelectorInstance::AllocateParameter( size_type sizeOrLength, const 
    {
       measures.Clear();
       if ( sizeOrLength > 0 )
-         measures.Add( MeasureData(), sizeOrLength );
+         measures.Add( MeasureItem(), sizeOrLength );
    }
    else if ( p == TheSSMeasurementPathParameter )
    {
@@ -792,13 +802,29 @@ SubframeSelectorInstance::CreateThreadForSubframe( const String& filePath, const
 {
    thread_list threads;
    ImageWindow subframeWindow = LoadImageFile( filePath );
-   MeasureData outputData( filePath );
-   threads.Add( new SubframeSelectorMeasureThread( subframeWindow,
-                                                   outputData,
+   ImageVariant sf;
+   subframeWindow.MainView().Image().GetIntensity( sf );
+   threads.Add( new SubframeSelectorMeasureThread( sf,
                                                    filePath,
+                                                   subframeWindow.MainView().FullId(),
                                                    threadData ));
    return threads;
 }
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInstance::CreateMeasureData( const SubframeSelectorMeasureThread* t )
+{
+   // Store output data
+   MeasureItem m;
+   m.path = t->SubframePath();
+   m.fwhm = t->OutputData().fwhm;
+   measures.Add( m );
+
+   // Close open image
+   View::ViewById( t->SubframeWindowId() ).Window().Close();
+}
+
 
 // ----------------------------------------------------------------------------
 

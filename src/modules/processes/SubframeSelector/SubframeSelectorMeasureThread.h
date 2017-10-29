@@ -94,25 +94,24 @@ class SubframeSelectorMeasureThread : public Thread
 {
 public:
 
-   SubframeSelectorMeasureThread( ImageWindow& subframe, MeasureData& outputData, const String& subframePath,
+   SubframeSelectorMeasureThread( ImageVariant& subframe,
+                                  const String& subframePath, const String& subframeWindowId,
                                   const MeasureThreadInputData& data );
 
    virtual void Run();
 
-   const MeasureThreadInputData& MeasuringData() const;
-   const ImageWindow* SubframeImage() const;
    String SubframePath() const;
+   String SubframeWindowId() const;
    const MeasureData& OutputData() const;
-   int SubimageIndex() const;
    bool Success() const;
 
 private:
 
-   ImageWindow                m_subframe;      // The image being measured. It belongs to this thread.
-   MeasureData                m_outputData;    // Target image parameters and embedded m_data. It belongs to this thread.
-   String                     m_subframePath;  // File path of this m_target image
-   int                        m_subimageIndex; // >= 0 in case of a multiple image; = 0 otherwise
-   bool                       m_success : 1;   // The thread completed execution successfully
+   ImageVariant               m_subframe;
+   MeasureData                m_outputData;
+   String                     m_subframePath;
+   String                     m_subframeWindowId;
+   bool                       m_success : 1;
 
    const MeasureThreadInputData& m_data;
 

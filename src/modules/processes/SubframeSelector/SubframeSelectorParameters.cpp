@@ -830,7 +830,7 @@ SSXYStretch::SSXYStretch( MetaProcess* P ) : MetaFloat( P )
 
 IsoString SSXYStretch::Id() const
 {
-   return "xyStrecth";
+   return "xyStretch";
 }
 
 int SSXYStretch::Precision() const
@@ -990,7 +990,7 @@ SSMeasurementEnabled::SSMeasurementEnabled( MetaTable* T ) : MetaBoolean( T )
 
 IsoString SSMeasurementEnabled::Id() const
 {
-   return "measurementsEnabled";
+   return "measurementEnabled";
 }
 
 bool SSMeasurementEnabled::DefaultValue() const
@@ -1007,12 +1007,12 @@ SSMeasurementLocked::SSMeasurementLocked( MetaTable* T ) : MetaBoolean( T )
 
 IsoString SSMeasurementLocked::Id() const
 {
-   return "measurementsLocked";
+   return "measurementLocked";
 }
 
 bool SSMeasurementLocked::DefaultValue() const
 {
-   return true;
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -1024,7 +1024,7 @@ SSMeasurementPath::SSMeasurementPath( MetaTable* T ) : MetaString( T )
 
 IsoString SSMeasurementPath::Id() const
 {
-   return "measurementsPath";
+   return "measurementPath";
 }
 
 // ----------------------------------------------------------------------------
@@ -1036,7 +1036,7 @@ SSMeasurementFWHM::SSMeasurementFWHM( MetaTable* T ) : MetaFloat( T )
 
 IsoString SSMeasurementFWHM::Id() const
 {
-   return "measurementsFWHM";
+   return "measurementFWHM";
 }
 
 int SSMeasurementFWHM::Precision() const
@@ -1046,7 +1046,7 @@ int SSMeasurementFWHM::Precision() const
 
 double SSMeasurementFWHM::DefaultValue() const
 {
-   return 1;
+   return 0;
 }
 
 double SSMeasurementFWHM::MinimumValue() const

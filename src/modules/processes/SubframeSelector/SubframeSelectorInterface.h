@@ -98,7 +98,10 @@ public:
 
    virtual bool ImportProcess( const ProcessImplementation& );
 
-private:
+   void ClearMeasurements();
+   void AddMeasurement( const SubframeSelectorInstance::MeasureItem& measure );
+
+   private:
 
    SubframeSelectorInstance instance;
 
@@ -227,6 +230,7 @@ private:
    void __MeasurementImages_NodeActivated( TreeBox &sender, TreeBox::Node &node, int col );
 
    friend struct GUIData;
+   friend class SubframeSelectorInstance;
 };
 
 // ----------------------------------------------------------------------------

@@ -53,12 +53,7 @@
 #ifndef __SubframeSelectorMeasureData_h
 #define __SubframeSelectorMeasureData_h
 
-#include <pcl/ProcessImplementation.h>
-#include <pcl/MetaParameter.h> // pcl_bool, pcl_enum
-#include <pcl/AutoPointer.h>
-#include <pcl/FileFormat.h>
-#include <pcl/ICCProfile.h>
-#include <pcl/FileFormatInstance.h>
+#include <pcl/MetaParameter.h>
 
 namespace pcl
 {
@@ -67,31 +62,16 @@ namespace pcl
 
 struct MeasureData
 {
-   pcl_bool enabled; // if disabled, skip (ignore) this image
-   pcl_bool locked;  // if locked, don't evaluate this image
-   String   path;    // absolute file path
-   float    fwhm;
+   String   path;
+   double   fwhm;
 
    MeasureData( const String& p = String() ) :
-           enabled( true ),
-           locked( false ),
            path( p ),
-           fwhm()
+           fwhm( 0 )
    {
    }
 
-   MeasureData( const MeasureData& x ) :
-           enabled( x.enabled ),
-           locked( x.locked ),
-           path( x.path ),
-           fwhm( x.fwhm )
-   {
-   }
-
-   bool IsValid() const
-   {
-      return !enabled || !path.IsEmpty();
-   }
+   MeasureData( const MeasureData& x ) = default;
 };
 
 // ----------------------------------------------------------------------------

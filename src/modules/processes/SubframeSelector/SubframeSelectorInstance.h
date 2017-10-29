@@ -54,6 +54,7 @@
 #define __SubframeSelectorInstance_h
 
 #include "SubframeSelectorMeasureThread.h"
+#include "SubframeSelectorParameters.h"
 
 #include <pcl/MetaParameter.h> // pcl_bool, pcl_enum
 #include <pcl/ProcessImplementation.h>
@@ -98,26 +99,15 @@ private:
       String   path;    // absolute file path
 
       SubframeItem( const String& p = String() ) :
-              enabled( true ),
+              enabled( TheSSSubframeEnabledParameter->DefaultValue() ),
               path( p )
       {
       }
 
-      SubframeItem( const SubframeItem& x ) :
-              enabled( x.enabled ),
-              path( x.path )
-      {
-      }
-
-      bool IsValid() const
-      {
-         return !enabled || !path.IsEmpty();
-      }
+      SubframeItem( const SubframeItem& x ) = default;
    };
 
    typedef Array<SubframeItem>  subframe_list;
-
-   typedef Array<MeasureData>  measured_list;
 
    // Types of run methods
    pcl_enum       routine;
@@ -148,10 +138,30 @@ private:
    Rect           roi;
 
    // The set of measured subframes
-   measured_list     measures;
+   struct MeasureItem
+   {
+      pcl_bool enabled; // if disabled, skip (ignore) this image
+      pcl_bool locked;  // if locked, don't evaluate this image
+      String   path;    // absolute file path
+      float    fwhm;
+
+      MeasureItem( const String& p = String() ) :
+              enabled( TheSSMeasurementEnabledParameter->DefaultValue() ),
+              locked( TheSSMeasurementLockedParameter->DefaultValue() ),
+              path( p ),
+              fwhm( TheSSMeasurementFWHMParameter->DefaultValue() )
+      {
+      }
+
+      MeasureItem( const MeasureItem& x ) = default;
+   };
+   Array<MeasureItem>     measures;
 
    // Read a subframe file into a Thread
    thread_list CreateThreadForSubframe( const String& filePath, const MeasureThreadInputData& );
+
+   // Create the measurement data from the Thread
+   void CreateMeasureData( const SubframeSelectorMeasureThread* );
 
    friend class SubframeSelectorProcess;
    friend class SubframeSelectorInterface;

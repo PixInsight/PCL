@@ -51,14 +51,11 @@
 // ----------------------------------------------------------------------------
 
 #include "SubframeSelectorInterface.h"
-#include "SubframeSelectorParameters.h"
 #include "SubframeSelectorProcess.h"
 
 #include <pcl/Dialog.h>
 #include <pcl/FileDialog.h>
-#include <pcl/FileFormat.h>
 #include <pcl/ViewList.h>
-#include <pcl/ProcessInterface.h>
 #include <pcl/PreviewSelectionDialog.h>
 #include <pcl/Console.h>
 #include <pcl/MetaModule.h>
@@ -282,6 +279,8 @@ void SubframeSelectorInterface::UpdateStarDetectorParameters()
    GUI->StarDetectorParameters_ROIY0_Control.SetValue( instance.roi.y0 );
    GUI->StarDetectorParameters_ROIWidth_Control.SetValue( instance.roi.Width() );
    GUI->StarDetectorParameters_ROIHeight_Control.SetValue( instance.roi.Height() );
+   GUI->StarDetectorParameters_PSFFit_Control.SetCurrentItem( instance.psfFit );
+   GUI->StarDetectorParameters_PSFFitCircular_Control.SetChecked( instance.psfFitCircular );
 }
 
 // ----------------------------------------------------------------------------
@@ -308,7 +307,7 @@ void SubframeSelectorInterface::UpdateMeasurementImageItem( size_type i )
    node->SetToolTip( 3, item.path );
    node->SetAlignment( 3, TextAlign::Left );
 
-   node->SetText( 4, String().Format( "%.03f", item.fwhm ) );
+   node->SetText( 4, String().Format( "%.03f", item.FWHM( instance.subframeScale, instance.scaleUnit ) ) );
    node->SetAlignment( 4, TextAlign::Center );
 }
 
@@ -526,7 +525,10 @@ void SubframeSelectorInterface::__SubframeImages_FileDrop( Control &sender, cons
 void SubframeSelectorInterface::__RealValueUpdated( NumericEdit& sender, double value )
 {
    if ( sender == GUI->SystemParameters_SubframeScale_Control )
+   {
       instance.subframeScale = value;
+      UpdateMeasurementImagesList();
+   }
    if ( sender == GUI->SystemParameters_CameraGain_Control )
       instance.cameraGain = value;
    if ( sender == GUI->StarDetectorParameters_Sensitivity_Control )
@@ -577,9 +579,14 @@ void SubframeSelectorInterface::__ItemSelected( ComboBox& sender, int itemIndex 
    if ( sender == GUI->SystemParameters_CameraResolution_Control )
       instance.cameraResolution = itemIndex;
    if ( sender == GUI->SystemParameters_ScaleUnit_Control )
+   {
       instance.scaleUnit = itemIndex;
+      UpdateMeasurementImagesList();
+   }
    if ( sender == GUI->SystemParameters_DataUnit_Control )
       instance.dataUnit = itemIndex;
+   if ( sender == GUI->StarDetectorParameters_PSFFit_Control )
+      instance.psfFit = itemIndex;
 }
 
 // ----------------------------------------------------------------------------
@@ -588,6 +595,8 @@ void SubframeSelectorInterface::__CheckboxUpdated( Button& sender, Button::check
 {
    if ( sender == GUI->StarDetectorParameters_ApplyHotPixelFilter_Control )
       instance.applyHotPixelFilterToDetectionImage = state == CheckState::Checked;
+   if ( sender == GUI->StarDetectorParameters_PSFFitCircular_Control )
+      instance.psfFitCircular = state == CheckState::Checked;
 }
 
 // ----------------------------------------------------------------------------
@@ -1012,6 +1021,29 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    StarDetectorParameters_XYStretch_Control.SetToolTip( TheSSXYStretchParameter->Tooltip() );
    StarDetectorParameters_XYStretch_Control.OnValueUpdated( (NumericEdit::value_event_handler)&SubframeSelectorInterface::__RealValueUpdated, w );
 
+   StarDetectorParameters_PSFFit_Label.SetText( "PSF Fit:" );
+   StarDetectorParameters_PSFFit_Label.SetMinWidth( currentLabelWidth );
+   StarDetectorParameters_PSFFit_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   for ( int i = 0; i < TheSSPSFFitParameter->NumberOfElements(); ++i )
+      StarDetectorParameters_PSFFit_Control.AddItem( TheSSPSFFitParameter->ElementLabel( i ) );
+
+   StarDetectorParameters_PSFFit_Control.SetToolTip( TheSSPSFFitParameter->Tooltip() );
+   StarDetectorParameters_PSFFit_Control.OnItemSelected( (ComboBox::item_event_handler)&SubframeSelectorInterface::__ItemSelected, w );
+
+   StarDetectorParameters_PSFFitCircular_Label.SetText( "Circular:" );
+   StarDetectorParameters_PSFFitCircular_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   StarDetectorParameters_PSFFitCircular_Control.SetToolTip( TheSSPSFFitCircularParameter->Tooltip() );
+   StarDetectorParameters_PSFFitCircular_Control.OnCheck( (Button::check_event_handler)&SubframeSelectorInterface::__CheckboxUpdated, w );
+
+   StarDetectorParameters_PSFFit_Sizer.SetSpacing( 4 );
+   StarDetectorParameters_PSFFit_Sizer.Add( StarDetectorParameters_PSFFit_Label );
+   StarDetectorParameters_PSFFit_Sizer.Add( StarDetectorParameters_PSFFit_Control );
+   StarDetectorParameters_PSFFit_Sizer.Add( StarDetectorParameters_PSFFitCircular_Label );
+   StarDetectorParameters_PSFFit_Sizer.Add( StarDetectorParameters_PSFFitCircular_Control );
+   StarDetectorParameters_PSFFit_Sizer.AddStretch();
+
    currentLabelWidth = fnt.Width( String( "Height:" ) ); // the longest label text
 
    StarDetectorParameters_ROIX0_Label.SetText( "Left:" );
@@ -1084,6 +1116,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    StarDetectorParameters_Sizer.Add( StarDetectorParameters_UpperLimit_Control );
    StarDetectorParameters_Sizer.Add( StarDetectorParameters_BackgroundExpansion_Sizer );
    StarDetectorParameters_Sizer.Add( StarDetectorParameters_XYStretch_Control );
+   StarDetectorParameters_Sizer.Add( StarDetectorParameters_PSFFit_Sizer );
    StarDetectorParameters_Sizer.Add( StarDetectorParameters_ROIRow1_Sizer );
    StarDetectorParameters_Sizer.Add( StarDetectorParameters_ROIRow2_Sizer );
 

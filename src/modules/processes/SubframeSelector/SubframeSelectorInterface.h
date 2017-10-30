@@ -176,6 +176,11 @@ public:
             Label             StarDetectorParameters_BackgroundExpansion_Label;
             SpinBox           StarDetectorParameters_BackgroundExpansion_Control;
          NumericControl    StarDetectorParameters_XYStretch_Control;
+         HorizontalSizer   StarDetectorParameters_PSFFit_Sizer;
+            Label             StarDetectorParameters_PSFFit_Label;
+            ComboBox          StarDetectorParameters_PSFFit_Control;
+            Label             StarDetectorParameters_PSFFitCircular_Label;
+            CheckBox          StarDetectorParameters_PSFFitCircular_Control;
          HorizontalSizer   StarDetectorParameters_ROIRow1_Sizer;
             Label             StarDetectorParameters_ROIX0_Label;
             SpinBox           StarDetectorParameters_ROIX0_Control;

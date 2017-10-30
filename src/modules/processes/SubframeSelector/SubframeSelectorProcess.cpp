@@ -103,6 +103,8 @@ SubframeSelectorProcess::SubframeSelectorProcess() : MetaProcess()
    new SSROIY0( this );
    new SSROIX1( this );
    new SSROIY1( this );
+   new SSPSFFit( this );
+   new SSPSFFitCircular( this );
 
    new SSMeasurements( this );
    new SSMeasurementEnabled( TheSSMeasurementsParameter );

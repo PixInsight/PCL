@@ -86,6 +86,8 @@ struct MeasureThreadInputData
    int32          backgroundExpansion;
    float          xyStretch;
    Rect           roi;
+   pcl_enum       psfFit;
+   pcl_bool       psfFitCircular;
 };
 
 // ----------------------------------------------------------------------------

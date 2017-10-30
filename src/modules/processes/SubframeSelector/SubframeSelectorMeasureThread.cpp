@@ -63,6 +63,14 @@
 #define MAX_STARS 20000
 #define STAR_DETECTEDOK 1 // DynamicPSF Status Enumeration
 #define PSF_FITTEDOK 1 // DynamicPSF Status Enumeration
+#define FWHM_GAUSSIAN 1.551850 // return 2.0 * pcl::Sqrt( 2.0 * pcl::Log( 2.0 ) );
+#define FWHM_MOFFAT10 0.535811 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 10.0 ) - 1.0 );
+#define FWHM_MOFFAT8 0.601690 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 8.0 ) - 1.0 );
+#define FWHM_MOFFAT6 0.699892 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 6.0 ) - 1.0 );
+#define FWHM_MOFFAT4 0.869959 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 4.0 ) - 1.0 );
+#define FWHM_MOFFAT25 1.130501 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 2.5 ) - 1.0 );
+#define FWHM_MOFFAT15 1.532842 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 1.5 ) - 1.0 );
+#define FWHM_LORENTZIAN 2.000000 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 1.0 ) - 1.0 );
 
 namespace pcl
 {
@@ -134,16 +142,24 @@ void SubframeSelectorMeasureThread::Run()
 
       // Find the PSF parameters and setup the options
       dPSF.SetParameterValue( false, ProcessParameter( dPSFProcess, "autoPSF" ), 0 );
-      dPSF.SetParameterValue( false, ProcessParameter( dPSFProcess, "circularPSF" ), 0 );
-      dPSF.SetParameterValue( false, ProcessParameter( dPSFProcess, "gaussianPSF" ), 0 );
       dPSF.SetParameterValue( false, ProcessParameter( dPSFProcess, "moffatPSF" ), 0 );
-      dPSF.SetParameterValue( false, ProcessParameter( dPSFProcess, "moffat10PSF" ), 0 );
-      dPSF.SetParameterValue( false, ProcessParameter( dPSFProcess, "moffat8PSF" ), 0 );
-      dPSF.SetParameterValue( false, ProcessParameter( dPSFProcess, "moffat6PSF" ), 0 );
-      dPSF.SetParameterValue( true,  ProcessParameter( dPSFProcess, "moffat4PSF" ), 0 );
-      dPSF.SetParameterValue( false, ProcessParameter( dPSFProcess, "moffat25PSF" ), 0 );
-      dPSF.SetParameterValue( false, ProcessParameter( dPSFProcess, "moffat15PSF" ), 0 );
-      dPSF.SetParameterValue( false, ProcessParameter( dPSFProcess, "lorentzianPSF" ), 0 );
+      dPSF.SetParameterValue( (bool) m_data.psfFitCircular, ProcessParameter( dPSFProcess, "circularPSF" ), 0 );
+      dPSF.SetParameterValue( m_data.psfFit == SSPSFFit::Gaussian,
+                              ProcessParameter( dPSFProcess, "gaussianPSF" ), 0 );
+      dPSF.SetParameterValue( m_data.psfFit == SSPSFFit::Moffat10,
+                              ProcessParameter( dPSFProcess, "moffat10PSF" ), 0 );
+      dPSF.SetParameterValue( m_data.psfFit == SSPSFFit::Moffat8,
+                              ProcessParameter( dPSFProcess, "moffat8PSF" ), 0 );
+      dPSF.SetParameterValue( m_data.psfFit == SSPSFFit::Moffat6,
+                              ProcessParameter( dPSFProcess, "moffat6PSF" ), 0 );
+      dPSF.SetParameterValue( m_data.psfFit == SSPSFFit::Moffat4,
+                              ProcessParameter( dPSFProcess, "moffat4PSF" ), 0 );
+      dPSF.SetParameterValue( m_data.psfFit == SSPSFFit::Moffat25,
+                              ProcessParameter( dPSFProcess, "moffat25PSF" ), 0 );
+      dPSF.SetParameterValue( m_data.psfFit == SSPSFFit::Moffat15,
+                              ProcessParameter( dPSFProcess, "moffat15PSF" ), 0 );
+      dPSF.SetParameterValue( m_data.psfFit == SSPSFFit::Lorentzian,
+                              ProcessParameter( dPSFProcess, "lorentzianPSF" ), 0 );
 
       // Find the Views parameter and setup 1 View with this window
       ProcessParameter viewsParameter( dPSFProcess, "views" );
@@ -203,9 +219,34 @@ void SubframeSelectorMeasureThread::Run()
 
       // Find the output PSF parameter and get the results
       ProcessParameter psfParameter( dPSFProcess, "psf" );
-
       size_type psfRows = dPSF.TableRowCount( psfParameter );
-      Array<double> FWHMs;
+      // Determine the best fit to weight the others against
+      double minMAD = -1;
+      for ( size_type i = 0; i < psfRows; ++i ) {
+         Variant fit = dPSF.ParameterValue( ProcessParameter( psfParameter, "status" ), i );
+         if ( !fit.IsValid())
+            continue;
+         if ( fit.ToInt() != PSF_FITTEDOK )
+            continue;
+
+         Variant MADV = dPSF.ParameterValue( ProcessParameter( psfParameter, "mad" ), i );
+         if ( !MADV.IsValid())
+            continue;
+         double MAD = MADV.ToDouble();
+
+         if ( minMAD <= 0 )
+         {
+            minMAD = MAD;
+            continue;
+         }
+         
+         if ( MAD < minMAD )
+            minMAD = MAD;
+      }
+      // Analyze each star parameter
+      size_type fits = 0;
+      double sumSigma = 0;
+      double sumWeight = 0;
       for ( size_type i = 0; i < psfRows; ++i ) {
          Variant fit = dPSF.ParameterValue( ProcessParameter( psfParameter, "status" ), i );
          if ( !fit.IsValid() )
@@ -220,13 +261,39 @@ void SubframeSelectorMeasureThread::Run()
          if ( !sy.IsValid() )
             continue;
 
-         FWHMs.Add( pcl::Sqrt( sx.ToDouble() * sy.ToDouble() ) );
+         Variant MADV = dPSF.ParameterValue( ProcessParameter( psfParameter, "mad" ), i );
+         if ( !MADV.IsValid())
+            continue;
+         double MAD = MADV.ToDouble();
+
+         double weight = minMAD / MAD;
+         sumWeight += weight;
+
+         sumSigma += weight * pcl::Sqrt( sx.ToDouble() * sy.ToDouble() );
+         ++fits;
       }
 
-      if ( FWHMs.IsEmpty() )
+      if ( fits <= 0 )
          m_success = false;
       else {
-         m_outputData.fwhm = pcl::Median( FWHMs.Begin(), FWHMs.End() );
+         double FWHM = sumSigma / sumWeight;
+         if ( m_data.psfFit == SSPSFFit::Gaussian )
+            FWHM *= FWHM_GAUSSIAN;
+         if ( m_data.psfFit == SSPSFFit::Moffat10 )
+            FWHM *= FWHM_MOFFAT10;
+         if ( m_data.psfFit == SSPSFFit::Moffat8 )
+            FWHM *= FWHM_MOFFAT8;
+         if ( m_data.psfFit == SSPSFFit::Moffat6 )
+            FWHM *= FWHM_MOFFAT6;
+         if ( m_data.psfFit == SSPSFFit::Moffat4 )
+            FWHM *= FWHM_MOFFAT4;
+         if ( m_data.psfFit == SSPSFFit::Moffat25 )
+            FWHM *= FWHM_MOFFAT25;
+         if ( m_data.psfFit == SSPSFFit::Moffat15 )
+            FWHM *= FWHM_MOFFAT15;
+         if ( m_data.psfFit == SSPSFFit::Lorentzian )
+            FWHM *= FWHM_LORENTZIAN;
+         m_outputData.fwhm = FWHM;
          m_success = true;
       }
 

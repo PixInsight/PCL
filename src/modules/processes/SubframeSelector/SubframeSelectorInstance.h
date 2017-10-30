@@ -136,6 +136,8 @@ private:
    int32          backgroundExpansion;
    float          xyStretch;
    Rect           roi;
+   pcl_enum       psfFit;
+   pcl_bool       psfFitCircular;
 
    // The set of measured subframes
    struct MeasureItem
@@ -154,6 +156,15 @@ private:
       }
 
       MeasureItem( const MeasureItem& x ) = default;
+
+      float FWHM( const float& subframeScale, const int& scaleUnit ) const
+      {
+         if ( scaleUnit == SSScaleUnit::ArcSeconds )
+            return fwhm * subframeScale;
+         if ( scaleUnit == SSScaleUnit::Pixel )
+            return fwhm;
+         return fwhm;
+      }
    };
    Array<MeasureItem>     measures;
 

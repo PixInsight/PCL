@@ -101,6 +101,8 @@ SubframeSelectorInstance::SubframeSelectorInstance( const MetaProcess* m ) :
    backgroundExpansion( TheSSBackgroundExpansionParameter->DefaultValue() ),
    xyStretch( TheSSXYStretchParameter->DefaultValue() ),
    roi( 0 ),
+   psfFit( SSPSFFit::Default ),
+   psfFitCircular( TheSSPSFFitCircularParameter->DefaultValue() ),
    measures()
 {
 }
@@ -136,6 +138,8 @@ void SubframeSelectorInstance::Assign( const ProcessImplementation& p )
       backgroundExpansion                    = x->backgroundExpansion;
       xyStretch                              = x->xyStretch;
       roi                                    = x->roi;
+      psfFit                                 = x->psfFit;
+      psfFitCircular                         = x->psfFitCircular;
       measures                               = x->measures;
    }
 }
@@ -200,6 +204,8 @@ bool SubframeSelectorInstance::TestStarDetector() {
       inputThreadData.backgroundExpansion                   = backgroundExpansion;
       inputThreadData.xyStretch                             = xyStretch;
       inputThreadData.roi                                   = roi;
+      inputThreadData.psfFit                                = psfFit;
+      inputThreadData.psfFitCircular                        = psfFitCircular;
 
       try
       {
@@ -346,6 +352,8 @@ bool SubframeSelectorInstance::Measure() {
       inputThreadData.backgroundExpansion                   = backgroundExpansion;
       inputThreadData.xyStretch                             = xyStretch;
       inputThreadData.roi                                   = roi;
+      inputThreadData.psfFit                                = psfFit;
+      inputThreadData.psfFitCircular                        = psfFitCircular;
 
       /*
        * We'll work on a temporary duplicate of the subframes list. This
@@ -730,6 +738,10 @@ void* SubframeSelectorInstance::LockParameter( const MetaParameter* p, size_type
       return &roi.x1;
    if ( p == TheSSROIY1Parameter )
       return &roi.y1;
+   if ( p == TheSSPSFFitParameter )
+      return &psfFit;
+   if ( p == TheSSPSFFitCircularParameter )
+      return &psfFitCircular;
 
    if ( p == TheSSMeasurementEnabledParameter )
       return &measures[tableRow].enabled;

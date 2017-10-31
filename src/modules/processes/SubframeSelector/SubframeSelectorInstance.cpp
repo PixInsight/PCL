@@ -50,6 +50,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
+#include "PSF.h"
 #include "SubframeSelectorInstance.h"
 #include "SubframeSelectorUtils.h"
 #include "SubframeSelectorStarDetector.h"
@@ -146,6 +147,9 @@ struct MeasureThreadInputData
 
 // ----------------------------------------------------------------------------
 
+typedef Array<Star> star_list;
+typedef Array<PSFData> psf_list;
+
 class SubframeSelectorMeasureThread : public Thread
 {
 public:
@@ -170,12 +174,10 @@ public:
 
          Console console;
          console.NoteLn( "<end><cbr><br>Measuring: " + m_outputData.path );
-         Module->ProcessEvents();
-
-         ElapsedTime T;
 
          // Crop if the ROI was set
-         if ( m_data->instance->roi.IsRect() ) {
+         if ( m_data->instance->roi.IsRect() )
+         {
             console.WriteLn( String().Format( "Cropping to: (%i, %i), (%i x %i)",
                                               m_data->instance->roi.x0, m_data->instance->roi.y0,
                                               m_data->instance->roi.Width(), m_data->instance->roi.Height()));
@@ -183,130 +185,48 @@ public:
             m_subframe.CropTo( m_data->instance->roi );
          }
 
-         // Setup StarDetector parameters and find the list of stars
-         SubframeSelectorStarDetector starDetector;
-         starDetector.showStarDetectionMaps                 = m_data->showStarDetectionMaps;
-         starDetector.structureLayers                       = m_data->instance->structureLayers;
-         starDetector.noiseLayers                           = m_data->instance->noiseLayers;
-         starDetector.hotPixelFilterRadius                  = m_data->instance->hotPixelFilterRadius;
-         starDetector.noiseReductionFilterRadius            = m_data->instance->noiseReductionFilterRadius;
-         starDetector.applyHotPixelFilterToDetectionImage   = m_data->instance->applyHotPixelFilterToDetectionImage;
-         starDetector.sensitivity                           = m_data->instance->sensitivity;
-         starDetector.peakResponse                          = m_data->instance->peakResponse;
-         starDetector.maxDistortion                         = m_data->instance->maxDistortion;
-         starDetector.upperLimit                            = m_data->instance->upperLimit;
-         starDetector.backgroundExpansion                   = m_data->instance->backgroundExpansion;
-         starDetector.xyStretch                             = m_data->instance->xyStretch;
-         Array<Star> stars = starDetector.GetStars( m_subframe );
-         m_subframe.Free();
+         // Run the Star Detector
+         ElapsedTime T;
+         star_list stars = StarDetector();
+         console.WriteLn( String().Format( "%i Star(s) detected", stars.Length() ) );
          console.WriteLn( "Star Detector: " + T.ToIsoString() );
-         T.Reset();
 
          // Stop if just showing the maps
-         if ( m_data->showStarDetectionMaps ) {
+         if ( m_data->showStarDetectionMaps )
+         {
+            m_subframe.Free(); // no longer required
             m_success = true;
             return;
          }
 
-         // Setup a DynamicPSF process
-         Process dPSFProcess( IsoString( "DynamicPSF" ) );
-         ProcessInstance dPSF( dPSFProcess );
-         if ( dPSF.IsNull() )
-            throw Error( "Couldn't instantiate the DynamicPSF process: null" );
-
-         // Find the PSF parameters and setup the options
-         dPSF.SetParameterValue( false, ProcessParameter( dPSFProcess, "autoPSF" ), 0 );
-         dPSF.SetParameterValue( false, ProcessParameter( dPSFProcess, "moffatPSF" ), 0 );
-         dPSF.SetParameterValue( (bool) m_data->instance->psfFitCircular, ProcessParameter( dPSFProcess, "circularPSF" ), 0 );
-         dPSF.SetParameterValue( m_data->instance->psfFit == SSPSFFit::Gaussian,
-                                 ProcessParameter( dPSFProcess, "gaussianPSF" ), 0 );
-         dPSF.SetParameterValue( m_data->instance->psfFit == SSPSFFit::Moffat10,
-                                 ProcessParameter( dPSFProcess, "moffat10PSF" ), 0 );
-         dPSF.SetParameterValue( m_data->instance->psfFit == SSPSFFit::Moffat8,
-                                 ProcessParameter( dPSFProcess, "moffat8PSF" ), 0 );
-         dPSF.SetParameterValue( m_data->instance->psfFit == SSPSFFit::Moffat6,
-                                 ProcessParameter( dPSFProcess, "moffat6PSF" ), 0 );
-         dPSF.SetParameterValue( m_data->instance->psfFit == SSPSFFit::Moffat4,
-                                 ProcessParameter( dPSFProcess, "moffat4PSF" ), 0 );
-         dPSF.SetParameterValue( m_data->instance->psfFit == SSPSFFit::Moffat25,
-                                 ProcessParameter( dPSFProcess, "moffat25PSF" ), 0 );
-         dPSF.SetParameterValue( m_data->instance->psfFit == SSPSFFit::Moffat15,
-                                 ProcessParameter( dPSFProcess, "moffat15PSF" ), 0 );
-         dPSF.SetParameterValue( m_data->instance->psfFit == SSPSFFit::Lorentzian,
-                                 ProcessParameter( dPSFProcess, "lorentzianPSF" ), 0 );
-
-         // Find the Views parameter and setup 1 View with this window
-         ProcessParameter viewsParameter( dPSFProcess, "views" );
-
-         if ( !dPSF.AllocateTableRows( viewsParameter, 1 ) )
-            throw Error( "Cannot allocate DynamicPSF views" );
-
-         dPSF.SetParameterValue( m_subframeWindowId, ProcessParameter( viewsParameter, "id" ), 0 );
-
-         // Find the Stars parameter and setup N Stars with the previous results
-         size_type starRows = stars.Length();
-         if ( stars.Length() > MAX_STARS )
-            starRows = MAX_STARS;
-
-         ProcessParameter starsParameter( dPSFProcess, "stars" );
-
-         if ( !dPSF.AllocateTableRows( starsParameter, starRows ) )
-            throw Error( "Cannot allocate DynamicPSF views" );
-
-         for ( size_type i = 0; i < starRows; ++i )
+         // Stop if no stars found
+         if ( stars.IsEmpty() )
          {
-            Star star = stars[i];
-            int radius = pcl::Max(3, pcl::Ceil(pcl::Sqrt(star.size)));
-            int ox = 0;
-            int oy = 0;
-            if ( m_data->instance->roi.IsRect() ) {
-               ox += m_data->instance->roi.x0;
-               oy += m_data->instance->roi.y0;
-            }
-            dPSF.SetParameterValue( STAR_DETECTEDOK,
-                                    ProcessParameter( starsParameter, "status" ), i );
-            dPSF.SetParameterValue( ox + star.position.x,
-                                    ProcessParameter( starsParameter, "x" ),      i );
-            dPSF.SetParameterValue( ox + star.position.x - radius,
-                                    ProcessParameter( starsParameter, "x0" ),     i );
-            dPSF.SetParameterValue( ox + star.position.x + radius,
-                                    ProcessParameter( starsParameter, "x1" ),     i );
-            dPSF.SetParameterValue( oy + star.position.y,
-                                    ProcessParameter( starsParameter, "y" ),      i );
-            dPSF.SetParameterValue( oy + star.position.y - radius,
-                                    ProcessParameter( starsParameter, "y0" ),     i );
-            dPSF.SetParameterValue( oy + star.position.y + radius,
-                                    ProcessParameter( starsParameter, "y1" ),     i );
+            m_subframe.Free(); // no longer required
+            m_success = false;
+            return;
          }
 
-         // Run the DynamicPSF process if possible
-         String whyNot;
-         if ( !dPSF.CanExecuteGlobal( whyNot ) )
-            throw Error( "Cannot execute DynamicPSF instance <br/>"
-                                 "Reason: " + whyNot );
-
-         if ( !dPSF.ExecuteGlobal() )
-            throw CaughtException();
-
-         console.WriteLn( "DynamicPSF: " + T.ToIsoString() );
+         // Run the PSF Fitter
          T.Reset();
+         psf_list fits = FitPSFs( stars.Begin(), stars.End() );
+         console.WriteLn( String().Format( "%i PSF(s) fitted", fits.Length() ) );
+         console.WriteLn( "Fit PSFs: " + T.ToIsoString() );
 
-         // Find the output PSF parameter and get the results
-         ProcessParameter psfParameter( dPSFProcess, "psf" );
-         size_type psfRows = dPSF.TableRowCount( psfParameter );
+         if ( fits.IsEmpty() )
+         {
+            m_subframe.Free(); // no longer required
+            m_success = false;
+            return;
+         }
+
+         // Measure Data
+         T.Reset();
          // Determine the best fit to weight the others against
          double minMAD = -1;
-         for ( size_type i = 0; i < psfRows; ++i ) {
-            Variant fit = dPSF.ParameterValue( ProcessParameter( psfParameter, "status" ), i );
-            if ( !fit.IsValid())
-               continue;
-            if ( fit.ToInt() != PSF_FITTEDOK )
-               continue;
-
-            Variant MADV = dPSF.ParameterValue( ProcessParameter( psfParameter, "mad" ), i );
-            if ( !MADV.IsValid())
-               continue;
-            double MAD = MADV.ToDouble();
+         for ( psf_list::const_iterator i = fits.Begin(); i != fits.End(); ++i )
+         {
+            double MAD = i->mad;
 
             if ( minMAD <= 0 )
             {
@@ -318,66 +238,25 @@ public:
                minMAD = MAD;
          }
          // Analyze each star parameter
-         size_type fits = 0;
          double sumSigma = 0;
          double sumWeight = 0;
-         for ( size_type i = 0; i < psfRows; ++i ) {
-            Variant fit = dPSF.ParameterValue( ProcessParameter( psfParameter, "status" ), i );
-            if ( !fit.IsValid() )
-               continue;
-            if ( fit.ToInt() != PSF_FITTEDOK )
-               continue;
-
-            Variant sx = dPSF.ParameterValue( ProcessParameter( psfParameter, "sx" ), i );
-            if ( !sx.IsValid() )
-               continue;
-            Variant sy = dPSF.ParameterValue( ProcessParameter( psfParameter, "sy" ), i );
-            if ( !sy.IsValid() )
-               continue;
-
-            Variant MADV = dPSF.ParameterValue( ProcessParameter( psfParameter, "mad" ), i );
-            if ( !MADV.IsValid())
-               continue;
-            double MAD = MADV.ToDouble();
+         for ( psf_list::const_iterator i = fits.Begin(); i != fits.End(); ++i )
+         {
+            double MAD = i->mad;
 
             double weight = minMAD / MAD;
             sumWeight += weight;
 
-            sumSigma += weight * pcl::Sqrt( sx.ToDouble() * sy.ToDouble() );
-            ++fits;
+            sumSigma += weight * pcl::Sqrt( i->sx * i->sy );
          }
+         double FWHM = sumSigma / sumWeight;
+         m_outputData.fwhm = PSFData::FWHM( PSFFunction( m_data->instance->psfFit ), FWHM, 0 ); // beta is unused here
 
-         if ( fits <= 0 )
-            m_success = false;
-         else {
-            double FWHM = sumSigma / sumWeight;
-            if ( m_data->instance->psfFit == SSPSFFit::Gaussian )
-               FWHM *= FWHM_GAUSSIAN;
-            if ( m_data->instance->psfFit == SSPSFFit::Moffat10 )
-               FWHM *= FWHM_MOFFAT10;
-            if ( m_data->instance->psfFit == SSPSFFit::Moffat8 )
-               FWHM *= FWHM_MOFFAT8;
-            if ( m_data->instance->psfFit == SSPSFFit::Moffat6 )
-               FWHM *= FWHM_MOFFAT6;
-            if ( m_data->instance->psfFit == SSPSFFit::Moffat4 )
-               FWHM *= FWHM_MOFFAT4;
-            if ( m_data->instance->psfFit == SSPSFFit::Moffat25 )
-               FWHM *= FWHM_MOFFAT25;
-            if ( m_data->instance->psfFit == SSPSFFit::Moffat15 )
-               FWHM *= FWHM_MOFFAT15;
-            if ( m_data->instance->psfFit == SSPSFFit::Lorentzian )
-               FWHM *= FWHM_LORENTZIAN;
-            m_outputData.fwhm = FWHM;
-            m_success = true;
-         }
+         console.WriteLn( "Calculations: " + T.ToIsoString() );
 
-         // Cleanup
-         dPSF.AllocateTableRows( viewsParameter, 0 );
-         dPSF.AllocateTableRows( starsParameter, 0 );
-         dPSF.AllocateTableRows( psfParameter, 0 );
+         m_subframe.Free(); // no longer required
 
          m_success = true;
-         m_outputData.fwhm = 2;
       }
       catch ( ... )
       {
@@ -405,6 +284,60 @@ public:
    }
 
 private:
+
+   star_list StarDetector()
+   {
+      // Setup StarDetector parameters and find the list of stars
+      SubframeSelectorStarDetector starDetector;
+      starDetector.showStarDetectionMaps                 = m_data->showStarDetectionMaps;
+      starDetector.structureLayers                       = m_data->instance->structureLayers;
+      starDetector.noiseLayers                           = m_data->instance->noiseLayers;
+      starDetector.hotPixelFilterRadius                  = m_data->instance->hotPixelFilterRadius;
+      starDetector.noiseReductionFilterRadius            = m_data->instance->noiseReductionFilterRadius;
+      starDetector.applyHotPixelFilterToDetectionImage   = m_data->instance->applyHotPixelFilterToDetectionImage;
+      starDetector.sensitivity                           = m_data->instance->sensitivity;
+      starDetector.peakResponse                          = m_data->instance->peakResponse;
+      starDetector.maxDistortion                         = m_data->instance->maxDistortion;
+      starDetector.upperLimit                            = m_data->instance->upperLimit;
+      starDetector.backgroundExpansion                   = m_data->instance->backgroundExpansion;
+      starDetector.xyStretch                             = m_data->instance->xyStretch;
+      return starDetector.GetStars( m_subframe );
+   }
+
+   psf_list FitPSFs( star_list::const_iterator begin, star_list::const_iterator end )
+   {
+      psf_list PSFs;
+      for ( star_list::const_iterator i = begin; i != end; ++i )
+      {
+         int radius = pcl::Max(3, pcl::Ceil(pcl::Sqrt(i->size)));
+         Rect rect( Point( i->position.x - radius, i->position.y - radius ),
+                    Point( i->position.x + radius, i->position.y + radius ) );
+
+         PSFFit psfFit( m_subframe, i->position, rect, PSFFunction( m_data->instance->psfFit ),
+                        m_data->instance->psfFitCircular );
+         PSFData psf = psfFit.psf;
+
+         if ( psf.status == PSFFit::FittedOk )
+            PSFs.Append( psf );
+      }
+      return PSFs;
+   }
+
+   PSFFit::Function PSFFunction( const pcl_enum& fit )
+   {
+      switch ( m_data->instance->psfFit )
+      {
+      case SSPSFFit::Gaussian: return PSFFit::Function::Gaussian;
+      case SSPSFFit::Moffat10: return PSFFit::Function::MoffatA;
+      case SSPSFFit::Moffat8: return PSFFit::Function::Moffat8;
+      case SSPSFFit::Moffat6: return PSFFit::Function::Moffat6;
+      case SSPSFFit::Moffat4: return PSFFit::Function::Moffat4;
+      case SSPSFFit::Moffat25: return PSFFit::Function::Moffat25;
+      case SSPSFFit::Moffat15: return PSFFit::Function::Moffat15;
+      case SSPSFFit::Lorentzian: return PSFFit::Function::Lorentzian;
+      default: return PSFFit::Function::Gaussian;
+      }
+   }
 
    ImageVariant               m_subframe;
    MeasureData                m_outputData;
@@ -586,8 +519,7 @@ bool SubframeSelectorInstance::Measure() {
        * Running threads list. Note that IndirectArray<> initializes all item
        * pointers to zero.
        */
-//      int numberOfThreads = Thread::NumberOfThreads( PCL_MAX_PROCESSORS, 1 );
-      int numberOfThreads = 1;
+      int numberOfThreads = Thread::NumberOfThreads( PCL_MAX_PROCESSORS, 1 );
       thread_list runningThreads( Min( int( subframes.Length()), numberOfThreads ));
 
       /*
@@ -694,7 +626,7 @@ bool SubframeSelectorInstance::Measure() {
                      m.Input( (*i)->OutputData() );
                      measures.Append( m );
 
-//                     // Close open image
+                     // Close open image
                      View::ViewById( (*i)->SubframeWindowId() ).Window().Close();
 
                      // Dispose this calibration thread, since we are done with
@@ -868,9 +800,6 @@ bool SubframeSelectorInstance::Measure() {
       console.NoteLn(
               String().Format( "<end><cbr><br>===== SubframeSelector: %u succeeded, %u failed, %u skipped =====",
                                succeeded, failed, skipped ));
-
-      Module->ProcessEvents();
-      Sleep(5000);
 
       if ( TheSubframeSelectorInterface != nullptr )
       {

@@ -53,14 +53,29 @@
 #ifndef __SubframeSelectorInstance_h
 #define __SubframeSelectorInstance_h
 
-#include "SubframeSelectorMeasureThread.h"
 #include "SubframeSelectorParameters.h"
+#include "SubframeSelectorMeasureData.h"
 
-#include <pcl/MetaParameter.h> // pcl_bool, pcl_enum
+#include <pcl/MetaParameter.h>
 #include <pcl/ProcessImplementation.h>
+
+#define MAX_STARS 20000
+#define STAR_DETECTEDOK 1 // DynamicPSF Status Enumeration
+#define PSF_FITTEDOK 1 // DynamicPSF Status Enumeration
+#define FWHM_GAUSSIAN 1.551850 // return 2.0 * pcl::Sqrt( 2.0 * pcl::Log( 2.0 ) );
+#define FWHM_MOFFAT10 0.535811 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 10.0 ) - 1.0 );
+#define FWHM_MOFFAT8 0.601690 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 8.0 ) - 1.0 );
+#define FWHM_MOFFAT6 0.699892 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 6.0 ) - 1.0 );
+#define FWHM_MOFFAT4 0.869959 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 4.0 ) - 1.0 );
+#define FWHM_MOFFAT25 1.130501 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 2.5 ) - 1.0 );
+#define FWHM_MOFFAT15 1.532842 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 1.5 ) - 1.0 );
+#define FWHM_LORENTZIAN 2.000000 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 1.0 ) - 1.0 );
 
 namespace pcl
 {
+
+class MeasureThreadInputData;
+struct SubframeSelectorMeasureThread;
 
 typedef IndirectArray<SubframeSelectorMeasureThread> thread_list;
 
@@ -83,6 +98,9 @@ public:
 
    bool CanMeasure( String& whyNot ) const;
    bool Measure();
+
+   void ApproveMeasurements();
+   void WeightMeasurements();
 
    virtual bool CanExecuteGlobal( String& whyNot ) const;
    virtual bool ExecuteGlobal();
@@ -139,40 +157,15 @@ private:
    pcl_enum       psfFit;
    pcl_bool       psfFitCircular;
 
+   // The expressions
+   String         approvalExpression;
+   String         weightingExpression;
+
    // The set of measured subframes
-   struct MeasureItem
-   {
-      pcl_bool enabled; // if disabled, skip (ignore) this image
-      pcl_bool locked;  // if locked, don't evaluate this image
-      String   path;    // absolute file path
-      float    fwhm;
-
-      MeasureItem( const String& p = String() ) :
-              enabled( TheSSMeasurementEnabledParameter->DefaultValue() ),
-              locked( TheSSMeasurementLockedParameter->DefaultValue() ),
-              path( p ),
-              fwhm( TheSSMeasurementFWHMParameter->DefaultValue() )
-      {
-      }
-
-      MeasureItem( const MeasureItem& x ) = default;
-
-      float FWHM( const float& subframeScale, const int& scaleUnit ) const
-      {
-         if ( scaleUnit == SSScaleUnit::ArcSeconds )
-            return fwhm * subframeScale;
-         if ( scaleUnit == SSScaleUnit::Pixel )
-            return fwhm;
-         return fwhm;
-      }
-   };
    Array<MeasureItem>     measures;
 
    // Read a subframe file into a Thread
-   thread_list CreateThreadForSubframe( const String& filePath, const MeasureThreadInputData& );
-
-   // Create the measurement data from the Thread
-   void CreateMeasureData( const SubframeSelectorMeasureThread* );
+   thread_list CreateThreadForSubframe( const String&, MeasureThreadInputData* );
 
    friend class SubframeSelectorProcess;
    friend class SubframeSelectorInterface;

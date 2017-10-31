@@ -59,6 +59,7 @@
 #include <pcl/PreviewSelectionDialog.h>
 #include <pcl/Console.h>
 #include <pcl/MetaModule.h>
+#include <pcl/FileFormat.h>
 
 #define IMAGELIST_MINHEIGHT( fnt )  (8*fnt.Height() + 2)
 
@@ -170,9 +171,9 @@ void SubframeSelectorInterface::ClearMeasurements()
 
 // ----------------------------------------------------------------------------
 
-void SubframeSelectorInterface::AddMeasurement( const SubframeSelectorInstance::MeasureItem& measure )
+void SubframeSelectorInterface::AddMeasurement( const MeasureItem& measure )
 {
-   instance.measures.Add( SubframeSelectorInstance::MeasureItem( measure ) );
+   instance.measures.Add( MeasureItem( measure ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -183,6 +184,7 @@ void SubframeSelectorInterface::UpdateControls()
    UpdateSubframeImagesList();
    UpdateSystemParameters();
    UpdateStarDetectorParameters();
+   UpdateExpressionParameters();
    UpdateMeasurementImagesList();
 }
 
@@ -202,7 +204,7 @@ void SubframeSelectorInterface::UpdateSubframeImageItem( size_type i )
    node->SetIcon( 1, Bitmap( ScaledResource( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
    node->SetAlignment( 1, TextAlign::Left );
 
-   node->SetIcon( 2, Bitmap( ScaledResource( ":/browser/document.png" ) ) );
+   node->SetIcon( 2, Bitmap( ScaledResource( ":/browser/picture.png" ) ) );
    node->SetText( 2, File::ExtractNameAndSuffix( item.path ) );
    node->SetToolTip( 2, item.path );
    node->SetAlignment( 2, TextAlign::Left );
@@ -285,30 +287,41 @@ void SubframeSelectorInterface::UpdateStarDetectorParameters()
 
 // ----------------------------------------------------------------------------
 
+void SubframeSelectorInterface::UpdateExpressionParameters()
+{
+   GUI->ExpressionParameters_Approval_Control.SetText( instance.approvalExpression );
+   GUI->ExpressionParameters_Weighting_Control.SetText( instance.weightingExpression );
+}
+
+// ----------------------------------------------------------------------------
+
 void SubframeSelectorInterface::UpdateMeasurementImageItem( size_type i )
 {
    TreeBox::Node* node = GUI->MeasurementImages_TreeBox[i];
    if ( node == nullptr )
       return;
 
-   const SubframeSelectorInstance::MeasureItem& item = instance.measures[i];
+   const MeasureItem& item = instance.measures[i];
 
-   node->SetText( 0, String( i+1 ) );
+   node->SetText( 0, String().Format( "%3i", item.index ) );
    node->SetAlignment( 0, TextAlign::Right );
 
    node->SetIcon( 1, Bitmap( ScaledResource( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
    node->SetAlignment( 1, TextAlign::Left );
 
-   node->SetIcon( 2, Bitmap( ScaledResource( item.locked ? ":/file-explorer/read-only.png" : ":/file-explorer/read-write.png" ) ) );
+   node->SetIcon( 2, Bitmap( ScaledResource( item.locked ? ":/file-explorer/read-only.png" : ":/icons/unlock.png" ) ) );
    node->SetAlignment( 2, TextAlign::Left );
 
-   node->SetIcon( 3, Bitmap( ScaledResource( ":/browser/document.png" ) ) );
+   node->SetIcon( 3, Bitmap( ScaledResource( ":/browser/picture.png" ) ) );
    node->SetText( 3, File::ExtractNameAndSuffix( item.path ) );
    node->SetToolTip( 3, item.path );
    node->SetAlignment( 3, TextAlign::Left );
 
-   node->SetText( 4, String().Format( "%.03f", item.FWHM( instance.subframeScale, instance.scaleUnit ) ) );
+   node->SetText( 4, String().Format( "%.03f", item.weight ) );
    node->SetAlignment( 4, TextAlign::Center );
+
+   node->SetText( 5, String().Format( "%.03f", item.FWHM( instance.subframeScale, instance.scaleUnit ) ) );
+   node->SetAlignment( 5, TextAlign::Center );
 }
 
 // ----------------------------------------------------------------------------
@@ -320,22 +333,53 @@ void SubframeSelectorInterface::UpdateMeasurementImagesList()
    GUI->MeasurementImages_TreeBox.DisableUpdates();
    GUI->MeasurementImages_TreeBox.Clear();
 
+   ApplyWeightingExpression();
+   ApplyApprovalExpression();
+
    for ( size_type i = 0; i < instance.measures.Length(); ++i )
    {
       new TreeBox::Node( GUI->MeasurementImages_TreeBox );
       UpdateMeasurementImageItem( i );
    }
 
-   GUI->MeasurementImages_TreeBox.AdjustColumnWidthToContents( 0 );
-   GUI->MeasurementImages_TreeBox.AdjustColumnWidthToContents( 1 );
-   GUI->MeasurementImages_TreeBox.AdjustColumnWidthToContents( 2 );
    GUI->MeasurementImages_TreeBox.AdjustColumnWidthToContents( 3 );
    GUI->MeasurementImages_TreeBox.AdjustColumnWidthToContents( 4 );
+   GUI->MeasurementImages_TreeBox.AdjustColumnWidthToContents( 5 );
 
    if ( !instance.measures.IsEmpty() )
       if ( currentIdx >= 0 && currentIdx < GUI->MeasurementImages_TreeBox.NumberOfChildren() )
          GUI->MeasurementImages_TreeBox.SetCurrentNode( GUI->MeasurementImages_TreeBox[currentIdx] );
 
+   GUI->MeasurementImages_TreeBox.EnableUpdates();
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::ApplyApprovalExpression()
+{
+   GUI->MeasurementImages_TreeBox.DisableUpdates();
+   try
+   {
+      instance.ApproveMeasurements();
+   }
+   catch ( ... )
+   {
+      GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
+   }
+   GUI->MeasurementImages_TreeBox.EnableUpdates();
+}
+
+void SubframeSelectorInterface::ApplyWeightingExpression()
+{
+   GUI->MeasurementImages_TreeBox.DisableUpdates();
+   try
+   {
+      instance.WeightMeasurements();
+   }
+   catch ( ... )
+   {
+      GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
+   }
    GUI->MeasurementImages_TreeBox.EnableUpdates();
 }
 
@@ -364,11 +408,6 @@ void SubframeSelectorInterface::__ToggleSection( SectionBar& sender, Control& se
          GUI->MeasurementImages_TreeBox.SetMaxHeight( int_max );
       }
    }
-
-   if ( GUI->SubframeImages_Control.IsVisible() || GUI->MeasurementImages_Control.IsVisible() )
-      SetVariableHeight();
-   else
-      SetFixedHeight();
 }
 
 // ----------------------------------------------------------------------------
@@ -621,6 +660,85 @@ void SubframeSelectorInterface::__ButtonClick( Button& sender, bool checked )
 
 // ----------------------------------------------------------------------------
 
+void SubframeSelectorInterface::__TextUpdated( Edit& sender, const String& text )
+{
+   if ( sender == GUI->ExpressionParameters_Approval_Control )
+   {
+      if ( MeasureUtils::IsValidExpression( text ) )
+      {
+         GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
+//         instance.approvalExpression = text;
+      }
+      else
+      {
+         GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
+//         instance.approvalExpression = "";
+      }
+   }
+   if ( sender == GUI->ExpressionParameters_Weighting_Control )
+   {
+      if ( MeasureUtils::IsValidExpression( text ) )
+      {
+         GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
+//         instance.weightingExpression = text;
+      }
+      else
+      {
+         GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
+//         instance.weightingExpression = "";
+      }
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::__TextUpdateCompleted( Edit& sender )
+{
+   bool shouldUpdate = false;
+   if ( sender == GUI->ExpressionParameters_Approval_Control )
+   {
+      String text = sender.Text();
+      if ( MeasureUtils::IsValidExpression( text ) )
+      {
+         GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
+         if ( instance.approvalExpression != text )
+            shouldUpdate = true;
+         instance.approvalExpression = text;
+      }
+      else
+      {
+         GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
+         instance.approvalExpression = "";
+      }
+      if ( shouldUpdate )
+      {
+         UpdateMeasurementImagesList();
+      }
+   }
+   if ( sender == GUI->ExpressionParameters_Weighting_Control )
+   {
+      String text = sender.Text();
+      if ( MeasureUtils::IsValidExpression( text ) )
+      {
+         GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
+         if ( instance.weightingExpression != text )
+            shouldUpdate = true;
+         instance.weightingExpression = text;
+      }
+      else
+      {
+         GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
+         instance.weightingExpression = "";
+      }
+      if ( shouldUpdate )
+      {
+         UpdateMeasurementImagesList();
+      }
+   }
+}
+
+// ----------------------------------------------------------------------------
+
 void SubframeSelectorInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
 {
    if ( sender == GUI->StarDetectorParameters_ROISelectPreview_Button )
@@ -659,7 +777,7 @@ void SubframeSelectorInterface::__MeasurementImages_NodeActivated( TreeBox &send
    if ( index < 0 || size_type( index ) >= instance.measures.Length() )
       throw Error( "SubframeSelectorInterface: *Warning* Corrupted interface structures" );
 
-   SubframeSelectorInstance::MeasureItem& item = instance.measures[index];
+   MeasureItem& item = instance.measures[index];
 
    switch ( col )
    {
@@ -695,7 +813,6 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    pcl::Font fnt = w.Font();
 
    int currentLabelWidth = fnt.Width( String( "Routine:" ) ); // the longest label text
-   int currentEditWidth = fnt.Width( String( '0', 7 ) ); // the longest edit text
 
    //
 
@@ -703,7 +820,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    Routine_Label.SetMinWidth( currentLabelWidth );
    Routine_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
-   for ( int i = 0; i < TheSSRoutineParameter->NumberOfElements(); ++i )
+   for ( size_type i = 0; i < TheSSRoutineParameter->NumberOfElements(); ++i )
       Routine_Control.AddItem( TheSSRoutineParameter->ElementLabel( i ) );
    Routine_Control.SetToolTip( TheSSRoutineParameter->Tooltip() );
    Routine_Control.OnItemSelected( (ComboBox::item_event_handler)&SubframeSelectorInterface::__ItemSelected, w );
@@ -820,7 +937,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    SystemParameters_CameraResolution_Label.SetMinWidth( currentLabelWidth );
    SystemParameters_CameraResolution_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
-   for ( int i = 0; i < TheSSCameraResolutionParameter->NumberOfElements(); ++i )
+   for ( size_type i = 0; i < TheSSCameraResolutionParameter->NumberOfElements(); ++i )
       SystemParameters_CameraResolution_Control.AddItem( TheSSCameraResolutionParameter->ElementLabel( i ) );
    SystemParameters_CameraResolution_Control.SetToolTip( "TODO" ); // TODO
    SystemParameters_CameraResolution_Control.OnItemSelected( (ComboBox::item_event_handler)&SubframeSelectorInterface::__ItemSelected, w );
@@ -857,7 +974,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    SystemParameters_ScaleUnit_Label.SetMinWidth( currentLabelWidth );
    SystemParameters_ScaleUnit_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
-   for ( int i = 0; i < TheSSScaleUnitParameter->NumberOfElements(); ++i )
+   for ( size_type i = 0; i < TheSSScaleUnitParameter->NumberOfElements(); ++i )
       SystemParameters_ScaleUnit_Control.AddItem( TheSSScaleUnitParameter->ElementLabel( i ) );
    SystemParameters_ScaleUnit_Control.SetToolTip( "TODO" ); // TODO
    SystemParameters_ScaleUnit_Control.OnItemSelected( (ComboBox::item_event_handler)&SubframeSelectorInterface::__ItemSelected, w );
@@ -871,7 +988,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    SystemParameters_DataUnit_Label.SetMinWidth( currentLabelWidth );
    SystemParameters_DataUnit_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
-   for ( int i = 0; i < TheSSDataUnitParameter->NumberOfElements(); ++i )
+   for ( size_type i = 0; i < TheSSDataUnitParameter->NumberOfElements(); ++i )
       SystemParameters_DataUnit_Control.AddItem( TheSSDataUnitParameter->ElementLabel( i ) );
    SystemParameters_DataUnit_Control.SetToolTip( "TODO" ); // TODO
    SystemParameters_DataUnit_Control.OnItemSelected( (ComboBox::item_event_handler)&SubframeSelectorInterface::__ItemSelected, w );
@@ -1025,7 +1142,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    StarDetectorParameters_PSFFit_Label.SetMinWidth( currentLabelWidth );
    StarDetectorParameters_PSFFit_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
-   for ( int i = 0; i < TheSSPSFFitParameter->NumberOfElements(); ++i )
+   for ( size_type i = 0; i < TheSSPSFFitParameter->NumberOfElements(); ++i )
       StarDetectorParameters_PSFFit_Control.AddItem( TheSSPSFFitParameter->ElementLabel( i ) );
 
    StarDetectorParameters_PSFFit_Control.SetToolTip( TheSSPSFFitParameter->Tooltip() );
@@ -1125,17 +1242,70 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 
    //
 
+   currentLabelWidth = fnt.Width( String( "Weighting:" ) ); // the longest label text
+
+   ExpressionParameters_SectionBar.SetTitle( "Expressions" );
+   ExpressionParameters_SectionBar.SetSection( ExpressionParameters_Control );
+   ExpressionParameters_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&SubframeSelectorInterface::__ToggleSection, w );
+
+   ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ExpressionParameters_Approval_Status.ScaledResource( ":/browser/enabled.png" ) ) );
+
+   ExpressionParameters_Approval_Label.SetText( "Approval:" );
+   ExpressionParameters_Approval_Label.SetMinWidth( currentLabelWidth );
+   ExpressionParameters_Approval_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   ExpressionParameters_Approval_Control.SetToolTip( TheSSApprovalExpressionParameter->Tooltip() );
+   ExpressionParameters_Approval_Control.OnTextUpdated( (Edit::text_event_handler)&SubframeSelectorInterface::__TextUpdated, w );
+   ExpressionParameters_Approval_Control.OnEditCompleted( (Edit::edit_event_handler)&SubframeSelectorInterface::__TextUpdateCompleted, w );
+   ExpressionParameters_Approval_Control.OnReturnPressed( (Edit::edit_event_handler)&SubframeSelectorInterface::__TextUpdateCompleted, w );
+
+   ExpressionParameters_Approval_Sizer.SetSpacing( 4 );
+   ExpressionParameters_Approval_Sizer.Add( ExpressionParameters_Approval_Status, 0 );
+   ExpressionParameters_Approval_Sizer.Add( ExpressionParameters_Approval_Label, 0 );
+   ExpressionParameters_Approval_Sizer.Add( ExpressionParameters_Approval_Control, 100 );
+
+   ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ExpressionParameters_Weighting_Status.ScaledResource( ":/browser/enabled.png" ) ) );
+
+   ExpressionParameters_Weighting_Label.SetText( "Weighting:" );
+   ExpressionParameters_Weighting_Label.SetMinWidth( currentLabelWidth );
+   ExpressionParameters_Weighting_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   ExpressionParameters_Weighting_Control.SetToolTip( TheSSWeightingExpressionParameter->Tooltip() );
+   ExpressionParameters_Weighting_Control.OnTextUpdated( (Edit::text_event_handler)&SubframeSelectorInterface::__TextUpdated, w );
+   ExpressionParameters_Weighting_Control.OnEditCompleted( (Edit::edit_event_handler)&SubframeSelectorInterface::__TextUpdateCompleted, w );
+   ExpressionParameters_Weighting_Control.OnReturnPressed( (Edit::edit_event_handler)&SubframeSelectorInterface::__TextUpdateCompleted, w );
+
+   ExpressionParameters_Weighting_Sizer.SetSpacing( 4 );
+   ExpressionParameters_Weighting_Sizer.Add( ExpressionParameters_Weighting_Status, 0 );
+   ExpressionParameters_Weighting_Sizer.Add( ExpressionParameters_Weighting_Label, 0 );
+   ExpressionParameters_Weighting_Sizer.Add( ExpressionParameters_Weighting_Control, 100 );
+
+   ExpressionParameters_Sizer.SetSpacing( 4 );
+   ExpressionParameters_Sizer.Add( ExpressionParameters_Approval_Sizer );
+   ExpressionParameters_Sizer.Add( ExpressionParameters_Weighting_Sizer );
+
+   ExpressionParameters_Control.SetSizer( ExpressionParameters_Sizer );
+   ExpressionParameters_Control.AdjustToContents();
+
+   //
+
    MeasurementImages_SectionBar.SetTitle( "Measurements" );
    MeasurementImages_SectionBar.SetSection( MeasurementImages_Control );
    MeasurementImages_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&SubframeSelectorInterface::__ToggleSection, w );
 
    MeasurementImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
    MeasurementImages_TreeBox.SetNumberOfColumns( 5 );
-   MeasurementImages_TreeBox.SetHeaderText( 0, "Index" );
-   MeasurementImages_TreeBox.SetHeaderText( 1, "Output" );
-   MeasurementImages_TreeBox.SetHeaderText( 2, "Lock" );
+   MeasurementImages_TreeBox.SetHeaderText( 0, "Ind." );
+   MeasurementImages_TreeBox.SetScaledColumnWidth( 0, 40 );
+   MeasurementImages_TreeBox.SetHeaderIcon( 1, Bitmap( MeasurementImages_TreeBox.ScaledResource( ":/icons/picture-ok.png" ) ) );
+   MeasurementImages_TreeBox.SetHeaderText( 1, "" );
+   MeasurementImages_TreeBox.SetScaledColumnWidth( 1, 30 );
+   MeasurementImages_TreeBox.SetHeaderIcon( 2, Bitmap( MeasurementImages_TreeBox.ScaledResource( ":/icons/function-import.png" ) ) );
+   MeasurementImages_TreeBox.SetHeaderText( 2, "" );
+   MeasurementImages_TreeBox.SetScaledColumnWidth( 2, 30 );
    MeasurementImages_TreeBox.SetHeaderText( 3, "Name" );
-   MeasurementImages_TreeBox.SetHeaderText( 4, "FWHM" );
+   MeasurementImages_TreeBox.SetHeaderText( 4, "Weight" );
+   MeasurementImages_TreeBox.SetHeaderText( 5, "FWHM" );
    MeasurementImages_TreeBox.EnableMultipleSelections();
    MeasurementImages_TreeBox.DisableRootDecoration();
    MeasurementImages_TreeBox.EnableAlternateRowColor();
@@ -1159,6 +1329,8 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    Global_Sizer.Add( SystemParameters_Control );
    Global_Sizer.Add( StarDetectorParameters_SectionBar );
    Global_Sizer.Add( StarDetectorParameters_Control );
+   Global_Sizer.Add( ExpressionParameters_SectionBar );
+   Global_Sizer.Add( ExpressionParameters_Control );
    Global_Sizer.Add( MeasurementImages_SectionBar );
    Global_Sizer.Add( MeasurementImages_Control );
 

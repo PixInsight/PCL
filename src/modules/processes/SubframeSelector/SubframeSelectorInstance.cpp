@@ -51,7 +51,6 @@
 // ----------------------------------------------------------------------------
 
 #include "SubframeSelectorInstance.h"
-#include "SubframeSelectorParameters.h"
 #include "SubframeSelectorUtils.h"
 #include "SubframeSelectorStarDetector.h"
 #include "SubframeSelectorInterface.h"
@@ -59,23 +58,11 @@
 #include <pcl/Console.h>
 #include <pcl/MetaModule.h>
 #include <pcl/ErrorHandler.h>
+#include <pcl/ElapsedTime.h>
+#include <pcl/ProcessInstance.h>
 
 namespace pcl
 {
-
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-// File Management Routines
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-
-static ImageWindow LoadImageFile( const String& filePath )
-{
-   Array<ImageWindow> imageWindows = ImageWindow::Open( filePath );
-   if ( imageWindows.Length() != 1 )
-      throw Error( String().Format( "Image Window incorrect length: 1 != %i : %s", imageWindows.Length(), filePath ) );
-   return imageWindows[0];
-}
 
 // ----------------------------------------------------------------------------
 
@@ -103,6 +90,8 @@ SubframeSelectorInstance::SubframeSelectorInstance( const MetaProcess* m ) :
    roi( 0 ),
    psfFit( SSPSFFit::Default ),
    psfFitCircular( TheSSPSFFitCircularParameter->DefaultValue() ),
+   approvalExpression( "" ),
+   weightingExpression( "" ),
    measures()
 {
 }
@@ -140,9 +129,292 @@ void SubframeSelectorInstance::Assign( const ProcessImplementation& p )
       roi                                    = x->roi;
       psfFit                                 = x->psfFit;
       psfFitCircular                         = x->psfFitCircular;
+      approvalExpression                     = x->approvalExpression;
+      weightingExpression                    = x->weightingExpression;
       measures                               = x->measures;
    }
 }
+
+// ----------------------------------------------------------------------------
+
+struct MeasureThreadInputData
+{
+   // The static settings
+   pcl_bool                   showStarDetectionMaps = false;
+   SubframeSelectorInstance*  instance = nullptr;
+};
+
+// ----------------------------------------------------------------------------
+
+class SubframeSelectorMeasureThread : public Thread
+{
+public:
+
+   SubframeSelectorMeasureThread( ImageVariant* subframe,
+                                  const String& subframePath, const String& subframeWindowId,
+                                  MeasureThreadInputData* data ) :
+           m_outputData( subframePath ),
+           m_subframeWindowId( subframeWindowId ),
+           m_success( false ),
+           m_data( data )
+   {
+      subframe->GetIntensity( m_subframe );
+   }
+
+   virtual void Run()
+   {
+
+      try
+      {
+         m_success = false;
+
+         Console console;
+         console.NoteLn( "<end><cbr><br>Measuring: " + m_outputData.path );
+         Module->ProcessEvents();
+
+         ElapsedTime T;
+
+         // Crop if the ROI was set
+         if ( m_data->instance->roi.IsRect() ) {
+            console.WriteLn( String().Format( "Cropping to: (%i, %i), (%i x %i)",
+                                              m_data->instance->roi.x0, m_data->instance->roi.y0,
+                                              m_data->instance->roi.Width(), m_data->instance->roi.Height()));
+            Module->ProcessEvents();
+            m_subframe.CropTo( m_data->instance->roi );
+         }
+
+         // Setup StarDetector parameters and find the list of stars
+         SubframeSelectorStarDetector starDetector;
+         starDetector.showStarDetectionMaps                 = m_data->showStarDetectionMaps;
+         starDetector.structureLayers                       = m_data->instance->structureLayers;
+         starDetector.noiseLayers                           = m_data->instance->noiseLayers;
+         starDetector.hotPixelFilterRadius                  = m_data->instance->hotPixelFilterRadius;
+         starDetector.noiseReductionFilterRadius            = m_data->instance->noiseReductionFilterRadius;
+         starDetector.applyHotPixelFilterToDetectionImage   = m_data->instance->applyHotPixelFilterToDetectionImage;
+         starDetector.sensitivity                           = m_data->instance->sensitivity;
+         starDetector.peakResponse                          = m_data->instance->peakResponse;
+         starDetector.maxDistortion                         = m_data->instance->maxDistortion;
+         starDetector.upperLimit                            = m_data->instance->upperLimit;
+         starDetector.backgroundExpansion                   = m_data->instance->backgroundExpansion;
+         starDetector.xyStretch                             = m_data->instance->xyStretch;
+         Array<Star> stars = starDetector.GetStars( m_subframe );
+         m_subframe.Free();
+         console.WriteLn( "Star Detector: " + T.ToIsoString() );
+         T.Reset();
+
+         // Stop if just showing the maps
+         if ( m_data->showStarDetectionMaps ) {
+            m_success = true;
+            return;
+         }
+
+         // Setup a DynamicPSF process
+         Process dPSFProcess( IsoString( "DynamicPSF" ) );
+         ProcessInstance dPSF( dPSFProcess );
+         if ( dPSF.IsNull() )
+            throw Error( "Couldn't instantiate the DynamicPSF process: null" );
+
+         // Find the PSF parameters and setup the options
+         dPSF.SetParameterValue( false, ProcessParameter( dPSFProcess, "autoPSF" ), 0 );
+         dPSF.SetParameterValue( false, ProcessParameter( dPSFProcess, "moffatPSF" ), 0 );
+         dPSF.SetParameterValue( (bool) m_data->instance->psfFitCircular, ProcessParameter( dPSFProcess, "circularPSF" ), 0 );
+         dPSF.SetParameterValue( m_data->instance->psfFit == SSPSFFit::Gaussian,
+                                 ProcessParameter( dPSFProcess, "gaussianPSF" ), 0 );
+         dPSF.SetParameterValue( m_data->instance->psfFit == SSPSFFit::Moffat10,
+                                 ProcessParameter( dPSFProcess, "moffat10PSF" ), 0 );
+         dPSF.SetParameterValue( m_data->instance->psfFit == SSPSFFit::Moffat8,
+                                 ProcessParameter( dPSFProcess, "moffat8PSF" ), 0 );
+         dPSF.SetParameterValue( m_data->instance->psfFit == SSPSFFit::Moffat6,
+                                 ProcessParameter( dPSFProcess, "moffat6PSF" ), 0 );
+         dPSF.SetParameterValue( m_data->instance->psfFit == SSPSFFit::Moffat4,
+                                 ProcessParameter( dPSFProcess, "moffat4PSF" ), 0 );
+         dPSF.SetParameterValue( m_data->instance->psfFit == SSPSFFit::Moffat25,
+                                 ProcessParameter( dPSFProcess, "moffat25PSF" ), 0 );
+         dPSF.SetParameterValue( m_data->instance->psfFit == SSPSFFit::Moffat15,
+                                 ProcessParameter( dPSFProcess, "moffat15PSF" ), 0 );
+         dPSF.SetParameterValue( m_data->instance->psfFit == SSPSFFit::Lorentzian,
+                                 ProcessParameter( dPSFProcess, "lorentzianPSF" ), 0 );
+
+         // Find the Views parameter and setup 1 View with this window
+         ProcessParameter viewsParameter( dPSFProcess, "views" );
+
+         if ( !dPSF.AllocateTableRows( viewsParameter, 1 ) )
+            throw Error( "Cannot allocate DynamicPSF views" );
+
+         dPSF.SetParameterValue( m_subframeWindowId, ProcessParameter( viewsParameter, "id" ), 0 );
+
+         // Find the Stars parameter and setup N Stars with the previous results
+         size_type starRows = stars.Length();
+         if ( stars.Length() > MAX_STARS )
+            starRows = MAX_STARS;
+
+         ProcessParameter starsParameter( dPSFProcess, "stars" );
+
+         if ( !dPSF.AllocateTableRows( starsParameter, starRows ) )
+            throw Error( "Cannot allocate DynamicPSF views" );
+
+         for ( size_type i = 0; i < starRows; ++i )
+         {
+            Star star = stars[i];
+            int radius = pcl::Max(3, pcl::Ceil(pcl::Sqrt(star.size)));
+            int ox = 0;
+            int oy = 0;
+            if ( m_data->instance->roi.IsRect() ) {
+               ox += m_data->instance->roi.x0;
+               oy += m_data->instance->roi.y0;
+            }
+            dPSF.SetParameterValue( STAR_DETECTEDOK,
+                                    ProcessParameter( starsParameter, "status" ), i );
+            dPSF.SetParameterValue( ox + star.position.x,
+                                    ProcessParameter( starsParameter, "x" ),      i );
+            dPSF.SetParameterValue( ox + star.position.x - radius,
+                                    ProcessParameter( starsParameter, "x0" ),     i );
+            dPSF.SetParameterValue( ox + star.position.x + radius,
+                                    ProcessParameter( starsParameter, "x1" ),     i );
+            dPSF.SetParameterValue( oy + star.position.y,
+                                    ProcessParameter( starsParameter, "y" ),      i );
+            dPSF.SetParameterValue( oy + star.position.y - radius,
+                                    ProcessParameter( starsParameter, "y0" ),     i );
+            dPSF.SetParameterValue( oy + star.position.y + radius,
+                                    ProcessParameter( starsParameter, "y1" ),     i );
+         }
+
+         // Run the DynamicPSF process if possible
+         String whyNot;
+         if ( !dPSF.CanExecuteGlobal( whyNot ) )
+            throw Error( "Cannot execute DynamicPSF instance <br/>"
+                                 "Reason: " + whyNot );
+
+         if ( !dPSF.ExecuteGlobal() )
+            throw CaughtException();
+
+         console.WriteLn( "DynamicPSF: " + T.ToIsoString() );
+         T.Reset();
+
+         // Find the output PSF parameter and get the results
+         ProcessParameter psfParameter( dPSFProcess, "psf" );
+         size_type psfRows = dPSF.TableRowCount( psfParameter );
+         // Determine the best fit to weight the others against
+         double minMAD = -1;
+         for ( size_type i = 0; i < psfRows; ++i ) {
+            Variant fit = dPSF.ParameterValue( ProcessParameter( psfParameter, "status" ), i );
+            if ( !fit.IsValid())
+               continue;
+            if ( fit.ToInt() != PSF_FITTEDOK )
+               continue;
+
+            Variant MADV = dPSF.ParameterValue( ProcessParameter( psfParameter, "mad" ), i );
+            if ( !MADV.IsValid())
+               continue;
+            double MAD = MADV.ToDouble();
+
+            if ( minMAD <= 0 )
+            {
+               minMAD = MAD;
+               continue;
+            }
+
+            if ( MAD < minMAD )
+               minMAD = MAD;
+         }
+         // Analyze each star parameter
+         size_type fits = 0;
+         double sumSigma = 0;
+         double sumWeight = 0;
+         for ( size_type i = 0; i < psfRows; ++i ) {
+            Variant fit = dPSF.ParameterValue( ProcessParameter( psfParameter, "status" ), i );
+            if ( !fit.IsValid() )
+               continue;
+            if ( fit.ToInt() != PSF_FITTEDOK )
+               continue;
+
+            Variant sx = dPSF.ParameterValue( ProcessParameter( psfParameter, "sx" ), i );
+            if ( !sx.IsValid() )
+               continue;
+            Variant sy = dPSF.ParameterValue( ProcessParameter( psfParameter, "sy" ), i );
+            if ( !sy.IsValid() )
+               continue;
+
+            Variant MADV = dPSF.ParameterValue( ProcessParameter( psfParameter, "mad" ), i );
+            if ( !MADV.IsValid())
+               continue;
+            double MAD = MADV.ToDouble();
+
+            double weight = minMAD / MAD;
+            sumWeight += weight;
+
+            sumSigma += weight * pcl::Sqrt( sx.ToDouble() * sy.ToDouble() );
+            ++fits;
+         }
+
+         if ( fits <= 0 )
+            m_success = false;
+         else {
+            double FWHM = sumSigma / sumWeight;
+            if ( m_data->instance->psfFit == SSPSFFit::Gaussian )
+               FWHM *= FWHM_GAUSSIAN;
+            if ( m_data->instance->psfFit == SSPSFFit::Moffat10 )
+               FWHM *= FWHM_MOFFAT10;
+            if ( m_data->instance->psfFit == SSPSFFit::Moffat8 )
+               FWHM *= FWHM_MOFFAT8;
+            if ( m_data->instance->psfFit == SSPSFFit::Moffat6 )
+               FWHM *= FWHM_MOFFAT6;
+            if ( m_data->instance->psfFit == SSPSFFit::Moffat4 )
+               FWHM *= FWHM_MOFFAT4;
+            if ( m_data->instance->psfFit == SSPSFFit::Moffat25 )
+               FWHM *= FWHM_MOFFAT25;
+            if ( m_data->instance->psfFit == SSPSFFit::Moffat15 )
+               FWHM *= FWHM_MOFFAT15;
+            if ( m_data->instance->psfFit == SSPSFFit::Lorentzian )
+               FWHM *= FWHM_LORENTZIAN;
+            m_outputData.fwhm = FWHM;
+            m_success = true;
+         }
+
+         // Cleanup
+         dPSF.AllocateTableRows( viewsParameter, 0 );
+         dPSF.AllocateTableRows( starsParameter, 0 );
+         dPSF.AllocateTableRows( psfParameter, 0 );
+
+         m_success = true;
+         m_outputData.fwhm = 2;
+      }
+      catch ( ... )
+      {
+         try
+         {
+            throw;
+         }
+         ERROR_HANDLER
+      }
+   }
+
+   String SubframeWindowId() const
+   {
+      return m_subframeWindowId;
+   }
+
+   const MeasureData& OutputData() const
+   {
+      return m_outputData;
+   }
+
+   bool Success() const
+   {
+      return m_success;
+   }
+
+private:
+
+   ImageVariant               m_subframe;
+   MeasureData                m_outputData;
+   String                     m_subframeWindowId;
+   bool                       m_success : 1;
+
+   MeasureThreadInputData* m_data;
+};
+
+// ----------------------------------------------------------------------------
 
 bool SubframeSelectorInstance::CanExecuteOn( const View& view, String& whyNot ) const
 {
@@ -179,6 +451,10 @@ bool SubframeSelectorInstance::TestStarDetector() {
    }
    Console console;
 
+   MeasureThreadInputData inputThreadData;
+   inputThreadData.showStarDetectionMaps  = true;
+   inputThreadData.instance               = this;
+
    try {
       /*
        * For all errors generated, we want a report on the console. This is
@@ -189,23 +465,6 @@ bool SubframeSelectorInstance::TestStarDetector() {
 
       console.EnableAbort();
       Module->ProcessEvents();
-
-      MeasureThreadInputData inputThreadData;
-      inputThreadData.showStarDetectionMaps                 = true;
-      inputThreadData.structureLayers                       = structureLayers;
-      inputThreadData.noiseLayers                           = noiseLayers;
-      inputThreadData.hotPixelFilterRadius                  = hotPixelFilterRadius;
-      inputThreadData.noiseReductionFilterRadius            = noiseReductionFilterRadius;
-      inputThreadData.applyHotPixelFilterToDetectionImage   = applyHotPixelFilterToDetectionImage;
-      inputThreadData.sensitivity                           = sensitivity;
-      inputThreadData.peakResponse                          = peakResponse;
-      inputThreadData.maxDistortion                         = maxDistortion;
-      inputThreadData.upperLimit                            = upperLimit;
-      inputThreadData.backgroundExpansion                   = backgroundExpansion;
-      inputThreadData.xyStretch                             = xyStretch;
-      inputThreadData.roi                                   = roi;
-      inputThreadData.psfFit                                = psfFit;
-      inputThreadData.psfFitCircular                        = psfFitCircular;
 
       try
       {
@@ -219,7 +478,7 @@ bool SubframeSelectorInstance::TestStarDetector() {
          console.WriteLn( String().Format( "<end><cbr><br>Measuring subframe %u of %u", 1, subframes.Length() ) );
          Module->ProcessEvents();
 
-         thread_list threads = CreateThreadForSubframe( item.path, inputThreadData );
+         thread_list threads = CreateThreadForSubframe( item.path, &inputThreadData );
          SubframeSelectorMeasureThread* thread = *threads;
 
          // Keep the GUI responsive, last chance to abort
@@ -295,10 +554,13 @@ bool SubframeSelectorInstance::Measure() {
             throw ("No such file exists on the local filesystem: " + i->path);
    }
 
-   // Reset measured values
+   // Reset measured values and create temporary list
    measures.Clear();
 
    Console console;
+
+   MeasureThreadInputData inputThreadData;
+   inputThreadData.instance = this;
 
    try {
 
@@ -324,7 +586,8 @@ bool SubframeSelectorInstance::Measure() {
        * Running threads list. Note that IndirectArray<> initializes all item
        * pointers to zero.
        */
-      int numberOfThreads = Thread::NumberOfThreads( PCL_MAX_PROCESSORS, 1 );
+//      int numberOfThreads = Thread::NumberOfThreads( PCL_MAX_PROCESSORS, 1 );
+      int numberOfThreads = 1;
       thread_list runningThreads( Min( int( subframes.Length()), numberOfThreads ));
 
       /*
@@ -338,22 +601,6 @@ bool SubframeSelectorInstance::Measure() {
        * are no more pending images but there are still running threads.
        */
       bool waitingForFinished = false;
-
-      MeasureThreadInputData inputThreadData;
-      inputThreadData.structureLayers                       = structureLayers;
-      inputThreadData.noiseLayers                           = noiseLayers;
-      inputThreadData.hotPixelFilterRadius                  = hotPixelFilterRadius;
-      inputThreadData.noiseReductionFilterRadius            = noiseReductionFilterRadius;
-      inputThreadData.applyHotPixelFilterToDetectionImage   = applyHotPixelFilterToDetectionImage;
-      inputThreadData.sensitivity                           = sensitivity;
-      inputThreadData.peakResponse                          = peakResponse;
-      inputThreadData.maxDistortion                         = maxDistortion;
-      inputThreadData.upperLimit                            = upperLimit;
-      inputThreadData.backgroundExpansion                   = backgroundExpansion;
-      inputThreadData.xyStretch                             = xyStretch;
-      inputThreadData.roi                                   = roi;
-      inputThreadData.psfFit                                = psfFit;
-      inputThreadData.psfFitCircular                        = psfFitCircular;
 
       /*
        * We'll work on a temporary duplicate of the subframes list. This
@@ -442,7 +689,13 @@ bool SubframeSelectorInstance::Measure() {
                      (*i)->FlushConsoleOutputText();
                      Module->ProcessEvents();
 
-                     CreateMeasureData( *i );
+                     // Store output data
+                     MeasureItem m( measures.Length() + 1 );
+                     m.Input( (*i)->OutputData() );
+                     measures.Append( m );
+
+//                     // Close open image
+                     View::ViewById( (*i)->SubframeWindowId() ).Window().Close();
 
                      // Dispose this calibration thread, since we are done with
                      // it. NB: IndirectArray<T>::Delete() sets to zero the
@@ -533,7 +786,7 @@ bool SubframeSelectorInstance::Measure() {
                   /*
                    * Create a new thread for this subframe image
                    */
-                  thread_list threads = CreateThreadForSubframe( item.path, inputThreadData );
+                  thread_list threads = CreateThreadForSubframe( item.path, &inputThreadData );
 
                   /*
                    * Put the new thread in the free slot.
@@ -616,6 +869,9 @@ bool SubframeSelectorInstance::Measure() {
               String().Format( "<end><cbr><br>===== SubframeSelector: %u succeeded, %u failed, %u skipped =====",
                                succeeded, failed, skipped ));
 
+      Module->ProcessEvents();
+      Sleep(5000);
+
       if ( TheSubframeSelectorInterface != nullptr )
       {
          TheSubframeSelectorInterface->ClearMeasurements();
@@ -632,6 +888,64 @@ bool SubframeSelectorInstance::Measure() {
        */
       Exception::EnableGUIOutput( true );
       throw;
+   }
+}
+
+void SubframeSelectorInstance::ApproveMeasurements()
+{
+   if ( approvalExpression.IsEmpty() )
+   {
+      for ( size_type i = 0; i < measures.Length(); ++i )
+         if ( !measures[i].locked )
+            measures[i].enabled = true;
+   }
+   else
+   {
+      for ( size_type i = 0; i < measures.Length(); ++i )
+      {
+         if ( measures[i].locked )
+            continue;
+
+         String JSEvaluator = measures[i].JavaScriptParameters( subframeScale, scaleUnit );
+         JSEvaluator += approvalExpression;
+         Console().NoteLn( "\nScript:" );
+         Console().WriteLn( JSEvaluator.EncodedHTMLSpecialChars() );
+
+         Variant result = Module->EvaluateScript( JSEvaluator.DecodedHTMLSpecialChars(), "JavaScript" );
+         if ( !result.IsValid() )
+            throw Error( "Approval Error: Invalid script execution" );
+         String resultText = result.ToString();
+         Console().NoteLn( "\nResult:" + resultText );
+
+         measures[i].enabled = result.ToBool();
+      }
+   }
+}
+
+void SubframeSelectorInstance::WeightMeasurements()
+{
+   if ( weightingExpression.IsEmpty() )
+   {
+      for ( size_type i = 0; i < measures.Length(); ++i )
+         measures[i].weight = 0;
+   }
+   else
+   {
+      for ( size_type i = 0; i < measures.Length(); ++i )
+      {
+         String JSEvaluator = measures[i].JavaScriptParameters( subframeScale, scaleUnit );
+         JSEvaluator += weightingExpression;
+         Console().NoteLn( "\nScript:" );
+         Console().WriteLn( JSEvaluator.EncodedHTMLSpecialChars() );
+
+         Variant result = Module->EvaluateScript( JSEvaluator.DecodedHTMLSpecialChars(), "JavaScript" );
+         if ( !result.IsValid() )
+            throw Error( "Approval Error: Invalid script execution" );
+         String resultText = result.ToString();
+         Console().NoteLn( "\nResult:" + resultText );
+
+         measures[i].weight = result.ToFloat();
+      }
    }
 }
 
@@ -690,66 +1004,75 @@ void* SubframeSelectorInstance::LockParameter( const MetaParameter* p, size_type
    if ( p == TheSSRoutineParameter )
       return &routine;
 
-   if ( p == TheSSSubframeEnabledParameter )
+   else if ( p == TheSSSubframeEnabledParameter )
       return &subframes[tableRow].enabled;
-   if ( p == TheSSSubframePathParameter )
+   else if ( p == TheSSSubframePathParameter )
       return subframes[tableRow].path.Begin();
 
-   if ( p == TheSSSubframeScaleParameter )
+   else if ( p == TheSSSubframeScaleParameter )
       return &subframeScale;
-   if ( p == TheSSCameraGainParameter )
+   else if ( p == TheSSCameraGainParameter )
       return &cameraGain;
-   if ( p == TheSSCameraResolutionParameter )
+   else if ( p == TheSSCameraResolutionParameter )
       return &cameraResolution;
-   if ( p == TheSSSiteLocalMidnightParameter )
+   else if ( p == TheSSSiteLocalMidnightParameter )
       return &siteLocalMidnight;
-   if ( p == TheSSScaleUnitParameter )
+   else if ( p == TheSSScaleUnitParameter )
       return &scaleUnit;
-   if ( p == TheSSDataUnitParameter )
+   else if ( p == TheSSDataUnitParameter )
       return &dataUnit;
 
-   if ( p == TheSSStructureLayersParameter )
+   else if ( p == TheSSStructureLayersParameter )
       return &structureLayers;
-   if ( p == TheSSNoiseLayersParameter )
+   else if ( p == TheSSNoiseLayersParameter )
       return &noiseLayers;
-   if ( p == TheSSHotPixelFilterRadiusParameter )
+   else if ( p == TheSSHotPixelFilterRadiusParameter )
       return &hotPixelFilterRadius;
-   if ( p == TheSSApplyHotPixelFilterParameter )
+   else if ( p == TheSSApplyHotPixelFilterParameter )
       return &applyHotPixelFilterToDetectionImage;
-   if ( p == TheSSNoiseReductionFilterRadiusParameter )
+   else if ( p == TheSSNoiseReductionFilterRadiusParameter )
       return &noiseReductionFilterRadius;
-   if ( p == TheSSSensitivityParameter )
+   else if ( p == TheSSSensitivityParameter )
       return &sensitivity;
-   if ( p == TheSSPeakResponseParameter )
+   else if ( p == TheSSPeakResponseParameter )
       return &peakResponse;
-   if ( p == TheSSMaxDistortionParameter )
+   else if ( p == TheSSMaxDistortionParameter )
       return &maxDistortion;
-   if ( p == TheSSUpperLimitParameter )
+   else if ( p == TheSSUpperLimitParameter )
       return &upperLimit;
-   if ( p == TheSSBackgroundExpansionParameter )
+   else if ( p == TheSSBackgroundExpansionParameter )
       return &backgroundExpansion;
-   if ( p == TheSSXYStretchParameter )
+   else if ( p == TheSSXYStretchParameter )
       return &xyStretch;
-   if ( p == TheSSROIX0Parameter )
+   else if ( p == TheSSROIX0Parameter )
       return &roi.x0;
-   if ( p == TheSSROIY0Parameter )
+   else if ( p == TheSSROIY0Parameter )
       return &roi.y0;
-   if ( p == TheSSROIX1Parameter )
+   else if ( p == TheSSROIX1Parameter )
       return &roi.x1;
-   if ( p == TheSSROIY1Parameter )
+   else if ( p == TheSSROIY1Parameter )
       return &roi.y1;
-   if ( p == TheSSPSFFitParameter )
+   else if ( p == TheSSPSFFitParameter )
       return &psfFit;
-   if ( p == TheSSPSFFitCircularParameter )
+   else if ( p == TheSSPSFFitCircularParameter )
       return &psfFitCircular;
 
-   if ( p == TheSSMeasurementEnabledParameter )
+   else if ( p == TheSSApprovalExpressionParameter )
+      return approvalExpression.Begin();
+   else if ( p == TheSSWeightingExpressionParameter )
+      return weightingExpression.Begin();
+
+   else if ( p == TheSSMeasurementIndexParameter )
+      return &measures[tableRow].index;
+   else if ( p == TheSSMeasurementEnabledParameter )
       return &measures[tableRow].enabled;
-   if ( p == TheSSMeasurementLockedParameter )
+   else if ( p == TheSSMeasurementLockedParameter )
       return &measures[tableRow].locked;
-   if ( p == TheSSMeasurementPathParameter )
+   else if ( p == TheSSMeasurementPathParameter )
       return measures[tableRow].path.Begin();
-   if ( p == TheSSMeasurementFWHMParameter )
+   else if ( p == TheSSMeasurementWeightParameter )
+      return &measures[tableRow].weight;
+   else if ( p == TheSSMeasurementFWHMParameter )
       return &measures[tableRow].fwhm;
 
    return nullptr;
@@ -769,11 +1092,24 @@ bool SubframeSelectorInstance::AllocateParameter( size_type sizeOrLength, const 
       if ( sizeOrLength > 0 )
          subframes[tableRow].path.SetLength( sizeOrLength );
    }
+   else if ( p == TheSSApprovalExpressionParameter )
+   {
+      approvalExpression.Clear();
+      if ( sizeOrLength > 0 )
+         approvalExpression.SetLength( sizeOrLength );
+   }
+   else if ( p == TheSSWeightingExpressionParameter )
+   {
+      weightingExpression.Clear();
+      if ( sizeOrLength > 0 )
+         weightingExpression.SetLength( sizeOrLength );
+   }
    else if ( p == TheSSMeasurementsParameter )
    {
       measures.Clear();
       if ( sizeOrLength > 0 )
-         measures.Add( MeasureItem(), sizeOrLength );
+         for ( size_type i = 0; i < sizeOrLength; ++i )
+            measures.Add( MeasureItem( i ) );
    }
    else if ( p == TheSSMeasurementPathParameter )
    {
@@ -791,12 +1127,17 @@ size_type SubframeSelectorInstance::ParameterLength( const MetaParameter* p, siz
 {
    if ( p == TheSSSubframesParameter )
       return subframes.Length();
-   if ( p == TheSSSubframePathParameter )
+   else if ( p == TheSSSubframePathParameter )
       return subframes[tableRow].path.Length();
 
-   if ( p == TheSSMeasurementsParameter )
+   else if ( p == TheSSApprovalExpressionParameter )
+      return approvalExpression.Length();
+   else if ( p == TheSSWeightingExpressionParameter )
+      return weightingExpression.Length();
+
+   else if ( p == TheSSMeasurementsParameter )
       return measures.Length();
-   if ( p == TheSSMeasurementPathParameter )
+   else if ( p == TheSSMeasurementPathParameter )
       return measures[tableRow].path.Length();
 
    return 0;
@@ -810,31 +1151,19 @@ size_type SubframeSelectorInstance::ParameterLength( const MetaParameter* p, siz
  * measure all subimages loaded from the file.
  */
 thread_list
-SubframeSelectorInstance::CreateThreadForSubframe( const String& filePath, const MeasureThreadInputData& threadData )
+SubframeSelectorInstance::CreateThreadForSubframe( const String& filePath, MeasureThreadInputData* threadData )
 {
    thread_list threads;
-   ImageWindow subframeWindow = LoadImageFile( filePath );
-   ImageVariant sf;
-   subframeWindow.MainView().Image().GetIntensity( sf );
-   threads.Add( new SubframeSelectorMeasureThread( sf,
+   Array<ImageWindow> imageWindows = ImageWindow::Open( filePath );
+   if ( imageWindows.Length() != 1 )
+      throw Error( String().Format( "Image Window incorrect length: 1 != %i : %s", imageWindows.Length(), filePath ) );
+   ImageWindow subframeWindow = imageWindows[0];
+   ImageVariant subframe = subframeWindow.MainView().Image();
+   threads.Add( new SubframeSelectorMeasureThread( &subframe,
                                                    filePath,
                                                    subframeWindow.MainView().FullId(),
                                                    threadData ));
    return threads;
-}
-
-// ----------------------------------------------------------------------------
-
-void SubframeSelectorInstance::CreateMeasureData( const SubframeSelectorMeasureThread* t )
-{
-   // Store output data
-   MeasureItem m;
-   m.path = t->SubframePath();
-   m.fwhm = t->OutputData().fwhm;
-   measures.Add( m );
-
-   // Close open image
-   View::ViewById( t->SubframeWindowId() ).Window().Close();
 }
 
 

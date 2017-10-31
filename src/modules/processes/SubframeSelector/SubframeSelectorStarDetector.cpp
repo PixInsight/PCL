@@ -313,7 +313,7 @@ Array<Star> pcl::SubframeSelectorStarDetector::GetStars( ImageVariant& image )
          }
 
          // Erase this structure.
-         for ( int i = 0; i < starPoints.Length(); ++i )
+         for ( size_type i = 0; i < starPoints.Length(); ++i )
          {
             Point p = starPoints[i];
             structuresMatrix[p.y][p.x] = 0;
@@ -452,7 +452,7 @@ Star pcl::SubframeSelectorStarDetector::GetStarParameters( ImageVariant& image, 
    star.position.y = pcl::RoundInt( sy/sz + 0.5 );
 
    // Total flux, peak value and structure size
-   for ( int i = 0; i < stars.Length(); ++i )
+   for ( size_type i = 0; i < stars.Length(); ++i )
    {
       Point point = stars[i];
       double pointValue = image( point.x, point.y, 0 );

@@ -54,6 +54,7 @@
 #define __SubframeSelectorMeasureData_h
 
 #include <pcl/MetaParameter.h>
+#include "SubframeSelectorParameters.h"
 
 namespace pcl
 {
@@ -65,13 +66,95 @@ struct MeasureData
    String   path;
    double   fwhm;
 
-   MeasureData( const String& p = String() ) :
+   MeasureData( const String& p = String( "" ) ) :
            path( p ),
            fwhm( 0 )
    {
    }
 
    MeasureData( const MeasureData& x ) = default;
+};
+
+// ----------------------------------------------------------------------------
+
+struct MeasureItem
+{
+   uint16   index;
+   pcl_bool enabled;
+   pcl_bool locked;
+   String   path;
+   float    weight;
+   float    fwhm;
+
+   MeasureItem( uint16 i, const String& p = String( "" ) ) :
+           index( i ),
+           enabled( TheSSMeasurementEnabledParameter->DefaultValue() ),
+           locked( TheSSMeasurementLockedParameter->DefaultValue() ),
+           path( p ),
+           weight( TheSSMeasurementWeightParameter->DefaultValue() ),
+           fwhm( TheSSMeasurementFWHMParameter->DefaultValue() )
+   {
+   }
+
+   MeasureItem( const MeasureItem& x ) = default;
+
+   void Input( const MeasureData& measureData )
+   {
+      path = measureData.path;
+      fwhm = measureData.fwhm;
+   }
+
+   float FWHM( const float& subframeScale, const int& scaleUnit ) const
+   {
+      if ( scaleUnit == SSScaleUnit::ArcSeconds )
+         return fwhm * subframeScale;
+      if ( scaleUnit == SSScaleUnit::Pixel )
+         return fwhm;
+      return fwhm;
+   }
+
+   String JavaScriptParameters( const float& subframeScale, const int& scaleUnit ) const
+   {
+      return String().Format( "let Index = %i;\n", index ) +
+              String().Format( "let Weight = %.4f;\n", weight ) +
+              String().Format( "let FWHM = %.4f;\n", FWHM( subframeScale, scaleUnit ) );
+   }
+};
+
+// ----------------------------------------------------------------------------
+
+struct MeasureUtils
+{
+   // Rudimentary first-line check for a JS Expression
+   static bool IsValidExpression( const String& expression )
+   {
+      if ( expression.IsEmpty() )
+         return true;
+
+      int pOpen = 0;
+      int pClose = 0;
+      int a = 0;
+      int o = 0;
+      for ( String::const_iterator i = expression.Begin(); i < expression.End(); ++i )
+      {
+         if ( !isalnum( *i ) && *i != '(' && *i != ')' && *i != '&' && *i != '|' && *i != ' '
+              && *i != '*' && *i != '+' && *i != '-' && *i != '/' && *i != '.'
+              && *i != '<' && *i != '>' && *i != '=' && *i != '!' )
+            return false;
+
+         if ( *i == '(' )
+            ++pOpen;
+         if ( *i == ')' )
+            ++pClose;
+
+         if ( *i == '&' )
+            ++a;
+         if ( *i == '|' )
+            ++o;
+      }
+
+      return pOpen == pClose && a % 2 == 0 && o % 2 == 0;
+   }
 };
 
 // ----------------------------------------------------------------------------

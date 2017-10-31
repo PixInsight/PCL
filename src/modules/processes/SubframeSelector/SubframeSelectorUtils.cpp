@@ -73,7 +73,7 @@ IsoString SubframeSelectorUtils::FilterViewID( const String& baseId )
 
    IsoString newId = "";
 
-   for ( int i = 0 ; i < baseId.Length() ; ++i )
+   for ( size_type i = 0 ; i < baseId.Length() ; ++i )
       if ( isalnum( baseId[i] ) || baseId[i] == '_' )
          newId += baseId[i];
 

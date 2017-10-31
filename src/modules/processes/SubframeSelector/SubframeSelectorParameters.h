@@ -592,6 +592,36 @@ extern SSPSFFitCircular* TheSSPSFFitCircularParameter;
 
 // ----------------------------------------------------------------------------
 
+class SSApprovalExpression : public MetaString
+{
+   public:
+
+   SSApprovalExpression( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSApprovalExpression* TheSSApprovalExpressionParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSWeightingExpression : public MetaString
+{
+   public:
+
+   SSWeightingExpression( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSWeightingExpression* TheSSWeightingExpressionParameter;
+
+// ----------------------------------------------------------------------------
+
 class SSMeasurements : public MetaTable
 {
    public:
@@ -602,6 +632,25 @@ class SSMeasurements : public MetaTable
 };
 
 extern SSMeasurements* TheSSMeasurementsParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementIndex : public MetaUInt16
+{
+   public:
+
+   SSMeasurementIndex( MetaTable* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSMeasurementIndex* TheSSMeasurementIndexParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -643,6 +692,25 @@ class SSMeasurementPath : public MetaString
 };
 
 extern SSMeasurementPath* TheSSMeasurementPathParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementWeight : public MetaFloat
+{
+   public:
+
+   SSMeasurementWeight( MetaTable* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSMeasurementWeight* TheSSMeasurementWeightParameter;
 
 // ----------------------------------------------------------------------------
 

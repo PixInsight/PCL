@@ -66,6 +66,8 @@
 #include <pcl/CheckBox.h>
 #include <pcl/Label.h>
 #include <pcl/GroupBox.h>
+#include <pcl/TextBox.h>
+#include <pcl/BitmapBox.h>
 
 #include "SubframeSelectorInstance.h"
 
@@ -99,7 +101,7 @@ public:
    virtual bool ImportProcess( const ProcessImplementation& );
 
    void ClearMeasurements();
-   void AddMeasurement( const SubframeSelectorInstance::MeasureItem& measure );
+   void AddMeasurement( const MeasureItem& measure );
 
    private:
 
@@ -193,6 +195,18 @@ public:
             SpinBox           StarDetectorParameters_ROIHeight_Control;
             PushButton        StarDetectorParameters_ROISelectPreview_Button;
 
+      SectionBar        ExpressionParameters_SectionBar;
+      Control           ExpressionParameters_Control;
+      VerticalSizer     ExpressionParameters_Sizer;
+         HorizontalSizer   ExpressionParameters_Approval_Sizer;
+            BitmapBox         ExpressionParameters_Approval_Status;
+            Label             ExpressionParameters_Approval_Label;
+            Edit              ExpressionParameters_Approval_Control;
+         HorizontalSizer   ExpressionParameters_Weighting_Sizer;
+            BitmapBox         ExpressionParameters_Weighting_Status;
+            Label             ExpressionParameters_Weighting_Label;
+            Edit              ExpressionParameters_Weighting_Control;
+
       SectionBar        MeasurementImages_SectionBar;
       Control           MeasurementImages_Control;
       VerticalSizer     MeasurementImages_Sizer;
@@ -207,8 +221,12 @@ public:
    void UpdateSubframeImageSelectionButtons();
    void UpdateSystemParameters();
    void UpdateStarDetectorParameters();
+   void UpdateExpressionParameters();
    void UpdateMeasurementImageItem( size_type );
    void UpdateMeasurementImagesList();
+
+   void ApplyApprovalExpression();
+   void ApplyWeightingExpression();
 
    // Event Handlers
 
@@ -228,6 +246,8 @@ public:
    void __ItemSelected( ComboBox& sender, int itemIndex );
    void __CheckboxUpdated( Button& sender, Button::check_state state );
    void __ButtonClick( Button& sender, bool checked );
+   void __TextUpdated( Edit& sender, const String& text );
+   void __TextUpdateCompleted( Edit& sender );
    void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
    void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
 

@@ -88,10 +88,15 @@ SSROIY1*                         TheSSROIY1Parameter = nullptr;
 SSPSFFit*                        TheSSPSFFitParameter = nullptr;
 SSPSFFitCircular*                TheSSPSFFitCircularParameter = nullptr;
 
+SSApprovalExpression*            TheSSApprovalExpressionParameter = nullptr;
+SSWeightingExpression*           TheSSWeightingExpressionParameter = nullptr;
+
 SSMeasurements*                  TheSSMeasurementsParameter = nullptr;
+SSMeasurementIndex*              TheSSMeasurementIndexParameter = nullptr;
 SSMeasurementEnabled*            TheSSMeasurementEnabledParameter = nullptr;
 SSMeasurementLocked*             TheSSMeasurementLockedParameter = nullptr;
 SSMeasurementPath*               TheSSMeasurementPathParameter = nullptr;
+SSMeasurementWeight*             TheSSMeasurementWeightParameter = nullptr;
 SSMeasurementFWHM*               TheSSMeasurementFWHMParameter = nullptr;
 
 // ----------------------------------------------------------------------------
@@ -174,7 +179,7 @@ SSSubframeEnabled::SSSubframeEnabled( MetaTable* T ) : MetaBoolean( T )
 
 IsoString SSSubframeEnabled::Id() const
 {
-   return "subframesEnabled";
+   return "subframeEnabled";
 }
 
 bool SSSubframeEnabled::DefaultValue() const
@@ -191,7 +196,7 @@ SSSubframePath::SSSubframePath( MetaTable* T ) : MetaString( T )
 
 IsoString SSSubframePath::Id() const
 {
-   return "subframesPath";
+   return "subframePath";
 }
 
 // ----------------------------------------------------------------------------
@@ -1040,7 +1045,7 @@ IsoString SSPSFFit::Tooltip() const
 
 // ----------------------------------------------------------------------------
 
-SSPSFFitCircular::SSPSFFitCircular( MetaProcess* T ) : MetaBoolean( T )
+SSPSFFitCircular::SSPSFFitCircular( MetaProcess* P ) : MetaBoolean( P )
 {
    TheSSPSFFitCircularParameter = this;
 }
@@ -1064,6 +1069,61 @@ IsoString SSPSFFitCircular::Tooltip() const
 
 // ----------------------------------------------------------------------------
 
+SSApprovalExpression::SSApprovalExpression( MetaProcess* P ) : MetaString( P )
+{
+   TheSSApprovalExpressionParameter = this;
+}
+
+IsoString SSApprovalExpression::Id() const
+{
+   return "approvalExpression";
+}
+
+IsoString SSApprovalExpression::Tooltip() const
+{
+   return "<p>Subframe approval expression, a boolean combination of constraints. A blank "
+          "expression will approve all subframes.</p>"
+          "<p><i>approval</i> = [ <i>constraint</i> [ [ && | || ] <i>constraint</i> ]... ]</p>"
+          "<p><i>constraint</i> = [ <i>weighting</i> [ &lt; | &gt; | &lt;= | &gt;= | == | != ] "
+          "<i>weighting</i> | true | false | [ ! ] (<i>approval</i>) ]</p>"
+          "<p><i>weighting</i> = <i>term</i> [ [ + | - | * | / ] <i>term</i> ]...</p>"
+          "<p><i>term</i> = [ - ] [ <i>number</i> | <i>property</i> | (<i>weighting</i>) ]</p>"
+          "<p><i>property</i> = [ Index | Weight | WeightSigma | FWHM | FWHMSigma | Eccentricity | "
+          "EccentricitySigma | SNRWeight | SNRWeightSigma | Median | MedianSigma | "
+          "MeanDeviation | MeanDeviationSigma | Noise | NoiseSigma | StarSupport | "
+          "StarSupportSigma | StarResidual | StarResidualSigma | NoiseSupport | "
+          "NoiseSupportSigma | FWHMMeanDev | FWHMMeanDevSigma | EccentricityMeanDev | "
+          "EccenricityMeanDevSigma | StarResidualMeanDev | StarResidualMeanDevSigma ]</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSWeightingExpression::SSWeightingExpression( MetaProcess* P ) : MetaString( P )
+{
+   TheSSWeightingExpressionParameter = this;
+}
+
+IsoString SSWeightingExpression::Id() const
+{
+   return "weightingExpression";
+}
+
+IsoString SSWeightingExpression::Tooltip() const
+{
+   return "<p>Subframe weighting expression, an arithmetic combination of "
+          "properties. A blank expression will assign a zero weight to all subframes.</p>"
+          "<p><i>weighting</i> = [ <i>term</i> [ [ + | - | * | / ] <i>term</i> ]... ]</p>"
+          "<p><i>term</i> = [ - ] [ <i>number</i> | <i>property</i> | (<i>weighting</i>) ]</p>"
+          "<p><i>property</i> = [ Index | FWHM | FWHMSigma | Eccentricity | EccentricitySigma | "
+          "SNRWeight | SNRWeightSigma | Median | MedianSigma | MeanDeviation | "
+          "MeanDeviationSigma | Noise | NoiseSigma | StarSupport | StarSupportSigma | "
+          "StarResidual | StarResidualSigma | NoiseSupport | NoiseSupportSigma | FWHMMeanDev | "
+          "FWHMMeanDevSigma | EccentricityMeanDev | EccentricityMeanDevSigma | "
+          "StarResidualMeanDev | StarResidualMeanDevSigma ]</p>";
+}
+
+// ----------------------------------------------------------------------------
+
 SSMeasurements::SSMeasurements( MetaProcess* P ) : MetaTable( P )
 {
    TheSSMeasurementsParameter = this;
@@ -1072,6 +1132,38 @@ SSMeasurements::SSMeasurements( MetaProcess* P ) : MetaTable( P )
 IsoString SSMeasurements::Id() const
 {
    return "measurements";
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementIndex::SSMeasurementIndex( MetaTable* T ) : MetaUInt16( T )
+{
+   TheSSMeasurementIndexParameter = this;
+}
+
+IsoString SSMeasurementIndex::Id() const
+{
+   return "measurementIndex";
+}
+
+int SSMeasurementIndex::Precision() const
+{
+   return 0;
+}
+
+double SSMeasurementIndex::DefaultValue() const
+{
+   return 1;
+}
+
+double SSMeasurementIndex::MinimumValue() const
+{
+   return 1;
+}
+
+double SSMeasurementIndex::MaximumValue() const
+{
+   return UINT16_MAX;
 }
 
 // ----------------------------------------------------------------------------
@@ -1118,6 +1210,38 @@ SSMeasurementPath::SSMeasurementPath( MetaTable* T ) : MetaString( T )
 IsoString SSMeasurementPath::Id() const
 {
    return "measurementPath";
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementWeight::SSMeasurementWeight( MetaTable* T ) : MetaFloat( T )
+{
+   TheSSMeasurementWeightParameter = this;
+}
+
+IsoString SSMeasurementWeight::Id() const
+{
+   return "measurementWeight";
+}
+
+int SSMeasurementWeight::Precision() const
+{
+   return 4;
+}
+
+double SSMeasurementWeight::DefaultValue() const
+{
+   return 0;
+}
+
+double SSMeasurementWeight::MinimumValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementWeight::MaximumValue() const
+{
+   return 10000.0;
 }
 
 // ----------------------------------------------------------------------------

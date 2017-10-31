@@ -106,10 +106,15 @@ SubframeSelectorProcess::SubframeSelectorProcess() : MetaProcess()
    new SSPSFFit( this );
    new SSPSFFitCircular( this );
 
+   new SSApprovalExpression( this );
+   new SSWeightingExpression( this );
+
    new SSMeasurements( this );
+   new SSMeasurementIndex( TheSSMeasurementsParameter );
    new SSMeasurementEnabled( TheSSMeasurementsParameter );
    new SSMeasurementLocked( TheSSMeasurementsParameter );
    new SSMeasurementPath( TheSSMeasurementsParameter );
+   new SSMeasurementWeight( TheSSMeasurementsParameter );
    new SSMeasurementFWHM( TheSSMeasurementsParameter );
 }
 

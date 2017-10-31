@@ -61,7 +61,7 @@
 #include <pcl/MetaModule.h>
 #include <pcl/FileFormat.h>
 
-#define IMAGELIST_MINHEIGHT( fnt )  (8*fnt.Height() + 2)
+#define IMAGELIST_MINHEIGHT( fnt )  (12*fnt.Height() + 2)
 
 namespace pcl
 {
@@ -828,7 +828,6 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    Routine_Sizer.SetSpacing( 4 );
    Routine_Sizer.Add( Routine_Label );
    Routine_Sizer.Add( Routine_Control );
-   Routine_Sizer.AddStretch();
 
    //
 
@@ -839,6 +838,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    SubframeImages_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&SubframeSelectorInterface::__ToggleSection, w );
 
    SubframeImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
+   SubframeImages_TreeBox.SetScaledMinWidth( 200 );
    SubframeImages_TreeBox.SetNumberOfColumns( 3 );
    SubframeImages_TreeBox.HideHeader();
    SubframeImages_TreeBox.EnableMultipleSelections();
@@ -1254,6 +1254,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    ExpressionParameters_Approval_Label.SetMinWidth( currentLabelWidth );
    ExpressionParameters_Approval_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
+   ExpressionParameters_Approval_Control.SetScaledMinWidth( 300 );
    ExpressionParameters_Approval_Control.SetToolTip( TheSSApprovalExpressionParameter->Tooltip() );
    ExpressionParameters_Approval_Control.OnTextUpdated( (Edit::text_event_handler)&SubframeSelectorInterface::__TextUpdated, w );
    ExpressionParameters_Approval_Control.OnEditCompleted( (Edit::edit_event_handler)&SubframeSelectorInterface::__TextUpdateCompleted, w );
@@ -1270,6 +1271,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    ExpressionParameters_Weighting_Label.SetMinWidth( currentLabelWidth );
    ExpressionParameters_Weighting_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
+   ExpressionParameters_Weighting_Control.SetScaledMinWidth( 300 );
    ExpressionParameters_Weighting_Control.SetToolTip( TheSSWeightingExpressionParameter->Tooltip() );
    ExpressionParameters_Weighting_Control.OnTextUpdated( (Edit::text_event_handler)&SubframeSelectorInterface::__TextUpdated, w );
    ExpressionParameters_Weighting_Control.OnEditCompleted( (Edit::edit_event_handler)&SubframeSelectorInterface::__TextUpdateCompleted, w );
@@ -1294,6 +1296,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    MeasurementImages_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&SubframeSelectorInterface::__ToggleSection, w );
 
    MeasurementImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
+   MeasurementImages_TreeBox.SetScaledMinWidth( 400 );
    MeasurementImages_TreeBox.SetNumberOfColumns( 5 );
    MeasurementImages_TreeBox.SetHeaderText( 0, "Ind." );
    MeasurementImages_TreeBox.SetScaledColumnWidth( 0, 40 );
@@ -1320,23 +1323,31 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 
    //
 
-   Global_Sizer.SetMargin( 8 );
-   Global_Sizer.SetSpacing( 6 );
-   Global_Sizer.Add( Routine_Sizer );
-   Global_Sizer.Add( SubframeImages_SectionBar );
-   Global_Sizer.Add( SubframeImages_Control );
-   Global_Sizer.Add( SystemParameters_SectionBar );
-   Global_Sizer.Add( SystemParameters_Control );
-   Global_Sizer.Add( StarDetectorParameters_SectionBar );
-   Global_Sizer.Add( StarDetectorParameters_Control );
-   Global_Sizer.Add( ExpressionParameters_SectionBar );
-   Global_Sizer.Add( ExpressionParameters_Control );
-   Global_Sizer.Add( MeasurementImages_SectionBar );
-   Global_Sizer.Add( MeasurementImages_Control );
+   Left_Sizer.SetMargin( 8 );
+   Left_Sizer.SetSpacing( 6 );
+
+   Left_Sizer.Add( Routine_Sizer );
+   Left_Sizer.SetAlignment( Routine_Sizer, Sizer::item_alignment::Center );
+   Left_Sizer.Add( SubframeImages_SectionBar );
+   Left_Sizer.Add( SubframeImages_Control );
+   Left_Sizer.Add( SystemParameters_SectionBar );
+   Left_Sizer.Add( SystemParameters_Control );
+   Left_Sizer.Add( StarDetectorParameters_SectionBar );
+   Left_Sizer.Add( StarDetectorParameters_Control );
+   Left_Sizer.AddStretch( 100 );
+
+   Right_Sizer.SetMargin( 8 );
+   Right_Sizer.SetSpacing( 6 );
+   Right_Sizer.Add( ExpressionParameters_SectionBar );
+   Right_Sizer.Add( ExpressionParameters_Control );
+   Right_Sizer.Add( MeasurementImages_SectionBar );
+   Right_Sizer.Add( MeasurementImages_Control, 100 );
+
+   Global_Sizer.Add( Left_Sizer, 20 );
+   Global_Sizer.Add( Right_Sizer, 80 );
 
    w.SetSizer( Global_Sizer );
 
-   SystemParameters_Control.Hide();
    StarDetectorParameters_Control.Hide();
 
    w.AdjustToContents();

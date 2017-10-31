@@ -131,14 +131,14 @@ pcl::SubframeSelectorStarDetector::SubframeSelectorStarDetector() = default;
 
 // ----------------------------------------------------------------------------
 
-Array<Star> pcl::SubframeSelectorStarDetector::GetStars( ImageVariant& image )
+Array<Star> pcl::SubframeSelectorStarDetector::GetStars( ImageVariant* image )
 {
    Array<Star> stars;
 
    // We work on a duplicate of the source grayscale image, or on its HSI
    // intensity component if it is a color image.
    ImageVariant workingImage;
-   image.GetIntensity( workingImage );
+   image->GetIntensity( workingImage );
 
    if ( showStarDetectionMaps )
       CreateImageWindow( workingImage, "Original" );

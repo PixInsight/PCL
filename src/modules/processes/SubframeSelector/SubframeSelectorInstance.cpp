@@ -61,6 +61,8 @@
 #include <pcl/ErrorHandler.h>
 #include <pcl/ElapsedTime.h>
 #include <pcl/ProcessInstance.h>
+#include <pcl/FileFormat.h>
+#include <pcl/FileFormatInstance.h>
 
 namespace pcl
 {
@@ -155,14 +157,13 @@ class SubframeSelectorMeasureThread : public Thread
 public:
 
    SubframeSelectorMeasureThread( ImageVariant* subframe,
-                                  const String& subframePath, const String& subframeWindowId,
+                                  const String& subframePath,
                                   MeasureThreadInputData* data ) :
+           m_subframe( subframe ),
            m_outputData( subframePath ),
-           m_subframeWindowId( subframeWindowId ),
            m_success( false ),
            m_data( data )
    {
-      subframe->GetIntensity( m_subframe );
    }
 
    virtual void Run()
@@ -175,16 +176,6 @@ public:
          Console console;
          console.NoteLn( "<end><cbr><br>Measuring: " + m_outputData.path );
 
-         // Crop if the ROI was set
-         if ( m_data->instance->roi.IsRect() )
-         {
-            console.WriteLn( String().Format( "Cropping to: (%i, %i), (%i x %i)",
-                                              m_data->instance->roi.x0, m_data->instance->roi.y0,
-                                              m_data->instance->roi.Width(), m_data->instance->roi.Height()));
-            Module->ProcessEvents();
-            m_subframe.CropTo( m_data->instance->roi );
-         }
-
          // Run the Star Detector
          ElapsedTime T;
          star_list stars = StarDetector();
@@ -194,7 +185,6 @@ public:
          // Stop if just showing the maps
          if ( m_data->showStarDetectionMaps )
          {
-            m_subframe.Free(); // no longer required
             m_success = true;
             return;
          }
@@ -202,7 +192,6 @@ public:
          // Stop if no stars found
          if ( stars.IsEmpty() )
          {
-            m_subframe.Free(); // no longer required
             m_success = false;
             return;
          }
@@ -215,7 +204,6 @@ public:
 
          if ( fits.IsEmpty() )
          {
-            m_subframe.Free(); // no longer required
             m_success = false;
             return;
          }
@@ -254,8 +242,6 @@ public:
 
          console.WriteLn( "Calculations: " + T.ToIsoString() );
 
-         m_subframe.Free(); // no longer required
-
          m_success = true;
       }
       catch ( ... )
@@ -266,11 +252,6 @@ public:
          }
          ERROR_HANDLER
       }
-   }
-
-   String SubframeWindowId() const
-   {
-      return m_subframeWindowId;
    }
 
    const MeasureData& OutputData() const
@@ -313,7 +294,7 @@ private:
          Rect rect( Point( i->position.x - radius, i->position.y - radius ),
                     Point( i->position.x + radius, i->position.y + radius ) );
 
-         PSFFit psfFit( m_subframe, i->position, rect, PSFFunction( m_data->instance->psfFit ),
+         PSFFit psfFit( *m_subframe, i->position, rect, PSFFunction( m_data->instance->psfFit ),
                         m_data->instance->psfFitCircular );
          PSFData psf = psfFit.psf;
 
@@ -339,13 +320,110 @@ private:
       }
    }
 
-   ImageVariant               m_subframe;
+   AutoPointer<ImageVariant>  m_subframe;
    MeasureData                m_outputData;
-   String                     m_subframeWindowId;
    bool                       m_success : 1;
 
    MeasureThreadInputData* m_data;
 };
+
+// ----------------------------------------------------------------------------
+
+ImageVariant* SubframeSelectorInstance::LoadSubframe( const String& filePath )
+{
+   Console console;
+
+   /*
+    * Find out an installed file format that can read image files with the
+    * specified extension ...
+    */
+   FileFormat format( File::ExtractExtension( filePath ), true, false );
+
+   /*
+    * ... and create a format instance (usually a disk file) to access this
+    * subframe image.
+    */
+   FileFormatInstance file( format );
+
+   /*
+    * Open input stream.
+    */
+   ImageDescriptionArray images;
+   if ( !file.Open( images, filePath ) )
+      throw CaughtException();
+
+   /*
+    * Check for an empty calibration frame.
+    */
+   if ( images.IsEmpty() )
+      throw Error( filePath + ": Empty subframe image." );
+
+   /*
+    * Subframe files can store multiple images - only the first image
+    * will be used in such case, and the rest will be ignored.
+    */
+   if ( images.Length() > 1 )
+      console.NoteLn( String().Format( "<end><cbr>* Ignoring %u additional image(s) in subframe.",
+                                       images.Length() - 1 ) );
+
+   // Create a shared image, 32-bit floating point
+   Image* image = new Image( (void*)0, 0, 0 );
+
+   // Read the image
+   if ( format.SupportsMultipleImages() )
+      file.SelectImage( 0 );
+   if ( !file.ReadImage( *image ) )
+      throw CaughtException();
+
+
+   /*
+    * Optional pedestal subtraction.
+    */
+//   SubtractPedestal( image, file );
+
+   /*
+    * Convert to grayscale
+    */
+   ImageVariant* imageVariant = new ImageVariant();
+   image->GetIntensity( *imageVariant );
+
+   /*
+    * Crop if the ROI was set
+    */
+   if ( roi.IsRect() )
+   {
+      console.WriteLn( String().Format( "Cropping to: (%i, %i), (%i x %i)",
+                                        roi.x0, roi.y0,
+                                        roi.Width(), roi.Height()));
+      Module->ProcessEvents();
+      imageVariant->CropTo( roi );
+   }
+
+   /*
+    * Close the input stream.
+    */
+   if ( !file.Close() )
+      throw CaughtException();
+
+   return imageVariant;
+}
+
+// ----------------------------------------------------------------------------
+
+
+/*
+ * Read a subframe file. Returns a list of measuring threads ready to
+ * measure all subimages loaded from the file.
+ */
+thread_list
+SubframeSelectorInstance::CreateThreadForSubframe( const String& filePath, MeasureThreadInputData* threadData )
+{
+   thread_list threads;
+   threads.Add( new SubframeSelectorMeasureThread( LoadSubframe( filePath ),
+                                                   filePath,
+                                                   threadData ) );
+   return threads;
+}
 
 // ----------------------------------------------------------------------------
 
@@ -625,9 +703,6 @@ bool SubframeSelectorInstance::Measure() {
                      MeasureItem m( measures.Length() + 1 );
                      m.Input( (*i)->OutputData() );
                      measures.Append( m );
-
-                     // Close open image
-                     View::ViewById( (*i)->SubframeWindowId() ).Window().Close();
 
                      // Dispose this calibration thread, since we are done with
                      // it. NB: IndirectArray<T>::Delete() sets to zero the
@@ -1070,29 +1145,6 @@ size_type SubframeSelectorInstance::ParameterLength( const MetaParameter* p, siz
       return measures[tableRow].path.Length();
 
    return 0;
-}
-
-// ----------------------------------------------------------------------------
-
-
-/*
- * Read a subframe file. Returns a list of measuring threads ready to
- * measure all subimages loaded from the file.
- */
-thread_list
-SubframeSelectorInstance::CreateThreadForSubframe( const String& filePath, MeasureThreadInputData* threadData )
-{
-   thread_list threads;
-   Array<ImageWindow> imageWindows = ImageWindow::Open( filePath );
-   if ( imageWindows.Length() != 1 )
-      throw Error( String().Format( "Image Window incorrect length: 1 != %i : %s", imageWindows.Length(), filePath ) );
-   ImageWindow subframeWindow = imageWindows[0];
-   ImageVariant subframe = subframeWindow.MainView().Image();
-   threads.Add( new SubframeSelectorMeasureThread( &subframe,
-                                                   filePath,
-                                                   subframeWindow.MainView().FullId(),
-                                                   threadData ));
-   return threads;
 }
 
 

@@ -111,7 +111,9 @@ public:
    {
       GUIData( SubframeSelectorInterface& );
 
-      VerticalSizer     Global_Sizer;
+      HorizontalSizer   Global_Sizer;
+      VerticalSizer     Left_Sizer;
+      VerticalSizer     Right_Sizer;
 
       HorizontalSizer   Routine_Sizer;
          Label             Routine_Label;

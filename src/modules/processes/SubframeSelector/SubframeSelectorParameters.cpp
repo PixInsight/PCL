@@ -892,7 +892,7 @@ double SSROIX0::MinimumValue() const
 
 double SSROIX0::MaximumValue() const
 {
-   return int32_max;
+   return uint16_max;
 }
 
 // ----------------------------------------------------------------------------
@@ -919,7 +919,7 @@ double SSROIY0::MinimumValue() const
 
 double SSROIY0::MaximumValue() const
 {
-   return int32_max;
+   return uint16_max;
 }
 
 // ----------------------------------------------------------------------------
@@ -946,7 +946,7 @@ double SSROIX1::MinimumValue() const
 
 double SSROIX1::MaximumValue() const
 {
-   return int32_max;
+   return uint16_max;
 }
 
 // ----------------------------------------------------------------------------
@@ -973,7 +973,7 @@ double SSROIY1::MinimumValue() const
 
 double SSROIY1::MaximumValue() const
 {
-   return int32_max;
+   return uint16_max;
 }
 
 // ----------------------------------------------------------------------------

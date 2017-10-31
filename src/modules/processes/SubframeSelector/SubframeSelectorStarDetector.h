@@ -99,7 +99,7 @@ public:
 
    SubframeSelectorStarDetector();
 
-   Array<Star> GetStars( ImageVariant& image );
+   Array<Star> GetStars( ImageVariant* image );
 
    bool showStarDetectionMaps = false;
 

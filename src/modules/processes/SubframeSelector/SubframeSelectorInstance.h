@@ -164,6 +164,9 @@ private:
    // The set of measured subframes
    Array<MeasureItem>     measures;
 
+   // Read a subframe file
+   ImageVariant* LoadSubframe( const String& filePath );
+
    // Read a subframe file into a Thread
    thread_list CreateThreadForSubframe( const String&, MeasureThreadInputData* );
 

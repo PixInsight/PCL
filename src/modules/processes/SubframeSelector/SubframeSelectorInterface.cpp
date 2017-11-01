@@ -278,12 +278,13 @@ void SubframeSelectorInterface::UpdateStarDetectorParameters()
    GUI->StarDetectorParameters_UpperLimit_Control.SetValue( instance.upperLimit );
    GUI->StarDetectorParameters_BackgroundExpansion_Control.SetValue( instance.backgroundExpansion );
    GUI->StarDetectorParameters_XYStretch_Control.SetValue( instance.xyStretch );
+   GUI->StarDetectorParameters_PSFFit_Control.SetCurrentItem( instance.psfFit );
+   GUI->StarDetectorParameters_PSFFitCircular_Control.SetChecked( instance.psfFitCircular );
+   GUI->StarDetectorParameters_Pedestal_Control.SetValue( instance.pedestal );
    GUI->StarDetectorParameters_ROIX0_Control.SetValue( instance.roi.x0 );
    GUI->StarDetectorParameters_ROIY0_Control.SetValue( instance.roi.y0 );
    GUI->StarDetectorParameters_ROIWidth_Control.SetValue( instance.roi.Width() );
    GUI->StarDetectorParameters_ROIHeight_Control.SetValue( instance.roi.Height() );
-   GUI->StarDetectorParameters_PSFFit_Control.SetCurrentItem( instance.psfFit );
-   GUI->StarDetectorParameters_PSFFitCircular_Control.SetChecked( instance.psfFitCircular );
 }
 
 // ----------------------------------------------------------------------------
@@ -615,6 +616,8 @@ void SubframeSelectorInterface::__IntegerValueUpdated( SpinBox& sender, int valu
       instance.noiseReductionFilterRadius = value;
    if ( sender == GUI->StarDetectorParameters_BackgroundExpansion_Control )
       instance.backgroundExpansion = value;
+   if ( sender == GUI->StarDetectorParameters_Pedestal_Control )
+      instance.pedestal = value;
    if ( sender == GUI->StarDetectorParameters_ROIX0_Control )
       instance.roi.x0 = value;
    if ( sender == GUI->StarDetectorParameters_ROIY0_Control )
@@ -1180,6 +1183,23 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    StarDetectorParameters_PSFFit_Sizer.Add( StarDetectorParameters_PSFFitCircular_Control );
    StarDetectorParameters_PSFFit_Sizer.AddStretch();
 
+   StarDetectorParameters_Pedestal_Label.SetText( "Pedestal:" );
+   StarDetectorParameters_Pedestal_Label.SetMinWidth( currentLabelWidth );
+   StarDetectorParameters_Pedestal_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   StarDetectorParameters_Pedestal_Control.SetRange( TheSSPedestalParameter->MinimumValue(), TheSSPedestalParameter->MaximumValue() );
+   StarDetectorParameters_Pedestal_Control.SetToolTip( TheSSPedestalParameter->Tooltip() );
+   StarDetectorParameters_Pedestal_Control.OnValueUpdated( (SpinBox::value_event_handler)&SubframeSelectorInterface::__IntegerValueUpdated, w );
+
+   StarDetectorParameters_Pedestal_Unit.SetText( "Data Numbers" );
+   StarDetectorParameters_Pedestal_Unit.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+
+   StarDetectorParameters_Pedestal_Sizer.SetSpacing( 4 );
+   StarDetectorParameters_Pedestal_Sizer.Add( StarDetectorParameters_Pedestal_Label );
+   StarDetectorParameters_Pedestal_Sizer.Add( StarDetectorParameters_Pedestal_Control );
+   StarDetectorParameters_Pedestal_Sizer.Add( StarDetectorParameters_Pedestal_Unit );
+   StarDetectorParameters_Pedestal_Sizer.AddStretch();
+
    currentLabelWidth = fnt.Width( String( "Height:" ) ); // the longest label text
 
    StarDetectorParameters_ROIX0_Label.SetText( "Left:" );
@@ -1253,6 +1273,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    StarDetectorParameters_Sizer.Add( StarDetectorParameters_BackgroundExpansion_Sizer );
    StarDetectorParameters_Sizer.Add( StarDetectorParameters_XYStretch_Control );
    StarDetectorParameters_Sizer.Add( StarDetectorParameters_PSFFit_Sizer );
+   StarDetectorParameters_Sizer.Add( StarDetectorParameters_Pedestal_Sizer );
    StarDetectorParameters_Sizer.Add( StarDetectorParameters_ROIRow1_Sizer );
    StarDetectorParameters_Sizer.Add( StarDetectorParameters_ROIRow2_Sizer );
 

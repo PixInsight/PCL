@@ -180,7 +180,7 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
          strokeWidth: 2,
          drawPoints: true,
          drawPointCallback: drawApprovedPoint,
-         pointSize: 6,
+         pointSize: 4,
          xRangePad: 10,
          yRangePad: 20,
       }

@@ -141,9 +141,10 @@ private:
    float          upperLimit;
    int32          backgroundExpansion;
    float          xyStretch;
-   Rect           roi;
    pcl_enum       psfFit;
    pcl_bool       psfFitCircular;
+   uint16         pedestal;
+   Rect           roi;
 
    // The expressions
    String         approvalExpression;

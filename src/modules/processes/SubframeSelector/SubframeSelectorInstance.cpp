@@ -52,7 +52,6 @@
 
 #include "PSF.h"
 #include "SubframeSelectorInstance.h"
-#include "SubframeSelectorUtils.h"
 #include "SubframeSelectorStarDetector.h"
 #include "SubframeSelectorInterface.h"
 
@@ -90,9 +89,10 @@ SubframeSelectorInstance::SubframeSelectorInstance( const MetaProcess* m ) :
    upperLimit( TheSSUpperLimitParameter->DefaultValue() ),
    backgroundExpansion( TheSSBackgroundExpansionParameter->DefaultValue() ),
    xyStretch( TheSSXYStretchParameter->DefaultValue() ),
-   roi( 0 ),
    psfFit( SSPSFFit::Default ),
    psfFitCircular( TheSSPSFFitCircularParameter->DefaultValue() ),
+   pedestal( TheSSPedestalParameter->DefaultValue() ),
+   roi( 0 ),
    approvalExpression( "" ),
    weightingExpression( "" ),
    measures()
@@ -129,9 +129,10 @@ void SubframeSelectorInstance::Assign( const ProcessImplementation& p )
       upperLimit                             = x->upperLimit;
       backgroundExpansion                    = x->backgroundExpansion;
       xyStretch                              = x->xyStretch;
-      roi                                    = x->roi;
       psfFit                                 = x->psfFit;
       psfFitCircular                         = x->psfFitCircular;
+      pedestal                               = x->pedestal;
+      roi                                    = x->roi;
       approvalExpression                     = x->approvalExpression;
       weightingExpression                    = x->weightingExpression;
       measures                               = x->measures;
@@ -379,13 +380,18 @@ ImageVariant* SubframeSelectorInstance::LoadSubframe( const String& filePath )
    /*
     * Optional pedestal subtraction.
     */
-//   SubtractPedestal( image, file );
+   if ( pedestal > 0 )
+   {
+      Console().WriteLn( String().Format( "Subtracting pedestal: %d DN", pedestal ) );
+      image->Apply( pedestal/TheSSCameraResolutionParameter->ElementData(cameraResolution), ImageOp::Sub );
+   }
 
    /*
     * Convert to grayscale
     */
    ImageVariant* imageVariant = new ImageVariant();
    image->GetIntensity( *imageVariant );
+   image->FreeData();
 
    /*
     * Crop if the ROI was set
@@ -1049,6 +1055,12 @@ void* SubframeSelectorInstance::LockParameter( const MetaParameter* p, size_type
       return &backgroundExpansion;
    else if ( p == TheSSXYStretchParameter )
       return &xyStretch;
+   else if ( p == TheSSPSFFitParameter )
+      return &psfFit;
+   else if ( p == TheSSPSFFitCircularParameter )
+      return &psfFitCircular;
+   else if ( p == TheSSPedestalParameter )
+      return &pedestal;
    else if ( p == TheSSROIX0Parameter )
       return &roi.x0;
    else if ( p == TheSSROIY0Parameter )
@@ -1057,10 +1069,6 @@ void* SubframeSelectorInstance::LockParameter( const MetaParameter* p, size_type
       return &roi.x1;
    else if ( p == TheSSROIY1Parameter )
       return &roi.y1;
-   else if ( p == TheSSPSFFitParameter )
-      return &psfFit;
-   else if ( p == TheSSPSFFitCircularParameter )
-      return &psfFitCircular;
 
    else if ( p == TheSSApprovalExpressionParameter )
       return approvalExpression.Begin();

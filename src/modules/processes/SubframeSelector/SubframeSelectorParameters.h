@@ -479,6 +479,75 @@ extern SSXYStretch* TheSSXYStretchParameter;
 
 // ----------------------------------------------------------------------------
 
+class SSPSFFit : public MetaEnumeration
+{
+public:
+
+   enum { Gaussian,
+      Moffat10,
+      Moffat8,
+      Moffat6,
+      Moffat4,
+      Moffat25,
+      Moffat15,
+      Lorentzian,
+      NumberOfItems,
+      Default = Gaussian };
+
+   SSPSFFit( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
+   IsoString ElementLabel( size_type ) const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSPSFFit* TheSSPSFFitParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSPSFFitCircular : public MetaBoolean
+{
+public:
+
+   SSPSFFitCircular( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSPSFFitCircular* TheSSPSFFitCircularParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSPedestal : public MetaUInt16
+{
+public:
+
+   SSPedestal( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSPedestal* TheSSPedestalParameter;
+
+// ----------------------------------------------------------------------------
+
 class SSROIX0 : public MetaInt32
 {
    public:
@@ -541,54 +610,6 @@ class SSROIY1 : public MetaInt32
 };
 
 extern SSROIY1* TheSSROIY1Parameter;
-
-// ----------------------------------------------------------------------------
-
-class SSPSFFit : public MetaEnumeration
-{
-   public:
-
-   enum { Gaussian,
-      Moffat10,
-      Moffat8,
-      Moffat6,
-      Moffat4,
-      Moffat25,
-      Moffat15,
-      Lorentzian,
-      NumberOfItems,
-      Default = Gaussian };
-
-   SSPSFFit( MetaProcess* );
-
-   virtual IsoString Id() const;
-
-   virtual size_type NumberOfElements() const;
-   virtual IsoString ElementId( size_type ) const;
-   virtual int ElementValue( size_type ) const;
-   virtual size_type DefaultValueIndex() const;
-   IsoString ElementLabel( size_type ) const;
-
-   IsoString Tooltip() const;
-};
-
-extern SSPSFFit* TheSSPSFFitParameter;
-
-// ----------------------------------------------------------------------------
-
-class SSPSFFitCircular : public MetaBoolean
-{
-   public:
-
-   SSPSFFitCircular( MetaProcess* );
-
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
-
-   IsoString Tooltip() const;
-};
-
-extern SSPSFFitCircular* TheSSPSFFitCircularParameter;
 
 // ----------------------------------------------------------------------------
 

@@ -81,12 +81,13 @@ SSMaxDistortion*                 TheSSMaxDistortionParameter = nullptr;
 SSUpperLimit*                    TheSSUpperLimitParameter = nullptr;
 SSBackgroundExpansion*           TheSSBackgroundExpansionParameter = nullptr;
 SSXYStretch*                     TheSSXYStretchParameter = nullptr;
+SSPSFFit*                        TheSSPSFFitParameter = nullptr;
+SSPSFFitCircular*                TheSSPSFFitCircularParameter = nullptr;
+SSPedestal*                      TheSSPedestalParameter = nullptr;
 SSROIX0*                         TheSSROIX0Parameter = nullptr;
 SSROIY0*                         TheSSROIY0Parameter = nullptr;
 SSROIX1*                         TheSSROIX1Parameter = nullptr;
 SSROIY1*                         TheSSROIY1Parameter = nullptr;
-SSPSFFit*                        TheSSPSFFitParameter = nullptr;
-SSPSFFitCircular*                TheSSPSFFitCircularParameter = nullptr;
 
 SSApprovalExpression*            TheSSApprovalExpressionParameter = nullptr;
 SSWeightingExpression*           TheSSWeightingExpressionParameter = nullptr;
@@ -870,6 +871,136 @@ IsoString SSXYStretch::Tooltip() const
 
 // ----------------------------------------------------------------------------
 
+SSPSFFit::SSPSFFit( MetaProcess* P ) : MetaEnumeration( P )
+{
+   TheSSPSFFitParameter = this;
+}
+
+IsoString SSPSFFit::Id() const
+{
+   return "psfFit";
+}
+
+size_type SSPSFFit::NumberOfElements() const
+{
+   return NumberOfItems;
+}
+
+IsoString SSPSFFit::ElementId( size_type i ) const
+{
+   switch ( i )
+   {
+   default:
+   case Gaussian:  return "Gaussian";
+   case Moffat10:  return "Moffat10";
+   case Moffat8:  return "Moffat8";
+   case Moffat6:  return "Moffat6";
+   case Moffat4:  return "Moffat4";
+   case Moffat25:  return "Moffat25";
+   case Moffat15:  return "Moffat15";
+   case Lorentzian:  return "Lorentzian";
+   }
+}
+
+int SSPSFFit::ElementValue( size_type i ) const
+{
+   return int( i );
+}
+
+IsoString SSPSFFit::ElementLabel( size_type i ) const
+{
+   switch ( i )
+   {
+   default:
+   case Gaussian:  return "Gaussian";
+   case Moffat10:  return "Moffat10";
+   case Moffat8:  return "Moffat8";
+   case Moffat6:  return "Moffat6";
+   case Moffat4:  return "Moffat4";
+   case Moffat25:  return "Moffat2.5";
+   case Moffat15:  return "Moffat1.5";
+   case Lorentzian:  return "Lorentzian";
+   }
+}
+
+size_type SSPSFFit::DefaultValueIndex() const
+{
+   return Default;
+}
+
+IsoString SSPSFFit::Tooltip() const
+{
+   return "<p>This parameter specifies the <i>point spread function</i> (PSF) used to fit star images.</p>"
+           "<p>The function may be either an elliptical <i>Gaussian</i>, an elliptical "
+           "<i>Moffat</i> with a selected <i>Beta</i> parameter or an elliptical "
+           "<i>Lorentzian</i>.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSPSFFitCircular::SSPSFFitCircular( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheSSPSFFitCircularParameter = this;
+}
+
+IsoString SSPSFFitCircular::Id() const
+{
+   return "psfFitCircular";
+}
+
+bool SSPSFFitCircular::DefaultValue() const
+{
+   return false;
+}
+
+IsoString SSPSFFitCircular::Tooltip() const
+{
+   return "<p>Enable this option to fit circular point spread functions. Disable it to fit elliptical functions.</p>"
+           "Circular functions can provide more robust and useful results in cases of strong "
+           "undersampling or high noise levels.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSPedestal::SSPedestal( MetaProcess* P ) : MetaUInt16( P )
+{
+   TheSSPedestalParameter = this;
+}
+
+IsoString SSPedestal::Id() const
+{
+   return "pedestal";
+}
+
+int SSPedestal::Precision() const
+{
+   return 0;
+}
+
+double SSPedestal::DefaultValue() const
+{
+   return 0;
+}
+
+double SSPedestal::MinimumValue() const
+{
+   return 0;
+}
+
+double SSPedestal::MaximumValue() const
+{
+   return UINT16_MAX;
+}
+
+IsoString SSPedestal::Tooltip() const
+{
+   return "<p>Pedestal value in the Camera Resolution Data Number range (e.g. 16-bit is from 0 to 65535), "
+           "which will be subtracted from each image before processing. This value is"
+           "divided by the Camera Resolution.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
 SSROIX0::SSROIX0( MetaProcess* P ) : MetaInt32( P )
 {
    TheSSROIX0Parameter = this;
@@ -974,97 +1105,6 @@ double SSROIY1::MinimumValue() const
 double SSROIY1::MaximumValue() const
 {
    return uint16_max;
-}
-
-// ----------------------------------------------------------------------------
-
-SSPSFFit::SSPSFFit( MetaProcess* P ) : MetaEnumeration( P )
-{
-   TheSSPSFFitParameter = this;
-}
-
-IsoString SSPSFFit::Id() const
-{
-   return "psfFit";
-}
-
-size_type SSPSFFit::NumberOfElements() const
-{
-   return NumberOfItems;
-}
-
-IsoString SSPSFFit::ElementId( size_type i ) const
-{
-   switch ( i )
-   {
-      default:
-      case Gaussian:  return "Gaussian";
-      case Moffat10:  return "Moffat10";
-      case Moffat8:  return "Moffat8";
-      case Moffat6:  return "Moffat6";
-      case Moffat4:  return "Moffat4";
-      case Moffat25:  return "Moffat25";
-      case Moffat15:  return "Moffat15";
-      case Lorentzian:  return "Lorentzian";
-   }
-}
-
-int SSPSFFit::ElementValue( size_type i ) const
-{
-   return int( i );
-}
-
-IsoString SSPSFFit::ElementLabel( size_type i ) const
-{
-   switch ( i )
-   {
-      default:
-      case Gaussian:  return "Gaussian";
-      case Moffat10:  return "Moffat10";
-      case Moffat8:  return "Moffat8";
-      case Moffat6:  return "Moffat6";
-      case Moffat4:  return "Moffat4";
-      case Moffat25:  return "Moffat2.5";
-      case Moffat15:  return "Moffat1.5";
-      case Lorentzian:  return "Lorentzian";
-   }
-}
-
-size_type SSPSFFit::DefaultValueIndex() const
-{
-   return Default;
-}
-
-IsoString SSPSFFit::Tooltip() const
-{
-   return "<p>This parameter specifies the <i>point spread function</i> (PSF) used to fit star images.</p>"
-          "<p>The function may be either an elliptical <i>Gaussian</i>, an elliptical "
-          "<i>Moffat</i> with a selected <i>Beta</i> parameter or an elliptical "
-          "<i>Lorentzian</i>.</p>";
-}
-
-// ----------------------------------------------------------------------------
-
-SSPSFFitCircular::SSPSFFitCircular( MetaProcess* P ) : MetaBoolean( P )
-{
-   TheSSPSFFitCircularParameter = this;
-}
-
-IsoString SSPSFFitCircular::Id() const
-{
-   return "psfFitCircular";
-}
-
-bool SSPSFFitCircular::DefaultValue() const
-{
-   return false;
-}
-
-IsoString SSPSFFitCircular::Tooltip() const
-{
-   return "<p>Enable this option to fit circular point spread functions. Disable it to fit elliptical functions.</p>"
-          "Circular functions can provide more robust and useful results in cases of strong "
-          "undersampling or high noise levels.</p>";
 }
 
 // ----------------------------------------------------------------------------

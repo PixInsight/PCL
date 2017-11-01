@@ -99,12 +99,13 @@ SubframeSelectorProcess::SubframeSelectorProcess() : MetaProcess()
    new SSUpperLimit( this );
    new SSBackgroundExpansion( this );
    new SSXYStretch( this );
+   new SSPSFFit( this );
+   new SSPSFFitCircular( this );
+   new SSPedestal( this );
    new SSROIX0( this );
    new SSROIY0( this );
    new SSROIX1( this );
    new SSROIY1( this );
-   new SSPSFFit( this );
-   new SSPSFFitCircular( this );
 
    new SSApprovalExpression( this );
    new SSWeightingExpression( this );

@@ -186,6 +186,10 @@ public:
             ComboBox          StarDetectorParameters_PSFFit_Control;
             Label             StarDetectorParameters_PSFFitCircular_Label;
             CheckBox          StarDetectorParameters_PSFFitCircular_Control;
+         HorizontalSizer   StarDetectorParameters_Pedestal_Sizer;
+            Label             StarDetectorParameters_Pedestal_Label;
+            SpinBox           StarDetectorParameters_Pedestal_Control;
+            Label             StarDetectorParameters_Pedestal_Unit;
          HorizontalSizer   StarDetectorParameters_ROIRow1_Sizer;
             Label             StarDetectorParameters_ROIX0_Label;
             SpinBox           StarDetectorParameters_ROIX0_Control;

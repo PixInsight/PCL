@@ -185,7 +185,8 @@ void SubframeSelectorInterface::UpdateControls()
    UpdateSystemParameters();
    UpdateStarDetectorParameters();
    UpdateExpressionParameters();
-   UpdateMeasurementImagesList();
+   UpdateMeasurementImagesList();;
+   UpdateMeasurementGraph();
 }
 
 // ----------------------------------------------------------------------------
@@ -297,7 +298,7 @@ void SubframeSelectorInterface::UpdateExpressionParameters()
 
 void SubframeSelectorInterface::UpdateMeasurementImageItem( size_type i )
 {
-   TreeBox::Node* node = GUI->MeasurementImages_TreeBox[i];
+   TreeBox::Node* node = GUI->MeasurementTable_TreeBox[i];
    if ( node == nullptr )
       return;
 
@@ -328,36 +329,50 @@ void SubframeSelectorInterface::UpdateMeasurementImageItem( size_type i )
 
 void SubframeSelectorInterface::UpdateMeasurementImagesList()
 {
-   int currentIdx = GUI->MeasurementImages_TreeBox.ChildIndex( GUI->MeasurementImages_TreeBox.CurrentNode() );
+   int currentIdx = GUI->MeasurementTable_TreeBox.ChildIndex( GUI->MeasurementTable_TreeBox.CurrentNode() );
 
-   GUI->MeasurementImages_TreeBox.DisableUpdates();
-   GUI->MeasurementImages_TreeBox.Clear();
+   GUI->MeasurementTable_TreeBox.DisableUpdates();
+   GUI->MeasurementTable_TreeBox.Clear();
 
    ApplyWeightingExpression();
    ApplyApprovalExpression();
 
    for ( size_type i = 0; i < instance.measures.Length(); ++i )
    {
-      new TreeBox::Node( GUI->MeasurementImages_TreeBox );
+      new TreeBox::Node( GUI->MeasurementTable_TreeBox );
       UpdateMeasurementImageItem( i );
    }
 
-   GUI->MeasurementImages_TreeBox.AdjustColumnWidthToContents( 3 );
-   GUI->MeasurementImages_TreeBox.AdjustColumnWidthToContents( 4 );
-   GUI->MeasurementImages_TreeBox.AdjustColumnWidthToContents( 5 );
+   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 3 );
+   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 4 );
+   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 5 );
 
    if ( !instance.measures.IsEmpty() )
-      if ( currentIdx >= 0 && currentIdx < GUI->MeasurementImages_TreeBox.NumberOfChildren() )
-         GUI->MeasurementImages_TreeBox.SetCurrentNode( GUI->MeasurementImages_TreeBox[currentIdx] );
+      if ( currentIdx >= 0 && currentIdx < GUI->MeasurementTable_TreeBox.NumberOfChildren() )
+         GUI->MeasurementTable_TreeBox.SetCurrentNode( GUI->MeasurementTable_TreeBox[currentIdx] );
 
-   GUI->MeasurementImages_TreeBox.EnableUpdates();
+   GUI->MeasurementTable_TreeBox.EnableUpdates();
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::UpdateMeasurementGraph()
+{
+   DataPointVector dataset( instance.measures.Length() );
+   for ( size_type i = 0; i < instance.measures.Length(); ++i )
+   {
+      dataset[i].x         = instance.measures[i].index;
+      dataset[i].y         = instance.measures[i].fwhm;
+      dataset[i].approved  = instance.measures[i].enabled;
+   }
+   GUI->MeasurementGraph_Graph.SetDataset( "FWHM", &dataset );
 }
 
 // ----------------------------------------------------------------------------
 
 void SubframeSelectorInterface::ApplyApprovalExpression()
 {
-   GUI->MeasurementImages_TreeBox.DisableUpdates();
+   GUI->MeasurementTable_TreeBox.DisableUpdates();
    try
    {
       instance.ApproveMeasurements();
@@ -366,12 +381,12 @@ void SubframeSelectorInterface::ApplyApprovalExpression()
    {
       GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
    }
-   GUI->MeasurementImages_TreeBox.EnableUpdates();
+   GUI->MeasurementTable_TreeBox.EnableUpdates();
 }
 
 void SubframeSelectorInterface::ApplyWeightingExpression()
 {
-   GUI->MeasurementImages_TreeBox.DisableUpdates();
+   GUI->MeasurementTable_TreeBox.DisableUpdates();
    try
    {
       instance.WeightMeasurements();
@@ -380,7 +395,7 @@ void SubframeSelectorInterface::ApplyWeightingExpression()
    {
       GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
    }
-   GUI->MeasurementImages_TreeBox.EnableUpdates();
+   GUI->MeasurementTable_TreeBox.EnableUpdates();
 }
 
 // ----------------------------------------------------------------------------
@@ -398,14 +413,14 @@ void SubframeSelectorInterface::__ToggleSection( SectionBar& sender, Control& se
          GUI->SubframeImages_TreeBox.SetMaxHeight( int_max );
       }
    }
-   else if ( sender == GUI->MeasurementImages_SectionBar )
+   else if ( sender == GUI->MeasurementTable_SectionBar )
    {
       if ( start )
-         GUI->MeasurementImages_TreeBox.SetFixedHeight();
+         GUI->MeasurementTable_TreeBox.SetFixedHeight();
       else
       {
-         GUI->MeasurementImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( Font() ) );
-         GUI->MeasurementImages_TreeBox.SetMaxHeight( int_max );
+         GUI->MeasurementTable_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( Font() ) );
+         GUI->MeasurementTable_TreeBox.SetMaxHeight( int_max );
       }
    }
 }
@@ -567,6 +582,7 @@ void SubframeSelectorInterface::__RealValueUpdated( NumericEdit& sender, double 
    {
       instance.subframeScale = value;
       UpdateMeasurementImagesList();
+      UpdateMeasurementGraph();
    }
    if ( sender == GUI->SystemParameters_CameraGain_Control )
       instance.cameraGain = value;
@@ -621,6 +637,7 @@ void SubframeSelectorInterface::__ItemSelected( ComboBox& sender, int itemIndex 
    {
       instance.scaleUnit = itemIndex;
       UpdateMeasurementImagesList();
+      UpdateMeasurementGraph();
    }
    if ( sender == GUI->SystemParameters_DataUnit_Control )
       instance.dataUnit = itemIndex;
@@ -713,6 +730,7 @@ void SubframeSelectorInterface::__TextUpdateCompleted( Edit& sender )
       if ( shouldUpdate )
       {
          UpdateMeasurementImagesList();
+         UpdateMeasurementGraph();
       }
    }
    if ( sender == GUI->ExpressionParameters_Weighting_Control )
@@ -733,6 +751,7 @@ void SubframeSelectorInterface::__TextUpdateCompleted( Edit& sender )
       if ( shouldUpdate )
       {
          UpdateMeasurementImagesList();
+         UpdateMeasurementGraph();
       }
    }
 }
@@ -1291,35 +1310,52 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 
    //
 
-   MeasurementImages_SectionBar.SetTitle( "Measurements" );
-   MeasurementImages_SectionBar.SetSection( MeasurementImages_Control );
-   MeasurementImages_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&SubframeSelectorInterface::__ToggleSection, w );
+   MeasurementTable_SectionBar.SetTitle( "Measurements Table" );
+   MeasurementTable_SectionBar.SetSection( MeasurementTable_Control );
+   MeasurementTable_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&SubframeSelectorInterface::__ToggleSection, w );
 
-   MeasurementImages_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
-   MeasurementImages_TreeBox.SetScaledMinWidth( 400 );
-   MeasurementImages_TreeBox.SetNumberOfColumns( 5 );
-   MeasurementImages_TreeBox.SetHeaderText( 0, "Ind." );
-   MeasurementImages_TreeBox.SetScaledColumnWidth( 0, 40 );
-   MeasurementImages_TreeBox.SetHeaderIcon( 1, Bitmap( MeasurementImages_TreeBox.ScaledResource( ":/icons/picture-ok.png" ) ) );
-   MeasurementImages_TreeBox.SetHeaderText( 1, "" );
-   MeasurementImages_TreeBox.SetScaledColumnWidth( 1, 30 );
-   MeasurementImages_TreeBox.SetHeaderIcon( 2, Bitmap( MeasurementImages_TreeBox.ScaledResource( ":/icons/function-import.png" ) ) );
-   MeasurementImages_TreeBox.SetHeaderText( 2, "" );
-   MeasurementImages_TreeBox.SetScaledColumnWidth( 2, 30 );
-   MeasurementImages_TreeBox.SetHeaderText( 3, "Name" );
-   MeasurementImages_TreeBox.SetHeaderText( 4, "Weight" );
-   MeasurementImages_TreeBox.SetHeaderText( 5, "FWHM" );
-   MeasurementImages_TreeBox.EnableMultipleSelections();
-   MeasurementImages_TreeBox.DisableRootDecoration();
-   MeasurementImages_TreeBox.EnableAlternateRowColor();
-   MeasurementImages_TreeBox.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler) &SubframeSelectorInterface::__MeasurementImages_CurrentNodeUpdated, w );
-   MeasurementImages_TreeBox.OnNodeActivated( (TreeBox::node_event_handler) &SubframeSelectorInterface::__MeasurementImages_NodeActivated, w );
+   MeasurementTable_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
+   MeasurementTable_TreeBox.SetScaledMinWidth( 400 );
+   MeasurementTable_TreeBox.SetNumberOfColumns( 5 );
+   MeasurementTable_TreeBox.SetHeaderText( 0, "Ind." );
+   MeasurementTable_TreeBox.SetScaledColumnWidth( 0, 40 );
+   MeasurementTable_TreeBox.SetHeaderIcon( 1, Bitmap( MeasurementTable_TreeBox.ScaledResource( ":/icons/picture-ok.png" ) ) );
+   MeasurementTable_TreeBox.SetHeaderText( 1, "" );
+   MeasurementTable_TreeBox.SetScaledColumnWidth( 1, 30 );
+   MeasurementTable_TreeBox.SetHeaderIcon( 2, Bitmap( MeasurementTable_TreeBox.ScaledResource( ":/icons/function-import.png" ) ) );
+   MeasurementTable_TreeBox.SetHeaderText( 2, "" );
+   MeasurementTable_TreeBox.SetScaledColumnWidth( 2, 30 );
+   MeasurementTable_TreeBox.SetHeaderText( 3, "Name" );
+   MeasurementTable_TreeBox.SetHeaderText( 4, "Weight" );
+   MeasurementTable_TreeBox.SetHeaderText( 5, "FWHM" );
+   MeasurementTable_TreeBox.EnableMultipleSelections();
+   MeasurementTable_TreeBox.DisableRootDecoration();
+   MeasurementTable_TreeBox.EnableAlternateRowColor();
+   MeasurementTable_TreeBox.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler) &SubframeSelectorInterface::__MeasurementImages_CurrentNodeUpdated, w );
+   MeasurementTable_TreeBox.OnNodeActivated( (TreeBox::node_event_handler) &SubframeSelectorInterface::__MeasurementImages_NodeActivated, w );
 
-   MeasurementImages_Sizer.SetSpacing( 4 );
-   MeasurementImages_Sizer.Add( MeasurementImages_TreeBox, 100 );
+   MeasurementTable_Sizer.SetSpacing( 4 );
+   MeasurementTable_Sizer.Add( MeasurementTable_TreeBox, 100 );
 
-   MeasurementImages_Control.SetSizer( MeasurementImages_Sizer );
-   MeasurementImages_Control.AdjustToContents();
+   MeasurementTable_Control.SetSizer( MeasurementTable_Sizer );
+   MeasurementTable_Control.AdjustToContents();
+
+   //
+
+   MeasurementGraph_SectionBar.SetTitle( "Measurements Graph" );
+   MeasurementGraph_SectionBar.SetSection( MeasurementGraph_Control );
+   MeasurementGraph_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&SubframeSelectorInterface::__ToggleSection, w );
+
+   MeasurementGraph_Graph.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
+   MeasurementGraph_Graph.SetScaledMinWidth( 400 );
+   MeasurementGraph_Graph.SetZoomFactor( MeasurementGraph_Graph.DisplayPixelRatio() );
+   MeasurementGraph_Graph.SetBackgroundColor( MeasurementGraph_Control.BackgroundColor() );
+
+   MeasurementGraph_Sizer.SetSpacing( 4 );
+   MeasurementGraph_Sizer.Add( MeasurementGraph_Graph, 100 );
+
+   MeasurementGraph_Control.SetSizer( MeasurementGraph_Sizer );
+   MeasurementGraph_Control.AdjustToContents();
 
    //
 
@@ -1340,8 +1376,10 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    Right_Sizer.SetSpacing( 6 );
    Right_Sizer.Add( ExpressionParameters_SectionBar );
    Right_Sizer.Add( ExpressionParameters_Control );
-   Right_Sizer.Add( MeasurementImages_SectionBar );
-   Right_Sizer.Add( MeasurementImages_Control, 100 );
+   Right_Sizer.Add( MeasurementTable_SectionBar );
+   Right_Sizer.Add( MeasurementTable_Control, 50 );
+   Right_Sizer.Add( MeasurementGraph_SectionBar );
+   Right_Sizer.Add( MeasurementGraph_Control, 100 );
 
    Global_Sizer.Add( Left_Sizer, 20 );
    Global_Sizer.Add( Right_Sizer, 80 );

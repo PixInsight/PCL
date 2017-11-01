@@ -59,18 +59,6 @@
 #include <pcl/MetaParameter.h>
 #include <pcl/ProcessImplementation.h>
 
-#define MAX_STARS 20000
-#define STAR_DETECTEDOK 1 // DynamicPSF Status Enumeration
-#define PSF_FITTEDOK 1 // DynamicPSF Status Enumeration
-#define FWHM_GAUSSIAN 1.551850 // return 2.0 * pcl::Sqrt( 2.0 * pcl::Log( 2.0 ) );
-#define FWHM_MOFFAT10 0.535811 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 10.0 ) - 1.0 );
-#define FWHM_MOFFAT8 0.601690 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 8.0 ) - 1.0 );
-#define FWHM_MOFFAT6 0.699892 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 6.0 ) - 1.0 );
-#define FWHM_MOFFAT4 0.869959 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 4.0 ) - 1.0 );
-#define FWHM_MOFFAT25 1.130501 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 2.5 ) - 1.0 );
-#define FWHM_MOFFAT15 1.532842 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 1.5 ) - 1.0 );
-#define FWHM_LORENTZIAN 2.000000 // return 2.0 * pcl::Sqrt( pcl::Pow( 2.0, 1.0 / 1.0 ) - 1.0 );
-
 namespace pcl
 {
 

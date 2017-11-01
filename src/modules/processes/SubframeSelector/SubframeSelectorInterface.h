@@ -68,6 +68,7 @@
 #include <pcl/GroupBox.h>
 #include <pcl/TextBox.h>
 #include <pcl/BitmapBox.h>
+#include "GraphWebView.h"
 
 #include "SubframeSelectorInstance.h"
 
@@ -209,10 +210,15 @@ public:
             Label             ExpressionParameters_Weighting_Label;
             Edit              ExpressionParameters_Weighting_Control;
 
-      SectionBar        MeasurementImages_SectionBar;
-      Control           MeasurementImages_Control;
-      VerticalSizer     MeasurementImages_Sizer;
-         TreeBox           MeasurementImages_TreeBox;
+      SectionBar        MeasurementTable_SectionBar;
+      Control           MeasurementTable_Control;
+      VerticalSizer     MeasurementTable_Sizer;
+         TreeBox           MeasurementTable_TreeBox;
+
+      SectionBar        MeasurementGraph_SectionBar;
+      Control           MeasurementGraph_Control;
+      VerticalSizer     MeasurementGraph_Sizer;
+         GraphWebView      MeasurementGraph_Graph;
    };
 
    GUIData* GUI = nullptr;
@@ -226,6 +232,7 @@ public:
    void UpdateExpressionParameters();
    void UpdateMeasurementImageItem( size_type );
    void UpdateMeasurementImagesList();
+   void UpdateMeasurementGraph();
 
    void ApplyApprovalExpression();
    void ApplyWeightingExpression();

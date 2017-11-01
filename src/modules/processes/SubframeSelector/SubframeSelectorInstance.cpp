@@ -882,6 +882,7 @@ bool SubframeSelectorInstance::Measure() {
          for ( size_type i = 0; i < measures.Length(); ++i )
             TheSubframeSelectorInterface->AddMeasurement( measures[i] );
          TheSubframeSelectorInterface->UpdateMeasurementImagesList();
+         TheSubframeSelectorInterface->UpdateMeasurementGraph();
       }
       return true;
    } // try

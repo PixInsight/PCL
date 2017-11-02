@@ -64,6 +64,7 @@ struct DataPoint
 {
    int x;
    double y;
+   double y2;
    bool approved;
 };
 
@@ -85,7 +86,7 @@ class GraphWebView : public WebView
 {
 public:
 
-   void SetDataset( const String& dataname, DataPointVector* dataset );
+   void SetDataset( const String& dataname, const String& dataname2, DataPointVector* dataset );
 
 private:
 

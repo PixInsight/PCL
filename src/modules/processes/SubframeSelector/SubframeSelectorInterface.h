@@ -217,15 +217,21 @@ public:
       SectionBar        MeasurementTable_SectionBar;
       Control           MeasurementTable_Control;
       VerticalSizer     MeasurementTable_Sizer;
+         HorizontalSizer   MeasurementsTable_Top_Sizer;
+            ComboBox          MeasurementsTable_SortingProperty_Control;
+            ComboBox          MeasurementsTable_SortingMode_Control;
          TreeBox           MeasurementTable_TreeBox;
 
       SectionBar        MeasurementGraph_SectionBar;
       Control           MeasurementGraph_Control;
       VerticalSizer     MeasurementGraph_Sizer;
+         ComboBox          MeasurementGraph_GraphProperty_Control;
          GraphWebView      MeasurementGraph_Graph;
    };
 
    GUIData* GUI = nullptr;
+
+   MeasureItem* GetMeasurementItem( size_type );
 
    void UpdateControls();
    void UpdateSubframeImageItem( size_type );
@@ -234,6 +240,7 @@ public:
    void UpdateSystemParameters();
    void UpdateStarDetectorParameters();
    void UpdateExpressionParameters();
+   void UpdateMeasurementImageItem( size_type, MeasureItem* );
    void UpdateMeasurementImageItem( size_type );
    void UpdateMeasurementImagesList();
    void UpdateMeasurementGraph();
@@ -256,7 +263,7 @@ public:
 
    void __RealValueUpdated( NumericEdit& sender, double value );
    void __IntegerValueUpdated( SpinBox& sender, int value );
-   void __ItemSelected( ComboBox& sender, int itemIndex );
+   void __ComboSelected( ComboBox& sender, int itemIndex );
    void __CheckboxUpdated( Button& sender, Button::check_state state );
    void __ButtonClick( Button& sender, bool checked );
    void __TextUpdated( Edit& sender, const String& text );

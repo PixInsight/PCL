@@ -65,10 +65,12 @@ struct MeasureData
 {
    String   path;
    double   fwhm;
+   double   eccentricity;
 
    MeasureData( const String& p = String( "" ) ) :
            path( p ),
-           fwhm( 0 )
+           fwhm( TheSSMeasurementFWHMParameter->DefaultValue() ),
+           eccentricity( TheSSMeasurementEccentricityParameter->DefaultValue() )
    {
    }
 
@@ -85,6 +87,7 @@ struct MeasureItem
    String   path;
    float    weight;
    float    fwhm;
+   float    eccentricity;
 
    MeasureItem( uint16 i, const String& p = String( "" ) ) :
            index( i ),
@@ -92,7 +95,8 @@ struct MeasureItem
            locked( TheSSMeasurementLockedParameter->DefaultValue() ),
            path( p ),
            weight( TheSSMeasurementWeightParameter->DefaultValue() ),
-           fwhm( TheSSMeasurementFWHMParameter->DefaultValue() )
+           fwhm( TheSSMeasurementFWHMParameter->DefaultValue() ),
+           eccentricity( TheSSMeasurementEccentricityParameter->DefaultValue() )
    {
    }
 
@@ -102,6 +106,7 @@ struct MeasureItem
    {
       path = measureData.path;
       fwhm = measureData.fwhm;
+      eccentricity = measureData.eccentricity;
    }
 
    float FWHM( const float& subframeScale, const int& scaleUnit ) const
@@ -117,7 +122,20 @@ struct MeasureItem
    {
       return String().Format( "let Index = %i;\n", index ) +
               String().Format( "let Weight = %.4f;\n", weight ) +
-              String().Format( "let FWHM = %.4f;\n", FWHM( subframeScale, scaleUnit ) );
+              String().Format( "let FWHM = %.4f;\n", FWHM( subframeScale, scaleUnit ) ) +
+              String().Format( "let Eccentricity = %.4f;\n", eccentricity );
+   }
+
+   double SortingValue( pcl_enum sortBy ) const
+   {
+      switch ( sortBy )
+      {
+      case SSSortingProperty::Index: return index;
+      case SSSortingProperty::Weight: return weight;
+      case SSSortingProperty::FWHM: return fwhm;
+      case SSSortingProperty::Eccentricity: return eccentricity;
+      default: return 0; // ?
+      }
    }
 };
 

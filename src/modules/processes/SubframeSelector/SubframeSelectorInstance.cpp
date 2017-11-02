@@ -95,6 +95,8 @@ SubframeSelectorInstance::SubframeSelectorInstance( const MetaProcess* m ) :
    roi( 0 ),
    approvalExpression( "" ),
    weightingExpression( "" ),
+   sortingProperty( SSSortingProperty::Default ),
+   graphProperty( SSGraphProperty::Default ),
    measures()
 {
 }
@@ -135,6 +137,8 @@ void SubframeSelectorInstance::Assign( const ProcessImplementation& p )
       roi                                    = x->roi;
       approvalExpression                     = x->approvalExpression;
       weightingExpression                    = x->weightingExpression;
+      sortingProperty                        = x->sortingProperty;
+      graphProperty                       = x->graphProperty;
       measures                               = x->measures;
    }
 }
@@ -227,7 +231,8 @@ public:
                minMAD = MAD;
          }
          // Analyze each star parameter
-         double sumSigma = 0;
+         double fwhmSumSigma = 0;
+         double eccentricitySumSigma = 0;
          double sumWeight = 0;
          for ( psf_list::const_iterator i = fits.Begin(); i != fits.End(); ++i )
          {
@@ -236,10 +241,12 @@ public:
             double weight = minMAD / MAD;
             sumWeight += weight;
 
-            sumSigma += weight * pcl::Sqrt( i->sx * i->sy );
+            fwhmSumSigma += weight * pcl::Sqrt( i->sx * i->sy );
+            eccentricitySumSigma += weight * pcl::Sqrt(1.0 - pcl::Pow(i->sy / i->sx, 2.0));
          }
-         double FWHM = sumSigma / sumWeight;
+         double FWHM = fwhmSumSigma / sumWeight;
          m_outputData.fwhm = PSFData::FWHM( PSFFunction( m_data->instance->psfFit ), FWHM, 0 ); // beta is unused here
+         m_outputData.eccentricity = eccentricitySumSigma / sumWeight;
 
          console.WriteLn( "Calculations: " + T.ToIsoString() );
 
@@ -1075,6 +1082,11 @@ void* SubframeSelectorInstance::LockParameter( const MetaParameter* p, size_type
    else if ( p == TheSSWeightingExpressionParameter )
       return weightingExpression.Begin();
 
+   else if ( p == TheSSSortingPropertyParameter )
+      return &sortingProperty;
+   else if ( p == TheSSGraphPropertyParameter )
+      return &graphProperty;
+
    else if ( p == TheSSMeasurementIndexParameter )
       return &measures[tableRow].index;
    else if ( p == TheSSMeasurementEnabledParameter )
@@ -1087,6 +1099,8 @@ void* SubframeSelectorInstance::LockParameter( const MetaParameter* p, size_type
       return &measures[tableRow].weight;
    else if ( p == TheSSMeasurementFWHMParameter )
       return &measures[tableRow].fwhm;
+   else if ( p == TheSSMeasurementEccentricityParameter )
+      return &measures[tableRow].eccentricity;
 
    return nullptr;
 }

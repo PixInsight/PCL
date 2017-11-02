@@ -110,6 +110,9 @@ SubframeSelectorProcess::SubframeSelectorProcess() : MetaProcess()
    new SSApprovalExpression( this );
    new SSWeightingExpression( this );
 
+   new SSSortingProperty( this );
+   new SSGraphProperty( this );
+
    new SSMeasurements( this );
    new SSMeasurementIndex( TheSSMeasurementsParameter );
    new SSMeasurementEnabled( TheSSMeasurementsParameter );
@@ -117,6 +120,7 @@ SubframeSelectorProcess::SubframeSelectorProcess() : MetaProcess()
    new SSMeasurementPath( TheSSMeasurementsParameter );
    new SSMeasurementWeight( TheSSMeasurementsParameter );
    new SSMeasurementFWHM( TheSSMeasurementsParameter );
+   new SSMeasurementEccentricity( TheSSMeasurementsParameter );
 }
 
 // ----------------------------------------------------------------------------

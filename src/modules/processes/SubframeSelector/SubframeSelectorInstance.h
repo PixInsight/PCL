@@ -150,6 +150,10 @@ private:
    String         approvalExpression;
    String         weightingExpression;
 
+   // How to view the measured subframes
+   pcl_enum       sortingProperty;
+   pcl_enum       graphProperty;
+
    // The set of measured subframes
    Array<MeasureItem>     measures;
 

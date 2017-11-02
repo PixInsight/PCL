@@ -92,6 +92,9 @@ SSROIY1*                         TheSSROIY1Parameter = nullptr;
 SSApprovalExpression*            TheSSApprovalExpressionParameter = nullptr;
 SSWeightingExpression*           TheSSWeightingExpressionParameter = nullptr;
 
+SSSortingProperty*               TheSSSortingPropertyParameter = nullptr;
+SSGraphProperty*                 TheSSGraphPropertyParameter = nullptr;
+
 SSMeasurements*                  TheSSMeasurementsParameter = nullptr;
 SSMeasurementIndex*              TheSSMeasurementIndexParameter = nullptr;
 SSMeasurementEnabled*            TheSSMeasurementEnabledParameter = nullptr;
@@ -99,6 +102,7 @@ SSMeasurementLocked*             TheSSMeasurementLockedParameter = nullptr;
 SSMeasurementPath*               TheSSMeasurementPathParameter = nullptr;
 SSMeasurementWeight*             TheSSMeasurementWeightParameter = nullptr;
 SSMeasurementFWHM*               TheSSMeasurementFWHMParameter = nullptr;
+SSMeasurementEccentricity*       TheSSMeasurementEccentricityParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -1164,6 +1168,106 @@ IsoString SSWeightingExpression::Tooltip() const
 
 // ----------------------------------------------------------------------------
 
+SSSortingProperty::SSSortingProperty( MetaProcess* P ) : MetaEnumeration( P )
+{
+   TheSSSortingPropertyParameter = this;
+}
+
+IsoString SSSortingProperty::Id() const
+{
+   return "sortProperty";
+}
+
+size_type SSSortingProperty::NumberOfElements() const
+{
+   return NumberOfItems;
+}
+
+IsoString SSSortingProperty::ElementId( size_type i ) const
+{
+   switch ( i )
+   {
+   default:
+   case Index:  return "Index";
+   case Weight:  return "Weight";
+   case FWHM:  return "FWHM";
+   case Eccentricity:  return "Eccentricity";
+   }
+}
+
+int SSSortingProperty::ElementValue( size_type i ) const
+{
+   return int( i );
+}
+
+IsoString SSSortingProperty::ElementLabel( size_type i ) const
+{
+   switch ( i )
+   {
+   default:
+   case Index:  return "Index";
+   case Weight:  return "Weight";
+   case FWHM:  return "FWHM";
+   case Eccentricity:  return "Eccentricity";
+   }
+}
+
+size_type SSSortingProperty::DefaultValueIndex() const
+{
+   return Default;
+}
+
+// ----------------------------------------------------------------------------
+
+SSGraphProperty::SSGraphProperty( MetaProcess* P ) : MetaEnumeration( P )
+{
+   TheSSGraphPropertyParameter = this;
+}
+
+IsoString SSGraphProperty::Id() const
+{
+   return "graphProperty";
+}
+
+size_type SSGraphProperty::NumberOfElements() const
+{
+   return NumberOfItems;
+}
+
+IsoString SSGraphProperty::ElementId( size_type i ) const
+{
+   switch ( i )
+   {
+   default:
+   case Weight:  return "Weight";
+   case FWHM:  return "FWHM";
+   case Eccentricity:  return "Eccentricity";
+   }
+}
+
+int SSGraphProperty::ElementValue( size_type i ) const
+{
+   return int( i );
+}
+
+IsoString SSGraphProperty::ElementLabel( size_type i ) const
+{
+   switch ( i )
+   {
+   default:
+   case Weight:  return "Weight";
+   case FWHM:  return "FWHM";
+   case Eccentricity:  return "Eccentricity";
+   }
+}
+
+size_type SSGraphProperty::DefaultValueIndex() const
+{
+   return Default;
+}
+
+// ----------------------------------------------------------------------------
+
 SSMeasurements::SSMeasurements( MetaProcess* P ) : MetaTable( P )
 {
    TheSSMeasurementsParameter = this;
@@ -1314,6 +1418,38 @@ double SSMeasurementFWHM::MinimumValue() const
 double SSMeasurementFWHM::MaximumValue() const
 {
    return 100.0;
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementEccentricity::SSMeasurementEccentricity( MetaTable* T ) : MetaFloat( T )
+{
+   TheSSMeasurementEccentricityParameter = this;
+}
+
+IsoString SSMeasurementEccentricity::Id() const
+{
+   return "measurementEccentricity";
+}
+
+int SSMeasurementEccentricity::Precision() const
+{
+   return 4;
+}
+
+double SSMeasurementEccentricity::DefaultValue() const
+{
+   return 0.5;
+}
+
+double SSMeasurementEccentricity::MinimumValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementEccentricity::MaximumValue() const
+{
+   return 1.0;
 }
 
 // ----------------------------------------------------------------------------

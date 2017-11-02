@@ -57,7 +57,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset )
+void GraphWebView::SetDataset( const String& dataname, const String& dataname2, DataPointVector* dataset )
 {
    String coreSrcDir = PixInsightSettings::GlobalString ( "Application/SrcDirectory" );
 
@@ -72,7 +72,9 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
    String graphingArray = "[ ";
    String indexedApprovals = "{ ";
    for ( DataPointVector::const_iterator i = dataset->Begin(); i != dataset->End(); ++i ) {
-      graphingArray += String().Format( "[ %i, [%.4f, %.4f, %.4f] ], ", i->x, median - mad, i->y, median + mad );
+      graphingArray += String().Format( "[ %i, [%.4f, %.4f, %.4f], [%.4f, %.4f, %.4f] ], ",
+                                        i->x, median - mad, i->y, median + mad,
+                                        i->y2, i->y2, i->y2 );
       indexedApprovals += String().Format( "%i:%s, ", i->x, i->approved ? "true" : "false" );
    }
    indexedApprovals += "}";
@@ -105,6 +107,10 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
       border: 4px solid rgba(0,0,0,0.5);
       border-radius: 2px;
    }
+
+   .dygraph-axis-label {
+      font-size: 10px;
+   }
 </style>
 </head>
 <body>
@@ -131,24 +137,9 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
 
-      if (approvals[dataset[idx][0]] === true) {
-         ctx.strokeStyle = "green";
-         ctx.lineWidth = 3;
-
-         ctx.beginPath();
-         ctx.moveTo(cx - radius,     cy);
-         ctx.lineTo(cx - radius/2.0, cy + radius);
-         ctx.closePath();
-         ctx.stroke();
-
-         ctx.beginPath();
-         ctx.moveTo(cx - radius/2.0, cy + radius);
-         ctx.lineTo(cx + radius,     cy - radius);
-         ctx.closePath();
-         ctx.stroke();
-      } else {
+      if (approvals[dataset[idx][0]] === false) {
          ctx.strokeStyle = "red";
-         ctx.lineWidth = 4;
+         ctx.lineWidth = 3;
 
          ctx.beginPath();
          ctx.moveTo(cx + radius, cy + radius);
@@ -170,19 +161,43 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
       document.getElementById("graph"), dataset,
       {
          ylabel: ")DELIM" + dataname + R"DELIM(",
-         labels: ["Index", ")DELIM" + dataname + R"DELIM("],
+         y2label: ")DELIM" + dataname2 + R"DELIM(",
+         labels: ["Index", ")DELIM" + dataname + R"DELIM(", ")DELIM" + dataname2 + R"DELIM("],
          labelsSeparateLines: true,
+         series: {
+            ")DELIM" + dataname + R"DELIM(": {
+               axis: "y",
+               drawPoints: true,
+               drawPointCallback: drawApprovedPoint,
+               strokeWidth: 2,
+               color: "#4394E5",
+            },
+            ")DELIM" + dataname2 + R"DELIM(": {
+               axis: "y2",
+               strokeWidth: 1,
+               strokePattern: Dygraph.DASHED_LINE,
+               color: "#A4A4A6",
+            }
+         },
+         axes: {
+            y: {
+               independentTicks: true,
+               includeZero: false,
+            },
+            y2: {
+               independentTicks: true,
+               includeZero: false,
+               drawGrid: false,
+            },
+         },
          digitsAfterDecimal: 4,
          legend: "follow",
          legendFormatter: legendFormatter,
          customBars: true,
          errorBars: true,
-         strokeWidth: 2,
-         drawPoints: true,
-         drawPointCallback: drawApprovedPoint,
          pointSize: 4,
          xRangePad: 10,
-         yRangePad: 20,
+         yRangePad: 60,
       }
    );
 </script>

@@ -643,6 +643,57 @@ extern SSWeightingExpression* TheSSWeightingExpressionParameter;
 
 // ----------------------------------------------------------------------------
 
+class SSSortingProperty : public MetaEnumeration
+{
+public:
+
+   enum { Index,
+      Weight,
+      FWHM,
+      Eccentricity,
+      NumberOfItems,
+      Default = Index };
+
+   SSSortingProperty( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
+   IsoString ElementLabel( size_type ) const;
+};
+
+extern SSSortingProperty* TheSSSortingPropertyParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSGraphProperty : public MetaEnumeration
+{
+public:
+
+   enum { Weight,
+      FWHM,
+      Eccentricity,
+      NumberOfItems,
+      Default = Weight };
+
+   SSGraphProperty( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
+   IsoString ElementLabel( size_type ) const;
+};
+
+extern SSGraphProperty* TheSSGraphPropertyParameter;
+
+// ----------------------------------------------------------------------------
+
 class SSMeasurements : public MetaTable
 {
    public:
@@ -751,6 +802,25 @@ class SSMeasurementFWHM : public MetaFloat
 };
 
 extern SSMeasurementFWHM* TheSSMeasurementFWHMParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementEccentricity : public MetaFloat
+{
+public:
+
+   SSMeasurementEccentricity( MetaTable* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSMeasurementEccentricity* TheSSMeasurementEccentricityParameter;
 
 // ----------------------------------------------------------------------------
 

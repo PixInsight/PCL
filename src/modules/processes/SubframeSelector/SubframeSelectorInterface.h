@@ -125,12 +125,11 @@ public:
       HorizontalSizer   SubframeImages_Sizer;
          TreeBox           SubframeImages_TreeBox;
          VerticalSizer     SubframeButtons_Sizer;
-            PushButton        AddFiles_PushButton;
-            PushButton        SelectAll_PushButton;
-            PushButton        InvertSelection_PushButton;
-            PushButton        ToggleSelected_PushButton;
-            PushButton        RemoveSelected_PushButton;
-            PushButton        Clear_PushButton;
+            PushButton        SubframeImages_AddFiles_PushButton;
+            PushButton        SubframeImages_Invert_PushButton;
+            PushButton        SubframeImages_Toggle_PushButton;
+            PushButton        SubframeImages_Remove_PushButton;
+            PushButton        SubframeImages_Clear_PushButton;
 
       SectionBar        SystemParameters_SectionBar;
       Control           SystemParameters_Control;
@@ -217,9 +216,13 @@ public:
       SectionBar        MeasurementTable_SectionBar;
       Control           MeasurementTable_Control;
       VerticalSizer     MeasurementTable_Sizer;
-         HorizontalSizer   MeasurementsTable_Top_Sizer;
+         HorizontalSizer   MeasurementsTable_Top1_Sizer;
             ComboBox          MeasurementsTable_SortingProperty_Control;
             ComboBox          MeasurementsTable_SortingMode_Control;
+            PushButton        MeasurementsTable_ToggleApproved_PushButton;
+            PushButton        MeasurementsTable_ToggleLocked_PushButton;
+            PushButton        MeasurementsTable_Invert_PushButton;
+            PushButton        MeasurementsTable_Clear_PushButton;
          TreeBox           MeasurementTable_TreeBox;
 
       SectionBar        MeasurementGraph_SectionBar;
@@ -241,7 +244,6 @@ public:
    void UpdateStarDetectorParameters();
    void UpdateExpressionParameters();
    void UpdateMeasurementImageItem( size_type, MeasureItem* );
-   void UpdateMeasurementImageItem( size_type );
    void UpdateMeasurementImagesList();
    void UpdateMeasurementGraph();
 
@@ -261,6 +263,14 @@ public:
                                    bool &wantsFiles );
    void __SubframeImages_FileDrop( Control &sender, const Point &pos, const StringList &files, unsigned modifiers );
 
+   void __MeasurementImages_CurrentNodeUpdated( TreeBox &sender, TreeBox::Node &current, TreeBox::Node &oldCurrent );
+   void __MeasurementImages_NodeActivated( TreeBox &sender, TreeBox::Node &node, int col );
+   void __MeasurementImages_Click( Button &sender, bool checked );
+
+   void __StarDetector_ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers,
+                                 bool& wantsView );
+   void __StarDetector_ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
+
    void __RealValueUpdated( NumericEdit& sender, double value );
    void __IntegerValueUpdated( SpinBox& sender, int value );
    void __ComboSelected( ComboBox& sender, int itemIndex );
@@ -268,11 +278,6 @@ public:
    void __ButtonClick( Button& sender, bool checked );
    void __TextUpdated( Edit& sender, const String& text );
    void __TextUpdateCompleted( Edit& sender );
-   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
-   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
-
-   void __MeasurementImages_CurrentNodeUpdated( TreeBox &sender, TreeBox::Node &current, TreeBox::Node &oldCurrent );
-   void __MeasurementImages_NodeActivated( TreeBox &sender, TreeBox::Node &node, int col );
 
    friend struct GUIData;
    friend class SubframeSelectorInstance;

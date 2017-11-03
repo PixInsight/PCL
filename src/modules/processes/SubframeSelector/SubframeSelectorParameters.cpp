@@ -95,14 +95,24 @@ SSWeightingExpression*           TheSSWeightingExpressionParameter = nullptr;
 SSSortingProperty*               TheSSSortingPropertyParameter = nullptr;
 SSGraphProperty*                 TheSSGraphPropertyParameter = nullptr;
 
-SSMeasurements*                  TheSSMeasurementsParameter = nullptr;
-SSMeasurementIndex*              TheSSMeasurementIndexParameter = nullptr;
-SSMeasurementEnabled*            TheSSMeasurementEnabledParameter = nullptr;
-SSMeasurementLocked*             TheSSMeasurementLockedParameter = nullptr;
-SSMeasurementPath*               TheSSMeasurementPathParameter = nullptr;
-SSMeasurementWeight*             TheSSMeasurementWeightParameter = nullptr;
-SSMeasurementFWHM*               TheSSMeasurementFWHMParameter = nullptr;
-SSMeasurementEccentricity*       TheSSMeasurementEccentricityParameter = nullptr;
+SSMeasurements*                     TheSSMeasurementsParameter = nullptr;
+SSMeasurementIndex*                 TheSSMeasurementIndexParameter = nullptr;
+SSMeasurementEnabled*               TheSSMeasurementEnabledParameter = nullptr;
+SSMeasurementLocked*                TheSSMeasurementLockedParameter = nullptr;
+SSMeasurementPath*                  TheSSMeasurementPathParameter = nullptr;
+SSMeasurementWeight*                TheSSMeasurementWeightParameter = nullptr;
+SSMeasurementFWHM*                  TheSSMeasurementFWHMParameter = nullptr;
+SSMeasurementEccentricity*          TheSSMeasurementEccentricityParameter = nullptr;
+SSMeasurementSNRWeight*             TheSSMeasurementSNRWeightParameter = nullptr;
+SSMeasurementMedian*                TheSSMeasurementMedianParameter = nullptr;
+SSMeasurementMedianMeanDev*         TheSSMeasurementMedianMeanDevParameter = nullptr;
+SSMeasurementNoise*                 TheSSMeasurementNoiseParameter = nullptr;
+SSMeasurementNoiseRatio*            TheSSMeasurementNoiseRatioParameter = nullptr;
+SSMeasurementStars*                 TheSSMeasurementStarsParameter = nullptr;
+SSMeasurementStarResidual*          TheSSMeasurementStarResidualParameter = nullptr;
+SSMeasurementFWHMMeanDev*           TheSSMeasurementFWHMMeanDevParameter = nullptr;
+SSMeasurementEccentricityMeanDev*   TheSSMeasurementEccentricityMeanDevParameter = nullptr;
+SSMeasurementStarResidualMeanDev*   TheSSMeasurementStarResidualMeanDevParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -236,6 +246,12 @@ double SSSubframeScale::MaximumValue() const
    return 100.0;
 }
 
+IsoString SSSubframeScale::Tooltip() const
+{
+   return "<p>Subframe scale in arcseconds per pixel. This affects star-related measurements.</p>"
+           "<p>This is only used if the Scale Units are not in Pixels</p>";
+}
+
 // ----------------------------------------------------------------------------
 
 SSCameraGain::SSCameraGain( MetaProcess* P ) : MetaFloat( P )
@@ -266,6 +282,12 @@ double SSCameraGain::MinimumValue() const
 double SSCameraGain::MaximumValue() const
 {
    return 100.0;
+}
+
+IsoString SSCameraGain::Tooltip() const
+{
+   return "<p>Subframe camera gain in electrons per Data Number. This affects star-related measurements.</p>"
+           "<p>This is only used if the Data Units are not in Data Numbers</p>";
 }
 
 // ----------------------------------------------------------------------------
@@ -334,6 +356,11 @@ size_type SSCameraResolution::DefaultValueIndex() const
    return Default;
 }
 
+IsoString SSCameraResolution::Tooltip() const
+{
+   return "<p>Subframe camera resolution in bits per pixel. This affects some subframe-related measurements.</p>";
+}
+
 // ----------------------------------------------------------------------------
 
 SSSiteLocalMidnight::SSSiteLocalMidnight( MetaProcess* P ) : MetaInt32( P )
@@ -359,6 +386,17 @@ double SSSiteLocalMidnight::MinimumValue() const
 double SSSiteLocalMidnight::MaximumValue() const
 {
    return 24;
+}
+
+IsoString SSSiteLocalMidnight::Tooltip() const
+{
+   return "<p>This parameters specifies the Coordinated Universal Time (UTC) of local midnight "
+           "at the site of target subframe observation, rounded to the nearest hour from 0 to "
+           "23. If this time is unknown or varies by more than six hours, set this parameter "
+           "to 24.</p> "
+           "<p>This parameter and the value of the FITS keyword DATE-OBS (if available) are used to "
+           "identify sequences of subframe observations that occurred during the same night for "
+           "data presentation purposes.</p>";
 }
 
 // ----------------------------------------------------------------------------
@@ -393,16 +431,6 @@ int SSScaleUnit::ElementValue( size_type i ) const
    return int( i );
 }
 
-IsoString SSScaleUnit::ElementData( size_type i ) const
-{
-   switch ( i )
-   {
-      default:
-      case ArcSeconds:  return "arcsec";
-      case Pixel: return "pixel";
-   }
-}
-
 IsoString SSScaleUnit::ElementLabel( size_type i ) const
 {
    switch ( i )
@@ -416,6 +444,11 @@ IsoString SSScaleUnit::ElementLabel( size_type i ) const
 size_type SSScaleUnit::DefaultValueIndex() const
 {
    return Default;
+}
+
+IsoString SSScaleUnit::Tooltip() const
+{
+   return "<p>How to present some star-related measurements.</p>";
 }
 
 // ----------------------------------------------------------------------------
@@ -450,16 +483,6 @@ int SSDataUnit::ElementValue( size_type i ) const
    return int( i );
 }
 
-IsoString SSDataUnit::ElementData( size_type i ) const
-{
-   switch ( i )
-   {
-      default:
-      case Electron:  return "e-";
-      case DataNumber: return "DN";
-   }
-}
-
 IsoString SSDataUnit::ElementLabel( size_type i ) const
 {
    switch ( i )
@@ -473,6 +496,11 @@ IsoString SSDataUnit::ElementLabel( size_type i ) const
 size_type SSDataUnit::DefaultValueIndex() const
 {
    return Default;
+}
+
+IsoString SSDataUnit::Tooltip() const
+{
+   return "<p>How to present some subframe-related measurements.</p>";
 }
 
 // ----------------------------------------------------------------------------
@@ -758,7 +786,7 @@ IsoString SSMaxDistortion::Tooltip() const
 {
    return "<p>Star distortion is the fractional area of the star's bounding box "
            "covered by the star. The distortion of a perfectly circular star "
-           "is about 0.75 (actually, π/4). Decrease this parameter to detect "
+           "is about 0.75 (actually, pi/4). Decrease this parameter to detect "
            "stars with larger elongation.</p>";
 }
 
@@ -999,7 +1027,7 @@ double SSPedestal::MaximumValue() const
 IsoString SSPedestal::Tooltip() const
 {
    return "<p>Pedestal value in the Camera Resolution Data Number range (e.g. 16-bit is from 0 to 65535), "
-           "which will be subtracted from each image before processing. This value is"
+           "which will be subtracted from each image before processing. This value is "
            "divided by the Camera Resolution.</p>";
 }
 
@@ -1126,18 +1154,20 @@ IsoString SSApprovalExpression::Id() const
 IsoString SSApprovalExpression::Tooltip() const
 {
    return "<p>Subframe approval expression, a boolean combination of constraints. A blank "
-          "expression will approve all subframes.</p>"
-          "<p><i>approval</i> = [ <i>constraint</i> [ [ && | || ] <i>constraint</i> ]... ]</p>"
-          "<p><i>constraint</i> = [ <i>weighting</i> [ &lt; | &gt; | &lt;= | &gt;= | == | != ] "
-          "<i>weighting</i> | true | false | [ ! ] (<i>approval</i>) ]</p>"
-          "<p><i>weighting</i> = <i>term</i> [ [ + | - | * | / ] <i>term</i> ]...</p>"
-          "<p><i>term</i> = [ - ] [ <i>number</i> | <i>property</i> | (<i>weighting</i>) ]</p>"
-          "<p><i>property</i> = [ Index | Weight | WeightSigma | FWHM | FWHMSigma | Eccentricity | "
-          "EccentricitySigma | SNRWeight | SNRWeightSigma | Median | MedianSigma | "
-          "MeanDeviation | MeanDeviationSigma | Noise | NoiseSigma | StarSupport | "
-          "StarSupportSigma | StarResidual | StarResidualSigma | NoiseSupport | "
-          "NoiseSupportSigma | FWHMMeanDev | FWHMMeanDevSigma | EccentricityMeanDev | "
-          "EccenricityMeanDevSigma | StarResidualMeanDev | StarResidualMeanDevSigma ]</p>";
+           "expression will approve all subframes. This is technically JavaScript, and although "
+           "some characters are limited to prevent misuse, many things are possible such as "
+           "<i>Math.abs(FWHMSigma)<i> or using <i>//</i> to comment the end of the line.</p>"
+           "<p><i>approval</i> = [ <i>constraint</i> [ [ && | || ] <i>constraint</i> ]... ]</p>"
+           "<p><i>constraint</i> = [ <i>weighting</i> [ &lt; | &gt; | &lt;= | &gt;= | == | != ] "
+           "<i>weighting</i> | true | false | [ ! ] (<i>approval</i>) ]</p>"
+           "<p><i>weighting</i> = <i>term</i> [ [ + | - | * | / ] <i>term</i> ]...</p>"
+           "<p><i>term</i> = [ - ] [ <i>number</i> | <i>property</i> | (<i>weighting</i>) ]</p>"
+           "<p><i>property</i> = [ Index | Weight | FWHM | Eccentricity | SNRWeight | Median | "
+           "MedianMeanDev | Noise | Stars | StarResidual | NoiseRatio | FWHMMeanDev | EccentricityMeanDev | "
+           "StarResidualMeanDev]</p>"
+           "<p>Each <i>property</i> (excluding <i>Index</i>) also has a Sigma version, "
+           "e.g. <i>SNRWeightSigma</i>, where the value is represented in sigma units of the "
+           "Mean Absolute Deviation from the Median.</p>";
 }
 
 // ----------------------------------------------------------------------------
@@ -1154,16 +1184,18 @@ IsoString SSWeightingExpression::Id() const
 
 IsoString SSWeightingExpression::Tooltip() const
 {
-   return "<p>Subframe weighting expression, an arithmetic combination of "
-          "properties. A blank expression will assign a zero weight to all subframes.</p>"
-          "<p><i>weighting</i> = [ <i>term</i> [ [ + | - | * | / ] <i>term</i> ]... ]</p>"
-          "<p><i>term</i> = [ - ] [ <i>number</i> | <i>property</i> | (<i>weighting</i>) ]</p>"
-          "<p><i>property</i> = [ Index | FWHM | FWHMSigma | Eccentricity | EccentricitySigma | "
-          "SNRWeight | SNRWeightSigma | Median | MedianSigma | MeanDeviation | "
-          "MeanDeviationSigma | Noise | NoiseSigma | StarSupport | StarSupportSigma | "
-          "StarResidual | StarResidualSigma | NoiseSupport | NoiseSupportSigma | FWHMMeanDev | "
-          "FWHMMeanDevSigma | EccentricityMeanDev | EccentricityMeanDevSigma | "
-          "StarResidualMeanDev | StarResidualMeanDevSigma ]</p>";
+   return "<p>Subframe weighting expression, an arithmetic combination of properties. A blank "
+           "expression will assign a zero weight to all subframes. This is technically JavaScript, "
+           "and although some characters are limited to prevent misuse, many things are possible such as "
+           "<i>Math.abs(FWHMSigma)</i> or using <i>//</i> to comment the end of the line.</p>"
+           "<p><i>weighting</i> = [ <i>term</i> [ [ + | - | * | / ] <i>term</i> ]... ]</p>"
+           "<p><i>term</i> = [ - ] [ <i>number</i> | <i>property</i> | (<i>weighting</i>) ]</p>"
+           "<p><i>property</i> = [ Index | FWHM | Eccentricity | SNRWeight | Median | MedianMeanDev | "
+           "Noise | Stars | StarResidual | NoiseRatio | FWHMMeanDev | EccentricityMeanDev | "
+           "StarResidualMeanDev ]</p>"
+           "<p>Each <i>property<i> (excluding <i>Index</i>) also has a Sigma version, "
+           "e.g. <i>SNRWeightSigma</i>, where the value is represented in sigma units of the "
+           "Mean Absolute Deviation from the Median.</p>";
 }
 
 // ----------------------------------------------------------------------------
@@ -1192,6 +1224,16 @@ IsoString SSSortingProperty::ElementId( size_type i ) const
    case Weight:  return "Weight";
    case FWHM:  return "FWHM";
    case Eccentricity:  return "Eccentricity";
+   case SNRWeight:  return "SNRWeight";
+   case Median:  return "Median";
+   case MedianMeanDev:  return "MedianMeanDev";
+   case Noise:  return "Noise";
+   case NoiseRatio:  return "NoiseRatio";
+   case Stars:  return "Stars";
+   case StarResidual:  return "StarResidual";
+   case FWHMMeanDev:  return "FWHMMeanDev";
+   case EccentricityMeanDev:  return "EccentricityMeanDev";
+   case StarResidualMeanDev:  return "StarResidualMeanDev";
    }
 }
 
@@ -1209,6 +1251,16 @@ IsoString SSSortingProperty::ElementLabel( size_type i ) const
    case Weight:  return "Weight";
    case FWHM:  return "FWHM";
    case Eccentricity:  return "Eccentricity";
+   case SNRWeight:  return "SNR Weight";
+   case Median:  return "Median";
+   case MedianMeanDev:  return "Median Mean Dev.";
+   case Noise:  return "Noise";
+   case NoiseRatio:  return "Noise Ratio";
+   case Stars:  return "Stars";
+   case StarResidual:  return "Star Residual";
+   case FWHMMeanDev:  return "FWHM Mean Dev.";
+   case EccentricityMeanDev:  return "Eccentricity Mean Dev.";
+   case StarResidualMeanDev:  return "Star Residual Mean Dev.";
    }
 }
 
@@ -1242,6 +1294,16 @@ IsoString SSGraphProperty::ElementId( size_type i ) const
    case Weight:  return "Weight";
    case FWHM:  return "FWHM";
    case Eccentricity:  return "Eccentricity";
+   case SNRWeight:  return "SNRWeight";
+   case Median:  return "Median";
+   case MedianMeanDev:  return "MedianMeanDev";
+   case Noise:  return "Noise";
+   case NoiseRatio:  return "NoiseRatio";
+   case Stars:  return "Stars";
+   case StarResidual:  return "StarResidual";
+   case FWHMMeanDev:  return "FWHMMeanDev";
+   case EccentricityMeanDev:  return "EccentricityMeanDev";
+   case StarResidualMeanDev:  return "StarResidualMeanDev";
    }
 }
 
@@ -1258,6 +1320,16 @@ IsoString SSGraphProperty::ElementLabel( size_type i ) const
    case Weight:  return "Weight";
    case FWHM:  return "FWHM";
    case Eccentricity:  return "Eccentricity";
+   case SNRWeight:  return "SNR Weight";
+   case Median:  return "Median";
+   case MedianMeanDev:  return "Median Mean Dev.";
+   case Noise:  return "Noise";
+   case NoiseRatio:  return "Noise Ratio";
+   case Stars:  return "Stars";
+   case StarResidual:  return "Star Residual";
+   case FWHMMeanDev:  return "FWHM Mean Dev.";
+   case EccentricityMeanDev:  return "Eccentricity Mean Dev.";
+   case StarResidualMeanDev:  return "Star Residual Mean Dev.";
    }
 }
 
@@ -1407,12 +1479,12 @@ int SSMeasurementFWHM::Precision() const
 
 double SSMeasurementFWHM::DefaultValue() const
 {
-   return 0;
+   return 0.0;
 }
 
 double SSMeasurementFWHM::MinimumValue() const
 {
-   return 0.01;
+   return 0.0;
 }
 
 double SSMeasurementFWHM::MaximumValue() const
@@ -1450,6 +1522,326 @@ double SSMeasurementEccentricity::MinimumValue() const
 double SSMeasurementEccentricity::MaximumValue() const
 {
    return 1.0;
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementSNRWeight::SSMeasurementSNRWeight( MetaTable* T ) : MetaFloat( T )
+{
+   TheSSMeasurementSNRWeightParameter = this;
+}
+
+IsoString SSMeasurementSNRWeight::Id() const
+{
+   return "measurementSNRWeight";
+}
+
+int SSMeasurementSNRWeight::Precision() const
+{
+   return 4;
+}
+
+double SSMeasurementSNRWeight::DefaultValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementSNRWeight::MinimumValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementSNRWeight::MaximumValue() const
+{
+   return DBL_MAX;
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementMedian::SSMeasurementMedian( MetaTable* T ) : MetaFloat( T )
+{
+   TheSSMeasurementMedianParameter = this;
+}
+
+IsoString SSMeasurementMedian::Id() const
+{
+   return "measurementMedian";
+}
+
+int SSMeasurementMedian::Precision() const
+{
+   return 12;
+}
+
+double SSMeasurementMedian::DefaultValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementMedian::MinimumValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementMedian::MaximumValue() const
+{
+   return 1.0;
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementMedianMeanDev::SSMeasurementMedianMeanDev( MetaTable* T ) : MetaFloat( T )
+{
+   TheSSMeasurementMedianMeanDevParameter = this;
+}
+
+IsoString SSMeasurementMedianMeanDev::Id() const
+{
+   return "measurementMedianMeanDev";
+}
+
+int SSMeasurementMedianMeanDev::Precision() const
+{
+   return 12;
+}
+
+double SSMeasurementMedianMeanDev::DefaultValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementMedianMeanDev::MinimumValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementMedianMeanDev::MaximumValue() const
+{
+   return 1.0;
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementNoise::SSMeasurementNoise( MetaTable* T ) : MetaFloat( T )
+{
+   TheSSMeasurementNoiseParameter = this;
+}
+
+IsoString SSMeasurementNoise::Id() const
+{
+   return "measurementNoise";
+}
+
+int SSMeasurementNoise::Precision() const
+{
+   return 12;
+}
+
+double SSMeasurementNoise::DefaultValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementNoise::MinimumValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementNoise::MaximumValue() const
+{
+   return 1.0;
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementNoiseRatio::SSMeasurementNoiseRatio( MetaTable* T ) : MetaFloat( T )
+{
+   TheSSMeasurementNoiseRatioParameter = this;
+}
+
+IsoString SSMeasurementNoiseRatio::Id() const
+{
+   return "measurementNoiseRatio";
+}
+
+int SSMeasurementNoiseRatio::Precision() const
+{
+   return 8;
+}
+
+double SSMeasurementNoiseRatio::DefaultValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementNoiseRatio::MinimumValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementNoiseRatio::MaximumValue() const
+{
+   return 1.0;
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementStars::SSMeasurementStars( MetaTable* T ) : MetaUInt16( T )
+{
+   TheSSMeasurementStarsParameter = this;
+}
+
+IsoString SSMeasurementStars::Id() const
+{
+   return "measurementStars";
+}
+
+int SSMeasurementStars::Precision() const
+{
+   return 0;
+}
+
+double SSMeasurementStars::DefaultValue() const
+{
+   return 0;
+}
+
+double SSMeasurementStars::MinimumValue() const
+{
+   return 0;
+}
+
+double SSMeasurementStars::MaximumValue() const
+{
+   return UINT16_MAX;
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementStarResidual::SSMeasurementStarResidual( MetaTable* T ) : MetaFloat( T )
+{
+   TheSSMeasurementStarResidualParameter = this;
+}
+
+IsoString SSMeasurementStarResidual::Id() const
+{
+   return "measurementStarResidual";
+}
+
+int SSMeasurementStarResidual::Precision() const
+{
+   return 4;
+}
+
+double SSMeasurementStarResidual::DefaultValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementStarResidual::MinimumValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementStarResidual::MaximumValue() const
+{
+   return DBL_MAX;
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementFWHMMeanDev::SSMeasurementFWHMMeanDev( MetaTable* T ) : MetaFloat( T )
+{
+   TheSSMeasurementFWHMMeanDevParameter = this;
+}
+
+IsoString SSMeasurementFWHMMeanDev::Id() const
+{
+   return "measurementFWHMMeanDev";
+}
+
+int SSMeasurementFWHMMeanDev::Precision() const
+{
+   return 6;
+}
+
+double SSMeasurementFWHMMeanDev::DefaultValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementFWHMMeanDev::MinimumValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementFWHMMeanDev::MaximumValue() const
+{
+   return DBL_MAX;
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementEccentricityMeanDev::SSMeasurementEccentricityMeanDev( MetaTable* T ) : MetaFloat( T )
+{
+   TheSSMeasurementEccentricityMeanDevParameter = this;
+}
+
+IsoString SSMeasurementEccentricityMeanDev::Id() const
+{
+   return "measurementEccentricityMeanDev";
+}
+
+int SSMeasurementEccentricityMeanDev::Precision() const
+{
+   return 4;
+}
+
+double SSMeasurementEccentricityMeanDev::DefaultValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementEccentricityMeanDev::MinimumValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementEccentricityMeanDev::MaximumValue() const
+{
+   return DBL_MAX;
+}
+
+// ----------------------------------------------------------------------------
+
+SSMeasurementStarResidualMeanDev::SSMeasurementStarResidualMeanDev( MetaTable* T ) : MetaFloat( T )
+{
+   TheSSMeasurementStarResidualMeanDevParameter = this;
+}
+
+IsoString SSMeasurementStarResidualMeanDev::Id() const
+{
+   return "measurementStarResidualMeanDev";
+}
+
+int SSMeasurementStarResidualMeanDev::Precision() const
+{
+   return 4;
+}
+
+double SSMeasurementStarResidualMeanDev::DefaultValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementStarResidualMeanDev::MinimumValue() const
+{
+   return 0.0;
+}
+
+double SSMeasurementStarResidualMeanDev::MaximumValue() const
+{
+   return DBL_MAX;
 }
 
 // ----------------------------------------------------------------------------

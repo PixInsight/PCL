@@ -63,9 +63,10 @@ namespace pcl
 struct DataPoint
 {
    int x;
-   double y;
-   double y2;
+   double data;
+   double weight;
    bool approved;
+   bool locked;
 };
 
 typedef GenericVector<DataPoint> DataPointVector;
@@ -86,7 +87,7 @@ class GraphWebView : public WebView
 {
 public:
 
-   void SetDataset( const String& dataname, const String& dataname2, DataPointVector* dataset );
+   void SetDataset( const String& dataname, DataPointVector* dataset );
 
 private:
 

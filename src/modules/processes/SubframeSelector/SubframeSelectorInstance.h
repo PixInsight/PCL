@@ -163,6 +163,22 @@ private:
    // Read a subframe file into a Thread
    thread_list CreateThreadForSubframe( const String&, MeasureThreadInputData* );
 
+   // Get Median and Mean Deviation from Median of an Array
+   void MedianAndMeanDeviation( double&, double&,
+                                double&, double&,
+                                double&, double&,
+                                double&, double&,
+                                double&, double&,
+                                double&, double&,
+                                double&, double&,
+                                double&, double&,
+                                double&, double&,
+                                double&, double&,
+                                double&, double&,
+                                double&, double&,
+                                double&, double&
+   ) const;
+
    friend class SubframeSelectorProcess;
    friend class SubframeSelectorInterface;
    friend class SubframeSelectorMeasureThread;

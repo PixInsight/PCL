@@ -62,9 +62,32 @@
 #include <pcl/ProcessInstance.h>
 #include <pcl/FileFormat.h>
 #include <pcl/FileFormatInstance.h>
+#include <pcl/ATrousWaveletTransform.h>
 
 namespace pcl
 {
+
+// ----------------------------------------------------------------------------
+// From Debayer
+/*
+ * 5x5 B3-spline wavelet scaling function used by the noise estimation routine.
+ *
+ * Kernel filter coefficients:
+ *
+ *   1.0/256, 1.0/64, 3.0/128, 1.0/64, 1.0/256,
+ *   1.0/64,  1.0/16, 3.0/32,  1.0/16, 1.0/64,
+ *   3.0/128, 3.0/32, 9.0/64,  3.0/32, 3.0/128,
+ *   1.0/64,  1.0/16, 3.0/32,  1.0/16, 1.0/64,
+ *   1.0/256, 1.0/64, 3.0/128, 1.0/64, 1.0/256
+ *
+ * Note that we use this scaling function as a separable filter (row and column
+ * vectors) for performance reasons.
+ */
+// Separable filter coefficients
+const float __5x5B3Spline_hv[] = { 0.0625F, 0.25F, 0.375F, 0.25F, 0.0625F };
+// Gaussian noise scaling factors
+const float __5x5B3Spline_kj[] =
+        { 0.8907F, 0.2007F, 0.0856F, 0.0413F, 0.0205F, 0.0103F, 0.0052F, 0.0026F, 0.0013F, 0.0007F };
 
 // ----------------------------------------------------------------------------
 
@@ -138,7 +161,7 @@ void SubframeSelectorInstance::Assign( const ProcessImplementation& p )
       approvalExpression                     = x->approvalExpression;
       weightingExpression                    = x->weightingExpression;
       sortingProperty                        = x->sortingProperty;
-      graphProperty                       = x->graphProperty;
+      graphProperty                          = x->graphProperty;
       measures                               = x->measures;
    }
 }
@@ -177,15 +200,29 @@ public:
       try
       {
          m_success = false;
+         ElapsedTime T;
+
+         if ( IsAborted() )
+            throw Error( "Aborted" );
 
          Console console;
          console.NoteLn( "<end><cbr><br>Measuring: " + m_outputData.path );
+         MeasureImage();
+         console.WriteLn( "Image Calculations: " + T.ToIsoString() );
+         T.Reset();
+
+         if ( IsAborted() )
+            throw Error( "Aborted" );
+
+         /*
+          * Crop if the ROI was set
+          */
+         if ( m_data->instance->roi.IsRect() )
+            m_subframe->CropTo( m_data->instance->roi );
 
          // Run the Star Detector
-         ElapsedTime T;
          star_list stars = StarDetector();
-         console.WriteLn( String().Format( "%i Star(s) detected", stars.Length() ) );
-         console.WriteLn( "Star Detector: " + T.ToIsoString() );
+         console.WriteLn( "     Star Detector: " + T.ToIsoString() );
 
          // Stop if just showing the maps
          if ( m_data->showStarDetectionMaps )
@@ -201,11 +238,13 @@ public:
             return;
          }
 
+         if ( IsAborted() )
+            throw Error( "Aborted" );
+
          // Run the PSF Fitter
          T.Reset();
          psf_list fits = FitPSFs( stars.Begin(), stars.End() );
-         console.WriteLn( String().Format( "%i PSF(s) fitted", fits.Length() ) );
-         console.WriteLn( "Fit PSFs: " + T.ToIsoString() );
+         console.WriteLn( "          Fit PSFs: " + T.ToIsoString() );
 
          if ( fits.IsEmpty() )
          {
@@ -213,42 +252,16 @@ public:
             return;
          }
 
+         if ( IsAborted() )
+            throw Error( "Aborted" );
+
          // Measure Data
          T.Reset();
-         // Determine the best fit to weight the others against
-         double minMAD = -1;
-         for ( psf_list::const_iterator i = fits.Begin(); i != fits.End(); ++i )
-         {
-            double MAD = i->mad;
+         MeasurePSFs( fits );
+         console.WriteLn( "  PSF Calculations: " + T.ToIsoString() );
 
-            if ( minMAD <= 0 )
-            {
-               minMAD = MAD;
-               continue;
-            }
-
-            if ( MAD < minMAD )
-               minMAD = MAD;
-         }
-         // Analyze each star parameter
-         double fwhmSumSigma = 0;
-         double eccentricitySumSigma = 0;
-         double sumWeight = 0;
-         for ( psf_list::const_iterator i = fits.Begin(); i != fits.End(); ++i )
-         {
-            double MAD = i->mad;
-
-            double weight = minMAD / MAD;
-            sumWeight += weight;
-
-            fwhmSumSigma += weight * pcl::Sqrt( i->sx * i->sy );
-            eccentricitySumSigma += weight * pcl::Sqrt(1.0 - pcl::Pow(i->sy / i->sx, 2.0));
-         }
-         double FWHM = fwhmSumSigma / sumWeight;
-         m_outputData.fwhm = PSFData::FWHM( PSFFunction( m_data->instance->psfFit ), FWHM, 0 ); // beta is unused here
-         m_outputData.eccentricity = eccentricitySumSigma / sumWeight;
-
-         console.WriteLn( "Calculations: " + T.ToIsoString() );
+         console.WriteLn( String().Format( "%i Star(s) detected", stars.Length() ) );
+         console.WriteLn( String().Format( "%i PSF(s) fitted", fits.Length() ) );
 
          m_success = true;
       }
@@ -273,6 +286,52 @@ public:
    }
 
 private:
+
+   void EvaluateNoise()
+   {
+      double noiseEstimate = 0;
+      double noiseFraction = 0;
+      double noiseEstimateKS = 0;
+      double noiseFractionKS = 0;
+      SeparableFilter H( __5x5B3Spline_hv, __5x5B3Spline_hv, 5 );
+      for ( int n = 4; ; )
+      {
+         ATrousWaveletTransform W( H, n );
+         W << *m_subframe;
+
+         size_type N;
+         if ( n == 4 )
+         {
+            noiseEstimateKS = W.NoiseKSigma( 0, 3, 0.01, 10, &N )/__5x5B3Spline_kj[0];
+            noiseFractionKS = double( N )/m_subframe->NumberOfPixels();
+         }
+         noiseEstimate = W.NoiseMRS( ImageVariant( *m_subframe ), __5x5B3Spline_kj, noiseEstimateKS, 3, &N );
+         noiseFraction = double( N )/m_subframe->NumberOfPixels();
+
+         if ( noiseEstimate > 0 && noiseFraction >= 0.01 )
+            break;
+
+         if ( --n == 1 )
+         {
+            noiseEstimate = noiseEstimateKS;
+            noiseFraction = noiseFractionKS;
+            break;
+         }
+      }
+
+      m_outputData.noise = noiseEstimate;
+      m_outputData.noiseRatio = noiseFraction;
+   }
+
+   void MeasureImage()
+   {
+      // Most parameters here are defaults, but set it to use 1 CPU at the end
+      m_outputData.median = m_subframe->Median( 0, -1, -1, 1 );
+      m_outputData.medianMeanDev = m_subframe->AvgDev( m_outputData.median, 0, -1, -1, 1 );
+      EvaluateNoise();
+      m_outputData.snrWeight = m_outputData.noise != 0 ?
+                               pcl::Pow( m_outputData.medianMeanDev, 2.0 ) / pcl::Pow( m_outputData.noise, 2.0 ) : 0;
+   }
 
    star_list StarDetector()
    {
@@ -326,6 +385,68 @@ private:
       case SSPSFFit::Lorentzian: return PSFFit::Function::Lorentzian;
       default: return PSFFit::Function::Gaussian;
       }
+   }
+
+   void MeasurePSFs( psf_list fits )
+   {
+      m_outputData.stars = fits.Length();
+
+      // Determine the best fit to weight the others against
+      double minMAD = -1;
+      for ( psf_list::const_iterator i = fits.Begin(); i != fits.End(); ++i )
+      {
+         double MAD = i->mad;
+
+         if ( minMAD <= 0 )
+         {
+            minMAD = MAD;
+            continue;
+         }
+
+         if ( MAD < minMAD )
+            minMAD = MAD;
+      }
+
+      // Analyze each star parameter against the best residual
+      double fwhmSumSigma = 0;
+      double eccentricitySumSigma = 0;
+      double residualSumSigma = 0;
+      double sumWeight = 0;
+      Array<double> fwhms( fits.Length(), 0 );
+      Array<double> eccentricities( fits.Length(), 0 );
+      Array<double> residuals( fits.Length(), 0 );
+      for ( size_type i = 0; i < fits.Length(); ++i )
+      {
+         PSFData* fit = &fits[i];
+
+         double MAD = fit->mad;
+         double weight = minMAD / MAD;
+         sumWeight += weight;
+
+         fwhms[i] = pcl::Sqrt( fit->sx * fit->sy );
+         eccentricities[i] = pcl::Sqrt(1.0 - pcl::Pow(fit->sy / fit->sx, 2.0));
+         residuals[i] = MAD;
+
+         fwhmSumSigma += weight * fwhms[i];
+         eccentricitySumSigma += weight * eccentricities[i];
+         residualSumSigma += weight * MAD;
+      }
+
+      // Average each star parameter against the total weight
+      double FWHM = fwhmSumSigma / sumWeight;
+      m_outputData.fwhm = PSFData::FWHM( PSFFunction( m_data->instance->psfFit ), FWHM, 0 ); // beta is unused here
+      m_outputData.eccentricity = eccentricitySumSigma / sumWeight;
+      m_outputData.starResidual = residualSumSigma / sumWeight;
+
+      // Determine Mean Deviation for each star parameter
+      m_outputData.fwhmMeanDev = pcl::AvgDev( fwhms.Begin(), fwhms.End(),
+                                              pcl::Mean( fwhms.Begin(), fwhms.End() ) );
+      m_outputData.fwhmMeanDev = PSFData::FWHM( PSFFunction( m_data->instance->psfFit ),
+                                                m_outputData.fwhmMeanDev, 0 ); // beta is unused here
+      m_outputData.eccentricityMeanDev = pcl::AvgDev( eccentricities.Begin(), eccentricities.End(),
+                                                      pcl::Mean( eccentricities.Begin(), eccentricities.End() ) );
+      m_outputData.starResidualMeanDev = pcl::AvgDev( residuals.Begin(), residuals.End(),
+                                                      pcl::Mean( residuals.Begin(), residuals.End() ) );
    }
 
    AutoPointer<ImageVariant>  m_subframe;
@@ -399,18 +520,6 @@ ImageVariant* SubframeSelectorInstance::LoadSubframe( const String& filePath )
    ImageVariant* imageVariant = new ImageVariant();
    image->GetIntensity( *imageVariant );
    image->FreeData();
-
-   /*
-    * Crop if the ROI was set
-    */
-   if ( roi.IsRect() )
-   {
-      console.WriteLn( String().Format( "Cropping to: (%i, %i), (%i x %i)",
-                                        roi.x0, roi.y0,
-                                        roi.Width(), roi.Height()));
-      Module->ProcessEvents();
-      imageVariant->CropTo( roi );
-   }
 
    /*
     * Close the input stream.
@@ -913,29 +1022,108 @@ void SubframeSelectorInstance::ApproveMeasurements()
 {
    if ( approvalExpression.IsEmpty() )
    {
-      for ( size_type i = 0; i < measures.Length(); ++i )
-         if ( !measures[i].locked )
-            measures[i].enabled = true;
+      for ( Array<MeasureItem>::iterator i = measures.Begin(); i != measures.End(); ++i )
+         if ( !i->locked )
+            i->enabled = true;
    }
    else
    {
-      for ( size_type i = 0; i < measures.Length(); ++i )
+      // First, get all Medians and Mean Deviation from Medians for Sigma units
+      double weightMedian, weightDeviation;
+      double fwhmMedian, fwhmDeviation;
+      double eccentricityMedian, eccentricityDeviation;
+      double snrWeightMedian, snrWeightDeviation;
+      double medianMedian, medianDeviation;
+      double medianMeanDevMedian, medianMeanDevDeviation;
+      double noiseMedian, noiseDeviation;
+      double noiseRatioMedian, noiseRatioDeviation;
+      double starsMedian, starsDeviation;
+      double starResidualMedian, starResidualDeviation;
+      double fwhmMeanDevMedian, fwhmMeanDevDeviation;
+      double eccentricityMeanDevMedian, eccentricityMeanDevDeviation;
+      double starResidualMeanDevMedian, starResidualMeanDevDeviation;
+      MedianAndMeanDeviation( weightMedian, weightDeviation,
+                              fwhmMedian, fwhmDeviation,
+                              eccentricityMedian, eccentricityDeviation,
+                              snrWeightMedian, snrWeightDeviation,
+                              medianMedian, medianDeviation,
+                              medianMeanDevMedian, medianMeanDevDeviation,
+                              noiseMedian, noiseDeviation,
+                              noiseRatioMedian, noiseRatioDeviation,
+                              starsMedian, starsDeviation,
+                              starResidualMedian, starResidualDeviation,
+                              fwhmMeanDevMedian, fwhmMeanDevDeviation,
+                              eccentricityMeanDevMedian, eccentricityMeanDevDeviation,
+                              starResidualMeanDevMedian, starResidualMeanDevDeviation
+      );
+
+      for ( Array<MeasureItem>::iterator i = measures.Begin(); i != measures.End(); ++i )
       {
-         if ( measures[i].locked )
+         if ( i->locked )
             continue;
 
-         String JSEvaluator = measures[i].JavaScriptParameters( subframeScale, scaleUnit );
-         JSEvaluator += approvalExpression;
-         Console().NoteLn( "\nScript:" );
-         Console().WriteLn( JSEvaluator.EncodedHTMLSpecialChars() );
+         // The standard parameters for the MeasureItem
+         String JSEvaluator = i->JavaScriptParameters( subframeScale, scaleUnit, cameraGain,
+                                                       TheSSCameraResolutionParameter->ElementData( cameraResolution ),
+                                                       dataUnit );
 
+         // The Sigma parameters for the MeasureItem
+         JSEvaluator += String().Format( "let WeightSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->weight, weightMedian, weightDeviation
+         ) );
+         JSEvaluator += String().Format( "let FWHMSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->FWHM( subframeScale, scaleUnit ), fwhmMedian, fwhmDeviation
+         ) );
+         JSEvaluator += String().Format( "let EccentricitySigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->eccentricity, eccentricityMedian, eccentricityDeviation
+         ) );
+         JSEvaluator += String().Format( "let SNRWeightSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->snrWeight, snrWeightMedian, snrWeightDeviation
+         ) );
+         JSEvaluator += String().Format( "let MedianSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->Median( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit ),
+                 medianMedian, medianDeviation
+         ) );
+         JSEvaluator += String().Format( "let MedianMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->MedianMeanDev( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ),
+                                   dataUnit ),
+                 medianMeanDevMedian, medianMeanDevDeviation
+         ) );
+         JSEvaluator += String().Format( "let NoiseSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->Noise( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit ),
+                 noiseMedian, noiseDeviation
+         ) );
+         JSEvaluator += String().Format( "let NoiseRatioSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->noiseRatio, noiseRatioMedian, noiseRatioDeviation
+         ) );
+         JSEvaluator += String().Format( "let StarsSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->stars, starsMedian, starsDeviation
+         ) );
+         JSEvaluator += String().Format( "let StarResidualSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->starResidual, starResidualMedian, starResidualDeviation
+         ) );
+         JSEvaluator += String().Format( "let FWHMMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->FWHMMeanDeviation( subframeScale, scaleUnit ), fwhmMeanDevMedian, fwhmMeanDevDeviation
+         ) );
+         JSEvaluator += String().Format( "let EccentricityMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->eccentricityMeanDev, eccentricityMeanDevMedian, eccentricityMeanDevDeviation
+         ) );
+         JSEvaluator += String().Format( "let StarResidualMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->starResidualMeanDev, starResidualMeanDevMedian, starResidualMeanDevDeviation
+         ) );
+
+         // The final expression that evaluates to a return value
+         JSEvaluator += approvalExpression;
+
+         // Try to get the final result and update the MeasureItem
          Variant result = Module->EvaluateScript( JSEvaluator.DecodedHTMLSpecialChars(), "JavaScript" );
          if ( !result.IsValid() )
             throw Error( "Approval Error: Invalid script execution" );
          String resultText = result.ToString();
-         Console().NoteLn( "\nResult:" + resultText );
+         if ( resultText.Contains( "Error" ) )
+            throw Error( resultText );
 
-         measures[i].enabled = result.ToBool();
+         i->enabled = result.ToBool();
       }
    }
 }
@@ -944,30 +1132,177 @@ void SubframeSelectorInstance::WeightMeasurements()
 {
    if ( weightingExpression.IsEmpty() )
    {
-      for ( size_type i = 0; i < measures.Length(); ++i )
-         measures[i].weight = 0;
+      for ( Array<MeasureItem>::iterator i = measures.Begin(); i != measures.End(); ++i )
+         i->weight = 0;
    }
    else
    {
-      for ( size_type i = 0; i < measures.Length(); ++i )
-      {
-         String JSEvaluator = measures[i].JavaScriptParameters( subframeScale, scaleUnit );
-         JSEvaluator += weightingExpression;
-         Console().NoteLn( "\nScript:" );
-         Console().WriteLn( JSEvaluator.EncodedHTMLSpecialChars() );
+      // First, get all Medians and Mean Deviation from Medians for Sigma units
+      double weightMedian, weightDeviation;
+      double fwhmMedian, fwhmDeviation;
+      double eccentricityMedian, eccentricityDeviation;
+      double snrWeightMedian, snrWeightDeviation;
+      double medianMedian, medianDeviation;
+      double medianMeanDevMedian, medianMeanDevDeviation;
+      double noiseMedian, noiseDeviation;
+      double noiseRatioMedian, noiseRatioDeviation;
+      double starsMedian, starsDeviation;
+      double starResidualMedian, starResidualDeviation;
+      double fwhmMeanDevMedian, fwhmMeanDevDeviation;
+      double eccentricityMeanDevMedian, eccentricityMeanDevDeviation;
+      double starResidualMeanDevMedian, starResidualMeanDevDeviation;
+      MedianAndMeanDeviation( weightMedian, weightDeviation,
+                              fwhmMedian, fwhmDeviation,
+                              eccentricityMedian, eccentricityDeviation,
+                              snrWeightMedian, snrWeightDeviation,
+                              medianMedian, medianDeviation,
+                              medianMeanDevMedian, medianMeanDevDeviation,
+                              noiseMedian, noiseDeviation,
+                              noiseRatioMedian, noiseRatioDeviation,
+                              starsMedian, starsDeviation,
+                              starResidualMedian, starResidualDeviation,
+                              fwhmMeanDevMedian, fwhmMeanDevDeviation,
+                              eccentricityMeanDevMedian, eccentricityMeanDevDeviation,
+                              starResidualMeanDevMedian, starResidualMeanDevDeviation
+      );
 
+      for ( Array<MeasureItem>::iterator i = measures.Begin(); i != measures.End(); ++i )
+      {
+         // The standard parameters for the MeasureItem
+         String JSEvaluator = i->JavaScriptParameters( subframeScale, scaleUnit, cameraGain,
+                                                       TheSSCameraResolutionParameter->ElementData( cameraResolution ),
+                                                       dataUnit );
+
+         // The Sigma parameters for the MeasureItem
+         JSEvaluator += String().Format( "let WeightSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->weight, weightMedian, weightDeviation
+         ) );
+         JSEvaluator += String().Format( "let FWHMSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->FWHM( subframeScale, scaleUnit ), fwhmMedian, fwhmDeviation
+         ) );
+         JSEvaluator += String().Format( "let EccentricitySigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->eccentricity, eccentricityMedian, eccentricityDeviation
+         ) );
+         JSEvaluator += String().Format( "let SNRWeightSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->snrWeight, snrWeightMedian, snrWeightDeviation
+         ) );
+         JSEvaluator += String().Format( "let MedianSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->Median( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit ),
+                 medianMedian, medianDeviation
+         ) );
+         JSEvaluator += String().Format( "let MedianMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->MedianMeanDev( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ),
+                                   dataUnit ),
+                 medianMeanDevMedian, medianMeanDevDeviation
+         ) );
+         JSEvaluator += String().Format( "let NoiseSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->Noise( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit ),
+                 noiseMedian, noiseDeviation
+         ) );
+         JSEvaluator += String().Format( "let NoiseRatioSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->noiseRatio, noiseRatioMedian, noiseRatioDeviation
+         ) );
+         JSEvaluator += String().Format( "let StarsSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->stars, starsMedian, starsDeviation
+         ) );
+         JSEvaluator += String().Format( "let StarResidualSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->starResidual, starResidualMedian, starResidualDeviation
+         ) );
+         JSEvaluator += String().Format( "let FWHMMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->FWHMMeanDeviation( subframeScale, scaleUnit ), fwhmMeanDevMedian, fwhmMeanDevDeviation
+         ) );
+         JSEvaluator += String().Format( "let EccentricityMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->eccentricityMeanDev, eccentricityMeanDevMedian, eccentricityMeanDevDeviation
+         ) );
+         JSEvaluator += String().Format( "let StarResidualMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
+                 i->starResidualMeanDev, starResidualMeanDevMedian, starResidualMeanDevDeviation
+         ) );
+
+         // The final expression that evaluates to a return value
+         JSEvaluator += weightingExpression;
+
+         // Try to get the final result and update the MeasureItem
          Variant result = Module->EvaluateScript( JSEvaluator.DecodedHTMLSpecialChars(), "JavaScript" );
          if ( !result.IsValid() )
             throw Error( "Approval Error: Invalid script execution" );
          String resultText = result.ToString();
-         Console().NoteLn( "\nResult:" + resultText );
+         if ( resultText.Contains( "Error" ) )
+            throw Error( resultText );
 
-         measures[i].weight = result.ToFloat();
+         i->weight = result.ToFloat();
       }
    }
 }
 
-bool SubframeSelectorInstance::CanExecuteGlobal( String &whyNot ) const {
+void SubframeSelectorInstance::MedianAndMeanDeviation( double& weightMedian, double& weightDeviation,
+                                                       double& fwhmMedian, double& fwhmDeviation,
+                                                       double& eccentricityMedian, double& eccentricityDeviation,
+                                                       double& snrWeightMedian, double& snrWeightDeviation,
+                                                       double& medianMedian, double& medianDeviation,
+                                                       double& medianMeanDevMedian, double& medianMeanDevDeviation,
+                                                       double& noiseMedian, double& noiseDeviation,
+                                                       double& noiseRatioMedian, double& noiseRatioDeviation,
+                                                       double& starsMedian, double& starsDeviation,
+                                                       double& starResidualMedian, double& starResidualDeviation,
+                                                       double& fwhmMeanDevMedian, double& fwhmMeanDevDeviation,
+                                                       double& eccentricityMeanDevMedian, double& eccentricityMeanDevDeviation,
+                                                       double& starResidualMeanDevMedian, double& starResidualMeanDevDeviation
+) const
+{
+   size_type measuresLength( measures.Length() );
+
+   Array<double> weight( measuresLength );
+   Array<double> fwhm( measuresLength );
+   Array<double> eccentricity( measuresLength );
+   Array<double> snrWeight( measuresLength );
+   Array<double> median( measuresLength );
+   Array<double> medianMeanDev( measuresLength );
+   Array<double> noise( measuresLength );
+   Array<double> noiseRatio( measuresLength );
+   Array<double> stars( measuresLength );
+   Array<double> starResidual( measuresLength );
+   Array<double> fwhmMeanDev( measuresLength );
+   Array<double> eccentricityMeanDev( measuresLength );
+   Array<double> starResidualMeanDev( measuresLength );
+
+   for ( size_type i = 0; i < measuresLength; ++i )
+   {
+      weight[i] = measures[i].weight;
+      fwhm[i] = measures[i].FWHM( subframeScale, scaleUnit );
+      eccentricity[i] = measures[i].eccentricity;
+      snrWeight[i] = measures[i].snrWeight;
+      median[i] = measures[i].Median( cameraGain,
+                                      TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit );
+      medianMeanDev[i] = measures[i].MedianMeanDev( cameraGain,
+                                                    TheSSCameraResolutionParameter->ElementData( cameraResolution ),
+                                                    dataUnit );
+      noise[i] = measures[i].Noise( cameraGain,
+                                     TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit );
+      noiseRatio[i] = measures[i].noiseRatio;
+      stars[i] = measures[i].stars;
+      starResidual[i] = measures[i].starResidual;
+      fwhmMeanDev[i] = measures[i].FWHMMeanDeviation( subframeScale, scaleUnit );
+      eccentricityMeanDev[i] = measures[i].eccentricityMeanDev;
+      starResidualMeanDev[i] = measures[i].starResidualMeanDev;
+   }
+
+   MeasureUtils::MedianAndMeanDeviation( weight, weightMedian, weightDeviation );
+   MeasureUtils::MedianAndMeanDeviation( fwhm, fwhmMedian, fwhmDeviation );
+   MeasureUtils::MedianAndMeanDeviation( eccentricity, eccentricityMedian, eccentricityDeviation );
+   MeasureUtils::MedianAndMeanDeviation( snrWeight, snrWeightMedian, snrWeightDeviation );
+   MeasureUtils::MedianAndMeanDeviation( median, medianMedian, medianDeviation );
+   MeasureUtils::MedianAndMeanDeviation( medianMeanDev, medianMeanDevMedian, medianMeanDevDeviation );
+   MeasureUtils::MedianAndMeanDeviation( noise, noiseMedian, noiseDeviation );
+   MeasureUtils::MedianAndMeanDeviation( noiseRatio, noiseRatioMedian, noiseRatioDeviation );
+   MeasureUtils::MedianAndMeanDeviation( stars, starsMedian, starsDeviation );
+   MeasureUtils::MedianAndMeanDeviation( starResidual, starResidualMedian, starResidualDeviation );
+   MeasureUtils::MedianAndMeanDeviation( fwhmMeanDev, fwhmMeanDevMedian, fwhmMeanDevDeviation );
+   MeasureUtils::MedianAndMeanDeviation( eccentricityMeanDev, eccentricityMeanDevMedian, eccentricityMeanDevDeviation );
+   MeasureUtils::MedianAndMeanDeviation( starResidualMeanDev, starResidualMeanDevMedian, starResidualMeanDevDeviation );
+}
+
+bool SubframeSelectorInstance::CanExecuteGlobal( String &whyNot ) const
+{
    if ( subframes.IsEmpty())
    {
        whyNot = "No subframes have been specified.";
@@ -991,7 +1326,8 @@ bool SubframeSelectorInstance::CanExecuteGlobal( String &whyNot ) const {
    return false;
 }
 
-bool SubframeSelectorInstance::ExecuteGlobal() {
+bool SubframeSelectorInstance::ExecuteGlobal()
+{
    /*
     * Start with a general validation of working parameters.
     */
@@ -1101,6 +1437,26 @@ void* SubframeSelectorInstance::LockParameter( const MetaParameter* p, size_type
       return &measures[tableRow].fwhm;
    else if ( p == TheSSMeasurementEccentricityParameter )
       return &measures[tableRow].eccentricity;
+   else if ( p == TheSSMeasurementSNRWeightParameter )
+      return &measures[tableRow].snrWeight;
+   else if ( p == TheSSMeasurementMedianParameter )
+      return &measures[tableRow].median;
+   else if ( p == TheSSMeasurementMedianMeanDevParameter )
+      return &measures[tableRow].medianMeanDev;
+   else if ( p == TheSSMeasurementNoiseParameter )
+      return &measures[tableRow].noise;
+   else if ( p == TheSSMeasurementNoiseRatioParameter )
+      return &measures[tableRow].noiseRatio;
+   else if ( p == TheSSMeasurementStarsParameter )
+      return &measures[tableRow].stars;
+   else if ( p == TheSSMeasurementStarResidualParameter )
+      return &measures[tableRow].starResidual;
+   else if ( p == TheSSMeasurementFWHMMeanDevParameter )
+      return &measures[tableRow].fwhmMeanDev;
+   else if ( p == TheSSMeasurementEccentricityMeanDevParameter )
+      return &measures[tableRow].eccentricityMeanDev;
+   else if ( p == TheSSMeasurementStarResidualMeanDevParameter )
+      return &measures[tableRow].starResidualMeanDev;
 
    return nullptr;
 }

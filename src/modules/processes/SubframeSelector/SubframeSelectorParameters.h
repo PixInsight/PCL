@@ -143,6 +143,8 @@ public:
    virtual double DefaultValue() const;
    virtual double MinimumValue() const;
    virtual double MaximumValue() const;
+
+   IsoString Tooltip() const;
 };
 
 extern SSSubframeScale* TheSSSubframeScaleParameter;
@@ -162,6 +164,8 @@ public:
    virtual double DefaultValue() const;
    virtual double MinimumValue() const;
    virtual double MaximumValue() const;
+
+   IsoString Tooltip() const;
 };
 
 extern SSCameraGain* TheSSCameraGainParameter;
@@ -190,6 +194,8 @@ class SSCameraResolution : public MetaEnumeration
    virtual size_type DefaultValueIndex() const;
    IsoString ElementLabel( size_type ) const;
    int ElementData( size_type ) const;
+
+   IsoString Tooltip() const;
 };
 
 extern SSCameraResolution* TheSSCameraResolutionParameter;
@@ -207,6 +213,8 @@ class SSSiteLocalMidnight : public MetaInt32
    virtual double DefaultValue() const;
    virtual double MinimumValue() const;
    virtual double MaximumValue() const;
+
+   IsoString Tooltip() const;
 };
 
 extern SSSiteLocalMidnight* TheSSSiteLocalMidnightParameter;
@@ -231,7 +239,8 @@ class SSScaleUnit : public MetaEnumeration
    virtual int ElementValue( size_type ) const;
    virtual size_type DefaultValueIndex() const;
    IsoString ElementLabel( size_type ) const;
-   IsoString ElementData( size_type ) const;
+
+   IsoString Tooltip() const;
 };
 
 extern SSScaleUnit* TheSSScaleUnitParameter;
@@ -256,7 +265,8 @@ class SSDataUnit : public MetaEnumeration
    virtual int ElementValue( size_type ) const;
    virtual size_type DefaultValueIndex() const;
    IsoString ElementLabel( size_type ) const;
-   IsoString ElementData( size_type ) const;
+
+   IsoString Tooltip() const;
 };
 
 extern SSDataUnit* TheSSDataUnitParameter;
@@ -651,6 +661,16 @@ public:
       Weight,
       FWHM,
       Eccentricity,
+      SNRWeight,
+      Median,
+      MedianMeanDev,
+      Noise,
+      NoiseRatio,
+      Stars,
+      StarResidual,
+      FWHMMeanDev,
+      EccentricityMeanDev,
+      StarResidualMeanDev,
       NumberOfItems,
       Default = Index };
 
@@ -676,8 +696,18 @@ public:
    enum { Weight,
       FWHM,
       Eccentricity,
+      SNRWeight,
+      Median,
+      MedianMeanDev,
+      Noise,
+      NoiseRatio,
+      Stars,
+      StarResidual,
+      FWHMMeanDev,
+      EccentricityMeanDev,
+      StarResidualMeanDev,
       NumberOfItems,
-      Default = Weight };
+      Default = FWHM };
 
    SSGraphProperty( MetaProcess* );
 
@@ -821,6 +851,196 @@ public:
 };
 
 extern SSMeasurementEccentricity* TheSSMeasurementEccentricityParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementSNRWeight : public MetaFloat
+{
+public:
+
+   SSMeasurementSNRWeight( MetaTable* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSMeasurementSNRWeight* TheSSMeasurementSNRWeightParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementMedian : public MetaFloat
+{
+public:
+
+   SSMeasurementMedian( MetaTable* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSMeasurementMedian* TheSSMeasurementMedianParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementMedianMeanDev : public MetaFloat
+{
+public:
+
+   SSMeasurementMedianMeanDev( MetaTable* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSMeasurementMedianMeanDev* TheSSMeasurementMedianMeanDevParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementNoise : public MetaFloat
+{
+public:
+
+   SSMeasurementNoise( MetaTable* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSMeasurementNoise* TheSSMeasurementNoiseParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementNoiseRatio : public MetaFloat
+{
+public:
+
+   SSMeasurementNoiseRatio( MetaTable* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSMeasurementNoiseRatio* TheSSMeasurementNoiseRatioParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementStars : public MetaUInt16
+{
+public:
+
+   SSMeasurementStars( MetaTable* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSMeasurementStars* TheSSMeasurementStarsParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementStarResidual : public MetaFloat
+{
+public:
+
+   SSMeasurementStarResidual( MetaTable* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSMeasurementStarResidual* TheSSMeasurementStarResidualParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementFWHMMeanDev : public MetaFloat
+{
+public:
+
+   SSMeasurementFWHMMeanDev( MetaTable* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSMeasurementFWHMMeanDev* TheSSMeasurementFWHMMeanDevParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementEccentricityMeanDev : public MetaFloat
+{
+public:
+
+   SSMeasurementEccentricityMeanDev( MetaTable* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSMeasurementEccentricityMeanDev* TheSSMeasurementEccentricityMeanDevParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSMeasurementStarResidualMeanDev : public MetaFloat
+{
+public:
+
+   SSMeasurementStarResidualMeanDev( MetaTable* );
+
+   virtual IsoString Id() const;
+
+   virtual int Precision() const;
+
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern SSMeasurementStarResidualMeanDev* TheSSMeasurementStarResidualMeanDevParameter;
 
 // ----------------------------------------------------------------------------
 

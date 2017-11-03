@@ -295,11 +295,10 @@ void SubframeSelectorInterface::UpdateSubframeImageSelectionButtons()
    bool hasItems = GUI->SubframeImages_TreeBox.NumberOfChildren() > 0;
    bool hasSelection = hasItems && GUI->SubframeImages_TreeBox.HasSelectedTopLevelNodes();
 
-   GUI->SelectAll_PushButton.Enable( hasItems );
-   GUI->InvertSelection_PushButton.Enable( hasItems );
-   GUI->ToggleSelected_PushButton.Enable( hasSelection );
-   GUI->RemoveSelected_PushButton.Enable( hasSelection );
-   GUI->Clear_PushButton.Enable( hasItems );
+   GUI->SubframeImages_Invert_PushButton.Enable( hasItems );
+   GUI->SubframeImages_Toggle_PushButton.Enable( hasSelection );
+   GUI->SubframeImages_Remove_PushButton.Enable( hasSelection );
+   GUI->SubframeImages_Clear_PushButton.Enable( hasItems );
 }
 
 // ----------------------------------------------------------------------------
@@ -379,6 +378,46 @@ void SubframeSelectorInterface::UpdateMeasurementImageItem( size_type i, Measure
 
    node->SetText( 6, String().Format( "%.03f", item->eccentricity ) );
    node->SetAlignment( 6, TextAlign::Center );
+
+   node->SetText( 7, String().Format( "%.04f", item->snrWeight ) );
+   node->SetAlignment( 7, TextAlign::Center );
+
+   node->SetText( 8, String().Format( "%.03f", item->Median( instance.cameraGain,
+                                                             TheSSCameraResolutionParameter->ElementData(
+                                                                     instance.cameraResolution ),
+                                                             instance.dataUnit ) ) );
+   node->SetAlignment( 8, TextAlign::Center );
+
+   node->SetText( 9, String().Format( "%.03f", item->MedianMeanDev( instance.cameraGain,
+                                                                    TheSSCameraResolutionParameter->ElementData(
+                                                                            instance.cameraResolution ),
+                                                                    instance.dataUnit ) ) );
+   node->SetAlignment( 9, TextAlign::Center );
+
+   node->SetText( 10, String().Format( "%.03f", item->Noise( instance.cameraGain,
+                                                             TheSSCameraResolutionParameter->ElementData(
+                                                                     instance.cameraResolution ),
+                                                             instance.dataUnit ) ) );
+   node->SetAlignment( 10, TextAlign::Center );
+
+   node->SetText( 11, String().Format( "%.04f", item->noiseRatio ) );
+   node->SetAlignment( 11, TextAlign::Center );
+
+   node->SetText( 12, String().Format( "%i", item->stars ) );
+   node->SetAlignment( 12, TextAlign::Center );
+
+   node->SetText( 13, String().Format( "%.03f", item->starResidual ) );
+   node->SetAlignment( 13, TextAlign::Center );
+
+   node->SetText( 14, String().Format( "%.04f", item->FWHMMeanDeviation( instance.subframeScale,
+                                                                         instance.scaleUnit ) ) );
+   node->SetAlignment( 14, TextAlign::Center );
+
+   node->SetText( 15, String().Format( "%.04f", item->eccentricityMeanDev ) );
+   node->SetAlignment( 15, TextAlign::Center );
+
+   node->SetText( 16, String().Format( "%.04f", item->starResidualMeanDev ) );
+   node->SetAlignment( 16, TextAlign::Center );
 }
 
 // ----------------------------------------------------------------------------
@@ -387,10 +426,16 @@ void SubframeSelectorInterface::UpdateMeasurementImagesList()
 {
    GUI->MeasurementsTable_SortingProperty_Control.SetCurrentItem( instance.sortingProperty );
 
-   int currentIdx = GUI->MeasurementTable_TreeBox.ChildIndex( GUI->MeasurementTable_TreeBox.CurrentNode() );
+   bool shouldRecreate = instance.measures.Length() != GUI->MeasurementTable_TreeBox.NumberOfChildren();
+
+   const IndirectArray<TreeBox::Node>& selections = GUI->MeasurementTable_TreeBox.SelectedNodes();
+   Array<int> currentIds( selections.Length() );
+   for ( size_type i = 0; i < selections.Length(); ++i )
+      currentIds[i] = GUI->MeasurementTable_TreeBox.ChildIndex( selections[i] );
 
    GUI->MeasurementTable_TreeBox.DisableUpdates();
-   GUI->MeasurementTable_TreeBox.Clear();
+   if ( shouldRecreate )
+      GUI->MeasurementTable_TreeBox.Clear();
 
    ApplyWeightingExpression();
    ApplyApprovalExpression();
@@ -401,7 +446,8 @@ void SubframeSelectorInterface::UpdateMeasurementImagesList()
 
    for ( size_type i = 0; i < measuresSorted.Length(); ++i )
    {
-      new TreeBox::Node( GUI->MeasurementTable_TreeBox );
+      if ( shouldRecreate )
+         new TreeBox::Node( GUI->MeasurementTable_TreeBox );
       UpdateMeasurementImageItem( i, &measuresSorted[i] );
    }
 
@@ -409,9 +455,10 @@ void SubframeSelectorInterface::UpdateMeasurementImagesList()
    GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 4 );
    GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 5 );
 
-   if ( !instance.measures.IsEmpty() )
-      if ( currentIdx >= 0 && currentIdx < GUI->MeasurementTable_TreeBox.NumberOfChildren() )
-         GUI->MeasurementTable_TreeBox.SetCurrentNode( GUI->MeasurementTable_TreeBox[currentIdx] );
+   if ( shouldRecreate && !instance.measures.IsEmpty() )
+      for ( size_type i = 0; i < currentIds.Length(); ++i )
+         if ( currentIds[i] >= 0 && currentIds[i] < GUI->MeasurementTable_TreeBox.NumberOfChildren() )
+            GUI->MeasurementTable_TreeBox.Child( currentIds[i] )->Select();
 
    GUI->MeasurementTable_TreeBox.EnableUpdates();
 }
@@ -428,21 +475,56 @@ void SubframeSelectorInterface::UpdateMeasurementGraph()
       dataset[i].x = instance.measures[i].index;
       switch ( instance.graphProperty )
       {
-      case SSGraphProperty::Weight: dataset[i].y = instance.measures[i].weight;
+      case SSGraphProperty::Weight: dataset[i].data = instance.measures[i].weight;
          break;
-      case SSGraphProperty::FWHM: dataset[i].y = instance.measures[i].fwhm;
+      case SSGraphProperty::FWHM:
+         dataset[i].data = instance.measures[i].FWHM( instance.subframeScale, instance.scaleUnit );
          break;
-      case SSGraphProperty::Eccentricity: dataset[i].y = instance.measures[i].eccentricity;
+      case SSGraphProperty::Eccentricity: dataset[i].data = instance.measures[i].eccentricity;
          break;
-      default: dataset[i].y = instance.measures[i].weight;
+      case SSGraphProperty::SNRWeight: dataset[i].data = instance.measures[i].snrWeight;
+         break;
+      case SSGraphProperty::Median:
+         dataset[i].data = instance.measures[i].Median( instance.cameraGain,
+                                                     TheSSCameraResolutionParameter->ElementData(
+                                                             instance.cameraResolution ),
+                                                     instance.dataUnit );
+         break;
+      case SSGraphProperty::MedianMeanDev:
+         dataset[i].data = instance.measures[i].MedianMeanDev( instance.cameraGain,
+                                                            TheSSCameraResolutionParameter->ElementData(
+                                                                    instance.cameraResolution ),
+                                                            instance.dataUnit );
+         break;
+      case SSGraphProperty::Noise:
+         dataset[i].data = instance.measures[i].Noise( instance.cameraGain,
+                                                    TheSSCameraResolutionParameter->ElementData(
+                                                            instance.cameraResolution ),
+                                                    instance.dataUnit );
+         break;
+      case SSGraphProperty::NoiseRatio: dataset[i].data = instance.measures[i].noiseRatio;
+         break;
+      case SSGraphProperty::Stars: dataset[i].data = instance.measures[i].stars;
+         break;
+      case SSGraphProperty::StarResidual: dataset[i].data = instance.measures[i].starResidual;
+         break;
+      case SSGraphProperty::FWHMMeanDev:
+         dataset[i].data = instance.measures[i].FWHMMeanDeviation( instance.subframeScale, instance.scaleUnit );
+         break;
+      case SSGraphProperty::EccentricityMeanDev: dataset[i].data = instance.measures[i].eccentricityMeanDev;
+         break;
+      case SSGraphProperty::StarResidualMeanDev: dataset[i].data = instance.measures[i].starResidualMeanDev;
+         break;
+      default: dataset[i].data = instance.measures[i].weight;
          break;
       }
-      dataset[i].y2 = instance.measures[i].weight;
+      dataset[i].weight = instance.measures[i].weight;
       dataset[i].approved = instance.measures[i].enabled;
+      dataset[i].locked = instance.measures[i].locked;
    }
 
    GUI->MeasurementGraph_Graph.SetDataset( TheSSGraphPropertyParameter->ElementLabel( instance.graphProperty ),
-                                           "Weight", &dataset );
+                                           &dataset );
 }
 
 // ----------------------------------------------------------------------------
@@ -457,6 +539,7 @@ void SubframeSelectorInterface::ApplyApprovalExpression()
    catch ( ... )
    {
       GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
+      Console().Show();
    }
    GUI->MeasurementTable_TreeBox.EnableUpdates();
 }
@@ -471,6 +554,7 @@ void SubframeSelectorInterface::ApplyWeightingExpression()
    catch ( ... )
    {
       GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
+      Console().Show();
    }
    GUI->MeasurementTable_TreeBox.EnableUpdates();
 }
@@ -564,7 +648,7 @@ void SubframeSelectorInterface::__SubframeImages_NodeSelectionUpdated( TreeBox& 
 
 void SubframeSelectorInterface::__SubframeImages_Click( Button& sender, bool checked )
 {
-   if ( sender == GUI->AddFiles_PushButton )
+   if ( sender == GUI->SubframeImages_AddFiles_PushButton )
    {
       OpenFileDialog d;
       d.EnableMultipleSelections();
@@ -580,18 +664,13 @@ void SubframeSelectorInterface::__SubframeImages_Click( Button& sender, bool che
          UpdateSubframeImageSelectionButtons();
       }
    }
-   else if ( sender == GUI->SelectAll_PushButton )
-   {
-      GUI->SubframeImages_TreeBox.SelectAllNodes();
-      UpdateSubframeImageSelectionButtons();
-   }
-   else if ( sender == GUI->InvertSelection_PushButton )
+   else if ( sender == GUI->SubframeImages_Invert_PushButton )
    {
       for ( int i = 0, n = GUI->SubframeImages_TreeBox.NumberOfChildren(); i < n; ++i )
          GUI->SubframeImages_TreeBox[i]->Select( !GUI->SubframeImages_TreeBox[i]->IsSelected() );
       UpdateSubframeImageSelectionButtons();
    }
-   else if ( sender == GUI->ToggleSelected_PushButton )
+   else if ( sender == GUI->SubframeImages_Toggle_PushButton )
    {
       for ( int i = 0, n = GUI->SubframeImages_TreeBox.NumberOfChildren(); i < n; ++i )
          if ( GUI->SubframeImages_TreeBox[i]->IsSelected() )
@@ -599,7 +678,7 @@ void SubframeSelectorInterface::__SubframeImages_Click( Button& sender, bool che
       UpdateSubframeImagesList();
       UpdateSubframeImageSelectionButtons();
    }
-   else if ( sender == GUI->RemoveSelected_PushButton )
+   else if ( sender == GUI->SubframeImages_Remove_PushButton )
    {
       SubframeSelectorInstance::subframe_list newTargets;
       for ( int i = 0, n = GUI->SubframeImages_TreeBox.NumberOfChildren(); i < n; ++i )
@@ -609,7 +688,7 @@ void SubframeSelectorInterface::__SubframeImages_Click( Button& sender, bool che
       UpdateSubframeImagesList();
       UpdateSubframeImageSelectionButtons();
    }
-   else if ( sender == GUI->Clear_PushButton )
+   else if ( sender == GUI->SubframeImages_Clear_PushButton )
    {
       instance.subframes.Clear();
       UpdateSubframeImagesList();
@@ -653,6 +732,128 @@ void SubframeSelectorInterface::__SubframeImages_FileDrop( Control& sender, cons
 
 // ----------------------------------------------------------------------------
 
+void SubframeSelectorInterface::__MeasurementImages_CurrentNodeUpdated( TreeBox& sender,
+                                                                        TreeBox::Node& current,
+                                                                        TreeBox::Node& oldCurrent )
+{
+   // Actually do nothing (placeholder). Just perform a sanity check.
+   int index = sender.ChildIndex( &current );
+   if ( index < 0 || size_type( index ) >= instance.measures.Length() )
+      throw Error( "SubframeSelectorInterface: *Warning* Corrupted interface structures" );
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::__MeasurementImages_NodeActivated( TreeBox& sender, TreeBox::Node& node, int col )
+{
+   int index = sender.ChildIndex( &node );
+   if ( index < 0 || size_type( index ) >= instance.measures.Length() )
+      throw Error( "SubframeSelectorInterface: *Warning* Corrupted interface structures" );
+
+   MeasureItem* item = GetMeasurementItem( index );
+   if ( item == nullptr )
+      return;
+
+   switch ( col )
+   {
+   case 0:
+      // Activate the item's index number: ignore.
+      break;
+   case 1:
+      // Activate the item's checkmark: toggle item's enabled state.
+      item->enabled = !item->enabled;
+      item->locked = true;
+      UpdateMeasurementImageItem( index, item );
+      UpdateMeasurementGraph();
+      break;
+   case 2:
+      // Activate the item's checkmark: toggle item's locked state.
+      item->locked = !item->locked;
+      UpdateMeasurementImageItem( index, item );
+      UpdateMeasurementGraph();
+      break;
+   case 3:
+   {
+      // Activate the item's path: open the image.
+      Array<ImageWindow> windows = ImageWindow::Open( item->path, IsoString()/*id*/ );
+      for ( ImageWindow& window : windows )
+         window.Show();
+   }
+      break;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::__MeasurementImages_Click( Button& sender, bool checked )
+{
+   if ( sender == GUI->MeasurementsTable_ToggleApproved_PushButton )
+   {
+      for ( int i = 0, n = GUI->MeasurementTable_TreeBox.NumberOfChildren(); i < n; ++i )
+         if ( GUI->MeasurementTable_TreeBox[i]->IsSelected() )
+         {
+            MeasureItem* item = GetMeasurementItem( i );
+            if ( item == nullptr )
+               continue;
+
+            item->enabled = !item->enabled;
+            item->locked = true;
+         }
+      UpdateMeasurementImagesList();
+      UpdateMeasurementGraph();
+   }
+   else if ( sender == GUI->MeasurementsTable_ToggleLocked_PushButton )
+   {
+      for ( int i = 0, n = GUI->MeasurementTable_TreeBox.NumberOfChildren(); i < n; ++i )
+         if ( GUI->MeasurementTable_TreeBox[i]->IsSelected() )
+         {
+            MeasureItem* item = GetMeasurementItem( i );
+            if ( item == nullptr )
+               continue;
+
+            item->locked = !item->locked;
+         }
+      UpdateMeasurementImagesList();
+      UpdateMeasurementGraph();
+   }
+   else if ( sender == GUI->MeasurementsTable_Invert_PushButton )
+   {
+      for ( int i = 0, n = GUI->MeasurementTable_TreeBox.NumberOfChildren(); i < n; ++i )
+         GUI->MeasurementTable_TreeBox[i]->Select( !GUI->MeasurementTable_TreeBox[i]->IsSelected() );
+   }
+   else if ( sender == GUI->MeasurementsTable_Clear_PushButton )
+   {
+      instance.measures.Clear();
+      UpdateMeasurementImagesList();
+      UpdateMeasurementGraph();
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::__StarDetector_ViewDrag( Control& sender, const Point& pos, const View& view,
+                                                         unsigned modifiers,
+                                                         bool& wantsView )
+{
+   if ( sender == GUI->StarDetectorParameters_ROISelectPreview_Button )
+      wantsView = view.IsPreview();
+}
+
+void SubframeSelectorInterface::__StarDetector_ViewDrop( Control& sender, const Point& pos, const View& view,
+                                                         unsigned modifiers )
+{
+   if ( sender == GUI->StarDetectorParameters_ROISelectPreview_Button )
+   {
+      if ( view.IsPreview() )
+      {
+         instance.roi = view.Window().PreviewRect( view.Id() );
+         UpdateControls();
+      }
+   }
+}
+
+// ----------------------------------------------------------------------------
+
 void SubframeSelectorInterface::__RealValueUpdated( NumericEdit& sender, double value )
 {
    if ( sender == GUI->SystemParameters_SubframeScale_Control )
@@ -662,7 +863,11 @@ void SubframeSelectorInterface::__RealValueUpdated( NumericEdit& sender, double 
       UpdateMeasurementGraph();
    }
    else if ( sender == GUI->SystemParameters_CameraGain_Control )
+   {
       instance.cameraGain = value;
+      UpdateMeasurementImagesList();
+      UpdateMeasurementGraph();
+   }
    else if ( sender == GUI->StarDetectorParameters_Sensitivity_Control )
       instance.sensitivity = value;
    else if ( sender == GUI->StarDetectorParameters_PeakResponse_Control )
@@ -711,7 +916,11 @@ void SubframeSelectorInterface::__ComboSelected( ComboBox& sender, int itemIndex
    if ( sender == GUI->Routine_Control )
       instance.routine = itemIndex;
    else if ( sender == GUI->SystemParameters_CameraResolution_Control )
+   {
       instance.cameraResolution = itemIndex;
+      UpdateMeasurementImagesList();
+      UpdateMeasurementGraph();
+   }
    else if ( sender == GUI->SystemParameters_ScaleUnit_Control )
    {
       instance.scaleUnit = itemIndex;
@@ -719,7 +928,11 @@ void SubframeSelectorInterface::__ComboSelected( ComboBox& sender, int itemIndex
       UpdateMeasurementGraph();
    }
    else if ( sender == GUI->SystemParameters_DataUnit_Control )
+   {
       instance.dataUnit = itemIndex;
+      UpdateMeasurementImagesList();
+      UpdateMeasurementGraph();
+   }
    else if ( sender == GUI->StarDetectorParameters_PSFFit_Control )
       instance.psfFit = itemIndex;
 
@@ -778,12 +991,10 @@ void SubframeSelectorInterface::__TextUpdated( Edit& sender, const String& text 
       if ( MeasureUtils::IsValidExpression( text ) )
       {
          GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
-//         instance.approvalExpression = text;
       }
       else
       {
          GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
-//         instance.approvalExpression = "";
       }
    }
    if ( sender == GUI->ExpressionParameters_Weighting_Control )
@@ -791,12 +1002,10 @@ void SubframeSelectorInterface::__TextUpdated( Edit& sender, const String& text 
       if ( MeasureUtils::IsValidExpression( text ) )
       {
          GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
-//         instance.weightingExpression = text;
       }
       else
       {
          GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
-//         instance.weightingExpression = "";
       }
    }
 }
@@ -852,79 +1061,6 @@ void SubframeSelectorInterface::__TextUpdateCompleted( Edit& sender )
 
 // ----------------------------------------------------------------------------
 
-void SubframeSelectorInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers,
-                                            bool& wantsView )
-{
-   if ( sender == GUI->StarDetectorParameters_ROISelectPreview_Button )
-      wantsView = view.IsPreview();
-}
-
-void SubframeSelectorInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
-{
-   if ( sender == GUI->StarDetectorParameters_ROISelectPreview_Button )
-   {
-      if ( view.IsPreview() )
-      {
-         instance.roi = view.Window().PreviewRect( view.Id() );
-         UpdateControls();
-      }
-   }
-}
-
-// ----------------------------------------------------------------------------
-
-void SubframeSelectorInterface::__MeasurementImages_CurrentNodeUpdated( TreeBox& sender,
-                                                                        TreeBox::Node& current,
-                                                                        TreeBox::Node& oldCurrent )
-{
-   // Actually do nothing (placeholder). Just perform a sanity check.
-   int index = sender.ChildIndex( &current );
-   if ( index < 0 || size_type( index ) >= instance.measures.Length() )
-      throw Error( "SubframeSelectorInterface: *Warning* Corrupted interface structures" );
-}
-
-// ----------------------------------------------------------------------------
-
-void SubframeSelectorInterface::__MeasurementImages_NodeActivated( TreeBox& sender, TreeBox::Node& node, int col )
-{
-   int index = sender.ChildIndex( &node );
-   if ( index < 0 || size_type( index ) >= instance.measures.Length() )
-      throw Error( "SubframeSelectorInterface: *Warning* Corrupted interface structures" );
-
-   MeasureItem* item = GetMeasurementItem( index );
-   if ( item == nullptr )
-      return;
-
-   switch ( col )
-   {
-   case 0:
-      // Activate the item's index number: ignore.
-      break;
-   case 1:
-      // Activate the item's checkmark: toggle item's enabled state.
-      item->enabled = !item->enabled;
-      item->locked = true;
-      UpdateMeasurementImageItem( index, item );
-      UpdateMeasurementGraph();
-      break;
-   case 2:
-      // Activate the item's checkmark: toggle item's locked state.
-      item->locked = !item->locked;
-      UpdateMeasurementImageItem( index, item );
-      break;
-   case 3:
-   {
-      // Activate the item's path: open the image.
-      Array<ImageWindow> windows = ImageWindow::Open( item->path, IsoString()/*id*/ );
-      for ( ImageWindow& window : windows )
-         window.Show();
-   }
-      break;
-   }
-}
-
-// ----------------------------------------------------------------------------
-
 SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 {
    pcl::Font fnt = w.Font();
@@ -974,41 +1110,36 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    SubframeImages_TreeBox.Viewport().OnFileDrop(
            (Control::file_drop_event_handler) &SubframeSelectorInterface::__SubframeImages_FileDrop, w );
 
-   AddFiles_PushButton.SetText( "Add Files" );
-   AddFiles_PushButton.SetToolTip( "<p>Add existing image files to the list of subframes.</p>" );
-   AddFiles_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click, w );
+   SubframeImages_AddFiles_PushButton.SetText( "Add Files" );
+   SubframeImages_AddFiles_PushButton.SetToolTip( "<p>Add existing image files to the list of subframes.</p>" );
+   SubframeImages_AddFiles_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click, w );
 
-   SelectAll_PushButton.SetText( "Select All" );
-   SelectAll_PushButton.SetToolTip( "<p>Select all subframes.</p>" );
-   SelectAll_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click, w );
-
-   InvertSelection_PushButton.SetText( "Invert Selection" );
-   InvertSelection_PushButton.SetToolTip( "<p>Invert the current selection of subframes.</p>" );
-   InvertSelection_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click,
+   SubframeImages_Invert_PushButton.SetText( "Invert" );
+   SubframeImages_Invert_PushButton.SetToolTip( "<p>Invert the current selection of subframes.</p>" );
+   SubframeImages_Invert_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click,
                                        w );
 
-   ToggleSelected_PushButton.SetText( "Toggle Selected" );
-   ToggleSelected_PushButton.SetToolTip( "<p>Toggle the enabled/disabled state of currently selected subframes.</p>"
+   SubframeImages_Toggle_PushButton.SetText( "Toggle" );
+   SubframeImages_Toggle_PushButton.SetToolTip( "<p>Toggle the enabled/disabled state of currently selected subframes.</p>"
                                                  "<p>Disabled subframes will be ignored during the measuring and output processes.</p>" );
-   ToggleSelected_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click,
+   SubframeImages_Toggle_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click,
                                       w );
 
-   RemoveSelected_PushButton.SetText( "Remove Selected" );
-   RemoveSelected_PushButton.SetToolTip( "<p>Remove all currently selected subframes.</p>" );
-   RemoveSelected_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click,
+   SubframeImages_Remove_PushButton.SetText( "Remove" );
+   SubframeImages_Remove_PushButton.SetToolTip( "<p>Remove all currently selected subframes.</p>" );
+   SubframeImages_Remove_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click,
                                       w );
 
-   Clear_PushButton.SetText( "Clear" );
-   Clear_PushButton.SetToolTip( "<p>Clear the list of subframes.</p>" );
-   Clear_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click, w );
+   SubframeImages_Clear_PushButton.SetText( "Clear" );
+   SubframeImages_Clear_PushButton.SetToolTip( "<p>Clear the list of subframes.</p>" );
+   SubframeImages_Clear_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click, w );
 
    SubframeButtons_Sizer.SetSpacing( 4 );
-   SubframeButtons_Sizer.Add( AddFiles_PushButton );
-   SubframeButtons_Sizer.Add( SelectAll_PushButton );
-   SubframeButtons_Sizer.Add( InvertSelection_PushButton );
-   SubframeButtons_Sizer.Add( ToggleSelected_PushButton );
-   SubframeButtons_Sizer.Add( RemoveSelected_PushButton );
-   SubframeButtons_Sizer.Add( Clear_PushButton );
+   SubframeButtons_Sizer.Add( SubframeImages_AddFiles_PushButton );
+   SubframeButtons_Sizer.Add( SubframeImages_Invert_PushButton );
+   SubframeButtons_Sizer.Add( SubframeImages_Toggle_PushButton );
+   SubframeButtons_Sizer.Add( SubframeImages_Remove_PushButton );
+   SubframeButtons_Sizer.Add( SubframeImages_Clear_PushButton );
    SubframeButtons_Sizer.AddStretch();
 
    SubframeImages_Sizer.SetSpacing( 4 );
@@ -1033,7 +1164,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    SystemParameters_SubframeScale_Control.SetRange( TheSSSubframeScaleParameter->MinimumValue(),
                                                     TheSSSubframeScaleParameter->MaximumValue() );
    SystemParameters_SubframeScale_Control.SetPrecision( TheSSSubframeScaleParameter->Precision() );
-   SystemParameters_SubframeScale_Control.SetToolTip( "TODO" ); // TODO
+   SystemParameters_SubframeScale_Control.SetToolTip( TheSSSubframeScaleParameter->Tooltip() );
    SystemParameters_SubframeScale_Control.OnValueUpdated(
            (NumericEdit::value_event_handler) &SubframeSelectorInterface::__RealValueUpdated, w );
 
@@ -1053,7 +1184,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    SystemParameters_CameraGain_Control.SetRange( TheSSCameraGainParameter->MinimumValue(),
                                                  TheSSCameraGainParameter->MaximumValue() );
    SystemParameters_CameraGain_Control.SetPrecision( TheSSCameraGainParameter->Precision() );
-   SystemParameters_CameraGain_Control.SetToolTip( "TODO" ); // TODO
+   SystemParameters_CameraGain_Control.SetToolTip( TheSSCameraGainParameter->Tooltip() );
    SystemParameters_CameraGain_Control.OnValueUpdated(
            (NumericEdit::value_event_handler) &SubframeSelectorInterface::__RealValueUpdated, w );
 
@@ -1071,7 +1202,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 
    for ( size_type i = 0; i < TheSSCameraResolutionParameter->NumberOfElements(); ++i )
       SystemParameters_CameraResolution_Control.AddItem( TheSSCameraResolutionParameter->ElementLabel( i ) );
-   SystemParameters_CameraResolution_Control.SetToolTip( "TODO" ); // TODO
+   SystemParameters_CameraResolution_Control.SetToolTip( TheSSCameraResolutionParameter->Tooltip() );
    SystemParameters_CameraResolution_Control.OnItemSelected(
            (ComboBox::item_event_handler) &SubframeSelectorInterface::__ComboSelected, w );
 
@@ -1086,14 +1217,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 
    SystemParameters_SiteLocalMidnight_Control.SetRange( TheSSSiteLocalMidnightParameter->MinimumValue(),
                                                         TheSSSiteLocalMidnightParameter->MaximumValue() );
-   SystemParameters_SiteLocalMidnight_Control.SetToolTip(
-           "<p>This parameters specifies the Coordinated Universal Time (UTC) of local midnight "
-                   "at the site of target subframe observation, rounded to the nearest hour from 0 to "
-                   "23. If this time is unknown or varies by more than six hours, set this parameter "
-                   "to 24.</p> "
-                   "<p>This parameter and the value of the FITS keyword DATE-OBS (if available) are used to "
-                   "identify sequences of subframe observations that occurred during the same night for "
-                   "data presentation purposes.</p>" );
+   SystemParameters_SiteLocalMidnight_Control.SetToolTip( TheSSSiteLocalMidnightParameter->Tooltip() );
    SystemParameters_SiteLocalMidnight_Control.OnValueUpdated(
            (SpinBox::value_event_handler) &SubframeSelectorInterface::__IntegerValueUpdated, w );
 
@@ -1112,7 +1236,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 
    for ( size_type i = 0; i < TheSSScaleUnitParameter->NumberOfElements(); ++i )
       SystemParameters_ScaleUnit_Control.AddItem( TheSSScaleUnitParameter->ElementLabel( i ) );
-   SystemParameters_ScaleUnit_Control.SetToolTip( "TODO" ); // TODO
+   SystemParameters_ScaleUnit_Control.SetToolTip( TheSSScaleUnitParameter->Tooltip() );
    SystemParameters_ScaleUnit_Control.OnItemSelected(
            (ComboBox::item_event_handler) &SubframeSelectorInterface::__ComboSelected, w );
 
@@ -1127,7 +1251,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 
    for ( size_type i = 0; i < TheSSDataUnitParameter->NumberOfElements(); ++i )
       SystemParameters_DataUnit_Control.AddItem( TheSSDataUnitParameter->ElementLabel( i ) );
-   SystemParameters_DataUnit_Control.SetToolTip( "TODO" ); // TODO
+   SystemParameters_DataUnit_Control.SetToolTip( TheSSDataUnitParameter->Tooltip() );
    SystemParameters_DataUnit_Control.OnItemSelected(
            (ComboBox::item_event_handler) &SubframeSelectorInterface::__ComboSelected, w );
 
@@ -1405,9 +1529,9 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    StarDetectorParameters_ROISelectPreview_Button.OnClick(
            (Button::click_event_handler) &SubframeSelectorInterface::__ButtonClick, w );
    StarDetectorParameters_ROISelectPreview_Button.OnViewDrag(
-           (Control::view_drag_event_handler) &SubframeSelectorInterface::__ViewDrag, w );
+           (Control::view_drag_event_handler) &SubframeSelectorInterface::__StarDetector_ViewDrag, w );
    StarDetectorParameters_ROISelectPreview_Button.OnViewDrop(
-           (Control::view_drop_event_handler) &SubframeSelectorInterface::__ViewDrop, w );
+           (Control::view_drop_event_handler) &SubframeSelectorInterface::__StarDetector_ViewDrop, w );
 
    StarDetectorParameters_ROIRow2_Sizer.SetSpacing( 4 );
    StarDetectorParameters_ROIRow2_Sizer.Add( StarDetectorParameters_ROIWidth_Label );
@@ -1514,10 +1638,33 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    MeasurementsTable_SortingMode_Control.OnItemSelected(
            (ComboBox::item_event_handler) &SubframeSelectorInterface::__ComboSelected, w );
 
-   MeasurementsTable_Top_Sizer.SetSpacing( 4 );
-   MeasurementsTable_Top_Sizer.Add( MeasurementsTable_SortingProperty_Control );
-   MeasurementsTable_Top_Sizer.Add( MeasurementsTable_SortingMode_Control );
-   MeasurementsTable_Top_Sizer.AddStretch( 100 );
+   MeasurementsTable_ToggleApproved_PushButton.SetText( "Toggle Approve" );
+   MeasurementsTable_ToggleApproved_PushButton.SetToolTip( "<p>Toggle the approved state of currently selected measurements.</p>" );
+   MeasurementsTable_ToggleApproved_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click,
+                                                     w );
+
+   MeasurementsTable_ToggleLocked_PushButton.SetText( "Toggle Lock" );
+   MeasurementsTable_ToggleLocked_PushButton.SetToolTip( "<p>Toggle the locked state of currently selected measurements.</p>" );
+   MeasurementsTable_ToggleLocked_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click,
+                                                       w );
+
+   MeasurementsTable_Top1_Sizer.SetSpacing( 4 );
+   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_SortingProperty_Control );
+   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_SortingMode_Control );
+   MeasurementsTable_Top1_Sizer.AddStretch( 100 );
+   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_ToggleApproved_PushButton );
+   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_ToggleLocked_PushButton );
+   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_Invert_PushButton );
+   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_Clear_PushButton );
+
+   MeasurementsTable_Invert_PushButton.SetText( "Invert" );
+   MeasurementsTable_Invert_PushButton.SetToolTip( "<p>Invert the current selection of measurements.</p>" );
+   MeasurementsTable_Invert_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click,
+                                                         w );
+
+   MeasurementsTable_Clear_PushButton.SetText( "Clear" );
+   MeasurementsTable_Clear_PushButton.SetToolTip( "<p>Clear the list of measurements.</p>" );
+   MeasurementsTable_Clear_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click, w );
 
    MeasurementTable_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
    MeasurementTable_TreeBox.SetScaledMinWidth( 400 );
@@ -1533,9 +1680,19 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    MeasurementTable_TreeBox.SetHeaderText( 2, "" );
    MeasurementTable_TreeBox.SetScaledColumnWidth( 2, 30 );
    MeasurementTable_TreeBox.SetHeaderText( 3, "Name" );
-   MeasurementTable_TreeBox.SetHeaderText( 4, "Weight" );
-   MeasurementTable_TreeBox.SetHeaderText( 5, "FWHM" );
-   MeasurementTable_TreeBox.SetHeaderText( 6, "Eccentricity" );
+   MeasurementTable_TreeBox.SetHeaderText( 4, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::Weight ) );
+   MeasurementTable_TreeBox.SetHeaderText( 5, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::FWHM ) );
+   MeasurementTable_TreeBox.SetHeaderText( 6, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::Eccentricity ) );
+   MeasurementTable_TreeBox.SetHeaderText( 7, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::SNRWeight ) );
+   MeasurementTable_TreeBox.SetHeaderText( 8, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::Median ) );
+   MeasurementTable_TreeBox.SetHeaderText( 9, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::MedianMeanDev ) );
+   MeasurementTable_TreeBox.SetHeaderText( 10, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::Noise ) );
+   MeasurementTable_TreeBox.SetHeaderText( 11, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::NoiseRatio ) );
+   MeasurementTable_TreeBox.SetHeaderText( 12, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::Stars ) );
+   MeasurementTable_TreeBox.SetHeaderText( 13, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::StarResidual ) );
+   MeasurementTable_TreeBox.SetHeaderText( 14, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::FWHMMeanDev ) );
+   MeasurementTable_TreeBox.SetHeaderText( 15, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::EccentricityMeanDev ) );
+   MeasurementTable_TreeBox.SetHeaderText( 16, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::StarResidualMeanDev ) );
    MeasurementTable_TreeBox.EnableMultipleSelections();
    MeasurementTable_TreeBox.DisableRootDecoration();
    MeasurementTable_TreeBox.EnableAlternateRowColor();
@@ -1546,7 +1703,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
            (TreeBox::node_event_handler) &SubframeSelectorInterface::__MeasurementImages_NodeActivated, w );
 
    MeasurementTable_Sizer.SetSpacing( 4 );
-   MeasurementTable_Sizer.Add( MeasurementsTable_Top_Sizer );
+   MeasurementTable_Sizer.Add( MeasurementsTable_Top1_Sizer );
    MeasurementTable_Sizer.Add( MeasurementTable_TreeBox, 100 );
 
    MeasurementTable_Control.SetSizer( MeasurementTable_Sizer );
@@ -1607,6 +1764,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 
    w.SetSizer( Global_Sizer );
 
+   SystemParameters_Control.Hide();
    StarDetectorParameters_Control.Hide();
 
    w.AdjustToContents();

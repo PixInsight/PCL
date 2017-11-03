@@ -54,6 +54,7 @@
 #define __SubframeSelectorMeasureData_h
 
 #include <pcl/MetaParameter.h>
+
 #include "SubframeSelectorParameters.h"
 
 namespace pcl
@@ -65,12 +66,32 @@ struct MeasureData
 {
    String   path;
    double   fwhm;
+   double   fwhmMeanDev;
    double   eccentricity;
+   double   eccentricityMeanDev;
+   double   snrWeight;
+   double   median;
+   double   medianMeanDev;
+   double   noise;
+   double   noiseRatio;
+   uint16   stars;
+   double   starResidual;
+   double   starResidualMeanDev;
 
    MeasureData( const String& p = String( "" ) ) :
            path( p ),
            fwhm( TheSSMeasurementFWHMParameter->DefaultValue() ),
-           eccentricity( TheSSMeasurementEccentricityParameter->DefaultValue() )
+           fwhmMeanDev( 0 ),
+           eccentricity( TheSSMeasurementEccentricityParameter->DefaultValue() ),
+           eccentricityMeanDev( 0 ),
+           snrWeight( TheSSMeasurementSNRWeightParameter->DefaultValue() ),
+           median( TheSSMeasurementMedianParameter->DefaultValue() ),
+           medianMeanDev( 0 ),
+           noise( TheSSMeasurementNoiseParameter->DefaultValue() ),
+           noiseRatio( TheSSMeasurementNoiseRatioParameter->DefaultValue() ),
+           stars( TheSSMeasurementStarsParameter->DefaultValue() ),
+           starResidual( TheSSMeasurementStarResidualParameter->DefaultValue() ),
+           starResidualMeanDev( 0 )
    {
    }
 
@@ -88,6 +109,16 @@ struct MeasureItem
    float    weight;
    float    fwhm;
    float    eccentricity;
+   float    snrWeight;
+   float    median;
+   float    medianMeanDev;
+   float    noise;
+   float    noiseRatio;
+   uint16   stars;
+   float    starResidual;
+   float    fwhmMeanDev;
+   float    eccentricityMeanDev;
+   float    starResidualMeanDev;
 
    MeasureItem( uint16 i, const String& p = String( "" ) ) :
            index( i ),
@@ -96,7 +127,17 @@ struct MeasureItem
            path( p ),
            weight( TheSSMeasurementWeightParameter->DefaultValue() ),
            fwhm( TheSSMeasurementFWHMParameter->DefaultValue() ),
-           eccentricity( TheSSMeasurementEccentricityParameter->DefaultValue() )
+           eccentricity( TheSSMeasurementEccentricityParameter->DefaultValue() ),
+           snrWeight( TheSSMeasurementSNRWeightParameter->DefaultValue() ),
+           median( TheSSMeasurementMedianParameter->DefaultValue() ),
+           medianMeanDev( TheSSMeasurementMedianMeanDevParameter->DefaultValue() ),
+           noise( TheSSMeasurementNoiseParameter->DefaultValue() ),
+           noiseRatio( TheSSMeasurementNoiseRatioParameter->DefaultValue() ),
+           stars( TheSSMeasurementStarsParameter->DefaultValue() ),
+           starResidual( TheSSMeasurementStarResidualParameter->DefaultValue() ),
+           fwhmMeanDev( TheSSMeasurementFWHMMeanDevParameter->DefaultValue() ),
+           eccentricityMeanDev( TheSSMeasurementEccentricityMeanDevParameter->DefaultValue() ),
+           starResidualMeanDev( TheSSMeasurementStarResidualMeanDevParameter->DefaultValue() )
    {
    }
 
@@ -107,6 +148,16 @@ struct MeasureItem
       path = measureData.path;
       fwhm = measureData.fwhm;
       eccentricity = measureData.eccentricity;
+      snrWeight = measureData.snrWeight;
+      median = measureData.median;
+      medianMeanDev = measureData.medianMeanDev;
+      noise = measureData.noise;
+      noiseRatio = measureData.noiseRatio;
+      stars = measureData.stars;
+      starResidual = measureData.starResidual;
+      fwhmMeanDev = measureData.fwhmMeanDev;
+      eccentricityMeanDev = measureData.eccentricityMeanDev;
+      starResidualMeanDev = measureData.starResidualMeanDev;
    }
 
    float FWHM( const float& subframeScale, const int& scaleUnit ) const
@@ -118,12 +169,59 @@ struct MeasureItem
       return fwhm;
    }
 
-   String JavaScriptParameters( const float& subframeScale, const int& scaleUnit ) const
+   float Median( const float& cameraGain, const int& cameraResolution, const int& dataUnit ) const
+   {
+      if ( dataUnit == SSDataUnit::Electron )
+         return median * cameraResolution * cameraGain;
+      if ( dataUnit == SSDataUnit::DataNumber )
+         return median * cameraResolution;
+      return median;
+   }
+
+   float MedianMeanDev( const float& cameraGain, const int& cameraResolution, const int& dataUnit ) const
+   {
+      if ( dataUnit == SSDataUnit::Electron )
+         return medianMeanDev * cameraResolution * cameraGain;
+      if ( dataUnit == SSDataUnit::DataNumber )
+         return medianMeanDev * cameraResolution;
+      return medianMeanDev;
+   }
+
+   float Noise( const float& cameraGain, const int& cameraResolution, const int& dataUnit ) const
+   {
+      if ( dataUnit == SSDataUnit::Electron )
+         return noise * cameraResolution * cameraGain;
+      if ( dataUnit == SSDataUnit::DataNumber )
+         return noise * cameraResolution;
+      return noise;
+   }
+
+   float FWHMMeanDeviation( const float& subframeScale, const int& scaleUnit ) const
+   {
+      if ( scaleUnit == SSScaleUnit::ArcSeconds )
+         return fwhmMeanDev * subframeScale;
+      if ( scaleUnit == SSScaleUnit::Pixel )
+         return fwhmMeanDev;
+      return fwhmMeanDev;
+   }
+
+   String JavaScriptParameters( const float& subframeScale, const int& scaleUnit, const float& cameraGain,
+                                const int& cameraResolution, const int& dataUnit ) const
    {
       return String().Format( "let Index = %i;\n", index ) +
               String().Format( "let Weight = %.4f;\n", weight ) +
               String().Format( "let FWHM = %.4f;\n", FWHM( subframeScale, scaleUnit ) ) +
-              String().Format( "let Eccentricity = %.4f;\n", eccentricity );
+              String().Format( "let Eccentricity = %.4f;\n", eccentricity ) +
+              String().Format( "let SNRWeight = %.4f;\n", snrWeight ) +
+              String().Format( "let Median = %.4f;\n", Median( cameraGain, cameraResolution, dataUnit ) ) +
+              String().Format( "let MedianMeanDev = %.4f;\n", MedianMeanDev( cameraGain, cameraResolution, dataUnit ) ) +
+              String().Format( "let Noise = %.4f;\n", Noise( cameraGain, cameraResolution, dataUnit ) ) +
+              String().Format( "let NoiseRatio = %.4f;\n", noiseRatio ) +
+              String().Format( "let Stars = %i;\n", stars ) +
+              String().Format( "let StarResidual = %.4f;\n", starResidual ) +
+              String().Format( "let FWHMMeanDev = %.4f;\n", FWHMMeanDeviation( subframeScale, scaleUnit ) ) +
+              String().Format( "let EccentricityMeanDev = %.4f;\n", eccentricityMeanDev ) +
+              String().Format( "let StarResidualMeanDev = %.4f;\n", starResidualMeanDev );
    }
 
    double SortingValue( pcl_enum sortBy ) const
@@ -134,6 +232,16 @@ struct MeasureItem
       case SSSortingProperty::Weight: return weight;
       case SSSortingProperty::FWHM: return fwhm;
       case SSSortingProperty::Eccentricity: return eccentricity;
+      case SSSortingProperty::SNRWeight: return snrWeight;
+      case SSSortingProperty::Median: return median;
+      case SSSortingProperty::MedianMeanDev: return medianMeanDev;
+      case SSSortingProperty::Noise: return noise;
+      case SSSortingProperty::NoiseRatio: return noiseRatio;
+      case SSSortingProperty::Stars: return stars;
+      case SSSortingProperty::StarResidual: return starResidual;
+      case SSSortingProperty::FWHMMeanDev: return fwhmMeanDev;
+      case SSSortingProperty::EccentricityMeanDev: return eccentricityMeanDev;
+      case SSSortingProperty::StarResidualMeanDev: return starResidualMeanDev;
       default: return 0; // ?
       }
    }
@@ -172,6 +280,19 @@ struct MeasureUtils
       }
 
       return pOpen == pClose && a % 2 == 0 && o % 2 == 0;
+   }
+
+   static void MedianAndMeanDeviation( Array<double>& values,
+                                       double& median, double& deviation )
+   {
+      median = pcl::Median( values.Begin(), values.End() );
+      deviation = pcl::AvgDev( values.Begin(), values.End(), median );
+   }
+
+   static double DeviationNormalize( const double& value, const double& median,
+                                     const double& deviation )
+   {
+      return ( value - median ) / ( deviation != 0.0 ? deviation : 1.0 );
    }
 };
 

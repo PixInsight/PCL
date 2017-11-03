@@ -50,33 +50,48 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
+#include <pcl/Console.h>
+
 #include "GraphWebView.h"
+#include "SubframeSelectorMeasureData.h"
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-void GraphWebView::SetDataset( const String& dataname, const String& dataname2, DataPointVector* dataset )
+void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset )
 {
    String coreSrcDir = PixInsightSettings::GlobalString ( "Application/SrcDirectory" );
 
    // Find Median and MAD of the values
    Array<double> values( dataset->Length() );
    for ( int i = 0; i < dataset->Length(); ++i )
-      values[i] = dataset->At( i )->y;
-   double median = pcl::Median( values.Begin(), values.End() );
-   double mad = pcl::MAD( values.Begin(), values.End() );
+      values[i] = dataset->At( i )->data;
+   double median, meanDev;
+   MeasureUtils::MedianAndMeanDeviation( values, median, meanDev );
 
    // Create the Graphing arrays and backend objects
    String graphingArray = "[ ";
    String indexedApprovals = "{ ";
+   String indexedLocks = "{ ";
+   String indexedSigmas = "{ ";
    for ( DataPointVector::const_iterator i = dataset->Begin(); i != dataset->End(); ++i ) {
-      graphingArray += String().Format( "[ %i, [%.4f, %.4f, %.4f], [%.4f, %.4f, %.4f] ], ",
-                                        i->x, median - mad, i->y, median + mad,
-                                        i->y2, i->y2, i->y2 );
+      double dataSigma = MeasureUtils::DeviationNormalize( i->data, median, meanDev );
+      graphingArray += String().Format(
+              "[ %i, [%.4f, %.4f, %.4f], [%.4f, %.4f, %.4f], [%.4f, %.4f, %.4f], [%.4f, %.4f, %.4f] ], ",
+              i->x,
+              i->weight, i->weight, i->weight,
+              median - meanDev, median, median + meanDev,
+              median - meanDev*2, median, median + meanDev*2,
+              i->data, i->data, i->data
+      );
+      indexedLocks += String().Format( "%i:%s, ", i->x, i->locked ? "true" : "false" );
       indexedApprovals += String().Format( "%i:%s, ", i->x, i->approved ? "true" : "false" );
+      indexedSigmas += String().Format( "%i:%.4f, ", i->x, dataSigma );
    }
+   indexedSigmas += "}";
+   indexedLocks += "}";
    indexedApprovals += "}";
    graphingArray += "]";
 
@@ -90,47 +105,71 @@ void GraphWebView::SetDataset( const String& dataname, const String& dataname2, 
 <link rel="stylesheet" href=")DELIM" + File::FileURI( coreSrcDir + "/scripts/Dygraph/dygraph-doc.css" ) + R"DELIM("/>
 <link rel="stylesheet" href=")DELIM" + File::FileURI( coreSrcDir + "/scripts/Dygraph/dygraph.css" ) + R"DELIM("/>
 <style>
+   /* No white background, makes it appear more like a normal control */
    html, body {
       background-color: rgba(0,0,0,0);
    }
 
+   /* Fit the graph within the confines of the view */
    #graph {
-      height: 90vh;
+      height: 92vh;
       weight: 80vw;
    }
 
+   /* Override the ugly legend for something more like a PI Tooltip */
    .dygraph-legend {
+      font-size: 13px;
       width: auto;
-      padding: 2px;
-      color: white;
-      background-color: rgba(0,0,0,0.9);
-      border: 4px solid rgba(0,0,0,0.5);
+      padding: 1px;
+      background-color: black;
+      border: 1px solid gray;
       border-radius: 2px;
    }
 
+   /* Fix the table too */
+   table, tr, tr:nth-child(even), tr:nth-child(odd), td {
+      padding: 2px;
+      background-color: black;
+      color: white;
+      border: 0px solid black;
+      border-collapse: collapse;
+   }
+   td:first-child {
+      font-weight: bold;
+      text-align: right;
+   }
+
+   /* Shrink the axis labels a little to prevent overlap */
    .dygraph-axis-label {
-      font-size: 10px;
+      font-size: 11px;
    }
 </style>
 </head>
 <body>
 <div id="graph"></div>
 <script type="text/javascript">
+
+   // Some items are stored in Objects (hashmap-like) for quick lookup
    var approvals = )DELIM" + indexedApprovals + R"DELIM(;
+   var locks = )DELIM" + indexedLocks + R"DELIM(;
+   var sigmas = )DELIM" + indexedSigmas + R"DELIM(;
+
+   // This is the Array of data that will be graphed
    var dataset = )DELIM" + graphingArray + R"DELIM(;
 
+   // Custom Legend Formatting to lookup attributes and hide some series
    function legendFormatter(data) {
-      let first = true;
-      let html = '';
+      let html = '<table>';
       data.series.forEach(function(series) {
-         if (!series.isVisible) return;
-         if (!first) html += '<br/>';
-         html += '<b>' + series.labelHTML + '</b>: ' + series.yHTML;
-         first = false;
+         if (series.labelHTML.indexOf('NOLEGEND') === -1)
+            html += '<tr><td>' + series.labelHTML + ':</td><td>' + series.yHTML + '</td></tr>';
       });
+      html += '<tr><td>Sigma:</td><td>' + sigmas[data.x] + '</td></tr>';
+      html += '</table>';
       return html;
    }
 
+   // The main series can be drawn to indicate approved and locked frames
    function drawApprovedPoint(g, series, ctx, cx, cy, color, radius, idx) {
       ctx.save();
 
@@ -154,6 +193,16 @@ void GraphWebView::SetDataset( const String& dataname, const String& dataname2, 
          ctx.stroke();
       }
 
+      if (locks[dataset[idx][0]] === true) {
+         ctx.strokeStyle = "black";
+         ctx.lineWidth = 1;
+
+         ctx.beginPath();
+         ctx.arc(cx, cy, radius*2, 0, 2 * Math.PI, false);
+         ctx.closePath();
+         ctx.stroke();
+      }
+
       ctx.restore()
    }
 
@@ -161,43 +210,70 @@ void GraphWebView::SetDataset( const String& dataname, const String& dataname2, 
       document.getElementById("graph"), dataset,
       {
          ylabel: ")DELIM" + dataname + R"DELIM(",
-         y2label: ")DELIM" + dataname2 + R"DELIM(",
-         labels: ["Index", ")DELIM" + dataname + R"DELIM(", ")DELIM" + dataname2 + R"DELIM("],
+         y2label: " Weight",
+
+         labels: [
+            "Index",
+            " Weight",
+            " Median", " Median NOLEGEND",
+            ")DELIM" + dataname + R"DELIM(",
+         ],
          labelsSeparateLines: true,
+
+
          series: {
+            " Weight": {
+               axis: "y2",
+               strokeWidth: 1,
+               strokePattern: Dygraph.DASHED_LINE,
+               color: "#7A7A7A",
+            },
+            " Median": {
+               axis: "y",
+               strokeWidth: 1,
+               color: "black",
+            },
+            " Median NOLEGEND": {
+               axis: "y",
+               strokeWidth: 0,
+               color: "black",
+            },
             ")DELIM" + dataname + R"DELIM(": {
                axis: "y",
                drawPoints: true,
                drawPointCallback: drawApprovedPoint,
-               strokeWidth: 2,
+               strokeWidth: 3,
                color: "#4394E5",
             },
-            ")DELIM" + dataname2 + R"DELIM(": {
-               axis: "y2",
-               strokeWidth: 1,
-               strokePattern: Dygraph.DASHED_LINE,
-               color: "#A4A4A6",
-            }
          },
+
+         // Separate the Axes' Grids
          axes: {
             y: {
                independentTicks: true,
-               includeZero: false,
             },
             y2: {
                independentTicks: true,
-               includeZero: false,
                drawGrid: false,
             },
          },
+
          digitsAfterDecimal: 4,
+
+         // Legend acts more like a tooltip
          legend: "follow",
          legendFormatter: legendFormatter,
+
+         // Error bars are used to show MAD across the Median
          customBars: true,
          errorBars: true,
+         fillAlpha: 0.08,
+
+         // Sizing and padding
          pointSize: 4,
          xRangePad: 10,
          yRangePad: 60,
+         rightGap: 20,
       }
    );
 </script>

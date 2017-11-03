@@ -121,6 +121,16 @@ SubframeSelectorProcess::SubframeSelectorProcess() : MetaProcess()
    new SSMeasurementWeight( TheSSMeasurementsParameter );
    new SSMeasurementFWHM( TheSSMeasurementsParameter );
    new SSMeasurementEccentricity( TheSSMeasurementsParameter );
+   new SSMeasurementSNRWeight( TheSSMeasurementsParameter );
+   new SSMeasurementMedian( TheSSMeasurementsParameter );
+   new SSMeasurementMedianMeanDev( TheSSMeasurementsParameter );
+   new SSMeasurementNoise( TheSSMeasurementsParameter );
+   new SSMeasurementNoiseRatio( TheSSMeasurementsParameter );
+   new SSMeasurementStars( TheSSMeasurementsParameter );
+   new SSMeasurementStarResidual( TheSSMeasurementsParameter );
+   new SSMeasurementFWHMMeanDev( TheSSMeasurementsParameter );
+   new SSMeasurementEccentricityMeanDev( TheSSMeasurementsParameter );
+   new SSMeasurementStarResidualMeanDev( TheSSMeasurementsParameter );
 }
 
 // ----------------------------------------------------------------------------

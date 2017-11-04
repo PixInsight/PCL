@@ -90,6 +90,9 @@ public:
    void ApproveMeasurements();
    void WeightMeasurements();
 
+   bool CanOutput( String& whyNot ) const;
+   bool Output();
+
    virtual bool CanExecuteGlobal( String& whyNot ) const;
    virtual bool ExecuteGlobal();
 
@@ -146,6 +149,14 @@ private:
    uint16         pedestal;
    Rect           roi;
 
+   // Output files
+   String          outputDirectory;
+   String          outputPrefix;
+   String          outputPostfix;
+   String          outputKeyword;
+   pcl_bool        overwriteExistingFiles;
+   pcl_enum        onError;
+
    // The expressions
    String         approvalExpression;
    String         weightingExpression;
@@ -161,7 +172,7 @@ private:
    ImageVariant* LoadSubframe( const String& filePath );
 
    // Read a subframe file into a Thread
-   thread_list CreateThreadForSubframe( const String&, MeasureThreadInputData* );
+   thread_list CreateThreadForSubframe( int index, const String&, MeasureThreadInputData* );
 
    // Get Median and Mean Deviation from Median of an Array
    void MedianAndMeanDeviation( double&, double&,
@@ -178,6 +189,9 @@ private:
                                 double&, double&,
                                 double&, double&
    ) const;
+
+   // Write output file
+   void WriteMeasuredImage( MeasureItem* measureItem );
 
    friend class SubframeSelectorProcess;
    friend class SubframeSelectorInterface;

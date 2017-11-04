@@ -623,6 +623,111 @@ extern SSROIY1* TheSSROIY1Parameter;
 
 // ----------------------------------------------------------------------------
 
+class SSOutputDirectory : public MetaString
+{
+public:
+
+   SSOutputDirectory( MetaProcess* );
+
+   virtual IsoString Id() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSOutputDirectory* TheSSOutputDirectoryParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSOutputPrefix : public MetaString
+{
+public:
+
+   SSOutputPrefix( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual String DefaultValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSOutputPrefix* TheSSOutputPrefixParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSOutputPostfix : public MetaString
+{
+public:
+
+   SSOutputPostfix( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual String DefaultValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSOutputPostfix* TheSSOutputPostfixParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSOutputKeyword : public MetaString
+{
+public:
+
+   SSOutputKeyword( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual String DefaultValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSOutputKeyword* TheSSOutputKeywordParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSOverwriteExistingFiles : public MetaBoolean
+{
+public:
+
+   SSOverwriteExistingFiles( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSOverwriteExistingFiles* TheSSOverwriteExistingFilesParameter;
+
+// ----------------------------------------------------------------------------
+
+class SSOnError : public MetaEnumeration
+{
+public:
+
+   enum { Continue,
+      Abort,
+      AskUser,
+      NumberOfItems,
+      Default = Continue };
+
+   SSOnError( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   IsoString ElementLabel( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSOnError* TheSSOnErrorParameter;
+
+// ----------------------------------------------------------------------------
+
 class SSApprovalExpression : public MetaString
 {
    public:

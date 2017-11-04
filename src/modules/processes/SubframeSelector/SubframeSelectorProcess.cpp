@@ -107,6 +107,13 @@ SubframeSelectorProcess::SubframeSelectorProcess() : MetaProcess()
    new SSROIX1( this );
    new SSROIY1( this );
 
+   new SSOutputDirectory( this );
+   new SSOutputPrefix( this );
+   new SSOutputPostfix( this );
+   new SSOutputKeyword( this );
+   new SSOverwriteExistingFiles( this );
+   new SSOnError( this );
+
    new SSApprovalExpression( this );
    new SSWeightingExpression( this );
 

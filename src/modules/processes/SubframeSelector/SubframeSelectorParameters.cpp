@@ -89,6 +89,13 @@ SSROIY0*                         TheSSROIY0Parameter = nullptr;
 SSROIX1*                         TheSSROIX1Parameter = nullptr;
 SSROIY1*                         TheSSROIY1Parameter = nullptr;
 
+SSOutputDirectory*               TheSSOutputDirectoryParameter = nullptr;
+SSOutputPrefix*                  TheSSOutputPrefixParameter = nullptr;
+SSOutputPostfix*                 TheSSOutputPostfixParameter = nullptr;
+SSOutputKeyword*                 TheSSOutputKeywordParameter = nullptr;
+SSOverwriteExistingFiles*        TheSSOverwriteExistingFilesParameter = nullptr;
+SSOnError*                       TheSSOnErrorParameter = nullptr;
+
 SSApprovalExpression*            TheSSApprovalExpressionParameter = nullptr;
 SSWeightingExpression*           TheSSWeightingExpressionParameter = nullptr;
 
@@ -1137,6 +1144,171 @@ double SSROIY1::MinimumValue() const
 double SSROIY1::MaximumValue() const
 {
    return uint16_max;
+}
+
+// ----------------------------------------------------------------------------
+
+SSOutputDirectory::SSOutputDirectory( MetaProcess* P ) : MetaString( P )
+{
+   TheSSOutputDirectoryParameter = this;
+}
+
+IsoString SSOutputDirectory::Id() const
+{
+   return "outputDirectory";
+}
+
+IsoString SSOutputDirectory::Tooltip() const
+{
+   return "<p>This is the directory (or folder) where all output files will be written.</p>"
+           "<p>If this field is left blank, output files will be written to the same directories as their "
+           "corresponding subframe files. In this case, make sure that source directories are writable, or the "
+           "output process will fail.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSOutputPrefix::SSOutputPrefix( MetaProcess* P ) : MetaString( P )
+{
+   TheSSOutputPrefixParameter = this;
+}
+
+IsoString SSOutputPrefix::Id() const
+{
+   return "outputPrefix";
+}
+
+String SSOutputPrefix::DefaultValue() const
+{
+   return String(); // no prefix
+}
+
+IsoString SSOutputPrefix::Tooltip() const
+{
+   return "<p>This is a prefix that will be prepended to all output file names.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSOutputPostfix::SSOutputPostfix( MetaProcess* P ) : MetaString( P )
+{
+   TheSSOutputPostfixParameter = this;
+}
+
+IsoString SSOutputPostfix::Id() const
+{
+   return "outputPostfix";
+}
+
+String SSOutputPostfix::DefaultValue() const
+{
+   return "_a";
+}
+
+IsoString SSOutputPostfix::Tooltip() const
+{
+   return "<p>This is a postfix that will be appended to all output file names.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSOutputKeyword::SSOutputKeyword( MetaProcess* P ) : MetaString( P )
+{
+   TheSSOutputKeywordParameter = this;
+}
+
+IsoString SSOutputKeyword::Id() const
+{
+   return "outputKeyword";
+}
+
+String SSOutputKeyword::DefaultValue() const
+{
+   return "SSWEIGHT";
+}
+
+IsoString SSOutputKeyword::Tooltip() const
+{
+   return "<p>This is the FITS Keyword name that will be used to store the Weight.</p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSOverwriteExistingFiles::SSOverwriteExistingFiles( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheSSOverwriteExistingFilesParameter = this;
+}
+
+IsoString SSOverwriteExistingFiles::Id() const
+{
+   return "overwriteExistingFiles";
+}
+
+bool SSOverwriteExistingFiles::DefaultValue() const
+{
+   return false;
+}
+
+IsoString SSOverwriteExistingFiles::Tooltip() const
+{
+   return "<p>If this option is selected, SubframeSelector will overwrite "
+           "existing files with the same names as generated output files. This can be dangerous because the original "
+           "contents of overwritten files will be lost.</p>"
+           "<p><b>Enable this option <u>at your own risk.</u></b></p>";
+}
+
+// ----------------------------------------------------------------------------
+
+SSOnError::SSOnError( MetaProcess* P ) : MetaEnumeration( P )
+{
+   TheSSOnErrorParameter = this;
+}
+
+IsoString SSOnError::Id() const
+{
+   return "onError";
+}
+
+size_type SSOnError::NumberOfElements() const
+{
+   return NumberOfItems;
+}
+
+IsoString SSOnError::ElementId( size_type i ) const
+{
+   switch ( i )
+   {
+   default:
+   case Continue: return "Continue";
+   case Abort:    return "Abort";
+   case AskUser:  return "AskUser";
+   }
+}
+
+IsoString SSOnError::ElementLabel( size_type i ) const
+{
+   switch ( i )
+   {
+   default:
+   case Continue: return "Continue";
+   case Abort:    return "Abort";
+   case AskUser:  return "Ask User";
+   }
+}
+
+int SSOnError::ElementValue( size_type i ) const
+{
+   return int( i );
+}
+
+size_type SSOnError::DefaultValueIndex() const
+{
+   return size_type( Default );
+}
+
+IsoString SSOnError::Tooltip() const
+{
+   return "<p>Specify what to do if there are errors during the output process.</p>";
 }
 
 // ----------------------------------------------------------------------------

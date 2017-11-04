@@ -298,6 +298,30 @@ struct MeasureUtils
 
 // ----------------------------------------------------------------------------
 
+class SubframeSortingBinaryPredicate
+{
+public:
+
+   SubframeSortingBinaryPredicate( pcl_enum sortBy, int ascending ) : sortBy( sortBy ), ascending( ascending )
+   {
+   }
+
+   bool operator()( const MeasureItem& s1, const MeasureItem& s2 ) const
+   {
+      if ( ascending > 0 )
+         return s1.SortingValue( sortBy ) > s2.SortingValue( sortBy );
+      else
+         return s1.SortingValue( sortBy ) < s2.SortingValue( sortBy );
+   }
+
+private:
+
+   pcl_enum sortBy;
+   int ascending;
+};
+
+// ----------------------------------------------------------------------------
+
 
 } // pcl
 

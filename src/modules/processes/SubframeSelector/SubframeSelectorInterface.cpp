@@ -68,30 +68,6 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-class SubframeSortingBinaryPredicate
-{
-public:
-
-   SubframeSortingBinaryPredicate( pcl_enum sortBy, int ascending ) : sortBy( sortBy ), ascending( ascending )
-   {
-   }
-
-   bool operator()( const MeasureItem& s1, const MeasureItem& s2 ) const
-   {
-      if ( ascending > 0 )
-         return s1.SortingValue( sortBy ) > s2.SortingValue( sortBy );
-      else
-         return s1.SortingValue( sortBy ) < s2.SortingValue( sortBy );
-   }
-
-private:
-
-   pcl_enum sortBy;
-   int ascending;
-};
-
-// ----------------------------------------------------------------------------
-
 SubframeSelectorInterface* TheSubframeSelectorInterface = nullptr;
 
 // ----------------------------------------------------------------------------
@@ -196,9 +172,11 @@ void SubframeSelectorInterface::ClearMeasurements()
 
 // ----------------------------------------------------------------------------
 
-void SubframeSelectorInterface::AddMeasurement( const MeasureItem& measure )
+void SubframeSelectorInterface::AddMeasurements( Array<MeasureItem>::const_iterator begin,
+                                                 Array<MeasureItem>::const_iterator end )
 {
-   instance.measures.Add( MeasureItem( measure ) );
+   for ( Array<MeasureItem>::const_iterator i = begin; i != end; ++i )
+      instance.measures.Add( MeasureItem( *i ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -235,6 +213,7 @@ void SubframeSelectorInterface::UpdateControls()
    UpdateSubframeImagesList();
    UpdateSystemParameters();
    UpdateStarDetectorParameters();
+   UpdateOutputFilesControls();
    UpdateExpressionParameters();
    UpdateMeasurementImagesList();;
    UpdateMeasurementGraph();
@@ -335,6 +314,18 @@ void SubframeSelectorInterface::UpdateStarDetectorParameters()
    GUI->StarDetectorParameters_ROIY0_Control.SetValue( instance.roi.y0 );
    GUI->StarDetectorParameters_ROIWidth_Control.SetValue( instance.roi.Width() );
    GUI->StarDetectorParameters_ROIHeight_Control.SetValue( instance.roi.Height() );
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::UpdateOutputFilesControls()
+{
+   GUI->OutputDirectory_Edit.SetText( instance.outputDirectory );
+   GUI->OutputPrefix_Edit.SetText( instance.outputPrefix );
+   GUI->OutputPostfix_Edit.SetText( instance.outputPostfix );
+   GUI->OutputKeyword_Edit.SetText( instance.outputKeyword );
+   GUI->OverwriteExistingFiles_CheckBox.SetChecked( instance.overwriteExistingFiles );
+   GUI->OnError_ComboBox.SetCurrentItem( instance.onError );
 }
 
 // ----------------------------------------------------------------------------
@@ -698,40 +689,6 @@ void SubframeSelectorInterface::__SubframeImages_Click( Button& sender, bool che
 
 // ----------------------------------------------------------------------------
 
-void SubframeSelectorInterface::__SubframeImages_FileDrag( Control& sender, const Point& pos, const StringList& files,
-                                                           unsigned modifiers, bool& wantsFiles )
-{
-   if ( sender == GUI->SubframeImages_TreeBox.Viewport() )
-      wantsFiles = true;
-}
-
-// ----------------------------------------------------------------------------
-
-void SubframeSelectorInterface::__SubframeImages_FileDrop( Control& sender, const Point& pos, const StringList& files,
-                                                           unsigned modifiers )
-{
-   if ( sender == GUI->SubframeImages_TreeBox.Viewport() )
-   {
-      StringList inputFiles;
-      bool recursive = IsControlOrCmdPressed();
-      for ( const String& item : files )
-         if ( File::Exists( item ) )
-            inputFiles << item;
-         else if ( File::DirectoryExists( item ) )
-            inputFiles << FileFormat::SupportedImageFiles( item, true/*toRead*/, false/*toWrite*/, recursive );
-
-      inputFiles.Sort();
-      size_type i0 = TreeInsertionIndex( GUI->SubframeImages_TreeBox );
-      for ( const String& file : inputFiles )
-         instance.subframes.Insert( instance.subframes.At( i0++ ), SubframeSelectorInstance::SubframeItem( file ) );
-
-      UpdateSubframeImagesList();
-      UpdateSubframeImageSelectionButtons();
-   }
-}
-
-// ----------------------------------------------------------------------------
-
 void SubframeSelectorInterface::__MeasurementImages_CurrentNodeUpdated( TreeBox& sender,
                                                                         TreeBox::Node& current,
                                                                         TreeBox::Node& oldCurrent )
@@ -950,6 +907,8 @@ void SubframeSelectorInterface::__ComboSelected( ComboBox& sender, int itemIndex
       instance.graphProperty = itemIndex;
       UpdateMeasurementGraph();
    }
+   else if ( sender == GUI->OnError_ComboBox )
+      instance.onError = itemIndex;
 }
 
 // ----------------------------------------------------------------------------
@@ -980,6 +939,15 @@ void SubframeSelectorInterface::__ButtonClick( Button& sender, bool checked )
             }
          }
    }
+   else if ( sender == GUI->OutputDirectory_ToolButton )
+   {
+      GetDirectoryDialog d;
+      d.SetCaption( "SubframeSelector: Select Output Directory" );
+      if ( d.Execute() )
+         GUI->OutputDirectory_Edit.SetText( instance.outputDirectory = d.Directory() );
+   }
+   else if ( sender == GUI->OverwriteExistingFiles_CheckBox )
+      instance.overwriteExistingFiles = checked;
 }
 
 // ----------------------------------------------------------------------------
@@ -997,7 +965,7 @@ void SubframeSelectorInterface::__TextUpdated( Edit& sender, const String& text 
          GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
       }
    }
-   if ( sender == GUI->ExpressionParameters_Weighting_Control )
+   else if ( sender == GUI->ExpressionParameters_Weighting_Control )
    {
       if ( MeasureUtils::IsValidExpression( text ) )
       {
@@ -1036,7 +1004,7 @@ void SubframeSelectorInterface::__TextUpdateCompleted( Edit& sender )
          UpdateMeasurementGraph();
       }
    }
-   if ( sender == GUI->ExpressionParameters_Weighting_Control )
+   else if ( sender == GUI->ExpressionParameters_Weighting_Control )
    {
       String text = sender.Text();
       if ( MeasureUtils::IsValidExpression( text ) )
@@ -1056,6 +1024,71 @@ void SubframeSelectorInterface::__TextUpdateCompleted( Edit& sender )
          UpdateMeasurementImagesList();
          UpdateMeasurementGraph();
       }
+   }
+   else if ( sender == GUI->OutputDirectory_Edit )
+   {
+      String text = sender.Text().Trimmed();
+      instance.outputDirectory = text;
+      sender.SetText( text );
+   }
+   else if ( sender == GUI->OutputPrefix_Edit )
+   {
+      String text = sender.Text().Trimmed();
+      instance.outputPrefix = text;
+      sender.SetText( text );
+   }
+   else if ( sender == GUI->OutputPostfix_Edit )
+   {
+      String text = sender.Text().Trimmed();
+      instance.outputPostfix = text;
+      sender.SetText( text );
+   }
+   else if ( sender == GUI->OutputKeyword_Edit )
+   {
+      String text = sender.Text().Trimmed();
+      instance.outputKeyword = text;
+      sender.SetText( text );
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::__FileDrag( Control& sender, const Point& pos, const StringList& files,
+                                            unsigned modifiers, bool& wantsFiles )
+{
+   if ( sender == GUI->SubframeImages_TreeBox.Viewport() )
+      wantsFiles = true;
+   else if ( sender == GUI->OutputDirectory_Edit )
+      wantsFiles = files.Length() == 1 && File::DirectoryExists( files[0] );
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::__FileDrop( Control& sender, const Point& pos, const StringList& files,
+                                            unsigned modifiers )
+{
+   if ( sender == GUI->SubframeImages_TreeBox.Viewport() )
+   {
+      StringList inputFiles;
+      bool recursive = IsControlOrCmdPressed();
+      for ( const String& item : files )
+         if ( File::Exists( item ) )
+            inputFiles << item;
+         else if ( File::DirectoryExists( item ) )
+            inputFiles << FileFormat::SupportedImageFiles( item, true/*toRead*/, false/*toWrite*/, recursive );
+
+      inputFiles.Sort();
+      size_type i0 = TreeInsertionIndex( GUI->SubframeImages_TreeBox );
+      for ( const String& file : inputFiles )
+         instance.subframes.Insert( instance.subframes.At( i0++ ), SubframeSelectorInstance::SubframeItem( file ) );
+
+      UpdateSubframeImagesList();
+      UpdateSubframeImageSelectionButtons();
+   }
+   else if ( sender == GUI->OutputDirectory_Edit )
+   {
+      if ( File::DirectoryExists( files[0] ) )
+         GUI->OutputDirectory_Edit.SetText( instance.outputDirectory = files[0] );
    }
 }
 
@@ -1106,9 +1139,9 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    SubframeImages_TreeBox.OnNodeSelectionUpdated(
            (TreeBox::tree_event_handler) &SubframeSelectorInterface::__SubframeImages_NodeSelectionUpdated, w );
    SubframeImages_TreeBox.Viewport().OnFileDrag(
-           (Control::file_drag_event_handler) &SubframeSelectorInterface::__SubframeImages_FileDrag, w );
+           (Control::file_drag_event_handler) &SubframeSelectorInterface::__FileDrag, w );
    SubframeImages_TreeBox.Viewport().OnFileDrop(
-           (Control::file_drop_event_handler) &SubframeSelectorInterface::__SubframeImages_FileDrop, w );
+           (Control::file_drop_event_handler) &SubframeSelectorInterface::__FileDrop, w );
 
    SubframeImages_AddFiles_PushButton.SetText( "Add Files" );
    SubframeImages_AddFiles_PushButton.SetToolTip( "<p>Add existing image files to the list of subframes.</p>" );
@@ -1564,6 +1597,94 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
 
    //
 
+   currentLabelWidth = fnt.Width( String( "Output directory:" ) ); // the longest label text
+
+   OutputFiles_SectionBar.SetTitle( "Output Files" );
+   OutputFiles_SectionBar.SetSection( OutputFiles_Control );
+   OutputFiles_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&SubframeSelectorInterface::__ToggleSection, w );
+
+   OutputDirectory_Label.SetText( "Output directory:" );
+   OutputDirectory_Label.SetFixedWidth( currentLabelWidth );
+   OutputDirectory_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   OutputDirectory_Edit.SetToolTip( TheSSOutputDirectoryParameter->Tooltip() );
+   OutputDirectory_Edit.OnEditCompleted( (Edit::edit_event_handler)&SubframeSelectorInterface::__TextUpdateCompleted, w );
+   OutputDirectory_Edit.OnFileDrag( (Control::file_drag_event_handler)&SubframeSelectorInterface::__FileDrag, w );
+   OutputDirectory_Edit.OnFileDrop( (Control::file_drop_event_handler)&SubframeSelectorInterface::__FileDrop, w );
+
+   OutputDirectory_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
+   OutputDirectory_ToolButton.SetScaledFixedSize( 20, 20 );
+   OutputDirectory_ToolButton.OnClick( (Button::click_event_handler)&SubframeSelectorInterface::__ButtonClick, w );
+
+   OutputDirectory_Sizer.SetSpacing( 4 );
+   OutputDirectory_Sizer.Add( OutputDirectory_Label );
+   OutputDirectory_Sizer.Add( OutputDirectory_Edit, 100 );
+   OutputDirectory_Sizer.Add( OutputDirectory_ToolButton );
+
+   OutputPrefix_Label.SetText( "Prefix:" );
+   OutputPrefix_Label.SetFixedWidth( currentLabelWidth );
+   OutputPrefix_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   OutputPrefix_Edit.SetToolTip( TheSSOutputPrefixParameter->Tooltip() );
+   OutputPrefix_Edit.OnEditCompleted( (Edit::edit_event_handler)&SubframeSelectorInterface::__TextUpdateCompleted, w );
+
+   OutputPostfix_Label.SetText( "Postfix:" );
+   OutputPostfix_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   OutputPostfix_Edit.SetToolTip( TheSSOutputPostfixParameter->Tooltip() );
+   OutputPostfix_Edit.OnEditCompleted( (Edit::edit_event_handler)&SubframeSelectorInterface::__TextUpdateCompleted, w );
+
+   OutputChunks_Sizer.SetSpacing( 4 );
+   OutputChunks_Sizer.Add( OutputPrefix_Label );
+   OutputChunks_Sizer.Add( OutputPrefix_Edit );
+   OutputChunks_Sizer.AddSpacing( 12 );
+   OutputChunks_Sizer.Add( OutputPostfix_Label );
+   OutputChunks_Sizer.Add( OutputPostfix_Edit );
+   OutputChunks_Sizer.AddStretch();
+
+   OutputKeyword_Label.SetText( "Keyword:" );
+   OutputKeyword_Label.SetFixedWidth( currentLabelWidth );
+   OutputKeyword_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   OutputKeyword_Edit.SetToolTip( TheSSOutputKeywordParameter->Tooltip() );
+   OutputKeyword_Edit.OnEditCompleted( (Edit::edit_event_handler)&SubframeSelectorInterface::__TextUpdateCompleted, w );
+
+   OutputKeyword_Sizer.SetSpacing( 4 );
+   OutputKeyword_Sizer.Add( OutputKeyword_Label );
+   OutputKeyword_Sizer.Add( OutputKeyword_Edit );
+   OutputKeyword_Sizer.AddStretch();
+
+   OverwriteExistingFiles_CheckBox.SetText( "Overwrite existing files" );
+   OverwriteExistingFiles_CheckBox.SetToolTip( TheSSOverwriteExistingFilesParameter->Tooltip() );
+   OverwriteExistingFiles_CheckBox.OnClick( (Button::click_event_handler)&SubframeSelectorInterface::__ButtonClick, w );
+
+   OnError_Label.SetText( "On error:" );
+   OnError_Label.SetFixedWidth( currentLabelWidth );
+   OnError_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   for ( size_type i = 0; i < TheSSOnErrorParameter->NumberOfElements(); ++i )
+      OnError_ComboBox.AddItem( TheSSOnErrorParameter->ElementLabel( i ) );
+
+   OnError_ComboBox.SetToolTip( TheSSOnErrorParameter->Tooltip() );
+   OnError_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&SubframeSelectorInterface::__ComboSelected, w );
+
+   OutputMisc_Sizer.SetSpacing( 4 );
+   OutputMisc_Sizer.Add( OverwriteExistingFiles_CheckBox );
+   OutputMisc_Sizer.AddStretch();
+   OutputMisc_Sizer.Add( OnError_Label );
+   OutputMisc_Sizer.Add( OnError_ComboBox );
+
+   OutputFiles_Sizer.SetSpacing( 4 );
+   OutputFiles_Sizer.Add( OutputDirectory_Sizer );
+   OutputFiles_Sizer.Add( OutputChunks_Sizer );
+   OutputFiles_Sizer.Add( OutputKeyword_Sizer );
+   OutputFiles_Sizer.Add( OutputMisc_Sizer );
+
+   OutputFiles_Control.SetSizer( OutputFiles_Sizer );
+   OutputFiles_Control.AdjustToContents();
+
+   //
+
    currentLabelWidth = fnt.Width( String( "Weighting:" ) ); // the longest label text
 
    ExpressionParameters_SectionBar.SetTitle( "Expressions" );
@@ -1571,8 +1692,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    ExpressionParameters_SectionBar.OnToggleSection(
            (SectionBar::section_event_handler) &SubframeSelectorInterface::__ToggleSection, w );
 
-   ExpressionParameters_Approval_Status.SetBitmap(
-           Bitmap( ExpressionParameters_Approval_Status.ScaledResource( ":/browser/enabled.png" ) ) );
+   ExpressionParameters_Approval_Status.SetBitmap( Bitmap( w.ScaledResource( ":/browser/enabled.png" ) ) );
 
    ExpressionParameters_Approval_Label.SetText( "Approval:" );
    ExpressionParameters_Approval_Label.SetMinWidth( currentLabelWidth );
@@ -1592,8 +1712,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    ExpressionParameters_Approval_Sizer.Add( ExpressionParameters_Approval_Label, 0 );
    ExpressionParameters_Approval_Sizer.Add( ExpressionParameters_Approval_Control, 100 );
 
-   ExpressionParameters_Weighting_Status.SetBitmap(
-           Bitmap( ExpressionParameters_Weighting_Status.ScaledResource( ":/browser/enabled.png" ) ) );
+   ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( w.ScaledResource( ":/browser/enabled.png" ) ) );
 
    ExpressionParameters_Weighting_Label.SetText( "Weighting:" );
    ExpressionParameters_Weighting_Label.SetMinWidth( currentLabelWidth );
@@ -1671,12 +1790,10 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    MeasurementTable_TreeBox.SetNumberOfColumns( 5 );
    MeasurementTable_TreeBox.SetHeaderText( 0, "Ind." );
    MeasurementTable_TreeBox.SetScaledColumnWidth( 0, 40 );
-   MeasurementTable_TreeBox.SetHeaderIcon( 1, Bitmap( MeasurementTable_TreeBox.ScaledResource(
-           ":/icons/picture-ok.png" ) ) );
+   MeasurementTable_TreeBox.SetHeaderIcon( 1, Bitmap( w.ScaledResource( ":/icons/picture-ok.png" ) ) );
    MeasurementTable_TreeBox.SetHeaderText( 1, "" );
    MeasurementTable_TreeBox.SetScaledColumnWidth( 1, 30 );
-   MeasurementTable_TreeBox.SetHeaderIcon( 2, Bitmap( MeasurementTable_TreeBox.ScaledResource(
-           ":/icons/function-import.png" ) ) );
+   MeasurementTable_TreeBox.SetHeaderIcon( 2, Bitmap( w.ScaledResource( ":/icons/function-import.png" ) ) );
    MeasurementTable_TreeBox.SetHeaderText( 2, "" );
    MeasurementTable_TreeBox.SetScaledColumnWidth( 2, 30 );
    MeasurementTable_TreeBox.SetHeaderText( 3, "Name" );
@@ -1748,6 +1865,8 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    Left_Sizer.Add( SystemParameters_Control );
    Left_Sizer.Add( StarDetectorParameters_SectionBar );
    Left_Sizer.Add( StarDetectorParameters_Control );
+   Left_Sizer.Add( OutputFiles_SectionBar );
+   Left_Sizer.Add( OutputFiles_Control );
    Left_Sizer.AddStretch( 100 );
 
    Right_Sizer.SetMargin( 8 );

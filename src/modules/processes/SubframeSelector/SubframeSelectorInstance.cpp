@@ -63,6 +63,9 @@
 #include <pcl/FileFormat.h>
 #include <pcl/FileFormatInstance.h>
 #include <pcl/ATrousWaveletTransform.h>
+#include <pcl/Version.h>
+#include <pcl/ICCProfile.h>
+#include <pcl/MessageBox.h>
 
 namespace pcl
 {
@@ -116,6 +119,12 @@ SubframeSelectorInstance::SubframeSelectorInstance( const MetaProcess* m ) :
    psfFitCircular( TheSSPSFFitCircularParameter->DefaultValue() ),
    pedestal( TheSSPedestalParameter->DefaultValue() ),
    roi( 0 ),
+   outputDirectory( TheSSOutputDirectoryParameter->DefaultValue() ),
+   outputPrefix( TheSSOutputPrefixParameter->DefaultValue() ),
+   outputPostfix( TheSSOutputPostfixParameter->DefaultValue() ),
+   outputKeyword( TheSSOutputKeywordParameter->DefaultValue() ),
+   overwriteExistingFiles( TheSSOverwriteExistingFilesParameter->DefaultValue() ),
+   onError( SSOnError::Default ),
    approvalExpression( "" ),
    weightingExpression( "" ),
    sortingProperty( SSSortingProperty::Default ),
@@ -158,6 +167,12 @@ void SubframeSelectorInstance::Assign( const ProcessImplementation& p )
       psfFitCircular                         = x->psfFitCircular;
       pedestal                               = x->pedestal;
       roi                                    = x->roi;
+      outputDirectory                        = x->outputDirectory;
+      outputPrefix                           = x->outputPrefix;
+      outputPostfix                          = x->outputPostfix;
+      outputKeyword                          = x->outputKeyword;
+      overwriteExistingFiles                 = x->overwriteExistingFiles;
+      onError                                = x->onError;
       approvalExpression                     = x->approvalExpression;
       weightingExpression                    = x->weightingExpression;
       sortingProperty                        = x->sortingProperty;
@@ -184,9 +199,11 @@ class SubframeSelectorMeasureThread : public Thread
 {
 public:
 
-   SubframeSelectorMeasureThread( ImageVariant* subframe,
+   SubframeSelectorMeasureThread( int index,
+                                  ImageVariant* subframe,
                                   const String& subframePath,
                                   MeasureThreadInputData* data ) :
+           m_index( index ),
            m_subframe( subframe ),
            m_outputData( subframePath ),
            m_success( false ),
@@ -273,6 +290,11 @@ public:
          }
          ERROR_HANDLER
       }
+   }
+
+   int Index() const
+   {
+      return m_index;
    }
 
    const MeasureData& OutputData() const
@@ -449,6 +471,7 @@ private:
                                                       pcl::Mean( residuals.Begin(), residuals.End() ) );
    }
 
+   int                        m_index;
    AutoPointer<ImageVariant>  m_subframe;
    MeasureData                m_outputData;
    bool                       m_success : 1;
@@ -482,25 +505,22 @@ ImageVariant* SubframeSelectorInstance::LoadSubframe( const String& filePath )
       throw CaughtException();
 
    /*
-    * Check for an empty calibration frame.
+    * Check for an empty subframe.
     */
    if ( images.IsEmpty() )
       throw Error( filePath + ": Empty subframe image." );
 
    /*
-    * Subframe files can store multiple images - only the first image
-    * will be used in such case, and the rest will be ignored.
+    * Subframe files can store multiple images -
+    * this is not supported.
     */
    if ( images.Length() > 1 )
-      console.NoteLn( String().Format( "<end><cbr>* Ignoring %u additional image(s) in subframe.",
-                                       images.Length() - 1 ) );
+      throw Error ( filePath + ": Has multiple images; unsupported " );
 
    // Create a shared image, 32-bit floating point
    Image* image = new Image( (void*)0, 0, 0 );
 
    // Read the image
-   if ( format.SupportsMultipleImages() )
-      file.SelectImage( 0 );
    if ( !file.ReadImage( *image ) )
       throw CaughtException();
 
@@ -538,10 +558,11 @@ ImageVariant* SubframeSelectorInstance::LoadSubframe( const String& filePath )
  * measure all subimages loaded from the file.
  */
 thread_list
-SubframeSelectorInstance::CreateThreadForSubframe( const String& filePath, MeasureThreadInputData* threadData )
+SubframeSelectorInstance::CreateThreadForSubframe( int index, const String& filePath, MeasureThreadInputData* threadData )
 {
    thread_list threads;
-   threads.Add( new SubframeSelectorMeasureThread( LoadSubframe( filePath ),
+   threads.Add( new SubframeSelectorMeasureThread( index,
+                                                   LoadSubframe( filePath ),
                                                    filePath,
                                                    threadData ) );
    return threads;
@@ -611,7 +632,7 @@ bool SubframeSelectorInstance::TestStarDetector() {
          console.WriteLn( String().Format( "<end><cbr><br>Measuring subframe %u of %u", 1, subframes.Length() ) );
          Module->ProcessEvents();
 
-         thread_list threads = CreateThreadForSubframe( item.path, &inputThreadData );
+         thread_list threads = CreateThreadForSubframe( 1, item.path, &inputThreadData );
          SubframeSelectorMeasureThread* thread = *threads;
 
          // Keep the GUI responsive, last chance to abort
@@ -822,7 +843,7 @@ bool SubframeSelectorInstance::Measure() {
                      Module->ProcessEvents();
 
                      // Store output data
-                     MeasureItem m( measures.Length() + 1 );
+                     MeasureItem m( (*i)->Index() );
                      m.Input( (*i)->OutputData() );
                      measures.Append( m );
 
@@ -915,7 +936,8 @@ bool SubframeSelectorInstance::Measure() {
                   /*
                    * Create a new thread for this subframe image
                    */
-                  thread_list threads = CreateThreadForSubframe( item.path, &inputThreadData );
+                  thread_list threads = CreateThreadForSubframe( subframes.Length()-subframes_copy.Length(),
+                                                                 item.path, &inputThreadData );
 
                   /*
                    * Put the new thread in the free slot.
@@ -998,11 +1020,12 @@ bool SubframeSelectorInstance::Measure() {
               String().Format( "<end><cbr><br>===== SubframeSelector: %u succeeded, %u failed, %u skipped =====",
                                succeeded, failed, skipped ));
 
+      measures.Sort( SubframeSortingBinaryPredicate( SSSortingProperty::Index, 0 ) );
+
       if ( TheSubframeSelectorInterface != nullptr )
       {
          TheSubframeSelectorInterface->ClearMeasurements();
-         for ( size_type i = 0; i < measures.Length(); ++i )
-            TheSubframeSelectorInterface->AddMeasurement( measures[i] );
+         TheSubframeSelectorInterface->AddMeasurements( measures.Begin(), measures.End() );
          TheSubframeSelectorInterface->UpdateMeasurementImagesList();
          TheSubframeSelectorInterface->UpdateMeasurementGraph();
       }
@@ -1301,18 +1324,296 @@ void SubframeSelectorInstance::MedianAndMeanDeviation( double& weightMedian, dou
    MeasureUtils::MedianAndMeanDeviation( starResidualMeanDev, starResidualMeanDevMedian, starResidualMeanDevDeviation );
 }
 
-bool SubframeSelectorInstance::CanExecuteGlobal( String &whyNot ) const
+static String UniqueFilePath( const String& filePath )
 {
-   if ( subframes.IsEmpty())
+   for ( unsigned u = 1; ; ++u )
    {
-       whyNot = "No subframes have been specified.";
-       return false;
+      String tryFilePath = File::AppendToName( filePath, '_' + String( u ) );
+      if ( !File::Exists( tryFilePath ) )
+         return tryFilePath;
+   }
+}
+
+void SubframeSelectorInstance::WriteMeasuredImage( MeasureItem* item )
+{
+   Console console;
+
+   /*
+    * Output directory.
+    */
+   String fileDir = outputDirectory.Trimmed();
+   if ( fileDir.IsEmpty() )
+      fileDir = File::ExtractDrive( item->path ) + File::ExtractDirectory( item->path );
+   if ( fileDir.IsEmpty() )
+      throw Error( item->path + ": Unable to determine an output directory." );
+   if ( !fileDir.EndsWith( '/' ) )
+      fileDir.Append( '/' );
+
+   /*
+    * Output file extension, which defines the output file format.
+    */
+   String fileExtension = File::ExtractExtension( item->path );
+   if ( fileExtension.IsEmpty() )
+      throw Error( item->path + ": Unable to determine an output file extension." );
+   if ( !fileExtension.StartsWith( '.' ) )
+      fileExtension.Prepend( '.' );
+
+   /*
+    * Output file name.
+    */
+   String fileName = File::ExtractName( item->path ).Trimmed();
+   if ( !outputPrefix.IsEmpty() )
+      fileName.Prepend( outputPrefix );
+   if ( !outputPostfix.IsEmpty() )
+      fileName.Append( outputPostfix );
+   if ( fileName.IsEmpty() )
+      throw Error( item->path + ": Unable to determine an output file name." );
+
+   /*
+    * Output file path.
+    */
+   String outputFilePath = fileDir + fileName + fileExtension;
+
+   console.WriteLn( "<end><cbr><br>Writing output file: " + outputFilePath );
+
+
+   /*
+    * Check for an already existing file, and either overwrite it (but show a
+    * warning message if that happens), or find a unique file name, depending
+    * on the overwriteExistingFiles parameter.
+    */
+   if ( File::Exists( outputFilePath ) )
+      if ( overwriteExistingFiles )
+         console.WarningLn( "** Warning: Overwriting already existing file." );
+      else
+      {
+         outputFilePath = UniqueFilePath( outputFilePath );
+         console.NoteLn( "* File already exists, writing to: " + outputFilePath );
+      }
+
+   /*
+    * Find an installed file format able to write files with the
+    * specified extension ...
+    */
+   FileFormat format( fileExtension, false/*read*/, true/*write*/ );
+
+   if ( format.IsDeprecated() )
+      console.WarningLn( "** Warning: Deprecated file format: " + format.Name() );
+
+   FileFormatInstance outputFile( format );
+
+   /*
+    * ... and create a format instance (usually a disk file).
+    */
+   FileFormatInstance inputFile( format );
+   if ( !outputFile.Create( outputFilePath ) )
+      throw CaughtException();
+
+   /*
+    * Open input stream.
+    */
+   ImageDescriptionArray images;
+   if ( !inputFile.Open( images, item->path ) )
+      throw CaughtException();
+
+   /*
+    * Check for an empty subframe.
+    */
+   if ( images.IsEmpty() )
+      throw Error( item->path + ": Empty subframe image." );
+
+   /*
+    * Subframe files can store multiple images - only the first image
+    * will be used in such case, and the rest will be ignored.
+    */
+   if ( images.Length() > 1 )
+      throw Error ( item->path + ": Has multiple images; unsupported " );
+
+   // Create a shared image, 32-bit floating point
+   Image* image = new Image( (void*)0, 0, 0 );
+
+   // Read the image
+   if ( !inputFile.ReadImage( *image ) )
+      throw CaughtException();
+
+   /*
+    * Determine the output sample format: bits per sample and whether integer
+    * or real samples.
+    */
+   outputFile.SetOptions( images[0].options );
+
+   /*
+    * File formats often use format-specific data.
+    * Keep track of private data structures.
+    */
+   if ( format.UsesFormatSpecificData() && format.ValidateFormatSpecificData( inputFile.FormatSpecificData() ) )
+      outputFile.SetFormatSpecificData( inputFile.FormatSpecificData() );
+
+   /*
+    * Set image properties.
+    */
+   if ( !inputFile.ReadImageProperties().IsEmpty() )
+      if ( format.CanStoreImageProperties() )
+      {
+         outputFile.WriteImageProperties( inputFile.ReadImageProperties() );
+         if ( !format.SupportsViewProperties() )
+            console.WarningLn( "** Warning: The output format cannot store view properties; existing properties have been stored as BLOB data." );
+      }
+      else
+         console.WarningLn( "** Warning: The output format cannot store image properties; existing properties will be lost." );
+
+   /*
+    * Add FITS header keywords and preserve existing ones, if possible.
+    * N.B.: A COMMENT or HISTORY keyword cannot have a value; these keywords
+    * have only the name and comment components.
+    */
+   if ( format.CanStoreKeywords() )
+   {
+      FITSKeywordArray keywords;
+      inputFile.ReadFITSKeywords( keywords );
+
+      keywords << FITSHeaderKeyword( "COMMENT", IsoString(), "Measured with " + PixInsightVersion::AsString() )
+               << FITSHeaderKeyword( "HISTORY", IsoString(), "Measured with " + Module->ReadableVersion() )
+               << FITSHeaderKeyword( "HISTORY", IsoString(), "Measured with SubframeSelector process" );
+
+      keywords << FITSHeaderKeyword( outputKeyword,
+                                     String().Format( "%.6f", item->weight ),
+                                     "SubframeSelector.weight" );
+
+      outputFile.WriteFITSKeywords( keywords );
+   }
+   else
+   {
+      console.WarningLn( "** Warning: The output format cannot store FITS header keywords - subframe weight metadata not embedded." );
    }
 
+   /*
+    * Preserve ICC profile, if possible.
+    */
+   ICCProfile inputProfile;
+   inputFile.ReadICCProfile( inputProfile );
+   if ( inputProfile.IsProfile() )
+      if ( format.CanStoreICCProfiles() )
+         outputFile.WriteICCProfile( inputProfile );
+      else
+         console.WarningLn( "** Warning: The output format cannot store color profiles - original ICC profile not embedded." );
+
+   /*
+    * Write the output image and close the output stream.
+    */
+   if ( !outputFile.WriteImage( image ) || !outputFile.Close() )
+      throw CaughtException();
+}
+
+bool SubframeSelectorInstance::CanOutput( String &whyNot ) const {
+   if ( measures.IsEmpty())
+   {
+      whyNot = "No measurements have been made.";
+      return false;
+   }
+
+   if ( outputKeyword.IsEmpty() )
+   {
+      whyNot = "The specified output keyword is blank.";
+      return false;
+   }
+
+   if ( !outputDirectory.IsEmpty() && !File::DirectoryExists( outputDirectory ) )
+   {
+      whyNot = "The specified output directory does not exist.";
+      return false;
+   }
+
+   return true;
+}
+
+bool SubframeSelectorInstance::Output()
+{
+   /*
+    * Start with a general validation of working parameters.
+    */
+   {
+      String why;
+      if ( !CanOutput( why ) )
+         throw Error( why );
+
+      for ( Array<MeasureItem>::const_iterator i = measures.Begin(); i != measures.End(); ++i )
+         if ( i->enabled && !File::Exists( i->path ) )
+            throw ("No such file exists on the local filesystem: " + i->path);
+
+
+      for ( Array<MeasureItem>::iterator i = measures.Begin(); i != measures.End(); ++i )
+      {
+         try
+         {
+            if ( i->enabled )
+               WriteMeasuredImage( i );
+         }
+         catch ( ... )
+         {
+            Console console;
+            console.Note( "<end><cbr><br>* Applying error policy: " );
+
+            switch ( onError )
+            {
+            default: // ?
+            case SSOnError::Continue:
+               console.NoteLn( "Continue on error." );
+               continue;
+
+            case SSOnError::Abort:
+               console.NoteLn( "Abort on error." );
+               throw ProcessAborted();
+
+            case SSOnError::AskUser:
+            {
+               console.NoteLn( "Ask on error..." );
+
+               int r = MessageBox( "<p style=\"white-space:pre;\">"
+                                           "An error occurred during SubframeSelector Output. What do you want to do?</p>",
+                                   "SubframeSelector",
+                                   StdIcon::Error,
+                                   StdButton::Ignore, StdButton::Abort ).Execute();
+
+               if ( r == StdButton::Abort )
+               {
+                  console.NoteLn( "* Aborting as per user request." );
+                  throw ProcessAborted();
+               }
+
+               console.NoteLn( "* Ignoring error as per user request." );
+               continue;
+            }
+            }
+         }
+      }
+
+      return true;
+   }
+}
+
+bool SubframeSelectorInstance::CanExecuteGlobal( String &whyNot ) const
+{
    if ( routine == SSRoutine::StarDetectionPreview )
+   {
+      if ( subframes.IsEmpty())
+      {
+         whyNot = "No subframes have been specified.";
+         return false;
+      }
+
       return true;
+   }
    else if ( routine == SSRoutine::MeasureSubframes )
+   {
+      if ( subframes.IsEmpty())
+      {
+         whyNot = "No subframes have been specified.";
+         return false;
+      }
+
       return true;
+   }
    else if ( routine == SSRoutine::OutputSubframes )
    {
       if ( measures.IsEmpty())
@@ -1320,6 +1621,20 @@ bool SubframeSelectorInstance::CanExecuteGlobal( String &whyNot ) const
          whyNot = "No measurements have been made.";
          return false;
       }
+
+      if ( outputKeyword.IsEmpty() )
+      {
+         whyNot = "The specified output keyword is blank.";
+         return false;
+      }
+
+      if ( !outputDirectory.IsEmpty() && !File::DirectoryExists( outputDirectory ) )
+      {
+         whyNot = "The specified output directory does not exist.";
+         return false;
+      }
+
+      return true;
    }
 
    whyNot = "Unknown routine.";
@@ -1347,8 +1662,9 @@ bool SubframeSelectorInstance::ExecuteGlobal()
          return Measure();
 
       if ( routine == SSRoutine::OutputSubframes )
-         throw Error("Unimplemented Routine: Output Subframes");
+         return Output();
 
+      throw Error("Unimplemented Routine");
       return false;
    }
 }
@@ -1413,6 +1729,19 @@ void* SubframeSelectorInstance::LockParameter( const MetaParameter* p, size_type
    else if ( p == TheSSROIY1Parameter )
       return &roi.y1;
 
+   else if ( p == TheSSOutputDirectoryParameter )
+      return outputDirectory.Begin();
+   else if ( p == TheSSOutputPrefixParameter )
+      return outputPrefix.Begin();
+   else if ( p == TheSSOutputPostfixParameter )
+      return outputPostfix.Begin();
+   else if ( p == TheSSOutputKeywordParameter )
+      return outputKeyword.Begin();
+   else if ( p == TheSSOverwriteExistingFilesParameter )
+      return &overwriteExistingFiles;
+   else if ( p == TheSSOnErrorParameter )
+      return &onError;
+
    else if ( p == TheSSApprovalExpressionParameter )
       return approvalExpression.Begin();
    else if ( p == TheSSWeightingExpressionParameter )
@@ -1475,6 +1804,30 @@ bool SubframeSelectorInstance::AllocateParameter( size_type sizeOrLength, const 
       if ( sizeOrLength > 0 )
          subframes[tableRow].path.SetLength( sizeOrLength );
    }
+   else if ( p == TheSSOutputDirectoryParameter )
+   {
+      outputDirectory.Clear();
+      if ( sizeOrLength > 0 )
+         outputDirectory.SetLength( sizeOrLength );
+   }
+   else if ( p == TheSSOutputPrefixParameter )
+   {
+      outputPrefix.Clear();
+      if ( sizeOrLength > 0 )
+         outputPrefix.SetLength( sizeOrLength );
+   }
+   else if ( p == TheSSOutputPostfixParameter )
+   {
+      outputPostfix.Clear();
+      if ( sizeOrLength > 0 )
+         outputPostfix.SetLength( sizeOrLength );
+   }
+   else if ( p == TheSSOutputKeywordParameter )
+   {
+      outputKeyword.Clear();
+      if ( sizeOrLength > 0 )
+         outputKeyword.SetLength( sizeOrLength );
+   }
    else if ( p == TheSSApprovalExpressionParameter )
    {
       approvalExpression.Clear();
@@ -1512,6 +1865,15 @@ size_type SubframeSelectorInstance::ParameterLength( const MetaParameter* p, siz
       return subframes.Length();
    else if ( p == TheSSSubframePathParameter )
       return subframes[tableRow].path.Length();
+
+   else if ( p == TheSSOutputDirectoryParameter )
+      return outputDirectory.Length();
+   else if ( p == TheSSOutputPrefixParameter )
+      return outputPrefix.Length();
+   else if ( p == TheSSOutputPostfixParameter )
+      return outputPostfix.Length();
+   else if ( p == TheSSOutputKeywordParameter )
+      return outputKeyword.Length();
 
    else if ( p == TheSSApprovalExpressionParameter )
       return approvalExpression.Length();

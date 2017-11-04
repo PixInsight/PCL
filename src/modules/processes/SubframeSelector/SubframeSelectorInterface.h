@@ -102,7 +102,7 @@ public:
    virtual bool ImportProcess( const ProcessImplementation& );
 
    void ClearMeasurements();
-   void AddMeasurement( const MeasureItem& measure );
+   void AddMeasurements( Array<MeasureItem>::const_iterator begin, Array<MeasureItem>::const_iterator end );
 
    private:
 
@@ -201,6 +201,26 @@ public:
             SpinBox           StarDetectorParameters_ROIHeight_Control;
             PushButton        StarDetectorParameters_ROISelectPreview_Button;
 
+      SectionBar        OutputFiles_SectionBar;
+      Control           OutputFiles_Control;
+      VerticalSizer     OutputFiles_Sizer;
+         HorizontalSizer   OutputDirectory_Sizer;
+            Label             OutputDirectory_Label;
+            Edit              OutputDirectory_Edit;
+            ToolButton        OutputDirectory_ToolButton;
+         HorizontalSizer   OutputChunks_Sizer;
+            Label             OutputPrefix_Label;
+            Edit              OutputPrefix_Edit;
+            Label             OutputPostfix_Label;
+            Edit              OutputPostfix_Edit;
+         HorizontalSizer   OutputKeyword_Sizer;
+            Label             OutputKeyword_Label;
+            Edit              OutputKeyword_Edit;
+         HorizontalSizer   OutputMisc_Sizer;
+            CheckBox          OverwriteExistingFiles_CheckBox;
+            Label             OnError_Label;
+            ComboBox          OnError_ComboBox;
+
       SectionBar        ExpressionParameters_SectionBar;
       Control           ExpressionParameters_Control;
       VerticalSizer     ExpressionParameters_Sizer;
@@ -242,6 +262,7 @@ public:
    void UpdateSubframeImageSelectionButtons();
    void UpdateSystemParameters();
    void UpdateStarDetectorParameters();
+   void UpdateOutputFilesControls();
    void UpdateExpressionParameters();
    void UpdateMeasurementImageItem( size_type, MeasureItem* );
    void UpdateMeasurementImagesList();
@@ -259,10 +280,6 @@ public:
    void __SubframeImages_NodeSelectionUpdated( TreeBox &sender );
    void __SubframeImages_Click( Button &sender, bool checked );
 
-   void __SubframeImages_FileDrag( Control &sender, const Point &pos, const StringList &files, unsigned modifiers,
-                                   bool &wantsFiles );
-   void __SubframeImages_FileDrop( Control &sender, const Point &pos, const StringList &files, unsigned modifiers );
-
    void __MeasurementImages_CurrentNodeUpdated( TreeBox &sender, TreeBox::Node &current, TreeBox::Node &oldCurrent );
    void __MeasurementImages_NodeActivated( TreeBox &sender, TreeBox::Node &node, int col );
    void __MeasurementImages_Click( Button &sender, bool checked );
@@ -278,6 +295,8 @@ public:
    void __ButtonClick( Button& sender, bool checked );
    void __TextUpdated( Edit& sender, const String& text );
    void __TextUpdateCompleted( Edit& sender );
+   void __FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
+   void __FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
 
    friend struct GUIData;
    friend class SubframeSelectorInstance;

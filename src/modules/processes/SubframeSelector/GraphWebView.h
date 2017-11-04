@@ -54,6 +54,7 @@
 #define __GRAPHWEBVIEW_h
 
 #include <pcl/WebView.h>
+#include <pcl/Timer.h>
 
 namespace pcl
 {
@@ -87,9 +88,39 @@ class GraphWebView : public WebView
 {
 public:
 
+   GraphWebView( Control& parent );
+
    void SetDataset( const String& dataname, DataPointVector* dataset );
 
+   typedef void (Control::*approve_event_handler)( WebView& sender, int& index );
+   typedef void (Control::*unlock_event_handler)( WebView& sender, int& index );
+
+   void OnApprove( approve_event_handler handler, Control& receiver );
+   void OnUnlock( unlock_event_handler handler, Control& receiver );
+
 private:
+
+   void __MouseEnter( Control& sender );
+   void __MouseLeave( Control& sender );
+   void __Timer( Timer& sender );
+   void __JSResult( WebView& sender, const Variant& result );
+
+   Timer eventCheckTimer;
+   bool keepChecking;
+
+   struct EventHandlers
+   {
+      approve_event_handler   onApprove = nullptr;
+      Control*                onApproveReceiver = nullptr;
+      unlock_event_handler    onUnlock = nullptr;
+      Control*                onUnlockReceiver = nullptr;
+
+      EventHandlers() = default;
+      EventHandlers( const EventHandlers& ) = default;
+      EventHandlers& operator =( const EventHandlers& ) = default;
+   };
+
+   AutoPointer<EventHandlers> eventHandlers;
 
 };
 

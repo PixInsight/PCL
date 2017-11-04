@@ -255,6 +255,7 @@ public:
    GUIData* GUI = nullptr;
 
    MeasureItem* GetMeasurementItem( size_type );
+   TreeBox::Node* GetMeasurementNode( MeasureItem* );
 
    void UpdateControls();
    void UpdateSubframeImageItem( size_type );
@@ -283,6 +284,9 @@ public:
    void __MeasurementImages_CurrentNodeUpdated( TreeBox &sender, TreeBox::Node &current, TreeBox::Node &oldCurrent );
    void __MeasurementImages_NodeActivated( TreeBox &sender, TreeBox::Node &node, int col );
    void __MeasurementImages_Click( Button &sender, bool checked );
+
+   void __MeasurementGraph_Approve( GraphWebView &sender, int& index );
+   void __MeasurementGraph_Unlock( GraphWebView &sender, int& index );
 
    void __StarDetector_ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers,
                                  bool& wantsView );

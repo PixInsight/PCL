@@ -207,6 +207,37 @@ MeasureItem* SubframeSelectorInterface::GetMeasurementItem( size_type i )
 
 // ----------------------------------------------------------------------------
 
+TreeBox::Node* SubframeSelectorInterface::GetMeasurementNode( MeasureItem* item )
+{
+   if ( item == nullptr )
+      return nullptr;
+
+   for ( int i = 0; i < GUI->MeasurementTable_TreeBox.NumberOfChildren(); ++i )
+   {
+      TreeBox::Node* node = GUI->MeasurementTable_TreeBox[i];
+      if ( node == nullptr )
+         return nullptr;
+
+      String indexString = node->Text( 0 );
+      long index;
+      try
+      {
+         index = indexString.ToInt();
+      }
+      catch ( ... )
+      {
+         return nullptr;
+      }
+
+      if ( index == item->index )
+         return node;
+   }
+
+   return nullptr;
+}
+
+// ----------------------------------------------------------------------------
+
 void SubframeSelectorInterface::UpdateControls()
 {
    GUI->Routine_Control.SetCurrentItem( instance.routine );
@@ -788,6 +819,55 @@ void SubframeSelectorInterface::__MeasurementImages_Click( Button& sender, bool 
 
 // ----------------------------------------------------------------------------
 
+void SubframeSelectorInterface::__MeasurementGraph_Approve( GraphWebView &sender, int& index )
+{
+   if ( index <= 0 )
+      return;
+
+   --index; // 1-based to 0-based
+
+   if ( index >= instance.measures.Length() )
+      return;
+
+   MeasureItem* item = &instance.measures[index];
+   item->enabled = !item->enabled;
+   item->locked = true;
+
+   TreeBox::Node* node = GetMeasurementNode( item );
+   if ( node == nullptr )
+      return;
+
+   GUI->MeasurementTable_TreeBox.SetCurrentNode( node );
+   GUI->MeasurementTable_TreeBox.SetVerticalScrollPosition( GUI->MeasurementTable_TreeBox.NodeRect( node ).y0 );
+   UpdateMeasurementImageItem( GUI->MeasurementTable_TreeBox.ChildIndex( node ), item );
+   UpdateMeasurementGraph();
+}
+
+void SubframeSelectorInterface::__MeasurementGraph_Unlock( GraphWebView &sender, int& index )
+{
+   if ( index <= 0 )
+      return;
+
+   --index; // 1-based to 0-based
+
+   if ( index >= instance.measures.Length() )
+      return;
+
+   MeasureItem* item = &instance.measures[index];
+   item->locked = false;
+
+   TreeBox::Node* node = GetMeasurementNode( item );
+   if ( node == nullptr )
+      return;
+
+   GUI->MeasurementTable_TreeBox.SetCurrentNode( node );
+   GUI->MeasurementTable_TreeBox.SetVerticalScrollPosition( GUI->MeasurementTable_TreeBox.NodeRect( node ).y0 );
+   UpdateMeasurementImageItem( GUI->MeasurementTable_TreeBox.ChildIndex( node ), item );
+   UpdateMeasurementGraph();
+}
+
+// ----------------------------------------------------------------------------
+
 void SubframeSelectorInterface::__StarDetector_ViewDrag( Control& sender, const Point& pos, const View& view,
                                                          unsigned modifiers,
                                                          bool& wantsView )
@@ -1094,7 +1174,7 @@ void SubframeSelectorInterface::__FileDrop( Control& sender, const Point& pos, c
 
 // ----------------------------------------------------------------------------
 
-SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
+SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : MeasurementGraph_Graph( w )
 {
    pcl::Font fnt = w.Font();
 
@@ -1843,6 +1923,10 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w )
    MeasurementGraph_Graph.SetScaledMinWidth( 400 );
    MeasurementGraph_Graph.SetZoomFactor( MeasurementGraph_Graph.DisplayPixelRatio() );
    MeasurementGraph_Graph.SetBackgroundColor( MeasurementGraph_Control.BackgroundColor() );
+   MeasurementGraph_Graph.OnApprove(
+           (GraphWebView::approve_event_handler) &SubframeSelectorInterface::__MeasurementGraph_Approve, w );
+   MeasurementGraph_Graph.OnUnlock(
+           (GraphWebView::unlock_event_handler) &SubframeSelectorInterface::__MeasurementGraph_Unlock, w );
 
    MeasurementGraph_Sizer.SetSpacing( 4 );
    MeasurementGraph_Sizer.Add( MeasurementGraph_GraphProperty_Control );

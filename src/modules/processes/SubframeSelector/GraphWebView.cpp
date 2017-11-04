@@ -60,6 +60,90 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+GraphWebView::GraphWebView( Control& parent ) : WebView( parent ), eventCheckTimer(), keepChecking( true )
+{
+   eventCheckTimer.SetInterval( 0.1 );
+   eventCheckTimer.SetPeriodic();
+
+   eventCheckTimer.OnTimer( (Timer::timer_event_handler)&GraphWebView::__Timer, *this );
+
+   OnEnter( (Control::event_handler)&GraphWebView::__MouseEnter, *this );
+   OnLeave( (Control::event_handler)&GraphWebView::__MouseLeave, *this );
+
+   OnScriptResultAvailable( (WebView::result_event_handler)&GraphWebView::__JSResult, *this );
+}
+
+// ----------------------------------------------------------------------------
+
+void GraphWebView::__MouseEnter( Control& sender )
+{
+   keepChecking = true;
+   if ( !eventCheckTimer.IsRunning() )
+      eventCheckTimer.Start();
+}
+
+void GraphWebView::__MouseLeave( Control& sender )
+{
+   keepChecking = false;
+}
+
+// ----------------------------------------------------------------------------
+
+void GraphWebView::__Timer( Timer& sender )
+{
+   EvaluateScript( "getApprovalIndex()", "JavaScript" );
+   EvaluateScript( "getLockIndex()", "JavaScript" );
+}
+
+// ----------------------------------------------------------------------------
+
+void GraphWebView::__JSResult( WebView& sender, const Variant& result )
+{
+   if ( !result.IsValid() )
+      throw Error( "Graph Error: Invalid script execution" );
+
+   String resultText = result.ToString();
+   if ( resultText.Contains( "Error" ) )
+      throw Error( resultText );
+
+   bool approve = resultText.StartsWith("A:");
+   bool unlock = resultText.StartsWith("U:");
+   resultText.DeleteLeft( 2 );
+
+   int index = resultText.ToInt();
+   if ( index <= 0 )
+   {
+      if ( !keepChecking && eventCheckTimer.IsRunning() )
+         eventCheckTimer.Stop();
+      return;
+   }
+
+   if ( approve && !eventHandlers.IsNull() && eventHandlers->onApprove != nullptr )
+      (eventHandlers->onApproveReceiver->*eventHandlers->onApprove)( *this, index );
+   if ( unlock && !eventHandlers.IsNull() && eventHandlers->onUnlock != nullptr )
+      (eventHandlers->onUnlockReceiver->*eventHandlers->onUnlock)( *this, index );
+}
+
+// ----------------------------------------------------------------------------
+
+void GraphWebView::OnApprove( approve_event_handler handler, Control& receiver )
+{
+   if ( eventHandlers.IsNull() )
+      eventHandlers = new EventHandlers;
+   eventHandlers->onApprove = handler;
+   eventHandlers->onApproveReceiver = &receiver;
+}
+
+void GraphWebView::OnUnlock( unlock_event_handler handler, Control& receiver )
+{
+   if ( eventHandlers.IsNull() )
+      eventHandlers = new EventHandlers;
+   eventHandlers->onUnlock = handler;
+   eventHandlers->onUnlockReceiver = &receiver;
+}
+
+// ----------------------------------------------------------------------------
+
 void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset )
 {
    String coreSrcDir = PixInsightSettings::GlobalString ( "Application/SrcDirectory" );
@@ -149,13 +233,48 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
 <div id="graph"></div>
 <script type="text/javascript">
 
+   // Store the graph later globaly for access
+   graph = null;
+
    // Some items are stored in Objects (hashmap-like) for quick lookup
-   var approvals = )DELIM" + indexedApprovals + R"DELIM(;
-   var locks = )DELIM" + indexedLocks + R"DELIM(;
-   var sigmas = )DELIM" + indexedSigmas + R"DELIM(;
+   approvals = )DELIM" + indexedApprovals + R"DELIM(;
+   locks = )DELIM" + indexedLocks + R"DELIM(;
+   sigmas = )DELIM" + indexedSigmas + R"DELIM(;
 
    // This is the Array of data that will be graphed
-   var dataset = )DELIM" + graphingArray + R"DELIM(;
+   dataset = )DELIM" + graphingArray + R"DELIM(;
+
+   // For the parent controls to communicate with us, we'll
+   // store the indices that have been selected with this interface
+   // and return them with this function call
+   approvalQueue = [];
+   lockQueue = [];
+   function getApprovalIndex() {
+      if (approvalQueue.length <= 0) return 'A:' + -1;
+      return 'A:' + approvalQueue.shift();
+   }
+   function getLockIndex() {
+      if (lockQueue.length <= 0) return 'U:' + -1;
+      return 'U:' + lockQueue.shift();
+   }
+
+   // When points are clicked, put them in the Queues
+   // Update the graph too for more immediate feedback
+   function pointClickCallback(event, point) {
+      if (event.shiftKey) {
+         if (locks.hasOwnProperty(point.xval) && locks[point.xval] === true) {
+            lockQueue.push(point.xval);
+            locks[point.xval] = false;
+         }
+      } else {
+         approvalQueue.push(point.xval);
+         if (approvals.hasOwnProperty(point.xval))
+            approvals[point.xval] = !approvals[point.xval];
+         if (locks.hasOwnProperty(point.xval))
+            locks[point.xval] = true;
+      }
+      graph.updateOptions({}); // force redraw
+   }
 
    // Custom Legend Formatting to lookup attributes and hide some series
    function legendFormatter(data) {
@@ -181,14 +300,14 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
          ctx.lineWidth = 3;
 
          ctx.beginPath();
-         ctx.moveTo(cx + radius, cy + radius);
-         ctx.lineTo(cx - radius, cy - radius);
+         ctx.moveTo(cx + radius/2, cy + radius/2);
+         ctx.lineTo(cx - radius/2, cy - radius/2);
          ctx.closePath();
          ctx.stroke();
 
          ctx.beginPath();
-         ctx.moveTo(cx + radius, cy - radius);
-         ctx.lineTo(cx - radius, cy + radius);
+         ctx.moveTo(cx + radius/2, cy - radius/2);
+         ctx.lineTo(cx - radius/2, cy + radius/2);
          ctx.closePath();
          ctx.stroke();
       }
@@ -198,7 +317,7 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
          ctx.lineWidth = 1;
 
          ctx.beginPath();
-         ctx.arc(cx, cy, radius*2, 0, 2 * Math.PI, false);
+         ctx.arc(cx, cy, radius, 0, 2 * Math.PI, false);
          ctx.closePath();
          ctx.stroke();
       }
@@ -206,7 +325,7 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
       ctx.restore()
    }
 
-   var g = new Dygraph(
+   graph = new Dygraph(
       document.getElementById("graph"), dataset,
       {
          ylabel: ")DELIM" + dataname + R"DELIM(",
@@ -260,6 +379,9 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
 
          digitsAfterDecimal: 4,
 
+         // Need to know which points were clicked
+         pointClickCallback: pointClickCallback,
+
          // Legend acts more like a tooltip
          legend: "follow",
          legendFormatter: legendFormatter,
@@ -270,7 +392,8 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
          fillAlpha: 0.08,
 
          // Sizing and padding
-         pointSize: 4,
+         pointSize: 6,
+         highlightCircleSize: 4,
          xRangePad: 10,
          yRangePad: 60,
          rightGap: 20,

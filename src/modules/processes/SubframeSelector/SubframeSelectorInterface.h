@@ -249,7 +249,9 @@ public:
       SectionBar        MeasurementGraph_SectionBar;
       Control           MeasurementGraph_Control;
       VerticalSizer     MeasurementGraph_Sizer;
-         ComboBox          MeasurementGraph_GraphProperty_Control;
+         HorizontalSizer   MeasurementGraph_Top_Sizer;
+            ComboBox          MeasurementGraph_GraphProperty_Control;
+            PushButton        MeasurementGraph_Save_PushButton;
          GraphWebView      MeasurementGraph_Graph;
    };
 
@@ -274,6 +276,7 @@ public:
    void ApplyWeightingExpression();
 
    void ExportCSV() const;
+   void ExportPDF() const;
 
    // Event Handlers
 

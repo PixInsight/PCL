@@ -673,6 +673,30 @@ void SubframeSelectorInterface::ExportCSV() const
 }
 
 // ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::ExportPDF() const
+{
+   SaveFileDialog d;
+   d.SetCaption( "SubframeSelector: Save PDF File" );
+   d.SetFilter( FileFilter( "PDF", ".PDF" ) );
+   d.EnableOverwritePrompt();
+   if ( d.Execute() )
+   {
+      String filePath = d.FileName();
+      File f = File::CreateFileForWriting( filePath );
+      Console().WriteLn( "Generating output PDF file: " + filePath );
+
+      double defaultWidth = 210;
+      double ratio = (double) GUI->MeasurementGraph_Graph.Width() / (double) GUI->MeasurementGraph_Graph.Height();
+      GUI->MeasurementGraph_Graph.SaveAsPDF( filePath,
+                                             defaultWidth, pcl::Ceil( defaultWidth / ratio ),
+                                             0, 0, 0, 0 );
+
+      Console().WriteLn( "Generated PDF file: " + filePath );
+   }
+}
+
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void SubframeSelectorInterface::__ToggleSection( SectionBar& sender, Control& section, bool start )
@@ -909,6 +933,10 @@ void SubframeSelectorInterface::__MeasurementImages_Click( Button& sender, bool 
    else if ( sender == GUI->MeasurementsTable_CSV_PushButton )
    {
       ExportCSV();
+   }
+   else if ( sender == GUI->MeasurementGraph_Save_PushButton )
+   {
+      ExportPDF();
    }
 }
 
@@ -1949,12 +1977,10 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
 
    MeasurementsTable_Clear_PushButton.SetText( "Clear" );
    MeasurementsTable_Clear_PushButton.SetToolTip( "<p>Clear the list of measurements.</p>" );
-   MeasurementsTable_Clear_PushButton.SetMinWidth( 40 );
    MeasurementsTable_Clear_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click, w );
 
    MeasurementsTable_CSV_PushButton.SetText( "CSV" );
    MeasurementsTable_CSV_PushButton.SetToolTip( "<p>Export the table as a CSV file.</p>" );
-   MeasurementsTable_CSV_PushButton.SetMinWidth( 20 );
    MeasurementsTable_CSV_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click, w );
 
    MeasurementsTable_Top_Sizer.SetSpacing( 4 );
@@ -2021,6 +2047,15 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
    MeasurementGraph_GraphProperty_Control.OnItemSelected(
            (ComboBox::item_event_handler) &SubframeSelectorInterface::__ComboSelected, w );
 
+   MeasurementGraph_Save_PushButton.SetText( "Save PDF" );
+   MeasurementGraph_Save_PushButton.SetToolTip( "<p>Export the graph as a PDF file.</p>" );
+   MeasurementGraph_Save_PushButton.OnClick(
+           (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click, w );
+
+   MeasurementGraph_Top_Sizer.SetSpacing( 4 );
+   MeasurementGraph_Top_Sizer.Add( MeasurementGraph_GraphProperty_Control );
+   MeasurementGraph_Top_Sizer.Add( MeasurementGraph_Save_PushButton );
+
    MeasurementGraph_Graph.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
    MeasurementGraph_Graph.SetScaledMinWidth( 400 );
    MeasurementGraph_Graph.SetZoomFactor( MeasurementGraph_Graph.DisplayPixelRatio() );
@@ -2031,9 +2066,9 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
            (GraphWebView::unlock_event_handler) &SubframeSelectorInterface::__MeasurementGraph_Unlock, w );
 
    MeasurementGraph_Sizer.SetSpacing( 4 );
-   MeasurementGraph_Sizer.Add( MeasurementGraph_GraphProperty_Control );
+   MeasurementGraph_Sizer.Add( MeasurementGraph_Top_Sizer );
    MeasurementGraph_Sizer.Add( MeasurementGraph_Graph, 100 );
-   MeasurementGraph_Sizer.SetAlignment( MeasurementGraph_GraphProperty_Control, Sizer::item_alignment::Center );
+   MeasurementGraph_Sizer.SetAlignment( MeasurementGraph_Top_Sizer, Sizer::item_alignment::Center );
 
    MeasurementGraph_Control.SetSizer( MeasurementGraph_Sizer );
    MeasurementGraph_Control.AdjustToContents();

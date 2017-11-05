@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.00.02.0261
+// Standard SubframeSelector Process Module Version 01.01.01.0001
 // ----------------------------------------------------------------------------
-// SubframeSelectorInterface.cpp - Released 2017-08-01T14:26:58Z
+// SubframeSelectorInterface.cpp - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SubframeSelector PixInsight module.
 //
@@ -50,18 +50,17 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include "SubframeSelectorInterface.h"
-#include "SubframeSelectorProcess.h"
-#include "Version.h"
-
 #include <pcl/Dialog.h>
 #include <pcl/FileDialog.h>
 #include <pcl/ViewList.h>
 #include <pcl/PreviewSelectionDialog.h>
 #include <pcl/Console.h>
-#include <pcl/MetaModule.h>
 #include <pcl/FileFormat.h>
 #include <pcl/StdStatus.h>
+
+#include "SubframeSelectorInterface.h"
+#include "SubframeSelectorProcess.h"
+#include "Version.h"
 
 #define IMAGELIST_MINHEIGHT( fnt )  (12*fnt.Height() + 2)
 
@@ -2115,4 +2114,4 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SubframeSelectorInterface.cpp - Released 2017-08-01T14:26:58Z
+// EOF SubframeSelectorInterface.cpp - Released 2017-11-05T16:00:00Z

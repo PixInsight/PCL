@@ -4,10 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.00.02.0261
+// Standard SubframeSelector Process Module Version 01.01.01.0001
 // ----------------------------------------------------------------------------
-// SubframeSelectorStarDetector
-// .cpp - Released 2017-08-01T14:26:58Z
+// SubframeSelectorStarDetector.cpp - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SubframeSelector PixInsight module.
 //
@@ -58,6 +57,7 @@
 #include <pcl/MetaModule.h>
 #include <pcl/Console.h>
 #include <pcl/ImageWindow.h>
+
 #include "SubframeSelectorStarDetector.h"
 
 namespace pcl
@@ -473,4 +473,4 @@ Star pcl::SubframeSelectorStarDetector::GetStarParameters( ImageVariant& image, 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SubframeSelectorStarDetector.cpp - Released 2017-08-01T14:26:58Z
+// EOF SubframeSelectorStarDetector.cpp - Released 2017-11-05T16:00:00Z

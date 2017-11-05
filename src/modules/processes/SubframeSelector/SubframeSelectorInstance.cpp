@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.00.02.0261
+// Standard SubframeSelector Process Module Version 01.01.01.0001
 // ----------------------------------------------------------------------------
-// SubframeSelectorInstance.cpp - Released 2017-08-01T14:26:58Z
+// SubframeSelectorInstance.cpp - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SubframeSelector PixInsight module.
 //
@@ -50,11 +50,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include "PSF.h"
-#include "SubframeSelectorInstance.h"
-#include "SubframeSelectorStarDetector.h"
-#include "SubframeSelectorInterface.h"
-
 #include <pcl/Console.h>
 #include <pcl/MetaModule.h>
 #include <pcl/ErrorHandler.h>
@@ -66,6 +61,11 @@
 #include <pcl/Version.h>
 #include <pcl/ICCProfile.h>
 #include <pcl/MessageBox.h>
+
+#include "PSF.h"
+#include "SubframeSelectorInstance.h"
+#include "SubframeSelectorStarDetector.h"
+#include "SubframeSelectorInterface.h"
 
 namespace pcl
 {
@@ -902,7 +902,7 @@ bool SubframeSelectorInstance::Measure() {
                      {
                         if ( !waitingForFinished )
                         {
-                           console.WriteLn( "<end><cbr><br>* Waiting for running tasks to terminate ..." );
+                           console.NoteLn( "<end><cbr><br>* Waiting for running tasks to terminate ..." );
                            waitingForFinished = true;
                         }
 
@@ -1894,4 +1894,4 @@ size_type SubframeSelectorInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SubframeSelectorInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF SubframeSelectorInstance.cpp - Released 2017-11-05T16:00:00Z

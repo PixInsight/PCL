@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard SubframeSelector Process Module Version 01.01.01.0001
 // ----------------------------------------------------------------------------
-// GraphWebView.cpp - Released 2017-08-01T14:26:58Z
+// GraphWebView.cpp - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -49,8 +49,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
-
-#include <pcl/Console.h>
 
 #include "GraphWebView.h"
 #include "SubframeSelectorMeasureData.h"
@@ -412,4 +410,4 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF GraphWebView.cpp - Released 2017-08-01T14:26:58Z
+// EOF GraphWebView.cpp - Released 2017-11-05T16:00:00Z

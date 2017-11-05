@@ -4,11 +4,11 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard SubframeSelector Process Module Version 01.01.01.0001
 // ----------------------------------------------------------------------------
-// Version.h - Released 2017-08-01T14:26:58Z
+// Version.h - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
-// This file is part of the standard Image PixInsight module.
+// This file is part of the standard SubframeSelector PixInsight module.
 //
 // Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
@@ -86,4 +86,4 @@ static const char* SubframeSelectorVersion()
 #endif   // __Version_h
 
 // ----------------------------------------------------------------------------
-// EOF Version.h - Released 2017-08-01T14:26:58Z
+// EOF Version.h - Released 2017-11-05T16:00:00Z

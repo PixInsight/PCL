@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard SubframeSelector Process Module Version 01.01.01.0001
 // ----------------------------------------------------------------------------
-// PSF.h - Released 2017-08-01T14:26:58Z
+// PSF.h - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -55,7 +55,7 @@
 
 #include <pcl/ImageVariant.h>
 #include <pcl/Matrix.h>
-#include <pcl/MetaParameter.h>   // pcl_enum, pcl_bool
+#include <pcl/MetaParameter.h>
 
 namespace pcl
 {
@@ -231,4 +231,4 @@ inline double PSFData::FWHM( int function, double sigma, double beta )
 #endif   // __PSF_h
 
 // ----------------------------------------------------------------------------
-// EOF PSF.h - Released 2017-08-01T14:26:58Z
+// EOF PSF.h - Released 2017-11-05T16:00:00Z

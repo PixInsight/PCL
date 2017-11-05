@@ -52,6 +52,7 @@
 
 #include "SubframeSelectorInterface.h"
 #include "SubframeSelectorProcess.h"
+#include "Version.h"
 
 #include <pcl/Dialog.h>
 #include <pcl/FileDialog.h>
@@ -60,6 +61,7 @@
 #include <pcl/Console.h>
 #include <pcl/MetaModule.h>
 #include <pcl/FileFormat.h>
+#include <pcl/StdStatus.h>
 
 #define IMAGELIST_MINHEIGHT( fnt )  (12*fnt.Height() + 2)
 
@@ -582,6 +584,95 @@ void SubframeSelectorInterface::ApplyWeightingExpression()
 }
 
 // ----------------------------------------------------------------------------
+
+void SubframeSelectorInterface::ExportCSV() const
+{
+   SaveFileDialog d;
+   d.SetCaption( "SubframeSelector: Save CSV File" );
+   d.SetFilter( FileFilter( "CSV", ".csv" ) );
+   d.EnableOverwritePrompt();
+   if ( d.Execute() )
+   {
+      String filePath = d.FileName();
+      File f = File::CreateFileForWriting( filePath );
+      Console().WriteLn( "Generating output CSV file: " + filePath );
+
+      StandardStatus status;
+      StatusMonitor monitor;
+      monitor.SetCallback( &status );
+      monitor.Initialize( "Writing CSV file", instance.measures.Length() );
+
+
+      f.OutTextLn( String().Format( "SubframeSelector Version: %s", SubframeSelectorVersion() ) );
+
+      f.OutTextLn( String().Format( "Subframe Scale,%.5f", instance.subframeScale ) );
+      f.OutTextLn( String().Format( "Camera Gain,%.5f", instance.cameraGain ) );
+      f.OutTextLn( "Camera Resolution,\"" +
+                   TheSSCameraResolutionParameter->ElementLabel( instance.cameraResolution ) + "\"" );
+      f.OutTextLn( String().Format( "Site Local Midnight,%d", instance.siteLocalMidnight ) );
+      f.OutTextLn( "Scale Unit,\"" + TheSSScaleUnitParameter->ElementLabel( instance.scaleUnit ) + "\"" );
+      f.OutTextLn( "Data Unit,\"" + TheSSDataUnitParameter->ElementLabel( instance.dataUnit ) + "\"" );
+      f.OutTextLn( String().Format( "Structure Layers,%d", instance.structureLayers ) );
+      f.OutTextLn( String().Format( "Noise Layers,%d", instance.noiseLayers ) );
+      f.OutTextLn( String().Format( "Hot Pixel Filter Radius,%d", instance.hotPixelFilterRadius ) );
+      f.OutTextLn( String().Format( "Apply Hot Pixel Filter to Detection Image,%s",
+                                    instance.applyHotPixelFilterToDetectionImage ? "true," : "false," ) );
+      f.OutTextLn( String().Format( "Noise Reduction Filter Radius,%d", instance.noiseReductionFilterRadius ) );
+      f.OutTextLn( String().Format( "Sensitivity,%.5f", instance.sensitivity ) );
+      f.OutTextLn( String().Format( "Peak Response,%.3f", instance.peakResponse ) );
+      f.OutTextLn( String().Format( "Maximum Star Distortion,%.3f", instance.maxDistortion ) );
+      f.OutTextLn( String().Format( "Upper Limit,%.3f", instance.upperLimit ) );
+      f.OutTextLn( String().Format( "Background Expansion,%d", instance.backgroundExpansion ) );
+      f.OutTextLn( String().Format( "XY Stretch,%.3f", instance.xyStretch ) );
+      f.OutTextLn( String().Format( "Pedestal,%d", instance.pedestal ) );
+      f.OutTextLn( String().Format( "Subframe Region,%d,%d,%d,%d",
+                                    instance.roi.x0, instance.roi.y0, instance.roi.Width(), instance.roi.Height() )
+      );
+      f.OutTextLn( "PSF Fit,\"" + TheSSPSFFitParameter->ElementLabel( instance.psfFit ) + "\"" );
+      f.OutTextLn( String().Format( "Circular PSF,%s", instance.psfFitCircular ? "true," : "false," ) );
+      f.OutTextLn( "Approval expression,\"" + instance.approvalExpression + "\"" );
+      f.OutTextLn( "Weighting expression,\"" + instance.weightingExpression + "\"" );
+
+      f.OutTextLn( "Index,Approved,Locked,File,Weight,FWHM,Eccentricity,SNR Weight,Median,"
+                           "Median Mean Deviation,Noise,Noise Ratio,Stars,Star Residual,"
+                           "FWHM Mean Deviation,Eccentricity Mean Deviation,"
+                           "Star Residual Mean Deviation" );
+
+      for ( Array<MeasureItem>::const_iterator i = instance.measures.Begin(); i != instance.measures.End(); ++i, ++monitor )
+         f.OutTextLn( IsoString( i->index ) + ',' +
+                      IsoString( i->enabled ? "true," : "false," ) +
+                      IsoString( i->locked ? "true," : "false," ) +
+                      IsoString( '"' + i->path + '"' + ',' ) +
+                      String().Format(
+                              "%.05f,%.05f,%.05f,%.05f,%.05f,%.05f,%.05f,%.05f,%i,%.05f,%.05f,%.05f,%.05f",
+                              i->weight,
+                              i->FWHM( instance.subframeScale, instance.scaleUnit ),
+                              i->eccentricity,
+                              i->snrWeight,
+                              i->Median( instance.cameraGain,
+                                         TheSSCameraResolutionParameter->ElementData( instance.cameraResolution ),
+                                         instance.dataUnit ),
+                              i->MedianMeanDev( instance.cameraGain,
+                                                TheSSCameraResolutionParameter->ElementData(
+                                                        instance.cameraResolution ),
+                                                instance.dataUnit ),
+                              i->Noise( instance.cameraGain,
+                                        TheSSCameraResolutionParameter->ElementData( instance.cameraResolution ),
+                                        instance.dataUnit ),
+                              i->noiseRatio,
+                              i->stars,
+                              i->starResidual,
+                              i->FWHMMeanDeviation( instance.subframeScale, instance.scaleUnit ),
+                              i->eccentricityMeanDev,
+                              i->starResidualMeanDev
+                      ) );
+
+      monitor.Complete();
+      f.Close();
+   }
+}
+
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void SubframeSelectorInterface::__ToggleSection( SectionBar& sender, Control& section, bool start )
@@ -814,6 +905,10 @@ void SubframeSelectorInterface::__MeasurementImages_Click( Button& sender, bool 
       instance.measures.Clear();
       UpdateMeasurementImagesList();
       UpdateMeasurementGraph();
+   }
+   else if ( sender == GUI->MeasurementsTable_CSV_PushButton )
+   {
+      ExportCSV();
    }
 }
 
@@ -1847,15 +1942,6 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
    MeasurementsTable_ToggleLocked_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click,
                                                        w );
 
-   MeasurementsTable_Top1_Sizer.SetSpacing( 4 );
-   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_SortingProperty_Control );
-   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_SortingMode_Control );
-   MeasurementsTable_Top1_Sizer.AddStretch( 100 );
-   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_ToggleApproved_PushButton );
-   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_ToggleLocked_PushButton );
-   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_Invert_PushButton );
-   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_Clear_PushButton );
-
    MeasurementsTable_Invert_PushButton.SetText( "Invert" );
    MeasurementsTable_Invert_PushButton.SetToolTip( "<p>Invert the current selection of measurements.</p>" );
    MeasurementsTable_Invert_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click,
@@ -1863,7 +1949,23 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
 
    MeasurementsTable_Clear_PushButton.SetText( "Clear" );
    MeasurementsTable_Clear_PushButton.SetToolTip( "<p>Clear the list of measurements.</p>" );
+   MeasurementsTable_Clear_PushButton.SetMinWidth( 40 );
    MeasurementsTable_Clear_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click, w );
+
+   MeasurementsTable_CSV_PushButton.SetText( "CSV" );
+   MeasurementsTable_CSV_PushButton.SetToolTip( "<p>Export the table as a CSV file.</p>" );
+   MeasurementsTable_CSV_PushButton.SetMinWidth( 20 );
+   MeasurementsTable_CSV_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click, w );
+
+   MeasurementsTable_Top_Sizer.SetSpacing( 4 );
+   MeasurementsTable_Top_Sizer.Add( MeasurementsTable_SortingProperty_Control );
+   MeasurementsTable_Top_Sizer.Add( MeasurementsTable_SortingMode_Control );
+   MeasurementsTable_Top_Sizer.AddStretch( 100 );
+   MeasurementsTable_Top_Sizer.Add( MeasurementsTable_ToggleApproved_PushButton );
+   MeasurementsTable_Top_Sizer.Add( MeasurementsTable_ToggleLocked_PushButton );
+   MeasurementsTable_Top_Sizer.Add( MeasurementsTable_Invert_PushButton );
+   MeasurementsTable_Top_Sizer.Add( MeasurementsTable_Clear_PushButton );
+   MeasurementsTable_Top_Sizer.Add( MeasurementsTable_CSV_PushButton );
 
    MeasurementTable_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
    MeasurementTable_TreeBox.SetScaledMinWidth( 400 );
@@ -1900,7 +2002,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
            (TreeBox::node_event_handler) &SubframeSelectorInterface::__MeasurementImages_NodeActivated, w );
 
    MeasurementTable_Sizer.SetSpacing( 4 );
-   MeasurementTable_Sizer.Add( MeasurementsTable_Top1_Sizer );
+   MeasurementTable_Sizer.Add( MeasurementsTable_Top_Sizer );
    MeasurementTable_Sizer.Add( MeasurementTable_TreeBox, 100 );
 
    MeasurementTable_Control.SetSizer( MeasurementTable_Sizer );

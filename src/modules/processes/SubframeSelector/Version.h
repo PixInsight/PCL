@@ -6,7 +6,7 @@
 // ----------------------------------------------------------------------------
 // Standard Image Process Module Version 01.02.09.0402
 // ----------------------------------------------------------------------------
-// GraphWebView.h - Released 2017-08-01T14:26:58Z
+// Version.h - Released 2017-08-01T14:26:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -50,85 +50,40 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#ifndef __GRAPHWEBVIEW_h
-#define __GRAPHWEBVIEW_h
+#ifndef __Version_h
+#define __Version_h
 
-#include <pcl/WebView.h>
-#include <pcl/Timer.h>
+#define MODULE_VERSION_MAJOR     01
+#define MODULE_VERSION_MINOR     01
+#define MODULE_VERSION_REVISION  01
+#define MODULE_VERSION_BUILD     0001
+#define MODULE_VERSION_LANGUAGE  eng
+
+#define MODULE_RELEASE_YEAR      2017
+#define MODULE_RELEASE_MONTH     11
+#define MODULE_RELEASE_DAY       05
+
+#include <pcl/MetaModule.h>
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-struct DataPoint
+static const char* SubframeSelectorVersion()
 {
-   int x;
-   double data;
-   double weight;
-   bool approved;
-   bool locked;
-};
-
-typedef GenericVector<DataPoint> DataPointVector;
-
-inline bool operator ==( const DataPoint& p1, const DataPoint& p2 )
-{
-   return p1.x == p2.x;
+   return PCL_MODULE_VERSION( MODULE_VERSION_MAJOR,
+                              MODULE_VERSION_MINOR,
+                              MODULE_VERSION_REVISION,
+                              MODULE_VERSION_BUILD,
+                              MODULE_VERSION_LANGUAGE );
 }
-
-inline bool operator <( const DataPoint& p1, const DataPoint& p2 )
-{
-   return p1.x < p2.x;
-}
-
-// ----------------------------------------------------------------------------
-
-class GraphWebView : public WebView
-{
-public:
-
-   GraphWebView( Control& parent );
-
-   void SetDataset( const String& dataname, DataPointVector* dataset );
-
-   typedef void (Control::*approve_event_handler)( GraphWebView& sender, int& index );
-   typedef void (Control::*unlock_event_handler)( GraphWebView& sender, int& index );
-
-   void OnApprove( approve_event_handler handler, Control& receiver );
-   void OnUnlock( unlock_event_handler handler, Control& receiver );
-
-private:
-
-   void __MouseEnter( Control& sender );
-   void __MouseLeave( Control& sender );
-   void __Timer( Timer& sender );
-   void __JSResult( WebView& sender, const Variant& result );
-
-   Timer eventCheckTimer;
-   bool keepChecking;
-
-   struct EventHandlers
-   {
-      approve_event_handler   onApprove = nullptr;
-      Control*                onApproveReceiver = nullptr;
-      unlock_event_handler    onUnlock = nullptr;
-      Control*                onUnlockReceiver = nullptr;
-
-      EventHandlers() = default;
-      EventHandlers( const EventHandlers& ) = default;
-      EventHandlers& operator =( const EventHandlers& ) = default;
-   };
-
-   AutoPointer<EventHandlers> eventHandlers;
-
-};
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __GRAPHWEBVIEW_h
+#endif   // __Version_h
 
 // ----------------------------------------------------------------------------
-// EOF GraphWebView.h - Released 2017-08-01T14:26:58Z
+// EOF Version.h - Released 2017-08-01T14:26:58Z

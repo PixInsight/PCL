@@ -50,19 +50,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     01
-#define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0001
-#define MODULE_VERSION_LANGUAGE  eng
-
-#define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     10
-#define MODULE_RELEASE_DAY       20
-
 #include "SubframeSelectorModule.h"
 #include "SubframeSelectorProcess.h"
 #include "SubframeSelectorInterface.h"
+#include "Version.h"
 
 namespace pcl
 {
@@ -75,11 +66,7 @@ SubframeSelectorModule::SubframeSelectorModule() : MetaModule()
 
 const char* SubframeSelectorModule::Version() const
 {
-   return PCL_MODULE_VERSION( MODULE_VERSION_MAJOR,
-                              MODULE_VERSION_MINOR,
-                              MODULE_VERSION_REVISION,
-                              MODULE_VERSION_BUILD,
-                              MODULE_VERSION_LANGUAGE );
+   return SubframeSelectorVersion();
 }
 
 IsoString SubframeSelectorModule::Name() const

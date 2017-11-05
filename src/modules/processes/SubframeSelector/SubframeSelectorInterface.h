@@ -236,13 +236,14 @@ public:
       SectionBar        MeasurementTable_SectionBar;
       Control           MeasurementTable_Control;
       VerticalSizer     MeasurementTable_Sizer;
-         HorizontalSizer   MeasurementsTable_Top1_Sizer;
+         HorizontalSizer   MeasurementsTable_Top_Sizer;
             ComboBox          MeasurementsTable_SortingProperty_Control;
             ComboBox          MeasurementsTable_SortingMode_Control;
             PushButton        MeasurementsTable_ToggleApproved_PushButton;
             PushButton        MeasurementsTable_ToggleLocked_PushButton;
             PushButton        MeasurementsTable_Invert_PushButton;
             PushButton        MeasurementsTable_Clear_PushButton;
+            PushButton        MeasurementsTable_CSV_PushButton;
          TreeBox           MeasurementTable_TreeBox;
 
       SectionBar        MeasurementGraph_SectionBar;
@@ -271,6 +272,8 @@ public:
 
    void ApplyApprovalExpression();
    void ApplyWeightingExpression();
+
+   void ExportCSV() const;
 
    // Event Handlers
 

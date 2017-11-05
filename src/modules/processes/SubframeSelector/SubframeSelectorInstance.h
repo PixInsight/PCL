@@ -62,8 +62,8 @@
 namespace pcl
 {
 
-class MeasureThreadInputData;
-struct SubframeSelectorMeasureThread;
+struct MeasureThreadInputData;
+class SubframeSelectorMeasureThread;
 
 typedef IndirectArray<SubframeSelectorMeasureThread> thread_list;
 

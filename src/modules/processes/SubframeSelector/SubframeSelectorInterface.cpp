@@ -4,7 +4,7 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.01.01.0001
+// Standard SubframeSelector Process Module Version 01.02.01.0002
 // ----------------------------------------------------------------------------
 // SubframeSelectorInterface.cpp - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
@@ -923,6 +923,28 @@ void SubframeSelectorInterface::__MeasurementImages_Click( Button& sender, bool 
       for ( int i = 0, n = GUI->MeasurementTable_TreeBox.NumberOfChildren(); i < n; ++i )
          GUI->MeasurementTable_TreeBox[i]->Select( !GUI->MeasurementTable_TreeBox[i]->IsSelected() );
    }
+   else if ( sender == GUI->MeasurementsTable_Remove_PushButton )
+   {
+      Array<MeasureItem> newMeasures;
+      uint16 index = 1;
+      for ( size_type i = 0; i < instance.measures.Length(); ++i )
+      {
+         MeasureItem* measure = instance.measures.At( i );
+         TreeBox::Node* measureNode = GetMeasurementNode( measure );
+         if ( measureNode == nullptr )
+            continue;
+
+         if ( !measureNode->IsSelected() )
+         {
+            measure->index = index;
+            newMeasures.Add( *measure );
+            ++index;
+         }
+      }
+      instance.measures = newMeasures;
+      UpdateMeasurementImagesList();
+      UpdateMeasurementGraph();
+   }
    else if ( sender == GUI->MeasurementsTable_Clear_PushButton )
    {
       instance.measures.Clear();
@@ -1799,13 +1821,13 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
 
    //
 
-   currentLabelWidth = fnt.Width( String( "Output directory:" ) ); // the longest label text
+   currentLabelWidth = fnt.Width( String( "Directory:" ) ); // the longest label text
 
    OutputFiles_SectionBar.SetTitle( "Output Files" );
    OutputFiles_SectionBar.SetSection( OutputFiles_Control );
    OutputFiles_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&SubframeSelectorInterface::__ToggleSection, w );
 
-   OutputDirectory_Label.SetText( "Output directory:" );
+   OutputDirectory_Label.SetText( "Directory:" );
    OutputDirectory_Label.SetFixedWidth( currentLabelWidth );
    OutputDirectory_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
@@ -1974,23 +1996,31 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
    MeasurementsTable_Invert_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click,
                                                          w );
 
+   MeasurementsTable_Remove_PushButton.SetText( "Remove" );
+   MeasurementsTable_Remove_PushButton.SetToolTip( "<p>Remove the selected measurements.</p>" );
+   MeasurementsTable_Remove_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click, w );
+
    MeasurementsTable_Clear_PushButton.SetText( "Clear" );
    MeasurementsTable_Clear_PushButton.SetToolTip( "<p>Clear the list of measurements.</p>" );
    MeasurementsTable_Clear_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click, w );
 
-   MeasurementsTable_CSV_PushButton.SetText( "CSV" );
+   MeasurementsTable_CSV_PushButton.SetText( "Save CSV" );
    MeasurementsTable_CSV_PushButton.SetToolTip( "<p>Export the table as a CSV file.</p>" );
    MeasurementsTable_CSV_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__MeasurementImages_Click, w );
 
-   MeasurementsTable_Top_Sizer.SetSpacing( 4 );
-   MeasurementsTable_Top_Sizer.Add( MeasurementsTable_SortingProperty_Control );
-   MeasurementsTable_Top_Sizer.Add( MeasurementsTable_SortingMode_Control );
-   MeasurementsTable_Top_Sizer.AddStretch( 100 );
-   MeasurementsTable_Top_Sizer.Add( MeasurementsTable_ToggleApproved_PushButton );
-   MeasurementsTable_Top_Sizer.Add( MeasurementsTable_ToggleLocked_PushButton );
-   MeasurementsTable_Top_Sizer.Add( MeasurementsTable_Invert_PushButton );
-   MeasurementsTable_Top_Sizer.Add( MeasurementsTable_Clear_PushButton );
-   MeasurementsTable_Top_Sizer.Add( MeasurementsTable_CSV_PushButton );
+   MeasurementsTable_Top1_Sizer.SetSpacing( 4 );
+   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_SortingProperty_Control );
+   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_SortingMode_Control );
+   MeasurementsTable_Top1_Sizer.AddStretch( 100 );
+   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_ToggleApproved_PushButton );
+   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_ToggleLocked_PushButton );
+   MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_Invert_PushButton );
+
+   MeasurementsTable_Top2_Sizer.SetSpacing( 4 );
+   MeasurementsTable_Top2_Sizer.AddStretch( 100 );
+   MeasurementsTable_Top2_Sizer.Add( MeasurementsTable_Remove_PushButton );
+   MeasurementsTable_Top2_Sizer.Add( MeasurementsTable_Clear_PushButton );
+   MeasurementsTable_Top2_Sizer.Add( MeasurementsTable_CSV_PushButton );
 
    MeasurementTable_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
    MeasurementTable_TreeBox.SetScaledMinWidth( 400 );
@@ -2027,7 +2057,8 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
            (TreeBox::node_event_handler) &SubframeSelectorInterface::__MeasurementImages_NodeActivated, w );
 
    MeasurementTable_Sizer.SetSpacing( 4 );
-   MeasurementTable_Sizer.Add( MeasurementsTable_Top_Sizer );
+   MeasurementTable_Sizer.Add( MeasurementsTable_Top1_Sizer );
+   MeasurementTable_Sizer.Add( MeasurementsTable_Top2_Sizer );
    MeasurementTable_Sizer.Add( MeasurementTable_TreeBox, 100 );
 
    MeasurementTable_Control.SetSizer( MeasurementTable_Sizer );

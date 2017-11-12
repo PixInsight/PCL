@@ -4,7 +4,7 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.01.01.0001
+// Standard SubframeSelector Process Module Version 01.02.01.0002
 // ----------------------------------------------------------------------------
 // SubframeSelectorInstance.cpp - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
@@ -531,7 +531,7 @@ ImageVariant* SubframeSelectorInstance::LoadSubframe( const String& filePath )
    if ( pedestal > 0 )
    {
       Console().WriteLn( String().Format( "Subtracting pedestal: %d DN", pedestal ) );
-      image->Apply( pedestal/TheSSCameraResolutionParameter->ElementData(cameraResolution), ImageOp::Sub );
+      image->Apply( (double) pedestal / (double) TheSSCameraResolutionParameter->ElementData(cameraResolution), ImageOp::Sub );
    }
 
    /*
@@ -1476,9 +1476,10 @@ void SubframeSelectorInstance::WriteMeasuredImage( MeasureItem* item )
                << FITSHeaderKeyword( "HISTORY", IsoString(), "Measured with " + Module->ReadableVersion() )
                << FITSHeaderKeyword( "HISTORY", IsoString(), "Measured with SubframeSelector process" );
 
-      keywords << FITSHeaderKeyword( outputKeyword,
-                                     String().Format( "%.6f", item->weight ),
-                                     "SubframeSelector.weight" );
+      if ( !outputKeyword.IsEmpty() )
+         keywords << FITSHeaderKeyword( outputKeyword,
+                                        String().Format( "%.6f", item->weight ),
+                                        "SubframeSelector.weight" );
 
       outputFile.WriteFITSKeywords( keywords );
    }
@@ -1502,7 +1503,11 @@ void SubframeSelectorInstance::WriteMeasuredImage( MeasureItem* item )
     * Write the output image and close the output stream.
     */
    if ( !outputFile.WriteImage( image ) || !outputFile.Close() )
+   {
+      image->FreeData();
       throw CaughtException();
+   }
+   image->FreeData();
 }
 
 bool SubframeSelectorInstance::CanOutput( String &whyNot ) const {

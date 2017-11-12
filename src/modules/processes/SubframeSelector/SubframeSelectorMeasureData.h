@@ -4,7 +4,7 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.01.01.0001
+// Standard SubframeSelector Process Module Version 01.02.01.0002
 // ----------------------------------------------------------------------------
 // SubframeSelectorMeasureData.h - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
@@ -259,12 +259,15 @@ struct MeasureUtils
 
       int pOpen = 0;
       int pClose = 0;
+      int bOpen = 0;
+      int bClose = 0;
       int a = 0;
       int o = 0;
       for ( String::const_iterator i = expression.Begin(); i < expression.End(); ++i )
       {
          if ( !isalnum( *i ) && *i != '(' && *i != ')' && *i != '&' && *i != '|' && *i != ' '
-              && *i != '*' && *i != '+' && *i != '-' && *i != '/' && *i != '.'
+              && *i != '*' && *i != '+' && *i != '-' && *i != '/' && *i != '.' && *i != ','
+              && *i != '%' && *i != '?' && *i != ':' && *i != '[' && *i != ']'
               && *i != '<' && *i != '>' && *i != '=' && *i != '!' )
             return false;
 
@@ -273,13 +276,18 @@ struct MeasureUtils
          if ( *i == ')' )
             ++pClose;
 
+         if ( *i == '[' )
+            ++bOpen;
+         if ( *i == ']' )
+            ++bClose;
+
          if ( *i == '&' )
             ++a;
          if ( *i == '|' )
             ++o;
       }
 
-      return pOpen == pClose && a % 2 == 0 && o % 2 == 0;
+      return pOpen == pClose && bOpen == bClose && a % 2 == 0 && o % 2 == 0;
    }
 
    static void MedianAndMeanDeviation( Array<double>& values,

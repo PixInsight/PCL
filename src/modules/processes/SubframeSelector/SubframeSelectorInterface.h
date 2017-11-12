@@ -4,7 +4,7 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.01.01.0001
+// Standard SubframeSelector Process Module Version 01.02.01.0002
 // ----------------------------------------------------------------------------
 // SubframeSelectorInterface.h - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
@@ -235,12 +235,14 @@ public:
       SectionBar        MeasurementTable_SectionBar;
       Control           MeasurementTable_Control;
       VerticalSizer     MeasurementTable_Sizer;
-         HorizontalSizer   MeasurementsTable_Top_Sizer;
+         HorizontalSizer   MeasurementsTable_Top1_Sizer;
             ComboBox          MeasurementsTable_SortingProperty_Control;
             ComboBox          MeasurementsTable_SortingMode_Control;
             PushButton        MeasurementsTable_ToggleApproved_PushButton;
             PushButton        MeasurementsTable_ToggleLocked_PushButton;
             PushButton        MeasurementsTable_Invert_PushButton;
+         HorizontalSizer   MeasurementsTable_Top2_Sizer;
+            PushButton        MeasurementsTable_Remove_PushButton;
             PushButton        MeasurementsTable_Clear_PushButton;
             PushButton        MeasurementsTable_CSV_PushButton;
          TreeBox           MeasurementTable_TreeBox;

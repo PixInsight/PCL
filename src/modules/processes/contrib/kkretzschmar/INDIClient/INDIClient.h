@@ -56,10 +56,12 @@
 #include "IINDIProperty.h"
 #include "INDIParamListTypes.h"
 
-#include "INDI/BaseClientImpl.h"
+#include "INDI/baseclient.h"
 #include "INDI/basedevice.h"
 #include "INDI/indicom.h"
 #include "INDI/indidevapi.h"
+
+#include "INDI/PCLClientListener.h"
 
 #include <pcl/AutoLock.h>
 
@@ -161,14 +163,17 @@ public:
    }
 };
 
-class INDIClient : public INDI::BaseClientImpl
+class INDIClient : public INDI::BaseClient
 {
 public:
 
    INDIClient( const IsoString& hostName = "localhost", uint32 port = 7624 ) :
-      BaseClientImpl( hostName.c_str(), port ),
+      BaseClient( ),
       m_verbosity( 1 )
    {
+	   INDI::IClientListener* listener = new INDI::PclClientListener(this);
+	   setListener(listener);
+	   setServer(hostName.c_str(), port);
    }
 
    virtual ~INDIClient()
@@ -178,7 +183,7 @@ public:
    bool IsServerConnected() const
    {
       // Should be: INDI::BaseClientImpl::serverIsConnected() const
-      return const_cast<INDIClient*>( this )->serverIsConnected();
+      return const_cast<INDIClient*>( this )->isConnected();
    }
 
    IsoString HostName() const
@@ -361,18 +366,18 @@ public:
 protected:
 
    // Reimplemented from base class
-   virtual void newDevice( INDI::BaseDevice* );
-   virtual void deleteDevice( INDI::BaseDevice* );
-   virtual void newProperty( INDI::Property* );
-   virtual void removeProperty( INDI::Property* );
-   virtual void newBLOB( IBLOB* );
-   virtual void newSwitch( ISwitchVectorProperty* );
-   virtual void newNumber( INumberVectorProperty* );
-   virtual void newText( ITextVectorProperty* );
-   virtual void newLight( ILightVectorProperty* );
-   virtual void newMessage( INDI::BaseDevice*, int messageID );
-   virtual void serverConnected();
-   virtual void serverDisconnected( int exit_code );
+   void newDevice( INDI::BaseDevice* ) override;
+   void removeDevice( INDI::BaseDevice* ) override;
+   void newProperty( INDI::Property* ) override;
+   void removeProperty( INDI::Property* ) override;
+   void newBLOB( IBLOB* ) override;
+   void newSwitch( ISwitchVectorProperty* ) override;
+   void newNumber( INumberVectorProperty* ) override;
+   void newText( ITextVectorProperty* ) override;
+   void newLight( ILightVectorProperty* );
+   void newMessage( INDI::BaseDevice*, int messageID ) override;
+   void serverConnected() override;
+   void serverDisconnected( int exit_code ) override;
 
 private:
 

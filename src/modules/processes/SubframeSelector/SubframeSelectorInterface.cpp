@@ -370,6 +370,36 @@ void SubframeSelectorInterface::UpdateExpressionParameters()
 
 // ----------------------------------------------------------------------------
 
+void SubframeSelectorInterface::UpdateMeasurementQuantity()
+{
+   // Update the table and gather quantities
+   int approved = 0;
+   int locked = 0;
+   size_type amount = instance.measures.Length();
+   if ( amount > 0 )
+   {
+      for ( Array<MeasureItem>::const_iterator i = instance.measures.Begin(); i < instance.measures.End(); ++i )
+      {
+         if ( i->enabled )
+            ++approved;
+         if ( i->locked )
+            ++locked;
+      }
+
+      GUI->MeasurementsTable_Quantities_Label.SetText( String().Format(
+              "%i/%i Approved (%i%%), %i Locked (%i%%)",
+              approved, amount, pcl::RoundInt(((double)approved / (double)amount) * 100),
+              locked, pcl::RoundInt(((double)locked / (double)amount) * 100)
+      ) );
+   }
+   else
+   {
+      GUI->MeasurementsTable_Quantities_Label.SetText( "0/0 Approved (0%), 0 Locked (0%)" );
+   }
+}
+
+// ----------------------------------------------------------------------------
+
 void SubframeSelectorInterface::UpdateMeasurementImageItem( size_type i, MeasureItem* item )
 {
    TreeBox::Node* node = GUI->MeasurementTable_TreeBox[i];
@@ -449,25 +479,33 @@ void SubframeSelectorInterface::UpdateMeasurementImagesList()
 {
    GUI->MeasurementsTable_SortingProperty_Control.SetCurrentItem( instance.sortingProperty );
 
+   // Ensure Approval/Weighting is updated
+   ApplyWeightingExpression();
+   ApplyApprovalExpression();
+
+   GUI->MeasurementTable_TreeBox.DisableUpdates();
+
+   // Removing/Adding all the items can be slow; try to update each items text if possible
    bool shouldRecreate = instance.measures.Length() != GUI->MeasurementTable_TreeBox.NumberOfChildren();
 
+   // Store all current selections to re-select later
    const IndirectArray<TreeBox::Node>& selections = GUI->MeasurementTable_TreeBox.SelectedNodes();
    Array<int> currentIds( selections.Length() );
    for ( size_type i = 0; i < selections.Length(); ++i )
       currentIds[i] = GUI->MeasurementTable_TreeBox.ChildIndex( selections[i] );
 
-   GUI->MeasurementTable_TreeBox.DisableUpdates();
+   // When the number of items changes, it's easier to add all items over again
    if ( shouldRecreate )
       GUI->MeasurementTable_TreeBox.Clear();
 
-   ApplyWeightingExpression();
-   ApplyApprovalExpression();
-
+   // Ensure items are sorted properly
    Array<MeasureItem> measuresSorted( instance.measures );
    measuresSorted.Sort( SubframeSortingBinaryPredicate( instance.sortingProperty,
                                                         GUI->MeasurementsTable_SortingMode_Control.CurrentItem() ) );
 
-   for ( size_type i = 0; i < measuresSorted.Length(); ++i )
+   // Update the table
+   size_type amount = measuresSorted.Length();
+   for ( size_type i = 0; i < amount; ++i )
    {
       if ( shouldRecreate )
          new TreeBox::Node( GUI->MeasurementTable_TreeBox );
@@ -477,13 +515,26 @@ void SubframeSelectorInterface::UpdateMeasurementImagesList()
    GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 3 );
    GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 4 );
    GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 5 );
+   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 6 );
+   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 7 );
+   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 8 );
+   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 9 );
+   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 10 );
+   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 11 );
+   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 12 );
+   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 13 );
+   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 14 );
+   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 15 );
+   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 16 );
 
+   // If the table was cleared, setup previous selections
    if ( shouldRecreate && !instance.measures.IsEmpty() )
       for ( size_type i = 0; i < currentIds.Length(); ++i )
          if ( currentIds[i] >= 0 && currentIds[i] < GUI->MeasurementTable_TreeBox.NumberOfChildren() )
             GUI->MeasurementTable_TreeBox.Child( currentIds[i] )->Select();
 
    GUI->MeasurementTable_TreeBox.EnableUpdates();
+   UpdateMeasurementQuantity();
 }
 
 // ----------------------------------------------------------------------------
@@ -866,12 +917,14 @@ void SubframeSelectorInterface::__MeasurementImages_NodeActivated( TreeBox& send
       item->enabled = !item->enabled;
       item->locked = true;
       UpdateMeasurementImageItem( index, item );
+      UpdateMeasurementQuantity();
       UpdateMeasurementGraph();
       break;
    case 2:
       // Activate the item's checkmark: toggle item's locked state.
       item->locked = !item->locked;
       UpdateMeasurementImageItem( index, item );
+      UpdateMeasurementQuantity();
       UpdateMeasurementGraph();
       break;
    case 3:
@@ -984,6 +1037,7 @@ void SubframeSelectorInterface::__MeasurementGraph_Approve( GraphWebView &sender
    GUI->MeasurementTable_TreeBox.SetCurrentNode( node );
    GUI->MeasurementTable_TreeBox.SetVerticalScrollPosition( GUI->MeasurementTable_TreeBox.NodeRect( node ).y0 );
    UpdateMeasurementImageItem( GUI->MeasurementTable_TreeBox.ChildIndex( node ), item );
+   UpdateMeasurementQuantity();
    UpdateMeasurementGraph();
 }
 
@@ -1006,7 +1060,9 @@ void SubframeSelectorInterface::__MeasurementGraph_Unlock( GraphWebView &sender,
 
    GUI->MeasurementTable_TreeBox.SetCurrentNode( node );
    GUI->MeasurementTable_TreeBox.SetVerticalScrollPosition( GUI->MeasurementTable_TreeBox.NodeRect( node ).y0 );
+   ApplyApprovalExpression();
    UpdateMeasurementImageItem( GUI->MeasurementTable_TreeBox.ChildIndex( node ), item );
+   UpdateMeasurementQuantity();
    UpdateMeasurementGraph();
 }
 
@@ -2017,6 +2073,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
    MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_Invert_PushButton );
 
    MeasurementsTable_Top2_Sizer.SetSpacing( 4 );
+   MeasurementsTable_Top2_Sizer.Add( MeasurementsTable_Quantities_Label );
    MeasurementsTable_Top2_Sizer.AddStretch( 100 );
    MeasurementsTable_Top2_Sizer.Add( MeasurementsTable_Remove_PushButton );
    MeasurementsTable_Top2_Sizer.Add( MeasurementsTable_Clear_PushButton );

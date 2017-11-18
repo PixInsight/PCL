@@ -242,6 +242,7 @@ public:
             PushButton        MeasurementsTable_ToggleLocked_PushButton;
             PushButton        MeasurementsTable_Invert_PushButton;
          HorizontalSizer   MeasurementsTable_Top2_Sizer;
+            Label             MeasurementsTable_Quantities_Label;
             PushButton        MeasurementsTable_Remove_PushButton;
             PushButton        MeasurementsTable_Clear_PushButton;
             PushButton        MeasurementsTable_CSV_PushButton;
@@ -269,6 +270,7 @@ public:
    void UpdateStarDetectorParameters();
    void UpdateOutputFilesControls();
    void UpdateExpressionParameters();
+   void UpdateMeasurementQuantity();
    void UpdateMeasurementImageItem( size_type, MeasureItem* );
    void UpdateMeasurementImagesList();
    void UpdateMeasurementGraph();

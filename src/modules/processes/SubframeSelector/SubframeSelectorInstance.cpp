@@ -66,6 +66,7 @@
 #include "SubframeSelectorInstance.h"
 #include "SubframeSelectorStarDetector.h"
 #include "SubframeSelectorInterface.h"
+#include "SubframeSelectorCache.h"
 
 namespace pcl
 {
@@ -605,6 +606,7 @@ bool SubframeSelectorInstance::TestStarDetector() {
    }
    Console console;
 
+   // Setup common data for each thread
    MeasureThreadInputData inputThreadData;
    inputThreadData.showStarDetectionMaps  = true;
    inputThreadData.instance               = this;
@@ -708,13 +710,25 @@ bool SubframeSelectorInstance::Measure() {
             throw ("No such file exists on the local filesystem: " + i->path);
    }
 
-   // Reset measured values and create temporary list
+   // Reset measured values
    measures.Clear();
 
    Console console;
 
+   // Setup common data for each thread
    MeasureThreadInputData inputThreadData;
    inputThreadData.instance = this;
+
+   // Setup the cache
+   if ( TheSubframeSelectorCache == nullptr )
+   {
+      new SubframeSelectorCache; // loads cache upon construction
+      if ( TheSubframeSelectorCache->IsEnabled() )
+         if ( TheSubframeSelectorCache->IsEmpty() )
+            console.NoteLn( "<end><cbr><br>* Empty file cache" );
+         else
+            console.NoteLn( "<end><cbr><br>* Loaded cache: " + String( TheSubframeSelectorCache->NumberOfItems() ) + " item(s)" );
+   }
 
    try {
 
@@ -846,6 +860,7 @@ bool SubframeSelectorInstance::Measure() {
                      MeasureItem m( (*i)->Index() );
                      m.Input( (*i)->OutputData() );
                      measures.Append( m );
+                     (*i)->OutputData().AddToCache();
 
                      // Dispose this calibration thread, since we are done with
                      // it. NB: IndirectArray<T>::Delete() sets to zero the
@@ -934,17 +949,28 @@ bool SubframeSelectorInstance::Measure() {
                   }
 
                   /*
-                   * Create a new thread for this subframe image
+                   * Check for the subframe in the cache, and use that if possible
                    */
-                  thread_list threads = CreateThreadForSubframe( subframes.Length()-subframes_copy.Length(),
-                                                                 item.path, &inputThreadData );
+                  MeasureData cacheData( item.path );
+                  if ( cacheData.GetFromCache() )
+                  {
+                     console.NoteLn( "<end><cbr>* Retrieved data from file cache." );
+                     MeasureItem m( subframes.Length()-subframes_copy.Length(), item.path );
+                     m.Input( cacheData );
+                     measures.Append( m );
+                     ++succeeded;
+                  }
 
                   /*
-                   * Put the new thread in the free slot.
+                   * Create a new thread for this subframe image
                    */
-                  *i = *threads;
-                  threads.Remove( threads.Begin() );
-
+                  else
+                  {
+                     thread_list threads = CreateThreadForSubframe( subframes.Length()-subframes_copy.Length(),
+                                                                    item.path, &inputThreadData );
+                     *i = *threads;
+                     threads.Remove( threads.Begin() );
+                  }
                }
 
                /*
@@ -1547,12 +1573,16 @@ bool SubframeSelectorInstance::Output()
             throw ("No such file exists on the local filesystem: " + i->path);
 
 
-      for ( Array<MeasureItem>::iterator i = measures.Begin(); i != measures.End(); ++i )
+      for ( size_type i = 0; i < measures.Length(); ++i )
       {
          try
          {
-            if ( i->enabled )
-               WriteMeasuredImage( i );
+            if ( measures[i].enabled )
+            {
+               Console().NoteLn( String().Format( "<end><cbr><br>Outputting subframe %u of %u",
+                                                  i+1, measures.Length() ) );
+               WriteMeasuredImage( measures.At( i ) );
+            }
          }
          catch ( ... )
          {

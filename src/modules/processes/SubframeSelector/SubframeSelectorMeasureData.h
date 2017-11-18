@@ -56,6 +56,9 @@
 #include <pcl/MetaParameter.h>
 
 #include "SubframeSelectorParameters.h"
+#include "SubframeSelectorCache.h"
+
+#define CACHE_VERSION 1
 
 namespace pcl
 {
@@ -79,23 +82,84 @@ struct MeasureData
    double   starResidualMeanDev;
 
    MeasureData( const String& p = String( "" ) ) :
-           path( p ),
-           fwhm( TheSSMeasurementFWHMParameter->DefaultValue() ),
-           fwhmMeanDev( 0 ),
-           eccentricity( TheSSMeasurementEccentricityParameter->DefaultValue() ),
-           eccentricityMeanDev( 0 ),
-           snrWeight( TheSSMeasurementSNRWeightParameter->DefaultValue() ),
-           median( TheSSMeasurementMedianParameter->DefaultValue() ),
-           medianMeanDev( 0 ),
-           noise( TheSSMeasurementNoiseParameter->DefaultValue() ),
-           noiseRatio( TheSSMeasurementNoiseRatioParameter->DefaultValue() ),
-           stars( TheSSMeasurementStarsParameter->DefaultValue() ),
-           starResidual( TheSSMeasurementStarResidualParameter->DefaultValue() ),
-           starResidualMeanDev( 0 )
+           path( p )
    {
+      ResetCacheableData();
    }
 
    MeasureData( const MeasureData& x ) = default;
+
+   void ResetCacheableData()
+   {
+      fwhm = TheSSMeasurementFWHMParameter->DefaultValue();
+      fwhmMeanDev = 0;
+      eccentricity = TheSSMeasurementEccentricityParameter->DefaultValue();
+      eccentricityMeanDev = 0;
+      snrWeight = TheSSMeasurementSNRWeightParameter->DefaultValue();
+      median = TheSSMeasurementMedianParameter->DefaultValue();
+      medianMeanDev = 0;
+      noise = TheSSMeasurementNoiseParameter->DefaultValue();
+      noiseRatio = TheSSMeasurementNoiseRatioParameter->DefaultValue();
+      stars = TheSSMeasurementStarsParameter->DefaultValue();
+      starResidual = TheSSMeasurementStarResidualParameter->DefaultValue();
+      starResidualMeanDev = 0;
+   }
+
+   void AddToCache() const
+   {
+      SubframeSelectorCacheItem item( path );
+      item.cacheVersion        = CACHE_VERSION;
+      item.fwhm                = fwhm;
+      item.fwhmMeanDev         = fwhmMeanDev;
+      item.eccentricity        = eccentricity;
+      item.eccentricityMeanDev = eccentricityMeanDev;
+      item.snrWeight           = snrWeight;
+      item.median              = median;
+      item.medianMeanDev       = medianMeanDev;
+      item.noise               = noise;
+      item.noiseRatio          = noiseRatio;
+      item.stars               = stars;
+      item.starResidual        = starResidual;
+      item.starResidualMeanDev = starResidualMeanDev;
+      TheSubframeSelectorCache->Add( item );
+   }
+
+   bool GetFromCache()
+   {
+      ResetCacheableData();
+
+      SubframeSelectorCacheItem item;
+      if ( !TheSubframeSelectorCache->Get( item, path ) )
+         return false;
+
+      fwhm                = item.fwhm;
+      fwhmMeanDev         = item.fwhmMeanDev;
+      eccentricity        = item.eccentricity;
+      eccentricityMeanDev = item.eccentricityMeanDev;
+      snrWeight           = item.snrWeight;
+      median              = item.median;
+      medianMeanDev       = item.medianMeanDev;
+      noise               = item.noise;
+      noiseRatio          = item.noiseRatio;
+      stars               = item.stars;
+      starResidual        = item.starResidual;
+      starResidualMeanDev = item.starResidualMeanDev;
+
+      return
+              item.cacheVersion   == CACHE_VERSION &&
+              fwhm                != TheSSMeasurementFWHMParameter->DefaultValue() &&
+              fwhmMeanDev         != 0 &&
+              eccentricity        != TheSSMeasurementEccentricityParameter->DefaultValue() &&
+              eccentricityMeanDev != 0 &&
+              snrWeight           != TheSSMeasurementSNRWeightParameter->DefaultValue() &&
+              median              != TheSSMeasurementMedianParameter->DefaultValue() &&
+              medianMeanDev       != 0 &&
+              noise               != TheSSMeasurementNoiseParameter->DefaultValue() &&
+              noiseRatio          != TheSSMeasurementNoiseRatioParameter->DefaultValue() &&
+              stars               != TheSSMeasurementStarsParameter->DefaultValue() &&
+              starResidual        != TheSSMeasurementStarResidualParameter->DefaultValue() &&
+              starResidualMeanDev != 0;
+   }
 };
 
 // ----------------------------------------------------------------------------
@@ -333,6 +397,7 @@ private:
 
 } // pcl
 
+#undef CACHE_VERSION
 #endif   // __SubframeSelectorMeasureData_h
 
 // ----------------------------------------------------------------------------

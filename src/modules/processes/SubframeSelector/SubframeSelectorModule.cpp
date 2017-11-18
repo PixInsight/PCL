@@ -127,6 +127,12 @@ void SubframeSelectorModule::GetReleaseDate( int& year, int& month, int& day ) c
    day   = MODULE_RELEASE_DAY;
 }
 
+void SubframeSelectorModule::OnUnload()
+{
+   if ( TheSubframeSelectorCache != nullptr )
+      TheSubframeSelectorCache->Save();
+}
+
 // ----------------------------------------------------------------------------
 
 } // pcl

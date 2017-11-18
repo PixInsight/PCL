@@ -6,9 +6,9 @@
 // ----------------------------------------------------------------------------
 // Standard SubframeSelector Process Module Version 01.02.01.0002
 // ----------------------------------------------------------------------------
-// SubframeSelectorModule.h - Released 2017-11-05T16:00:00Z
+// SubframeSelectorCache.h - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
-// This file is part of the standard SubframeSelector PixInsight module.
+// This file is part of the standard ImageIntegration PixInsight module.
 //
 // Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
@@ -50,39 +50,79 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#ifndef __SubframeSelectorModule_h
-#define __SubframeSelectorModule_h
+#ifndef __SubframeSelectorCache_h
+#define __SubframeSelectorCache_h
 
-#include <pcl/MetaModule.h>
+#include "FileDataCache.h"
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-class SubframeSelectorModule : public MetaModule
+class SubframeSelectorCacheItem : public FileDataCacheItem
 {
 public:
 
-   SubframeSelectorModule();
+   int      cacheVersion;
+   double   fwhm;
+   double   fwhmMeanDev;
+   double   eccentricity;
+   double   eccentricityMeanDev;
+   double   snrWeight;
+   double   median;
+   double   medianMeanDev;
+   double   noise;
+   double   noiseRatio;
+   uint16   stars;
+   double   starResidual;
+   double   starResidualMeanDev;
 
-   virtual const char* Version() const;
-   virtual IsoString Name() const;
-   virtual String Description() const;
-   virtual String Company() const;
-   virtual String Author() const;
-   virtual String Copyright() const;
-   virtual String TradeMarks() const;
-   virtual String OriginalFileName() const;
-   virtual void GetReleaseDate( int& year, int& month, int& day ) const;
-   virtual void OnUnload();
+   SubframeSelectorCacheItem( const String& path = String() ) :
+      FileDataCacheItem( path )
+   {
+   }
+
+   virtual ~SubframeSelectorCacheItem()
+   {
+   }
+
+private:
+
+   virtual void AssignData( const FileDataCacheItem& item );
+   virtual String DataAsString() const;
+   virtual bool GetDataFromTokens( const StringList& tokens );
 };
+
+// ----------------------------------------------------------------------------
+
+class SubframeSelectorCache : public FileDataCache
+{
+public:
+
+   SubframeSelectorCache();
+   virtual ~SubframeSelectorCache();
+
+   virtual String CacheName() const
+   {
+      return "SubframeSelector Cache";
+   }
+
+private:
+
+   virtual FileDataCacheItem* NewItem() const
+   {
+      return new SubframeSelectorCacheItem;
+   }
+};
+
+extern SubframeSelectorCache* TheSubframeSelectorCache;
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __SubframeSelectorModule_h
+#endif   // __SubframeSelectorCache_h
 
 // ----------------------------------------------------------------------------
-// EOF SubframeSelectorModule.h - Released 2017-11-05T16:00:00Z
+// EOF SubframeSelectorCache.h - Released 2017-11-05T16:00:00Z

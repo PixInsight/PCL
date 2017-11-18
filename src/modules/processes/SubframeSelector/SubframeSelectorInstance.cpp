@@ -1078,33 +1078,10 @@ void SubframeSelectorInstance::ApproveMeasurements()
    else
    {
       // First, get all Medians and Mean Deviation from Medians for Sigma units
-      double weightMedian, weightDeviation;
-      double fwhmMedian, fwhmDeviation;
-      double eccentricityMedian, eccentricityDeviation;
-      double snrWeightMedian, snrWeightDeviation;
-      double medianMedian, medianDeviation;
-      double medianMeanDevMedian, medianMeanDevDeviation;
-      double noiseMedian, noiseDeviation;
-      double noiseRatioMedian, noiseRatioDeviation;
-      double starsMedian, starsDeviation;
-      double starResidualMedian, starResidualDeviation;
-      double fwhmMeanDevMedian, fwhmMeanDevDeviation;
-      double eccentricityMeanDevMedian, eccentricityMeanDevDeviation;
-      double starResidualMeanDevMedian, starResidualMeanDevDeviation;
-      MedianAndMeanDeviation( weightMedian, weightDeviation,
-                              fwhmMedian, fwhmDeviation,
-                              eccentricityMedian, eccentricityDeviation,
-                              snrWeightMedian, snrWeightDeviation,
-                              medianMedian, medianDeviation,
-                              medianMeanDevMedian, medianMeanDevDeviation,
-                              noiseMedian, noiseDeviation,
-                              noiseRatioMedian, noiseRatioDeviation,
-                              starsMedian, starsDeviation,
-                              starResidualMedian, starResidualDeviation,
-                              fwhmMeanDevMedian, fwhmMeanDevDeviation,
-                              eccentricityMeanDevMedian, eccentricityMeanDevDeviation,
-                              starResidualMeanDevMedian, starResidualMeanDevDeviation
-      );
+      MeasureProperties properties = MeasureProperties();
+      MeasureUtils::MeasureProperties( measures, subframeScale, scaleUnit,
+                                       cameraGain, cameraResolution, dataUnit,
+                                       properties );
 
       for ( Array<MeasureItem>::iterator i = measures.Begin(); i != measures.End(); ++i )
       {
@@ -1114,52 +1091,7 @@ void SubframeSelectorInstance::ApproveMeasurements()
          // The standard parameters for the MeasureItem
          String JSEvaluator = i->JavaScriptParameters( subframeScale, scaleUnit, cameraGain,
                                                        TheSSCameraResolutionParameter->ElementData( cameraResolution ),
-                                                       dataUnit );
-
-         // The Sigma parameters for the MeasureItem
-         JSEvaluator += String().Format( "let WeightSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->weight, weightMedian, weightDeviation
-         ) );
-         JSEvaluator += String().Format( "let FWHMSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->FWHM( subframeScale, scaleUnit ), fwhmMedian, fwhmDeviation
-         ) );
-         JSEvaluator += String().Format( "let EccentricitySigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->eccentricity, eccentricityMedian, eccentricityDeviation
-         ) );
-         JSEvaluator += String().Format( "let SNRWeightSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->snrWeight, snrWeightMedian, snrWeightDeviation
-         ) );
-         JSEvaluator += String().Format( "let MedianSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->Median( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit ),
-                 medianMedian, medianDeviation
-         ) );
-         JSEvaluator += String().Format( "let MedianMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->MedianMeanDev( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ),
-                                   dataUnit ),
-                 medianMeanDevMedian, medianMeanDevDeviation
-         ) );
-         JSEvaluator += String().Format( "let NoiseSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->Noise( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit ),
-                 noiseMedian, noiseDeviation
-         ) );
-         JSEvaluator += String().Format( "let NoiseRatioSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->noiseRatio, noiseRatioMedian, noiseRatioDeviation
-         ) );
-         JSEvaluator += String().Format( "let StarsSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->stars, starsMedian, starsDeviation
-         ) );
-         JSEvaluator += String().Format( "let StarResidualSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->starResidual, starResidualMedian, starResidualDeviation
-         ) );
-         JSEvaluator += String().Format( "let FWHMMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->FWHMMeanDeviation( subframeScale, scaleUnit ), fwhmMeanDevMedian, fwhmMeanDevDeviation
-         ) );
-         JSEvaluator += String().Format( "let EccentricityMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->eccentricityMeanDev, eccentricityMeanDevMedian, eccentricityMeanDevDeviation
-         ) );
-         JSEvaluator += String().Format( "let StarResidualMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->starResidualMeanDev, starResidualMeanDevMedian, starResidualMeanDevDeviation
-         ) );
+                                                       dataUnit, properties );
 
          // The final expression that evaluates to a return value
          JSEvaluator += approvalExpression;
@@ -1187,85 +1119,17 @@ void SubframeSelectorInstance::WeightMeasurements()
    else
    {
       // First, get all Medians and Mean Deviation from Medians for Sigma units
-      double weightMedian, weightDeviation;
-      double fwhmMedian, fwhmDeviation;
-      double eccentricityMedian, eccentricityDeviation;
-      double snrWeightMedian, snrWeightDeviation;
-      double medianMedian, medianDeviation;
-      double medianMeanDevMedian, medianMeanDevDeviation;
-      double noiseMedian, noiseDeviation;
-      double noiseRatioMedian, noiseRatioDeviation;
-      double starsMedian, starsDeviation;
-      double starResidualMedian, starResidualDeviation;
-      double fwhmMeanDevMedian, fwhmMeanDevDeviation;
-      double eccentricityMeanDevMedian, eccentricityMeanDevDeviation;
-      double starResidualMeanDevMedian, starResidualMeanDevDeviation;
-      MedianAndMeanDeviation( weightMedian, weightDeviation,
-                              fwhmMedian, fwhmDeviation,
-                              eccentricityMedian, eccentricityDeviation,
-                              snrWeightMedian, snrWeightDeviation,
-                              medianMedian, medianDeviation,
-                              medianMeanDevMedian, medianMeanDevDeviation,
-                              noiseMedian, noiseDeviation,
-                              noiseRatioMedian, noiseRatioDeviation,
-                              starsMedian, starsDeviation,
-                              starResidualMedian, starResidualDeviation,
-                              fwhmMeanDevMedian, fwhmMeanDevDeviation,
-                              eccentricityMeanDevMedian, eccentricityMeanDevDeviation,
-                              starResidualMeanDevMedian, starResidualMeanDevDeviation
-      );
+      MeasureProperties properties = MeasureProperties();
+      MeasureUtils::MeasureProperties( measures, subframeScale, scaleUnit,
+                                       cameraGain, cameraResolution, dataUnit,
+                                       properties );
 
       for ( Array<MeasureItem>::iterator i = measures.Begin(); i != measures.End(); ++i )
       {
          // The standard parameters for the MeasureItem
          String JSEvaluator = i->JavaScriptParameters( subframeScale, scaleUnit, cameraGain,
                                                        TheSSCameraResolutionParameter->ElementData( cameraResolution ),
-                                                       dataUnit );
-
-         // The Sigma parameters for the MeasureItem
-         JSEvaluator += String().Format( "let WeightSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->weight, weightMedian, weightDeviation
-         ) );
-         JSEvaluator += String().Format( "let FWHMSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->FWHM( subframeScale, scaleUnit ), fwhmMedian, fwhmDeviation
-         ) );
-         JSEvaluator += String().Format( "let EccentricitySigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->eccentricity, eccentricityMedian, eccentricityDeviation
-         ) );
-         JSEvaluator += String().Format( "let SNRWeightSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->snrWeight, snrWeightMedian, snrWeightDeviation
-         ) );
-         JSEvaluator += String().Format( "let MedianSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->Median( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit ),
-                 medianMedian, medianDeviation
-         ) );
-         JSEvaluator += String().Format( "let MedianMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->MedianMeanDev( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ),
-                                   dataUnit ),
-                 medianMeanDevMedian, medianMeanDevDeviation
-         ) );
-         JSEvaluator += String().Format( "let NoiseSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->Noise( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit ),
-                 noiseMedian, noiseDeviation
-         ) );
-         JSEvaluator += String().Format( "let NoiseRatioSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->noiseRatio, noiseRatioMedian, noiseRatioDeviation
-         ) );
-         JSEvaluator += String().Format( "let StarsSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->stars, starsMedian, starsDeviation
-         ) );
-         JSEvaluator += String().Format( "let StarResidualSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->starResidual, starResidualMedian, starResidualDeviation
-         ) );
-         JSEvaluator += String().Format( "let FWHMMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->FWHMMeanDeviation( subframeScale, scaleUnit ), fwhmMeanDevMedian, fwhmMeanDevDeviation
-         ) );
-         JSEvaluator += String().Format( "let EccentricityMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->eccentricityMeanDev, eccentricityMeanDevMedian, eccentricityMeanDevDeviation
-         ) );
-         JSEvaluator += String().Format( "let StarResidualMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->starResidualMeanDev, starResidualMeanDevMedian, starResidualMeanDevDeviation
-         ) );
+                                                       dataUnit, properties );
 
          // The final expression that evaluates to a return value
          JSEvaluator += weightingExpression;
@@ -1281,73 +1145,6 @@ void SubframeSelectorInstance::WeightMeasurements()
          i->weight = result.ToFloat();
       }
    }
-}
-
-void SubframeSelectorInstance::MedianAndMeanDeviation( double& weightMedian, double& weightDeviation,
-                                                       double& fwhmMedian, double& fwhmDeviation,
-                                                       double& eccentricityMedian, double& eccentricityDeviation,
-                                                       double& snrWeightMedian, double& snrWeightDeviation,
-                                                       double& medianMedian, double& medianDeviation,
-                                                       double& medianMeanDevMedian, double& medianMeanDevDeviation,
-                                                       double& noiseMedian, double& noiseDeviation,
-                                                       double& noiseRatioMedian, double& noiseRatioDeviation,
-                                                       double& starsMedian, double& starsDeviation,
-                                                       double& starResidualMedian, double& starResidualDeviation,
-                                                       double& fwhmMeanDevMedian, double& fwhmMeanDevDeviation,
-                                                       double& eccentricityMeanDevMedian, double& eccentricityMeanDevDeviation,
-                                                       double& starResidualMeanDevMedian, double& starResidualMeanDevDeviation
-) const
-{
-   size_type measuresLength( measures.Length() );
-
-   Array<double> weight( measuresLength );
-   Array<double> fwhm( measuresLength );
-   Array<double> eccentricity( measuresLength );
-   Array<double> snrWeight( measuresLength );
-   Array<double> median( measuresLength );
-   Array<double> medianMeanDev( measuresLength );
-   Array<double> noise( measuresLength );
-   Array<double> noiseRatio( measuresLength );
-   Array<double> stars( measuresLength );
-   Array<double> starResidual( measuresLength );
-   Array<double> fwhmMeanDev( measuresLength );
-   Array<double> eccentricityMeanDev( measuresLength );
-   Array<double> starResidualMeanDev( measuresLength );
-
-   for ( size_type i = 0; i < measuresLength; ++i )
-   {
-      weight[i] = measures[i].weight;
-      fwhm[i] = measures[i].FWHM( subframeScale, scaleUnit );
-      eccentricity[i] = measures[i].eccentricity;
-      snrWeight[i] = measures[i].snrWeight;
-      median[i] = measures[i].Median( cameraGain,
-                                      TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit );
-      medianMeanDev[i] = measures[i].MedianMeanDev( cameraGain,
-                                                    TheSSCameraResolutionParameter->ElementData( cameraResolution ),
-                                                    dataUnit );
-      noise[i] = measures[i].Noise( cameraGain,
-                                     TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit );
-      noiseRatio[i] = measures[i].noiseRatio;
-      stars[i] = measures[i].stars;
-      starResidual[i] = measures[i].starResidual;
-      fwhmMeanDev[i] = measures[i].FWHMMeanDeviation( subframeScale, scaleUnit );
-      eccentricityMeanDev[i] = measures[i].eccentricityMeanDev;
-      starResidualMeanDev[i] = measures[i].starResidualMeanDev;
-   }
-
-   MeasureUtils::MedianAndMeanDeviation( weight, weightMedian, weightDeviation );
-   MeasureUtils::MedianAndMeanDeviation( fwhm, fwhmMedian, fwhmDeviation );
-   MeasureUtils::MedianAndMeanDeviation( eccentricity, eccentricityMedian, eccentricityDeviation );
-   MeasureUtils::MedianAndMeanDeviation( snrWeight, snrWeightMedian, snrWeightDeviation );
-   MeasureUtils::MedianAndMeanDeviation( median, medianMedian, medianDeviation );
-   MeasureUtils::MedianAndMeanDeviation( medianMeanDev, medianMeanDevMedian, medianMeanDevDeviation );
-   MeasureUtils::MedianAndMeanDeviation( noise, noiseMedian, noiseDeviation );
-   MeasureUtils::MedianAndMeanDeviation( noiseRatio, noiseRatioMedian, noiseRatioDeviation );
-   MeasureUtils::MedianAndMeanDeviation( stars, starsMedian, starsDeviation );
-   MeasureUtils::MedianAndMeanDeviation( starResidual, starResidualMedian, starResidualDeviation );
-   MeasureUtils::MedianAndMeanDeviation( fwhmMeanDev, fwhmMeanDevMedian, fwhmMeanDevDeviation );
-   MeasureUtils::MedianAndMeanDeviation( eccentricityMeanDev, eccentricityMeanDevMedian, eccentricityMeanDevDeviation );
-   MeasureUtils::MedianAndMeanDeviation( starResidualMeanDev, starResidualMeanDevMedian, starResidualMeanDevDeviation );
 }
 
 static String UniqueFilePath( const String& filePath )

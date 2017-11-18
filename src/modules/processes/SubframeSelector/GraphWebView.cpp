@@ -159,7 +159,7 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
    String indexedLocks = "{ ";
    String indexedSigmas = "{ ";
    for ( DataPointVector::const_iterator i = dataset->Begin(); i != dataset->End(); ++i ) {
-      double dataSigma = MeasureUtils::DeviationNormalize( i->data, median, meanDev );
+      double dataSigma = DeviationNormalize( i->data, median, meanDev );
       graphingArray += String().Format(
               "[ %i, [%.4f, %.4f, %.4f], [%.4f, %.4f, %.4f], [%.4f, %.4f, %.4f], [%.4f, %.4f, %.4f] ], ",
               i->x,

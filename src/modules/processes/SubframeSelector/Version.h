@@ -4,7 +4,7 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.02.01.0002
+// Standard SubframeSelector Process Module Version 01.03.01.0003
 // ----------------------------------------------------------------------------
 // Version.h - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
@@ -54,9 +54,9 @@
 #define __Version_h
 
 #define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     02
+#define MODULE_VERSION_MINOR     03
 #define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0002
+#define MODULE_VERSION_BUILD     0003
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2017

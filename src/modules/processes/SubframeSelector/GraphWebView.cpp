@@ -76,7 +76,8 @@ GraphWebView::GraphWebView( Control& parent ) : WebView( parent ), eventCheckTim
 void GraphWebView::__MouseEnter( Control& sender )
 {
    keepChecking = true;
-   if ( !eventCheckTimer.IsRunning() )
+   if ( !eventCheckTimer.IsRunning() && !eventHandlers.IsNull() &&
+        (eventHandlers->onApprove != nullptr || eventHandlers->onUnlock != nullptr) )
       eventCheckTimer.Start();
 }
 
@@ -144,95 +145,149 @@ void GraphWebView::OnUnlock( unlock_event_handler handler, Control& receiver )
 
 void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset )
 {
-   String coreSrcDir = PixInsightSettings::GlobalString ( "Application/SrcDirectory" );
+   int length = dataset->Length();
+
+   // Sort the dataset by X values to ensure a proper line
+   DataPointVector datasetSortedX = dataset->Sorted( DataPointSortingBinaryPredicate( false ) );
+   // Sort the dataset by Y values to make distribution graphs
+   DataPointVector datasetSortedY = dataset->Sorted( DataPointSortingBinaryPredicate( true ) );
 
    // Find Median and MAD of the values
-   Array<double> values( dataset->Length() );
-   for ( int i = 0; i < dataset->Length(); ++i )
+   Array<double> values( length );
+   for ( int i = 0; i < length; ++i )
       values[i] = dataset->At( i )->data;
    double median, meanDev;
    MeasureUtils::MedianAndMeanDeviation( values, median, meanDev );
 
-   // Create the Graphing arrays and backend objects
+   // Find Min, Max, and Range of the values
+   double min = 0;
+   double max = 0;
+   if ( !dataset->IsEmpty() )
+   {
+      min = datasetSortedY.Begin()->data;
+      max = datasetSortedY.At( datasetSortedY.Length() - 1 )->data;
+   }
+   double range = max - min;
+
+   // Determine the # of bins and their width
+   int bins = 0;
+   double binRange = 0;
+   if ( !dataset->IsEmpty() )
+   {
+      bins = pcl::Sqrt( length );
+      binRange = range / bins;
+   }
+
+   // Create initial bin X values
+   DataPointVector datasetBinned( bins );
+   for ( int b = 0; b < bins; ++b )
+   {
+      datasetBinned[b].x = min + binRange/2 + binRange * b; // Center the bin value
+      datasetBinned[b].data = 0;
+   }
+   // Sort Y values into bins
+   double maxBins = 0;
+   for ( DataPointVector::const_iterator i = dataset->Begin(); i != dataset->End(); ++i )
+   {
+      int b = pcl::Min( bins - 1, pcl::RoundInt( pcl::Floor( (i->data - min) / binRange ) ) );
+      datasetBinned[b].data += 1;
+      maxBins = pcl::Max( maxBins, datasetBinned[b].data );
+   }
+
+   // Create initial Empirical Distribution Function vector
+   DataPointArray datasetEDF = DataPointArray();
+   double currentEDF = 0;
+   for ( DataPointArray::const_iterator i = datasetSortedY.Begin(); i != datasetSortedY.End(); ++i )
+   {
+      currentEDF += 1.0/(double)length;
+
+      // For extremely close values, add to the previous value
+      if ( !datasetEDF.IsEmpty() && datasetEDF.At( datasetEDF.Length()-1 )->x == i->data )
+         datasetEDF.At( datasetEDF.Length()-1 )->data = currentEDF;
+      // Otherwise, add a new point at the value and with one step up
+      else
+      {
+         DataPoint dataPoint = DataPoint();
+         dataPoint.x = i->data;
+         dataPoint.data = currentEDF;
+         datasetEDF.Append( dataPoint );
+      }
+   }
+
+   // Create the Graphing arrays and backend objects (Plots)
    String graphingArray = "[ ";
    String indexedApprovals = "{ ";
    String indexedLocks = "{ ";
    String indexedSigmas = "{ ";
-   for ( DataPointVector::const_iterator i = dataset->Begin(); i != dataset->End(); ++i ) {
+   for ( DataPointVector::const_iterator i = datasetSortedX.Begin(); i != datasetSortedX.End(); ++i )
+   {
       double dataSigma = DeviationNormalize( i->data, median, meanDev );
       graphingArray += String().Format(
-              "[ %i, [%.4f, %.4f, %.4f], [%.4f, %.4f, %.4f], [%.4f, %.4f, %.4f], [%.4f, %.4f, %.4f] ], ",
+              "[ %.0f, [%.4f, %.4f, %.4f], [%.4f, %.4f, %.4f], [%.4f, %.4f, %.4f], [%.4f, %.4f, %.4f] ], ",
               i->x,
               i->weight, i->weight, i->weight,
               median - meanDev, median, median + meanDev,
               median - meanDev*2, median, median + meanDev*2,
               i->data, i->data, i->data
       );
-      indexedLocks += String().Format( "%i:%s, ", i->x, i->locked ? "true" : "false" );
-      indexedApprovals += String().Format( "%i:%s, ", i->x, i->approved ? "true" : "false" );
-      indexedSigmas += String().Format( "%i:%.4f, ", i->x, dataSigma );
+      indexedLocks += String().Format( "%.0f:%s, ", i->x, i->locked ? "true" : "false" );
+      indexedApprovals += String().Format( "%.0f:%s, ", i->x, i->approved ? "true" : "false" );
+      indexedSigmas += String().Format( "%.0f:%.4f, ", i->x, dataSigma );
    }
    indexedSigmas += "}";
    indexedLocks += "}";
    indexedApprovals += "}";
    graphingArray += "]";
 
-   String html = R"DELIM(
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<script type="text/javascript" src=")DELIM" + File::FileURI( coreSrcDir + "/scripts/Dygraph/dygraph.js" ) + R"DELIM("></script>
-<script type="text/javascript" src=")DELIM" + File::FileURI( coreSrcDir + "/scripts/Dygraph/dygraph-extra.js" ) + R"DELIM("></script>
-<link rel="stylesheet" href=")DELIM" + File::FileURI( coreSrcDir + "/scripts/Dygraph/dygraph-doc.css" ) + R"DELIM("/>
-<link rel="stylesheet" href=")DELIM" + File::FileURI( coreSrcDir + "/scripts/Dygraph/dygraph.css" ) + R"DELIM("/>
-<style>
-   /* No white background, makes it appear more like a normal control */
-   html, body {
-      background-color: rgba(0,0,0,0);
-   }
+   // Create the Graphing arrays and backend objects (Histograph)
+   String histographingArray = "[ ";
+   // Master loop through the Histogram bins
+   for ( DataPointVector::const_iterator b = datasetBinned.Begin(); b != datasetBinned.End(); ++b )
+   {
+      // First, look for EDF values that come before this bin
+      int eAdded = 0;
+      int eMatched = -1;
+      for ( int e = 0; e != datasetEDF.Length(); ++e )
+      {
+         DataPoint* edf = datasetEDF.At( e );
 
-   /* Fit the graph within the confines of the view */
-   #graph {
-      height: 92vh;
-      weight: 80vw;
-   }
+         if ( edf->x < b->x ) // EDF < Bin, add the EDF and remove it later
+         {
+            histographingArray += String().Format( "[ %.8f, null, %.4f ], ", edf->x, edf->data );
+            ++eAdded;
+         }
+         else if ( edf->x == b->x ) // EDF = Bin, mark the EDF to be merged and remove it later
+         {
+            eMatched = e;
+            ++eAdded;
+         }
+         else // Sorted array means there's no more EDFs before this Bin
+            break;
+      }
 
-   /* Override the ugly legend for something more like a PI Tooltip */
-   .dygraph-legend {
-      font-size: 13px;
-      width: auto;
-      padding: 1px;
-      background-color: black;
-      border: 1px solid gray;
-      border-radius: 2px;
-   }
+      // If this point aligns with an EDF value, create that joint point
+      if ( eMatched >= 0 )
+         histographingArray += String().Format( "[ %.8f, %.0f, %.4f ], ", b->x, b->data, datasetEDF[eMatched].data );
+      else // Add this bin alone
+         histographingArray += String().Format( "[ %.8f, %.0f, null ], ", b->x, b->data );
 
-   /* Fix the table too */
-   table, tr, tr:nth-child(even), tr:nth-child(odd), td {
-      padding: 2px;
-      background-color: black;
-      color: white;
-      border: 0px solid black;
-      border-collapse: collapse;
+      // Remove the EDF values that were already added
+      if ( eAdded > 0 )
+         datasetEDF.Remove( datasetEDF.Begin(), eAdded );
    }
-   td:first-child {
-      font-weight: bold;
-      text-align: right;
-   }
+   // Add any EDF values that weren't already
+   for ( DataPointArray::const_iterator e = datasetEDF.Begin(); e != datasetEDF.End(); ++e )
+      histographingArray += String().Format( "[ %.8f, null, %.4f ], ", e->x, e->data );
+   histographingArray += "]";
 
-   /* Shrink the axis labels a little to prevent overlap */
-   .dygraph-axis-label {
-      font-size: 11px;
-   }
-</style>
-</head>
-<body>
+   String html = Header() + R"DELIM(
 <div id="graph"></div>
+<div id="histograph"></div>
 <script type="text/javascript">
 
-   // Store the graph later globaly for access
+   // Store the graphs later globally for access
    graph = null;
+   histograph = null;
 
    // Some items are stored in Objects (hashmap-like) for quick lookup
    approvals = )DELIM" + indexedApprovals + R"DELIM(;
@@ -240,7 +295,15 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
    sigmas = )DELIM" + indexedSigmas + R"DELIM(;
 
    // This is the Array of data that will be graphed
-   dataset = )DELIM" + graphingArray + R"DELIM(;
+   datasetValues = )DELIM" + graphingArray + R"DELIM(;
+   datasetHistogram = )DELIM" + histographingArray + R"DELIM(;
+
+   // Helpful information for the legend
+   datasetMin = )DELIM" + String().Format( "%.8f", min ) + R"DELIM(;
+   datasetMax = )DELIM" + String().Format( "%.8f", max ) + R"DELIM(;
+   datasetRange = )DELIM" + String().Format( "%.8f", range ) + R"DELIM(;
+   datasetBinRange = )DELIM" + String().Format( "%.8f", binRange ) + R"DELIM(;
+   datasetMaxValue = )DELIM" + String().Format( "%.8f", maxBins ) + R"DELIM(;
 
    // For the parent controls to communicate with us, we'll
    // store the indices that have been selected with this interface
@@ -285,6 +348,33 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
       html += '</table>';
       return html;
    }
+   function legendFormatterHistograph(data) {
+      let html = '<center>';
+      let hasFirstLine = false;
+      data.series.forEach(function(series) {
+         if (series.labelHTML === "Count" && series.yHTML !== undefined) {
+            html += '<strong>' + series.labelHTML + '</strong><br/>';
+
+            html += (data.x - datasetBinRange/2.0).toFixed(4);
+            html += ' - ';
+            html += (data.x + datasetBinRange/2.0).toFixed(4);
+            html += '<br/>';
+
+            html += '<strong>' + series.yHTML + '</strong>';
+            hasFirstLine = true;
+         }
+         if (series.labelHTML === "Probability" && series.yHTML !== undefined) {
+            if (hasFirstLine)
+               html += '<br/>';
+            html += '<strong>' + series.labelHTML + '</strong><br/>';
+
+            html += '< ' + data.x.toFixed(4) + '<br/>';
+            html += '<strong>' + (series.y * 100.0).toFixed(1) + '%</strong>';
+         }
+      });
+      html += '</center>';
+      return html;
+   }
 
    // The main series can be drawn to indicate approved and locked frames
    function drawApprovedPoint(g, series, ctx, cx, cy, color, radius, idx) {
@@ -293,7 +383,7 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
 
-      if (approvals[dataset[idx][0]] === false) {
+      if (approvals[datasetValues[idx][0]] === false) {
          ctx.strokeStyle = "red";
          ctx.lineWidth = 3;
 
@@ -310,7 +400,7 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
          ctx.stroke();
       }
 
-      if (locks[dataset[idx][0]] === true) {
+      if (locks[datasetValues[idx][0]] === true) {
          ctx.strokeStyle = "black";
          ctx.lineWidth = 1;
 
@@ -323,20 +413,55 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
       ctx.restore()
    }
 
+   // Custom Plotter to show bars instead of a line
+   function barChartPlotter(e) {
+      var ctx = e.drawingContext;
+      var points = e.points;
+      var y_bottom = e.dygraph.toDomYCoord(0);  // see http://dygraphs.com/jsdoc/symbols/Dygraph.html#toDomYCoord
+
+      // Find the bar width from only points that have values
+      var point1 = undefined;
+      var point2 = undefined;
+      for (var i = 0; i < points.length; i++) {
+         if (points[i].yval !== null && point1 === undefined) {
+            point1 = points[i];
+            continue;
+         }
+         if (points[i].yval !== null && point2 === undefined) {
+            point2 = points[i];
+            break;
+         }
+      }
+      if (point1 == undefined || point2 == undefined)
+         return;
+      var bar_width = 0.9 * (point2.canvasx - point1.canvasx);
+
+      ctx.fillStyle = e.color;
+
+      // Do the actual plotting.
+      for (var i = 0; i < points.length; i++) {
+         var p = points[i];
+         var center_x = p.canvasx;  // center of the bar
+
+         ctx.fillRect(center_x - bar_width / 2.0, p.canvasy,
+            bar_width, y_bottom - p.canvasy);
+         ctx.strokeRect(center_x - bar_width / 2.0, p.canvasy,
+            bar_width, y_bottom - p.canvasy);
+      }
+   }
+
    graph = new Dygraph(
-      document.getElementById("graph"), dataset,
+      document.getElementById("graph"), datasetValues,
       {
-         ylabel: ")DELIM" + dataname + R"DELIM(",
-         y2label: " Weight",
+         title: " ", // empty space above graph for our own labels
+         xlabel: "Index",
 
          labels: [
             "Index",
-            " Weight",
-            " Median", " Median NOLEGEND",
+            " Weight", // if Weight is graphed, we need a unique name for this too
+            " Median", " Median NOLEGEND", // above, plus the 'hidden' 2x Sigma version
             ")DELIM" + dataname + R"DELIM(",
          ],
-         labelsSeparateLines: true,
-
 
          series: {
             " Weight": {
@@ -397,12 +522,189 @@ void GraphWebView::SetDataset( const String& dataname, DataPointVector* dataset 
          rightGap: 20,
       }
    );
+
+   histograph = new Dygraph(
+      document.getElementById("histograph"), datasetHistogram,
+      {
+         title: " ", // empty space above graph for our own labels
+         xlabel: ")DELIM" + dataname + R"DELIM(",
+
+         labels: [
+            ")DELIM" + dataname + R"DELIM(",
+            "Count",
+            "Probability",
+         ],
+
+         connectSeparatedPoints: true,
+         series: {
+            "Count": {
+               axis: "y",
+               color: "#4394E5",
+               plotter: barChartPlotter,
+            },
+            "Probability": {
+               axis: "y2",
+               strokeWidth: 1,
+               color: "#333333",
+               stepPlot: true,
+            },
+         },
+
+         // Separate the Axes' Grids
+         axes: {
+            y: {
+               independentTicks: true,
+               valueRange: [0, datasetMaxValue*1.1],
+            },
+            y2: {
+               independentTicks: true,
+               drawGrid: false,
+               valueRange: [0, 1],
+            },
+         },
+
+         digitsAfterDecimal: 6,
+
+         // Legend acts more like a tooltip
+         legend: "follow",
+         legendFormatter: legendFormatterHistograph,
+
+         // Sizing and padding
+         xRangePad: 10,
+         yRangePad: 0,
+         dateWindow: [datasetMin - datasetBinRange/3, datasetMax + datasetBinRange/3],
+      }
+   );
+
+   // Dygraphs replaces the div content, but we want our own labels, so add them afterwards
+   var node = document.createElement("div");
+   var nodeClass = document.createAttribute("class");
+   nodeClass.value = "label-y1";
+   node.attributes.setNamedItem(nodeClass);
+   node.appendChild(document.createTextNode(")DELIM" + dataname + R"DELIM("));
+   document.getElementById("graph").appendChild(node);
+
+   node = document.createElement("div");
+   nodeClass = document.createAttribute("class");
+   nodeClass.value = "label-y2";
+   node.attributes.setNamedItem(nodeClass);
+   node.appendChild(document.createTextNode("Weight"));
+   document.getElementById("graph").appendChild(node);
+
+   node = document.createElement("div");
+   nodeClass = document.createAttribute("class");
+   nodeClass.value = "label-y1";
+   node.attributes.setNamedItem(nodeClass);
+   node.appendChild(document.createTextNode("Count"));
+   document.getElementById("histograph").appendChild(node);
+
+   node = document.createElement("div");
+   nodeClass = document.createAttribute("class");
+   nodeClass.value = "label-y2";
+   node.attributes.setNamedItem(nodeClass);
+   node.appendChild(document.createTextNode("Probability"));
+   document.getElementById("histograph").appendChild(node);
+
 </script>
+   )DELIM" + Footer();
+
+   SetHTML( html.ToUTF8() );
+}
+
+// ----------------------------------------------------------------------------
+
+String GraphWebView::Header() const
+{
+   String coreSrcDir = PixInsightSettings::GlobalString ( "Application/SrcDirectory" );
+
+   return R"DELIM(
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script type="text/javascript" src=")DELIM" + File::FileURI( coreSrcDir + "/scripts/Dygraph/dygraph.js" ) + R"DELIM("></script>
+<script type="text/javascript" src=")DELIM" + File::FileURI( coreSrcDir + "/scripts/Dygraph/dygraph-extra.js" ) + R"DELIM("></script>
+<link rel="stylesheet" href=")DELIM" + File::FileURI( coreSrcDir + "/scripts/Dygraph/dygraph-doc.css" ) + R"DELIM("/>
+<link rel="stylesheet" href=")DELIM" + File::FileURI( coreSrcDir + "/scripts/Dygraph/dygraph.css" ) + R"DELIM("/>
+<style>
+   /* No white background, makes it appear more like a normal control */
+   html, body {
+      background-color: rgba(0,0,0,0);
+      overflow: hidden;
+   }
+
+   /* Fit the graph within the confines of the view */
+   #graph {
+      position: fixed;
+      top: 0px;
+      left: -15px;
+      height: 100vh;
+      width: 67vw;
+   }
+   #histograph {
+      position: fixed;
+      top: 0px;
+      right: -15px;
+      height: 100vh;
+      width: 37vw;
+   }
+
+   /* Create axis labels at the top to save horizontal space */
+   .label-y1, .label-y2 {
+      position: absolute;
+      top: 0px;
+      font-size: 12px;
+      font-weight: bold;
+   }
+   .label-y1 {
+      left: 40px;
+   }
+   .label-y2 {
+      right: 60px;
+   }
+
+   /* Override the ugly legend for something more like a PI Tooltip */
+   .dygraph-legend {
+      font-size: 13px;
+      width: auto;
+      padding: 1px;
+      background-color: black;
+      color: white;
+      border: 1px solid gray;
+      border-radius: 2px;
+   }
+
+   /* Fix the table too */
+   table, tr, tr:nth-child(even), tr:nth-child(odd), td {
+      padding: 2px;
+      background-color: black;
+      color: white;
+      border: 0px solid black;
+      border-collapse: collapse;
+   }
+   td:first-child {
+      font-weight: bold;
+      text-align: right;
+   }
+
+   /* Shrink the axis labels a little to prevent overlap */
+   .dygraph-axis-label {
+      font-size: 11px;
+   }
+</style>
+</head>
+<body>
+   )DELIM";
+}
+
+// ----------------------------------------------------------------------------
+
+String GraphWebView::Footer() const
+{
+   return R"DELIM(
 </body>
 </html>
    )DELIM";
-
-   SetHTML( html.ToUTF8() );
 }
 
 // ----------------------------------------------------------------------------

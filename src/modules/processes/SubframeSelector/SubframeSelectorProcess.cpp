@@ -81,6 +81,8 @@ SubframeSelectorProcess::SubframeSelectorProcess() : MetaProcess()
    new SSSubframeEnabled( TheSSSubframesParameter );
    new SSSubframePath( TheSSSubframesParameter );
 
+   new SSFileCache( this );
+
    new SSSubframeScale( this );
    new SSCameraGain( this );
    new SSCameraResolution( this );

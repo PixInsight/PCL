@@ -63,6 +63,8 @@ SSSubframes*                     TheSSSubframesParameter = nullptr;
 SSSubframeEnabled*               TheSSSubframeEnabledParameter = nullptr;
 SSSubframePath*                  TheSSSubframePathParameter = nullptr;
 
+SSFileCache*                     TheSSFileCacheParameter = nullptr;
+
 SSSubframeScale*                 TheSSSubframeScaleParameter = nullptr;
 SSCameraGain*                    TheSSCameraGainParameter = nullptr;
 SSCameraResolution*              TheSSCameraResolutionParameter = nullptr;
@@ -219,6 +221,30 @@ SSSubframePath::SSSubframePath( MetaTable* T ) : MetaString( T )
 IsoString SSSubframePath::Id() const
 {
    return "subframePath";
+}
+
+// ----------------------------------------------------------------------------
+
+SSFileCache::SSFileCache( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheSSFileCacheParameter = this;
+}
+
+IsoString SSFileCache::Id() const
+{
+   return "fileCache";
+}
+
+bool SSFileCache::DefaultValue() const
+{
+   return true;
+}
+
+IsoString SSFileCache::Tooltip() const
+{
+   return "<p>Enable this option skip measuring subframes that have already been measured and are in the file cache. "
+           "Each time a subframe is measured, its file cache entry is created or overwritten.</p>"
+           "<p>When updates to this Module affect measurements, the file cache will not use older items.</p>";
 }
 
 // ----------------------------------------------------------------------------

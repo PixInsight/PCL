@@ -129,6 +129,7 @@ public:
             PushButton        SubframeImages_Toggle_PushButton;
             PushButton        SubframeImages_Remove_PushButton;
             PushButton        SubframeImages_Clear_PushButton;
+            CheckBox          SubframeImages_FileCache_Control;
 
       SectionBar        SystemParameters_SectionBar;
       Control           SystemParameters_Control;
@@ -254,7 +255,9 @@ public:
          HorizontalSizer   MeasurementGraph_Top_Sizer;
             ComboBox          MeasurementGraph_GraphProperty_Control;
             PushButton        MeasurementGraph_Save_PushButton;
-         GraphWebView      MeasurementGraph_Graph;
+         HorizontalSizer   MeasurementGraph_Bottom_Sizer;
+            GraphWebView      MeasurementGraph_Graph;
+            GraphWebView      MeasurementDistribution_Graph;
    };
 
    GUIData* GUI = nullptr;

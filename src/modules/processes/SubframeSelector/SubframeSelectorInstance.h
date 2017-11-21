@@ -120,6 +120,7 @@ private:
 
    // Types of run methods
    pcl_enum       routine;
+   pcl_bool       fileCache;
 
    // The set of subframes to measure
    subframe_list  subframes;
@@ -173,22 +174,6 @@ private:
 
    // Read a subframe file into a Thread
    thread_list CreateThreadForSubframe( int index, const String&, MeasureThreadInputData* );
-
-   // Get Median and Mean Deviation from Median of an Array
-   void MedianAndMeanDeviation( double&, double&,
-                                double&, double&,
-                                double&, double&,
-                                double&, double&,
-                                double&, double&,
-                                double&, double&,
-                                double&, double&,
-                                double&, double&,
-                                double&, double&,
-                                double&, double&,
-                                double&, double&,
-                                double&, double&,
-                                double&, double&
-   ) const;
 
    // Write output file
    void WriteMeasuredImage( MeasureItem* measureItem );

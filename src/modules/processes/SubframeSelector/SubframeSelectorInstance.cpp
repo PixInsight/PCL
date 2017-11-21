@@ -98,6 +98,7 @@ const float __5x5B3Spline_kj[] =
 SubframeSelectorInstance::SubframeSelectorInstance( const MetaProcess* m ) :
    ProcessImplementation( m ),
    routine( SSRoutine::Default ),
+   fileCache( TheSSFileCacheParameter->DefaultValue() ),
    subframes(),
    subframeScale( TheSSSubframeScaleParameter->DefaultValue() ),
    cameraGain( TheSSCameraGainParameter->DefaultValue() ),
@@ -147,6 +148,7 @@ void SubframeSelectorInstance::Assign( const ProcessImplementation& p )
    {
       routine                                = x->routine;
       subframes                              = x->subframes;
+      fileCache                              = x->fileCache;
       subframeScale                          = x->subframeScale;
       cameraGain                             = x->cameraGain;
       cameraResolution                       = x->cameraResolution;
@@ -415,20 +417,9 @@ private:
       m_outputData.stars = fits.Length();
 
       // Determine the best fit to weight the others against
-      double minMAD = -1;
+      double minMAD = DBL_MAX;
       for ( psf_list::const_iterator i = fits.Begin(); i != fits.End(); ++i )
-      {
-         double MAD = i->mad;
-
-         if ( minMAD <= 0 )
-         {
-            minMAD = MAD;
-            continue;
-         }
-
-         if ( MAD < minMAD )
-            minMAD = MAD;
-      }
+         minMAD = pcl::Min( minMAD, i->mad );
 
       // Analyze each star parameter against the best residual
       double fwhmSumSigma = 0;
@@ -463,13 +454,13 @@ private:
 
       // Determine Mean Deviation for each star parameter
       m_outputData.fwhmMeanDev = pcl::AvgDev( fwhms.Begin(), fwhms.End(),
-                                              pcl::Mean( fwhms.Begin(), fwhms.End() ) );
+                                              pcl::Median( fwhms.Begin(), fwhms.End() ) );
       m_outputData.fwhmMeanDev = PSFData::FWHM( PSFFunction( m_data->instance->psfFit ),
                                                 m_outputData.fwhmMeanDev, 0 ); // beta is unused here
       m_outputData.eccentricityMeanDev = pcl::AvgDev( eccentricities.Begin(), eccentricities.End(),
-                                                      pcl::Mean( eccentricities.Begin(), eccentricities.End() ) );
+                                                      pcl::Median( eccentricities.Begin(), eccentricities.End() ) );
       m_outputData.starResidualMeanDev = pcl::AvgDev( residuals.Begin(), residuals.End(),
-                                                      pcl::Mean( residuals.Begin(), residuals.End() ) );
+                                                      pcl::Median( residuals.Begin(), residuals.End() ) );
    }
 
    int                        m_index;
@@ -952,7 +943,7 @@ bool SubframeSelectorInstance::Measure() {
                    * Check for the subframe in the cache, and use that if possible
                    */
                   MeasureData cacheData( item.path );
-                  if ( cacheData.GetFromCache() )
+                  if ( cacheData.GetFromCache() && fileCache )
                   {
                      console.NoteLn( "<end><cbr>* Retrieved data from file cache." );
                      MeasureItem m( subframes.Length()-subframes_copy.Length(), item.path );
@@ -966,6 +957,8 @@ bool SubframeSelectorInstance::Measure() {
                    */
                   else
                   {
+                     if ( fileCache )
+                        console.NoteLn( "<end><cbr>* Ignored data from file cache." );
                      thread_list threads = CreateThreadForSubframe( subframes.Length()-subframes_copy.Length(),
                                                                     item.path, &inputThreadData );
                      *i = *threads;
@@ -1295,16 +1288,22 @@ void SubframeSelectorInstance::WriteMeasuredImage( MeasureItem* item )
       FITSKeywordArray keywords;
       inputFile.ReadFITSKeywords( keywords );
 
-      keywords << FITSHeaderKeyword( "COMMENT", IsoString(), "Measured with " + PixInsightVersion::AsString() )
-               << FITSHeaderKeyword( "HISTORY", IsoString(), "Measured with " + Module->ReadableVersion() )
-               << FITSHeaderKeyword( "HISTORY", IsoString(), "Measured with SubframeSelector process" );
+      // Remove old weight keywords
+      FITSKeywordArray newKeywords = FITSKeywordArray();
+      for ( FITSKeywordArray::const_iterator k = keywords.Begin(); k != keywords.End(); ++k )
+         if ( k->name != IsoString( outputKeyword ) )
+            newKeywords.Append( *k );
+
+      newKeywords << FITSHeaderKeyword( "COMMENT", IsoString(), "Measured with " + PixInsightVersion::AsString() )
+                  << FITSHeaderKeyword( "HISTORY", IsoString(), "Measured with " + Module->ReadableVersion() )
+                  << FITSHeaderKeyword( "HISTORY", IsoString(), "Measured with SubframeSelector process" );
 
       if ( !outputKeyword.IsEmpty() )
-         keywords << FITSHeaderKeyword( outputKeyword,
-                                        String().Format( "%.6f", item->weight ),
-                                        "SubframeSelector.weight" );
+         newKeywords << FITSHeaderKeyword( outputKeyword,
+                                           String().Format( "%.6f", item->weight ),
+                                           "SubframeSelector.weight" );
 
-      outputFile.WriteFITSKeywords( keywords );
+      outputFile.WriteFITSKeywords( newKeywords );
    }
    else
    {
@@ -1395,7 +1394,7 @@ bool SubframeSelectorInstance::Output()
 
             case SSOnError::Abort:
                console.NoteLn( "Abort on error." );
-               throw ProcessAborted();
+               throw;
 
             case SSOnError::AskUser:
             {
@@ -1510,6 +1509,9 @@ void* SubframeSelectorInstance::LockParameter( const MetaParameter* p, size_type
       return &subframes[tableRow].enabled;
    else if ( p == TheSSSubframePathParameter )
       return subframes[tableRow].path.Begin();
+
+   else if ( p == TheSSFileCacheParameter )
+      return &fileCache;
 
    else if ( p == TheSSSubframeScaleParameter )
       return &subframeScale;

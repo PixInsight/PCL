@@ -130,6 +130,22 @@ extern SSSubframePath* TheSSSubframePathParameter;
 
 // ----------------------------------------------------------------------------
 
+class SSFileCache : public MetaBoolean
+{
+public:
+
+   SSFileCache( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+
+   IsoString Tooltip() const;
+};
+
+extern SSFileCache* TheSSFileCacheParameter;
+
+// ----------------------------------------------------------------------------
+
 class SSSubframeScale : public MetaFloat
 {
 public:

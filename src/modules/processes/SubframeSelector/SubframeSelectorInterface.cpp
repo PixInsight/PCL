@@ -242,6 +242,7 @@ TreeBox::Node* SubframeSelectorInterface::GetMeasurementNode( MeasureItem* item 
 void SubframeSelectorInterface::UpdateControls()
 {
    GUI->Routine_Control.SetCurrentItem( instance.routine );
+   GUI->SubframeImages_FileCache_Control.SetChecked( instance.fileCache );
    UpdateSubframeImagesList();
    UpdateSystemParameters();
    UpdateStarDetectorParameters();
@@ -512,20 +513,7 @@ void SubframeSelectorInterface::UpdateMeasurementImagesList()
       UpdateMeasurementImageItem( i, &measuresSorted[i] );
    }
 
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 3 );
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 4 );
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 5 );
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 6 );
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 7 );
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 8 );
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 9 );
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 10 );
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 11 );
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 12 );
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 13 );
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 14 );
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 15 );
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 16 );
+   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 3 ); // filename
 
    // If the table was cleared, setup previous selections
    if ( shouldRecreate && !instance.measures.IsEmpty() )
@@ -1195,7 +1183,9 @@ void SubframeSelectorInterface::__ComboSelected( ComboBox& sender, int itemIndex
 
 void SubframeSelectorInterface::__CheckboxUpdated( Button& sender, Button::check_state state )
 {
-   if ( sender == GUI->StarDetectorParameters_ApplyHotPixelFilter_Control )
+   if ( sender == GUI->SubframeImages_FileCache_Control )
+      instance.fileCache = state == CheckState::Checked;
+   else if ( sender == GUI->StarDetectorParameters_ApplyHotPixelFilter_Control )
       instance.applyHotPixelFilterToDetectionImage = state == CheckState::Checked;
    else if ( sender == GUI->StarDetectorParameters_PSFFitCircular_Control )
       instance.psfFitCircular = state == CheckState::Checked;
@@ -1374,7 +1364,9 @@ void SubframeSelectorInterface::__FileDrop( Control& sender, const Point& pos, c
 
 // ----------------------------------------------------------------------------
 
-SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : MeasurementGraph_Graph( w )
+SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) :
+        MeasurementGraph_Graph( w ),
+        MeasurementDistribution_Graph( w )
 {
    pcl::Font fnt = w.Font();
 
@@ -1447,6 +1439,11 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
    SubframeImages_Clear_PushButton.SetToolTip( "<p>Clear the list of subframes.</p>" );
    SubframeImages_Clear_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click, w );
 
+   SubframeImages_FileCache_Control.SetText( "File Cache" );
+   SubframeImages_FileCache_Control.SetToolTip( TheSSFileCacheParameter->Tooltip() );
+   SubframeImages_FileCache_Control.OnCheck(
+           (Button::check_event_handler) &SubframeSelectorInterface::__CheckboxUpdated, w );
+
    SubframeButtons_Sizer.SetSpacing( 4 );
    SubframeButtons_Sizer.Add( SubframeImages_AddFiles_PushButton );
    SubframeButtons_Sizer.Add( SubframeImages_Invert_PushButton );
@@ -1454,6 +1451,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
    SubframeButtons_Sizer.Add( SubframeImages_Remove_PushButton );
    SubframeButtons_Sizer.Add( SubframeImages_Clear_PushButton );
    SubframeButtons_Sizer.AddStretch();
+   SubframeButtons_Sizer.Add( SubframeImages_FileCache_Control );
 
    SubframeImages_Sizer.SetSpacing( 4 );
    SubframeImages_Sizer.Add( SubframeImages_TreeBox, 100 );
@@ -2081,7 +2079,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
 
    MeasurementTable_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
    MeasurementTable_TreeBox.SetScaledMinWidth( 400 );
-   MeasurementTable_TreeBox.SetNumberOfColumns( 5 );
+   MeasurementTable_TreeBox.SetNumberOfColumns( 18 );
    MeasurementTable_TreeBox.SetHeaderText( 0, "Ind." );
    MeasurementTable_TreeBox.SetScaledColumnWidth( 0, 40 );
    MeasurementTable_TreeBox.SetHeaderIcon( 1, Bitmap( w.ScaledResource( ":/icons/picture-ok.png" ) ) );
@@ -2104,6 +2102,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
    MeasurementTable_TreeBox.SetHeaderText( 14, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::FWHMMeanDev ) );
    MeasurementTable_TreeBox.SetHeaderText( 15, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::EccentricityMeanDev ) );
    MeasurementTable_TreeBox.SetHeaderText( 16, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::StarResidualMeanDev ) );
+   MeasurementTable_TreeBox.SetHeaderText( 17, " " ); // blank 'spacer' column
    MeasurementTable_TreeBox.EnableMultipleSelections();
    MeasurementTable_TreeBox.DisableRootDecoration();
    MeasurementTable_TreeBox.EnableAlternateRowColor();
@@ -2186,8 +2185,8 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
    Right_Sizer.Add( MeasurementGraph_SectionBar );
    Right_Sizer.Add( MeasurementGraph_Control, 100 );
 
-   Global_Sizer.Add( Left_Sizer, 20 );
-   Global_Sizer.Add( Right_Sizer, 80 );
+   Global_Sizer.Add( Left_Sizer, 15 );
+   Global_Sizer.Add( Right_Sizer, 85 );
 
    w.SetSizer( Global_Sizer );
 

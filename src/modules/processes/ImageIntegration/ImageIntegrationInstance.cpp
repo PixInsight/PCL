@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.16.00.0445
+// Standard ImageIntegration Process Module Version 01.16.01.0447
 // ----------------------------------------------------------------------------
-// ImageIntegrationInstance.cpp - Released 2017-10-02T07:41:53Z
+// ImageIntegrationInstance.cpp - Released 2017-11-24T09:58:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -1427,7 +1427,8 @@ void IntegrationFile::Open( const String& path, const String& nmlPath, const Str
                                || instance.p_generateDrizzleData &&
                                   instance.p_weightMode == IIWeightMode::NoiseEvaluationWeight;
 
-   bool needScale = needNoise  || generateOutput &&
+   bool needScale = needNoise  || instance.p_generateDrizzleData
+                               || instance.p_generateIntegratedImage &&
                                  (instance.p_normalization == IINormalization::AdditiveWithScaling ||
                                   instance.p_normalization == IINormalization::MultiplicativeWithScaling)
                                || instance.p_rejection != IIRejection::NoRejection &&
@@ -5350,4 +5351,4 @@ size_type ImageIntegrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInstance.cpp - Released 2017-10-02T07:41:53Z
+// EOF ImageIntegrationInstance.cpp - Released 2017-11-24T09:58:41Z

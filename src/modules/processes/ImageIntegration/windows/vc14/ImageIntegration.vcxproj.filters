@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.104
+# PixInsight Makefile Generator Script v1.106
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-08-02T11:07:54.357Z
+# Generated on .... 2017-11-07T09:03:10.427Z
 # Project id ...... ImageIntegration
 # Project type .... Module
 # Platform ........ Windows/vc14
@@ -16,13 +16,13 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>1b067097-6138-44ff-99c8-2cd0ade45fbc</UniqueIdentifier>
+      <UniqueIdentifier>c146cd0b-01c7-4249-bd0a-26c382f0f2e6</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>f23f7a97-944b-4d5c-8c9a-7a3c1980b9ff</UniqueIdentifier>
+      <UniqueIdentifier>2f88bdfe-3538-472e-b8aa-fb014486284c</UniqueIdentifier>
     </Filter>
     <Filter Include="Image Files">
-      <UniqueIdentifier>9fc8d53b-5cc1-4d79-962c-c3834a305b8e</UniqueIdentifier>
+      <UniqueIdentifier>460f550d-229e-4fcd-b8bc-a56a3ea54ff9</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -136,18 +136,6 @@
         <Filter>Image Files</Filter>
     </None>
     <None Include="..\..\grid.png">
-        <Filter>Image Files</Filter>
-    </None>
-    <None Include="..\..\__private\ImageIntegrationIcons.svg">
-        <Filter>Image Files</Filter>
-    </None>
-    <None Include="..\..\__private\ImageIntegrationIcons.svg-rect3260-4294966373.png">
-        <Filter>Image Files</Filter>
-    </None>
-    <None Include="..\..\__private\Pyramid.svg">
-        <Filter>Image Files</Filter>
-    </None>
-    <None Include="..\..\__private\Tetrahedron.svg">
         <Filter>Image Files</Filter>
     </None>
   </ItemGroup>

@@ -182,19 +182,19 @@ public:
 
    bool IsServerConnected() const
    {
-      // Should be: INDI::BaseClientImpl::serverIsConnected() const
+      // Should be: INDI::BaseClient::serverIsConnected() const
       return const_cast<INDIClient*>( this )->isConnected();
    }
 
    IsoString HostName() const
    {
-      // Should be: INDI::BaseClientImpl::getHost() const
+      // Should be: INDI::BaseClient::getHost() const
       return const_cast<INDIClient*>( this )->getHost();
    }
 
    uint32 Port() const
    {
-      // Should be: INDI::BaseClientImpl::getPort() const
+      // Should be: INDI::BaseClient::getPort() const
       return uint32( const_cast<INDIClient*>( this )->getPort() );
    }
 

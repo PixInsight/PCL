@@ -66,6 +66,8 @@
 #include <pcl/StdStatus.h>
 #include <pcl/File.h>
 
+#include <time.h>
+
 namespace pcl
 {
 

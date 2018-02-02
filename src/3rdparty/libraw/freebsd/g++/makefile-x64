@@ -1,0 +1,80 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.106
+# Copyright (C) 2009-2017 Pleiades Astrophoto
+######################################################################
+# Generated on .... 2018-01-30T11:25:43.257Z
+# Project id ...... libraw
+# Project type .... StaticLibrary
+# Platform ........ FreeBSD/g++
+# Configuration ... Release/x64
+# --------------------------------------------------------------------
+# Additional include search directories:
+# $(PCLSRCDIR)/3rdparty/libraw
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/3rdparty/libraw/freebsd/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/liblibraw-pxi.a
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../internal/dcraw_common.cpp \
+../../internal/dcraw_fileio.cpp \
+../../internal/demosaic_packs.cpp \
+../../src/libraw_c_api.cpp \
+../../src/libraw_cxx.cpp \
+../../src/libraw_datastream.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/internal/dcraw_common.o \
+./x64/Release/internal/dcraw_fileio.o \
+./x64/Release/internal/demosaic_packs.o \
+./x64/Release/src/libraw_c_api.o \
+./x64/Release/src/libraw_cxx.o \
+./x64/Release/src/libraw_datastream.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/internal/dcraw_common.d \
+./x64/Release/internal/dcraw_fileio.d \
+./x64/Release/internal/demosaic_packs.d \
+./x64/Release/src/libraw_c_api.d \
+./x64/Release/src/libraw_cxx.d \
+./x64/Release/src/libraw_datastream.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/liblibraw-pxi.a: $(OBJ_FILES)
+	ar r $(OBJ_DIR)/liblibraw-pxi.a $(OBJ_FILES)
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/liblibraw-pxi.a
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/liblibraw-pxi.a $(PCLLIBDIR64)
+
+./x64/Release/internal/%.o: ../../internal/%.cpp
+	clang++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -I"$(PCLSRCDIR)/3rdparty/libraw" -mtune=corei7 -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -std=c++11 -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Release/src/%.o: ../../src/%.cpp
+	clang++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -I"$(PCLSRCDIR)/3rdparty/libraw" -mtune=corei7 -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -std=c++11 -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

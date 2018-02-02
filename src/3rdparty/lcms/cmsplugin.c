@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------
 //
 //  Little Color Management System
-//  Copyright (c) 1998-2016 Marti Maria Saguer
+//  Copyright (c) 1998-2017 Marti Maria Saguer
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -179,9 +179,19 @@ cmsBool CMSEXPORT  _cmsReadFloat32Number(cmsIOHANDLER* io, cmsFloat32Number* n)
 
         tmp = _cmsAdjustEndianess32(tmp);
         *n = *(cmsFloat32Number*)(void*)&tmp;
+        
+        // Safeguard which covers against absurd values
+        if (*n > 1E+20 || *n < -1E+20) return FALSE;
 
-        // fpclassify() required by C99
-        return ((fpclassify(*n) == FP_ZERO) || (fpclassify(*n) == FP_NORMAL));
+        #if defined(_MSC_VER) && _MSC_VER < 1800
+           return TRUE;
+        #elif defined (__BORLANDC__)
+           return TRUE;
+        #else
+
+           // fpclassify() required by C99 (only provided by MSVC >= 1800, VS2013 onwards)
+           return ((fpclassify(*n) == FP_ZERO) || (fpclassify(*n) == FP_NORMAL));
+        #endif        
     }
 
     return TRUE;
@@ -216,7 +226,7 @@ cmsBool CMSEXPORT  _cmsRead15Fixed16Number(cmsIOHANDLER* io, cmsFloat64Number* n
             return FALSE;
 
     if (n != NULL) {
-        *n = _cms15Fixed16toDouble(_cmsAdjustEndianess32(tmp));
+        *n = _cms15Fixed16toDouble((cmsS15Fixed16Number) _cmsAdjustEndianess32(tmp));
     }
 
     return TRUE;
@@ -233,9 +243,9 @@ cmsBool CMSEXPORT  _cmsReadXYZNumber(cmsIOHANDLER* io, cmsCIEXYZ* XYZ)
 
     if (XYZ != NULL) {
 
-        XYZ->X = _cms15Fixed16toDouble(_cmsAdjustEndianess32(xyz.X));
-        XYZ->Y = _cms15Fixed16toDouble(_cmsAdjustEndianess32(xyz.Y));
-        XYZ->Z = _cms15Fixed16toDouble(_cmsAdjustEndianess32(xyz.Z));
+        XYZ->X = _cms15Fixed16toDouble((cmsS15Fixed16Number) _cmsAdjustEndianess32((cmsUInt32Number) xyz.X));
+        XYZ->Y = _cms15Fixed16toDouble((cmsS15Fixed16Number) _cmsAdjustEndianess32((cmsUInt32Number) xyz.Y));
+        XYZ->Z = _cms15Fixed16toDouble((cmsS15Fixed16Number) _cmsAdjustEndianess32((cmsUInt32Number) xyz.Z));
     }
     return TRUE;
 }
@@ -324,7 +334,7 @@ cmsBool CMSEXPORT  _cmsWrite15Fixed16Number(cmsIOHANDLER* io, cmsFloat64Number n
 
     _cmsAssert(io != NULL);
 
-    tmp = _cmsAdjustEndianess32(_cmsDoubleTo15Fixed16(n));
+    tmp = _cmsAdjustEndianess32((cmsUInt32Number) _cmsDoubleTo15Fixed16(n));
     if (io -> Write(io, sizeof(cmsUInt32Number), &tmp) != 1)
             return FALSE;
 
@@ -338,9 +348,9 @@ cmsBool CMSEXPORT  _cmsWriteXYZNumber(cmsIOHANDLER* io, const cmsCIEXYZ* XYZ)
     _cmsAssert(io != NULL);
     _cmsAssert(XYZ != NULL);
 
-    xyz.X = _cmsAdjustEndianess32(_cmsDoubleTo15Fixed16(XYZ->X));
-    xyz.Y = _cmsAdjustEndianess32(_cmsDoubleTo15Fixed16(XYZ->Y));
-    xyz.Z = _cmsAdjustEndianess32(_cmsDoubleTo15Fixed16(XYZ->Z));
+    xyz.X = (cmsS15Fixed16Number) _cmsAdjustEndianess32((cmsUInt32Number) _cmsDoubleTo15Fixed16(XYZ->X));
+    xyz.Y = (cmsS15Fixed16Number) _cmsAdjustEndianess32((cmsUInt32Number) _cmsDoubleTo15Fixed16(XYZ->Y));
+    xyz.Z = (cmsS15Fixed16Number) _cmsAdjustEndianess32((cmsUInt32Number) _cmsDoubleTo15Fixed16(XYZ->Z));
 
     return io -> Write(io,  sizeof(cmsEncodedXYZNumber), &xyz);
 }
@@ -498,7 +508,7 @@ cmsBool CMSEXPORT _cmsIOPrintf(cmsIOHANDLER* io, const char* frm, ...)
         return FALSE;   // Truncated, which is a fatal error for us
     }
 
-    rc = io ->Write(io, len, Buffer);
+    rc = io ->Write(io, (cmsUInt32Number) len, Buffer);
 
     va_end(args);
 

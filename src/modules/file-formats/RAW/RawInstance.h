@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard RAW File Format Module Version 01.05.00.0397
+// Standard RAW File Format Module Version 01.05.00.0399
 // ----------------------------------------------------------------------------
-// RawInstance.h - Released 2018-02-02T19:48:42Z
+// RawInstance.h - Released 2018-02-07T11:38:44Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RAW PixInsight module.
 //
@@ -114,6 +114,7 @@ private:
    IsoString                m_cameraModel;
    IsoString                m_cfaPattern;
    IsoString                m_rawCFAPattern;
+   IsoString                m_cfaPatternName;
    TimePoint                m_timestamp;
    float                    m_exposure = 0;
    int                      m_isoSpeed = 0;
@@ -138,4 +139,4 @@ private:
 #endif   // __RawInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF RawInstance.h - Released 2018-02-02T19:48:42Z
+// EOF RawInstance.h - Released 2018-02-07T11:38:44Z

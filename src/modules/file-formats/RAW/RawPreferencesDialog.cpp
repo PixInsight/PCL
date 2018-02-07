@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard RAW File Format Module Version 01.05.00.0397
+// Standard RAW File Format Module Version 01.05.00.0399
 // ----------------------------------------------------------------------------
-// RawPreferencesDialog.cpp - Released 2018-02-02T19:48:42Z
+// RawPreferencesDialog.cpp - Released 2018-02-07T11:38:44Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RAW PixInsight module.
 //
@@ -273,14 +273,16 @@ RawPreferencesDialog::RawPreferencesDialog( RawPreferences& prf ) :
       "visible impulse noise leaving 99% of the details intact and significantly reduces chroma noise - this helps "
       "getting good results using different denoising techniques applied after demosaicing. It doesn't affect "
       "contrast or saturation of the image therefore no post processing is requied. The resulting image looks "
-      "grainy and natural.</em></p>";
+      "grainy and natural.</em></p>"
+      "<p>A parameter value of zero will disable FBDD noise reduction. A value of one will apply the algorithm to the raw image. "
+      "A value of two will apply an additional noise reduction step to the chroma components.</p>";
 
    FBDDNoiseReduction_Label.SetText( "FBDD noise reduction:" );
    FBDDNoiseReduction_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    FBDDNoiseReduction_Label.SetMinWidth( labelWidth1 );
    FBDDNoiseReduction_Label.SetToolTip( fbddToolTip );
 
-   FBDDNoiseReduction_SpinBox.SetRange( 0, 10 );
+   FBDDNoiseReduction_SpinBox.SetRange( 0, 2 );
    FBDDNoiseReduction_SpinBox.SetToolTip( fbddToolTip );
    FBDDNoiseReduction_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&RawPreferencesDialog::SpinBox_ValueUpdated, *this );
 
@@ -424,7 +426,7 @@ void RawPreferencesDialog::UpdateControls()
    AAHD_RadioButton.SetChecked( preferences.interpolation == RawPreferences::AAHD );
    HalfSize_RadioButton.SetChecked( preferences.interpolation == RawPreferences::HalfSize );
    InterpolateAs4Colors_CheckBox.SetChecked( preferences.interpolateAs4Colors );
-   FBDDNoiseReduction_SpinBox.SetValue( preferences.fbddNoiseReduction );
+   FBDDNoiseReduction_SpinBox.SetValue( Range( preferences.fbddNoiseReduction, 0, 2 ) );
 
    UseAutoWhiteBalance_CheckBox.SetChecked( preferences.useAutoWhiteBalance );
    UseCameraWhiteBalance_CheckBox.SetChecked( preferences.useCameraWhiteBalance );
@@ -594,7 +596,7 @@ void RawPreferencesDialog::Button_Click( Button& sender, bool checked )
 //       preferences.noiseThreshold = 0; // this is a very specific setting, don't change it
       preferences.dcbIterations = 3;
       preferences.dcbRefinement = false;
-      preferences.fbddNoiseReduction = 3;
+      preferences.fbddNoiseReduction = 2;
    }
    else if ( sender == OK_PushButton )
    {
@@ -633,4 +635,4 @@ void RawPreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RawPreferencesDialog.cpp - Released 2018-02-02T19:48:42Z
+// EOF RawPreferencesDialog.cpp - Released 2018-02-07T11:38:44Z

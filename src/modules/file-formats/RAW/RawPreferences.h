@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard RAW File Format Module Version 01.05.00.0397
+// Standard RAW File Format Module Version 01.05.00.0399
 // ----------------------------------------------------------------------------
-// RawPreferences.h - Released 2018-02-02T19:48:42Z
+// RawPreferences.h - Released 2018-02-07T11:38:44Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RAW PixInsight module.
 //
@@ -81,7 +81,7 @@ public:
    int           noiseThreshold         = 0;
    int           dcbIterations          = 3;
    bool          dcbRefinement          = false;
-   int           fbddNoiseReduction     = 3;
+   int           fbddNoiseReduction     = 2;
 
    String InterpolationAsString() const
    {
@@ -175,4 +175,4 @@ public :
 #endif   // __RawPreferences_h
 
 // ----------------------------------------------------------------------------
-// EOF RawPreferences.h - Released 2018-02-02T19:48:42Z
+// EOF RawPreferences.h - Released 2018-02-07T11:38:44Z

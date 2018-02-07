@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard RAW File Format Module Version 01.05.00.0397
+// Standard RAW File Format Module Version 01.05.00.0399
 // ----------------------------------------------------------------------------
-// RawInstance.cpp - Released 2018-02-02T19:48:42Z
+// RawInstance.cpp - Released 2018-02-07T11:38:44Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RAW PixInsight module.
 //
@@ -50,19 +50,17 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
+#include <libraw/libraw/libraw.h>
+
 #include "RawInstance.h"
 #include "RawFormat.h"
 #include "RawModule.h"
 
-#include <pcl/AutoLock.h>
 #include <pcl/FastRotation.h>
-#include <pcl/ErrorHandler.h>
 #include <pcl/FITSHeaderKeyword.h>
 #include <pcl/StdStatus.h>
 #include <pcl/TimePoint.h>
 #include <pcl/Version.h>
-
-#include <libraw/libraw/libraw.h>
 
 namespace pcl
 {
@@ -425,7 +423,6 @@ void RawInstance::CheckLibRawReturnCode( int errorCode )
 
 // ----------------------------------------------------------------------------
 
-
 static String EnabledOrDisabled( bool x )
 {
    return x ? "enabled" : "disabled";
@@ -445,12 +442,18 @@ ImageDescriptionArray RawInstance::Open( const String& filePath, const IsoString
 
    try
    {
+      /*
+       * Decode read hints.
+       */
       {
          RawReadHints readHints( hints );
          m_preferences = readHints.preferences;
          m_verbosity = readHints.verbosity;
       }
 
+      /*
+       * Open the file with LibRaw.
+       */
       m_filePath = filePath;
 
       m_raw = new LibRaw;
@@ -477,40 +480,77 @@ ImageDescriptionArray RawInstance::Open( const String& filePath, const IsoString
       bool foveon = idata.is_foveon;
       bool raw = (m_preferences.outputCFA || m_preferences.outputRawRGB || m_preferences.createSuperPixels && !xtrans) && !foveon;
 
+      /*
+       * Descriptive metadata.
+       */
       m_description = IsoString( other.desc ).Trimmed().UTF8ToUTF16();
       m_author = IsoString( other.artist ).Trimmed().UTF8ToUTF16();
 
+      /*
+       * Camera identification.
+       */
       m_cameraManufacturer = IsoString( idata.make ).Trimmed();
       m_cameraModel = IsoString( idata.model ).Trimmed();
 
       if ( !foveon )
       {
+         /*
+          * Get the CFA pattern of the raw image.
+          */
          if ( xtrans )
          {
             const char* x = reinterpret_cast<const char*>( (raw && m_preferences.noAutoCrop) ?
                                     idata.xtrans_abs : idata.xtrans );
             for ( int i = 0; i < 36; ++i )
                m_rawCFAPattern << idata.cdesc[int( x[i] )];
+
+            m_cfaPatternName = "X-Trans";
          }
          else
+         {
             m_rawCFAPattern = IsoString() << idata.cdesc[m_raw->COLOR( 0, 0 )]
                                           << idata.cdesc[m_raw->COLOR( 0, 1 )]
                                           << idata.cdesc[m_raw->COLOR( 1, 0 )]
                                           << idata.cdesc[m_raw->COLOR( 1, 1 )];
 
+            m_cfaPatternName = "Bayer";
+         }
+
+         /*
+          * CFA patterns refer to the top-left corner of the visible image
+          * region. If we are not cropping invisible areas, rotate CFA patterns
+          * horizontally and/or vertically, as necessary.
+          */
          if ( m_preferences.noAutoCrop )
             if ( raw )
                if ( xtrans )
                {
-                  if ( sizes.top_margin % 6 )
+                  // 6x6 X-Trans pattern
+                  int dy = sizes.top_margin % 6;
+                  int dx = sizes.left_margin % 6;
+                  char* p = m_rawCFAPattern.Begin();
+
+                  if ( dy )
                   {
+                     char t[ 6*dy ];
+                     memcpy( t, p, 6*dy );
+                     memcpy( p, p + 6*dy, 36 - 6*dy );
+                     memcpy( p + 36 - 6*dy, t, 6*dy );
                   }
-                  if ( sizes.left_margin % 6 )
+                  if ( dx )
                   {
+                     char t[ dx ];
+                     for ( int i = 0; i < 6; ++i, p += 6 )
+                     {
+                        memcpy( t, p, dx );
+                        memcpy( p, p + dx, 6-dx );
+                        memcpy( p + 6-dx, t, dx );
+                     }
                   }
                }
                else
                {
+                  // 2x2 Bayer pattern
                   if ( sizes.top_margin & 1 )
                   {
                      Swap( m_rawCFAPattern[0], m_rawCFAPattern[2] );
@@ -523,6 +563,11 @@ ImageDescriptionArray RawInstance::Open( const String& filePath, const IsoString
                   }
                }
 
+         /*
+          * Get the CFA pattern of the output image. Rotate it if we are
+          * loading with camera flipping enabled and the original frame has
+          * been rotated by 180, 90 CCW or 90 CW degrees.
+          */
          m_cfaPattern = m_rawCFAPattern;
          if ( !m_preferences.noAutoFlip )
             if ( raw )
@@ -578,14 +623,21 @@ ImageDescriptionArray RawInstance::Open( const String& filePath, const IsoString
                   }
       }
 
+      /*
+       * Camera timestamp, exposure in seconds, ISO speed, focal length in mm
+       * and f/d aperture.
+       */
       if ( other.timestamp != 0 )
          m_timestamp = TimePoint( other.timestamp );
-
       m_exposure = other.shutter;
       m_isoSpeed = other.iso_speed;
       m_focalLength = other.focal_len;
       m_aperture = other.aperture;
 
+      /*
+       * Check for nonexistent or invalid metadata items. These have caused
+       * problems in the old dcraw times, so checking them here doesn't hurt.
+       */
       if ( !IsFinite( m_exposure ) )
          m_exposure = 0;
       if ( !IsFinite( m_focalLength ) )
@@ -593,6 +645,9 @@ ImageDescriptionArray RawInstance::Open( const String& filePath, const IsoString
       if ( !IsFinite( m_aperture ) )
          m_aperture = 0;
 
+      /*
+       * Geometry and color space image properties.
+       */
       ImageInfo i;
       i.supported        = idata.filters >= 1000 || xtrans || foveon;
       i.colorSpace       = m_preferences.outputCFA ? ColorSpace::Gray : ColorSpace::RGB;
@@ -624,9 +679,12 @@ ImageDescriptionArray RawInstance::Open( const String& filePath, const IsoString
       }
 
       if ( !m_preferences.noAutoFlip )
-         if ( sizes.flip == 5 || sizes.flip == 6 ) // rotatedc 90 deg?
+         if ( sizes.flip == 5 || sizes.flip == 6 ) // rotated by +/-90 deg?
             Swap( i.width, i.height );
 
+      /*
+       * Format-independent image properties.
+       */
       ImageOptions o;
       o.bitsPerSample      = 16;
       o.complexSample      = false;
@@ -643,6 +701,9 @@ ImageDescriptionArray RawInstance::Open( const String& filePath, const IsoString
       o.aperture           = m_aperture;
       o.focalLength        = m_focalLength;
 
+      /*
+       * Be verbose as requested.
+       */
       if ( m_verbosity > 0 )
       {
          m_progress->Complete();
@@ -668,7 +729,7 @@ ImageDescriptionArray RawInstance::Open( const String& filePath, const IsoString
          if ( !m_author.IsEmpty() )
             console.WriteLn(                     "Author ........... <raw>" + m_author + "</raw>" );
          if ( !m_rawCFAPattern.IsEmpty() )
-            console.WriteLn(                     "CFA pattern ...... " + m_rawCFAPattern + ((m_cfaPattern != m_rawCFAPattern) ? " (" + m_cfaPattern + ")" : IsoString()) );
+            console.WriteLn(                     "CFA pattern ...... " + m_cfaPatternName + ' ' + m_rawCFAPattern + ((m_cfaPattern != m_rawCFAPattern) ? " (" + m_cfaPattern + ")" : IsoString()) );
          console.WriteLn( String().Format(       "Raw dimensions ... w=%d h=%d", sizes.raw_width, sizes.raw_height ) );
          console.WriteLn( String().Format(       "Image geometry ... x=%d y=%d w=%d h=%d", sizes.left_margin, sizes.top_margin, sizes.width, sizes.height ) );
          if ( sizes.flip > 0 )
@@ -751,7 +812,7 @@ void RawInstance::Close()
    m_raw.Reset();
    m_progress.Reset();
    m_description = m_author = String();
-   m_cameraManufacturer = m_cameraModel = m_cfaPattern = m_rawCFAPattern = IsoString();
+   m_cameraManufacturer = m_cameraModel = m_cfaPattern = m_rawCFAPattern = m_cfaPatternName = IsoString();
    m_timestamp = TimePoint();
    m_exposure = m_isoSpeed = m_focalLength = m_aperture = 0;
 }
@@ -837,6 +898,7 @@ PropertyDescriptionArray RawInstance::ImageProperties()
       descriptions << PropertyDescription( "PCL:CFASourcePattern", VariantType::IsoString );
       if ( m_rawCFAPattern != m_cfaPattern )
          descriptions << PropertyDescription( "PCL:RawCFASourcePattern", VariantType::IsoString );
+      descriptions << PropertyDescription( "PCL:CFASourcePatternName", VariantType::IsoString );
    }
    if ( !m_cameraModel.IsEmpty() )
       descriptions << PropertyDescription( "Instrument:Camera:Name", VariantType::String );
@@ -870,6 +932,8 @@ Variant RawInstance::ReadImageProperty( const IsoString& property )
       return m_cfaPattern;
    if ( property == "PCL:RawCFASourcePattern" )
       return m_rawCFAPattern;
+   if ( property == "PCL:CFASourcePatternName" )
+      return m_cfaPatternName;
    if ( property == "Instrument:Camera:Name" )
       return String( m_cameraManufacturer + ' ' + m_cameraModel );
    if ( property == "Instrument:Camera:ISOSpeed" )
@@ -965,6 +1029,10 @@ public:
       bool foveon = idata.is_foveon;
       bool raw = (preferences.outputCFA || preferences.outputRawRGB || preferences.createSuperPixels && !xtrans) && !foveon;
 
+      /*
+       * Set up dcraw processing parameters.
+       */
+
       // Linear 16-bit output
       params.output_bps = 16;
 
@@ -1044,8 +1112,14 @@ public:
          if ( !raw )
             params.threshold = preferences.noiseThreshold;
 
+      /*
+       * Perform dcraw-style processing.
+       */
       instance.CheckLibRawReturnCode( RAW->dcraw_process() );
 
+      /*
+       * Generate the output image.
+       */
       if ( raw )
       {
          const uint16* u = rawdata.raw_image;
@@ -1143,7 +1217,7 @@ public:
             throw Error( "RawImageReader::Read(): Internal error: invalid raw output mode" );
 
          /*
-          * Automatic frame rotation.
+          * Apply camera rotation.
           */
          if ( !preferences.noAutoFlip )
             switch ( sizes.flip )
@@ -1288,4 +1362,4 @@ UInt8Image RawInstance::ReadThumbnail()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RawInstance.cpp - Released 2018-02-02T19:48:42Z
+// EOF RawInstance.cpp - Released 2018-02-07T11:38:44Z

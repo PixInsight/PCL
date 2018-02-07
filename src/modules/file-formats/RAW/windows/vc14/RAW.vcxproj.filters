@@ -4,13 +4,14 @@
 # PixInsight Makefile Generator Script v1.106
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2018-01-30T11:25:51.906Z
+# Generated on .... 2018-02-07T11:40:10.563Z
 # Project id ...... RAW
 # Project type .... Module
 # Platform ........ Windows/vc14
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Additional preprocessor definitions:
 # _CRT_SECURE_NO_WARNINGS
+# LIBRAW_NODLL
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Additional libraries:
 # libraw-pxi
@@ -19,10 +20,10 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>b1e395df-011c-42dd-8c61-5094132a40e9</UniqueIdentifier>
+      <UniqueIdentifier>509049e4-b70d-43f4-8e91-0fffe0d426bc</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>56f35e3c-5174-4ed1-994a-9ff713ab1e56</UniqueIdentifier>
+      <UniqueIdentifier>4b3b6db0-edca-402a-9b60-b1a0dcd18696</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

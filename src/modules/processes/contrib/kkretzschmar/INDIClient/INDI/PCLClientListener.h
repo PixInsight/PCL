@@ -40,9 +40,10 @@ public:
 		pcl::Thread::Start();
 	}
 	void Stop() override {
-		Abort();
+		pcl::Thread::Abort();
 	}
 	void Join() override {
+		pcl::Thread::Wait();
 	}
 
 };

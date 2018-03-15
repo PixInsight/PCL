@@ -39,6 +39,7 @@ public:
 		}
 	}
 	void Stop() override {
+		pthread_exit(0);
 	}
 
 };

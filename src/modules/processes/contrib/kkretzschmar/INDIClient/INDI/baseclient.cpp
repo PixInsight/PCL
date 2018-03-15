@@ -487,7 +487,7 @@ void INDI::BaseClient::listenINDI()
     serverDisconnected((sConnected == false) ? 0 : -1);
     sConnected = false;
 
-
+    listen_thread->Stop();
     //pthread_exit(0);
 }
 

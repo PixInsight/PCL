@@ -75,7 +75,7 @@ namespace pcl
  *
  * \li Synchronous download and upload network data transfers.
  *
- * \li HTTP and FTP protocols fully supported.
+ * \li HTTP, FTP, SMTP, HTTPS, FTPS and SMTPS protocols supported.
  *
  * \li Supports user authentication.
  *
@@ -91,7 +91,7 @@ class PCL_CLASS NetworkTransfer : public UIObject
 public:
 
    /*!
-    * Constructs a %NetworkTransfer object.
+    * Constructs a default %NetworkTransfer object.
     */
    NetworkTransfer();
 
@@ -192,16 +192,19 @@ public:
    void SetProxyURL( const String& url, const String& userName = String(), const String& userPassword = String() );
 
    /*!
-    * Enable SSL/TLS for the FTP and SMTP protocols.
+    * Set SSL/TLS options.
     *
-    * \param useSSL     Enable SSL/TLS. The default value is true.
+    * \param useSSL     Enable SSL/TLS for the FTP, SMTP, POP3 and IMAP
+    *                   protocols. These are protocols that start plain text by
+    *                   default but can be restarted automatically using secure
+    *                   connections. The default value is true.
     *
     * \param forceSSL   If true, SSL will be required for communication during
     *                   the whole transfer operation; in this case, if SSL is
     *                   not available the connection will fail. If this
-    *                   parameter is false, SSL will be used if available, but
-    *                   the operation will continue (insecurely) otherwise. The
-    *                   default value is true.
+    *                   parameter is false, SSL/TLS will be used if available,
+    *                   but the operation will continue (insecurely) otherwise.
+    *                   The default value is false.
     *
     * \param verifyPeer Verify the authenticity of the peer's certificate, and
     *                   fail if it is not authentic. The peer's certificate is
@@ -209,21 +212,31 @@ public:
     *                   cerfificates supplied by the calling machine. If this
     *                   parameter is false, the connection won't fail if the
     *                   authenticity of the server's certificate cannot be
-    *                   verified. The default value is true.
+    *                   verified. This parameter works for all TLS based
+    *                   protocols: HTTPS, FTPS, SMTPS, etc. The default value
+    *                   is true.
     *
     * \param verifyHost Verify the identity of the host. The connection will
     *                   fail if the Common Name or Subject Alternate Name
     *                   fields of the server's certificate don't match the host
     *                   name in the URL set via the SetURL() member function.
     *                   If this parameter is false, the connection won't fail
-    *                   if the identity of the server cannot be verified. If
-    *                   the \a verifyPeer parameter is false, this parameter is
-    *                   ignored. The default value is true.
+    *                   if the identity of the server cannot be verified. This
+    *                   parameter works for all TLS based protocols: HTTPS,
+    *                   FTPS, SMTPS, etc. If the \a verifyPeer parameter is
+    *                   false, this parameter is ignored. The default value is
+    *                   true.
+    *
+    * By default, all %NetworkTransfer objects are initialized to use SSL/TLS
+    * if possible for plain text protocols. Authenticity of peer and host
+    * certificates are always verified by default. In other words, the default
+    * parameter values of this member function reflect the default state of the
+    * object upon construction.
     *
     * If the specified SSL settings are not valid for some reason, or if an
     * internal error occurs, this function throws an Error exception.
     */
-   void SetSSL( bool useSSL = true, bool forceSSL = true, bool verifyPeer = true, bool verifyHost = true );
+   void SetSSL( bool useSSL = true, bool forceSSL = false, bool verifyPeer = true, bool verifyHost = true );
 
    /*!
     * Define a set of custom HTTP headers.
@@ -306,7 +319,7 @@ public:
     *
     * \code
     * NetworkTransfer transfer;
-    * transfer.SetURL( "hhtp://example-cars-info-site.com/" );
+    * transfer.SetURL( "http://example-cars-info-site.com/" );
     * transfer.OnDownloadDataAvailable( GetCarInfo, receiver );
     * if ( !transfer.POST( "brand=Toyota&model=RAV4" ) )
     *    throw Error( "POST operation failed: " + transfer.ErrorInformation() );

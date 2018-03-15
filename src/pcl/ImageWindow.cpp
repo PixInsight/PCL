@@ -202,7 +202,15 @@ size_type ImageWindow::ModifyCount() const
 
 bool ImageWindow::Close()
 {
-   return (*API->ImageWindow->CloseImageWindow)( handle ) != api_false;
+   return (*API->ImageWindow->CloseImageWindow)( handle, api_false/*force*/ ) != api_false;
+}
+
+// ----------------------------------------------------------------------------
+
+void ImageWindow::ForceClose()
+{
+   if ( (*API->ImageWindow->CloseImageWindow)( handle, api_true/*force*/ ) == api_false )
+      throw APIFunctionError( "CloseImageWindow" );
 }
 
 // ----------------------------------------------------------------------------

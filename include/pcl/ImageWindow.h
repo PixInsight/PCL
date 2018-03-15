@@ -620,8 +620,19 @@ public:
     * affirmatively, the window will be closed and this function will return
     * true. If the user says no, the window will not be closed and the
     * function will return false.
+    *
+    * \sa ForceClose()
     */
    bool Close();
+
+   /*!
+    * Closes this image window unconditionally. The window will be closed
+    * immediately without asking questions, irrespective of whether the image
+    * or its associated metadata have been modified.
+    *
+    * \sa Close()
+    */
+   void ForceClose();
 
    /*!
     * Returns the main view of this image window.

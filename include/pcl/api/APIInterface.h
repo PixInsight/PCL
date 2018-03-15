@@ -56,7 +56,7 @@
 
 // Global namespace
 
-#define PCL_API_Version 0x0160
+#define PCL_API_Version 0x0161
 
 extern "C"
 {
@@ -2344,7 +2344,7 @@ struct api_context ImageWindowContext
                                                 api_bool asACopy, api_bool allowMessages,
                                                 pcl::window_enumeration_callback, void* );
 
-   api_bool       (api_func* CloseImageWindow)( window_handle );
+   api_bool       (api_func* CloseImageWindow)( window_handle, api_bool force );
 
    window_handle  (api_func* GetImageWindowById)( const char* );
    window_handle  (api_func* GetImageWindowByFilePath)( const char16_type* );

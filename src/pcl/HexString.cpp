@@ -86,7 +86,7 @@ IsoString IsoString::ToHex( const void* data, size_type length )
 // ----------------------------------------------------------------------------
 
 inline static
-int HexDigit( char c )
+int HexDigitValue( char c )
 {
    switch ( c )
    {
@@ -116,7 +116,7 @@ int HexDigit( char c )
    case 'F':
       return 10 + c - 'A';
    default:
-      throw ParseError( "Invalid hexadecimal character" );
+      throw ParseError( String().Format( "Invalid hexadecimal digit %%%02x", int( c ) ) );
    }
 }
 
@@ -130,8 +130,8 @@ ByteArray IsoString::FromHex() const
    ByteArray::iterator b = B.Begin();
    for ( const_iterator i = m_data->string; i < m_data->end; )
    {
-      int msb = HexDigit( *i++ ) << 4;
-      int lsb = HexDigit( *i++ );
+      int msb = HexDigitValue( *i++ ) << 4;
+      int lsb = HexDigitValue( *i++ );
       *b++ = uint8( msb | lsb );
    }
    return B;

@@ -1694,6 +1694,238 @@ IsoString& IsoString::ToDecodedHTMLSpecialChars()
 
 // ----------------------------------------------------------------------------
 
+inline static
+char HexDigit( int n )
+{
+   return char( (n < 10) ? n + '0' : n - 10 + 'A' );
+}
+
+IsoString IsoString::ToURLEncoded( const void* data, size_type length )
+{
+   IsoString r;
+   for ( IsoString::const_iterator begin = reinterpret_cast<IsoString::const_iterator>( data ),
+                                   end   = begin + length,
+                                   i     = begin; ; ++i )
+   {
+      IsoString::const_iterator j = i;
+      for ( ;; ++j )
+      {
+         if ( j == end )
+            break;
+         if ( *j < '0' || *j > '9' )
+            if ( *j < 'A' || *j > 'Z' )
+               if ( *j < 'a' || *j > 'z' )
+                  if ( *j != '-' )
+                     if ( *j != '.' )
+                        if ( *j != '_' )
+                           if ( *j != '~' )
+                              break;
+      }
+
+      r.Append( i, j );
+      if ( j == end )
+         break;
+
+      r << '%'
+        << HexDigit( (*j >> 4) & 0x0f )
+        << HexDigit(  *j       & 0x0f );
+
+      i = j;
+   }
+
+   return r;
+}
+
+IsoString& IsoString::ToURLEncoded()
+{
+   IsoString r;
+   for ( const_iterator i = Begin(); ; ++i )
+   {
+      const_iterator j = i;
+      for ( ;; ++j )
+      {
+         if ( j == End() )
+         {
+            if ( i == Begin() )
+               return *this;
+            break;
+         }
+
+         if ( *j < '0' || *j > '9' )
+            if ( *j < 'A' || *j > 'Z' )
+               if ( *j < 'a' || *j > 'z' )
+                  if ( *j != '-' )
+                     if ( *j != '.' )
+                        if ( *j != '_' )
+                           if ( *j != '~' )
+                              break;
+      }
+
+      r.Append( i, j );
+      if ( j == End() )
+         break;
+
+      r << '%'
+        << HexDigit( (*j >> 4) & 0x0f )
+        << HexDigit(  *j       & 0x0f );
+
+      i = j;
+   }
+
+   *this = r;
+   return *this;
+}
+
+inline static
+int HexDigitValue( char c )
+{
+   switch ( c )
+   {
+   case '0':
+   case '1':
+   case '2':
+   case '3':
+   case '4':
+   case '5':
+   case '6':
+   case '7':
+   case '8':
+   case '9':
+      return c - '0';
+   case 'a':
+   case 'b':
+   case 'c':
+   case 'd':
+   case 'e':
+   case 'f':
+      return 10 + c - 'a';
+   case 'A':
+   case 'B':
+   case 'C':
+   case 'D':
+   case 'E':
+   case 'F':
+      return 10 + c - 'A';
+   default:
+      throw ParseError( String().Format( "Invalid hexadecimal digit %%%02x", int( c ) ) );
+   }
+}
+
+template <class C> static
+void FromURLEncoded( C& r, const void* data, size_type length )
+{
+   try
+   {
+      for ( IsoString::const_iterator begin = reinterpret_cast<IsoString::const_iterator>( data ),
+                                      end   = begin + length,
+                                      i     = begin; ; )
+      {
+         IsoString::const_iterator j = i;
+         for ( ;; ++j )
+         {
+            if ( j == end )
+               break;
+
+            if ( *j == '%' )
+            {
+               if ( j+3 > end )
+                  throw ParseError( "Unexpected end of string" );
+               break;
+            }
+         }
+
+         r.Append( i, j );
+         if ( j == end )
+            break;
+
+         int msb = HexDigitValue( *++j ) << 4;
+         int lsb = HexDigitValue( *++j );
+         r.Append( typename C::item_type( msb | lsb ) );
+
+         if ( ++j == end )
+            break;
+
+         i = j;
+      }
+   }
+   catch ( const ParseError& e )
+   {
+      throw ParseError( "Parsing URL-encoded string: " + e.Message() );
+   }
+   catch ( ... )
+   {
+      throw;
+   }
+}
+
+ByteArray IsoString::FromURLEncoded( const void* data, size_type length )
+{
+   ByteArray r;
+   pcl::FromURLEncoded( r, data, length );
+   return r;
+}
+
+IsoString IsoString::ToURLDecoded( const void* data, size_type length )
+{
+   IsoString r;
+   pcl::FromURLEncoded( r, data, length );
+   return r;
+}
+
+IsoString& IsoString::ToURLDecoded()
+{
+   try
+   {
+      IsoString r;
+      for ( const_iterator i = Begin(); ; )
+      {
+         const_iterator j = i;
+         for ( ;; ++j )
+         {
+            if ( j == End() )
+            {
+               if ( i == Begin() )
+                  return *this;
+               break;
+            }
+
+            if ( *j == '%' )
+            {
+               if ( j+3 > End() )
+                  throw ParseError( "Unexpected end of string" );
+               break;
+            }
+         }
+
+         r.Append( i, j );
+         if ( j == End() )
+            break;
+
+         int msb = HexDigitValue( *++j ) << 4;
+         int lsb = HexDigitValue( *++j );
+         r << char( msb | lsb );
+
+         if ( ++j == End() )
+            break;
+
+         i = j;
+      }
+
+      *this = r;
+      return *this;
+   }
+   catch ( const ParseError& e )
+   {
+      throw ParseError( "Parsing URL-encoded string: " + e.Message() );
+   }
+   catch ( ... )
+   {
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
 template <class T, class S> static
 void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const S& separator, const T& str )
 {

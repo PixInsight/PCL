@@ -6091,6 +6091,8 @@ public:
     * "'" (single quote) becomes "\&#039;" \n
     * '<' (less than) becomes "\&lt;" \n
     * '>' (greater than) becomes "\&gt;"
+    *
+    * \sa EncodedHTMLSpecialChars(), ToDecodedHTMLSpecialChars()
     */
    IsoString& ToEncodedHTMLSpecialChars();
 
@@ -6098,7 +6100,7 @@ public:
     * Returns a duplicate of this string with all occurrences of HTML special
     * characters replaced with valid HTML entities.
     *
-    * \sa ToEncodedHTMLSpecialChars()
+    * \sa ToEncodedHTMLSpecialChars(), DecodedHTMLSpecialChars()
     */
    IsoString EncodedHTMLSpecialChars() const
    {
@@ -6118,6 +6120,8 @@ public:
     * "\&apos;" (apostrophe) becomes "'" \n
     * "\&lt;" (less than) becomes '<' \n
     * "\&gt;" (greater than) becomes '>'
+    *
+    * \sa DecodedHTMLSpecialChars(), ToEncodedHTMLSpecialChars()
     */
    IsoString& ToDecodedHTMLSpecialChars();
 
@@ -6126,11 +6130,153 @@ public:
     * entities replaced with their corresponding plain text character
     * equivalents.
     *
-    * \sa ToDecodedHTMLSpecialChars()
+    * \sa ToDecodedHTMLSpecialChars(), EncodedHTMLSpecialChars()
     */
    IsoString DecodedHTMLSpecialChars() const
    {
       return IsoString( *this ).ToDecodedHTMLSpecialChars();
+   }
+
+   /*!
+    * Returns a URL-encoded string that represents a binary \a data block of
+    * the specified \a length in bytes.
+    *
+    * In a URL-encoded string, all characters that are not a-z, A-Z, 0-9, '-',
+    * '.', '_' or '~' are replaced with their percent-encoded representation
+    * %NN, where NN is a zero-padded, two-digit uppercase hexadecimal number.
+    * See RFC 3986 (http://tools.ietf.org/html/rfc3986).
+    *
+    * \sa ToURLEncoded( const C& ), ToURLEncoded()
+    */
+   static IsoString ToURLEncoded( const void* data, size_type length );
+
+   /*!
+    * Returns a URL-encoded string for a container \a c, whose contents are
+    * treated as <em>raw binary data</em>. The objects stored in the container
+    * are considered as a sequence of bytes, irrespective of their actual data
+    * types or the classes they are instances of.
+    *
+    * The type C represents an array of contiguous objects, and must provide
+    * PCL container semantics: the Begin() and Length() standard container
+    * functions are required.
+    *
+    * \sa ToURLEncoded( const void*, size_type )
+    */
+   template <class C>
+   static IsoString ToURLEncoded( const C& c )
+   {
+      return ToURLEncoded( c.Begin(), c.Length()*sizeof( *c.Begin() ) );
+   }
+
+   /*!
+    * Replaces all characters that are not a-z, A-Z, 0-9, '-', '.', '_' or '~'
+    * with their percent-encoded representation %NN, where NN is a zero-padded,
+    * two-digit uppercase hexadecimal number. Returns a reference to this
+    * string. See RFC 3986 / URI Generic Syntax, for more information on URL
+    * encodings.
+    *
+    * \sa URLEncoded(), ToURLDecoded()
+    */
+   IsoString& ToURLEncoded();
+
+   /*!
+    * Returns a URL-encoded duplicate of this string. See ToURLEncoded() for
+    * detailed information.
+    *
+    * \sa ToURLEncoded(), URLDecoded()
+    */
+   IsoString URLEncoded() const
+   {
+      return IsoString( *this ).ToURLEncoded();
+   }
+
+   /*!
+    * Decodes a URL-encoded string stored as a raw \a data vector of the
+    * specified \a length in bytes. Returns the decoded binary raw data as a
+    * ByteArray object.
+    *
+    * This function replaces all percent-encoded character representations in
+    * the specified \a data vector with their actual characters in the output
+    * array.
+    *
+    * \sa FromURLEncoded(), ToURLEncoded( const void*, size_type )
+    */
+   static ByteArray FromURLEncoded( const void* data, size_type length );
+
+   /*!
+    * Decodes a URL-encoded generic string represented as a container \a c.
+    * Returns the decoded binary raw data as a ByteArray object.
+    *
+    * \sa FromURLEncoded( const void*, size_type ),
+    * ToURLEncoded( const void*, size_type )
+    */
+   template <class C>
+   static ByteArray FromURLEncoded( const C& c )
+   {
+      return FromURLEncoded( c.Begin(), c.Length()*sizeof( *c.Begin() ) );
+   }
+
+   /*!
+    * Decodes this URL-encoded string, and returns the decoded binary raw data
+    * as a ByteArray object.
+    *
+    * This function replaces all percent-encoded character representations in
+    * this string with their actual characters in the output array.
+    *
+    * If this string is empty, this function returns an empty %ByteArray.
+    *
+    * \sa FromURLEncoded( const void*, size_type ), ToURLEncoded()
+    */
+   ByteArray FromURLEncoded() const
+   {
+      return FromURLEncoded( Begin(), Length() );
+   }
+
+   /*!
+    * Decodes a URL-encoded string stored as a raw \a data vector of the
+    * specified \a length in bytes. Returns the decoded data stored as an 8-bit
+    * string.
+    *
+    * This function replaces all percent-encoded character representations in
+    * the specified \a data vector with their actual characters in the output
+    * string.
+    *
+    * \sa ToURLDecoded(), URLDecoded()
+    */
+   static IsoString ToURLDecoded( const void* data, size_type length );
+
+   /*!
+    * Decodes a URL-encoded generic string represented as a container \a c.
+    * Returns the decoded data stored as an 8-bit string.
+    *
+    * \sa ToURLDecoded( const void*, size_type ), ToURLDecoded(), URLDecoded()
+    */
+   template <class C>
+   static IsoString ToURLDecoded( const C& c )
+   {
+      return ToURLDecoded( c.Begin(), c.Length()*sizeof( *c.Begin() ) );
+   }
+
+   /*!
+    * Replaces all percent-encoded representations of characters with their
+    * actual characters. Returns a reference to this string.
+    *
+    * This is the reverse transformation to URL encoding. See ToURLEncoded()
+    * for more information.
+    *
+    * \sa URLDecoded(), ToURLEncoded(), FromURLEncoded()
+    */
+   IsoString& ToURLDecoded();
+
+   /*!
+    * Returns a URL-decoded duplicate of this string. See ToURLDecoded() for
+    * detailed information.
+    *
+    * \sa ToURLDecoded(), URLEncoded()
+    */
+   IsoString URLDecoded() const
+   {
+      return IsoString( *this ).ToURLDecoded();
    }
 
    // -------------------------------------------------------------------------
@@ -10017,6 +10163,8 @@ public:
     * "'" (single quote) becomes "\&#039;" \n
     * '<' (less than) becomes "\&lt;" \n
     * '>' (greater than) becomes "\&gt;"
+    *
+    * \sa EncodedHTMLSpecialChars(), ToDecodedHTMLSpecialChars()
     */
    String& ToEncodedHTMLSpecialChars();
 
@@ -10024,7 +10172,7 @@ public:
     * Returns a duplicate of this string with all occurrences of HTML special
     * characters replaced with valid HTML entities.
     *
-    * \sa ToEncodedHTMLSpecialChars()
+    * \sa ToEncodedHTMLSpecialChars(), DecodedHTMLSpecialChars()
     */
    String EncodedHTMLSpecialChars() const
    {
@@ -10044,6 +10192,8 @@ public:
     * "\&apos;" (apostrophe) becomes "'" \n
     * "\&lt;" (less than) becomes '<' \n
     * "\&gt;" (greater than) becomes '>'
+    *
+    * \sa DecodedHTMLSpecialChars(), ToEncodedHTMLSpecialChars()
     */
    String& ToDecodedHTMLSpecialChars();
 
@@ -10052,7 +10202,7 @@ public:
     * entities replaced with their corresponding plain text character
     * equivalents.
     *
-    * \sa ToDecodedHTMLSpecialChars()
+    * \sa ToDecodedHTMLSpecialChars(), EncodedHTMLSpecialChars()
     */
    String DecodedHTMLSpecialChars() const
    {

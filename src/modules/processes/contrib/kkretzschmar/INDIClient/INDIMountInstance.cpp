@@ -118,7 +118,7 @@ void INDIMountInstance::Assign( const ProcessImplementation& p )
       p_targetDec                 = x->p_targetDec;
       p_pierSide                  = x->p_pierSide;
       p_computeApparentPosition   = x->p_computeApparentPosition;
-      p_enableAlignmentCorrection = x->p_computeApparentPosition;
+      p_enableAlignmentCorrection = x->p_enableAlignmentCorrection;
       p_alignmentMethod           = x->p_alignmentMethod;
       p_alignmentFile             = x->p_alignmentFile;
       p_alignmentConfig           = x->p_alignmentConfig;
@@ -355,30 +355,6 @@ bool INDIMountInstance::ExecuteOn( View& view )
       observationCenterRA = ra.ToDouble()/15;
       observationCenterDec = dec.ToDouble();
 
-
-      if (p_enableAlignmentCorrection){
-
-    	  AutoPointer<AlignmentModel> aModel = AlignmentModel::create(p_alignmentFile);
-
-          Variant eodRa = view.PropertyValue( "Observation:Center:EOD_RA" );
-          Variant eodDec = view.PropertyValue( "Observation:Center:EOD_Dec" );
-          double localSiderialTime = 0;
-          if (view.HasProperty("Observation:LocalSiderealTime")){
-        	  Variant lst = view.PropertyValue( "Observation:LocalSiderealTime" );
-        	  localSiderialTime = lst.ToDouble();
-          }
-
-          double newHourAngle=-1;
-    	  double newDec=-1;
-    	  double observationCenterEodRA = eodRa.ToDouble()/15;
-    	  double observationCenterEodDec = eodDec.ToDouble();
-    	  aModel->ApplyInverse(newHourAngle, newDec, AlignmentModel::rangeShiftHourAngle(localSiderialTime - observationCenterEodRA), observationCenterEodDec);
-    	  double newObservationCenterRA=localSiderialTime-newHourAngle;
-    	  double newObservationCenterDec=newDec;
-
-    	  observationCenterRA  = observationCenterRA + newObservationCenterRA - observationCenterEodRA;
-    	  observationCenterDec = observationCenterDec + newObservationCenterDec - observationCenterEodDec;
-      }
 
       if ( view.HasProperty( "Image:Center:RA" ) && view.HasProperty( "Image:Center:Dec" ) )
       {
@@ -641,6 +617,40 @@ void INDIMountInstance::GetTargetCoordinates( double& targetRA, double& targetDe
    }
 }
 
+
+void INDIMountInstance::GetPierSide() {
+   INDIClient* indi = INDIClient::TheClientOrDie();
+
+   INDIPropertyListItem item;
+   static const char* indiPierSides[] = { "PIER_WEST", "PIER_EAST" };
+   for ( size_type i = 0; i < ItemsInArray( indiPierSides ); ++i )
+      if ( indi->GetPropertyItem( p_deviceName, "TELESCOPE_PIER_SIDE", indiPierSides[i], item ) )
+         if ( item.PropertyValue == "ON" )
+         {
+            p_pierSide = i;
+            break;
+         }
+      else
+         {
+            // pier side fallback
+            // If the INDI mount device does not support the TELESCOPE_PIER_SIDE property, compute the pierside from hour angle
+            double hourAngle = AlignmentModel::rangeShiftHourAngle(o_currentLST - o_currentRA);
+            p_pierSide = hourAngle <= 0 ? IMCPierSide::West : IMCPierSide::East;
+         }
+
+}
+
+ bool INDIMountInstance::isForceCounterWeightUp() const {
+    INDIClient* indi = INDIClient::TheClientOrDie();
+    INDIPropertyListItem item;
+    if ( indi->GetPropertyItem( p_deviceName, "FORCECWUP", "ENABLE", item))
+       if ( item.PropertyValue == "ON" )
+          return true;
+
+    return false;
+ }
+
+
 void INDIMountInstance::AddSyncDataPoint(const SyncDataPoint& syncDataPoint){
 	this->syncDataArray.Add(syncDataPoint);
 }
@@ -674,7 +684,7 @@ void AbstractINDIMountExecution::ApplyPointingModelCorrection(AlignmentModel* aM
 	double newHourAngle=-1;
 	double newDec=-1;
 
-	aModel->Apply(newHourAngle, newDec, AlignmentModel::rangeShiftHourAngle(localSiderialTime - targetRA), targetDec);
+   aModel->Apply(newHourAngle, newDec, AlignmentModel::rangeShiftHourAngle(localSiderialTime - targetRA), targetDec, m_instance.p_pierSide);
 	targetRA=localSiderialTime-newHourAngle;
 	targetDec=newDec;
 }
@@ -719,18 +729,18 @@ void AbstractINDIMountExecution::Perform()
 
           	  switch (m_instance.p_alignmentMethod){
           	  case IMCAlignmentMethod::AnalyticalModel:
-          		  // FIXME modelEachPierside
-          		  aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig,true );
+                 aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 31));
               	  aModel->readObject(m_instance.p_alignmentFile);
           		  break;
           	  default:
           		  aModel = AlignmentModel::create(m_instance.p_alignmentFile);
           	  }
-          	  if (aModel==nullptr){
+              if (aModel == nullptr){
           		throw Error( "Alignment model could not be loaded" );
           	  }
-
-          	  aModel->Apply(hourAngle,targetDec,AlignmentModel::rangeShiftHourAngle(m_instance.o_currentLST - targetRARaw),targetDecRaw);
+              bool isForceCounterWeightUp = m_instance.isForceCounterWeightUp();
+              pcl_enum pierside = aModel->getPierSideFromHourAngle(AlignmentModel::rangeShiftHourAngle(m_instance.o_currentLST - targetRARaw), isForceCounterWeightUp);
+              aModel->Apply(hourAngle, targetDec, AlignmentModel::rangeShiftHourAngle(m_instance.o_currentLST - targetRARaw), targetDecRaw, pierside);
           	  targetRA=AlignmentModel::rangeShiftRighascension(m_instance.o_currentLST-hourAngle);
 
           	  double deltaRA  = targetRA  - targetRARaw;
@@ -749,7 +759,7 @@ void AbstractINDIMountExecution::Perform()
             	targetDec = targetDecRaw;
             }
 
-			StartMountEvent( targetRA, m_instance.o_currentRA, targetDec, m_instance.o_currentDec, m_instance.p_command );
+            StartMountEvent( targetRA, m_instance.o_currentRA, targetDec, m_instance.o_currentDec, m_instance.p_command );
             indi->SendNewPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "INDI_NUMBER",  // send (RA,DEC) coordinates in bulk request
                                        "RA", targetRA,
                                        "DEC", targetDec, true/*async*/ );
@@ -865,6 +875,7 @@ void AbstractINDIMountExecution::Perform()
     	  // Apply corrected position to simulate an unaligned telescope
     	  double trueTargetRa = targetRA;
     	  double trueTargetDec = targetDec;
+        m_instance.GetPierSide();
     	  ApplyPointingModelCorrection(aModel.Ptr(), trueTargetRa, trueTargetDec);
 
           StartMountEvent( targetRA, m_instance.o_currentRA, targetDec, m_instance.o_currentDec, m_instance.p_command );
@@ -878,7 +889,8 @@ void AbstractINDIMountExecution::Perform()
         	   syncPoint.celestialDEC      = targetDec;
         	   syncPoint.telecopeRA        = trueTargetRa;
         	   syncPoint.telecopeDEC       = trueTargetDec;
-        	   syncPoint.pierSide          = aModel->getPierSide(syncPoint.localSiderialTime - syncPoint.celestialRA);
+            syncPoint.pierSide          = m_instance.p_pierSide;
+
         	   aModel->addSyncDataPoint(syncPoint);
         	   aModel->writeObject(m_instance.p_alignmentFile);
         	   break;
@@ -896,13 +908,7 @@ void AbstractINDIMountExecution::Perform()
             double targetRA, targetDec;
             m_instance.GetTargetCoordinates( targetRA, targetDec );
             m_instance.GetCurrentCoordinates();
-
-            if (m_instance.p_enableAlignmentCorrection){
-                // if alignment correction is enabled, the original target coordinates
-                // before alignment correction have to be determined
-            	AutoPointer<AlignmentModel> aModel =  AlignmentModel::create(m_instance.p_alignmentFile);
-            	ApplyPointingModelCorrection(aModel.Ptr(), targetRA, targetDec);
-            }
+            m_instance.GetPierSide();
 
             StartMountEvent( targetRA, m_instance.o_currentRA, targetDec, m_instance.o_currentDec, m_instance.p_command );
             switch (m_instance.p_alignmentMethod){
@@ -928,8 +934,7 @@ void AbstractINDIMountExecution::Perform()
             	syncPoint.celestialDEC      = targetDec;
             	syncPoint.telecopeRA        = m_instance.o_currentRA;
             	syncPoint.telecopeDEC       = m_instance.o_currentDec;
-            	syncPoint.pierSide          = aModel->getPierSide(syncPoint.localSiderialTime - syncPoint.celestialRA);
-
+               syncPoint.pierSide          = m_instance.p_pierSide;
             	aModel->addSyncDataPoint(syncPoint);
             	aModel->writeObject(m_instance.p_alignmentFile);
             	break;
@@ -989,7 +994,7 @@ void AbstractINDIMountExecution::Perform()
     		 throw Error( "Internal error: AbstractINDIMountExecution::Perform(): Unknown Pointing Model." );
     	 }
 
-    	 aModel->readObject(m_instance.p_alignmentFile);
+       aModel->readSyncData(m_instance.p_alignmentFile);
     	 // fit model
     	 aModel->fitModel();
     	 aModel->writeObject(m_instance.p_alignmentFile);

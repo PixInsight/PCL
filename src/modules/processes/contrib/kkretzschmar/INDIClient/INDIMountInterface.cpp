@@ -64,7 +64,6 @@
 
 #include "INDIDeviceControllerInterface.h"
 #include "INDIMountInterface.h"
-#include "INDIMountParameters.h"
 #include "INDIMountProcess.h"
 
 #include "INDI/basedevice.h"
@@ -928,6 +927,7 @@ bool INDIMountInterface::Launch( const MetaProcess& P, const ProcessImplementati
 
 void INDIMountInterface::GUIData::getAlignmentConfigParamter(int32& configParam){
 
+   configParam = 0;
 	if (m_alignmentConfigOffset) {
 		configParam |= 1 << 1; // offset
 	}
@@ -962,6 +962,13 @@ void INDIMountInterface::GUIData::getAlignmentConfigParamter(int32& configParam)
 
 }
 
+int INDIMountInterface::getAlignmentMethod() const  {
+   if (GUI == nullptr) {
+      return IMCAlignmentMethod::Default;
+   }
+   return GUI->m_alignmentModelIndex;
+}
+
 ProcessImplementation* INDIMountInterface::NewProcess() const
 {
    INDIMountInstance* instance = new INDIMountInstance( TheINDIMountProcess );
@@ -987,14 +994,14 @@ ProcessImplementation* INDIMountInterface::NewProcess() const
    	{
    		GUI->getAlignmentConfigParamter(instance->p_alignmentConfig);
    	}
-   	}
+   }
 
    instance->p_alignmentFile = GUI->AlignmentFile_Edit.Text();
 
 
    instance->GetCurrentCoordinates();
 
-   instance->p_pierSide = instance->o_currentLST <= instance->o_currentRA ? IMCPierSide::West : IMCPierSide::East;
+   instance->p_pierSide = m_pierSide;
 
    instance->o_geographicLatitude = m_geoLatitude;
 
@@ -1576,15 +1583,23 @@ __device_found:
       INDIClient* indi = INDIClient::TheClient();
       INDIPropertyListItem mountProp;
 
+      double time_lst = 0; // needed for pier side fallback
       if ( indi->GetPropertyItem( m_device, "TIME_LST", "LST", mountProp, false/*formatted*/ ) )
+      {
          GUI->LST_Value_Label.SetText( String::ToSexagesimal( mountProp.PropertyValue.ToDouble(),
                                  SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 3/*width*/ ) ) );
+         time_lst = mountProp.PropertyValue.ToDouble();
+      }
       else
          GUI->LST_Value_Label.Clear();
 
+      double coord_ra = 0;// needed for pier side fallback
       if ( indi->GetPropertyItem( m_device, "EQUATORIAL_EOD_COORD", "RA", mountProp, false/*formatted*/ ) )
+      {
          GUI->RA_Value_Label.SetText( String::ToSexagesimal( mountProp.PropertyValue.ToDouble(),
                                  SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 3/*width*/ ) ) );
+         coord_ra = mountProp.PropertyValue.ToDouble();
+      }
       else
          GUI->RA_Value_Label.Clear();
 
@@ -1593,6 +1608,23 @@ __device_found:
                                  SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 3/*width*/ ) ) );
       else
          GUI->Dec_Value_Label.Clear();
+
+      static const char* indiPierSides[] = { "PIER_WEST", "PIER_EAST" };
+      for ( size_type i = 0; i < ItemsInArray( indiPierSides ); ++i )
+         if ( indi->GetPropertyItem( m_device, "TELESCOPE_PIER_SIDE", indiPierSides[i], mountProp ) )
+            if ( mountProp.PropertyValue == "ON" )
+            {
+               m_pierSide = i;
+               break;
+            }
+         else
+            {
+               // pier side fallback
+               // If the INDI mount device does not support the TELESCOPE_PIER_SIDE property, compute the pierside from hour angle
+               double hourAngle = AlignmentModel::rangeShiftHourAngle(time_lst - coord_ra);
+               m_pierSide = hourAngle <= 0 ? IMCPierSide::West : IMCPierSide::East;
+            }
+
 
       if ( indi->GetPropertyItem( m_device, "HORIZONTAL_COORD", "ALT", mountProp, false/*formatted*/ ) )
          GUI->ALT_Value_Label.SetText( String::ToSexagesimal( mountProp.PropertyValue.ToDouble(),
@@ -1638,7 +1670,6 @@ __device_found:
     	  m_telescopeFocalLength = mountProp.PropertyValue.ToDouble();
       else
     	  m_telescopeFocalLength = 0;
-
 
    }
 }
@@ -2100,7 +2131,7 @@ void INDIMountInterface::plotAlignemtResiduals( AlignmentModel* model )
       // compute alignment correction
       double haCor = 0;
       double decCor = 0;
-      model->Apply( haCor, decCor, cel_ha, cel_dec );
+      model->Apply( haCor, decCor, cel_ha, cel_dec,IMCPierSide::West);
       double del_haCor = cel_ha - haCor;
       double del_decCor = cel_dec - decCor;
       double haResidual = (del_ha - del_haCor) * ra_factor;
@@ -2126,7 +2157,7 @@ void INDIMountInterface::plotAlignemtResiduals( AlignmentModel* model )
       // compute alignment correction
       double haCor = 0;
       double decCor = 0;
-      model->Apply( haCor, decCor, cel_ha, cel_dec );
+      model->Apply( haCor, decCor, cel_ha, cel_dec, IMCPierSide::East);
       double del_haCor = cel_ha - haCor;
       double del_decCor = cel_dec - decCor;
       double haResidual = (del_ha - del_haCor) * ra_factor;

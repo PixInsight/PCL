@@ -7,6 +7,6 @@ Created with PixInsight software - http://pixinsight.com/
    <CreationTime>2017-06-23T20:46:41.561Z</CreationTime>
    <GeographicLatitude>0.8552113334772214</GeographicLatitude>
    <Configuration>1918</Configuration>
-   <ModelParameters PierSide="West">-0.382163,0.138095,0.259225,0.131419,0.207197,-0.057098,0.089279,-0,0.084133,0.002292,-5e-06</ModelParameters>
-   <ModelParameters PierSide="East">0.303318,0.145588,-0.1613,0.125386,-0.144077,0.06553299999999999,0.018505,0,-0.31047,0.004833,6.3e-05</ModelParameters>
+   <ModelParameters PierSide="East">-0.382163,0.138095,0.259225,0.131419,0.207197,-0.057098,0.089279,-0,0.084133,0.002292,-5e-06</ModelParameters>
+   <ModelParameters PierSide="West">0.303318,0.145588,-0.1613,0.125386,-0.144077,0.06553299999999999,0.018505,0,-0.31047,0.004833,6.3e-05</ModelParameters>
 </xtpm>

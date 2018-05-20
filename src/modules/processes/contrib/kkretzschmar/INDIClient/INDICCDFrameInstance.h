@@ -120,12 +120,16 @@ private:
    pcl_bool   p_requireSelectedTelescope;
    String     p_telescopeDeviceName; // only if p_telescopeSelection = device name
    String     p_extFilterWheelDeviceName;
+   pcl_bool   p_enableAlignmentCorrection;
+   String     p_alignmentFile;
 
    StringList o_clientViewIds;
    StringList o_clientFilePaths;
    StringList o_serverFrames;
 
    int        m_exposureNumber;
+
+   void setTelescopeAlignmentModelParameter(bool throwErrors = false);
 
    friend class INDICCDFrameInterface;
    friend class AbstractINDICCDFrameExecution;

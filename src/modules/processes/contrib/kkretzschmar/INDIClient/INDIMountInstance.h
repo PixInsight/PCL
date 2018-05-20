@@ -93,6 +93,8 @@ public:
 
    void GetCurrentCoordinates();
    void GetTargetCoordinates( double& ra, double& dec ) const;
+   void GetPierSide();
+   bool isForceCounterWeightUp() const;
 
    void AddSyncDataPoint(const SyncDataPoint& syncDataPoint);
 

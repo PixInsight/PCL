@@ -104,6 +104,9 @@ INDICCDFrameInstance::INDICCDFrameInstance( const MetaProcess* m ) :
    p_requireSelectedTelescope( TheICFRequireSelectedTelescopeParameter->DefaultValue() ),
    p_telescopeDeviceName( TheICFTelescopeDeviceNameParameter->DefaultValue() ),
    p_extFilterWheelDeviceName( TheICFExternalFilterWheelDeviceNameParameter->DefaultValue() ),
+   p_enableAlignmentCorrection(TheICFEnableAlignmentCorrectionParameter->DefaultValue()),
+   p_alignmentFile(TheICFAlignmentFileParameter->DefaultValue()),
+
 
    o_clientViewIds(),
    o_clientFilePaths(),
@@ -149,6 +152,8 @@ void INDICCDFrameInstance::Assign( const ProcessImplementation& p )
       p_requireSelectedTelescope = x->p_requireSelectedTelescope;
       p_telescopeDeviceName      = x->p_telescopeDeviceName;
       p_extFilterWheelDeviceName = x->p_extFilterWheelDeviceName;
+      p_enableAlignmentCorrection = x->p_enableAlignmentCorrection;
+      p_alignmentFile             = x->p_alignmentFile;
 
       o_clientViewIds            = x->o_clientViewIds;
       o_clientFilePaths          = x->o_clientFilePaths;
@@ -202,6 +207,27 @@ bool INDICCDFrameInstance::ValidateDevice( bool throwErrors ) const
       throw Error( "INDI device not available: '" + p_deviceName + "'" );
    return false;
 }
+
+void  INDICCDFrameInstance::setTelescopeAlignmentModelParameter(bool throwErrors) {
+   throwErrors &= bool( p_requireSelectedTelescope );
+   switch ( p_telescopeSelection )
+   {
+   case ICFTelescopeSelection::NoTelescope:
+   case ICFTelescopeSelection::ActiveTelescope:
+      if (throwErrors) {
+         throw Error("Cannot set telescope alignment parameters: specify a telescope selection method");
+      }
+      break;
+   case ICFTelescopeSelection::MountControllerTelescope:
+   case ICFTelescopeSelection::MountControllerOrActiveTelescope:
+      p_alignmentFile = TheINDIMountInterface->getAlignmentFile();
+      p_enableAlignmentCorrection = TheINDIMountInterface->applyAlignmentCorrection();
+      break;
+   default:
+      break;
+   }
+}
+
 
 String INDICCDFrameInstance::TelescopeDeviceName( bool throwErrors ) const
 {
@@ -558,6 +584,10 @@ void* INDICCDFrameInstance::LockParameter( const MetaParameter* p, size_type tab
       return p_telescopeDeviceName.Begin();
    if ( p == TheICFExternalFilterWheelDeviceNameParameter )
             return p_extFilterWheelDeviceName.Begin();
+   if ( p == TheICFEnableAlignmentCorrectionParameter )
+      return &p_enableAlignmentCorrection;
+   if ( p == TheICFAlignmentFileParameter )
+      return p_alignmentFile.Begin();
 
    if ( p == TheICFClientViewIdParameter )
       return o_clientViewIds[tableRow].Begin();
@@ -662,6 +692,11 @@ bool INDICCDFrameInstance::AllocateParameter( size_type sizeOrLength, const Meta
       o_serverFrames[tableRow].Clear();
       if ( sizeOrLength > 0 )
          o_serverFrames[tableRow].SetLength( sizeOrLength );
+   } else if ( p == TheICFAlignmentFileParameter )
+   {
+      p_alignmentFile.Clear();
+      if ( sizeOrLength > 0 )
+         p_alignmentFile.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -691,6 +726,8 @@ size_type INDICCDFrameInstance::ParameterLength( const MetaParameter* p, size_ty
       return p_telescopeDeviceName.Length();
    if ( p == TheICFExternalFilterWheelDeviceNameParameter )
 	   return p_extFilterWheelDeviceName.Length();
+   if ( p == TheICFAlignmentFileParameter )
+         return p_alignmentFile.Length();
 
    if ( p == TheICFClientFramesParameter )
       return o_clientViewIds.Length();
@@ -800,6 +837,7 @@ struct ImageMetadata
    Definable<double>    focalLength;
    Definable<double>    aperture;
    Definable<double>    apertureArea;
+   Definable<String>    telescopePierSide;
 
    Definable<String>    objectName;
    Definable<int>       year;
@@ -977,6 +1015,8 @@ void AbstractINDICCDFrameExecution::Perform()
 
       String telescopeName = m_instance.TelescopeDeviceName();
 
+      m_instance.setTelescopeAlignmentModelParameter();
+
       m_instance.SendDeviceProperties( false/*async*/ );
 
       INDIPropertyListItem item;
@@ -1042,7 +1082,7 @@ void AbstractINDICCDFrameExecution::Perform()
                throw Error( "Cannot get current mount coordinates for device '" + telescopeName + "'" );
             telescopeRA = Rad( itemRA.PropertyValue.ToDouble()*15 );
             telescopeDec = Rad( itemDec.PropertyValue.ToDouble() );
-         }
+          }
 
          ElapsedTime T;
 
@@ -1130,26 +1170,118 @@ void AbstractINDICCDFrameExecution::Perform()
                            data.objectName = m_instance.p_objectName;
                         }
 
-                  if ( !telescopeName.IsEmpty() )
-                  {
-                     data.telescopeName = telescopeName;
-                     // Store the epoche-of-date coordinates
-                     if (!data.eodRa.defined && !data.eodDec.defined)
+                     // If not already available, try to get the local
+                     // sidereal time.
+                     if (!data.localSiderealTime.defined)
+                        if ( indi->GetPropertyItem( telescopeName, "TIME_LST", "LST", item, false/*formatted*/ ))
+                        {
+                           data.localSiderealTime = item.PropertyValue.ToDouble();;
+
+                           IsoString lstSexagesimal = IsoString::ToSexagesimal( data.localSiderealTime.value,
+                                                                                SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, false/*sign*/, 0/*width*/, ':'/*separator*/ ) );
+
+                           keywords << FITSHeaderKeyword( "LOCALLST", lstSexagesimal, "Local sidereal time (LST) - after exposure" );
+                        }
+
+                     if ( !telescopeName.IsEmpty() )
                      {
-                    	 data.eodRa =  Deg( telescopeRA );
-                    	 data.eodDec =  Deg( telescopeDec );
-                     }
+                        // If not already available, try to get the telescope
+                        // pier side from standard device properties.
+                        if ( !data.focalLength.defined )
+                           if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_PIER_SIDE", "PIER_WEST", item) )
+                           {
+                              if (item.PropertyValue == "ON" )
+                              {
+                                 data.telescopePierSide = "WEST";
+                                 keywords << FITSHeaderKeyword( "PIERSIDE", "West", "Counterweight pointing East." );
+                              } else
+                              {
+                                 data.telescopePierSide = "EAST";
+                                 keywords << FITSHeaderKeyword( "PIERSIDE", "East", "Counterweight pointing West." );
+                              }
+                           } else {
+                              data.telescopePierSide = "NONE";
+                           }
+
+                        // Apply the inverse of the alignment model
+                        if (m_instance.p_enableAlignmentCorrection){
+                           Console().WriteLn( "<end><cbr> INDICCDFrame apply alignment correction");
+
+                           AutoPointer<AlignmentModel> aModel = AlignmentModel::create(m_instance.p_alignmentFile);
+
+                           double localSiderialTime = data.localSiderealTime.value;
+
+                           double newHourAngle=-1;
+                           double newDec=-1;
+
+                           pcl_enum pierSide = data.telescopePierSide.value == "EAST" ?  IMCPierSide::East : IMCPierSide::West;
+                           aModel->ApplyInverse(newHourAngle, newDec, AlignmentModel::rangeShiftHourAngle(localSiderialTime - Deg(telescopeRA)/15), Deg(telescopeDec), pierSide);
+                           telescopeRA = Rad((localSiderialTime-newHourAngle) * 15);
+                           telescopeDec = Rad(newDec);
+                        }
 
 
-                     // Compute mean J2000 coordinates from telescope apparent
-                     // EOD coordinates.
-                     if ( data.year.defined )
+                        data.telescopeName = telescopeName;
+                        // Store the epoche-of-date coordinates
+                        if (!data.eodRa.defined && !data.eodDec.defined)
+                        {
+                           data.eodRa =  Deg( telescopeRA );
+                           data.eodDec =  Deg( telescopeDec );
+                        }
+
+
+                        // Compute mean J2000 coordinates from telescope apparent
+                        // EOD coordinates.
+                        if ( data.year.defined )
                         {
                            double jd = ComplexTimeToJD( data.year.value, data.month.value, data.day.value, data.dayf.value + data.tz.value/24 );
                            ApparentPosition( jd ).ApplyInverse( telescopeRA, telescopeDec );
                            data.ra = Deg( telescopeRA );
                            data.dec = Deg( telescopeDec );
                            data.equinox = 2000;
+                        }
+
+                        // If not already available, try to get the telescope
+                        // focal length from standard device properties.
+                        if ( !data.focalLength.defined )
+                           if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_INFO", "TELESCOPE_FOCAL_LENGTH", item, false/*formatted*/ ) )
+                           {
+                              double focalLengthMM = Round( item.PropertyValue.ToDouble(), 3 );
+                              data.focalLength = focalLengthMM/1000;
+                              keywords << FITSHeaderKeyword( "FOCALLEN", focalLengthMM, "Focal length (mm)" );
+                           }
+
+                     }
+
+                     // Replace existing coordinate keywords with accurate mean
+                     // coordinates.
+                     if ( data.ra.defined && data.dec.defined )
+                        for ( FITSHeaderKeyword& k : keywords )
+                           if ( k.name == "OBJCTRA" )
+                           {
+                              k.value = '\'' + IsoString::ToSexagesimal( data.ra.value/15,
+                                                                         SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 0/*width*/, ' '/*separator*/ ) ) + '\'';
+                              k.comment = "Right Ascension of the center of the image";
+                           }
+                           else if ( k.name == "OBJCTDEC" )
+                           {
+                              k.value = '\'' + IsoString::ToSexagesimal( data.dec.value,
+                                                                         SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 0/*width*/, ' '/*separator*/ ) ) + '\'';
+                              k.comment = "Declination of the center of the image";
+                           }
+                           else if ( k.name == "EQUINOX" )
+                           {
+                              k.value = "2000.0";
+                              k.comment = "Equinox of the celestial coordinate system";
+                           }
+                     // If not already available, try to get the telescope
+                     // aperture from standard device properties.
+                     if ( !data.aperture.defined )
+                        if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_INFO", "TELESCOPE_APERTURE", item, false/*formatted*/ ) )
+                        {
+                           double apertureMM = Round( item.PropertyValue.ToDouble(), 3 );
+                           data.aperture = apertureMM/1000;
+                           keywords << FITSHeaderKeyword( "APTDIA", apertureMM, "Aperture diameter (mm)" );
                         }
 
                      // If not already available, try to get the telescope
@@ -1161,79 +1293,24 @@ void AbstractINDICCDFrameExecution::Perform()
                            data.focalLength = focalLengthMM/1000;
                            keywords << FITSHeaderKeyword( "FOCALLEN", focalLengthMM, "Focal length (mm)" );
                         }
-                  }
 
-                  // Replace existing coordinate keywords with accurate mean
-                  // coordinates.
-                  if ( data.ra.defined && data.dec.defined )
-                     for ( FITSHeaderKeyword& k : keywords )
-                        if ( k.name == "OBJCTRA" )
+                     // If not already available, try to get the local
+                     // geographic latitude of observatory.
+                     if (!data.geographicLatitude.defined)
+                        if ( indi->GetPropertyItem( telescopeName, "GEOGRAPHIC_COORD", "LAT", item, false/*formatted*/ ))
                         {
-                           k.value = '\'' + IsoString::ToSexagesimal( data.ra.value/15,
-                                 SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 0/*width*/, ' '/*separator*/ ) ) + '\'';
-                           k.comment = "Right Ascension of the center of the image";
+                           data.geographicLatitude = item.PropertyValue.ToDouble();;
+
                         }
-                        else if ( k.name == "OBJCTDEC" )
+                     // If not already available, try to get the local
+                     // geographic longitude of observatory.
+                     if (!data.geographicLongitude.defined)
+                        if ( indi->GetPropertyItem( telescopeName, "GEOGRAPHIC_COORD", "LONG", item, false/*formatted*/ ))
                         {
-                           k.value = '\'' + IsoString::ToSexagesimal( data.dec.value,
-                                 SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 0/*width*/, ' '/*separator*/ ) ) + '\'';
-                           k.comment = "Declination of the center of the image";
+                           data.geographicLongitude = item.PropertyValue.ToDouble();;
+
                         }
-                        else if ( k.name == "EQUINOX" )
-                        {
-                           k.value = "2000.0";
-                           k.comment = "Equinox of the celestial coordinate system";
-                        }
-                  // If not already available, try to get the telescope
-                  // aperture from standard device properties.
-                  if ( !data.aperture.defined )
-                     if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_INFO", "TELESCOPE_APERTURE", item, false/*formatted*/ ) )
-                     {
-                        double apertureMM = Round( item.PropertyValue.ToDouble(), 3 );
-                        data.aperture = apertureMM/1000;
-                        keywords << FITSHeaderKeyword( "APTDIA", apertureMM, "Aperture diameter (mm)" );
-                     }
-
-                  // If not already available, try to get the telescope
-                  // focal length from standard device properties.
-                  if ( !data.focalLength.defined )
-                     if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_INFO", "TELESCOPE_FOCAL_LENGTH", item, false/*formatted*/ ) )
-                     {
-                        double focalLengthMM = Round( item.PropertyValue.ToDouble(), 3 );
-                        data.focalLength = focalLengthMM/1000;
-                        keywords << FITSHeaderKeyword( "FOCALLEN", focalLengthMM, "Focal length (mm)" );
-                     }
-                  // If not already available, try to get the local
-                  // sidereal time.
-                  if (!data.localSiderealTime.defined)
-                	  if ( indi->GetPropertyItem( telescopeName, "TIME_LST", "LST", item, false/*formatted*/ ))
-                	  {
-                		  data.localSiderealTime = item.PropertyValue.ToDouble();;
-
-                		  IsoString lstSexagesimal = IsoString::ToSexagesimal( data.localSiderealTime.value,
-                				  SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, false/*sign*/, 0/*width*/, ':'/*separator*/ ) );
-
-                		  keywords << FITSHeaderKeyword( "LOCALLST", lstSexagesimal, "Local sidereal time (LST) - after exposure" );
-
-
-                	  }
-                  // If not already available, try to get the local
-                  // geographic latitude of observatory.
-                  if (!data.geographicLatitude.defined)
-                	  if ( indi->GetPropertyItem( telescopeName, "GEOGRAPHIC_COORD", "LAT", item, false/*formatted*/ ))
-                	  {
-                		  data.geographicLatitude = item.PropertyValue.ToDouble();;
-
-                	  }
-                  // If not already available, try to get the local
-                  // geographic longitude of observatory.
-                  if (!data.geographicLongitude.defined)
-                	  if ( indi->GetPropertyItem( telescopeName, "GEOGRAPHIC_COORD", "LONG", item, false/*formatted*/ ))
-                	  {
-                		  data.geographicLongitude = item.PropertyValue.ToDouble();;
-
-                	  }
-                  properties << ImagePropertiesFromImageMetadata( data );
+                     properties << ImagePropertiesFromImageMetadata( data );
                }
 
 

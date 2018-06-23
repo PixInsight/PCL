@@ -999,7 +999,7 @@ void INDIDeviceControllerInterface::e_Click( Button& sender, bool checked )
                {
                   INDINewPropertyItem result;
                   if ( PropertyEditDialog::EditProperty( result, elementNode->Item() ) )
-                     if ( !INDIClient::TheClient()->SendNewPropertyItem( result ) )
+                     if ( !INDIClient::TheClient()->SendNewPropertyItem( result , true /*asynch*/) )
                         MessageBox( "<p>Failure to send new property item value:</p>"
                                     "<p>" + elementNode->Item().PropertyKey + "</p>",
                                     WindowTitle(),
@@ -1063,7 +1063,7 @@ void INDIDeviceControllerInterface::e_NodeActivated( TreeBox& sender, TreeBox::N
          {
             INDINewPropertyItem result;
             if ( PropertyEditDialog::EditProperty( result, elementNode->Item() ) )
-               INDIClient::TheClient()->SendNewPropertyItem( result );
+               INDIClient::TheClient()->SendNewPropertyItem( result , true /*asynch*/);
          }
       }
    }

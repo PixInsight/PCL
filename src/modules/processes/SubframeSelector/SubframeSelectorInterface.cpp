@@ -597,6 +597,7 @@ void SubframeSelectorInterface::ApplyApprovalExpression()
    try
    {
       instance.ApproveMeasurements();
+      GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
    }
    catch ( ... )
    {
@@ -612,6 +613,7 @@ void SubframeSelectorInterface::ApplyWeightingExpression()
    try
    {
       instance.WeightMeasurements();
+      GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
    }
    catch ( ... )
    {
@@ -1224,27 +1226,19 @@ void SubframeSelectorInterface::__ButtonClick( Button& sender, bool checked )
 
 void SubframeSelectorInterface::__TextUpdated( Edit& sender, const String& text )
 {
-   if ( sender == GUI->ExpressionParameters_Approval_Control )
+   String bmp = ":/browser/disabled.png";
+   if ( MeasureUtils::IsValidExpression( text ) )
    {
-      if ( MeasureUtils::IsValidExpression( text ) )
-      {
-         GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
-      }
-      else
-      {
-         GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
-      }
+      bmp = ":/browser/enabled.png";
    }
-   else if ( sender == GUI->ExpressionParameters_Weighting_Control )
+
+   if ( sender == GUI->ExpressionParameters_Approval_Control && instance.approvalExpression != text )
    {
-      if ( MeasureUtils::IsValidExpression( text ) )
-      {
-         GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
-      }
-      else
-      {
-         GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
-      }
+      GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( bmp ) ) );
+   }
+   else if ( sender == GUI->ExpressionParameters_Weighting_Control && instance.weightingExpression != text )
+   {
+      GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( bmp ) ) );
    }
 }
 
@@ -1252,22 +1246,13 @@ void SubframeSelectorInterface::__TextUpdated( Edit& sender, const String& text 
 
 void SubframeSelectorInterface::__TextUpdateCompleted( Edit& sender )
 {
-   bool shouldUpdate = false;
    if ( sender == GUI->ExpressionParameters_Approval_Control )
    {
       String text = sender.Text();
-      if ( MeasureUtils::IsValidExpression( text ) )
-      {
-         GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
-         if ( instance.approvalExpression != text )
-            shouldUpdate = true;
-         instance.approvalExpression = text;
-      }
-      else
-      {
-         GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
-         instance.approvalExpression = "";
-      }
+
+      bool shouldUpdate = MeasureUtils::IsValidExpression( text ) && instance.approvalExpression != text;
+      instance.approvalExpression = text;
+
       if ( shouldUpdate )
       {
          UpdateMeasurementImagesList();
@@ -1277,18 +1262,10 @@ void SubframeSelectorInterface::__TextUpdateCompleted( Edit& sender )
    else if ( sender == GUI->ExpressionParameters_Weighting_Control )
    {
       String text = sender.Text();
-      if ( MeasureUtils::IsValidExpression( text ) )
-      {
-         GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
-         if ( instance.weightingExpression != text )
-            shouldUpdate = true;
-         instance.weightingExpression = text;
-      }
-      else
-      {
-         GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
-         instance.weightingExpression = "";
-      }
+
+      bool shouldUpdate = MeasureUtils::IsValidExpression( text ) && instance.weightingExpression != text;
+      instance.weightingExpression = text;
+
       if ( shouldUpdate )
       {
          UpdateMeasurementImagesList();

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.104
+# PixInsight Makefile Generator Script v1.106
 # Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-08-02T11:07:54.356Z
+# Generated on .... 2017-11-07T09:03:10.425Z
 # Project id ...... ImageIntegration
 # Project type .... Module
 # Platform ........ Windows/vc14
@@ -33,7 +33,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{FA1B4F4D-D3F0-4854-A722-C6B9D04F0A8F}</ProjectGuid>
+    <ProjectGuid>{54809479-DE83-4221-BE6B-B03D8B89C763}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -279,10 +279,6 @@
     <None Include="..\..\HDRCompositionIcon.png"/>
     <None Include="..\..\ImageIntegrationIcon.png"/>
     <None Include="..\..\grid.png"/>
-    <None Include="..\..\__private\ImageIntegrationIcons.svg"/>
-    <None Include="..\..\__private\ImageIntegrationIcons.svg-rect3260-4294966373.png"/>
-    <None Include="..\..\__private\Pyramid.svg"/>
-    <None Include="..\..\__private\Tetrahedron.svg"/>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
   <ImportGroup Label="ExtensionTargets">

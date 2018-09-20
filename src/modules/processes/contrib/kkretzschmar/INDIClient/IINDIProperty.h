@@ -69,6 +69,8 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+typedef INDI_PROPERTY_TYPE INDI_TYPE;
+
 class IProperty
 {
 public:

@@ -90,7 +90,7 @@ struct INDIPropertyListItem
 {
    String    Device;
    String    Property;
-   INDI_TYPE PropertyType;
+   INDI_PROPERTY_TYPE PropertyType;
    String    PropertyTypeStr;
    String    Element;
    unsigned  PropertyState;

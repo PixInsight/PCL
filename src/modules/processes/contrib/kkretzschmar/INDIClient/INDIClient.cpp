@@ -359,7 +359,7 @@ void INDIClient::newDevice( INDI::BaseDevice* d )
    }
 }
 
-void INDIClient::deleteDevice( INDI::BaseDevice* d )
+void INDIClient::removeDevice( INDI::BaseDevice* d )
 {
    CHECK_POINTER( d )
 
@@ -453,11 +453,11 @@ void INDIClient::newLight( ILightVectorProperty* lvp )
 
 void INDIClient::newMessage( INDI::BaseDevice* d, int messageID )
 {
-   const char* message = d->messageQueue( messageID );
-   if ( message != nullptr )
+   std::string message = d->messageQueue( messageID );
+   if ( !message.empty() )
    {
       volatile AutoLock lock( m_mutex );
-      m_currentServerMessage = message;
+      m_currentServerMessage = message.c_str();
    }
 }
 

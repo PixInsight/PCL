@@ -1368,6 +1368,8 @@ bool SubframeSelectorInstance::Output()
          if ( i->enabled && !File::Exists( i->path ) )
             throw ("No such file exists on the local filesystem: " + i->path);
 
+      size_type o = 0;
+      size_type r = 0;
 
       for ( size_type i = 0; i < measures.Length(); ++i )
       {
@@ -1378,6 +1380,11 @@ bool SubframeSelectorInstance::Output()
                Console().NoteLn( String().Format( "<end><cbr><br>Outputting subframe %u of %u",
                                                   i+1, measures.Length() ) );
                WriteMeasuredImage( measures.At( i ) );
+               ++o;
+            } else {
+               Console().NoteLn( String().Format( "<end><cbr><br>Skipping subframe %u of %u",
+                                                  i+1, measures.Length() ) );
+               ++r;
             }
          }
          catch ( ... )
@@ -1418,6 +1425,8 @@ bool SubframeSelectorInstance::Output()
             }
          }
       }
+      Console().NoteLn( String().Format( "<end><cbr><br>%u Output subframes, %u Rejected subframes, %u total",
+                                         o, r, measures.Length() ) );
 
       return true;
    }

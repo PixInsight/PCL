@@ -160,7 +160,7 @@ IsoString SubframeSelectorProcess::Category() const
 
 uint32 SubframeSelectorProcess::Version() const
 {
-   return 0x100; // required
+   return 0x140; // required
 }
 
 // ----------------------------------------------------------------------------

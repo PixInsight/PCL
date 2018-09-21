@@ -96,7 +96,7 @@ String SubframeSelectorModule::Author() const
 
 String SubframeSelectorModule::Copyright() const
 {
-   return "Copyright (c) 2017, Cameron Leger";
+   return "Copyright (c) 2018, Cameron Leger";
 }
 
 String SubframeSelectorModule::TradeMarks() const

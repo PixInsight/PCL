@@ -172,9 +172,6 @@ private:
    // Read a subframe file
    ImageVariant* LoadSubframe( const String& filePath );
 
-   // Read a subframe file into a Thread
-   thread_list CreateThreadForSubframe( int index, const String&, MeasureThreadInputData* );
-
    // Write output file
    void WriteMeasuredImage( MeasureItem* measureItem );
 

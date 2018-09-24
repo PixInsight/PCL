@@ -4,7 +4,7 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.02.01.0002
+// Standard SubframeSelector Process Module Version 01.03.01.0003
 // ----------------------------------------------------------------------------
 // SubframeSelectorInstance.cpp - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
@@ -66,6 +66,7 @@
 #include "SubframeSelectorInstance.h"
 #include "SubframeSelectorStarDetector.h"
 #include "SubframeSelectorInterface.h"
+#include "SubframeSelectorCache.h"
 
 namespace pcl
 {
@@ -97,6 +98,7 @@ const float __5x5B3Spline_kj[] =
 SubframeSelectorInstance::SubframeSelectorInstance( const MetaProcess* m ) :
    ProcessImplementation( m ),
    routine( SSRoutine::Default ),
+   fileCache( TheSSFileCacheParameter->DefaultValue() ),
    subframes(),
    subframeScale( TheSSSubframeScaleParameter->DefaultValue() ),
    cameraGain( TheSSCameraGainParameter->DefaultValue() ),
@@ -146,6 +148,7 @@ void SubframeSelectorInstance::Assign( const ProcessImplementation& p )
    {
       routine                                = x->routine;
       subframes                              = x->subframes;
+      fileCache                              = x->fileCache;
       subframeScale                          = x->subframeScale;
       cameraGain                             = x->cameraGain;
       cameraResolution                       = x->cameraResolution;
@@ -231,15 +234,12 @@ public:
          if ( IsAborted() )
             throw Error( "Aborted" );
 
-         /*
-          * Crop if the ROI was set
-          */
+         // Crop if the ROI was set
          if ( m_data->instance->roi.IsRect() )
             m_subframe->CropTo( m_data->instance->roi );
 
          // Run the Star Detector
          star_list stars = StarDetector();
-         console.WriteLn( "     Star Detector: " + T.ToIsoString() );
 
          // Stop if just showing the maps
          if ( m_data->showStarDetectionMaps )
@@ -259,9 +259,7 @@ public:
             throw Error( "Aborted" );
 
          // Run the PSF Fitter
-         T.Reset();
          psf_list fits = FitPSFs( stars.Begin(), stars.End() );
-         console.WriteLn( "          Fit PSFs: " + T.ToIsoString() );
 
          if ( fits.IsEmpty() )
          {
@@ -273,9 +271,8 @@ public:
             throw Error( "Aborted" );
 
          // Measure Data
-         T.Reset();
          MeasurePSFs( fits );
-         console.WriteLn( "  PSF Calculations: " + T.ToIsoString() );
+         console.WriteLn( "     Star Detector: " + T.ToIsoString() );
 
          console.WriteLn( String().Format( "%i Star(s) detected", stars.Length() ) );
          console.WriteLn( String().Format( "%i PSF(s) fitted", fits.Length() ) );
@@ -414,20 +411,9 @@ private:
       m_outputData.stars = fits.Length();
 
       // Determine the best fit to weight the others against
-      double minMAD = -1;
+      double minMAD = DBL_MAX;
       for ( psf_list::const_iterator i = fits.Begin(); i != fits.End(); ++i )
-      {
-         double MAD = i->mad;
-
-         if ( minMAD <= 0 )
-         {
-            minMAD = MAD;
-            continue;
-         }
-
-         if ( MAD < minMAD )
-            minMAD = MAD;
-      }
+         minMAD = pcl::Min( minMAD, i->mad );
 
       // Analyze each star parameter against the best residual
       double fwhmSumSigma = 0;
@@ -462,13 +448,13 @@ private:
 
       // Determine Mean Deviation for each star parameter
       m_outputData.fwhmMeanDev = pcl::AvgDev( fwhms.Begin(), fwhms.End(),
-                                              pcl::Mean( fwhms.Begin(), fwhms.End() ) );
+                                              pcl::Median( fwhms.Begin(), fwhms.End() ) );
       m_outputData.fwhmMeanDev = PSFData::FWHM( PSFFunction( m_data->instance->psfFit ),
                                                 m_outputData.fwhmMeanDev, 0 ); // beta is unused here
       m_outputData.eccentricityMeanDev = pcl::AvgDev( eccentricities.Begin(), eccentricities.End(),
-                                                      pcl::Mean( eccentricities.Begin(), eccentricities.End() ) );
+                                                      pcl::Median( eccentricities.Begin(), eccentricities.End() ) );
       m_outputData.starResidualMeanDev = pcl::AvgDev( residuals.Begin(), residuals.End(),
-                                                      pcl::Mean( residuals.Begin(), residuals.End() ) );
+                                                      pcl::Median( residuals.Begin(), residuals.End() ) );
    }
 
    int                        m_index;
@@ -515,7 +501,7 @@ ImageVariant* SubframeSelectorInstance::LoadSubframe( const String& filePath )
     * this is not supported.
     */
    if ( images.Length() > 1 )
-      throw Error ( filePath + ": Has multiple images; unsupported " );
+      throw Error( filePath + ": Has multiple images; unsupported " );
 
    // Create a shared image, 32-bit floating point
    Image* image = new Image( (void*)0, 0, 0 );
@@ -548,24 +534,6 @@ ImageVariant* SubframeSelectorInstance::LoadSubframe( const String& filePath )
       throw CaughtException();
 
    return imageVariant;
-}
-
-// ----------------------------------------------------------------------------
-
-
-/*
- * Read a subframe file. Returns a list of measuring threads ready to
- * measure all subimages loaded from the file.
- */
-thread_list
-SubframeSelectorInstance::CreateThreadForSubframe( int index, const String& filePath, MeasureThreadInputData* threadData )
-{
-   thread_list threads;
-   threads.Add( new SubframeSelectorMeasureThread( index,
-                                                   LoadSubframe( filePath ),
-                                                   filePath,
-                                                   threadData ) );
-   return threads;
 }
 
 // ----------------------------------------------------------------------------
@@ -605,6 +573,7 @@ bool SubframeSelectorInstance::TestStarDetector() {
    }
    Console console;
 
+   // Setup common data for each thread
    MeasureThreadInputData inputThreadData;
    inputThreadData.showStarDetectionMaps  = true;
    inputThreadData.instance               = this;
@@ -632,8 +601,8 @@ bool SubframeSelectorInstance::TestStarDetector() {
          console.WriteLn( String().Format( "<end><cbr><br>Measuring subframe %u of %u", 1, subframes.Length() ) );
          Module->ProcessEvents();
 
-         thread_list threads = CreateThreadForSubframe( 1, item.path, &inputThreadData );
-         SubframeSelectorMeasureThread* thread = *threads;
+         SubframeSelectorMeasureThread* thread = new SubframeSelectorMeasureThread( 1, LoadSubframe( item.path ),
+                                                                                    item.path, &inputThreadData );
 
          // Keep the GUI responsive, last chance to abort
          Module->ProcessEvents();
@@ -708,13 +677,25 @@ bool SubframeSelectorInstance::Measure() {
             throw ("No such file exists on the local filesystem: " + i->path);
    }
 
-   // Reset measured values and create temporary list
+   // Reset measured values
    measures.Clear();
 
    Console console;
 
+   // Setup common data for each thread
    MeasureThreadInputData inputThreadData;
    inputThreadData.instance = this;
+
+   // Setup the cache
+   if ( TheSubframeSelectorCache == nullptr )
+   {
+      new SubframeSelectorCache; // loads cache upon construction
+      if ( TheSubframeSelectorCache->IsEnabled() )
+         if ( TheSubframeSelectorCache->IsEmpty() )
+            console.NoteLn( "<end><cbr><br>* Empty file cache" );
+         else
+            console.NoteLn( "<end><cbr><br>* Loaded cache: " + String( TheSubframeSelectorCache->NumberOfItems() ) + " item(s)" );
+   }
 
    try {
 
@@ -744,239 +725,142 @@ bool SubframeSelectorInstance::Measure() {
       thread_list runningThreads( Min( int( subframes.Length()), numberOfThreads ));
 
       /*
-       * Waiting threads list. We use this list for temporary storage of
-       * measuring threads for multiple image files.
+       * Pending subframes list. We use this list for temporary storage of
+       * indices that need measuring.
        */
-      thread_list waitingThreads;
+      Array<size_type> pendingItems;
+      for ( size_type i = 0; i < subframes.Length(); ++i )
+         if ( subframes[i].enabled )
+            pendingItems << i;
+         else
+         {
+            console.NoteLn( "* Skipping disabled target: " + subframes[i].path );
+            ++skipped;
+         }
+      size_type pendingItemsTotal = pendingItems.Length();
 
-      /*
-       * Flag to signal the beginning of the final waiting period, when there
-       * are no more pending images but there are still running threads.
-       */
-      bool waitingForFinished = false;
-
-      /*
-       * We'll work on a temporary duplicate of the subframes list. This
-       * allows us to modify the working list without altering the instance.
-       */
-      subframe_list subframes_copy( subframes );
-
-      console.WriteLn( String().Format( "<end><cbr><br>Measuring of %u subframes:", subframes.Length() ) );
+      console.WriteLn( String().Format( "<end><cbr><br>Measuring of %u subframes:", pendingItemsTotal ) );
       console.WriteLn( String().Format( "* Using %u worker threads", runningThreads.Length() ) );
 
       try
       {
+         /*
+          * Thread watching loop.
+          */
          for ( ;; )
          {
             try
             {
-               /*
-                * Thread watching loop.
-                */
-               thread_list::iterator i = 0;
-               size_type unused = 0;
-               for ( thread_list::iterator j = runningThreads.Begin(); j != runningThreads.End(); ++j )
+               int running = 0;
+               for ( thread_list::iterator i = runningThreads.Begin(); i != runningThreads.End(); ++i )
                {
-                  // Keep the GUI responsive
                   Module->ProcessEvents();
                   if ( console.AbortRequested() )
                      throw ProcessAborted();
 
-                  if ( *j == nullptr )
+                  if ( *i != nullptr )
                   {
-                     /*
-                      * This is a free thread slot. Ignore it if we don't have
-                      * more pending images to feed in.
-                      */
-                     if ( subframes_copy.IsEmpty() && waitingThreads.IsEmpty() )
+                     if ( !(*i)->Wait( 150 ) )
                      {
-                        ++unused;
+                        ++running;
                         continue;
                      }
-                  }
-                  else
-                  {
+
                      /*
-                      * This is an existing thread. If this thread is still
-                      * alive, wait for 0.1 seconds and then continue watching.
+                      * A thread has just finished.
                       */
-                     if ( (*j)->IsActive() )
+                     try
                      {
-                        pcl::Sleep( 100 );
-                        continue;
+                        if ( !(*i)->Success() )
+                           throw Error( (*i)->ConsoleOutputText() );
+
+                        (*i)->FlushConsoleOutputText();
+                        Module->ProcessEvents();
+
+                        // Store output data
+                        MeasureItem m( (*i)->Index() );
+                        m.Input( (*i)->OutputData() );
+                        measures.Append( m );
+                        (*i)->OutputData().AddToCache();
+
+                        // Dispose this calibration thread, since we are done with
+                        // it. NB: IndirectArray<T>::Delete() sets to zero the
+                        // pointer pointed to by the iterator, but does not remove
+                        // the array element.
+                        runningThreads.Delete( i );
                      }
+                     catch ( ... )
+                     {
+                        // Ensure the thread is also destroyed in the event of
+                        // error; we'd enter an infinite loop otherwise!
+                        runningThreads.Delete( i );
+                        throw;
+                     }
+
+                     ++succeeded;
                   }
 
                   /*
-                   * If we have a useful free thread slot, or a thread has just
-                   * finished, exit the watching loop and work it out.
+                   * If there are items pending, create a new thread and
+                   * fire the next one.
                    */
-                  i = j;
+                  if ( !pendingItems.IsEmpty() )
+                  {
+                     SubframeItem item = subframes[*pendingItems];
+
+                     size_type threadIndex = i - runningThreads.Begin();
+                     console.NoteLn( String().Format( "<end><cbr><br>[%03u] Measuring subframe %u of %u",
+                                                      threadIndex,
+                                                      pendingItemsTotal-pendingItems.Length()+1,
+                                                      pendingItemsTotal ) );
+
+                     /*
+                      * Check for the subframe in the cache, and use that if possible
+                      */
+                     MeasureData cacheData( item.path );
+                     if ( cacheData.GetFromCache() && fileCache )
+                     {
+                        console.NoteLn( "<end><cbr>* Retrieved data from file cache." );
+                        MeasureItem m( pendingItemsTotal-pendingItems.Length()+1, item.path );
+                        m.Input( cacheData );
+                        measures.Append( m );
+                        ++succeeded;
+                        ++running;
+                     }
+
+                     /*
+                      * Create a new thread for this subframe image
+                      */
+                     else
+                     {
+                        *i = new SubframeSelectorMeasureThread( pendingItemsTotal-pendingItems.Length()+1,
+                                                                LoadSubframe( item.path ),
+                                                                item.path,
+                                                                &inputThreadData );
+                        (*i)->Start( ThreadPriority::DefaultMax );
+                        ++running;
+                     }
+
+                     pendingItems.Remove( pendingItems.Begin() );
+
+                     if ( pendingItems.IsEmpty() )
+                        console.NoteLn( "<br>* Waiting for running tasks to terminate...<br>" );
+                  }
+               }
+
+               if ( !running )
                   break;
-               }
-
-               /*
-                * Keep watching while there is no useful free thread slots or a
-                * finished thread.
-                */
-               if ( i == 0 )
-                  if ( unused == runningThreads.Length() )
-                     break;
-                  else
-                     continue;
-
-               /*
-                * At this point we have found either a unused thread slot that
-                * we can reuse, or a thread that has just finished execution.
-                */
-               if ( *i != 0 )
-               {
-                  /*
-                   * This is a just-finished thread.
-                   */
-                  try
-                  {
-                     if ( !(*i)->Success() )
-                        throw Error( (*i)->ConsoleOutputText() );
-
-                     (*i)->FlushConsoleOutputText();
-                     Module->ProcessEvents();
-
-                     // Store output data
-                     MeasureItem m( (*i)->Index() );
-                     m.Input( (*i)->OutputData() );
-                     measures.Append( m );
-
-                     // Dispose this calibration thread, since we are done with
-                     // it. NB: IndirectArray<T>::Delete() sets to zero the
-                     // pointer pointed to by the iterator, but does not remove
-                     // the array element.
-                     runningThreads.Delete( i );
-                  }
-                  catch ( ... )
-                  {
-                     // Ensure the thread is also destroyed in the event of
-                     // error; we'd enter an infinite loop otherwise!
-                     runningThreads.Delete( i );
-                     throw;
-                  }
-
-                  ++succeeded;
-               }
-
-               // Keep the GUI responsive
-               Module->ProcessEvents();
-               if ( console.AbortRequested() )
-                  throw ProcessAborted();
-
-               if ( !waitingThreads.IsEmpty() )
-               {
-                  /*
-                   * If there are threads waiting, pop the first one from the
-                   * waiting threads list and put it in the free thread slot
-                   * for immediate firing.
-                   */
-                  *i = *waitingThreads;
-                  waitingThreads.Remove( waitingThreads.Begin() );
-               }
-               else
-               {
-                  /*
-                   * If there are no more target frames to calibrate, simply
-                   * wait until all running threads terminate execution.
-                   */
-                  if ( subframes_copy.IsEmpty() )
-                  {
-                     bool someRunning = false;
-                     for ( thread_list::iterator j = runningThreads.Begin(); j != runningThreads.End(); ++j )
-                        if ( *j != 0 )
-                        {
-                           someRunning = true;
-                           break;
-                        }
-
-                     /*
-                      * If there are still running threads, continue waiting.
-                      */
-                     if ( someRunning )
-                     {
-                        if ( !waitingForFinished )
-                        {
-                           console.NoteLn( "<end><cbr><br>* Waiting for running tasks to terminate ..." );
-                           waitingForFinished = true;
-                        }
-
-                        continue;
-                     }
-
-                     /*
-                      * If there are no running threads, no waiting threads,
-                      * and no pending target frames, then we are done.
-                      */
-                     break;
-                  }
-
-                  /*
-                   * We still have pending work to do: Extract the next target
-                   * frame from the targets list, load and calibrate it.
-                   */
-                  SubframeItem item = *subframes_copy;
-                  subframes_copy.Remove( subframes_copy.Begin() );
-
-                  console.WriteLn( String().Format( "<end><cbr><br>Measuring subframe %u of %u",
-                                                    subframes.Length()-subframes_copy.Length(),
-                                                    subframes.Length() ) );
-                  if ( !item.enabled )
-                  {
-                     console.NoteLn( "* Skipping disabled target" );
-                     ++skipped;
-                     continue;
-                  }
-
-                  /*
-                   * Create a new thread for this subframe image
-                   */
-                  thread_list threads = CreateThreadForSubframe( subframes.Length()-subframes_copy.Length(),
-                                                                 item.path, &inputThreadData );
-
-                  /*
-                   * Put the new thread in the free slot.
-                   */
-                  *i = *threads;
-                  threads.Remove( threads.Begin() );
-
-               }
-
-               /*
-                * If we have produced a new thread, run it immediately. Note
-                * that we support thread CPU affinity, if it has been enabled
-                * on the platform via global preferences - hence the second
-                * argument to Thread::Start() below.
-                */
-               if ( *i != 0 )
-                  (*i)->Start( ThreadPriority::DefaultMax, i - runningThreads.Begin() );
-            } // try
+            }
             catch ( ProcessAborted& )
             {
-               /*
-                * The user has requested to abort the process.
-                */
                throw;
             }
             catch ( ... )
             {
-               /*
-                * The user has requested to abort the process.
-                */
                if ( console.AbortRequested() )
                   throw ProcessAborted();
 
-               /*
-                * Other errors handled according to the selected error policy.
-                */
-
                ++failed;
-
                try
                {
                   throw;
@@ -989,18 +873,18 @@ bool SubframeSelectorInstance::Measure() {
                console.NoteLn( "Abort on error." );
                throw ProcessAborted();
             }
-         } // for ( ;; )
-      } // try
-
+         }
+      }
       catch ( ... )
       {
-         console.NoteLn( "<end><cbr><br>* Waiting for running tasks to terminate ..." );
-         for ( thread_list::iterator i = runningThreads.Begin(); i != runningThreads.End(); ++i )
-            if ( *i != 0 ) (*i)->Abort();
-         for ( thread_list::iterator i = runningThreads.Begin(); i != runningThreads.End(); ++i )
-            if ( *i != 0 ) (*i)->Wait();
+         console.NoteLn( "<end><cbr><br>* Waiting for running tasks to terminate..." );
+         for ( SubframeSelectorMeasureThread* thread : runningThreads )
+            if ( thread != nullptr )
+               thread->Abort();
+         for ( SubframeSelectorMeasureThread* thread : runningThreads )
+            if ( thread != nullptr )
+               thread->Wait();
          runningThreads.Destroy();
-         waitingThreads.Destroy();
          throw;
       }
 
@@ -1052,33 +936,10 @@ void SubframeSelectorInstance::ApproveMeasurements()
    else
    {
       // First, get all Medians and Mean Deviation from Medians for Sigma units
-      double weightMedian, weightDeviation;
-      double fwhmMedian, fwhmDeviation;
-      double eccentricityMedian, eccentricityDeviation;
-      double snrWeightMedian, snrWeightDeviation;
-      double medianMedian, medianDeviation;
-      double medianMeanDevMedian, medianMeanDevDeviation;
-      double noiseMedian, noiseDeviation;
-      double noiseRatioMedian, noiseRatioDeviation;
-      double starsMedian, starsDeviation;
-      double starResidualMedian, starResidualDeviation;
-      double fwhmMeanDevMedian, fwhmMeanDevDeviation;
-      double eccentricityMeanDevMedian, eccentricityMeanDevDeviation;
-      double starResidualMeanDevMedian, starResidualMeanDevDeviation;
-      MedianAndMeanDeviation( weightMedian, weightDeviation,
-                              fwhmMedian, fwhmDeviation,
-                              eccentricityMedian, eccentricityDeviation,
-                              snrWeightMedian, snrWeightDeviation,
-                              medianMedian, medianDeviation,
-                              medianMeanDevMedian, medianMeanDevDeviation,
-                              noiseMedian, noiseDeviation,
-                              noiseRatioMedian, noiseRatioDeviation,
-                              starsMedian, starsDeviation,
-                              starResidualMedian, starResidualDeviation,
-                              fwhmMeanDevMedian, fwhmMeanDevDeviation,
-                              eccentricityMeanDevMedian, eccentricityMeanDevDeviation,
-                              starResidualMeanDevMedian, starResidualMeanDevDeviation
-      );
+      MeasureProperties properties = MeasureProperties();
+      MeasureUtils::MeasureProperties( measures, subframeScale, scaleUnit,
+                                       cameraGain, cameraResolution, dataUnit,
+                                       properties );
 
       for ( Array<MeasureItem>::iterator i = measures.Begin(); i != measures.End(); ++i )
       {
@@ -1088,52 +949,7 @@ void SubframeSelectorInstance::ApproveMeasurements()
          // The standard parameters for the MeasureItem
          String JSEvaluator = i->JavaScriptParameters( subframeScale, scaleUnit, cameraGain,
                                                        TheSSCameraResolutionParameter->ElementData( cameraResolution ),
-                                                       dataUnit );
-
-         // The Sigma parameters for the MeasureItem
-         JSEvaluator += String().Format( "let WeightSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->weight, weightMedian, weightDeviation
-         ) );
-         JSEvaluator += String().Format( "let FWHMSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->FWHM( subframeScale, scaleUnit ), fwhmMedian, fwhmDeviation
-         ) );
-         JSEvaluator += String().Format( "let EccentricitySigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->eccentricity, eccentricityMedian, eccentricityDeviation
-         ) );
-         JSEvaluator += String().Format( "let SNRWeightSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->snrWeight, snrWeightMedian, snrWeightDeviation
-         ) );
-         JSEvaluator += String().Format( "let MedianSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->Median( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit ),
-                 medianMedian, medianDeviation
-         ) );
-         JSEvaluator += String().Format( "let MedianMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->MedianMeanDev( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ),
-                                   dataUnit ),
-                 medianMeanDevMedian, medianMeanDevDeviation
-         ) );
-         JSEvaluator += String().Format( "let NoiseSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->Noise( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit ),
-                 noiseMedian, noiseDeviation
-         ) );
-         JSEvaluator += String().Format( "let NoiseRatioSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->noiseRatio, noiseRatioMedian, noiseRatioDeviation
-         ) );
-         JSEvaluator += String().Format( "let StarsSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->stars, starsMedian, starsDeviation
-         ) );
-         JSEvaluator += String().Format( "let StarResidualSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->starResidual, starResidualMedian, starResidualDeviation
-         ) );
-         JSEvaluator += String().Format( "let FWHMMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->FWHMMeanDeviation( subframeScale, scaleUnit ), fwhmMeanDevMedian, fwhmMeanDevDeviation
-         ) );
-         JSEvaluator += String().Format( "let EccentricityMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->eccentricityMeanDev, eccentricityMeanDevMedian, eccentricityMeanDevDeviation
-         ) );
-         JSEvaluator += String().Format( "let StarResidualMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->starResidualMeanDev, starResidualMeanDevMedian, starResidualMeanDevDeviation
-         ) );
+                                                       dataUnit, properties );
 
          // The final expression that evaluates to a return value
          JSEvaluator += approvalExpression;
@@ -1161,85 +977,17 @@ void SubframeSelectorInstance::WeightMeasurements()
    else
    {
       // First, get all Medians and Mean Deviation from Medians for Sigma units
-      double weightMedian, weightDeviation;
-      double fwhmMedian, fwhmDeviation;
-      double eccentricityMedian, eccentricityDeviation;
-      double snrWeightMedian, snrWeightDeviation;
-      double medianMedian, medianDeviation;
-      double medianMeanDevMedian, medianMeanDevDeviation;
-      double noiseMedian, noiseDeviation;
-      double noiseRatioMedian, noiseRatioDeviation;
-      double starsMedian, starsDeviation;
-      double starResidualMedian, starResidualDeviation;
-      double fwhmMeanDevMedian, fwhmMeanDevDeviation;
-      double eccentricityMeanDevMedian, eccentricityMeanDevDeviation;
-      double starResidualMeanDevMedian, starResidualMeanDevDeviation;
-      MedianAndMeanDeviation( weightMedian, weightDeviation,
-                              fwhmMedian, fwhmDeviation,
-                              eccentricityMedian, eccentricityDeviation,
-                              snrWeightMedian, snrWeightDeviation,
-                              medianMedian, medianDeviation,
-                              medianMeanDevMedian, medianMeanDevDeviation,
-                              noiseMedian, noiseDeviation,
-                              noiseRatioMedian, noiseRatioDeviation,
-                              starsMedian, starsDeviation,
-                              starResidualMedian, starResidualDeviation,
-                              fwhmMeanDevMedian, fwhmMeanDevDeviation,
-                              eccentricityMeanDevMedian, eccentricityMeanDevDeviation,
-                              starResidualMeanDevMedian, starResidualMeanDevDeviation
-      );
+      MeasureProperties properties = MeasureProperties();
+      MeasureUtils::MeasureProperties( measures, subframeScale, scaleUnit,
+                                       cameraGain, cameraResolution, dataUnit,
+                                       properties );
 
       for ( Array<MeasureItem>::iterator i = measures.Begin(); i != measures.End(); ++i )
       {
          // The standard parameters for the MeasureItem
          String JSEvaluator = i->JavaScriptParameters( subframeScale, scaleUnit, cameraGain,
                                                        TheSSCameraResolutionParameter->ElementData( cameraResolution ),
-                                                       dataUnit );
-
-         // The Sigma parameters for the MeasureItem
-         JSEvaluator += String().Format( "let WeightSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->weight, weightMedian, weightDeviation
-         ) );
-         JSEvaluator += String().Format( "let FWHMSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->FWHM( subframeScale, scaleUnit ), fwhmMedian, fwhmDeviation
-         ) );
-         JSEvaluator += String().Format( "let EccentricitySigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->eccentricity, eccentricityMedian, eccentricityDeviation
-         ) );
-         JSEvaluator += String().Format( "let SNRWeightSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->snrWeight, snrWeightMedian, snrWeightDeviation
-         ) );
-         JSEvaluator += String().Format( "let MedianSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->Median( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit ),
-                 medianMedian, medianDeviation
-         ) );
-         JSEvaluator += String().Format( "let MedianMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->MedianMeanDev( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ),
-                                   dataUnit ),
-                 medianMeanDevMedian, medianMeanDevDeviation
-         ) );
-         JSEvaluator += String().Format( "let NoiseSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->Noise( cameraGain, TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit ),
-                 noiseMedian, noiseDeviation
-         ) );
-         JSEvaluator += String().Format( "let NoiseRatioSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->noiseRatio, noiseRatioMedian, noiseRatioDeviation
-         ) );
-         JSEvaluator += String().Format( "let StarsSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->stars, starsMedian, starsDeviation
-         ) );
-         JSEvaluator += String().Format( "let StarResidualSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->starResidual, starResidualMedian, starResidualDeviation
-         ) );
-         JSEvaluator += String().Format( "let FWHMMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->FWHMMeanDeviation( subframeScale, scaleUnit ), fwhmMeanDevMedian, fwhmMeanDevDeviation
-         ) );
-         JSEvaluator += String().Format( "let EccentricityMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->eccentricityMeanDev, eccentricityMeanDevMedian, eccentricityMeanDevDeviation
-         ) );
-         JSEvaluator += String().Format( "let StarResidualMeanDevSigma = %.4f;\n", MeasureUtils::DeviationNormalize(
-                 i->starResidualMeanDev, starResidualMeanDevMedian, starResidualMeanDevDeviation
-         ) );
+                                                       dataUnit, properties );
 
          // The final expression that evaluates to a return value
          JSEvaluator += weightingExpression;
@@ -1255,73 +1003,6 @@ void SubframeSelectorInstance::WeightMeasurements()
          i->weight = result.ToFloat();
       }
    }
-}
-
-void SubframeSelectorInstance::MedianAndMeanDeviation( double& weightMedian, double& weightDeviation,
-                                                       double& fwhmMedian, double& fwhmDeviation,
-                                                       double& eccentricityMedian, double& eccentricityDeviation,
-                                                       double& snrWeightMedian, double& snrWeightDeviation,
-                                                       double& medianMedian, double& medianDeviation,
-                                                       double& medianMeanDevMedian, double& medianMeanDevDeviation,
-                                                       double& noiseMedian, double& noiseDeviation,
-                                                       double& noiseRatioMedian, double& noiseRatioDeviation,
-                                                       double& starsMedian, double& starsDeviation,
-                                                       double& starResidualMedian, double& starResidualDeviation,
-                                                       double& fwhmMeanDevMedian, double& fwhmMeanDevDeviation,
-                                                       double& eccentricityMeanDevMedian, double& eccentricityMeanDevDeviation,
-                                                       double& starResidualMeanDevMedian, double& starResidualMeanDevDeviation
-) const
-{
-   size_type measuresLength( measures.Length() );
-
-   Array<double> weight( measuresLength );
-   Array<double> fwhm( measuresLength );
-   Array<double> eccentricity( measuresLength );
-   Array<double> snrWeight( measuresLength );
-   Array<double> median( measuresLength );
-   Array<double> medianMeanDev( measuresLength );
-   Array<double> noise( measuresLength );
-   Array<double> noiseRatio( measuresLength );
-   Array<double> stars( measuresLength );
-   Array<double> starResidual( measuresLength );
-   Array<double> fwhmMeanDev( measuresLength );
-   Array<double> eccentricityMeanDev( measuresLength );
-   Array<double> starResidualMeanDev( measuresLength );
-
-   for ( size_type i = 0; i < measuresLength; ++i )
-   {
-      weight[i] = measures[i].weight;
-      fwhm[i] = measures[i].FWHM( subframeScale, scaleUnit );
-      eccentricity[i] = measures[i].eccentricity;
-      snrWeight[i] = measures[i].snrWeight;
-      median[i] = measures[i].Median( cameraGain,
-                                      TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit );
-      medianMeanDev[i] = measures[i].MedianMeanDev( cameraGain,
-                                                    TheSSCameraResolutionParameter->ElementData( cameraResolution ),
-                                                    dataUnit );
-      noise[i] = measures[i].Noise( cameraGain,
-                                     TheSSCameraResolutionParameter->ElementData( cameraResolution ), dataUnit );
-      noiseRatio[i] = measures[i].noiseRatio;
-      stars[i] = measures[i].stars;
-      starResidual[i] = measures[i].starResidual;
-      fwhmMeanDev[i] = measures[i].FWHMMeanDeviation( subframeScale, scaleUnit );
-      eccentricityMeanDev[i] = measures[i].eccentricityMeanDev;
-      starResidualMeanDev[i] = measures[i].starResidualMeanDev;
-   }
-
-   MeasureUtils::MedianAndMeanDeviation( weight, weightMedian, weightDeviation );
-   MeasureUtils::MedianAndMeanDeviation( fwhm, fwhmMedian, fwhmDeviation );
-   MeasureUtils::MedianAndMeanDeviation( eccentricity, eccentricityMedian, eccentricityDeviation );
-   MeasureUtils::MedianAndMeanDeviation( snrWeight, snrWeightMedian, snrWeightDeviation );
-   MeasureUtils::MedianAndMeanDeviation( median, medianMedian, medianDeviation );
-   MeasureUtils::MedianAndMeanDeviation( medianMeanDev, medianMeanDevMedian, medianMeanDevDeviation );
-   MeasureUtils::MedianAndMeanDeviation( noise, noiseMedian, noiseDeviation );
-   MeasureUtils::MedianAndMeanDeviation( noiseRatio, noiseRatioMedian, noiseRatioDeviation );
-   MeasureUtils::MedianAndMeanDeviation( stars, starsMedian, starsDeviation );
-   MeasureUtils::MedianAndMeanDeviation( starResidual, starResidualMedian, starResidualDeviation );
-   MeasureUtils::MedianAndMeanDeviation( fwhmMeanDev, fwhmMeanDevMedian, fwhmMeanDevDeviation );
-   MeasureUtils::MedianAndMeanDeviation( eccentricityMeanDev, eccentricityMeanDevMedian, eccentricityMeanDevDeviation );
-   MeasureUtils::MedianAndMeanDeviation( starResidualMeanDev, starResidualMeanDevMedian, starResidualMeanDevDeviation );
 }
 
 static String UniqueFilePath( const String& filePath )
@@ -1472,16 +1153,22 @@ void SubframeSelectorInstance::WriteMeasuredImage( MeasureItem* item )
       FITSKeywordArray keywords;
       inputFile.ReadFITSKeywords( keywords );
 
-      keywords << FITSHeaderKeyword( "COMMENT", IsoString(), "Measured with " + PixInsightVersion::AsString() )
-               << FITSHeaderKeyword( "HISTORY", IsoString(), "Measured with " + Module->ReadableVersion() )
-               << FITSHeaderKeyword( "HISTORY", IsoString(), "Measured with SubframeSelector process" );
+      // Remove old weight keywords
+      FITSKeywordArray newKeywords = FITSKeywordArray();
+      for ( FITSKeywordArray::const_iterator k = keywords.Begin(); k != keywords.End(); ++k )
+         if ( k->name != IsoString( outputKeyword ) )
+            newKeywords.Append( *k );
+
+      newKeywords << FITSHeaderKeyword( "COMMENT", IsoString(), "Measured with " + PixInsightVersion::AsString() )
+                  << FITSHeaderKeyword( "HISTORY", IsoString(), "Measured with " + Module->ReadableVersion() )
+                  << FITSHeaderKeyword( "HISTORY", IsoString(), "Measured with SubframeSelector process" );
 
       if ( !outputKeyword.IsEmpty() )
-         keywords << FITSHeaderKeyword( outputKeyword,
-                                        String().Format( "%.6f", item->weight ),
-                                        "SubframeSelector.weight" );
+         newKeywords << FITSHeaderKeyword( outputKeyword,
+                                           String().Format( "%.6f", item->weight ),
+                                           "SubframeSelector.weight" );
 
-      outputFile.WriteFITSKeywords( keywords );
+      outputFile.WriteFITSKeywords( newKeywords );
    }
    else
    {
@@ -1546,13 +1233,24 @@ bool SubframeSelectorInstance::Output()
          if ( i->enabled && !File::Exists( i->path ) )
             throw ("No such file exists on the local filesystem: " + i->path);
 
+      size_type o = 0;
+      size_type r = 0;
 
-      for ( Array<MeasureItem>::iterator i = measures.Begin(); i != measures.End(); ++i )
+      for ( size_type i = 0; i < measures.Length(); ++i )
       {
          try
          {
-            if ( i->enabled )
-               WriteMeasuredImage( i );
+            if ( measures[i].enabled )
+            {
+               Console().NoteLn( String().Format( "<end><cbr><br>Outputting subframe %u of %u",
+                                                  i+1, measures.Length() ) );
+               WriteMeasuredImage( measures.At( i ) );
+               ++o;
+            } else {
+               Console().NoteLn( String().Format( "<end><cbr><br>Skipping subframe %u of %u",
+                                                  i+1, measures.Length() ) );
+               ++r;
+            }
          }
          catch ( ... )
          {
@@ -1568,7 +1266,7 @@ bool SubframeSelectorInstance::Output()
 
             case SSOnError::Abort:
                console.NoteLn( "Abort on error." );
-               throw ProcessAborted();
+               throw;
 
             case SSOnError::AskUser:
             {
@@ -1592,6 +1290,8 @@ bool SubframeSelectorInstance::Output()
             }
          }
       }
+      Console().NoteLn( String().Format( "<end><cbr><br>%u Output subframes, %u Rejected subframes, %u total",
+                                         o, r, measures.Length() ) );
 
       return true;
    }
@@ -1683,6 +1383,9 @@ void* SubframeSelectorInstance::LockParameter( const MetaParameter* p, size_type
       return &subframes[tableRow].enabled;
    else if ( p == TheSSSubframePathParameter )
       return subframes[tableRow].path.Begin();
+
+   else if ( p == TheSSFileCacheParameter )
+      return &fileCache;
 
    else if ( p == TheSSSubframeScaleParameter )
       return &subframeScale;

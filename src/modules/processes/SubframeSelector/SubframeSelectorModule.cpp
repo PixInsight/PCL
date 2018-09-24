@@ -4,7 +4,7 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.02.01.0002
+// Standard SubframeSelector Process Module Version 01.03.01.0003
 // ----------------------------------------------------------------------------
 // SubframeSelectorModule.cpp - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
@@ -96,7 +96,7 @@ String SubframeSelectorModule::Author() const
 
 String SubframeSelectorModule::Copyright() const
 {
-   return "Copyright (c) 2017, Cameron Leger";
+   return "Copyright (c) 2018, Cameron Leger";
 }
 
 String SubframeSelectorModule::TradeMarks() const
@@ -125,6 +125,12 @@ void SubframeSelectorModule::GetReleaseDate( int& year, int& month, int& day ) c
    year  = MODULE_RELEASE_YEAR;
    month = MODULE_RELEASE_MONTH;
    day   = MODULE_RELEASE_DAY;
+}
+
+void SubframeSelectorModule::OnUnload()
+{
+   if ( TheSubframeSelectorCache != nullptr )
+      TheSubframeSelectorCache->Save();
 }
 
 // ----------------------------------------------------------------------------

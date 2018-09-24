@@ -6,9 +6,9 @@
 // ----------------------------------------------------------------------------
 // Standard SubframeSelector Process Module Version 01.03.01.0003
 // ----------------------------------------------------------------------------
-// Version.h - Released 2017-11-05T16:00:00Z
+// SubframeSelectorCache.h - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
-// This file is part of the standard SubframeSelector PixInsight module.
+// This file is part of the standard ImageIntegration PixInsight module.
 //
 // Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
@@ -50,40 +50,79 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#ifndef __Version_h
-#define __Version_h
+#ifndef __SubframeSelectorCache_h
+#define __SubframeSelectorCache_h
 
-#define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     04
-#define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     1
-#define MODULE_VERSION_LANGUAGE  eng
-
-#define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       05
-
-#include <pcl/MetaModule.h>
+#include "FileDataCache.h"
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-static const char* SubframeSelectorVersion()
+class SubframeSelectorCacheItem : public FileDataCacheItem
 {
-   return PCL_MODULE_VERSION( MODULE_VERSION_MAJOR,
-                              MODULE_VERSION_MINOR,
-                              MODULE_VERSION_REVISION,
-                              MODULE_VERSION_BUILD,
-                              MODULE_VERSION_LANGUAGE );
-}
+public:
+
+   int      cacheVersion;
+   double   fwhm;
+   double   fwhmMeanDev;
+   double   eccentricity;
+   double   eccentricityMeanDev;
+   double   snrWeight;
+   double   median;
+   double   medianMeanDev;
+   double   noise;
+   double   noiseRatio;
+   uint16   stars;
+   double   starResidual;
+   double   starResidualMeanDev;
+
+   SubframeSelectorCacheItem( const String& path = String() ) :
+      FileDataCacheItem( path )
+   {
+   }
+
+   virtual ~SubframeSelectorCacheItem()
+   {
+   }
+
+private:
+
+   virtual void AssignData( const FileDataCacheItem& item );
+   virtual String DataAsString() const;
+   virtual bool GetDataFromTokens( const StringList& tokens );
+};
+
+// ----------------------------------------------------------------------------
+
+class SubframeSelectorCache : public FileDataCache
+{
+public:
+
+   SubframeSelectorCache();
+   virtual ~SubframeSelectorCache();
+
+   virtual String CacheName() const
+   {
+      return "SubframeSelector Cache";
+   }
+
+private:
+
+   virtual FileDataCacheItem* NewItem() const
+   {
+      return new SubframeSelectorCacheItem;
+   }
+};
+
+extern SubframeSelectorCache* TheSubframeSelectorCache;
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __Version_h
+#endif   // __SubframeSelectorCache_h
 
 // ----------------------------------------------------------------------------
-// EOF Version.h - Released 2017-11-05T16:00:00Z
+// EOF SubframeSelectorCache.h - Released 2017-11-05T16:00:00Z

@@ -4,7 +4,7 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.02.01.0002
+// Standard SubframeSelector Process Module Version 01.03.01.0003
 // ----------------------------------------------------------------------------
 // SubframeSelectorProcess.cpp - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
@@ -80,6 +80,8 @@ SubframeSelectorProcess::SubframeSelectorProcess() : MetaProcess()
    new SSSubframes( this );
    new SSSubframeEnabled( TheSSSubframesParameter );
    new SSSubframePath( TheSSSubframesParameter );
+
+   new SSFileCache( this );
 
    new SSSubframeScale( this );
    new SSCameraGain( this );
@@ -158,7 +160,7 @@ IsoString SubframeSelectorProcess::Category() const
 
 uint32 SubframeSelectorProcess::Version() const
 {
-   return 0x100; // required
+   return 0x140; // required
 }
 
 // ----------------------------------------------------------------------------

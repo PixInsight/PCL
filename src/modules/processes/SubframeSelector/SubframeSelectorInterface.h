@@ -4,7 +4,7 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.02.01.0002
+// Standard SubframeSelector Process Module Version 01.03.01.0003
 // ----------------------------------------------------------------------------
 // SubframeSelectorInterface.h - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
@@ -129,6 +129,7 @@ public:
             PushButton        SubframeImages_Toggle_PushButton;
             PushButton        SubframeImages_Remove_PushButton;
             PushButton        SubframeImages_Clear_PushButton;
+            CheckBox          SubframeImages_FileCache_Control;
 
       SectionBar        SystemParameters_SectionBar;
       Control           SystemParameters_Control;
@@ -242,6 +243,7 @@ public:
             PushButton        MeasurementsTable_ToggleLocked_PushButton;
             PushButton        MeasurementsTable_Invert_PushButton;
          HorizontalSizer   MeasurementsTable_Top2_Sizer;
+            Label             MeasurementsTable_Quantities_Label;
             PushButton        MeasurementsTable_Remove_PushButton;
             PushButton        MeasurementsTable_Clear_PushButton;
             PushButton        MeasurementsTable_CSV_PushButton;
@@ -253,7 +255,9 @@ public:
          HorizontalSizer   MeasurementGraph_Top_Sizer;
             ComboBox          MeasurementGraph_GraphProperty_Control;
             PushButton        MeasurementGraph_Save_PushButton;
-         GraphWebView      MeasurementGraph_Graph;
+         HorizontalSizer   MeasurementGraph_Bottom_Sizer;
+            GraphWebView      MeasurementGraph_Graph;
+            GraphWebView      MeasurementDistribution_Graph;
    };
 
    GUIData* GUI = nullptr;
@@ -269,6 +273,7 @@ public:
    void UpdateStarDetectorParameters();
    void UpdateOutputFilesControls();
    void UpdateExpressionParameters();
+   void UpdateMeasurementQuantity();
    void UpdateMeasurementImageItem( size_type, MeasureItem* );
    void UpdateMeasurementImagesList();
    void UpdateMeasurementGraph();

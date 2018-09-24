@@ -4,7 +4,7 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.02.01.0002
+// Standard SubframeSelector Process Module Version 01.03.01.0003
 // ----------------------------------------------------------------------------
 // SubframeSelectorInterface.cpp - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
@@ -242,6 +242,7 @@ TreeBox::Node* SubframeSelectorInterface::GetMeasurementNode( MeasureItem* item 
 void SubframeSelectorInterface::UpdateControls()
 {
    GUI->Routine_Control.SetCurrentItem( instance.routine );
+   GUI->SubframeImages_FileCache_Control.SetChecked( instance.fileCache );
    UpdateSubframeImagesList();
    UpdateSystemParameters();
    UpdateStarDetectorParameters();
@@ -370,6 +371,36 @@ void SubframeSelectorInterface::UpdateExpressionParameters()
 
 // ----------------------------------------------------------------------------
 
+void SubframeSelectorInterface::UpdateMeasurementQuantity()
+{
+   // Update the table and gather quantities
+   int approved = 0;
+   int locked = 0;
+   size_type amount = instance.measures.Length();
+   if ( amount > 0 )
+   {
+      for ( Array<MeasureItem>::const_iterator i = instance.measures.Begin(); i < instance.measures.End(); ++i )
+      {
+         if ( i->enabled )
+            ++approved;
+         if ( i->locked )
+            ++locked;
+      }
+
+      GUI->MeasurementsTable_Quantities_Label.SetText( String().Format(
+              "%i/%i Approved (%i%%), %i Locked (%i%%)",
+              approved, amount, pcl::RoundInt(((double)approved / (double)amount) * 100),
+              locked, pcl::RoundInt(((double)locked / (double)amount) * 100)
+      ) );
+   }
+   else
+   {
+      GUI->MeasurementsTable_Quantities_Label.SetText( "0/0 Approved (0%), 0 Locked (0%)" );
+   }
+}
+
+// ----------------------------------------------------------------------------
+
 void SubframeSelectorInterface::UpdateMeasurementImageItem( size_type i, MeasureItem* item )
 {
    TreeBox::Node* node = GUI->MeasurementTable_TreeBox[i];
@@ -449,41 +480,49 @@ void SubframeSelectorInterface::UpdateMeasurementImagesList()
 {
    GUI->MeasurementsTable_SortingProperty_Control.SetCurrentItem( instance.sortingProperty );
 
+   // Ensure Approval/Weighting is updated
+   ApplyWeightingExpression();
+   ApplyApprovalExpression();
+
+   GUI->MeasurementTable_TreeBox.DisableUpdates();
+
+   // Removing/Adding all the items can be slow; try to update each items text if possible
    bool shouldRecreate = instance.measures.Length() != GUI->MeasurementTable_TreeBox.NumberOfChildren();
 
+   // Store all current selections to re-select later
    const IndirectArray<TreeBox::Node>& selections = GUI->MeasurementTable_TreeBox.SelectedNodes();
    Array<int> currentIds( selections.Length() );
    for ( size_type i = 0; i < selections.Length(); ++i )
       currentIds[i] = GUI->MeasurementTable_TreeBox.ChildIndex( selections[i] );
 
-   GUI->MeasurementTable_TreeBox.DisableUpdates();
+   // When the number of items changes, it's easier to add all items over again
    if ( shouldRecreate )
       GUI->MeasurementTable_TreeBox.Clear();
 
-   ApplyWeightingExpression();
-   ApplyApprovalExpression();
-
+   // Ensure items are sorted properly
    Array<MeasureItem> measuresSorted( instance.measures );
    measuresSorted.Sort( SubframeSortingBinaryPredicate( instance.sortingProperty,
                                                         GUI->MeasurementsTable_SortingMode_Control.CurrentItem() ) );
 
-   for ( size_type i = 0; i < measuresSorted.Length(); ++i )
+   // Update the table
+   size_type amount = measuresSorted.Length();
+   for ( size_type i = 0; i < amount; ++i )
    {
       if ( shouldRecreate )
          new TreeBox::Node( GUI->MeasurementTable_TreeBox );
       UpdateMeasurementImageItem( i, &measuresSorted[i] );
    }
 
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 3 );
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 4 );
-   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 5 );
+   GUI->MeasurementTable_TreeBox.AdjustColumnWidthToContents( 3 ); // filename
 
+   // If the table was cleared, setup previous selections
    if ( shouldRecreate && !instance.measures.IsEmpty() )
       for ( size_type i = 0; i < currentIds.Length(); ++i )
          if ( currentIds[i] >= 0 && currentIds[i] < GUI->MeasurementTable_TreeBox.NumberOfChildren() )
             GUI->MeasurementTable_TreeBox.Child( currentIds[i] )->Select();
 
    GUI->MeasurementTable_TreeBox.EnableUpdates();
+   UpdateMeasurementQuantity();
 }
 
 // ----------------------------------------------------------------------------
@@ -558,6 +597,7 @@ void SubframeSelectorInterface::ApplyApprovalExpression()
    try
    {
       instance.ApproveMeasurements();
+      GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
    }
    catch ( ... )
    {
@@ -573,6 +613,7 @@ void SubframeSelectorInterface::ApplyWeightingExpression()
    try
    {
       instance.WeightMeasurements();
+      GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
    }
    catch ( ... )
    {
@@ -866,12 +907,14 @@ void SubframeSelectorInterface::__MeasurementImages_NodeActivated( TreeBox& send
       item->enabled = !item->enabled;
       item->locked = true;
       UpdateMeasurementImageItem( index, item );
+      UpdateMeasurementQuantity();
       UpdateMeasurementGraph();
       break;
    case 2:
       // Activate the item's checkmark: toggle item's locked state.
       item->locked = !item->locked;
       UpdateMeasurementImageItem( index, item );
+      UpdateMeasurementQuantity();
       UpdateMeasurementGraph();
       break;
    case 3:
@@ -984,6 +1027,7 @@ void SubframeSelectorInterface::__MeasurementGraph_Approve( GraphWebView &sender
    GUI->MeasurementTable_TreeBox.SetCurrentNode( node );
    GUI->MeasurementTable_TreeBox.SetVerticalScrollPosition( GUI->MeasurementTable_TreeBox.NodeRect( node ).y0 );
    UpdateMeasurementImageItem( GUI->MeasurementTable_TreeBox.ChildIndex( node ), item );
+   UpdateMeasurementQuantity();
    UpdateMeasurementGraph();
 }
 
@@ -1006,7 +1050,9 @@ void SubframeSelectorInterface::__MeasurementGraph_Unlock( GraphWebView &sender,
 
    GUI->MeasurementTable_TreeBox.SetCurrentNode( node );
    GUI->MeasurementTable_TreeBox.SetVerticalScrollPosition( GUI->MeasurementTable_TreeBox.NodeRect( node ).y0 );
+   ApplyApprovalExpression();
    UpdateMeasurementImageItem( GUI->MeasurementTable_TreeBox.ChildIndex( node ), item );
+   UpdateMeasurementQuantity();
    UpdateMeasurementGraph();
 }
 
@@ -1139,7 +1185,9 @@ void SubframeSelectorInterface::__ComboSelected( ComboBox& sender, int itemIndex
 
 void SubframeSelectorInterface::__CheckboxUpdated( Button& sender, Button::check_state state )
 {
-   if ( sender == GUI->StarDetectorParameters_ApplyHotPixelFilter_Control )
+   if ( sender == GUI->SubframeImages_FileCache_Control )
+      instance.fileCache = state == CheckState::Checked;
+   else if ( sender == GUI->StarDetectorParameters_ApplyHotPixelFilter_Control )
       instance.applyHotPixelFilterToDetectionImage = state == CheckState::Checked;
    else if ( sender == GUI->StarDetectorParameters_PSFFitCircular_Control )
       instance.psfFitCircular = state == CheckState::Checked;
@@ -1178,27 +1226,19 @@ void SubframeSelectorInterface::__ButtonClick( Button& sender, bool checked )
 
 void SubframeSelectorInterface::__TextUpdated( Edit& sender, const String& text )
 {
-   if ( sender == GUI->ExpressionParameters_Approval_Control )
+   String bmp = ":/browser/disabled.png";
+   if ( MeasureUtils::IsValidExpression( text ) )
    {
-      if ( MeasureUtils::IsValidExpression( text ) )
-      {
-         GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
-      }
-      else
-      {
-         GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
-      }
+      bmp = ":/browser/enabled.png";
    }
-   else if ( sender == GUI->ExpressionParameters_Weighting_Control )
+
+   if ( sender == GUI->ExpressionParameters_Approval_Control && instance.approvalExpression != text )
    {
-      if ( MeasureUtils::IsValidExpression( text ) )
-      {
-         GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
-      }
-      else
-      {
-         GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
-      }
+      GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( bmp ) ) );
+   }
+   else if ( sender == GUI->ExpressionParameters_Weighting_Control && instance.weightingExpression != text )
+   {
+      GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( bmp ) ) );
    }
 }
 
@@ -1206,22 +1246,13 @@ void SubframeSelectorInterface::__TextUpdated( Edit& sender, const String& text 
 
 void SubframeSelectorInterface::__TextUpdateCompleted( Edit& sender )
 {
-   bool shouldUpdate = false;
    if ( sender == GUI->ExpressionParameters_Approval_Control )
    {
       String text = sender.Text();
-      if ( MeasureUtils::IsValidExpression( text ) )
-      {
-         GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
-         if ( instance.approvalExpression != text )
-            shouldUpdate = true;
-         instance.approvalExpression = text;
-      }
-      else
-      {
-         GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
-         instance.approvalExpression = "";
-      }
+
+      bool shouldUpdate = MeasureUtils::IsValidExpression( text ) && instance.approvalExpression != text;
+      instance.approvalExpression = text;
+
       if ( shouldUpdate )
       {
          UpdateMeasurementImagesList();
@@ -1231,18 +1262,10 @@ void SubframeSelectorInterface::__TextUpdateCompleted( Edit& sender )
    else if ( sender == GUI->ExpressionParameters_Weighting_Control )
    {
       String text = sender.Text();
-      if ( MeasureUtils::IsValidExpression( text ) )
-      {
-         GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/enabled.png" ) ) );
-         if ( instance.weightingExpression != text )
-            shouldUpdate = true;
-         instance.weightingExpression = text;
-      }
-      else
-      {
-         GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( ":/browser/disabled.png" ) ) );
-         instance.weightingExpression = "";
-      }
+
+      bool shouldUpdate = MeasureUtils::IsValidExpression( text ) && instance.weightingExpression != text;
+      instance.weightingExpression = text;
+
       if ( shouldUpdate )
       {
          UpdateMeasurementImagesList();
@@ -1318,7 +1341,9 @@ void SubframeSelectorInterface::__FileDrop( Control& sender, const Point& pos, c
 
 // ----------------------------------------------------------------------------
 
-SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : MeasurementGraph_Graph( w )
+SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) :
+        MeasurementGraph_Graph( w ),
+        MeasurementDistribution_Graph( w )
 {
    pcl::Font fnt = w.Font();
 
@@ -1391,6 +1416,11 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
    SubframeImages_Clear_PushButton.SetToolTip( "<p>Clear the list of subframes.</p>" );
    SubframeImages_Clear_PushButton.OnClick( (Button::click_event_handler) &SubframeSelectorInterface::__SubframeImages_Click, w );
 
+   SubframeImages_FileCache_Control.SetText( "File Cache" );
+   SubframeImages_FileCache_Control.SetToolTip( TheSSFileCacheParameter->Tooltip() );
+   SubframeImages_FileCache_Control.OnCheck(
+           (Button::check_event_handler) &SubframeSelectorInterface::__CheckboxUpdated, w );
+
    SubframeButtons_Sizer.SetSpacing( 4 );
    SubframeButtons_Sizer.Add( SubframeImages_AddFiles_PushButton );
    SubframeButtons_Sizer.Add( SubframeImages_Invert_PushButton );
@@ -1398,6 +1428,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
    SubframeButtons_Sizer.Add( SubframeImages_Remove_PushButton );
    SubframeButtons_Sizer.Add( SubframeImages_Clear_PushButton );
    SubframeButtons_Sizer.AddStretch();
+   SubframeButtons_Sizer.Add( SubframeImages_FileCache_Control );
 
    SubframeImages_Sizer.SetSpacing( 4 );
    SubframeImages_Sizer.Add( SubframeImages_TreeBox, 100 );
@@ -2017,6 +2048,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
    MeasurementsTable_Top1_Sizer.Add( MeasurementsTable_Invert_PushButton );
 
    MeasurementsTable_Top2_Sizer.SetSpacing( 4 );
+   MeasurementsTable_Top2_Sizer.Add( MeasurementsTable_Quantities_Label );
    MeasurementsTable_Top2_Sizer.AddStretch( 100 );
    MeasurementsTable_Top2_Sizer.Add( MeasurementsTable_Remove_PushButton );
    MeasurementsTable_Top2_Sizer.Add( MeasurementsTable_Clear_PushButton );
@@ -2024,7 +2056,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
 
    MeasurementTable_TreeBox.SetMinHeight( IMAGELIST_MINHEIGHT( fnt ) );
    MeasurementTable_TreeBox.SetScaledMinWidth( 400 );
-   MeasurementTable_TreeBox.SetNumberOfColumns( 5 );
+   MeasurementTable_TreeBox.SetNumberOfColumns( 18 );
    MeasurementTable_TreeBox.SetHeaderText( 0, "Ind." );
    MeasurementTable_TreeBox.SetScaledColumnWidth( 0, 40 );
    MeasurementTable_TreeBox.SetHeaderIcon( 1, Bitmap( w.ScaledResource( ":/icons/picture-ok.png" ) ) );
@@ -2047,6 +2079,7 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
    MeasurementTable_TreeBox.SetHeaderText( 14, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::FWHMMeanDev ) );
    MeasurementTable_TreeBox.SetHeaderText( 15, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::EccentricityMeanDev ) );
    MeasurementTable_TreeBox.SetHeaderText( 16, TheSSSortingPropertyParameter->ElementLabel( SSSortingProperty::StarResidualMeanDev ) );
+   MeasurementTable_TreeBox.SetHeaderText( 17, " " ); // blank 'spacer' column
    MeasurementTable_TreeBox.EnableMultipleSelections();
    MeasurementTable_TreeBox.DisableRootDecoration();
    MeasurementTable_TreeBox.EnableAlternateRowColor();
@@ -2129,8 +2162,8 @@ SubframeSelectorInterface::GUIData::GUIData( SubframeSelectorInterface& w ) : Me
    Right_Sizer.Add( MeasurementGraph_SectionBar );
    Right_Sizer.Add( MeasurementGraph_Control, 100 );
 
-   Global_Sizer.Add( Left_Sizer, 20 );
-   Global_Sizer.Add( Right_Sizer, 80 );
+   Global_Sizer.Add( Left_Sizer, 15 );
+   Global_Sizer.Add( Right_Sizer, 85 );
 
    w.SetSizer( Global_Sizer );
 

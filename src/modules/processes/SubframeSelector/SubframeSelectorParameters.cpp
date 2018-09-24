@@ -4,7 +4,7 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.02.01.0002
+// Standard SubframeSelector Process Module Version 01.03.01.0003
 // ----------------------------------------------------------------------------
 // SubframeSelectorParameters.cpp - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
@@ -62,6 +62,8 @@ SSRoutine*                       TheSSRoutineParameter = nullptr;
 SSSubframes*                     TheSSSubframesParameter = nullptr;
 SSSubframeEnabled*               TheSSSubframeEnabledParameter = nullptr;
 SSSubframePath*                  TheSSSubframePathParameter = nullptr;
+
+SSFileCache*                     TheSSFileCacheParameter = nullptr;
 
 SSSubframeScale*                 TheSSSubframeScaleParameter = nullptr;
 SSCameraGain*                    TheSSCameraGainParameter = nullptr;
@@ -219,6 +221,30 @@ SSSubframePath::SSSubframePath( MetaTable* T ) : MetaString( T )
 IsoString SSSubframePath::Id() const
 {
    return "subframePath";
+}
+
+// ----------------------------------------------------------------------------
+
+SSFileCache::SSFileCache( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheSSFileCacheParameter = this;
+}
+
+IsoString SSFileCache::Id() const
+{
+   return "fileCache";
+}
+
+bool SSFileCache::DefaultValue() const
+{
+   return true;
+}
+
+IsoString SSFileCache::Tooltip() const
+{
+   return "<p>Enable this option skip measuring subframes that have already been measured and are in the file cache. "
+           "Each time a subframe is measured, its file cache entry is created or overwritten.</p>"
+           "<p>When updates to this Module affect measurements, the file cache will not use older items.</p>";
 }
 
 // ----------------------------------------------------------------------------
@@ -1328,15 +1354,13 @@ IsoString SSApprovalExpression::Tooltip() const
    return "<p>Subframe approval expression, a boolean combination of constraints. A blank "
            "expression will approve all subframes. This is technically JavaScript, and although "
            "some characters are limited to prevent misuse, many things are possible such as "
-           "<i>Math.abs(FWHMSigma)<i> or using <i>//</i> to comment the end of the line.</p>"
-           "<p><i>approval</i> = [ <i>constraint</i> [ [ && | || ] <i>constraint</i> ]... ]</p>"
-           "<p><i>constraint</i> = [ <i>weighting</i> [ &lt; | &gt; | &lt;= | &gt;= | == | != ] "
-           "<i>weighting</i> | true | false | [ ! ] (<i>approval</i>) ]</p>"
-           "<p><i>weighting</i> = <i>term</i> [ [ + | - | * | / ] <i>term</i> ]...</p>"
-           "<p><i>term</i> = [ - ] [ <i>number</i> | <i>property</i> | (<i>weighting</i>) ]</p>"
+           "<i>Math.abs(FWHMSigma)</i> or using <i>//</i> to comment the end of the line. "
+           "Please see the documentation for more information.</p>"
            "<p><i>property</i> = [ Index | Weight | FWHM | Eccentricity | SNRWeight | Median | "
            "MedianMeanDev | Noise | Stars | StarResidual | NoiseRatio | FWHMMeanDev | EccentricityMeanDev | "
            "StarResidualMeanDev]</p>"
+           "<p>Each <i>property</i> (excluding <i>Index</i>) also has a Median, Min, and Max version, "
+           "e.g. <i>FWHMMin</i>, which are computed across all subframes.</p>"
            "<p>Each <i>property</i> (excluding <i>Index</i>) also has a Sigma version, "
            "e.g. <i>SNRWeightSigma</i>, where the value is represented in sigma units of the "
            "Mean Absolute Deviation from the Median.</p>";
@@ -1359,13 +1383,14 @@ IsoString SSWeightingExpression::Tooltip() const
    return "<p>Subframe weighting expression, an arithmetic combination of properties. A blank "
            "expression will assign a zero weight to all subframes. This is technically JavaScript, "
            "and although some characters are limited to prevent misuse, many things are possible such as "
-           "<i>Math.abs(FWHMSigma)</i> or using <i>//</i> to comment the end of the line.</p>"
-           "<p><i>weighting</i> = [ <i>term</i> [ [ + | - | * | / ] <i>term</i> ]... ]</p>"
-           "<p><i>term</i> = [ - ] [ <i>number</i> | <i>property</i> | (<i>weighting</i>) ]</p>"
+           "<i>Math.abs(FWHMSigma)</i> or using <i>//</i> to comment the end of the line. "
+           "Please see the documentation for more information.</p>"
            "<p><i>property</i> = [ Index | FWHM | Eccentricity | SNRWeight | Median | MedianMeanDev | "
            "Noise | Stars | StarResidual | NoiseRatio | FWHMMeanDev | EccentricityMeanDev | "
            "StarResidualMeanDev ]</p>"
-           "<p>Each <i>property<i> (excluding <i>Index</i>) also has a Sigma version, "
+           "<p>Each <i>property</i> (excluding <i>Index</i>) also has a Median, Min, and Max version, "
+           "e.g. <i>FWHMMin</i>, which are computed across all subframes.</p>"
+           "<p>Each <i>property</i> (excluding <i>Index</i>) also has a Sigma version, "
            "e.g. <i>SNRWeightSigma</i>, where the value is represented in sigma units of the "
            "Mean Absolute Deviation from the Median.</p>";
 }

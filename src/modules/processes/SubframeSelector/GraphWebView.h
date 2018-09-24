@@ -4,7 +4,7 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.07.0873
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.02.01.0002
+// Standard SubframeSelector Process Module Version 01.03.01.0003
 // ----------------------------------------------------------------------------
 // GraphWebView.h - Released 2017-11-05T16:00:00Z
 // ----------------------------------------------------------------------------
@@ -63,7 +63,7 @@ namespace pcl
 
 struct DataPoint
 {
-   int x;
+   double x;
    double data;
    double weight;
    bool approved;
@@ -71,16 +71,30 @@ struct DataPoint
 };
 
 typedef GenericVector<DataPoint> DataPointVector;
+typedef Array<DataPoint> DataPointArray;
 
-inline bool operator ==( const DataPoint& p1, const DataPoint& p2 )
-{
-   return p1.x == p2.x;
-}
+// ----------------------------------------------------------------------------
 
-inline bool operator <( const DataPoint& p1, const DataPoint& p2 )
+class DataPointSortingBinaryPredicate
 {
-   return p1.x < p2.x;
-}
+public:
+
+   DataPointSortingBinaryPredicate( bool y = false ) : y( y )
+   {
+   }
+
+   bool operator()( const DataPoint& s1, const DataPoint& s2 ) const
+   {
+      if ( y )
+         return s1.data < s2.data;
+      else
+         return s1.x < s2.x;
+   }
+
+private:
+
+   bool y;
+};
 
 // ----------------------------------------------------------------------------
 
@@ -99,6 +113,9 @@ public:
    void OnUnlock( unlock_event_handler handler, Control& receiver );
 
 private:
+
+   String Header() const;
+   String Footer() const;
 
    void __MouseEnter( Control& sender );
    void __MouseLeave( Control& sender );

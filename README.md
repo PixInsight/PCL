@@ -1,11 +1,11 @@
 PCL - PixInsight Class Library
 ------------------------------
 
-[PixInsight](http://pixinsight.com/) is an advanced image processing software platform designed specifically for astrophotography and other technical imaging fields. PixInsight is a modular, open-architecture system where the entire processing and file handling capabilities are implemented as external installable modules.
+[PixInsight](http://pixinsight.com/) is an advanced image processing software platform designed specifically for astronomy and other technical imaging applications. PixInsight is a modular, open-architecture system where the entire processing and file handling capabilities are implemented as external installable modules.
 
 The PixInsight core application provides the infrastructure on top of which external modules can implement processes, image file formats, and their associated user interfaces. The [PixInsight Class Library](http://pixinsight.com/developer/pcl/) (PCL) is a C++ development framework to build PixInsight modules.
 
-PixInsight modules are special shared libraries (.so files on FreeBSD and Linux; .dylib under macOS; .dll files on Windows) that communicate with the PixInsight core application through a high-level API provided by PCL. Along with a core communication API, PCL includes a comprehensive set of image processing algorithms, ranging from geometrical transformations to multiscale analysis algorithms, most of them available as multithreaded parallel implementations.
+PixInsight modules are special shared libraries (.so files on FreeBSD and Linux; .dylib under macOS; .dll files on Windows) that communicate with the PixInsight core application through a high-level API provided by PCL. Along with a core communication API, PCL includes a comprehensive set of image processing algorithms, ranging from geometrical transformations to multiscale analysis algorithms, most of them available as multithreaded parallel implementations. PCL provides also rigorous and efficient implementations of essential astronomical algorithms, including state-of-the-art solar system ephemerides, vector astrometry, and reduction of positions of solar system and stellar objects.
 
 PCL is highly portable code. As of writing this document, it is available on the same platforms supported by the PixInsight core application: 64-bit FreeBSD, Linux, macOS, and Windows. PixInsight modules written around PCL are directly portable to all supported platforms *without changing a single line of source code*. This is possible because PCL is a high-level framework. PCL isolates your module from platform-specific implementation details: all platform-dependent complexities are handled behind the scenes by the PixInsight core application and internal PCL routines.
 
@@ -105,7 +105,9 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
 
 ## Supported Compilers
 
-The current version 2.1.3 of PCL has been built and tested with:
+**Important Note** *The information about supported compilers below is now outdated. The next version 2.1.9 of PCL is currently been developed with GCC 7.3.0 on Red Hat Enterprise Linux 7.4. As soon as we have a new release on all platforms, the list of supported compilers will be updated. Sorry for the inconvenience.*
+
+The current version of PCL has been built and tested with:
 
    * FreeBSD 10.3: System clang compiler
    * Red Hat Enterprise Linux 7.2: GCC C++ compiler 4.9.1
@@ -200,4 +202,4 @@ With the following environment variables correctly defined, you can generate mak
 
 
 ******
-###### Copyright (C) 2003-2017 Pleiades Astrophoto
+###### Copyright (C) 2003-2018 Pleiades Astrophoto

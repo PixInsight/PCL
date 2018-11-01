@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/UnixSignalException.h - Released 2017-08-01T14:23:31Z
+// pcl/UnixSignalException.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -98,7 +98,8 @@ public:
     * number and optional backtrace \a details.
     */
    UnixSignalException( int signal, const IsoString& details = IsoString() ) :
-      pcl::Exception(), m_signal( signal ), m_details( details )
+      m_signal( signal ),
+      m_details( details )
    {
    }
 
@@ -133,7 +134,7 @@ public:
     * exception. Typical messages are "segmentation violation", "bus error" and
     * "floating point exception", returned by specific derived classes.
     */
-   virtual String Message() const
+   String Message() const override
    {
       return "Undefined signal";
    }
@@ -142,7 +143,7 @@ public:
     * Returns a formatted error message with information on this signal
     * exception.
     */
-   virtual String FormatInfo() const
+   String FormatInfo() const override
    {
       String info = String().Format( "Critical signal caught (%d): ", SignalNumber() ) + Message();
       if ( !m_details.IsEmpty() )
@@ -158,7 +159,7 @@ public:
     * a message box. As reimplemented in this class, this member function
     * returns the string "PCL Unix Signal Handler".
     */
-   virtual String Caption() const
+   String Caption() const override
    {
       return "PCL Unix Signal Handler";
    }
@@ -190,7 +191,7 @@ protected:
       {                                                                       \
       }                                                                       \
       className( const className& ) = default;                                \
-      virtual String Message() const                                          \
+      String Message() const override                                         \
       {                                                                       \
          return message;                                                      \
       }                                                                       \
@@ -224,4 +225,4 @@ DECLARE_UNIX_SIGNAL_EXCEPTION( EUnixIBrokenPipeException, SIGPIPE,
 #endif   // __PCL_UnixSignalException_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/UnixSignalException.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/UnixSignalException.h - Released 2018-11-01T11:06:36Z

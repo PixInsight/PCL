@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard Image Process Module Version 01.02.09.0410
 // ----------------------------------------------------------------------------
-// ExtractAlphaChannelsInstance.cpp - Released 2017-08-01T14:26:58Z
+// ExtractAlphaChannelsInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -63,23 +63,27 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 ExtractAlphaChannelsInstance::ExtractAlphaChannelsInstance( const MetaProcess* P ) :
-ProcessImplementation( P ),
-channels( EAChannels::Default ),
-channelList( TheEAChannelListParameter->DefaultValue() ),
-extractChannels( TheEAExtractParameter->DefaultValue() ),
-deleteChannels( TheEADeleteParameter->DefaultValue() )
+   ProcessImplementation( P ),
+   channels( EAChannels::Default ),
+   channelList( TheEAChannelListParameter->DefaultValue() ),
+   extractChannels( TheEAExtractParameter->DefaultValue() ),
+   deleteChannels( TheEADeleteParameter->DefaultValue() )
 {
 }
+
+// ----------------------------------------------------------------------------
 
 ExtractAlphaChannelsInstance::ExtractAlphaChannelsInstance( const ExtractAlphaChannelsInstance& x ) : ProcessImplementation( x )
 {
    Assign( x );
 }
 
+// ----------------------------------------------------------------------------
+
 void ExtractAlphaChannelsInstance::Assign( const ProcessImplementation& p )
 {
    const ExtractAlphaChannelsInstance* x = dynamic_cast<const ExtractAlphaChannelsInstance*>( &p );
-   if ( x != 0 && x != this )
+   if ( x != nullptr && x != this )
    {
       channels        = x->channels;
       channelList     = x->channelList;
@@ -87,6 +91,8 @@ void ExtractAlphaChannelsInstance::Assign( const ProcessImplementation& p )
       deleteChannels  = x->deleteChannels;
    }
 }
+
+// ----------------------------------------------------------------------------
 
 bool ExtractAlphaChannelsInstance::Validate( String& info )
 {
@@ -112,15 +118,28 @@ bool ExtractAlphaChannelsInstance::Validate( String& info )
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool ExtractAlphaChannelsInstance::IsMaskable( const View&, const ImageWindow& ) const
 {
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool ExtractAlphaChannelsInstance::IsHistoryUpdater( const View& ) const
 {
    return deleteChannels;
 }
+
+// ----------------------------------------------------------------------------
+
+UndoFlags ExtractAlphaChannelsInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
+}
+
+// ----------------------------------------------------------------------------
 
 bool ExtractAlphaChannelsInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) const
 {
@@ -139,7 +158,8 @@ bool ExtractAlphaChannelsInstance::CanExecuteOn( const View& view, pcl::String& 
    return true;
 }
 
-//
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 template <class P>
 static void ExtractAllAlphaChannels( GenericImage<P>& image, bool extractChannels, bool deleteChannels, const String& baseId )
@@ -225,6 +245,8 @@ static void ExtractAllAlphaChannels( GenericImage<P>& image, bool extractChannel
    }
 }
 
+// ----------------------------------------------------------------------------
+
 static void ExtractAllAlphaChannels( ImageVariant& image, bool extractChannels, bool deleteChannels, const String& baseId )
 {
    if ( image.IsFloatSample() )
@@ -251,6 +273,9 @@ static void ExtractAllAlphaChannels( ImageVariant& image, bool extractChannels, 
          break;
       }
 }
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 template <class P>
 static void ExtractActiveAlphaChannel( GenericImage<P>& image, bool extractChannels, bool deleteChannels, const String& baseId )
@@ -322,6 +347,8 @@ static void ExtractActiveAlphaChannel( GenericImage<P>& image, bool extractChann
    }
 }
 
+// ----------------------------------------------------------------------------
+
 static void ExtractActiveAlphaChannel( ImageVariant& image, bool extractChannels, bool deleteChannels, const String& baseId )
 {
    if ( image.IsFloatSample() )
@@ -348,6 +375,9 @@ static void ExtractActiveAlphaChannel( ImageVariant& image, bool extractChannels
          break;
       }
 }
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 template <class P>
 static void ExtractListOfAlphaChannels( GenericImage<P>& image, const SortedArray<int>& list,
@@ -464,6 +494,8 @@ static void ExtractListOfAlphaChannels( GenericImage<P>& image, const SortedArra
    }
 }
 
+// ----------------------------------------------------------------------------
+
 static void ExtractListOfAlphaChannels( ImageVariant& image, const SortedArray<int>& list,
                                         bool extractChannels, bool deleteChannels, const String& baseId )
 {
@@ -492,7 +524,8 @@ static void ExtractListOfAlphaChannels( ImageVariant& image, const SortedArray<i
       }
 }
 
-//
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 bool ExtractAlphaChannelsInstance::ExecuteOn( View& view )
 {
@@ -531,6 +564,8 @@ bool ExtractAlphaChannelsInstance::ExecuteOn( View& view )
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 void* ExtractAlphaChannelsInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
 {
    if ( p == TheEAChannelsParameter )
@@ -541,8 +576,10 @@ void* ExtractAlphaChannelsInstance::LockParameter( const MetaParameter* p, size_
       return &extractChannels;
    if ( p == TheEADeleteParameter )
       return &deleteChannels;
-   return 0;
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ExtractAlphaChannelsInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {
@@ -556,6 +593,8 @@ bool ExtractAlphaChannelsInstance::AllocateParameter( size_type sizeOrLength, co
       return false;
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 size_type ExtractAlphaChannelsInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
@@ -588,4 +627,4 @@ void ExtractAlphaChannelsInstance::ParseChannelList( SortedArray<int>& list, con
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ExtractAlphaChannelsInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF ExtractAlphaChannelsInstance.cpp - Released 2018-11-01T11:07:21Z

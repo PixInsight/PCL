@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.05.0411
+// Standard FITS File Format Module Version 01.01.05.0417
 // ----------------------------------------------------------------------------
-// FITSInstance.cpp - Released 2017-08-01T14:26:50Z
+// FITSInstance.cpp - Released 2018-11-01T11:07:09Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -119,10 +119,10 @@ public:
             signedIntegersArePhysical = true;
          else if ( *i == "signed-is-logical" )
             signedIntegersArePhysical = false;
-         else if ( *i == "no-properties" )
-            noProperties = true;
          else if ( *i == "properties" )
             noProperties = false;
+         else if ( *i == "no-properties" )
+            noProperties = true;
          else if ( *i == "verbosity" )
          {
             if ( ++i == theHints.End() )
@@ -765,10 +765,18 @@ void FITSInstance::Create( const String& filePath, int numberOfImages, const Iso
             fitsOptions.cleanupHeaders = true;
          else if ( *i == "no-cleanup-headers" )
             fitsOptions.cleanupHeaders = false;
-         else if ( *i == "no-properties" )
-            options.embedProperties = false;
          else if ( *i == "properties" )
             options.embedProperties = true;
+         else if ( *i == "no-properties" )
+            options.embedProperties = false;
+         else if ( *i == "icc-profile" )
+            options.embedICCProfile = true;
+         else if ( *i == "no-icc-profile" )
+            options.embedICCProfile = false;
+         else if ( *i == "thumbnail" )
+            options.embedThumbnail = true;
+         else if ( *i == "no-thumbnail" )
+            options.embedThumbnail = false;
          else if ( *i == "verbosity" )
          {
             if ( ++i == theHints.End() )
@@ -966,4 +974,4 @@ void FITSInstance::CloseImage()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITSInstance.cpp - Released 2017-08-01T14:26:50Z
+// EOF FITSInstance.cpp - Released 2018-11-01T11:07:09Z

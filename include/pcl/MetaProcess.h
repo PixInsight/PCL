@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/MetaProcess.h - Released 2017-08-01T14:23:31Z
+// pcl/MetaProcess.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -146,7 +146,7 @@ public:
 
    /*!
    */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
    /*!
     * Returns a list of alias identifiers for this process.
@@ -227,7 +227,7 @@ public:
     * 3.11.5 as 0x3B5. The default return value is 0x100, corresponding to
     * version 1.0.0.
     */
-   virtual uint32 Version() const
+   uint32 Version() const override
    {
       return 0x100;
    }
@@ -251,7 +251,7 @@ public:
     * legal, but it is considered bad practice, so this function \e should be
     * reimplemented.
     */
-   virtual String Description() const
+   String Description() const override
    {
       return String();
    }
@@ -267,7 +267,7 @@ public:
     * \note The default implementation of this function returns an empty
     * string, so by default processes provide no script comments.
     */
-   virtual String ScriptComment() const
+   String ScriptComment() const override
    {
       return String();
    }
@@ -284,16 +284,16 @@ public:
     * 32-bit RGBA color images (including an alpha channel) are fully
     * supported.
     *
-    * If this function returns zero, a default icon will be assigned to this
+    * If this function returns nullptr, a default icon will be assigned to this
     * process automatically.
     *
-    * \note The default implementation of this function returns zero.
+    * \note The default implementation of this function returns nullptr.
     *
     * \sa IconImageFile()
     */
    virtual const char** IconImageXPM() const
    {
-      return 0; // zero means that an application-default icon will be used.
+      return nullptr;
    }
 
    /*!
@@ -344,7 +344,7 @@ public:
     */
    virtual const char** SmallIconImageXPM() const
    {
-      return 0;
+      return nullptr;
    }
 
    /*!
@@ -368,11 +368,11 @@ public:
 
    /*!
     */
-   virtual Bitmap Icon() const;
+   Bitmap Icon() const override;
 
    /*!
     */
-   virtual Bitmap SmallIcon() const;
+   Bitmap SmallIcon() const override;
 
    /*!
     * %Process class initialization routine.
@@ -442,7 +442,7 @@ public:
     * default a process is supposed to be executable on views. This is indeed
     * the case for the vast majority of processes.
     */
-   virtual bool CanProcessViews() const
+   bool CanProcessViews() const override
    {
       return true;
    }
@@ -467,7 +467,7 @@ public:
     * noted above it is necessary to maintain compatibility with 1.x PCL
     * versions. This may change in a future version 2.x of PCL.
     */
-   virtual bool CanProcessGlobal() const
+   bool CanProcessGlobal() const override
    {
       return true;
    }
@@ -500,7 +500,7 @@ public:
     * \note The default implementation of this function returns false, so by
     * default a process has no standalone image processing capabilities.
     */
-   virtual bool CanProcessImages() const
+   bool CanProcessImages() const override
    {
       return false;
    }
@@ -518,7 +518,7 @@ public:
     *
     * \sa ProcessCommandLine()
     */
-   virtual bool CanProcessCommandLines() const
+   bool CanProcessCommandLines() const override
    {
       return false;
    }
@@ -535,7 +535,7 @@ public:
     *
     * \sa EditPreferences()
     */
-   virtual bool CanEditPreferences() const
+   bool CanEditPreferences() const override
    {
       return false;
    }
@@ -560,7 +560,7 @@ public:
     *
     * \sa BrowseDocumentation()
     */
-   virtual bool CanBrowseDocumentation() const
+   bool CanBrowseDocumentation() const override
    {
       return true;
    }
@@ -635,7 +635,7 @@ public:
     * \note The default implementation of this function returns true, so
     * processes are assignable by default.
     */
-   virtual bool IsAssignable() const
+   bool IsAssignable() const override
    {
       return true; // by default, processes are considered assignable.
    }
@@ -666,7 +666,7 @@ public:
     *
     * \sa ProcessImplementation::Initialize()
     */
-   virtual bool NeedsInitialization() const
+   bool NeedsInitialization() const override
    {
       return false; // by default, process instances are not initialized.
    }
@@ -688,7 +688,7 @@ public:
     *
     * \sa ProcessImplementation::Validate()
     */
-   virtual bool NeedsValidation() const
+   bool NeedsValidation() const override
    {
       return false; // by default, process instances are not validated.
    }
@@ -709,7 +709,7 @@ public:
     * default processes prefer execution on views, instead of execution in the
     * global context.
     */
-   virtual bool PrefersGlobalExecution() const
+   bool PrefersGlobalExecution() const override
    {
       return false; // by default, processes prefer execution on views.
    }
@@ -744,7 +744,7 @@ public:
     *
     * \sa CanEditPreferences(), ProcessInterface::EditPreferences()
     */
-   virtual bool EditPreferences() const;
+   bool EditPreferences() const override;
 
    /*!
     * Handles a request to browse documentation specific for this process.
@@ -766,7 +766,7 @@ public:
     *
     * \sa CanBrowseDocumentation()
     */
-   virtual bool BrowseDocumentation() const;
+   bool BrowseDocumentation() const override;
 
    /*!
     * Provides access to the list of parameters defined for this process.
@@ -779,7 +779,7 @@ public:
 
 private:
 
-   virtual void PerformAPIDefinitions() const;
+   void PerformAPIDefinitions() const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -791,4 +791,4 @@ private:
 #endif   // __PCL_MetaProcess_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaProcess.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/MetaProcess.h - Released 2018-11-01T11:06:36Z

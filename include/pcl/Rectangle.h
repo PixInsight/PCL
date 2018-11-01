@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Rectangle.h - Released 2017-08-01T14:23:31Z
+// pcl/Rectangle.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -338,7 +338,7 @@ public:
     * Constructs a default %GenericRectangle instance. Rectangle coordinates
     * are not initialized, so they'll have unpredictable garbage values.
     */
-   GenericRectangle()
+   constexpr GenericRectangle()
    {
       PCL_ASSERT_RECT_SIZE();
    }
@@ -354,11 +354,60 @@ public:
     * type with numeric conversion semantics.
     */
    template <typename T1>
-   GenericRectangle( T1 left, T1 top, T1 right, T1 bottom ) :
+   constexpr GenericRectangle( T1 left, T1 top, T1 right, T1 bottom ) :
       x0( component( left ) ), y0( component( top ) ),
       x1( component( right ) ), y1( component( bottom ) )
    {
       PCL_ASSERT_RECT_SIZE();
+   }
+
+   /*!
+    * Constructs a %GenericRectangle instance from coordinates taken from the
+    * specified initializer list \a l.
+    *
+    * This constructor will copy 4, 3, 2, 1 or zero rectangle coordinates,
+    * depending on the number of values in the initializer list. Coordinates
+    * that cannot be initialized from list values will be set to zero. For
+    * example, the following code:
+    *
+    * \code
+    *    Rect r1 = {};
+    *    Rect r2 = { 1, 2 };
+    *    Rect r3 = { 1, 2, 3 };
+    *    Rect r4 = { 1, 2, 3, 4 };
+    * \endcode
+    *
+    * is functionally equivalent to:
+    *
+    * \code
+    *    Rect r1( 0, 0, 0, 0 );
+    *    Rect r2( 1, 2, 0, 0 );
+    *    Rect r3( 1, 2, 3, 0 };
+    *    Rect r4( 1, 2, 3, 4 };
+    * \endcode
+    */
+   template <typename T1>
+   GenericRectangle( std::initializer_list<T1> l )
+   {
+      PCL_ASSERT_RECT_SIZE();
+      switch ( l.size() )
+      {
+      default:
+      case 4: y1 = component( l.begin()[3] );
+      case 3: x1 = component( l.begin()[2] );
+      case 2: y0 = component( l.begin()[1] );
+      case 1: x0 = component( l.begin()[0] );
+      case 0: break;
+      }
+      switch ( l.size() )
+      {
+      case 0: x0 = component( 0 );
+      case 1: y0 = component( 0 );
+      case 2: x1 = component( 0 );
+      case 3: y1 = component( 0 );
+      default:
+      case 4: break;
+      }
    }
 
    /*!
@@ -372,8 +421,8 @@ public:
     */
    template <typename T1>
    GenericRectangle( const pcl::GenericPoint<T1>& leftTop, const pcl::GenericPoint<T1>& rightBottom ) :
-      x0( component( leftTop.x ) ), y0( component( leftTop.y ) ),
-      x1( component( rightBottom.x ) ), y1( component( rightBottom.y ) )
+      GenericRectangle( component( leftTop.x ), component( leftTop.y ),
+                        component( rightBottom.x ), component( rightBottom.y ) )
    {
       PCL_ASSERT_RECT_SIZE();
    }
@@ -386,9 +435,8 @@ public:
     * x1 = width \n
     * y1 = height
     */
-   GenericRectangle( component width, component height ) :
-      x0( component( 0 ) ), y0( component( 0 ) ),
-      x1( width ), y1( height )
+   constexpr GenericRectangle( component width, component height ) :
+      GenericRectangle( component( 0 ), component( 0 ), width, height )
    {
       PCL_ASSERT_RECT_SIZE();
    }
@@ -400,36 +448,35 @@ public:
     * The constructed rectangle will have all of its coordinates equal to the
     * scalar \a d.
     */
-   GenericRectangle( component d ) :
-      x0( d ), y0( d ),
-      x1( d ), y1( d )
+   constexpr GenericRectangle( component d ) :
+      GenericRectangle( d, d, d, d )
    {
       PCL_ASSERT_RECT_SIZE();
    }
 
    /*!
-    * Constructs a %GenericRectangle instance as a copy of an existing
-    * rectangle.
+    * Nontrivial copy constructor. Constructs a %GenericRectangle instance as a
+    * copy of the specified rectangle \a r.
     */
    template <typename T1>
    GenericRectangle( const GenericRectangle<T1>& r ) :
-      x0( component( r.x0 ) ), y0( component( r.y0 ) ),
-      x1( component( r.x1 ) ), y1( component( r.y1 ) )
+      GenericRectangle( component( r.x0 ), component( r.y0 ),
+                        component( r.x1 ), component( r.y1 ) )
    {
       PCL_ASSERT_RECT_SIZE();
    }
 
 #ifdef __PCL_QT_INTERFACE
    GenericRectangle( const QRect& r ) :
-      x0( component( r.left() ) ), y0( component( r.top() ) ),
-      x1( component( r.right()+1 ) ), y1( component( r.bottom()+1 ) )
+      GenericRectangle( component( r.left() ), component( r.top() ),
+                        component( r.right()+1 ), component( r.bottom()+1 ) )
    {
       PCL_ASSERT_RECT_SIZE();
    }
 
    GenericRectangle( const QPoint& p0, const QPoint& p1 ) :
-      x0( component( p0.x() ) ), y0( component( p0.y() ) ),
-      x1( component( p1.x() ) ), y1( component( p1.y() ) )
+      GenericRectangle( component( p0.x() ), component( p0.y() ),
+                        component( p1.x() ), component( p1.y() ) )
    {
       PCL_ASSERT_RECT_SIZE();
    }
@@ -2671,4 +2718,4 @@ typedef F64Rect                     DRect;
 #endif  // __PCL_Rectangle_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Rectangle.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Rectangle.h - Released 2018-11-01T11:06:36Z

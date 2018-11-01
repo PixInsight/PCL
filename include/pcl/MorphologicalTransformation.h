@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/MorphologicalTransformation.h - Released 2017-08-01T14:23:31Z
+// pcl/MorphologicalTransformation.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,6 +60,7 @@
 #include <pcl/AutoPointer.h>
 #include <pcl/InterlacedTransformation.h>
 #include <pcl/MorphologicalOperator.h>
+#include <pcl/ParallelProcess.h>
 #include <pcl/StructuringElement.h>
 #include <pcl/ThresholdedTransformation.h>
 
@@ -77,8 +78,9 @@ namespace pcl
  * \sa MorphologicalOperator, StructuringElement
  */
 class PCL_CLASS MorphologicalTransformation : public InterlacedTransformation,
-                                              public ThresholdedTransformation
-{                          // NB: ImageTransformation is a virtual base class
+                                              public ThresholdedTransformation,
+                                              public ParallelProcess
+{                          // N.B. ImageTransformation is a virtual base class
 public:
 
    /*!
@@ -90,11 +92,7 @@ public:
     * member functions, respectively, with the appropriate instances of
     * MorphologicalOperator and StructuringElement.
     */
-   MorphologicalTransformation() :
-      InterlacedTransformation(), ThresholdedTransformation(),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
-   {
-   }
+   MorphologicalTransformation() = default;
 
    /*!
     * Constructs a %MorphologicalTransformation object with the specified
@@ -104,9 +102,7 @@ public:
     * %MorphologicalTransformation instance is actively used, since it will
     * own private copies of the specified filter operator and structure.
     */
-   MorphologicalTransformation( const MorphologicalOperator& op, const StructuringElement& structure ) :
-      InterlacedTransformation(), ThresholdedTransformation(),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+   MorphologicalTransformation( const MorphologicalOperator& op, const StructuringElement& structure )
    {
       m_operator = op.Clone();
       m_structure = structure.Clone();
@@ -117,8 +113,9 @@ public:
     * Copy constructor.
     */
    MorphologicalTransformation( const MorphologicalTransformation& x ) :
-      InterlacedTransformation( x ), ThresholdedTransformation( x ),
-      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
+      InterlacedTransformation( x ),
+      ThresholdedTransformation( x ),
+      ParallelProcess( x )
    {
       if ( !x.m_operator.IsNull() )
          if ( !x.m_structure.IsNull() )
@@ -131,14 +128,7 @@ public:
    /*!
     * Move constructor.
     */
-   MorphologicalTransformation( MorphologicalTransformation&& x ) :
-      InterlacedTransformation( x ), ThresholdedTransformation( x ),
-      m_operator( x.m_operator ), m_structure( x.m_structure ),
-      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
-   {
-      //x.m_operator = nullptr;  // already done by AutoPointer
-      //x.m_structure = nullptr;
-   }
+   MorphologicalTransformation( MorphologicalTransformation&& x ) = default;
 
    /*!
     * Destroys a %MorphologicalTransformation object.
@@ -156,6 +146,7 @@ public:
       {
          (void)InterlacedTransformation::operator =( x );
          (void)ThresholdedTransformation::operator =( x );
+         (void)ParallelProcess::operator =( x );
          if ( !x.m_operator.IsNull() && !x.m_structure.IsNull() )
          {
             m_operator = x.m_operator->Clone();
@@ -166,8 +157,6 @@ public:
             m_operator.Destroy();
             m_structure.Destroy();
          }
-         m_parallel = x.m_parallel;
-         m_maxProcessors = x.m_maxProcessors;
       }
       return *this;
    }
@@ -175,21 +164,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-   MorphologicalTransformation& operator =( MorphologicalTransformation&& x )
-   {
-      if ( &x != this )
-      {
-         (void)InterlacedTransformation::operator =( x );
-         (void)ThresholdedTransformation::operator =( x );
-         m_operator = x.m_operator;
-         m_structure = x.m_structure;
-         m_parallel = x.m_parallel;
-         m_maxProcessors = x.m_maxProcessors;
-         //x.m_operator = nullptr;  // already done by AutoPointer
-         //x.m_structure = nullptr;
-      }
-      return *this;
-   }
+   MorphologicalTransformation& operator =( MorphologicalTransformation&& ) = default;
 
    /*!
     * Returns a reference to the morphological operator associated with this
@@ -242,95 +217,19 @@ public:
       return m_structure->Size() + (m_structure->Size() - 1)*(InterlacingDistance() - 1);
    }
 
-   /*!
-    * Returns true iff this object is allowed to use multiple parallel execution
-    * threads (when multiple threads are permitted and available).
-    */
-   bool IsParallelProcessingEnabled() const
-   {
-      return m_parallel;
-   }
-
-   /*!
-    * Enables parallel processing for this instance of
-    * %MorphologicalTransformation.
-    *
-    * \param enable  Whether to enable or disable parallel processing. True by
-    *                default.
-    *
-    * \param maxProcessors    The maximum number of processors allowed for this
-    *                instance of %MorphologicalTransformation. If \a enable is
-    *                false this parameter is ignored. A value <= 0 is ignored.
-    *                The default value is zero.
-    */
-   void EnableParallelProcessing( bool enable = true, int maxProcessors = 0 )
-   {
-      m_parallel = enable;
-      if ( enable && maxProcessors > 0 )
-         SetMaxProcessors( maxProcessors );
-   }
-
-   /*!
-    * Disables parallel processing for this instance of
-    * %MorphologicalTransformation.
-    *
-    * This is a convenience function, equivalent to:
-    * EnableParallelProcessing( !disable )
-    */
-   void DisableParallelProcessing( bool disable = true )
-   {
-      EnableParallelProcessing( !disable );
-   }
-
-   /*!
-    * Returns the maximum number of processors allowed for this instance of
-    * %MorphologicalTransformation.
-    *
-    * Irrespective of the value returned by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   int MaxProcessors() const
-   {
-      return m_maxProcessors;
-   }
-
-   /*!
-    * Sets the maximum number of processors allowed for this instance of
-    * %MorphologicalTransformation.
-    *
-    * In the current version of PCL, a module can use a maximum of 1023
-    * processors. The term \e processor actually refers to the number of
-    * threads a module can execute concurrently.
-    *
-    * Irrespective of the value specified by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   void SetMaxProcessors( int maxProcessors )
-   {
-      m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
-   }
-
 protected:
 
-   AutoPointer<MorphologicalOperator> m_operator;          // morphological operator
-   AutoPointer<StructuringElement>    m_structure;         // n-way structuring element
-   bool                               m_parallel      : 1; // use multiple execution threads
-   unsigned                           m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT; // Maximum number of processors allowed
+   AutoPointer<MorphologicalOperator> m_operator;  // morphological operator
+   AutoPointer<StructuringElement>    m_structure; // n-way structuring element
 
    /*
     * In-Place 2-D Morphological Transformation Algorithm.
     */
-   virtual void Apply( pcl::Image& ) const;
-   virtual void Apply( pcl::DImage& ) const;
-   virtual void Apply( pcl::UInt8Image& ) const;
-   virtual void Apply( pcl::UInt16Image& ) const;
-   virtual void Apply( pcl::UInt32Image& ) const;
+   void Apply( pcl::Image& ) const override;
+   void Apply( pcl::DImage& ) const override;
+   void Apply( pcl::UInt8Image& ) const override;
+   void Apply( pcl::UInt16Image& ) const override;
+   void Apply( pcl::UInt32Image& ) const override;
 
 private:
 
@@ -344,4 +243,4 @@ private:
 #endif   // __PCL_MorphologicalTransformation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MorphologicalTransformation.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/MorphologicalTransformation.h - Released 2018-11-01T11:06:36Z

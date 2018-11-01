@@ -2,7 +2,7 @@
 PixInsight Class Library License Version 1.0
 ===============================================================================
 
-Copyright (c) 2003-2017, Pleiades Astrophoto S.L. All Rights Reserved.
+Copyright (c) 2003-2018, Pleiades Astrophoto S.L. All Rights Reserved.
 
 Redistribution and use in both source and binary forms, with or without
 modification, is permitted provided that the following conditions are met:

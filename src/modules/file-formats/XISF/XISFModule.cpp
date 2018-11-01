@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.09.0165
+// Standard XISF File Format Module Version 01.00.09.0171
 // ----------------------------------------------------------------------------
-// XISFModule.cpp - Released 2017-08-01T14:26:50Z
+// XISFModule.cpp - Released 2018-11-01T11:07:09Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,11 +53,11 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  09
-#define MODULE_VERSION_BUILD     0165
+#define MODULE_VERSION_BUILD     0171
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     8
+#define MODULE_RELEASE_YEAR      2018
+#define MODULE_RELEASE_MONTH     11
 #define MODULE_RELEASE_DAY       1
 
 #include "XISFModule.h"
@@ -72,6 +72,8 @@ XISFModule::XISFModule() : MetaModule()
 {
 }
 
+// ----------------------------------------------------------------------------
+
 const char* XISFModule::Version() const
 {
    return PCL_MODULE_VERSION( MODULE_VERSION_MAJOR,
@@ -81,35 +83,49 @@ const char* XISFModule::Version() const
                               MODULE_VERSION_LANGUAGE );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString XISFModule::Name() const
 {
    return "XISF";
 }
+
+// ----------------------------------------------------------------------------
 
 String XISFModule::Description() const
 {
    return "Extensible Image Serialization Format (XISF) - PixInsight Standard XISF File Format Module";
 }
 
+// ----------------------------------------------------------------------------
+
 String XISFModule::Company() const
 {
    return "Pleiades Astrophoto";
 }
+
+// ----------------------------------------------------------------------------
 
 String XISFModule::Author() const
 {
    return "Juan Conejero, PTeam";
 }
 
+// ----------------------------------------------------------------------------
+
 String XISFModule::Copyright() const
 {
-   return "Copyright (c) 2014-2017, Pleiades Astrophoto";
+   return "Copyright (c) 2014-2018, Pleiades Astrophoto";
 }
+
+// ----------------------------------------------------------------------------
 
 String XISFModule::TradeMarks() const
 {
    return "PixInsight";
 }
+
+// ----------------------------------------------------------------------------
 
 String XISFModule::OriginalFileName() const
 {
@@ -126,6 +142,8 @@ String XISFModule::OriginalFileName() const
    return "XISF-pxm.dll";
 #endif
 }
+
+// ----------------------------------------------------------------------------
 
 void XISFModule::GetReleaseDate( int& year, int& month, int& day ) const
 {
@@ -149,4 +167,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF XISFModule.cpp - Released 2017-08-01T14:26:50Z
+// EOF XISFModule.cpp - Released 2018-11-01T11:07:09Z

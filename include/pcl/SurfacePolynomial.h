@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/SurfacePolynomial.h - Released 2017-08-01T14:23:31Z
+// pcl/SurfacePolynomial.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -112,18 +112,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    SurfacePolynomial( SurfacePolynomial&& ) = default;
-#else
-   SurfacePolynomial( SurfacePolynomial&& x ) :
-      m_r0( x.m_r0 ),
-      m_x0( x.m_x0 ),
-      m_y0( x.m_y0 ),
-      m_degree( x.m_degree ),
-      m_polynomial( std::move( x.m_polynomial ) )
-   {
-   }
-#endif
 
    /*!
     * Virtual destructor.
@@ -140,19 +129,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-#ifndef _MSC_VER
    SurfacePolynomial& operator =( SurfacePolynomial&& ) = default;
-#else
-   SurfacePolynomial& operator =( SurfacePolynomial&& x )
-   {
-      m_r0 = x.m_r0;
-      m_x0 = x.m_x0;
-      m_y0 = x.m_y0;
-      m_degree = x.m_degree;
-      m_polynomial = std::move( x.m_polynomial );
-      return *this;
-   }
-#endif
 
    /*!
     * Returns true iff this surface polynomial is valid. A valid surface
@@ -174,7 +151,7 @@ public:
    /*!
     * Sets the degree of this surface polynomial.
     *
-    * \param degree  Polynomial degree. Must be >= 1.
+    * \param degree  Polynomial degree. Must be &ge; 1.
     *
     * Calling this member function implicitly resets this %SurfacePolynomial
     * object and destroys all internal working structures.
@@ -200,7 +177,7 @@ public:
     *
     * \param z       Node values.
     *
-    * \param n       Number of nodes. Must be >= 3
+    * \param n       Number of nodes. Must be &ge; 3
     *                (3 nodes * 2 coordinates = six degrees of freedom).
     *
     * The input nodes can be arbitrarily distributed, and they don't need to
@@ -349,9 +326,9 @@ public:
 
 protected:
 
-   double      m_r0     = 1; // scaling factor for normalization of node coordinates
-   double      m_x0     = 0; // zero offset for normalization of X node coordinates
-   double      m_y0     = 0; // zero offset for normalization of Y node coordinates
+   double      m_r0 = 1;     // scaling factor for normalization of node coordinates
+   double      m_x0 = 0;     // zero offset for normalization of X node coordinates
+   double      m_y0 = 0;     // zero offset for normalization of Y node coordinates
    int         m_degree = 3; // polynomial degree > 0
    vector_type m_polynomial; // coefficients of the 2-D surface polynomial
 };
@@ -363,4 +340,4 @@ protected:
 #endif   // __PCL_SurfacePolynomial_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SurfacePolynomial.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/SurfacePolynomial.h - Released 2018-11-01T11:06:36Z

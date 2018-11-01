@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/AbstractImage.h - Released 2017-08-01T14:23:31Z
+// pcl/AbstractImage.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -61,6 +61,7 @@
 #include <pcl/ImageGeometry.h>
 #include <pcl/ImageSelections.h>
 #include <pcl/Mutex.h>
+#include <pcl/ParallelProcess.h>
 #include <pcl/ReferenceArray.h>
 #include <pcl/StatusMonitor.h>
 #include <pcl/Thread.h>
@@ -114,7 +115,9 @@ namespace pcl
  *
  * \sa ImageGeometry, ImageColor, GenericImage, ImageVariant
  */
-class PCL_CLASS AbstractImage : public ImageGeometry, public ImageColor
+class PCL_CLASS AbstractImage : public ImageGeometry,
+                                public ImageColor,
+                                public ParallelProcess
 {
 public:
 
@@ -191,7 +194,7 @@ public:
    /*!
     * Selects a single channel.
     *
-    * \param c    Channel index, 0 <= \a c < \a n, where \a n is the total
+    * \param c    Channel index, 0 &le; \a c < \a n, where \a n is the total
     *             number of channels in this image, including alpha channels.
     */
    void SelectChannel( int c ) const
@@ -713,7 +716,7 @@ public:
     *
     * Returns true iff the output rectangle is nonempty and the output channel
     * range is valid. When true is returned, this function ensures that
-    * \a firstChannel <= \a lastChannel.
+    * \a firstChannel &le; \a lastChannel.
     */
    bool ParseSelection( Rect& rect, int& firstChannel, int& lastChannel ) const
    {
@@ -796,84 +799,6 @@ public:
       m_status.SetCallback( callback );
    }
 
-   // -------------------------------------------------------------------------
-
-   /*!
-    * Returns true iff this image is allowed to use multiple parallel execution
-    * threads (when multiple threads are permitted and available) for member
-    * functions that support parallel execution.
-    */
-   bool IsParallelProcessingEnabled() const
-   {
-      return m_parallel;
-   }
-
-   /*!
-    * Enables parallel processing for this image.
-    *
-    * \param enable  Whether to enable or disable parallel processing. True by
-    *                default.
-    *
-    * \param maxProcessors    The maximum number of processors allowed for this
-    *                image. If \a enable is false this parameter is ignored. A
-    *                value <= 0 is ignored. The default value is zero.
-    */
-   void EnableParallelProcessing( bool enable = true, int maxProcessors = 0 )
-   {
-      if ( (m_parallel = enable) && maxProcessors > 0 )
-         SetMaxProcessors( maxProcessors );
-   }
-
-   /*!
-    * Disables parallel processing for this image.
-    *
-    * This is a convenience function, equivalent to:
-    * EnableParallelProcessing( !disable )
-    */
-   void DisableParallelProcessing( bool disable = true )
-   {
-      EnableParallelProcessing( !disable );
-   }
-
-   /*!
-    * Returns the maximum number of processors allowed for this image.
-    *
-    * The returned value is the maximum number of processors that this image
-    * can use in member functions that support parallel execution.
-    *
-    * Irrespective of the value returned by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   int MaxProcessors() const
-   {
-      return int( m_maxProcessors );
-   }
-
-   /*!
-    * Sets the maximum number of processors allowed for this image.
-    *
-    * The specified \a maxProcessors parameter is the maximum number of
-    * processors that this image can use in member functions that support
-    * parallel execution.
-    *
-    * In the current versions of PCL, a module can use a maximum of 1023
-    * processors. The term \e processor actually refers to the number of
-    * threads a module can execute concurrently.
-    *
-    * Irrespective of the value specified by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   void SetMaxProcessors( int maxProcessors )
-   {
-      m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
-   }
-
    /*!
     * Returns the maximum number of threads that this image can use
     * concurrently to process a set of items, taking into account if parallel
@@ -901,7 +826,7 @@ public:
     */
    int NumberOfThreads( size_type count, int maxProcessors = 0, size_type overheadLimit = 16u ) const
    {
-      return m_parallel ? pcl::Min( (maxProcessors > 0) ? maxProcessors : int( m_maxProcessors ),
+      return m_parallel ? pcl::Min( (maxProcessors > 0) ? maxProcessors : m_maxProcessors,
                                     Thread::NumberOfThreads( count, overheadLimit ) ) : 1;
    }
 
@@ -1142,14 +1067,8 @@ protected:
    mutable ImageSelections m_selected;
    mutable selection_stack m_savedSelections;
    mutable StatusMonitor   m_status;
-           bool            m_parallel      : 1;
-           unsigned        m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT;
 
-   AbstractImage() :
-      m_parallel( true ),
-      m_maxProcessors( PCL_MAX_PROCESSORS )
-   {
-   }
+   AbstractImage() = default;
 
    AbstractImage( const AbstractImage& ) = default;
 
@@ -1159,11 +1078,10 @@ protected:
    {
       ImageGeometry::Swap( image );
       ImageColor::Swap( image );
+      ParallelProcess::Swap( image );
       pcl::Swap( m_selected, image.m_selected );
       pcl::Swap( m_savedSelections, image.m_savedSelections );
       pcl::Swap( m_status, image.m_status );
-      bool b = m_parallel; m_parallel = image.m_parallel; image.m_parallel = b;
-      unsigned u = m_maxProcessors; m_maxProcessors = image.m_maxProcessors; image.m_maxProcessors = u;
    }
 
    void ValidateChannelRange() const
@@ -1271,7 +1189,7 @@ protected:
  *
  *    ... constructor and other member functions here
  *
- *    virtual void Run()
+ *    void Run() override
  *    {
  *       INIT_THREAD_MONITOR()
  *
@@ -1354,7 +1272,7 @@ protected:
  * Example of code using %UPDATE_THREAD_MONITOR_CHUNK():
  *
  * \code
- *    virtual void Run()
+ *    void Run() override
  *    {
  *       INIT_THREAD_MONITOR()
  *
@@ -1374,7 +1292,7 @@ protected:
  * Example of code using %UPDATE_THREAD_MONITOR():
  *
  * \code
- *    virtual void Run()
+ *    void Run() override
  *    {
  *       INIT_THREAD_MONITOR()
  *
@@ -1424,4 +1342,4 @@ protected:
 #endif   // __PCL_AbstractImage_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AbstractImage.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/AbstractImage.h - Released 2018-11-01T11:06:36Z

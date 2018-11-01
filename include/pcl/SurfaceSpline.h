@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/SurfaceSpline.h - Released 2017-08-01T14:23:31Z
+// pcl/SurfaceSpline.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -72,26 +72,58 @@ class SurfaceSplineBase
 {
 protected:
 
-   SurfaceSplineBase()
-   {
-   }
+   /*!
+    * Default constructor.
+    */
+   SurfaceSplineBase() = default;
 
-   SurfaceSplineBase( const SurfaceSplineBase& )
-   {
-   }
+   /*!
+    * Copy constructor.
+    */
+   SurfaceSplineBase( const SurfaceSplineBase& ) = default;
 
+   /*!
+    * Move constructor.
+    */
+   SurfaceSplineBase( SurfaceSplineBase&& ) = default;
+
+   /*!
+    * Virtual destructor.
+    */
    virtual ~SurfaceSplineBase()
    {
    }
 
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
+    */
+   SurfaceSplineBase& operator =( const SurfaceSplineBase& ) = default;
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   SurfaceSplineBase& operator =( SurfaceSplineBase&& ) = default;
+
+   /*!
+    * Surface spline generation callback, 32-bit floating point data.
+    */
    static void Generate( float*, float*, const float*, int,
                          int, float, const float*, float*, double&, double&, double& );
 
+   /*!
+    * Surface spline generation callback, 64-bit floating point data.
+    */
    static void Generate( double*, double*, const double*, int,
                          int, float, const float*, double*, double&, double&, double& );
 
+   /*!
+    * Surface spline interpolation callback, 32-bit floating point data.
+    */
    static float Interpolate( const float*, const float*, int, const float*, int, double, double );
 
+   /*!
+    * Surface spline interpolation callback, 64-bit floating point data.
+    */
    static double Interpolate( const double*, const double*, int, const double*, int, double, double );
 };
 
@@ -111,7 +143,7 @@ protected:
  * is the possibility to control adaptability with approximating (or smoothing)
  * surface splines, as opposed to interpolating splines, and the possibility to
  * control adaptability both as a global property of the modeling device, or on
- * a point per point basis. The main drawback of surface splines is that they
+ * a point-by-point basis. The main drawback of surface splines is that they
  * are computationally expensive, especially for large data sets. See the
  * GridInterpolation and PointGridInterpolation classes for discretized
  * implementations with much higher efficiency.
@@ -150,22 +182,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    SurfaceSpline( SurfaceSpline&& ) = default;
-#else
-   SurfaceSpline( SurfaceSpline&& x ) :
-      m_x( std::move( x.m_x ) ),
-      m_y( std::move( x.m_y ) ),
-      m_r0( x.m_r0 ),
-      m_x0( x.m_x0 ),
-      m_y0( x.m_y0 ),
-      m_order( x.m_order ),
-      m_smoothing( x.m_smoothing ),
-      m_weights( std::move( x.m_weights ) ),
-      m_spline( std::move( x.m_spline ) )
-   {
-   }
-#endif
 
    /*!
     * Virtual destructor.
@@ -182,23 +199,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-#ifndef _MSC_VER
    SurfaceSpline& operator =( SurfaceSpline&& ) = default;
-#else
-   SurfaceSpline& operator =( SurfaceSpline&& x )
-   {
-      m_x = std::move( x.m_x );
-      m_y = std::move( x.m_y );
-      m_r0 = x.m_r0;
-      m_x0 = x.m_x0;
-      m_y0 = x.m_y0;
-      m_order = x.m_order;
-      m_smoothing = x.m_smoothing;
-      m_weights = std::move( x.m_weights );
-      m_spline = std::move( x.m_spline );
-      return *this;
-   }
-#endif
 
    /*!
     * Returns true iff this surface spline is valid. A valid surface spline has
@@ -310,7 +311,7 @@ public:
     *
     * \param z       Node values.
     *
-    * \param n       Number of nodes. Must be >= 3
+    * \param n       Number of nodes. Must be &ge; 3
     *                (3 nodes * 2 coordinates = six degrees of freedom).
     *
     * \param w       When the smoothing factor of this spline is > 0, this is a
@@ -400,10 +401,10 @@ protected:
 
    vector_type m_x;             // vector of normalized X node coordinates
    vector_type m_y;             // vector of normalized Y node coordinates
-   double      m_r0        = 1; // scaling factor for normalization of node coordinates
-   double      m_x0        = 0; // zero offset for normalization of X node coordinates
-   double      m_y0        = 0; // zero offset for normalization of Y node coordinates
-   int         m_order     = 2; // derivative order > 0
+   double      m_r0 = 1;        // scaling factor for normalization of node coordinates
+   double      m_x0 = 0;        // zero offset for normalization of X node coordinates
+   double      m_y0 = 0;        // zero offset for normalization of Y node coordinates
+   int         m_order = 2;     // derivative order > 0
    float       m_smoothing = 0; // smoothing factor, or interpolating 2-D spline if m_smoothing == 0
    FVector     m_weights;       // vector of node weights if m_smoothing != 0, otherwise ignored (empty)
    vector_type m_spline;        // coefficients of the 2-D surface spline
@@ -419,4 +420,4 @@ protected:
 #endif   // __PCL_SurfaceSpline_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SurfaceSpline.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/SurfaceSpline.h - Released 2018-11-01T11:06:36Z

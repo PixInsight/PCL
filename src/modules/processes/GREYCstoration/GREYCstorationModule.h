@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard GREYCstoration Process Module Version 01.00.02.0322
+// Standard GREYCstoration Process Module Version 01.00.02.0330
 // ----------------------------------------------------------------------------
-// GREYCstorationModule.h - Released 2017-08-01T14:26:58Z
+// GREYCstorationModule.h - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard GREYCstoration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -101,4 +101,4 @@ public:
 #endif   // __GREYCstorationModule_h
 
 // ----------------------------------------------------------------------------
-// EOF GREYCstorationModule.h - Released 2017-08-01T14:26:58Z
+// EOF GREYCstorationModule.h - Released 2018-11-01T11:07:20Z

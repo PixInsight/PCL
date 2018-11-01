@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/FourierTransform.h - Released 2017-08-01T14:23:31Z
+// pcl/FourierTransform.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,6 +60,7 @@
 #include <pcl/FFT1D.h>
 #include <pcl/FFT2D.h>
 #include <pcl/ImageTransformation.h>
+#include <pcl/ParallelProcess.h>
 
 namespace pcl
 {
@@ -100,13 +101,13 @@ namespace FFTDirection
  * \note \b Important - For performance reasons, %InPlaceFourierTransform can
  * change the dimensions of a transformed image (width and/or height in pixels)
  * to their nearest optimized %FFT lengths. This may involve reallocation of
- * all pixel data. If the transformed image already has optimized dimensions,
- * no size change or reallocation occurs. See the GenericFFT::GenericFFT( int )
+ * pixel data. If the transformed image already has optimized dimensions, no
+ * size change or reallocation occurs. See the GenericFFT::GenericFFT( int )
  * constructor for details on optimized %FFT lengths.
  *
  * \sa FourierTransform
  */
-class PCL_CLASS InPlaceFourierTransform : public ImageTransformation
+class PCL_CLASS InPlaceFourierTransform : public ImageTransformation, public ParallelProcess
 {
 public:
 
@@ -129,19 +130,14 @@ public:
     * </table>
     */
    InPlaceFourierTransform( transform_type type = FFTDirection::Forward ) :
-      ImageTransformation(),
-      m_type( type ), m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      m_type( type )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   InPlaceFourierTransform( const InPlaceFourierTransform& x ) :
-      ImageTransformation( x ),
-      m_type( x.m_type ), m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
-   {
-   }
+   InPlaceFourierTransform( const InPlaceFourierTransform& ) = default;
 
    /*!
     * Destroys this %InPlaceFourierTransform object.
@@ -159,89 +155,13 @@ public:
       return m_type;
    }
 
-   /*!
-    * Returns true iff this object is allowed to use multiple parallel execution
-    * threads (when multiple threads are permitted and available).
-    */
-   bool IsParallelProcessingEnabled() const
-   {
-      return m_parallel;
-   }
-
-   /*!
-    * Enables parallel processing for this instance of
-    * %InPlaceFourierTransform.
-    *
-    * \param enable  Whether to enable or disable parallel processing. True by
-    *                default.
-    *
-    * \param maxProcessors    The maximum number of processors allowed for this
-    *                instance of %InPlaceFourierTransform. If \a enable is
-    *                false this parameter is ignored. A value <= 0 is ignored.
-    *                The default value is zero.
-    */
-   void EnableParallelProcessing( bool enable = true, int maxProcessors = 0 )
-   {
-      m_parallel = enable;
-      if ( enable && maxProcessors > 0 )
-         SetMaxProcessors( maxProcessors );
-   }
-
-   /*!
-    * Disables parallel processing for this instance of
-    * %InPlaceFourierTransform.
-    *
-    * This is a convenience function, equivalent to:
-    * EnableParallelProcessing( !disable )
-    */
-   void DisableParallelProcessing( bool disable = true )
-   {
-      EnableParallelProcessing( !disable );
-   }
-
-   /*!
-    * Returns the maximum number of processors allowed for this instance of
-    * %InPlaceFourierTransform.
-    *
-    * Irrespective of the value returned by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   int MaxProcessors() const
-   {
-      return m_maxProcessors;
-   }
-
-   /*!
-    * Sets the maximum number of processors allowed for this instance of
-    * %InPlaceFourierTransform.
-    *
-    * In the current version of PCL, a module can use a maximum of 1023
-    * processors. The term \e processor actually refers to the number of
-    * threads a module can execute concurrently.
-    *
-    * Irrespective of the value specified by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   void SetMaxProcessors( int maxProcessors )
-   {
-      m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
-   }
-
 protected:
 
    transform_type m_type;
-   bool           m_parallel      : 1;
-   unsigned       m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT;
 
    // In-place FFT of complex images.
-   virtual void Apply( pcl::ComplexImage& ) const;
-   virtual void Apply( pcl::DComplexImage& ) const;
+   void Apply( pcl::ComplexImage& ) const override;
+   void Apply( pcl::DComplexImage& ) const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -275,10 +195,7 @@ public:
    /*!
     * Copy constructor.
     */
-   InPlaceInverseFourierTransform( const InPlaceInverseFourierTransform& x ) :
-      InPlaceFourierTransform( x )
-   {
-   }
+   InPlaceInverseFourierTransform( const InPlaceInverseFourierTransform& ) = default;
 
    /*!
     * Virtual destructor.
@@ -306,7 +223,7 @@ public:
  *
  * \sa InPlaceFourierTransform
  */
-class PCL_CLASS FourierTransform : public BidirectionalImageTransformation
+class PCL_CLASS FourierTransform : public BidirectionalImageTransformation, public ParallelProcess
 {
 public:
 
@@ -315,33 +232,22 @@ public:
     *
     * Creates a %FourierTransform object with an empty Fourier transform.
     */
-   FourierTransform() :
-      BidirectionalImageTransformation(),
-      m_dft(), m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
-   {
-   }
+   FourierTransform() = default;
 
    /*!
     * Copy constructor.
     *
-    * This constructor copies the Fourier transform in the source object \a x.
-    * The Fourier transform is an ImageVariant object. This constructor creates
-    * an %ImageVariant that references the same image as the source object.
+    * This constructor copies the Fourier transform in the specified source
+    * object. The Fourier transform is an ImageVariant object. This constructor
+    * creates an %ImageVariant that references the same image as the source
+    * object.
     */
-   FourierTransform( const FourierTransform& x ) :
-      BidirectionalImageTransformation( x ),
-      m_dft( x.m_dft ), m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
-   {
-   }
+   FourierTransform( const FourierTransform& ) = default;
 
    /*!
     * Move constructor.
     */
-   FourierTransform( FourierTransform&& x ) :
-      BidirectionalImageTransformation( x ),
-      m_dft( std::move( x.m_dft ) ), m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
-   {
-   }
+   FourierTransform( FourierTransform&& ) = default;
 
    /*!
     * Destroys this %FourierTransform object.
@@ -358,32 +264,18 @@ public:
    /*!
     * Copy assignment operator. Returns a reference to this object.
     *
-    * This operator copies the Fourier transform in the source object \a x.
-    * The Fourier transform is an ImageVariant object. This operator causes the
+    * This operator copies the Fourier transform in the source object. The
+    * Fourier transform is an ImageVariant object. This operator causes the
     * %ImageVariant in this object to reference the same image as the source
     * object. If this object already stores a Fourier transform, it is released
     * before assignment.
     */
-   FourierTransform& operator =( const FourierTransform& x )
-   {
-      (void)BidirectionalImageTransformation::operator =( x );
-      m_dft = x.m_dft;
-      m_parallel = x.m_parallel;
-      m_maxProcessors = x.m_maxProcessors;
-      return *this;
-   }
+   FourierTransform& operator =( const FourierTransform& ) = default;
 
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-   FourierTransform& operator =( FourierTransform&& x )
-   {
-      (void)BidirectionalImageTransformation::operator =( x );
-      m_dft = std::move( x.m_dft );
-      m_parallel = x.m_parallel;
-      m_maxProcessors = x.m_maxProcessors;
-      return *this;
-   }
+   FourierTransform& operator =( FourierTransform&& ) = default;
 
    /*!
     * Returns a constant reference to the Fourier transform in this
@@ -460,102 +352,28 @@ public:
       m_dft.Free();
    }
 
-   /*!
-    * Returns true iff this object is allowed to use multiple parallel execution
-    * threads (when multiple threads are permitted and available).
-    */
-   bool IsParallelProcessingEnabled() const
-   {
-      return m_parallel;
-   }
-
-   /*!
-    * Enables parallel processing for this instance of %FourierTransform.
-    *
-    * \param enable  Whether to enable or disable parallel processing. True by
-    *                default.
-    *
-    * \param maxProcessors    The maximum number of processors allowed for this
-    *                instance of %FourierTransform. If \a enable is false
-    *                this parameter is ignored. A value <= 0 is ignored. The
-    *                default value is zero.
-    */
-   void EnableParallelProcessing( bool enable = true, int maxProcessors = 0 )
-   {
-      m_parallel = enable;
-      if ( enable && maxProcessors > 0 )
-         SetMaxProcessors( maxProcessors );
-   }
-
-   /*!
-    * Disables parallel processing for this instance of %FourierTransform.
-    *
-    * This is a convenience function, equivalent to:
-    * EnableParallelProcessing( !disable )
-    */
-   void DisableParallelProcessing( bool disable = true )
-   {
-      EnableParallelProcessing( !disable );
-   }
-
-   /*!
-    * Returns the maximum number of processors allowed for this instance of
-    * %FourierTransform.
-    *
-    * Irrespective of the value returned by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   int MaxProcessors() const
-   {
-      return m_maxProcessors;
-   }
-
-   /*!
-    * Sets the maximum number of processors allowed for this instance of
-    * %FourierTransform.
-    *
-    * In the current version of PCL, a module can use a maximum of 1023
-    * processors. The term \e processor actually refers to the number of
-    * threads a module can execute concurrently.
-    *
-    * Irrespective of the value specified by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   void SetMaxProcessors( int maxProcessors )
-   {
-      m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
-   }
-
 protected:
 
    // Discrete 2-D Fourier Transform
    ImageVariant m_dft;
-   bool         m_parallel      : 1;
-   unsigned     m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT;
 
    // Transform
-   virtual void Transform( const pcl::Image& );
-   virtual void Transform( const pcl::DImage& );
-   virtual void Transform( const pcl::ComplexImage& );
-   virtual void Transform( const pcl::DComplexImage& );
-   virtual void Transform( const pcl::UInt8Image& );
-   virtual void Transform( const pcl::UInt16Image& );
-   virtual void Transform( const pcl::UInt32Image& );
+   void Transform( const pcl::Image& ) override;
+   void Transform( const pcl::DImage& ) override;
+   void Transform( const pcl::ComplexImage& ) override;
+   void Transform( const pcl::DComplexImage& ) override;
+   void Transform( const pcl::UInt8Image& ) override;
+   void Transform( const pcl::UInt16Image& ) override;
+   void Transform( const pcl::UInt32Image& ) override;
 
    // Inverse transform
-   virtual void Apply( pcl::Image& ) const;
-   virtual void Apply( pcl::DImage& ) const;
-   virtual void Apply( pcl::ComplexImage& ) const;
-   virtual void Apply( pcl::DComplexImage& ) const;
-   virtual void Apply( pcl::UInt8Image& ) const;
-   virtual void Apply( pcl::UInt16Image& ) const;
-   virtual void Apply( pcl::UInt32Image& ) const;
+   void Apply( pcl::Image& ) const override;
+   void Apply( pcl::DImage& ) const override;
+   void Apply( pcl::ComplexImage& ) const override;
+   void Apply( pcl::DComplexImage& ) const override;
+   void Apply( pcl::UInt8Image& ) const override;
+   void Apply( pcl::UInt16Image& ) const override;
+   void Apply( pcl::UInt32Image& ) const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -565,4 +383,4 @@ protected:
 #endif   // __PCL_FourierTransform_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FourierTransform.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/FourierTransform.h - Released 2018-11-01T11:06:36Z

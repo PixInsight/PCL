@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// ExponentialTransformationProcess.cpp - Released 2017-08-01T14:26:58Z
+// ExponentialTransformationProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,7 +60,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ExponentialTransformationProcess* TheExponentialTransformationProcess = 0;
+ExponentialTransformationProcess* TheExponentialTransformationProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -68,7 +68,7 @@ ExponentialTransformationProcess* TheExponentialTransformationProcess = 0;
 
 // ----------------------------------------------------------------------------
 
-ExponentialTransformationProcess::ExponentialTransformationProcess() : MetaProcess()
+ExponentialTransformationProcess::ExponentialTransformationProcess()
 {
    TheExponentialTransformationProcess = this;
 
@@ -133,7 +133,7 @@ ProcessImplementation* ExponentialTransformationProcess::Create() const
 ProcessImplementation* ExponentialTransformationProcess::Clone( const ProcessImplementation& p ) const
 {
    const ExponentialTransformationInstance* instPtr = dynamic_cast<const ExponentialTransformationInstance*>( &p );
-   return (instPtr != 0) ? new ExponentialTransformationInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new ExponentialTransformationInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -141,4 +141,4 @@ ProcessImplementation* ExponentialTransformationProcess::Clone( const ProcessImp
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ExponentialTransformationProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF ExponentialTransformationProcess.cpp - Released 2018-11-01T11:07:21Z

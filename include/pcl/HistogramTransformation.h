@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/HistogramTransformation.h - Released 2017-08-01T14:23:31Z
+// pcl/HistogramTransformation.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,6 +58,7 @@
 
 #include <pcl/Array.h>
 #include <pcl/ImageTransformation.h>
+#include <pcl/ParallelProcess.h>
 
 namespace pcl
 {
@@ -72,7 +73,7 @@ class PCL_CLASS Histogram;
  *
  * ### TODO: Write a detailed description for %HistogramTransformation.
  */
-class PCL_CLASS HistogramTransformation : public ImageTransformation
+class PCL_CLASS HistogramTransformation : public ImageTransformation, public ParallelProcess
 {
 public:
 
@@ -91,20 +92,17 @@ public:
     *
     * \param hc   Highlights clipping point in the range [0,1].
     *
-    * \param lr   Low dynamic range expansion bound <= 0.
+    * \param lr   Low dynamic range expansion bound, \a lr &le; 0.
     *
-    * \param hr   High dynamic range expansion bound >= 1.
+    * \param hr   High dynamic range expansion bound, \a hr &ge; 1.
     *
     * The default parameter values define an identity transformation:
     *
-    * mb = 0.5, sc = 0, hc = 1, lr = 0, hr = 1.
+    * \a mb = 0.5, \a sc = 0, \a hc = 1, \a lr = 0, \a hr = 1.
     */
    HistogramTransformation( double mb = 0.5,
                             double sc = 0, double hc = 1,
-                            double lr = 0, double hr = 1 ) :
-      ImageTransformation(),
-      m_parallel( true ),
-      m_maxProcessors( PCL_MAX_PROCESSORS )
+                            double lr = 0, double hr = 1 )
    {
       PCL_PRECONDITION( mb >= 0 && mb <= 1 )
       PCL_PRECONDITION( sc >= 0 && sc <= 1 )
@@ -116,7 +114,7 @@ public:
       m_clipHigh = pcl::Range( hc, 0.0, 1.0 );
       if ( m_clipHigh < m_clipLow )
          pcl::Swap( m_clipLow, m_clipHigh );
-      m_expandLow = Min( 0.0, lr );
+      m_expandLow = Min( lr, 0.0 );
       m_expandHigh = Max( 1.0, hr );
       UpdateFlags();
    }
@@ -124,14 +122,12 @@ public:
    /*!
     * Copy constructor.
     */
-   HistogramTransformation( const HistogramTransformation& )  = default;
+   HistogramTransformation( const HistogramTransformation& ) = default;
 
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    HistogramTransformation( HistogramTransformation&& ) = default;
-#endif
 
    /*!
     * Destroys a %HistogramTransformation object.
@@ -148,9 +144,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-#ifndef _MSC_VER
    HistogramTransformation& operator =( HistogramTransformation&& ) = default;
-#endif
 
    /*!
     * Returns the number of histogram transforms in the transformation chain.
@@ -411,7 +405,7 @@ public:
        *
        *    return (m - 1)*x/((2*m - 1)*x - m);
        *
-       * Finally, precalculating (m - 1) we can save a multiplication:
+       * Finally, precalculating (m - 1) we can save a multiplication.
        */
       if ( x > 0 ) // guard us against degenerate cases
       {
@@ -447,114 +441,80 @@ public:
    }
 
    /*!
-    * Returns true iff this object is allowed to use multiple parallel execution
-    * threads (when multiple threads are permitted and available).
-    */
-   bool IsParallelProcessingEnabled() const
-   {
-      return m_parallel;
-   }
-
-   /*!
-    * Enables parallel processing for this instance of
-    * %HistogramTransformation.
-    *
-    * \param enable  Whether to enable or disable parallel processing. True by
-    *                default.
-    *
-    * \param maxProcessors    The maximum number of processors allowed for this
-    *                instance of %HistogramTransformation. If \a enable is
-    *                false this parameter is ignored. A value <= 0 is ignored.
-    *                The default value is zero.
-    */
-   void EnableParallelProcessing( bool enable = true, int maxProcessors = 0 )
-   {
-      m_parallel = enable;
-      if ( enable && maxProcessors > 0 )
-         SetMaxProcessors( maxProcessors );
-   }
-
-   /*!
-    * Disables parallel processing for this instance of
-    * %HistogramTransformation.
-    *
-    * This is a convenience function, equivalent to:
-    * EnableParallelProcessing( !disable )
-    */
-   void DisableParallelProcessing( bool disable = true )
-   {
-      EnableParallelProcessing( !disable );
-   }
-
-   /*!
-    * Returns the maximum number of processors allowed for this instance of
-    * %HistogramTransformation.
-    *
-    * Irrespective of the value returned by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   int MaxProcessors() const
-   {
-      return m_maxProcessors;
-   }
-
-   /*!
-    * Sets the maximum number of processors allowed for this instance of
-    * %HistogramTransformation.
-    *
-    * In the current version of PCL, a module can use a maximum of 1023
-    * processors. The term \e processor actually refers to the number of
-    * threads a module can execute concurrently.
-    *
-    * Irrespective of the value specified by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   void SetMaxProcessors( int maxProcessors )
-   {
-      m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
-   }
-
-private:
-
-   /*!
-    * \internal
     * \struct pcl::HistogramTransformation::Flags
     * \brief Characterizes a histogram transformation pertaining to a
     * histogram transformation chain.
     */
    struct Flags
    {
-      double d;               //!< Total width of the stretched dynamic range
-      double dr;              //!< Total width of the expanded dynamic range
-      bool   hasClipping : 1; //!< The transformation defines clipping parameters
-      bool   hasMTF      : 1; //!< The transformation defines a midtones transfer function
-      bool   hasRange    : 1; //!< The transformation defines dynamic range expansion parameters
-      bool   hasDelta    : 1; //!< The transformation defines a stretched range of sample values
+      double d = 1.0;             //!< Total width of the stretched dynamic range
+      double dr = 1.0;            //!< Total width of the expanded dynamic range
+      bool   hasClipping = false; //!< The transformation defines clipping parameters
+      bool   hasMTF = false;      //!< The transformation defines a midtones transfer function
+      bool   hasRange = false;    //!< The transformation defines dynamic range expansion parameters
+      bool   hasDelta = false;    //!< The transformation defines a nonzero stretched range of sample values
+
+      /*!
+       * Default constructor.
+       */
+      Flags() = default;
+
+      /*!
+       * Copy constructor.
+       */
+      Flags( const Flags& ) = default;
+
+      /*!
+       * Constructs a new %Flags object initialized for the parameters of the
+       * specified HistogramTransformation \a H.
+       */
+      Flags( const HistogramTransformation& H )
+      {
+         hasClipping = H.m_clipLow != 0 || H.m_clipHigh != 1;
+         hasMTF = H.m_midtonesBalance != 0.5;
+         hasRange = H.m_expandLow != 0 || H.m_expandHigh != 1;
+         hasDelta = false;
+         if ( hasClipping )
+         {
+            d = H.m_clipHigh - H.m_clipLow;
+            hasDelta = 1 + d != 1;
+         }
+         if ( hasRange )
+            dr = H.m_expandHigh - H.m_expandLow;
+      }
    };
 
-   double              m_midtonesBalance;   // midtones balance
-   double              m_clipLow;           // shadows clipping point
-   double              m_clipHigh;          // highlights clipping point
-   double              m_expandLow;         // shadows dynamic range expansion
-   double              m_expandHigh;        // highlights dynamic range expansion
-   Flags               m_flags;             // transformation flags
-   bool                m_parallel      : 1; // use multiple execution threads
-   unsigned            m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT; // Maximum number of processors allowed
-   transformation_list m_transformChain;    // more transformations
+   /*!
+    * Returns the set of flags characterizing this histogram transformation.
+    */
+   Flags TransformationFlags() const
+   {
+      return m_flags;
+   }
 
-   void UpdateFlags();
+private:
 
-   virtual void Apply( pcl::Image& ) const;
-   virtual void Apply( pcl::DImage& ) const;
-   virtual void Apply( pcl::UInt8Image& ) const;
-   virtual void Apply( pcl::UInt16Image& ) const;
-   virtual void Apply( pcl::UInt32Image& ) const;
+   double              m_midtonesBalance = 0.5; // midtones balance
+   double              m_clipLow = 0;           // shadows clipping point
+   double              m_clipHigh = 1;          // highlights clipping point
+   double              m_expandLow = 0;         // shadows dynamic range expansion
+   double              m_expandHigh = 1;        // highlights dynamic range expansion
+   Flags               m_flags;                 // transformation flags
+   transformation_list m_transformChain;        // more transformations
+
+   /*!
+    * \internal
+    */
+   void UpdateFlags()
+   {
+      m_flags = Flags( *this );
+   }
+
+   void Apply( pcl::Image& ) const override;
+   void Apply( pcl::DImage& ) const override;
+   void Apply( pcl::UInt8Image& ) const override;
+   void Apply( pcl::UInt16Image& ) const override;
+   void Apply( pcl::UInt32Image& ) const override;
 
    friend class LUT2408Thread;
    friend class LUT2416Thread;
@@ -567,4 +527,4 @@ private:
 #endif   // __PCL_HistogramTransformation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/HistogramTransformation.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/HistogramTransformation.h - Released 2018-11-01T11:06:36Z

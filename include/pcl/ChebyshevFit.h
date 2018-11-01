@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ChebyshevFit.h - Released 2017-08-01T14:23:31Z
+// pcl/ChebyshevFit.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -70,11 +70,12 @@ template <typename Tx, typename Ty> class GenericScalarChebyshevFit;
 
 /*!
  * \class GenericChebyshevFit
- * \brief Function approximation by Chebyshev polynomial expansion
+ * \brief Approximation of vector-valued functions by Chebyshev polynomial
+ * expansions.
  *
  * %GenericChebyshevFit approximates a smooth, vector-valued function f(x) in a
- * given interval [a,b] by expansion with a truncated series of Chebyshev
- * polynomials. As is well known, the Chebyshev expansion:
+ * given interval [a,b] by expansion with a set of truncated series of
+ * Chebyshev polynomials. As is well known, the Chebyshev expansion:
  *
  * T(x) = Sum_i( ci*Ti(x) ),
  *
@@ -212,6 +213,18 @@ public:
    }
 
    /*!
+    * Default constructor.
+    *
+    * Constructs an invalid, uninitialized object that cannot be used to
+    * perform function evaluations. A default-constructed %GenericChebyshevFit
+    * object should be assigned with an already initialized instance in order
+    * to become operative.
+    *
+    * \sa IsValid()
+    */
+   GenericChebyshevFit() = default;
+
+   /*!
     * Copy constructor.
     */
    GenericChebyshevFit( const GenericChebyshevFit& ) = default;
@@ -219,17 +232,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    GenericChebyshevFit( GenericChebyshevFit&& ) = default;
-#else
-   GenericChebyshevFit( GenericChebyshevFit&& x ) :
-      dx( x.dx ),
-      x0( x.x0 ),
-      c( std::move( x.c ) ),
-      m( std::move( x.m ) )
-   {
-   }
-#endif
 
    /*!
     * Copy assignment operator. Returns a reference to this object.
@@ -239,18 +242,17 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-#ifndef _MSC_VER
    GenericChebyshevFit& operator =( GenericChebyshevFit&& ) = default;
-#else
-   GenericChebyshevFit& operator =( GenericChebyshevFit&& x )
+
+   /*!
+    * Returns true if this object has been correctly initialized and can be
+    * used to perform function evaluations. Returns false if this is an
+    * uninitialized, default-constructed object
+    */
+   bool IsValid() const
    {
-      dx = x.dx;
-      x0 = x.x0;
-      c = std::move( x.c );
-      m = std::move( x.m );
-      return *this;
+      return !c.IsEmpty();
    }
-#endif
 
    /*!
     * Returns the lower bound of this Chebyshev fit. This is the smallest value
@@ -317,6 +319,32 @@ public:
       if ( i < 0 )
          return m.MaxComponent();
       return m[i];
+   }
+
+   /*!
+    * Returns the total number of coefficients in this Chebyshev polynomial
+    * expansion, or the sum of computed coefficients for all vector components.
+    *
+    * \sa NumberOfTruncatedCoefficients()
+    */
+   int NumberOfCoefficients() const
+   {
+      int N = 0;
+      for ( int i = 0; i < NumberOfComponents(); ++i )
+         N += c[i].Length();
+      return N;
+   }
+
+   /*!
+    * Returns the total number of coefficients in the truncated Chebyshev
+    * polynomial expansion, or the sum of the lengths of the truncated
+    * coefficients series for all vector components.
+    *
+    * \sa NumberOfCoefficients()
+    */
+   int NumberOfTruncatedCoefficients() const
+   {
+      return m.Sum();
    }
 
    /*!
@@ -563,19 +591,22 @@ private:
    coefficient_series c;  // Chebyshev polynomial coefficients
    IVector            m;  // length of the truncated coefficient series
 
-   /*!
-    * \internal
-    * Default constructor, used internally by several member functions.
-    */
-   GenericChebyshevFit()
-   {
-   }
-
    friend class GenericScalarChebyshevFit<Tx,Ty>;
 };
 
 // ----------------------------------------------------------------------------
 
+/*!
+ * \class GenericScalarChebyshevFit
+ * \brief Approximation of scalar-valued functions by Chebyshev polynomial
+ * expansion.
+ *
+ * %GenericScalarChebyshevFit approximates a smooth, scalar-valued function
+ * f(x) in a given interval [a,b] by expansion with a single truncated series
+ * of Chebyshev polynomials. %GenericScalarChebyshevFit is a convenient
+ * specialization of GenericChebyshevFit for functions returning a single
+ * value; refer to the parent class for complete information.
+ */
 template <typename Tx, typename Ty>
 class GenericScalarChebyshevFit : public GenericChebyshevFit<Tx,Ty>
 {
@@ -593,6 +624,18 @@ public:
       GenericChebyshevFit<Tx,Ty>( [f]( Tx x ){ return GenericVector<Ty>( f( x ), 1 ); }, x1, x2, 1, n )
    {
    }
+
+   /*!
+    * Default constructor.
+    *
+    * Constructs an invalid, uninitialized object that cannot be used to
+    * perform function evaluations. A default-constructed
+    * %GenericScalarChebyshevFit object should be assigned with an already
+    * initialized instance in order to become operative.
+    *
+    * \sa IsValid()
+    */
+   GenericScalarChebyshevFit() = default;
 
    /*!
     * Copy constructor.
@@ -892,4 +935,4 @@ typedef F80ScalarChebyshevFit                         LDScalarChebyshevFit;
 #endif  // __PCL_ChebyshevFit_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ChebyshevFit.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/ChebyshevFit.h - Released 2018-11-01T11:06:36Z

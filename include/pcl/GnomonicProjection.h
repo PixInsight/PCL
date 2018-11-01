@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/GnomonicProjection.h - Released 2017-08-01T14:23:31Z
+// pcl/GnomonicProjection.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -85,38 +85,30 @@ public:
    {
       m_ra0 = Rad( ra0 );
       m_dec0 = Rad( dec0 );
-      m_sinDec0 = Sin( m_dec0 );
-      m_cosDec0 = Cos( m_dec0 );
+      SinCos( m_dec0, m_sinDec0, m_cosDec0 );
    }
 
    /*!
     * Constructs a %GnomonicProjection object with the specified \a scale
     * factor and origin equatorial coordinates \a ra0 and \a dec0 in degrees.
     */
-   GnomonicProjection( double scale, double ra0, double dec0 )
+   GnomonicProjection( double scale, double ra0, double dec0 ) :
+      m_scale( scale )
    {
       m_ra0 = Rad( ra0 );
       m_dec0 = Rad( dec0 );
-      m_scale = scale;
-      m_sinDec0 = Sin( m_dec0 );
-      m_cosDec0 = Cos( m_dec0 );
+      SinCos( m_dec0, m_sinDec0, m_cosDec0 );
    }
 
    /*!
     * Copy constructor.
     */
-   GnomonicProjection( const GnomonicProjection& x ) :
-      ProjectionBase( x ),
-      m_scale( x.m_scale )
-   {
-      m_sinDec0 = Sin( m_dec0 );
-      m_cosDec0 = Cos( m_dec0 );
-   }
+   GnomonicProjection( const GnomonicProjection& ) = default;
 
    /*!
     * Returns a dynamically allocated duplicate of this object.
     */
-   virtual ProjectionBase* Clone() const
+   ProjectionBase* Clone() const override
    {
       return new GnomonicProjection( *this );
    }
@@ -124,7 +116,7 @@ public:
    /*!
     * Returns the WCS projection identifier for this projection system.
     */
-   virtual IsoString ProjCode() const
+   IsoString ProjCode() const override
    {
       return "TAN";
    }
@@ -132,7 +124,7 @@ public:
    /*!
     * Returns the readable name of this projection system.
     */
-   virtual IsoString Name() const
+   IsoString Name() const override
    {
       return "Gnomonic";
    }
@@ -140,17 +132,17 @@ public:
    /*!
     * Transforms from celestial coordinates to world coordinates.
     */
-   virtual bool Direct( DPoint& pW, const DPoint& pRD ) const noexcept;
+   bool Direct( DPoint& pW, const DPoint& pRD ) const noexcept override;
 
    /*!
     * Transforms from world coordinates to celestial coordinates.
     */
-   virtual bool Inverse( DPoint& pRD, const DPoint& pW ) const noexcept;
+   bool Inverse( DPoint& pRD, const DPoint& pW ) const noexcept override;
 
    /*!
     *
     */
-   virtual bool CheckBrokenLine( const DPoint& cp1, const DPoint& cp2 ) const noexcept
+   bool CheckBrokenLine( const DPoint& cp1, const DPoint& cp2 ) const noexcept override
    {
       DPoint gp1, gp2;
       return Direct( gp1, cp1 ) && Direct( gp2, cp2 ) &&
@@ -159,12 +151,12 @@ public:
 
 protected:
 
-   virtual bool Project( DPoint& pW, const DPoint& pN ) const noexcept
+   bool Project( DPoint& pW, const DPoint& pN ) const noexcept override
    {
       return false;
    }
 
-   virtual bool Unproject( DPoint& pN, const DPoint& pW ) const noexcept
+   bool Unproject( DPoint& pN, const DPoint& pW ) const noexcept override
    {
       return false;
    }
@@ -183,4 +175,4 @@ private:
 #endif   // __PCL_GnomonicProjection_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/GnomonicProjection.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/GnomonicProjection.h - Released 2018-11-01T11:06:36Z

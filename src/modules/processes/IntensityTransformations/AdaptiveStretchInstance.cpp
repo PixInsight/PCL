@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// AdaptiveStretchInstance.cpp - Released 2017-08-01T14:26:58Z
+// AdaptiveStretchInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -69,18 +69,18 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 AdaptiveStretchInstance::AdaptiveStretchInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-p_noiseThreshold( TheASNoiseThresholdParameter->DefaultValue() ),
-p_protection( TheASProtectionParameter->DefaultValue() ),
-p_useProtection( TheASUseProtectionParameter->DefaultValue() ),
-p_maxCurvePoints( TheASMaxCurvePointsParameter->DefaultValue() ),
-p_useROI( TheASUseROIParameter->DefaultValue() ),
-p_roi( 0 )
+   ProcessImplementation( m ),
+   p_noiseThreshold( TheASNoiseThresholdParameter->DefaultValue() ),
+   p_protection( TheASProtectionParameter->DefaultValue() ),
+   p_useProtection( TheASUseProtectionParameter->DefaultValue() ),
+   p_maxCurvePoints( TheASMaxCurvePointsParameter->DefaultValue() ),
+   p_useROI( TheASUseROIParameter->DefaultValue() ),
+   p_roi( 0 )
 {
 }
 
 AdaptiveStretchInstance::AdaptiveStretchInstance( const AdaptiveStretchInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -90,7 +90,7 @@ ProcessImplementation( x )
 void AdaptiveStretchInstance::Assign( const ProcessImplementation& p )
 {
    const AdaptiveStretchInstance* x = dynamic_cast<const AdaptiveStretchInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       p_noiseThreshold = x->p_noiseThreshold;
       p_protection     = x->p_protection;
@@ -99,6 +99,13 @@ void AdaptiveStretchInstance::Assign( const ProcessImplementation& p )
       p_useROI         = x->p_useROI;
       p_roi            = x->p_roi;
    }
+}
+
+// ----------------------------------------------------------------------------
+
+UndoFlags AdaptiveStretchInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
 }
 
 // ----------------------------------------------------------------------------
@@ -730,4 +737,4 @@ StretchCurve AdaptiveStretchInstance::Preview( UInt16Image& image, const View& v
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AdaptiveStretchInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF AdaptiveStretchInstance.cpp - Released 2018-11-01T11:07:21Z

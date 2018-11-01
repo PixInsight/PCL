@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard Image Process Module Version 01.02.09.0410
 // ----------------------------------------------------------------------------
-// ExtractAlphaChannelsInterface.cpp - Released 2017-08-01T14:26:58Z
+// ExtractAlphaChannelsInterface.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -61,7 +61,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ExtractAlphaChannelsInterface* TheExtractAlphaChannelsInterface = 0;
+ExtractAlphaChannelsInterface* TheExtractAlphaChannelsInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -70,36 +70,48 @@ ExtractAlphaChannelsInterface* TheExtractAlphaChannelsInterface = 0;
 // ----------------------------------------------------------------------------
 
 ExtractAlphaChannelsInterface::ExtractAlphaChannelsInterface() :
-ProcessInterface(), instance( TheExtractAlphaChannelsProcess ), GUI( 0 )
+   instance( TheExtractAlphaChannelsProcess )
 {
    TheExtractAlphaChannelsInterface = this;
 }
 
+// ----------------------------------------------------------------------------
+
 ExtractAlphaChannelsInterface::~ExtractAlphaChannelsInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString ExtractAlphaChannelsInterface::Id() const
 {
    return "ExtractAlphaChannels";
 }
 
+// ----------------------------------------------------------------------------
+
 MetaProcess* ExtractAlphaChannelsInterface::Process() const
 {
    return TheExtractAlphaChannelsProcess;
 }
+
+// ----------------------------------------------------------------------------
 
 const char** ExtractAlphaChannelsInterface::IconImageXPM() const
 {
    return ExtractAlphaChannelsIcon_XPM;
 }
 
+// ----------------------------------------------------------------------------
+
 void ExtractAlphaChannelsInterface::ApplyInstance() const
 {
    instance.LaunchOnCurrentWindow();
 }
+
+// ----------------------------------------------------------------------------
 
 void ExtractAlphaChannelsInterface::ResetInstance()
 {
@@ -107,9 +119,11 @@ void ExtractAlphaChannelsInterface::ResetInstance()
    ImportProcess( defaultInstance );
 }
 
+// ----------------------------------------------------------------------------
+
 bool ExtractAlphaChannelsInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "ExtractAlphaChannels" );
@@ -120,10 +134,14 @@ bool ExtractAlphaChannelsInterface::Launch( const MetaProcess& P, const ProcessI
    return &P == TheExtractAlphaChannelsProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* ExtractAlphaChannelsInterface::NewProcess() const
 {
    return new ExtractAlphaChannelsInstance( instance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool ExtractAlphaChannelsInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
@@ -133,10 +151,14 @@ bool ExtractAlphaChannelsInterface::ValidateProcess( const ProcessImplementation
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool ExtractAlphaChannelsInterface::RequiresInstanceValidation() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ExtractAlphaChannelsInterface::ImportProcess( const ProcessImplementation& p )
 {
@@ -284,4 +306,4 @@ ExtractAlphaChannelsInterface::GUIData::GUIData( ExtractAlphaChannelsInterface& 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ExtractAlphaChannelsInterface.cpp - Released 2017-08-01T14:26:58Z
+// EOF ExtractAlphaChannelsInterface.cpp - Released 2018-11-01T11:07:21Z

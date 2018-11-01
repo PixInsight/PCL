@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard NoiseGeneration Process Module Version 01.00.02.0325
+// Standard NoiseGeneration Process Module Version 01.00.02.0333
 // ----------------------------------------------------------------------------
-// SimplexNoiseInstance.cpp - Released 2017-08-01T14:26:58Z
+// SimplexNoiseInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard NoiseGeneration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -64,19 +64,19 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 SimplexNoiseInstance::SimplexNoiseInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-p_amount( TheSNAmountParameter->DefaultValue() ),
-p_scale( uint32( TheSNScaleParameter->DefaultValue() ) ),
-p_offsetX( int32( TheSNOffsetXParameter->DefaultValue() ) ),
-p_offsetY( int32( TheSNOffsetYParameter->DefaultValue() ) ),
-p_operator( SNOperator::Default )
+   ProcessImplementation( m ),
+   p_amount( TheSNAmountParameter->DefaultValue() ),
+   p_scale( uint32( TheSNScaleParameter->DefaultValue() ) ),
+   p_offsetX( int32( TheSNOffsetXParameter->DefaultValue() ) ),
+   p_offsetY( int32( TheSNOffsetYParameter->DefaultValue() ) ),
+   p_operator( SNOperator::Default )
 {
 }
 
 // ----------------------------------------------------------------------------
 
 SimplexNoiseInstance::SimplexNoiseInstance( const SimplexNoiseInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -86,7 +86,7 @@ ProcessImplementation( x )
 void SimplexNoiseInstance::Assign( const ProcessImplementation& p )
 {
    const SimplexNoiseInstance* x = dynamic_cast<const SimplexNoiseInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       p_amount = x->p_amount;
       p_scale = x->p_scale;
@@ -94,6 +94,13 @@ void SimplexNoiseInstance::Assign( const ProcessImplementation& p )
       p_offsetY = x->p_offsetY;
       p_operator = x->p_operator;
    }
+}
+
+// ----------------------------------------------------------------------------
+
+UndoFlags SimplexNoiseInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
 }
 
 // ----------------------------------------------------------------------------
@@ -121,7 +128,7 @@ public:
       static const double F2 = 0.5*( Sqrt( 3.0 ) - 1.0 );
       static const double G2 = (3.0 - Sqrt( 3.0 ))/6;
 
-      if ( perm == 0 )
+      if ( perm == nullptr )
       {
          perm = new int[ 512 ];
          for ( int i = 0; i < 512; ++i )
@@ -249,7 +256,7 @@ int SimplexNoise::p[ 256 ] =
    138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
 };
 
-int* SimplexNoise::perm = 0;
+int* SimplexNoise::perm = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -329,6 +336,8 @@ public:
    }
 };
 
+// ----------------------------------------------------------------------------
+
 bool SimplexNoiseInstance::ExecuteOn( View& view )
 {
    AutoViewLock lock( view );
@@ -372,7 +381,7 @@ void* SimplexNoiseInstance::LockParameter( const MetaParameter* p, size_type /*t
       return &p_offsetY;
    if ( p == TheSNOperatorParameter )
       return &p_operator;
-   return 0;
+   return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -380,4 +389,4 @@ void* SimplexNoiseInstance::LockParameter( const MetaParameter* p, size_type /*t
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SimplexNoiseInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF SimplexNoiseInstance.cpp - Released 2018-11-01T11:07:21Z

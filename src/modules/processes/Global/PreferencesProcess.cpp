@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0378
+// Standard Global Process Module Version 01.02.07.0386
 // ----------------------------------------------------------------------------
-// PreferencesProcess.cpp - Released 2017-08-01T14:26:58Z
+// PreferencesProcess.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -63,7 +63,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-PreferencesProcess* ThePreferencesProcess = 0;
+PreferencesProcess* ThePreferencesProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -95,6 +95,13 @@ PreferencesProcess::PreferencesProcess() : MetaProcess()
    new METAPARAMETER_ID( Application, highResFont )( this );
    new METAPARAMETER_ID( Application, lowResMonoFont )( this );
    new METAPARAMETER_ID( Application, highResMonoFont )( this );
+   new METAPARAMETER_ID( Application, fundamentalEphemeridesFile )( this );
+   new METAPARAMETER_ID( Application, shortTermFundamentalEphemeridesFile )( this );
+   new METAPARAMETER_ID( Application, nutationModelFile )( this );
+   new METAPARAMETER_ID( Application, shortTermNutationModelFile )( this );
+   new METAPARAMETER_ID( Application, deltaTDataFile )( this );
+   new METAPARAMETER_ID( Application, deltaATDataFile )( this );
+   new METAPARAMETER_ID( Application, cipITRSDataFile )( this );
 
    // -------------------------------------------------------------------------
 
@@ -174,6 +181,7 @@ PreferencesProcess::PreferencesProcess() : MetaProcess()
    new METAPARAMETER_ID( ImageWindow, highDPIRenditions )( this );
    new METAPARAMETER_ID( ImageWindow, default24BitScreenLUT )( this );
    new METAPARAMETER_ID( ImageWindow, createPreviewsFromCoreProperties )( this );
+   new METAPARAMETER_ID( ImageWindow, loadAstrometricSolutions )( this );
    new METAPARAMETER_ID( ImageWindow, swapDirectories )( this );
    new METAPARAMETER_ID( ImageWindow, swapDirectory )( METAPARAMETER_INSTANCE_ID( ImageWindow, swapDirectories ) );
    new METAPARAMETER_ID( ImageWindow, swapCompression )( this );
@@ -365,4 +373,4 @@ int PreferencesProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF PreferencesProcess.cpp - Released 2018-11-01T11:07:20Z

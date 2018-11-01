@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.05.0411
+// Standard FITS File Format Module Version 01.01.05.0417
 // ----------------------------------------------------------------------------
-// FITS.cpp - Released 2017-08-01T14:26:50Z
+// FITS.cpp - Released 2018-11-01T11:07:09Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -744,6 +744,9 @@ void FITSReader::Open( const String& filePath )
             else if ( !k.name.CompareIC( "EXTNAME" ) )
             {
                image.id = k.StripValueDelimiters();
+               // Don't load thumbnail image extensions as publicly visible images.
+               if ( image.id == hdus[0].thumbExtName )
+                  nonImageExtension = true;
             }
             else if ( !k.name.CompareIC( "EXPTIME" ) || !k.name.CompareIC( "EXPOSURE" ) )
             {
@@ -2692,4 +2695,4 @@ void FITSWriter::WriteExtensionHDU( const FITSExtensionData& ext )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITS.cpp - Released 2017-08-01T14:26:50Z
+// EOF FITS.cpp - Released 2018-11-01T11:07:09Z

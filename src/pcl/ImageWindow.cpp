@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ImageWindow.cpp - Released 2017-08-01T14:23:38Z
+// pcl/ImageWindow.cpp - Released 2018-11-01T11:06:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -498,10 +498,12 @@ FITSKeywordArray ImageWindow::Keywords() const
       for ( int i = 0; i < n; ++i )
       {
          IsoString name, value, comment;
-         name.Reserve( 16 );
-         value.Reserve( 96 );
-         comment.Reserve( 96 );
-         (*API->ImageWindow->GetImageWindowKeyword)( handle, i, name.Begin(), 16, value.Begin(), 96, comment.Begin(), 96 );
+         name.Reserve( 256 );
+         value.Reserve( 256 );
+         comment.Reserve( 256 );
+         // N.B. The passed maximum lengths *do not* include an ending null character.
+         (*API->ImageWindow->GetImageWindowKeyword)( handle, i,
+                        name.Begin(), 255, value.Begin(), 255, comment.Begin(), 255 );
          name.ResizeToNullTerminated();
          value.ResizeToNullTerminated();
          comment.ResizeToNullTerminated();
@@ -524,6 +526,35 @@ void ImageWindow::SetKeywords( const FITSKeywordArray& keywords )
 void ImageWindow::ResetKeywords()
 {
    (*API->ImageWindow->ResetImageWindowKeywords)( handle );
+}
+
+// ----------------------------------------------------------------------------
+
+bool ImageWindow::HasAstrometricSolution() const
+{
+   return (*API->ImageWindow->GetImageWindowHasAstrometricSolution)( handle ) != api_false;
+}
+
+// ----------------------------------------------------------------------------
+
+bool ImageWindow::RegenerateAstrometricSolution( bool allowGUIMessages, bool notify )
+{
+   return (*API->ImageWindow->RegenerateImageWindowAstrometricSolution)( handle,
+                                          api_bool( allowGUIMessages ), api_bool( notify ) ) != api_false;
+}
+
+// ----------------------------------------------------------------------------
+
+void ImageWindow::ClearAstrometricSolution( bool notify )
+{
+   (*API->ImageWindow->ClearImageWindowAstrometricSolution)( handle, api_bool( notify ) );
+}
+
+// ----------------------------------------------------------------------------
+
+void ImageWindow::UpdateAstrometryMetadata( bool notify )
+{
+   (*API->ImageWindow->UpdateImageWindowAstrometryMetadata)( handle, api_bool( notify ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -1167,4 +1198,4 @@ Array<ImageWindow> ImageWindow::AllWindows( bool includeIconicWindows )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageWindow.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/ImageWindow.cpp - Released 2018-11-01T11:06:52Z

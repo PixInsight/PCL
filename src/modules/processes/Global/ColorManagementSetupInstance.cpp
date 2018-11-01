@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0378
+// Standard Global Process Module Version 01.02.07.0386
 // ----------------------------------------------------------------------------
-// ColorManagementSetupInstance.cpp - Released 2017-08-01T14:26:58Z
+// ColorManagementSetupInstance.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -101,6 +101,8 @@ ColorManagementSetupInstance::ColorManagementSetupInstance( const MetaProcess* p
       }
    }
 }
+
+// ----------------------------------------------------------------------------
 
 ColorManagementSetupInstance::ColorManagementSetupInstance( const ColorManagementSetupInstance& x ) :
    ProcessImplementation( x )
@@ -285,6 +287,8 @@ void* ColorManagementSetupInstance::LockParameter( const MetaParameter* p, size_
    return nullptr;
 }
 
+// ----------------------------------------------------------------------------
+
 bool ColorManagementSetupInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type /*tableRow*/ )
 {
    if ( p == TheCMSDefaultRGBProfileParameter )
@@ -316,6 +320,8 @@ bool ColorManagementSetupInstance::AllocateParameter( size_type sizeOrLength, co
 
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 size_type ColorManagementSetupInstance::ParameterLength( const MetaParameter* p, size_type /*tableRow*/ ) const
 {
@@ -359,4 +365,4 @@ void ColorManagementSetupInstance::LoadCurrentSettings()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ColorManagementSetupInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF ColorManagementSetupInstance.cpp - Released 2018-11-01T11:07:20Z

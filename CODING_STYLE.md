@@ -1,7 +1,7 @@
 PixInsight Class Library - Coding Style Guidelines
 --------------------------------------------------
 
-Version 0.3 - 2015 November 27<br/>
+Version 0.4 - 2018 November 1<br/>
 
 --------------------------------------------------
 
@@ -605,18 +605,22 @@ Version 0.3 - 2015 November 27<br/>
 
 ### 7. Virtual Member Functions
 
-   7.1. Never omit the word 'virtual' in a reimplementation of a virtual or pure virtual member function.
+   7.1. Always use the 'override' specifier for declarations of reimplemented virtual member functions.
 
       class Base
       {
-         virtual void OneMember();
-         virtual int OtherMember();
+         virtual const char* OneMember() const;
+         virtual void OtherMember() const;
+         virtual double YetAnotherMember();
+         virtual int APureVirtualOne() = 0;
       };
 
       class Derived : public Base
       {
-         virtual void OneMember(); // right
-         int OtherMember();        // wrong
+         const char* OneMember() const override; // right
+         virtual void OtherMember() const;       // wrong
+         double YetAnotherMember();              // wrong
+         int APureVirtualOne() override;         // right
       };
 
 

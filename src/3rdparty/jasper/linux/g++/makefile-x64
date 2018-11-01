@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.104
-# Copyright (C) 2009-2017 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.107
+# Copyright (C) 2009-2018 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-06-07T15:42:32.200Z
+# Generated on .... 2018-11-01T11:08:44.305Z
 # Project id ...... jasper
 # Project type .... StaticLibrary
 # Platform ........ Linux/g++
@@ -19,7 +19,6 @@ all: $(OBJ_DIR)/libjasper-pxi.a
 #
 
 SRC_FILES= \
-../../dummy.c \
 ../../base/jas_cm.c \
 ../../base/jas_debug.c \
 ../../base/jas_getopt.c \
@@ -34,6 +33,7 @@ SRC_FILES= \
 ../../base/jas_tmr.c \
 ../../base/jas_tvp.c \
 ../../base/jas_version.c \
+../../dummy.c \
 ../../jp2/jp2_cod.c \
 ../../jp2/jp2_dec.c \
 ../../jp2/jp2_enc.c \
@@ -62,7 +62,6 @@ SRC_FILES= \
 #
 
 OBJ_FILES= \
-./x64/Release/dummy.o \
 ./x64/Release/base/jas_cm.o \
 ./x64/Release/base/jas_debug.o \
 ./x64/Release/base/jas_getopt.o \
@@ -77,6 +76,7 @@ OBJ_FILES= \
 ./x64/Release/base/jas_tmr.o \
 ./x64/Release/base/jas_tvp.o \
 ./x64/Release/base/jas_version.o \
+./x64/Release/dummy.o \
 ./x64/Release/jp2/jp2_cod.o \
 ./x64/Release/jp2/jp2_dec.o \
 ./x64/Release/jp2/jp2_enc.o \
@@ -105,7 +105,6 @@ OBJ_FILES= \
 #
 
 DEP_FILES= \
-./x64/Release/dummy.d \
 ./x64/Release/base/jas_cm.d \
 ./x64/Release/base/jas_debug.d \
 ./x64/Release/base/jas_getopt.d \
@@ -120,6 +119,7 @@ DEP_FILES= \
 ./x64/Release/base/jas_tmr.d \
 ./x64/Release/base/jas_tvp.d \
 ./x64/Release/base/jas_version.d \
+./x64/Release/dummy.d \
 ./x64/Release/jp2/jp2_cod.d \
 ./x64/Release/jp2/jp2_dec.d \
 ./x64/Release/jp2/jp2_enc.d \
@@ -161,16 +161,16 @@ clean:
 post-build:
 	cp $(OBJ_DIR)/libjasper-pxi.a $(PCLLIBDIR64)
 
-./x64/Release/%.o: ../../%.c
-	gcc -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
-	@echo ' '
 ./x64/Release/base/%.o: ../../base/%.c
-	gcc -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	gcc -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fnon-call-exceptions -std=c99 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Release/%.o: ../../%.c
+	gcc -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fnon-call-exceptions -std=c99 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x64/Release/jp2/%.o: ../../jp2/%.c
-	gcc -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	gcc -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fnon-call-exceptions -std=c99 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x64/Release/jpc/%.o: ../../jpc/%.c
-	gcc -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	gcc -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fnon-call-exceptions -std=c99 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

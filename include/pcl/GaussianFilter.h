@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/GaussianFilter.h - Released 2017-08-01T14:23:31Z
+// pcl/GaussianFilter.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -178,7 +178,7 @@ public:
 
    /*!
     */
-   virtual KernelFilter* Clone() const
+   KernelFilter* Clone() const override
    {
       return new GaussianFilter( *this );
    }
@@ -192,7 +192,7 @@ public:
     * that is, when its aspect ratio is 1. Otherwise an empty SeparableFilter
     * object is returned since the filter matrix is not separable.
     */
-   virtual SeparableFilter AsSeparableFilter( float tolerance = __PCL_DEFAULT_FILTER_SEPARABILITY_TOLERANCE ) const
+   SeparableFilter AsSeparableFilter( float tolerance = __PCL_DEFAULT_FILTER_SEPARABILITY_TOLERANCE ) const override
    {
       if ( m_rho == 1 )
       {
@@ -209,7 +209,7 @@ public:
     * member function returns true for undistorted/unrotated Gaussian filters,
     * that is, when this object's aspect ratio is 1.
     */
-   virtual bool IsSeparable() const
+   bool IsSeparable() const override
    {
       return m_rho == 1;
    }
@@ -408,7 +408,7 @@ public:
     * Gaussian function on a matrix of the specified size, preserving the
     * current coefficient truncation, aspect ratio and rotation angle.
     */
-   virtual void Resize( int n )  // Inherited from KernelFilter
+   void Resize( int n ) override
    {
       Initialize( n, m_epsilon, m_rho, m_theta );
    }
@@ -511,4 +511,4 @@ private:
 #endif   // __PCL_GaussianFilter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/GaussianFilter.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/GaussianFilter.h - Released 2018-11-01T11:06:36Z

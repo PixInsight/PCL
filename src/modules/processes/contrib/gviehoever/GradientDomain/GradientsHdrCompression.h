@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard GradientDomain Process Module Version 00.06.04.0215
+// Standard GradientDomain Process Module Version 00.06.04.0223
 // ----------------------------------------------------------------------------
-// GradientsHdrCompression.h - Released 2017-08-01T14:26:58Z
+// GradientsHdrCompression.h - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
-// Copyright (c) Georg Viehoever, 2011-2015. Licensed under LGPL 2.1
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) Georg Viehoever, 2011-2018. Licensed under LGPL 2.1
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -101,4 +101,4 @@ class GradientsHdrCompression: public GradientsBase
 #endif
 
 // ----------------------------------------------------------------------------
-// EOF GradientsHdrCompression.h - Released 2017-08-01T14:26:58Z
+// EOF GradientsHdrCompression.h - Released 2018-11-01T11:07:21Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/JPLEphemeris.cpp - Released 2017-08-01T14:23:38Z
+// pcl/JPLEphemeris.cpp - Released 2018-11-01T11:06:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -133,7 +133,7 @@ JPLEphemeris::JPLEphemeris( const String& filePath ) :
                if ( tokens.Length() != n+1 )
                   throw Error( "Invalid group 1040: insufficient constant name tokens." );
                for ( size_type i = 1; i <= n; ++i )
-                  m_constants << constant( tokens[i], 0.0 );
+                  m_constants << constant( tokens[i] );
             }
             break;
 
@@ -303,7 +303,7 @@ bool JPLEphemeris::Test( const String& filePath, bool verbose ) const
                case 10: target = JPLEphemerisItem::SSBMoon; break;
                case 11: target = JPLEphemerisItem::Sun; break;
                case 13: target = JPLEphemerisItem::EarthMoonBarycenter; break;
-               //case 14:
+               //case 14: // nutations
                case 15: target = JPLEphemerisItem::LunarLibration; break;
                default: target = JPLEphemerisItem::Unknown; break;
                }
@@ -345,8 +345,8 @@ bool JPLEphemeris::Test( const String& filePath, bool verbose ) const
                case 10: center = JPLEphemerisItem::SSBMoon; break;
                case 11: center = JPLEphemerisItem::Sun; break;
                case 13: center = JPLEphemerisItem::EarthMoonBarycenter; break;
-               //case 14:
-               //case 15:
+               //case 14: // nutations
+               //case 15: // librations
                default: center = JPLEphemerisItem::Unknown; break;
                }
 
@@ -414,7 +414,7 @@ IsoString JPLEphemeris::Summary() const
    text.AppendFormat( "Constants  : %u\n", m_constants.Length() );
    for ( auto c : m_constants )
    {
-      text.Append( c.key.LeftJustified( 10 ) );
+      text.Append( c.name.LeftJustified( 10 ) );
       text.AppendFormat( " = %+.15g\n", c.value );
    }
    text.Append( "Offsets    : " );
@@ -437,4 +437,4 @@ IsoString JPLEphemeris::Summary() const
 }  // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/JPLEphemeris.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/JPLEphemeris.cpp - Released 2018-11-01T11:06:52Z

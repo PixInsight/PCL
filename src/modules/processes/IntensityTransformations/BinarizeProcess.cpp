@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// BinarizeProcess.cpp - Released 2017-08-01T14:26:58Z
+// BinarizeProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -69,7 +69,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-BinarizeProcess* TheBinarizeProcess = 0;
+BinarizeProcess* TheBinarizeProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -145,7 +145,7 @@ ProcessImplementation* BinarizeProcess::Create() const
 ProcessImplementation* BinarizeProcess::Clone( const ProcessImplementation& p ) const
 {
    const BinarizeInstance* instPtr = dynamic_cast<const BinarizeInstance*>( &p );
-   return (instPtr != 0) ? new BinarizeInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new BinarizeInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -194,6 +194,8 @@ static void ShowHelp()
 "</raw>" );
 }
 
+// ----------------------------------------------------------------------------
+
 static double ArgumentThresholdValue( const Argument& arg )
 {
    if ( arg.NumericValue() < 0 || arg.NumericValue() > 1 )
@@ -201,10 +203,12 @@ static double ArgumentThresholdValue( const Argument& arg )
    return arg.NumericValue();
 }
 
+// ----------------------------------------------------------------------------
+
 int BinarizeProcess::ProcessCommandLine( const StringList& argv ) const
 {
    ArgumentList arguments =
-   ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
+      ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
 
    BinarizeInstance instance( this );
 
@@ -293,4 +297,4 @@ int BinarizeProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BinarizeProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF BinarizeProcess.cpp - Released 2018-11-01T11:07:21Z

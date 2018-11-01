@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0297
+// Standard StarGenerator Process Module Version 01.01.00.0305
 // ----------------------------------------------------------------------------
-// StarGeneratorParameters.cpp - Released 2017-08-01T14:26:58Z
+// StarGeneratorParameters.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,21 +57,21 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-SGStarDatabasePath*   TheSGStarDatabasePathParameter = 0;
-SGCenterRA*           TheSGCenterRAParameter = 0;
-SGCenterDec*          TheSGCenterDecParameter = 0;
-SGEpoch*              TheSGEpochParameter = 0;
-SGProjectionSystem*   TheSGProjectionSystemParameter = 0;
-SGFocalLength*        TheSGFocalLengthParameter = 0;
-SGPixelSize*          TheSGPixelSizeParameter = 0;
-SGSensorWidth*        TheSGSensorWidthParameter = 0;
-SGSensorHeight*       TheSGSensorHeightParameter = 0;
-SGLimitMagnitude*     TheSGLimitMagnitudeParameter = 0;
-SGStarFWHM*           TheSGStarFWHMParameter = 0;
-SGNonlinear*          TheSGNonlinearParameter = 0;
-SGTargetMinimumValue* TheSGTargetMinimumValueParameter = 0;
-SGOutputMode*         TheSGOutputModeParameter = 0;
-SGOutputFilePath*     TheSGOutputFilePathParameter = 0;
+SGStarDatabasePath*   TheSGStarDatabasePathParameter = nullptr;
+SGCenterRA*           TheSGCenterRAParameter = nullptr;
+SGCenterDec*          TheSGCenterDecParameter = nullptr;
+SGEpoch*              TheSGEpochParameter = nullptr;
+SGProjectionSystem*   TheSGProjectionSystemParameter = nullptr;
+SGFocalLength*        TheSGFocalLengthParameter = nullptr;
+SGPixelSize*          TheSGPixelSizeParameter = nullptr;
+SGSensorWidth*        TheSGSensorWidthParameter = nullptr;
+SGSensorHeight*       TheSGSensorHeightParameter = nullptr;
+SGLimitMagnitude*     TheSGLimitMagnitudeParameter = nullptr;
+SGStarFWHM*           TheSGStarFWHMParameter = nullptr;
+SGNonlinear*          TheSGNonlinearParameter = nullptr;
+SGTargetMinimumValue* TheSGTargetMinimumValueParameter = nullptr;
+SGOutputMode*         TheSGOutputModeParameter = nullptr;
+SGOutputFilePath*     TheSGOutputFilePathParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -503,4 +503,4 @@ IsoString SGOutputFilePath::Id() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF StarGeneratorParameters.cpp - Released 2017-08-01T14:26:58Z
+// EOF StarGeneratorParameters.cpp - Released 2018-11-01T11:07:21Z

@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * File: libraw_internal.h
- * Copyright 2008-2017 LibRaw LLC (info@libraw.org)
+ * Copyright 2008-2018 LibRaw LLC (info@libraw.org)
  * Created: Sat Mar  8 , 2008
  *
  * LibRaw internal data structures (not visible outside)
@@ -59,9 +59,9 @@ public:
   } sony_decrypt;
   struct
   {
-    uchar buf[0x4000];
-    int vbits, padding;
-  } pana_bits;
+    uchar buf[0x4002];
+    int vpos, padding;
+  } pana_data;
   uchar jpeg_buffer[4096];
   struct
   {
@@ -73,7 +73,7 @@ public:
     getbits.vbits = getbits.reset = 0;
     ph1_bits.bitbuf = 0;
     ph1_bits.vbits = 0;
-    pana_bits.vbits = 0;
+    pana_data.vpos = 0;
     ahd_data.cbrt[0] = -2.0f;
   }
 };
@@ -112,6 +112,7 @@ typedef struct
 {
   unsigned olympus_exif_cfa;
   unsigned unique_id;
+  unsigned long long OlyID;
   unsigned tiff_nifds;
   int tiff_flip;
 } identify_data_t;
@@ -137,6 +138,7 @@ typedef struct
   long long posRAFData;
   unsigned lenRAFData;
   int fuji_total_lines, fuji_total_blocks, fuji_block_width, fuji_bits, fuji_raw_type;
+ int pana_encoding, pana_bpp;
 } unpacker_data_t;
 
 typedef struct
@@ -176,7 +178,7 @@ struct jhead
   ushort quant[64], idct[64], *huff[20], *free[20], *row;
 };
 
-struct tiff_tag
+struct libraw_tiff_tag
 {
   ushort tag, type;
   int count;
@@ -192,12 +194,12 @@ struct tiff_hdr
   ushort t_order, magic;
   int ifd;
   ushort pad, ntag;
-  struct tiff_tag tag[23];
+  struct libraw_tiff_tag tag[23];
   int nextifd;
   ushort pad2, nexif;
-  struct tiff_tag exif[4];
+  struct libraw_tiff_tag exif[4];
   ushort pad3, ngps;
-  struct tiff_tag gpst[10];
+  struct libraw_tiff_tag gpst[10];
   short bps[4];
   int rat[10];
   unsigned gps[26];

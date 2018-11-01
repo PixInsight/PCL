@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/FileDialog.h - Released 2017-08-01T14:23:31Z
+// pcl/FileDialog.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -381,7 +381,7 @@ public:
 
    /*!
     */
-   virtual bool Execute();
+   bool Execute() override;
 
    /*!
     * Returns a reference to the list of selected files.
@@ -475,7 +475,7 @@ public:
 
    /*!
     */
-   virtual bool Execute();
+   bool Execute() override;
 
    /*!
     * Returns the selected file path. A full file path is always returned.
@@ -513,7 +513,7 @@ public:
 
    /*!
     */
-   virtual bool Execute();
+   bool Execute() override;
 
    /*!
     * Returns the selected directory path. A full path is always returned.
@@ -532,4 +532,4 @@ private:
 #endif   // __PCL_FileDialog_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileDialog.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/FileDialog.h - Released 2018-11-01T11:06:36Z

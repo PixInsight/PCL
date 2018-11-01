@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/StatusMonitor.h - Released 2017-08-01T14:23:31Z
+// pcl/StatusMonitor.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -100,16 +100,17 @@ public:
    /*!
     * Constructs a default %StatusCallback object.
     */
-   StatusCallback()
-   {
-   }
+   StatusCallback() = default;
 
    /*!
-    * Constructs a %StatusCallback object as a copy of an existing instance.
+    * Copy constructor.
     */
-   StatusCallback( const StatusCallback& )
-   {
-   }
+   StatusCallback( const StatusCallback& ) = default;
+
+   /*!
+    * Move constructor.
+    */
+   StatusCallback( StatusCallback&& ) = default;
 
    /*!
     * Destroys this %StatusCallback instance.
@@ -117,6 +118,16 @@ public:
    virtual ~StatusCallback()
    {
    }
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
+    */
+   StatusCallback& operator =( const StatusCallback& ) = default;
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   StatusCallback& operator =( StatusCallback&& ) = default;
 
    /*!
     * This function is called by a status \a monitor object when a new
@@ -214,10 +225,7 @@ public:
    /*!
     * Constructs a default %StatusMonitor object.
     */
-   StatusMonitor()
-   {
-      Reset();
-   }
+   StatusMonitor() = default;
 
    /*!
     * Constructs a %StatusMonitor object as a duplicate of an existing
@@ -237,8 +245,7 @@ public:
    }
 
    /*!
-    * Assigns a %StatusMonitor instance \a x to this object. Returns a
-    * reference to this status monitor.
+    * Copy assignment operator. Returns a reference to this object.
     */
    StatusMonitor& operator =( const StatusMonitor& x )
    {
@@ -406,7 +413,7 @@ public:
    void SetInfo( const String& s )
    {
       m_info = s;
-      if ( m_callback != 0 )
+      if ( m_callback != nullptr )
          m_callback->InfoUpdated( *this );
    }
 
@@ -460,7 +467,7 @@ public:
    }
 
    /*!
-    * Returns the address of the constant status callback object associated
+    * Returns the address of the immutable status callback object associated
     * with this status monitor. Returns zero if this monitor has no associated
     * status callback object.
     */
@@ -486,8 +493,8 @@ public:
     * current monitoring procedure, if any, and reinitializes the internal
     * state of this monitor.
     *
-    * To associate no status callback object with this monitor, pass a zero
-    * pointer to this function.
+    * To associate no status callback object with this monitor, pass \c nullptr
+    * as the argument to this function.
     */
    void SetCallback( StatusCallback* callback )
    {
@@ -580,16 +587,16 @@ public:
 
 private:
 
-   StatusCallback* m_callback;
-   bool            m_initialized : 1;
-   bool            m_completed   : 1;
-   bool            m_aborted     : 1;
-   bool            m_needsUpdate : 1; // thread-safe flag set by the dispatcher
-   int             m_initDisableCount;
-   int             m_retVal;
+   StatusCallback* m_callback = nullptr;
+   bool            m_initialized = false;
+   bool            m_completed = false;
+   bool            m_aborted = false;
+   bool            m_needsUpdate = false; // thread-safe flag set by the dispatcher
+   int             m_initDisableCount = 0;
+   int             m_retVal = 0;
    String          m_info;
-   size_type       m_total;
-   size_type       m_count;
+   size_type       m_total = 0;
+   size_type       m_count = 0;
 
    static unsigned s_msRefreshRate;
 
@@ -607,4 +614,4 @@ private:
 #endif   // __PCL_StatusMonitor_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/StatusMonitor.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/StatusMonitor.h - Released 2018-11-01T11:06:36Z

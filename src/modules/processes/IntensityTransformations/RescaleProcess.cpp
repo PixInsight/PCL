@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// RescaleProcess.cpp - Released 2017-08-01T14:26:58Z
+// RescaleProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -65,7 +65,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-RescaleProcess* TheRescaleProcess = 0;
+RescaleProcess* TheRescaleProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -73,7 +73,7 @@ RescaleProcess* TheRescaleProcess = 0;
 
 // ----------------------------------------------------------------------------
 
-RescaleProcess::RescaleProcess() : MetaProcess()
+RescaleProcess::RescaleProcess()
 {
    TheRescaleProcess = this;
 
@@ -144,7 +144,7 @@ ProcessImplementation* RescaleProcess::Create() const
 ProcessImplementation* RescaleProcess::Clone( const ProcessImplementation& p ) const
 {
    const RescaleInstance* instPtr = dynamic_cast<const RescaleInstance*>( &p );
-   return (instPtr != 0) ? new RescaleInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new RescaleInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -201,13 +201,15 @@ static void ShowHelp()
 "</raw>" );
 }
 
+// ----------------------------------------------------------------------------
+
 #define OUT_OF_RANGE \
    throw pcl::Error( "Numerical argument out of range: " + arg.Token() )
 
 int RescaleProcess::ProcessCommandLine( const StringList& argv ) const
 {
    ArgumentList arguments =
-   ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
+      ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
 
    RescaleInstance instance( this );
 
@@ -281,4 +283,4 @@ int RescaleProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RescaleProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF RescaleProcess.cpp - Released 2018-11-01T11:07:21Z

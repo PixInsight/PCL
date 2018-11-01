@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.01.0332
+// Standard ImageCalibration Process Module Version 01.04.01.0345
 // ----------------------------------------------------------------------------
-// LocalNormalizationParameters.cpp - Released 2017-08-01T14:26:58Z
+// LocalNormalizationParameters.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,6 +58,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 LNScale*                       TheLNScaleParameter = nullptr;
+LNNoScale*                     TheLNNoScaleParameter = nullptr;
 LNRejection*                   TheLNRejectionParameter = nullptr;
 LNBackgroundRejectionLimit*    TheLNBackgroundRejectionLimitParameter = nullptr;
 LNReferenceRejectionThreshold* TheLNReferenceRejectionThresholdParameter = nullptr;
@@ -118,6 +119,23 @@ double LNScale::MaximumValue() const
 double LNScale::DefaultValue() const
 {
    return 128;
+}
+
+// ----------------------------------------------------------------------------
+
+LNNoScale::LNNoScale( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheLNNoScaleParameter = this;
+}
+
+IsoString LNNoScale::Id() const
+{
+   return "noScale";
+}
+
+bool LNNoScale::DefaultValue() const
+{
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -868,4 +886,4 @@ String LNGraphOutputDirectory::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LocalNormalizationParameters.cpp - Released 2017-08-01T14:26:58Z
+// EOF LocalNormalizationParameters.cpp - Released 2018-11-01T11:07:21Z

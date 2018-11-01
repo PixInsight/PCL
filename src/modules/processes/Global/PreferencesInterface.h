@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0378
+// Standard Global Process Module Version 01.02.07.0386
 // ----------------------------------------------------------------------------
-// PreferencesInterface.h - Released 2017-08-01T14:26:58Z
+// PreferencesInterface.h - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -215,7 +215,8 @@ public:
 
    GlobalDirectoryControl();
 
-   PushButton selectDirButton;
+   HorizontalSizer buttonSizer;
+      PushButton selectDirButton;
 
 private:
 
@@ -236,7 +237,8 @@ public:
 
    StringList fileExtensions;
    String     dialogTitle;
-   PushButton selectFileButton;
+   HorizontalSizer buttonSizer;
+      PushButton selectFileButton;
 
 private:
 
@@ -553,6 +555,27 @@ DEFINE_PREFERENCES_CATEGORY( Wallpapers, "Core Wallpapers" )
 
 // ----------------------------------------------------------------------------
 
+class EphemeridesPreferencesPage : public PreferencesCategoryPage
+{
+public:
+
+   EphemeridesPreferencesPage( PreferencesInstance& );
+
+   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
+
+   GlobalFileControl          FundamentalEphemerides_File;
+   GlobalFileControl          ShortTermFundamentalEphemerides_File;
+   GlobalFileControl          NutationModel_File;
+   GlobalFileControl          ShortTermNutationModel_File;
+   GlobalFileControl          DeltaTData_File;
+   GlobalFileControl          DeltaATData_File;
+   GlobalFileControl          CIPITRSData_File;
+};
+
+DEFINE_PREFERENCES_CATEGORY( Ephemerides, "Core Ephemerides" )
+
+// ----------------------------------------------------------------------------
+
 class GUIEffectsPreferencesPage : public PreferencesCategoryPage
 {
 public:
@@ -698,6 +721,7 @@ public:
    GlobalFlagControl          HighDPIRenditions_Flag;
    GlobalFlagControl          Default24BitScreenLUT_Flag;
    GlobalFlagControl          CreatePreviewsFromCoreProperties_Flag;
+   GlobalFlagControl          LoadAstrometricSolutions_Flag;
 };
 
 DEFINE_PREFERENCES_CATEGORY( MiscImageWindowSettings, "Miscellaneous Image Window Settings" )
@@ -919,4 +943,4 @@ PCL_END_LOCAL
 #endif   // __PreferencesInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInterface.h - Released 2017-08-01T14:26:58Z
+// EOF PreferencesInterface.h - Released 2018-11-01T11:07:20Z

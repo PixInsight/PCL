@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0378
+// Standard Global Process Module Version 01.02.07.0386
 // ----------------------------------------------------------------------------
-// ReadoutOptionsInstance.cpp - Released 2017-08-01T14:26:58Z
+// ReadoutOptionsInstance.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,7 +60,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 ReadoutOptionsInstance::ReadoutOptionsInstance( const MetaProcess* p ) :
-ProcessImplementation( p )
+   ProcessImplementation( p )
 {
    SetOptions( ReadoutOptions() );
 }
@@ -68,7 +68,7 @@ ProcessImplementation( p )
 // ----------------------------------------------------------------------------
 
 ReadoutOptionsInstance::ReadoutOptionsInstance( const ReadoutOptionsInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -78,22 +78,8 @@ ProcessImplementation( x )
 void ReadoutOptionsInstance::Assign( const ProcessImplementation& p )
 {
    const ReadoutOptionsInstance* x = dynamic_cast<const ReadoutOptionsInstance*>( &p );
-   if ( x != 0 )
-   {
-      data          = x->data;
-      mode          = x->mode;
-      probeSize     = x->probeSize;
-      previewSize   = x->previewSize;
-      previewZoom   = x->previewZoom;
-      precision     = x->precision;
-      range         = x->range;
-      showAlpha     = x->showAlpha;
-      showMask      = x->showMask;
-      showPreview   = x->showPreview;
-      previewCenter = x->previewCenter;
-      broadcast     = x->broadcast;
-      real          = x->real;
-   }
+   if ( x != nullptr )
+      SetOptions( x->Options() );
 }
 
 // ----------------------------------------------------------------------------
@@ -145,11 +131,22 @@ void* ReadoutOptionsInstance::LockParameter( const MetaParameter* p, size_type /
       return &showPreview;
    if ( p == TheReadoutPreviewCenterParameter )
       return &previewCenter;
+   if ( p == TheReadoutShowEquatorialParameter )
+      return &showEquatorial;
+   if ( p == TheReadoutShowEclipticParameter )
+      return &showEcliptic;
+   if ( p == TheReadoutShowGalacticParameter )
+      return &showGalactic;
+   if ( p == TheReadoutCoordinateItemsParameter )
+      return &coordinateItems;
+   if ( p == TheReadoutCoordinatePrecisionParameter )
+      return &coordinatePrecision;
    if ( p == TheReadoutBroadcastParameter )
       return &broadcast;
    if ( p == TheReadoutRealParameter )
       return &real;
-   return 0;
+
+   return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -246,6 +243,32 @@ bool ReadoutOptionsInstance::ValidateParameter( void* value, const MetaParameter
          return false;
       }
    }
+   else if ( p == TheReadoutCoordinateItemsParameter )
+   {
+      if ( i32 < 1 )
+      {
+         i32 = 1;
+         return false;
+      }
+      if ( i32 > 3 )
+      {
+         i32 = 3;
+         return false;
+      }
+   }
+   else if ( p == TheReadoutCoordinatePrecisionParameter )
+   {
+      if ( i32 < 0 )
+      {
+         i32 = 0;
+         return false;
+      }
+      if ( i32 > 8 )
+      {
+         i32 = 8;
+         return false;
+      }
+   }
 
    return true;
 
@@ -266,4 +289,4 @@ void ReadoutOptionsInstance::LoadCurrentOptions()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ReadoutOptionsInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF ReadoutOptionsInstance.cpp - Released 2018-11-01T11:07:20Z

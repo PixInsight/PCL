@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard RAW File Format Module Version 01.05.00.0399
+// Standard RAW File Format Module Version 01.05.00.0405
 // ----------------------------------------------------------------------------
-// RawInstance.cpp - Released 2018-02-07T11:38:44Z
+// RawInstance.cpp - Released 2018-11-01T11:07:09Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RAW PixInsight module.
 //
@@ -624,6 +624,14 @@ ImageDescriptionArray RawInstance::Open( const String& filePath, const IsoString
       }
 
       /*
+       * Camera RGB to sRGB conversion matrix.
+       */
+      m_sRGBConversionMatrix = F32Matrix( 3, idata.colors );
+      for ( int i = 0; i < 3; ++i )
+         for ( int j = 0; j < idata.colors; ++j )
+            m_sRGBConversionMatrix[i][j] = color.rgb_cam[i][j];
+
+      /*
        * Camera timestamp, exposure in seconds, ISO speed, focal length in mm
        * and f/d aperture.
        */
@@ -813,6 +821,7 @@ void RawInstance::Close()
    m_progress.Reset();
    m_description = m_author = String();
    m_cameraManufacturer = m_cameraModel = m_cfaPattern = m_rawCFAPattern = m_cfaPatternName = IsoString();
+   m_sRGBConversionMatrix = F32Matrix();
    m_timestamp = TimePoint();
    m_exposure = m_isoSpeed = m_focalLength = m_aperture = 0;
 }
@@ -899,6 +908,7 @@ PropertyDescriptionArray RawInstance::ImageProperties()
       if ( m_rawCFAPattern != m_cfaPattern )
          descriptions << PropertyDescription( "PCL:RawCFASourcePattern", VariantType::IsoString );
       descriptions << PropertyDescription( "PCL:CFASourcePatternName", VariantType::IsoString );
+      descriptions << PropertyDescription( "PCL:sRGBConversionMatrix", VariantType::F32Matrix );
    }
    if ( !m_cameraModel.IsEmpty() )
       descriptions << PropertyDescription( "Instrument:Camera:Name", VariantType::String );
@@ -934,6 +944,8 @@ Variant RawInstance::ReadImageProperty( const IsoString& property )
       return m_rawCFAPattern;
    if ( property == "PCL:CFASourcePatternName" )
       return m_cfaPatternName;
+   if ( property == "PCL:sRGBConversionMatrix" )
+      return m_sRGBConversionMatrix;
    if ( property == "Instrument:Camera:Name" )
       return String( m_cameraManufacturer + ' ' + m_cameraModel );
    if ( property == "Instrument:Camera:ISOSpeed" )
@@ -1362,4 +1374,4 @@ UInt8Image RawInstance::ReadThumbnail()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RawInstance.cpp - Released 2018-02-07T11:38:44Z
+// EOF RawInstance.cpp - Released 2018-11-01T11:07:09Z

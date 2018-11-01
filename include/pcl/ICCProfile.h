@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ICCProfile.h - Released 2017-08-01T14:23:31Z
+// pcl/ICCProfile.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -274,9 +274,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    ICCProfile( ICCProfile&& ) = default;
-#endif
 
    /*!
     * Constructs an %ICCProfile object and loads an ICC profile from a file at
@@ -327,9 +325,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-#ifndef _MSC_VER
    ICCProfile& operator =( ICCProfile&& ) = default;
-#endif
 
    /*!
     * Returns true iff this object stores an ICC color profile structure.
@@ -905,4 +901,4 @@ private:
 #endif   // __PCL_ICCProfile_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ICCProfile.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/ICCProfile.h - Released 2018-11-01T11:06:36Z

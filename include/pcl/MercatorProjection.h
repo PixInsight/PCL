@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/MercatorProjection.h - Released 2017-08-01T14:23:31Z
+// pcl/MercatorProjection.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -90,7 +90,7 @@ public:
    /*!
     * Returns a dynamically allocated duplicate of this object.
     */
-   virtual ProjectionBase* Clone() const
+   ProjectionBase* Clone() const override
    {
       return new MercatorProjection( *this );
    }
@@ -98,7 +98,7 @@ public:
    /*!
     * Returns the WCS projection identifier for this projection system.
     */
-   virtual IsoString ProjCode() const
+   IsoString ProjCode() const override
    {
       return "MER";
    }
@@ -106,16 +106,16 @@ public:
    /*!
     * Returns the readable name of this projection system.
     */
-   virtual IsoString Name() const
+   IsoString Name() const override
    {
       return "Mercator";
    }
 
 protected:
 
-   virtual bool Project( DPoint& pW, const DPoint& pN ) const noexcept;
+   bool Project( DPoint& pW, const DPoint& pN ) const noexcept override;
 
-   virtual bool Unproject( DPoint& pN, const DPoint& pW ) const noexcept;
+   bool Unproject( DPoint& pN, const DPoint& pW ) const noexcept override;
 
 private:
 
@@ -131,4 +131,4 @@ private:
 #endif   // __PCL_MercatorProjection_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MercatorProjection.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/MercatorProjection.h - Released 2018-11-01T11:06:36Z

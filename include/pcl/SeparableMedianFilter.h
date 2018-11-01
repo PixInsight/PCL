@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/SeparableMedianFilter.h - Released 2017-08-01T14:23:31Z
+// pcl/SeparableMedianFilter.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,6 +59,7 @@
 
 #include <pcl/ImageTransformation.h>
 #include <pcl/Matrix.h> // PCL_VALID_KERNEL_SIZE()
+#include <pcl/ParallelProcess.h>
 
 namespace pcl
 {
@@ -71,7 +72,8 @@ namespace pcl
  *
  * ### TODO: Write a detailed description for %SeparableMedianFilter.
  */
-class PCL_CLASS SeparableMedianFilter : public ImageTransformation
+class PCL_CLASS SeparableMedianFilter : public ImageTransformation,
+                                        public ParallelProcess
 {
 public:
 
@@ -82,8 +84,7 @@ public:
     *                odd integer &gt;= 3 (3, 5, 7, ...).
     */
    SeparableMedianFilter( int size = 3 ) :
-      ImageTransformation(),
-      m_size( PCL_VALID_KERNEL_SIZE( size ) ), m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      m_size( PCL_VALID_KERNEL_SIZE( size ) )
    {
       PCL_PRECONDITION( size >= 3 && size&1 == 1 )
    }
@@ -91,11 +92,7 @@ public:
    /*!
     * Copy constructor.
     */
-   SeparableMedianFilter( const SeparableMedianFilter& x ) :
-      ImageTransformation( x ),
-      m_size( x.m_size ), m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
-   {
-   }
+   SeparableMedianFilter( const SeparableMedianFilter& ) = default;
 
    /*!
     * Destroys this %SeparableMedianFilter object.
@@ -114,7 +111,7 @@ public:
 
    /*!
     * Sets a new \a size in pixels for this separable median filter object. The
-    * specified size must be an odd integer &gt;= 3 (3, 5, 7, ...).
+    * specified size must be an odd integer &gt; 3 (3, 5, 7, ...).
     */
    void SetSize( int size )
    {
@@ -122,92 +119,18 @@ public:
       m_size = PCL_VALID_KERNEL_SIZE( size );
    }
 
-   /*!
-    * Returns true iff this object is allowed to use multiple parallel execution
-    * threads (when multiple threads are permitted and available).
-    */
-   bool IsParallelProcessingEnabled() const
-   {
-      return m_parallel;
-   }
-
-   /*!
-    * Enables parallel processing for this instance of %SeparableMedianFilter.
-    *
-    * \param enable  Whether to enable or disable parallel processing. True by
-    *                default.
-    *
-    * \param maxProcessors    The maximum number of processors allowed for this
-    *                instance of %SeparableMedianFilter. If \a enable is false
-    *                this parameter is ignored. A value <= 0 is ignored. The
-    *                default value is zero.
-    */
-   void EnableParallelProcessing( bool enable = true, int maxProcessors = 0 )
-   {
-      m_parallel = enable;
-      if ( enable && maxProcessors > 0 )
-         SetMaxProcessors( maxProcessors );
-   }
-
-   /*!
-    * Disables parallel processing for this instance of %SeparableMedianFilter.
-    *
-    * This is a convenience function, equivalent to:
-    * EnableParallelProcessing( !disable )
-    */
-   void DisableParallelProcessing( bool disable = true )
-   {
-      EnableParallelProcessing( !disable );
-   }
-
-   /*!
-    * Returns the maximum number of processors allowed for this instance of
-    * %SeparableMedianFilter.
-    *
-    * Irrespective of the value returned by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   int MaxProcessors() const
-   {
-      return m_maxProcessors;
-   }
-
-   /*!
-    * Sets the maximum number of processors allowed for this instance of
-    * %SeparableMedianFilter.
-    *
-    * In the current version of PCL, a module can use a maximum of 1023
-    * processors. The term \e processor actually refers to the number of
-    * threads a module can execute concurrently.
-    *
-    * Irrespective of the value specified by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   void SetMaxProcessors( int maxProcessors )
-   {
-      m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
-   }
-
 protected:
 
-   int      m_size;              // filter size
-   bool     m_parallel      : 1; // use multiple threads
-   unsigned m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT; // Maximum number of processors allowed
+   int  m_size; // filter size
 
    /*
     * In-place 2-D separable median approximation filter.
     */
-   virtual void Apply( pcl::Image& ) const;
-   virtual void Apply( pcl::DImage& ) const;
-   virtual void Apply( pcl::UInt8Image& ) const;
-   virtual void Apply( pcl::UInt16Image& ) const;
-   virtual void Apply( pcl::UInt32Image& ) const;
+   void Apply( pcl::Image& ) const override;
+   void Apply( pcl::DImage& ) const override;
+   void Apply( pcl::UInt8Image& ) const override;
+   void Apply( pcl::UInt16Image& ) const override;
+   void Apply( pcl::UInt32Image& ) const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -217,4 +140,4 @@ protected:
 #endif   // __PCL_SeparableMedianFilter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SeparableMedianFilter.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/SeparableMedianFilter.h - Released 2018-11-01T11:06:36Z

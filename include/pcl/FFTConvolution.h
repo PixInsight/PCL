@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/FFTConvolution.h - Released 2017-08-01T14:23:31Z
+// pcl/FFTConvolution.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,6 +60,7 @@
 #include <pcl/AutoPointer.h>
 #include <pcl/ImageTransformation.h>
 #include <pcl/KernelFilter.h>
+#include <pcl/ParallelProcess.h>
 
 namespace pcl
 {
@@ -113,7 +114,7 @@ namespace pcl
  *
  * \sa Convolution, SeparableConvolution, ATrousWaveletTransform, ImageTransformation
 */
-class PCL_CLASS FFTConvolution : public ImageTransformation
+class PCL_CLASS FFTConvolution : public ImageTransformation, public ParallelProcess
 {
 public:
 
@@ -124,13 +125,7 @@ public:
     * used before explicit association with a response function, specified
     * either as a KernelFilter object or as an ImageVariant.
     */
-   FFTConvolution() :
-      ImageTransformation(),
-      m_parallel( true ),
-      m_outputRealCmp( false ),
-      m_maxProcessors( PCL_MAX_PROCESSORS )
-   {
-   }
+   FFTConvolution() = default;
 
    /*!
     * Constructs an %FFTConvolution instance with the specified kernel filter.
@@ -142,11 +137,7 @@ public:
     *                reference-counted class).
     */
    FFTConvolution( const KernelFilter& filter ) :
-      ImageTransformation(),
-      m_filter( filter.Clone() ),
-      m_parallel( true ),
-      m_outputRealCmp( false ),
-      m_maxProcessors( PCL_MAX_PROCESSORS )
+      m_filter( filter.Clone() )
    {
       PCL_CHECK( bool( m_filter ) )
    }
@@ -165,11 +156,7 @@ public:
     *             transports the response function image.
     */
    FFTConvolution( const ImageVariant& f ) :
-      ImageTransformation(),
-      m_image( f ),
-      m_parallel( true ),
-      m_outputRealCmp( false ),
-      m_maxProcessors( PCL_MAX_PROCESSORS )
+      m_image( f )
    {
       PCL_CHECK( bool( m_image ) )
    }
@@ -179,10 +166,9 @@ public:
     */
    FFTConvolution( const FFTConvolution& x ) :
       ImageTransformation( x ),
+      ParallelProcess( x ),
       m_image( x.m_image ),
-      m_parallel( x.m_parallel ),
-      m_outputRealCmp( x.m_outputRealCmp ),
-      m_maxProcessors( x.m_maxProcessors )
+      m_outputRealCmp( x.m_outputRealCmp )
    {
       if ( x.m_filter )
          m_filter = x.m_filter->Clone();
@@ -191,18 +177,7 @@ public:
    /*!
     * Move constructor.
     */
-   FFTConvolution( FFTConvolution&& x ) :
-      ImageTransformation( x ),
-      m_filter( x.m_filter ),
-      m_image( std::move( x.m_image ) ),
-      m_parallel( x.m_parallel ),
-      m_outputRealCmp( x.m_outputRealCmp ),
-      m_maxProcessors( x.m_maxProcessors ),
-      m_h( x.m_h )
-   {
-      //x.m_filter = nullptr; // already done by AutoPointer
-      //x.m_h = nullptr;
-   }
+   FFTConvolution( FFTConvolution&& ) = default;
 
    /*!
     * Destroys this %FFTConvolution object.
@@ -219,14 +194,13 @@ public:
       if ( &x != this )
       {
          (void)ImageTransformation::operator =( x );
+         (void)ParallelProcess::operator =( x );
          DestroyFilter();
          if ( x.m_filter )
             m_filter = x.m_filter->Clone();
          else
             m_image = x.m_image;
-         m_parallel = x.m_parallel;
          m_outputRealCmp = x.m_outputRealCmp;
-         m_maxProcessors = x.m_maxProcessors;
       }
       return *this;
    }
@@ -234,22 +208,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-   FFTConvolution& operator =( FFTConvolution&& x )
-   {
-      if ( &x != this )
-      {
-         (void)ImageTransformation::operator =( x );
-         m_filter = x.m_filter;
-         m_image = std::move( x.m_image );
-         m_parallel = x.m_parallel;
-         m_outputRealCmp = x.m_outputRealCmp;
-         m_maxProcessors = x.m_maxProcessors;
-         m_h = x.m_h;
-         //x.m_filter = nullptr; // already done by AutoPointer
-         //x.m_h = nullptr;
-      }
-      return *this;
-   }
+   FFTConvolution& operator =( FFTConvolution&& ) = default;
 
    /*!
     * Returns true if this %FFTConvolution uses a KernelFilter object as its
@@ -398,78 +357,6 @@ public:
       m_outputRealCmp = !enable;
    }
 
-   /*!
-    * Returns true iff this object is allowed to use multiple parallel execution
-    * threads (when multiple threads are permitted and available).
-    */
-   bool IsParallelProcessingEnabled() const
-   {
-      return m_parallel;
-   }
-
-   /*!
-    * Enables parallel processing for this instance of %FFTConvolution.
-    *
-    * \param enable  Whether to enable or disable parallel processing. True by
-    *                default.
-    *
-    * \param maxProcessors    The maximum number of processors allowed for this
-    *                instance of %FFTConvolution. If \a enable is false
-    *                this parameter is ignored. A value <= 0 is ignored. The
-    *                default value is zero.
-    */
-   void EnableParallelProcessing( bool enable = true, int maxProcessors = 0 )
-   {
-      m_parallel = enable;
-      if ( enable && maxProcessors > 0 )
-         SetMaxProcessors( maxProcessors );
-   }
-
-   /*!
-    * Disables parallel processing for this instance of %FFTConvolution.
-    *
-    * This is a convenience function, equivalent to:
-    * EnableParallelProcessing( !disable )
-    */
-   void DisableParallelProcessing( bool disable = true )
-   {
-      EnableParallelProcessing( !disable );
-   }
-
-   /*!
-    * Returns the maximum number of processors allowed for this instance of
-    * %FFTConvolution.
-    *
-    * Irrespective of the value returned by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   int MaxProcessors() const
-   {
-      return m_maxProcessors;
-   }
-
-   /*!
-    * Sets the maximum number of processors allowed for this instance of
-    * %FFTConvolution.
-    *
-    * In the current version of PCL, a module can use a maximum of 1023
-    * processors. The term \e processor actually refers to the number of
-    * threads a module can execute concurrently.
-    *
-    * Irrespective of the value specified by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   void SetMaxProcessors( int maxProcessors )
-   {
-      m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
-   }
-
 protected:
 
    /*
@@ -479,9 +366,7 @@ protected:
     */
    AutoPointer<KernelFilter> m_filter;
    ImageVariant              m_image;
-   bool                      m_parallel      : 1;
-   bool                      m_outputRealCmp : 1;
-   unsigned                  m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT;
+   bool                      m_outputRealCmp = false;
 
    /*
     * Internal DFT of the response function. Initially zero. This matrix is
@@ -493,13 +378,13 @@ protected:
    /*
     * In-place Fourier-based 2-D convolution algorithm.
     */
-   virtual void Apply( pcl::Image& ) const;
-   virtual void Apply( pcl::DImage& ) const;
-   virtual void Apply( pcl::UInt8Image& ) const;
-   virtual void Apply( pcl::UInt16Image& ) const;
-   virtual void Apply( pcl::UInt32Image& ) const;
-   virtual void Apply( pcl::ComplexImage& ) const;
-   virtual void Apply( pcl::DComplexImage& ) const;
+   void Apply( pcl::Image& ) const override;
+   void Apply( pcl::DImage& ) const override;
+   void Apply( pcl::UInt8Image& ) const override;
+   void Apply( pcl::UInt16Image& ) const override;
+   void Apply( pcl::UInt32Image& ) const override;
+   void Apply( pcl::ComplexImage& ) const override;
+   void Apply( pcl::DComplexImage& ) const override;
 
    friend class PCL_FFTConvolutionEngine;
 
@@ -523,4 +408,4 @@ private:
 #endif   // __PCL_FFTConvolution_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FFTConvolution.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/FFTConvolution.h - Released 2018-11-01T11:06:36Z

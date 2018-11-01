@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/StructuringElement.h - Released 2017-08-01T14:23:31Z
+// pcl/StructuringElement.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -98,6 +98,10 @@ namespace pcl
  * through each way in the structure, and the result is the same operator
  * applied to the partial results.
  *
+ * This class is thread-safe. This means that multiple execution threads can
+ * access the same %StructuringElement instance concurrently to perform
+ * morphological transformations.
+ *
  * \sa MorphologicalOperator, MorphologicalTransformation
  */
 class PCL_CLASS StructuringElement
@@ -129,7 +133,9 @@ public:
     * \a size in pixels and number of ways \a n.
     */
    StructuringElement( int size = 3, int n = 1 ) :
-      m_size( Max( 3, size|1 ) ), m_mask( Max( 1, n ) ), m_count( 0, Max( 1, n ) ), m_reflected( false ), m_initialized()
+      m_size( Max( 3, size|1 ) ),
+      m_mask( Max( 1, n ) ),
+      m_count( 0, Max( 1, n ) )
    {
       PCL_PRECONDITION( size >= 3 )
       PCL_PRECONDITION( (size & 1) != 0 )
@@ -142,7 +148,9 @@ public:
     * Copy constructor.
     */
    StructuringElement( const StructuringElement& x ) :
-      m_size( x.m_size ), m_mask( x.NumberOfWays() ), m_count( 0, x.NumberOfWays() ), m_reflected( false ), m_initialized()
+      m_size( x.m_size ),
+      m_mask( x.NumberOfWays() ),
+      m_count( 0, x.NumberOfWays() )
    {
       for ( int k = 0; k < NumberOfWays(); ++k )
          m_mask[k] = existence_mask( existence_mask_element( 0 ), NumberOfElements() );
@@ -364,7 +372,7 @@ private:
 
    /*
     * Element existence masks (one mask per way).
-    * An element exists if its corresponding mask element is nonzero.
+    * An element exists iff its corresponding mask element is nonzero.
     */
    mutable existence_mask_set    m_mask;
 
@@ -376,7 +384,7 @@ private:
    /*
     * Flag true when the structure has been reflected.
     */
-   bool                          m_reflected : 1;
+   bool                          m_reflected = false;
 
    /*
     * Flag true when existence masks have been calculated.
@@ -428,7 +436,7 @@ public:
 
    /*!
     */
-   virtual StructuringElement* Clone() const
+   StructuringElement* Clone() const override
    {
       return new BoxStructure( *this );
    }
@@ -440,7 +448,7 @@ public:
     * As reimplemented by %BoxStructure, this member function always
     * returns true.
     */
-   virtual bool IsBox( int k ) const
+   bool IsBox( int k ) const override
    {
       PCL_PRECONDITION( k == 0 )
       return true;
@@ -491,7 +499,7 @@ public:
 
    /*!
     */
-   virtual StructuringElement* Clone() const
+   StructuringElement* Clone() const override
    {
       return new CircularStructure( *this );
    }
@@ -503,7 +511,7 @@ public:
     * As reimplemented by %CircularStructure, this member function always
     * returns false.
     */
-   virtual bool IsBox( int k ) const
+   bool IsBox( int k ) const override
    {
       PCL_PRECONDITION( k == 0 )
       return false;
@@ -511,7 +519,7 @@ public:
 
    /*!
     */
-   virtual bool ElementExists( int i, int j, int k ) const
+   bool ElementExists( int i, int j, int k ) const override
    {
       PCL_PRECONDITION( i >= 0 && i < Size() )
       PCL_PRECONDITION( j >= 0 && j < Size() )
@@ -562,7 +570,7 @@ public:
 
    /*!
     */
-   virtual StructuringElement* Clone() const
+   StructuringElement* Clone() const override
    {
       return new OrthogonalStructure( *this );
    }
@@ -574,7 +582,7 @@ public:
     * As reimplemented by %OrthogonalStructure, this member function always
     * returns false.
     */
-   virtual bool IsBox( int k ) const
+   bool IsBox( int k ) const override
    {
       PCL_PRECONDITION( k == 0 )
       return false;
@@ -582,7 +590,7 @@ public:
 
    /*!
     */
-   virtual bool ElementExists( int i, int j, int k ) const
+   bool ElementExists( int i, int j, int k ) const override
    {
       PCL_PRECONDITION( i >= 0 && i < Size() )
       PCL_PRECONDITION( j >= 0 && j < Size() )
@@ -631,7 +639,7 @@ public:
 
    /*!
     */
-   virtual StructuringElement* Clone() const
+   StructuringElement* Clone() const override
    {
       return new DiagonalStructure( *this );
    }
@@ -643,7 +651,7 @@ public:
     * As reimplemented by %DiagonalStructure, this member function always
     * returns false.
     */
-   virtual bool IsBox( int k ) const
+   bool IsBox( int k ) const override
    {
       PCL_PRECONDITION( k == 0 )
       return false;
@@ -651,7 +659,7 @@ public:
 
    /*!
     */
-   virtual bool ElementExists( int i, int j, int k ) const
+   bool ElementExists( int i, int j, int k ) const override
    {
       PCL_PRECONDITION( i >= 0 && i < Size() )
       PCL_PRECONDITION( j >= 0 && j < Size() )
@@ -702,7 +710,7 @@ public:
 
    /*!
     */
-   virtual StructuringElement* Clone() const
+   StructuringElement* Clone() const override
    {
       return new StarStructure( *this );
    }
@@ -714,7 +722,7 @@ public:
     * As reimplemented by %StarStructure, this member function always
     * returns false.
     */
-   virtual bool IsBox( int k ) const
+   bool IsBox( int k ) const override
    {
       PCL_PRECONDITION( k == 0 )
       return false;
@@ -722,7 +730,7 @@ public:
 
    /*!
     */
-   virtual bool ElementExists( int i, int j, int k ) const
+   bool ElementExists( int i, int j, int k ) const override
    {
       PCL_PRECONDITION( i >= 0 && i < Size() )
       PCL_PRECONDITION( j >= 0 && j < Size() )
@@ -787,7 +795,7 @@ public:
 
    /*!
     */
-   virtual StructuringElement* Clone() const
+   StructuringElement* Clone() const override
    {
       return new ThreeWayStructure( *this );
    }
@@ -799,7 +807,7 @@ public:
     * As reimplemented by %ThreeWayStructure, this member function always
     * returns false.
     */
-   virtual bool IsBox( int k ) const
+   bool IsBox( int k ) const override
    {
       PCL_PRECONDITION( k >= 0 && k < 3 )
       return false;
@@ -807,7 +815,7 @@ public:
 
    /*!
     */
-   virtual bool ElementExists( int i, int j, int k ) const
+   bool ElementExists( int i, int j, int k ) const override
    {
       PCL_PRECONDITION( i >= 0 && i < Size() )
       PCL_PRECONDITION( j >= 0 && j < Size() )
@@ -897,7 +905,7 @@ public:
     * \param n          Number of ways in this structure. Must be >= 1.
     */
    BitmapStructure( const char** bitmaps, int size, int n = 1 ) :
-      StructuringElement( size, n ), m_bitmaps()
+      StructuringElement( size, n )
    {
       PCL_PRECONDITION( bitmaps != nullptr )
       PCL_PRECONDITION( *bitmaps != '\0' )
@@ -912,14 +920,14 @@ public:
 
    /*!
     */
-   virtual StructuringElement* Clone() const
+   StructuringElement* Clone() const override
    {
       return new BitmapStructure( *this );
    }
 
    /*!
     */
-   virtual bool ElementExists( int i, int j, int k ) const
+   bool ElementExists( int i, int j, int k ) const override
    {
       PCL_PRECONDITION( i >= 0 && i < Size() )
       PCL_PRECONDITION( j >= 0 && j < Size() )
@@ -939,4 +947,4 @@ protected:
 #endif   // __PCL_StructuringElement_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/StructuringElement.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/StructuringElement.h - Released 2018-11-01T11:06:36Z

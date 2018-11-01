@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/DrizzleData.h - Released 2017-08-01T14:23:31Z
+// pcl/DrizzleData.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -148,28 +148,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    DrizzleData( DrizzleData&& ) = default;
-#else
-   DrizzleData( DrizzleData&& x ) :
-      m_sourceFilePath( std::move( x.m_sourceFilePath ) ),
-      m_cfaSourceFilePath( std::move( x.m_cfaSourceFilePath ) ),
-      m_cfaSourcePattern( std::move( x.m_cfaSourcePattern ) ),
-      m_alignTargetFilePath( std::move( x.m_alignTargetFilePath ) ),
-      m_referenceWidth( x.m_referenceWidth ),
-      m_referenceHeight( x.m_referenceHeight ),
-      m_H( std::move( x.m_H ) ),
-      m_S( std::move( x.m_S ) ),
-      m_location( std::move( x.m_location ) ),
-      m_referenceLocation( std::move( x.m_referenceLocation ) ),
-      m_scale( std::move( x.m_scale ) ),
-      m_weight( std::move( x.m_weight ) ),
-      m_rejectionLowCount( std::move( x.m_rejectionLowCount ) ),
-      m_rejectionHighCount( std::move( x.m_rejectionHighCount ) ),
-      m_rejectionMap( std::move( x.m_rejectionMap ) )
-   {
-   }
-#endif
 
    /*!
     * Constructs a new %DrizzleData instance by loading and parsing a file.
@@ -244,6 +223,16 @@ public:
    virtual ~DrizzleData()
    {
    }
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
+    */
+   DrizzleData& operator =( const DrizzleData& ) = default;
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   DrizzleData& operator =( DrizzleData&& ) = default;
 
    /*!
     * Returns the full path to the unregistered image file corresponding to the
@@ -970,7 +959,7 @@ private:
 
       spline& m_S;
 
-      virtual void ProcessBlock( IsoString&, const IsoString&, size_type, size_type );
+      void ProcessBlock( IsoString&, const IsoString&, size_type, size_type ) override;
    };
 };
 
@@ -981,4 +970,4 @@ private:
 #endif   // __PCL_DrizzleData_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/DrizzleData.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/DrizzleData.h - Released 2018-11-01T11:06:36Z

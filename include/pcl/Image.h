@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Image.h - Released 2017-08-01T14:23:31Z
+// pcl/Image.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -6162,7 +6162,8 @@ public:
    /*!
     * Move constructor.
     */
-   GenericImage( GenericImage&& image ) : AbstractImage( image ), m_data( image.m_data )
+   GenericImage( GenericImage&& image ) :
+      AbstractImage( image ), m_data( image.m_data )
    {
       image.m_data = nullptr;
    }
@@ -6416,18 +6417,19 @@ public:
    {
       if ( m_data->IsShared() )
       {
-         GenericImage local;
-         local.m_data->Allocate( m_width, m_height, m_numberOfChannels, m_colorSpace );
-         local.m_RGBWS = m_RGBWS;
-         local.m_selected = m_selected;
-         local.m_savedSelections = m_savedSelections;
-         local.m_status = m_status;
+         GenericImage local_;
+         GenericImage* local = &local_; // ### Workaround to GCC 7's 'dereferencing type-punned pointer' bugs
+         local->m_data->Allocate( m_width, m_height, m_numberOfChannels, m_colorSpace );
+         local->m_RGBWS = m_RGBWS;
+         local->m_selected = m_selected;
+         local->m_savedSelections = m_savedSelections;
+         local->m_status = m_status;
          for ( int c = 0; c < m_numberOfChannels; ++c )
-            P::Copy( local.m_pixelData[c], m_pixelData[c], NumberOfPixels() );
+            P::Copy( local->m_pixelData[c], m_pixelData[c], NumberOfPixels() );
 
-         local.m_data->Attach( this );
+         local->m_data->Attach( this );
          DetachFromData();
-         m_data = local.m_data;
+         m_data = local->m_data;
       }
       return *this;
    }
@@ -6756,7 +6758,7 @@ public:
    /*!
     * Returns a pointer to the first pixel sample in the specified \a channel.
     *
-    * \param channel    Channel index, 0 <= \a channel < \a n, where \a n is
+    * \param channel    Channel index, 0 &le; \a channel < \a n, where \a n is
     *                   the number of channels in this image, including nominal
     *                   and alpha channels. The default value is zero.
     *
@@ -6797,7 +6799,7 @@ public:
    /*!
     * Returns a pointer to the first pixel sample in the specified \a channel.
     *
-    * \param channel    Channel index, 0 <= \a channel < \a n, where \a n is
+    * \param channel    Channel index, 0 &le; \a channel < \a n, where \a n is
     *                   the number of channels in this image, including nominal
     *                   and alpha channels.
     *
@@ -6852,10 +6854,10 @@ public:
     * pixels) in this image.
     *
     * \param y          Vertical coordinate (or row index) of the desired scan
-    *                   line, such that 0 <= \a y < \a h, where \a h is the
+    *                   line, such that 0 &le; \a y < \a h, where \a h is the
     *                   height in pixels of this image.
     *
-    * \param channel    Channel index, 0 <= \a channel < \a n, where \a n is
+    * \param channel    Channel index, 0 &le; \a channel < \a n, where \a n is
     *                   the number of channels in this image, including nominal
     *                   and alpha channels. The default value is zero.
     *
@@ -6892,14 +6894,14 @@ public:
     * coordinates and channel index.
     *
     * \param x          Horizontal coordinate (or column index) of the desired
-    *                   pixel, 0 <= \a x < \a w, where \a w is the width in
+    *                   pixel, 0 &le; \a x < \a w, where \a w is the width in
     *                   pixels of this image.
     *
     * \param y          Vertical coordinate (or row index) of the desired scan
-    *                   line, 0 <= \a y < \a h, where \a h is the height in
+    *                   line, 0 &le; \a y < \a h, where \a h is the height in
     *                   pixels of this image.
     *
-    * \param channel    Channel index, 0 <= \a channel < \a n, where \a n is
+    * \param channel    Channel index, 0 &le; \a channel < \a n, where \a n is
     *                   the number of channels in this image, including nominal
     *                   and alpha channels. The default value is zero.
     *
@@ -6942,7 +6944,7 @@ public:
     *                   rectangle, that is, its coordinates must refer to an
     *                   existing pixel in this image.
     *
-    * \param channel    Channel index, 0 <= \a channel < \a n, where \a n is
+    * \param channel    Channel index, 0 &le; \a channel < \a n, where \a n is
     *                   the number of channels in this image, including nominal
     *                   and alpha channels. The default value is zero.
     *
@@ -6975,14 +6977,14 @@ public:
     * coordinates and channel index.
     *
     * \param x          Horizontal coordinate (or column index) of the desired
-    *                   pixel, 0 <= \a x < \a w, where \a w is the width in
+    *                   pixel, 0 &le; \a x < \a w, where \a w is the width in
     *                   pixels of this image.
     *
     * \param y          Vertical coordinate (or row index) of the desired scan
-    *                   line, 0 <= \a y < \a h, where \a h is the height in
+    *                   line, 0 &le; \a y < \a h, where \a h is the height in
     *                   pixels of this image.
     *
-    * \param channel    Channel index, 0 <= \a channel < \a n, where \a n is
+    * \param channel    Channel index, 0 &le; \a channel < \a n, where \a n is
     *                   the number of channels in this image, including nominal
     *                   and alpha channels. The default value is zero.
     *
@@ -7000,14 +7002,14 @@ public:
     * index.
     *
     * \param x          Horizontal coordinate (or column index) of the desired
-    *                   pixel, 0 <= \a x < \a w, where \a w is the width in
+    *                   pixel, 0 &le; \a x < \a w, where \a w is the width in
     *                   pixels of this image.
     *
     * \param y          Vertical coordinate (or row index) of the desired scan
-    *                   line, 0 <= \a y < \a h, where \a h is the height in
+    *                   line, 0 &le; \a y < \a h, where \a h is the height in
     *                   pixels of this image.
     *
-    * \param channel    Channel index, 0 <= \a channel < \a n, where \a n is
+    * \param channel    Channel index, 0 &le; \a channel < \a n, where \a n is
     *                   the number of channels in this image, including nominal
     *                   and alpha channels. The default value is zero.
     */
@@ -7025,7 +7027,7 @@ public:
     *                   rectangle, that is, its coordinates must refer to an
     *                   existing pixel in this image.
     *
-    * \param channel    Channel index, 0 <= \a channel < \a n, where \a n is
+    * \param channel    Channel index, 0 &le; \a channel < \a n, where \a n is
     *                   the number of channels in this image, including nominal
     *                   and alpha channels. The default value is zero.
     *
@@ -7047,7 +7049,7 @@ public:
     *                   rectangle, that is, its coordinates must refer to an
     *                   existing pixel in this image.
     *
-    * \param channel    Channel index, 0 <= \a channel < \a n, where \a n is
+    * \param channel    Channel index, 0 &le; \a channel < \a n, where \a n is
     *                   the number of channels in this image, including nominal
     *                   and alpha channels. The default value is zero.
     */
@@ -7114,7 +7116,7 @@ public:
     * application), the RGB working space cannot be changed by calling this
     * member function.
     */
-   virtual void SetRGBWorkingSpace( const RGBColorSystem& RGBWS )
+   void SetRGBWorkingSpace( const RGBColorSystem& RGBWS ) override
    {
       if ( !IsShared() )
       {
@@ -7406,7 +7408,7 @@ public:
     * Generates a vector of pixel samples from a row of this image.
     *
     * \param y          Vertical coordinate (or row index) of the desired scan
-    *                   line, 0 <= \a y < \a h, where \a h is the height in
+    *                   line, 0 &le; \a y < \a h, where \a h is the height in
     *                   pixels of this image.
     *
     * \param channel    Channel index. If this parameter is negative, the
@@ -7435,7 +7437,7 @@ public:
     * Generates a vector of pixel samples from a column of this image.
     *
     * \param x          Horizontal coordinate (or column index) of the desired
-    *                   column, 0 <= \a x < \a w, where \a w is the width in
+    *                   column, 0 &le; \a x < \a w, where \a w is the width in
     *                   pixels of this image.
     *
     * \param channel    Channel index. If this parameter is negative, the
@@ -7482,7 +7484,7 @@ public:
     *                   width in pixels of this image.
     *
     * \param y          Vertical coordinate (or row index) of the desired scan
-    *                   line, 0 <= \a y < \a h, where \a h is the height in
+    *                   line, 0 &le; \a y < \a h, where \a h is the height in
     *                   pixels of this image.
     *
     * \param channel    Channel index. If this parameter is negative, the
@@ -7513,7 +7515,7 @@ public:
     *                   height in pixels of this image.
     *
     * \param x          Horizontal coordinate (or column index) of the desired
-    *                   column, 0 <= \a x < \a w, where \a w is the width in
+    *                   column, 0 &le; \a x < \a w, where \a w is the width in
     *                   pixels of this image.
     *
     * \param channel    Channel index. If this parameter is negative, the
@@ -7548,7 +7550,7 @@ public:
     *                   least equal to the width in pixels of this image.
     *
     * \param y          Vertical coordinate (or row index) of the desired scan
-    *                   line, 0 <= \a y < \a h, where \a h is the height in
+    *                   line, 0 &le; \a y < \a h, where \a h is the height in
     *                   pixels of this image.
     *
     * \param channel    Channel index. If this parameter is negative, the
@@ -7580,7 +7582,7 @@ public:
     *                   at least equal to the height in pixels of this image.
     *
     * \param x          Horizontal coordinate (or column index) of the desired
-    *                   column, 0 <= \a x < \a w, where \a w is the width in
+    *                   column, 0 &le; \a x < \a w, where \a w is the width in
     *                   pixels of this image.
     *
     * \param channel    Channel index. If this parameter is negative, the
@@ -7712,7 +7714,7 @@ public:
     *                eventually destroyed.
     *
     * \param channel Zero-based index of the alpha channel to be released,
-    *                0 <= \a channel < \a n, where \a n is the number of
+    *                0 &le; \a channel < \a n, where \a n is the number of
     *                existing alpha channels before calling this function.
     *
     * \note The specified \a channel index is an <em>alpha channel index</em>,
@@ -7771,7 +7773,7 @@ public:
     * Destroys an alpha channel. Returns a reference to this image.
     *
     * \param channel Zero-based index of the alpha channel to be destroyed,
-    *                0 <= \a c < \a n, where \a n is the number of existing
+    *                0 &le; \a c < \a n, where \a n is the number of existing
     *                alpha channels before calling this function.
     *
     * \note The specified \a channel index is an <em>alpha channel index</em>,
@@ -7797,7 +7799,7 @@ public:
     * deallocating it. Returns a reference to this image.
     *
     * \param channel Zero-based index of the alpha channel to be forgotten,
-    *                0 <= \a c < \a n, where \a n is the number of existing
+    *                0 &le; \a c < \a n, where \a n is the number of existing
     *                alpha channels before calling this function.
     *
     * \warning You should have gained control over the pixel data corresponding
@@ -14706,12 +14708,11 @@ private:
    public:
 
       RectThreadBase( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-         Thread(),
          m_image( image ), m_rect( rect ), m_ch1( ch1 ), m_ch2( ch2 ), m_firstRow( firstRow ), m_endRow( endRow )
       {
       }
 
-      virtual void Run()
+      void Run() override
       {
          int w = m_rect.Width();
          int dw = m_image.Width() - w;
@@ -14768,7 +14769,7 @@ private:
       {
       }
 
-      virtual void Run()
+      void Run() override
       {
          // These threads are only used when range clipping is enabled.
          int w = this->m_rect.Width();
@@ -14794,16 +14795,16 @@ private:
    public:
 
       sample min;
-      bool initialized : 1;
+      bool initialized = false;
 
       MinThread( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), initialized( false )
+         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow )
       {
       }
 
    private:
 
-      virtual void Perform( const sample* f )
+      void Perform( const sample* f ) override
       {
          if ( initialized )
          {
@@ -14825,16 +14826,16 @@ private:
    public:
 
       sample max;
-      bool initialized : 1;
+      bool initialized = false;
 
       MaxThread( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), initialized( false )
+         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow )
       {
       }
 
    private:
 
-      virtual void Perform( const sample* f )
+      void Perform( const sample* f ) override
       {
          if ( initialized )
          {
@@ -14857,16 +14858,16 @@ private:
 
       sample min;
       sample max;
-      bool initialized : 1;
+      bool initialized = false;
 
       MinMaxThread( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), initialized( false )
+         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow )
       {
       }
 
    private:
 
-      virtual void Perform( const sample* f )
+      void Perform( const sample* f ) override
       {
          if ( initialized )
          {
@@ -14891,19 +14892,19 @@ private:
 
       int cmin, cmax;
       Point pmin, pmax;
-      bool initialized : 1;
+      bool initialized = false;
 
       ExtremePosThreadBase( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), initialized( false ), m_amin( 0 ), m_amax( 0 )
+         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow )
       {
       }
 
    protected:
 
-      const sample* m_amin;
-      const sample* m_amax;
+      const sample* m_amin = nullptr;
+      const sample* m_amax = nullptr;
 
-      virtual void PostProcess()
+      void PostProcess() override
       {
          if ( initialized )
          {
@@ -14944,7 +14945,7 @@ private:
 
    private:
 
-      virtual void Perform( const sample* f )
+      void Perform( const sample* f ) override
       {
          if ( this->initialized )
          {
@@ -14974,7 +14975,7 @@ private:
 
    private:
 
-      virtual void Perform( const sample* f )
+      void Perform( const sample* f ) override
       {
          if ( this->initialized )
          {
@@ -15004,7 +15005,7 @@ private:
 
    private:
 
-      virtual void Perform( const sample* f )
+      void Perform( const sample* f ) override
       {
          if ( this->initialized )
          {
@@ -15048,7 +15049,7 @@ private:
          ++n;
       }
 
-      virtual void Perform( const sample* f )
+      void Perform( const sample* f ) override
       {
          double v; P::FromSample( v, *f );
          SumStep( v );
@@ -15068,7 +15069,7 @@ private:
 
    private:
 
-      virtual void Perform( const sample* f )
+      void Perform( const sample* f ) override
       {
          double v; P::FromSample( v, *f );
          this->SumStep( v*v );
@@ -15088,7 +15089,7 @@ private:
 
    private:
 
-      virtual void Perform( const sample* f )
+      void Perform( const sample* f ) override
       {
          double v; P::FromSample( v, *f );
          this->SumStep( pcl::Abs( v ) );
@@ -15115,7 +15116,7 @@ private:
 
    private:
 
-      virtual void Perform( const sample* f )
+      void Perform( const sample* f ) override
       {
          samples[n++] = *f;
       }
@@ -15139,7 +15140,7 @@ private:
 
       double m_mean;
 
-      virtual void Perform( const sample* f )
+      void Perform( const sample* f ) override
       {
          double d; P::FromSample( d, *f );
          d -= m_mean;
@@ -15170,7 +15171,7 @@ private:
 
       double m_center;
 
-      virtual void Perform( const sample* f )
+      void Perform( const sample* f ) override
       {
          double v; P::FromSample( v, *f );
          devs[n++] = pcl::Abs( v - m_center );
@@ -15192,7 +15193,7 @@ private:
 
       double m_center;
 
-      virtual void Perform( const sample* f )
+      void Perform( const sample* f ) override
       {
          double v; P::FromSample( v, *f );
          this->SumStep( pcl::Abs( v - m_center ) );
@@ -15220,7 +15221,7 @@ private:
       double m_center;
       double m_kd;
 
-      virtual void Perform( const sample* f )
+      void Perform( const sample* f ) override
       {
          ++n;
          double xc; P::FromSample( xc, *f ); xc -= m_center;
@@ -15255,7 +15256,7 @@ private:
 
    private:
 
-      virtual void Perform( const sample* f )
+      void Perform( const sample* f ) override
       {
          P::FromSample( values[n++], *f );
       }
@@ -15269,12 +15270,11 @@ private:
 
       ColorSpaceConversionThread( GenericImage& image, ThreadData& data,
                                   color_space toColorSpace, size_type begin, size_type end ) :
-         Thread(),
          m_image( image ), m_data( data ), m_toColorSpace( toColorSpace ), m_begin( begin ), m_end( end )
       {
       }
 
-      virtual void Run()
+      void Run() override
       {
          INIT_THREAD_MONITOR()
 
@@ -15488,13 +15488,12 @@ private:
 
       GetLuminanceThread( GenericImage<P1>& luminance, const GenericImage& image, ThreadData& data,
                           const Rect& rect, int firstRow, int endRow ) :
-         Thread(),
          m_luminance( luminance ), m_image( image ), m_data( data ),
          m_rect( rect ), m_firstRow( firstRow ), m_endRow( endRow )
       {
       }
 
-      virtual void Run()
+      void Run() override
       {
          INIT_THREAD_MONITOR()
 
@@ -15575,13 +15574,12 @@ private:
 
       GetLightnessThread( GenericImage<P1>& lightness, const GenericImage& image, ThreadData& data,
                           const Rect& rect, int firstRow, int endRow ) :
-         Thread(),
          m_lightness( lightness ), m_image( image ), m_data( data ),
          m_rect( rect ), m_firstRow( firstRow ), m_endRow( endRow )
       {
       }
 
-      virtual void Run()
+      void Run() override
       {
          INIT_THREAD_MONITOR()
 
@@ -15659,13 +15657,12 @@ private:
 
       GetIntensityThread( GenericImage<P1>& luminance, const GenericImage& image, ThreadData& data,
                           const Rect& rect, int firstRow, int endRow ) :
-         Thread(),
          m_intensity( luminance ), m_image( image ), m_data( data ),
          m_rect( rect ), m_firstRow( firstRow ), m_endRow( endRow )
       {
       }
 
-      virtual void Run()
+      void Run() override
       {
          INIT_THREAD_MONITOR()
 
@@ -15735,13 +15732,12 @@ private:
 
       SetLuminanceThread( GenericImage& image, const GenericImage<P1>& luminance, ThreadData& data,
                           const Point& target, const Rect& rect, int firstRow, int endRow ) :
-         Thread(),
          m_image( image ), m_luminance( luminance ), m_data( data ),
          m_target( target ), m_rect( rect ), m_firstRow( firstRow ), m_endRow( endRow )
       {
       }
 
-      virtual void Run()
+      void Run() override
       {
          INIT_THREAD_MONITOR()
 
@@ -15973,13 +15969,12 @@ private:
 
       SetLightnessThread( GenericImage& image, const GenericImage<P1>& lightness, ThreadData& data,
                           const Point& target, const Rect& rect, int firstRow, int endRow ) :
-         Thread(),
          m_image( image ), m_lightness( lightness ), m_data( data ),
          m_target( target ), m_rect( rect ), m_firstRow( firstRow ), m_endRow( endRow )
       {
       }
 
-      virtual void Run()
+      void Run() override
       {
          INIT_THREAD_MONITOR()
 
@@ -16543,4 +16538,4 @@ typedef FComplexImage                     ComplexImage;
 #endif   // __PCL_Image_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Image.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Image.h - Released 2018-11-01T11:06:36Z

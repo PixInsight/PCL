@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0378
+// Standard Global Process Module Version 01.02.07.0386
 // ----------------------------------------------------------------------------
-// ReadoutOptionsParameters.cpp - Released 2017-08-01T14:26:58Z
+// ReadoutOptionsParameters.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,19 +59,24 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ReadoutOptionsData*              TheReadoutOptionsDataParameter = 0;
-ReadoutOptionsMode*              TheReadoutOptionsModeParameter = 0;
-ReadoutOptionsProbeSize*         TheReadoutOptionsProbeSizeParameter = 0;
-ReadoutOptionsPreviewSize*       TheReadoutOptionsPreviewSizeParameter = 0;
-ReadoutOptionsPreviewZoomFactor* TheReadoutOptionsPreviewZoomFactorParameter = 0;
-ReadoutRealPrecision*            TheReadoutRealPrecisionParameter = 0;
-ReadoutIntegerRange*             TheReadoutIntegerRangeParameter = 0;
-ReadoutAlpha*                    TheReadoutAlphaParameter = 0;
-ReadoutMask*                     TheReadoutMaskParameter = 0;
-ReadoutPreview*                  TheReadoutPreviewParameter = 0;
-ReadoutPreviewCenter*            TheReadoutPreviewCenterParameter = 0;
-ReadoutBroadcast*                TheReadoutBroadcastParameter = 0;
-ReadoutReal*                     TheReadoutRealParameter = 0;
+ReadoutOptionsData*              TheReadoutOptionsDataParameter = nullptr;
+ReadoutOptionsMode*              TheReadoutOptionsModeParameter = nullptr;
+ReadoutOptionsProbeSize*         TheReadoutOptionsProbeSizeParameter = nullptr;
+ReadoutOptionsPreviewSize*       TheReadoutOptionsPreviewSizeParameter = nullptr;
+ReadoutOptionsPreviewZoomFactor* TheReadoutOptionsPreviewZoomFactorParameter = nullptr;
+ReadoutRealPrecision*            TheReadoutRealPrecisionParameter = nullptr;
+ReadoutIntegerRange*             TheReadoutIntegerRangeParameter = nullptr;
+ReadoutAlpha*                    TheReadoutAlphaParameter = nullptr;
+ReadoutMask*                     TheReadoutMaskParameter = nullptr;
+ReadoutPreview*                  TheReadoutPreviewParameter = nullptr;
+ReadoutPreviewCenter*            TheReadoutPreviewCenterParameter = nullptr;
+ReadoutShowEquatorial*           TheReadoutShowEquatorialParameter = nullptr;
+ReadoutShowEcliptic*             TheReadoutShowEclipticParameter = nullptr;
+ReadoutShowGalactic*             TheReadoutShowGalacticParameter = nullptr;
+ReadoutCoordinateItems*          TheReadoutCoordinateItemsParameter = nullptr;
+ReadoutCoordinatePrecision*      TheReadoutCoordinatePrecisionParameter = nullptr;
+ReadoutBroadcast*                TheReadoutBroadcastParameter = nullptr;
+ReadoutReal*                     TheReadoutRealParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -157,7 +162,7 @@ size_type ReadoutOptionsMode::DefaultValueIndex() const
 
 // ----------------------------------------------------------------------------
 
-ReadoutOptionsProbeSize::ReadoutOptionsProbeSize( MetaProcess* p ) : MetaUInt8( p )
+ReadoutOptionsProbeSize::ReadoutOptionsProbeSize( MetaProcess* p ) : MetaInt32( p )
 {
    TheReadoutOptionsProbeSizeParameter = this;
 }
@@ -189,7 +194,7 @@ double ReadoutOptionsProbeSize::MaximumValue() const
 
 // ----------------------------------------------------------------------------
 
-ReadoutOptionsPreviewSize::ReadoutOptionsPreviewSize( MetaProcess* p ) : MetaUInt8( p )
+ReadoutOptionsPreviewSize::ReadoutOptionsPreviewSize( MetaProcess* p ) : MetaInt32( p )
 {
    TheReadoutOptionsPreviewSizeParameter = this;
 }
@@ -221,7 +226,7 @@ double ReadoutOptionsPreviewSize::MaximumValue() const
 
 // ----------------------------------------------------------------------------
 
-ReadoutOptionsPreviewZoomFactor::ReadoutOptionsPreviewZoomFactor( MetaProcess* p ) : MetaUInt8( p )
+ReadoutOptionsPreviewZoomFactor::ReadoutOptionsPreviewZoomFactor( MetaProcess* p ) : MetaInt32( p )
 {
    TheReadoutOptionsPreviewZoomFactorParameter = this;
 }
@@ -248,7 +253,7 @@ double ReadoutOptionsPreviewZoomFactor::MaximumValue() const
 
 // ----------------------------------------------------------------------------
 
-ReadoutRealPrecision::ReadoutRealPrecision( MetaProcess* p ) : MetaUInt8( p )
+ReadoutRealPrecision::ReadoutRealPrecision( MetaProcess* p ) : MetaInt32( p )
 {
    TheReadoutRealPrecisionParameter = this;
 }
@@ -314,7 +319,7 @@ IsoString ReadoutAlpha::Id() const
 
 bool ReadoutAlpha::DefaultValue() const
 {
-   return ReadoutOptions().IsAlphaChannelEnabled();
+   return ReadoutOptions().ShowAlphaChannel();
 }
 
 // ----------------------------------------------------------------------------
@@ -331,7 +336,7 @@ IsoString ReadoutMask::Id() const
 
 bool ReadoutMask::DefaultValue() const
 {
-   return ReadoutOptions().IsMaskChannelEnabled();
+   return ReadoutOptions().ShowMaskChannel();
 }
 
 // ----------------------------------------------------------------------------
@@ -348,7 +353,7 @@ IsoString ReadoutPreview::Id() const
 
 bool ReadoutPreview::DefaultValue() const
 {
-   return ReadoutOptions().IsPreviewEnabled();
+   return ReadoutOptions().ShowPreview();
 }
 
 // ----------------------------------------------------------------------------
@@ -365,7 +370,112 @@ IsoString ReadoutPreviewCenter::Id() const
 
 bool ReadoutPreviewCenter::DefaultValue() const
 {
-   return ReadoutOptions().IsPreviewCenterEnabled();
+   return ReadoutOptions().ShowPreviewCenter();
+}
+
+// ----------------------------------------------------------------------------
+
+ReadoutShowEquatorial::ReadoutShowEquatorial( MetaProcess* p ) : MetaBoolean( p )
+{
+   TheReadoutShowEquatorialParameter = this;
+}
+
+IsoString ReadoutShowEquatorial::Id() const
+{
+   return "showEquatorialCoordinates";
+}
+
+bool ReadoutShowEquatorial::DefaultValue() const
+{
+   return ReadoutOptions().ShowEquatorialCoordinates();
+}
+
+// ----------------------------------------------------------------------------
+
+ReadoutShowEcliptic::ReadoutShowEcliptic( MetaProcess* p ) : MetaBoolean( p )
+{
+   TheReadoutShowEclipticParameter = this;
+}
+
+IsoString ReadoutShowEcliptic::Id() const
+{
+   return "showEclipticCoordinates";
+}
+
+bool ReadoutShowEcliptic::DefaultValue() const
+{
+   return ReadoutOptions().ShowEclipticCoordinates();
+}
+
+// ----------------------------------------------------------------------------
+
+ReadoutShowGalactic::ReadoutShowGalactic( MetaProcess* p ) : MetaBoolean( p )
+{
+   TheReadoutShowGalacticParameter = this;
+}
+
+IsoString ReadoutShowGalactic::Id() const
+{
+   return "showGalacticCoordinates";
+}
+
+bool ReadoutShowGalactic::DefaultValue() const
+{
+   return ReadoutOptions().ShowGalacticCoordinates();
+}
+
+// ----------------------------------------------------------------------------
+
+ReadoutCoordinateItems::ReadoutCoordinateItems( MetaProcess* p ) : MetaInt32( p )
+{
+   TheReadoutCoordinateItemsParameter = this;
+}
+
+IsoString ReadoutCoordinateItems::Id() const
+{
+   return "coordinateItems";
+}
+
+double ReadoutCoordinateItems::DefaultValue() const
+{
+   return ReadoutOptions().CoordinateItems();
+}
+
+double ReadoutCoordinateItems::MinimumValue() const
+{
+   return 1;
+}
+
+double ReadoutCoordinateItems::MaximumValue() const
+{
+   return 3;
+}
+
+// ----------------------------------------------------------------------------
+
+ReadoutCoordinatePrecision::ReadoutCoordinatePrecision( MetaProcess* p ) : MetaInt32( p )
+{
+   TheReadoutCoordinatePrecisionParameter = this;
+}
+
+IsoString ReadoutCoordinatePrecision::Id() const
+{
+   return "coordinatePrecision";
+}
+
+double ReadoutCoordinatePrecision::DefaultValue() const
+{
+   return ReadoutOptions().CoordinatePrecision();
+}
+
+double ReadoutCoordinatePrecision::MinimumValue() const
+{
+   return 0;
+}
+
+double ReadoutCoordinatePrecision::MaximumValue() const
+{
+   return 8;
 }
 
 // ----------------------------------------------------------------------------
@@ -407,4 +517,4 @@ bool ReadoutReal::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ReadoutOptionsParameters.cpp - Released 2017-08-01T14:26:58Z
+// EOF ReadoutOptionsParameters.cpp - Released 2018-11-01T11:07:20Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/FileFormatInstance.cpp - Released 2017-08-01T14:23:38Z
+// pcl/FileFormatInstance.cpp - Released 2018-11-01T11:06:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -439,12 +439,13 @@ bool FileFormatInstance::ReadFITSKeywords( FITSKeywordArray& keywords )
       for ( size_type i = 0, count = (*API->FileFormat->GetKeywordCount)( handle ); i < count; ++i )
       {
          IsoString name, value, comment;
-         name.Reserve( 96 );
-         value.Reserve( 96 );
-         comment.Reserve( 96 );
+         name.Reserve( 256 );
+         value.Reserve( 256 );
+         comment.Reserve( 256 );
 
+         // N.B. The passed maximum length *includes* an ending null character.
          if ( (*API->FileFormat->GetNextKeyword)( handle,
-                  name.Begin(), value.Begin(), comment.Begin(), 81 ) == api_false )
+                  name.Begin(), value.Begin(), comment.Begin(), 256 ) == api_false )
             throw APIFunctionError( "GetNextKeyword" );
 
          name.ResizeToNullTerminated();
@@ -1192,4 +1193,4 @@ void* FileFormatInstance::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormatInstance.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/FileFormatInstance.cpp - Released 2018-11-01T11:06:52Z

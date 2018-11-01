@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.02.0379
+// Standard Geometry Process Module Version 01.02.02.0387
 // ----------------------------------------------------------------------------
-// GeometryModule.cpp - Released 2017-10-16T10:07:46Z
+// GeometryModule.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     02
 #define MODULE_VERSION_REVISION  02
-#define MODULE_VERSION_BUILD     0379
+#define MODULE_VERSION_BUILD     0387
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     10
-#define MODULE_RELEASE_DAY       16
+#define MODULE_RELEASE_YEAR      2018
+#define MODULE_RELEASE_MONTH     11
+#define MODULE_RELEASE_DAY       1
 
 #include <pcl/Console.h>
 #include <pcl/ImageWindow.h>
@@ -134,7 +134,7 @@ String GeometryModule::Author() const
 
 String GeometryModule::Copyright() const
 {
-   return "Copyright (c) 2005-2017, Pleiades Astrophoto";
+   return "Copyright (c) 2005-2018, Pleiades Astrophoto";
 }
 
 // ----------------------------------------------------------------------------
@@ -228,7 +228,7 @@ bool WarnOnAstrometryMetadataOrPreviewsOrMask( const ImageWindow& window, const 
       {
          if ( !noGUIMessages )
             if ( MessageBox( "<p>" + window.MainView().Id() + "</p>"
-                             "<p>The image contains an astrometric solution that will be deleted by the geometric transformation.</p>"
+                             "<p>The image contains WCS keywords that will be deleted by the geometric transformation.</p>"
                              "<p><b>This side effect could be irreversible. Proceed?</b></p>",
                              processId,
                              StdIcon::Warning,
@@ -237,7 +237,7 @@ bool WarnOnAstrometryMetadataOrPreviewsOrMask( const ImageWindow& window, const 
                return false;
             }
 
-         Console().WarningLn( "<end><cbr><br>** Warning: " + processId + ": Existing astrometric solution will be deleted." );
+         Console().WarningLn( "<end><cbr><br>** Warning: " + processId + ": Existing WCS keywords will be deleted." );
          break;
       }
 
@@ -302,4 +302,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF GeometryModule.cpp - Released 2017-10-16T10:07:46Z
+// EOF GeometryModule.cpp - Released 2018-11-01T11:07:20Z

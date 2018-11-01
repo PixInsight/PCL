@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Mutex.h - Released 2017-08-01T14:23:31Z
+// pcl/Mutex.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -116,7 +116,7 @@ namespace pcl
  * class ThreadOne : public Thread
  * {
  *    //...
- *    virtual void Run()
+ *    void Run() override
  *    {
  *       functionOne();
  *    }
@@ -125,7 +125,7 @@ namespace pcl
  * class ThreadTwo : public Thread
  * {
  *    //...
- *    virtual void Run()
+ *    void Run() override
  *    {
  *       functionTwo();
  *    }
@@ -423,7 +423,7 @@ private:
 
 #endif   // __PCL_WINDOWS
 
-   int m_spinCount;
+   int m_spinCount = 512;
 };
 
 // ----------------------------------------------------------------------------
@@ -433,4 +433,4 @@ private:
 #endif   // __PCL_Mutex_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Mutex.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Mutex.h - Released 2018-11-01T11:06:36Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/MeanFilter.h - Released 2017-08-01T14:23:31Z
+// pcl/MeanFilter.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -111,18 +111,11 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    MeanFilter( MeanFilter&& ) = default;
-#else
-   MeanFilter( MeanFilter&& x ) :
-      KernelFilter( std::move( x ) )
-   {
-   }
-#endif
 
    /*!
     */
-   virtual KernelFilter* Clone() const
+   KernelFilter* Clone() const override
    {
       return new MeanFilter( *this );
    }
@@ -133,7 +126,7 @@ public:
     * A block average filter is always separable, so this member function
     * should always return a valid SeparableFilter object.
     */
-   virtual SeparableFilter AsSeparableFilter( float tolerance = __PCL_DEFAULT_FILTER_SEPARABILITY_TOLERANCE ) const
+   SeparableFilter AsSeparableFilter( float tolerance = __PCL_DEFAULT_FILTER_SEPARABILITY_TOLERANCE ) const override
    {
       FVector v = coefficients.RowVector( Size()>>1 );
       return SeparableFilter( v, v );
@@ -145,7 +138,7 @@ public:
     * A block average filter is separable. As reimplemented in %MeanFilter,
     * this member function returns true.
     */
-   virtual bool IsSeparable() const
+   bool IsSeparable() const override
    {
       return true;
    }
@@ -158,20 +151,12 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-#ifndef _MSC_VER
    MeanFilter& operator =( MeanFilter&& ) = default;
-#else
-   MeanFilter& operator =( MeanFilter&& x )
-   {
-      (void)KernelFilter::operator =( std::move( x ) );
-      return *this;
-   }
-#endif
 
    /*!
     * Recalculates filter coefficients for the given odd kernel size \a n >= 3.
     */
-   virtual void Resize( int n )  // Inherited from KernelFilter
+   void Resize( int n ) override
    {
       Initialize( n );
    }
@@ -194,4 +179,4 @@ private:
 #endif   // __PCL_MeanFilter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MeanFilter.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/MeanFilter.h - Released 2018-11-01T11:06:36Z

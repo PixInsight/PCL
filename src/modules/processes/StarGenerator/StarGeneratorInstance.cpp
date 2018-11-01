@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0297
+// Standard StarGenerator Process Module Version 01.01.00.0305
 // ----------------------------------------------------------------------------
-// StarGeneratorInstance.cpp - Released 2017-08-01T14:26:58Z
+// StarGeneratorInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -70,35 +70,37 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 StarGeneratorInstance::StarGeneratorInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-starDatabasePath(),
-centerRA( TheSGCenterRAParameter->DefaultValue() ),
-centerDec( TheSGCenterDecParameter->DefaultValue() ),
-epoch( TheSGEpochParameter->DefaultValue() ),
-projectionSystem( SGProjectionSystem::Default ),
-focalLength( TheSGFocalLengthParameter->DefaultValue() ),
-pixelSize( TheSGPixelSizeParameter->DefaultValue() ),
-sensorWidth( TheSGSensorWidthParameter->DefaultValue() ),
-sensorHeight( TheSGSensorHeightParameter->DefaultValue() ),
-limitMagnitude( TheSGLimitMagnitudeParameter->DefaultValue() ),
-starFWHM( TheSGStarFWHMParameter->DefaultValue() ),
-nonlinear( TheSGNonlinearParameter->DefaultValue() ),
-targetMinimumValue( TheSGTargetMinimumValueParameter->DefaultValue() ),
-outputMode( SGOutputMode::Default ),
-outputFilePath()
+   ProcessImplementation( m ),
+   centerRA( TheSGCenterRAParameter->DefaultValue() ),
+   centerDec( TheSGCenterDecParameter->DefaultValue() ),
+   epoch( TheSGEpochParameter->DefaultValue() ),
+   projectionSystem( SGProjectionSystem::Default ),
+   focalLength( TheSGFocalLengthParameter->DefaultValue() ),
+   pixelSize( TheSGPixelSizeParameter->DefaultValue() ),
+   sensorWidth( TheSGSensorWidthParameter->DefaultValue() ),
+   sensorHeight( TheSGSensorHeightParameter->DefaultValue() ),
+   limitMagnitude( TheSGLimitMagnitudeParameter->DefaultValue() ),
+   starFWHM( TheSGStarFWHMParameter->DefaultValue() ),
+   nonlinear( TheSGNonlinearParameter->DefaultValue() ),
+   targetMinimumValue( TheSGTargetMinimumValueParameter->DefaultValue() ),
+   outputMode( SGOutputMode::Default )
 {
 }
 
+// ----------------------------------------------------------------------------
+
 StarGeneratorInstance::StarGeneratorInstance( const StarGeneratorInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
 
+// ----------------------------------------------------------------------------
+
 void StarGeneratorInstance::Assign( const ProcessImplementation& p )
 {
    const StarGeneratorInstance* x = dynamic_cast<const StarGeneratorInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       starDatabasePath = x->starDatabasePath;
       centerRA = x->centerRA;
@@ -118,21 +120,30 @@ void StarGeneratorInstance::Assign( const ProcessImplementation& p )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool StarGeneratorInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) const
 {
    whyNot = "StarGenerator can only be executed in the global context.";
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool StarGeneratorInstance::IsHistoryUpdater( const View& v ) const
 {
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool StarGeneratorInstance::CanExecuteGlobal( String& whyNot ) const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 class StarGeneratorEngine
 {
@@ -141,7 +152,7 @@ public:
    StarGeneratorEngine( const StarGeneratorInstance& aInstance ) :
    instance( aInstance )
    {
-      if ( S == 0 )
+      if ( S == nullptr )
       {
          if ( instance.starDatabasePath.IsEmpty() )
             throw Error( "No star database file has been specified" );
@@ -485,7 +496,9 @@ private:
    }
 };
 
-StarDatabase* StarGeneratorEngine::S = 0;
+StarDatabase* StarGeneratorEngine::S = nullptr;
+
+// ----------------------------------------------------------------------------
 
 bool StarGeneratorInstance::ExecuteGlobal()
 {
@@ -493,6 +506,8 @@ bool StarGeneratorInstance::ExecuteGlobal()
    StarGeneratorEngine( *this );
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void* StarGeneratorInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
 {
@@ -526,8 +541,11 @@ void* StarGeneratorInstance::LockParameter( const MetaParameter* p, size_type /*
       return &outputMode;
    if ( p == TheSGOutputFilePathParameter )
       return outputFilePath.Begin();
-   return 0;
+
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool StarGeneratorInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {
@@ -548,6 +566,8 @@ bool StarGeneratorInstance::AllocateParameter( size_type sizeOrLength, const Met
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 size_type StarGeneratorInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
    if ( p == TheSGStarDatabasePathParameter )
@@ -562,4 +582,4 @@ size_type StarGeneratorInstance::ParameterLength( const MetaParameter* p, size_t
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF StarGeneratorInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF StarGeneratorInstance.cpp - Released 2018-11-01T11:07:21Z

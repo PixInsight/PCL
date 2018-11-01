@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/FFTRegistration.h - Released 2017-08-01T14:23:31Z
+// pcl/FFTRegistration.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -104,7 +104,8 @@ public:
    /*!
     * Move constructor.
     */
-   FFTRegistrationEngine( FFTRegistrationEngine&& x ) : m_fftReference( std::move( x.m_fftReference ) )
+   FFTRegistrationEngine( FFTRegistrationEngine&& x ) :
+      m_fftReference( std::move( x.m_fftReference ) )
    {
    }
 
@@ -315,11 +316,7 @@ public:
    /*!
     * Constructs an %FFTTranslation object.
     */
-   FFTTranslation() :
-      FFTRegistrationEngine(),
-      m_largeTranslations( false ), m_delta( 0.0F ), m_peak( 0.0F )
-   {
-   }
+   FFTTranslation() = default;
 
    /*!
     * Destroys an %FFTTranslation object.
@@ -427,29 +424,29 @@ protected:
 
    // Allow translations > size/2.
    // Warning: a lot of memory may be necessary --four times more.
-   bool     m_largeTranslations;
+   bool     m_largeTranslations = false;
 
    // Evaluation result.
-   FPoint   m_delta;
+   FPoint   m_delta = 0.0F;
 
    // Peak value detected in the phase matrix.
-   float    m_peak;
+   float    m_peak = 0.0F;
 
-   virtual ComplexImage DoInitialize( const pcl::Image& );
-   virtual ComplexImage DoInitialize( const pcl::DImage& );
-   virtual ComplexImage DoInitialize( const pcl::ComplexImage& );
-   virtual ComplexImage DoInitialize( const pcl::DComplexImage& );
-   virtual ComplexImage DoInitialize( const pcl::UInt8Image& );
-   virtual ComplexImage DoInitialize( const pcl::UInt16Image& );
-   virtual ComplexImage DoInitialize( const pcl::UInt32Image& );
+   ComplexImage DoInitialize( const pcl::Image& ) override;
+   ComplexImage DoInitialize( const pcl::DImage& ) override;
+   ComplexImage DoInitialize( const pcl::ComplexImage& ) override;
+   ComplexImage DoInitialize( const pcl::DComplexImage& ) override;
+   ComplexImage DoInitialize( const pcl::UInt8Image& ) override;
+   ComplexImage DoInitialize( const pcl::UInt16Image& ) override;
+   ComplexImage DoInitialize( const pcl::UInt32Image& ) override;
 
-   virtual void DoEvaluate( const pcl::Image& );
-   virtual void DoEvaluate( const pcl::DImage& );
-   virtual void DoEvaluate( const pcl::ComplexImage& );
-   virtual void DoEvaluate( const pcl::DComplexImage& );
-   virtual void DoEvaluate( const pcl::UInt8Image& );
-   virtual void DoEvaluate( const pcl::UInt16Image& );
-   virtual void DoEvaluate( const pcl::UInt32Image& );
+   void DoEvaluate( const pcl::Image& ) override;
+   void DoEvaluate( const pcl::DImage& ) override;
+   void DoEvaluate( const pcl::ComplexImage& ) override;
+   void DoEvaluate( const pcl::DComplexImage& ) override;
+   void DoEvaluate( const pcl::UInt8Image& ) override;
+   void DoEvaluate( const pcl::UInt16Image& ) override;
+   void DoEvaluate( const pcl::UInt32Image& ) override;
 };
 
 // ----------------------------------------------------------------------------
@@ -477,11 +474,7 @@ public:
     *
     * Scaling ratio evaluation (see EvaluatesScaling()) is disabled by default.
     */
-   FFTRotationAndScaling() :
-      FFTRegistrationEngine(),
-      m_evaluateScaling( false ), m_lowFrequencyCutoff( 1.0F/200 ), m_rotationAngle( 0 ), m_scalingRatio( 1 )
-   {
-   }
+   FFTRotationAndScaling() = default;
 
    /*!
     * Destroys a %FFTRotationAndScaling object.
@@ -582,30 +575,30 @@ public:
 protected:
 
    // Evaluate rotation+scaling, or just rotation?
-   bool     m_evaluateScaling;
+   bool     m_evaluateScaling = false;
 
    // Low-frequency cutoff, as a fraction of the DFT radius.
-   float    m_lowFrequencyCutoff;
+   float    m_lowFrequencyCutoff = 1.0F/200;
 
    // Evaluation result
-   float    m_rotationAngle; // radians
-   float    m_scalingRatio;  // pixels
+   float    m_rotationAngle = 0.0F; // radians
+   float    m_scalingRatio = 1.0F;  // pixels
 
-   virtual ComplexImage DoInitialize( const pcl::Image& );
-   virtual ComplexImage DoInitialize( const pcl::DImage& );
-   virtual ComplexImage DoInitialize( const pcl::ComplexImage& );
-   virtual ComplexImage DoInitialize( const pcl::DComplexImage& );
-   virtual ComplexImage DoInitialize( const pcl::UInt8Image& );
-   virtual ComplexImage DoInitialize( const pcl::UInt16Image& );
-   virtual ComplexImage DoInitialize( const pcl::UInt32Image& );
+   ComplexImage DoInitialize( const pcl::Image& ) override;
+   ComplexImage DoInitialize( const pcl::DImage& ) override;
+   ComplexImage DoInitialize( const pcl::ComplexImage& ) override;
+   ComplexImage DoInitialize( const pcl::DComplexImage& ) override;
+   ComplexImage DoInitialize( const pcl::UInt8Image& ) override;
+   ComplexImage DoInitialize( const pcl::UInt16Image& ) override;
+   ComplexImage DoInitialize( const pcl::UInt32Image& ) override;
 
-   virtual void DoEvaluate( const pcl::Image& );
-   virtual void DoEvaluate( const pcl::DImage& );
-   virtual void DoEvaluate( const pcl::ComplexImage& );
-   virtual void DoEvaluate( const pcl::DComplexImage& );
-   virtual void DoEvaluate( const pcl::UInt8Image& );
-   virtual void DoEvaluate( const pcl::UInt16Image& );
-   virtual void DoEvaluate( const pcl::UInt32Image& );
+   void DoEvaluate( const pcl::Image& ) override;
+   void DoEvaluate( const pcl::DImage& ) override;
+   void DoEvaluate( const pcl::ComplexImage& ) override;
+   void DoEvaluate( const pcl::DComplexImage& ) override;
+   void DoEvaluate( const pcl::UInt8Image& ) override;
+   void DoEvaluate( const pcl::UInt16Image& ) override;
+   void DoEvaluate( const pcl::UInt32Image& ) override;
 };
 
 // ----------------------------------------------------------------------------
@@ -615,4 +608,4 @@ protected:
 #endif   // __PCL_FFTRegistration_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FFTRegistration.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/FFTRegistration.h - Released 2018-11-01T11:06:36Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/AutoPointer.h - Released 2017-08-01T14:23:31Z
+// pcl/AutoPointer.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -235,7 +235,7 @@ public:
  * feature for the \c lightness %AutoPointer, so it won't delete its stored
  * pointer when it gets out of scope.
  *
- * \sa StandardDeleter
+ * \sa StandardDeleter, AutoPointerCloner
  */
 template <class T, class D = StandardDeleter<T> >
 class PCL_CLASS AutoPointer
@@ -350,7 +350,7 @@ public:
     * feature is enabled, the pointed object will be destroyed by calling the
     * deleter object.
     */
-   ~AutoPointer()
+   virtual ~AutoPointer()
    {
       Reset();
    }
@@ -668,7 +668,7 @@ public:
       bool b = x1.m_autoDelete; x1.m_autoDelete = x2.m_autoDelete; x2.m_autoDelete = b;
    }
 
-private:
+protected:
 
    pointer m_pointer;
    deleter m_deleter;
@@ -677,9 +677,235 @@ private:
 
 // ----------------------------------------------------------------------------
 
+#define ASSERT_COPIABLE_T() \
+   static_assert( std::is_copy_constructible<T>::value, "AutoPointerCloner<> requires a copy-constructible type." )
+
+/*!
+ * \class AutoPointerCloner
+ * \brief A smart pointer able to clone the objects pointed to by other smart
+ * pointers.
+ *
+ * %AutoPointerCloner is like AutoPointer, from which it derives publicly, with
+ * the only and substantial difference that it makes a dynamically allocated
+ * copy (or \e clone) of the object pointed to by another smart pointer upon
+ * copy construction or copy assignment. This is useful in cases where a
+ * dynamically allocated data member object must be duplicated automatically by
+ * the copy constructors and copy assignment operator of its base class.
+ *
+ * \sa AutoPointer
+ */
+template <class T, class D = StandardDeleter<T> >
+class PCL_CLASS AutoPointerCloner : public AutoPointer<T,D>
+{
+public:
+
+   typedef AutoPointer<T,D>                  base_type;
+
+   /*!
+    * Represents the type of the object pointed to by this smart pointer.
+    */
+   typedef typename base_type::value_type    value_type;
+
+   /*!
+    * Represents a pointer stored in this smart pointer.
+    */
+   typedef typename base_type::pointer       pointer;
+
+   /*!
+    * Represents a pointer to an immutable object stored in this smart pointer.
+    */
+   typedef typename base_type::const_pointer const_pointer;
+
+   /*!
+    * Represents the type of the object responsible for object deletion.
+    */
+   typedef typename base_type::deleter       deleter;
+
+   /*!
+    * Constructs a null smart pointer cloner.
+    *
+    * \param autoDelete    Initial state of the automatic deletion feature. The
+    *                      default value is true, so auto deletion is always
+    *                      enabled by default for newly created %AutoPointer
+    *                      objects.
+    *
+    * \param d             Deleter object, responsible for object destruction
+    *                      when the automatic deletion feature is enabled.
+    *
+    * A null smart pointer stores a null pointer, so it does not point to a
+    * valid object.
+    *
+    * A copy of the specified deleter \a d will be used. If no deleter is
+    * specified, this object will use a default-constructed instance of the
+    * deleter template argument class.
+    */
+   AutoPointerCloner( bool autoDelete = true, const deleter& d = deleter() ) :
+      base_type( autoDelete, d )
+   {
+      ASSERT_COPIABLE_T();
+   }
+
+   /*!
+    * Constructs a smart pointer cloner to store a given pointer.
+    *
+    * \param p             The pointer to store in this %AutoPointer instance.
+    *
+    * \param autoDelete    Initial state of the automatic deletion feature. The
+    *                      default value is true, so auto deletion is always
+    *                      enabled by default for newly created %AutoPointer
+    *                      objects.
+    *
+    * \param d             Deleter object, responsible for object destruction
+    *                      when the automatic deletion feature is enabled.
+    *
+    * A copy of the specified deleter \a d will be used. If no deleter is
+    * specified, this object will use a default-constructed instance of the
+    * deleter template argument class.
+    */
+   AutoPointerCloner( pointer p, bool autoDelete = true, const deleter& d = deleter() ) :
+      base_type( p, autoDelete, d )
+   {
+      ASSERT_COPIABLE_T();
+   }
+
+   /*!
+    * Non-trivial copy constructor. Constructs a smart pointer cloner by making
+    * a dynamically allocated copy (or \e clone) of the object pointed to by
+    * the pointer stored in another smart pointer \a x.
+    *
+    * The automatic deletion feature will be enabled for this object if a clone
+    * object is generated; otherwise it will be in the same state as it is
+    * currently set for the source object \a x.
+    *
+    * Contrarily to the copy constructor of AutoPointer, the source smart
+    * pointer \a x will not be modified in any way by this constructor.
+    */
+   AutoPointerCloner( const base_type& x ) : base_type( nullptr )
+   {
+      ASSERT_COPIABLE_T();
+      this->m_pointer = x ? new value_type( *x ) : nullptr;
+      this->m_deleter = x.m_deleter;
+      this->m_autoDelete = x || x.m_autoDelete;
+   }
+
+   /*!
+    * Copy constructor. Constructs a smart pointer cloner by making a
+    * dynamically allocated copy (or \e clone) of the object pointed to by
+    * the pointer stored in another smart pointer cloner \a x.
+    *
+    * The automatic deletion feature will be enabled for this object if a clone
+    * object is generated; otherwise it will be in the same state as it is
+    * currently set for the source object \a x.
+    *
+    * Contrarily to the copy constructor of AutoPointer, the source smart
+    * pointer \a x will not be modified in any way by this constructor.
+    */
+   AutoPointerCloner( const AutoPointerCloner& x ) : base_type( nullptr )
+   {
+      ASSERT_COPIABLE_T();
+      this->m_pointer = x ? new value_type( *x ) : nullptr;
+      this->m_deleter = x.m_deleter;
+      this->m_autoDelete = x || x.m_autoDelete;
+   }
+
+   /*!
+    * Move constructor.
+    */
+   AutoPointerCloner( base_type&& x ) : base_type( std::move( x ) )
+   {
+   }
+
+   /*!
+    * Copy assignment from base class operator.
+    *
+    * This assignment operator performs the following actions:
+    *
+    * (1) If this smart pointer stores a valid (non-null) pointer, and the
+    * automatic deletion feature is enabled, the pointed object is destroyed by
+    * the deleter object. This behavior is the same as for AutoPointer.
+    *
+    * (2) If the other smart pointer \a x stores a valid (non-null) pointer,
+    * a dynamically allocated copy (or \e clone) of the pointed object will be
+    * generated, and a pointer to the newly constructed object will be stored
+    * in this instance. In such case, the automatic deletion feature will be
+    * enabled for this object; otherwise, it will have the same state as in the
+    * source object \a x, and this object will store a null pointer.
+    *
+    * (3) Returns a reference to this object.
+    *
+    * In contrast to AutoPointer's copy assignment operator, this operator does
+    * not modify the specified source object \a x in any way.
+    */
+   AutoPointerCloner& operator =( const base_type& x )
+   {
+      this->SetPointer( x ? new value_type( *x ) : nullptr );
+      this->m_deleter = x.m_deleter;
+      this->m_autoDelete = x || x.m_autoDelete;
+      return *this;
+   }
+
+   /*!
+    * Copy assignment operator.
+    *
+    * This assignment operator performs the following actions:
+    *
+    * (1) If this smart pointer stores a valid (non-null) pointer, and the
+    * automatic deletion feature is enabled, the pointed object is destroyed by
+    * the deleter object. This behavior is the same as for AutoPointer.
+    *
+    * (2) If the other smart pointer \a x stores a valid (non-null) pointer,
+    * a dynamically allocated copy (or \e clone) of the pointed object will be
+    * generated, and a pointer to the newly constructed object will be stored
+    * in this instance. In such case, the automatic deletion feature will be
+    * enabled for this object; otherwise, it will have the same state as in the
+    * source object \a x, and this object will store a null pointer.
+    *
+    * (3) Returns a reference to this object.
+    *
+    * In contrast to AutoPointer's copy assignment operator, this operator does
+    * not modify the specified source object \a x in any way.
+    */
+   AutoPointerCloner& operator =( const AutoPointerCloner& x )
+   {
+      this->SetPointer( x ? new value_type( *x ) : nullptr );
+      this->m_deleter = x.m_deleter;
+      this->m_autoDelete = x || x.m_autoDelete;
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. This function simply calls the base class
+    * version of the same operator and returns a reference to this object.
+    */
+   AutoPointerCloner& operator =( base_type&& x )
+   {
+      (void)base_type::operator =( std::move( x ) );
+      return *this;
+   }
+
+   /*!
+    * Causes this smart pointer cloner to store the specified pointer \a p.
+    * Returns a reference to this object.
+    *
+    * This member function is identical to its base class counterpart
+    * AutoPointer::operator =( pointer ). It is equivalent to:
+    *
+    * \code SetPointer( p ); \endcode
+    */
+   AutoPointerCloner& operator =( pointer p )
+   {
+      this->SetPointer( p );
+      return *this;
+   }
+};
+
+#undef ASSERT_COPIABLE_T
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 #endif  // __PCL_AutoPointer_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AutoPointer.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/AutoPointer.h - Released 2018-11-01T11:06:36Z

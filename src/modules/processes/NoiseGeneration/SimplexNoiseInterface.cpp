@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard NoiseGeneration Process Module Version 01.00.02.0325
+// Standard NoiseGeneration Process Module Version 01.00.02.0333
 // ----------------------------------------------------------------------------
-// SimplexNoiseInterface.cpp - Released 2017-08-01T14:26:58Z
+// SimplexNoiseInterface.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard NoiseGeneration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,7 +58,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-SimplexNoiseInterface* TheSimplexNoiseInterface = 0;
+SimplexNoiseInterface* TheSimplexNoiseInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -67,36 +67,48 @@ SimplexNoiseInterface* TheSimplexNoiseInterface = 0;
 // ----------------------------------------------------------------------------
 
 SimplexNoiseInterface::SimplexNoiseInterface() :
-ProcessInterface(), instance( TheSimplexNoiseProcess ), GUI( 0 )
+   instance( TheSimplexNoiseProcess )
 {
    TheSimplexNoiseInterface = this;
 }
 
+// ----------------------------------------------------------------------------
+
 SimplexNoiseInterface::~SimplexNoiseInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString SimplexNoiseInterface::Id() const
 {
    return "SimplexNoise";
 }
 
+// ----------------------------------------------------------------------------
+
 MetaProcess* SimplexNoiseInterface::Process() const
 {
    return TheSimplexNoiseProcess;
 }
+
+// ----------------------------------------------------------------------------
 
 const char** SimplexNoiseInterface::IconImageXPM() const
 {
    return SimplexNoiseIcon_XPM;
 }
 
+// ----------------------------------------------------------------------------
+
 void SimplexNoiseInterface::ApplyInstance() const
 {
    instance.LaunchOnCurrentView();
 }
+
+// ----------------------------------------------------------------------------
 
 void SimplexNoiseInterface::ResetInstance()
 {
@@ -104,9 +116,11 @@ void SimplexNoiseInterface::ResetInstance()
    ImportProcess( defaultInstance );
 }
 
+// ----------------------------------------------------------------------------
+
 bool SimplexNoiseInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
 
@@ -127,10 +141,14 @@ bool SimplexNoiseInterface::Launch( const MetaProcess& P, const ProcessImplement
    return &P == TheSimplexNoiseProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* SimplexNoiseInterface::NewProcess() const
 {
    return new SimplexNoiseInstance( instance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool SimplexNoiseInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
@@ -140,10 +158,14 @@ bool SimplexNoiseInterface::ValidateProcess( const ProcessImplementation& p, pcl
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool SimplexNoiseInterface::RequiresInstanceValidation() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool SimplexNoiseInterface::ImportProcess( const ProcessImplementation& p )
 {
@@ -171,6 +193,8 @@ void SimplexNoiseInterface::__ValueUpdated( NumericEdit& sender, double value )
       instance.p_amount = value;
 }
 
+// ----------------------------------------------------------------------------
+
 void SimplexNoiseInterface::__IntValueUpdated( SpinBox& sender, int value )
 {
    if ( sender == GUI->Scale_SpinBox )
@@ -180,6 +204,8 @@ void SimplexNoiseInterface::__IntValueUpdated( SpinBox& sender, int value )
    else if ( sender == GUI->OffsetY_SpinBox )
       instance.p_offsetY = value;
 }
+
+// ----------------------------------------------------------------------------
 
 void SimplexNoiseInterface::__Click( Button& sender, bool checked )
 {
@@ -205,12 +231,15 @@ void SimplexNoiseInterface::__Click( Button& sender, bool checked )
       GUI->OffsetY_SpinBox.SetStepSize( 100 );
 }
 
+// ----------------------------------------------------------------------------
+
 void SimplexNoiseInterface::__ItemSelected( ComboBox& sender, int itemIndex )
 {
    if ( sender == GUI->Operator_ComboBox )
       instance.p_operator = itemIndex;
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 SimplexNoiseInterface::GUIData::GUIData( SimplexNoiseInterface& w )
@@ -352,4 +381,4 @@ SimplexNoiseInterface::GUIData::GUIData( SimplexNoiseInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SimplexNoiseInterface.cpp - Released 2017-08-01T14:26:58Z
+// EOF SimplexNoiseInterface.cpp - Released 2018-11-01T11:07:21Z

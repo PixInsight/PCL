@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Cryptography.h - Released 2017-08-01T14:23:31Z
+// pcl/Cryptography.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -249,7 +249,7 @@ public:
    /*!
     * Returns the name of this cryptographic hashing algorithm: "MD5".
     */
-   virtual String AlgorithmName() const
+   String AlgorithmName() const override
    {
       return "MD5";
    }
@@ -261,18 +261,18 @@ public:
     * As reimplemented in %MD5, this function returns 16, the length in bytes
     * of an %MD5 digest.
     */
-   virtual size_type HashLength() const
+   size_type HashLength() const override
    {
       return 16;
    }
 
    /*!
     */
-   virtual void Initialize();
+   void Initialize() override;
 
    /*!
     */
-   virtual void Update( const void* data, size_type length );
+   void Update( const void* data, size_type length ) override;
 
 private:
 
@@ -280,7 +280,7 @@ private:
 
    /*!
     */
-   virtual void Finalize( void* hash );
+   void Finalize( void* hash ) override;
 };
 
 // ----------------------------------------------------------------------------
@@ -311,9 +311,7 @@ public:
    /*!
     * Constructs an SHA-1 hash generator.
     */
-   SHA1() : m_context( nullptr )
-   {
-   }
+   SHA1() = default;
 
    /*!
     * Destroys an SHA-1 hash generator.
@@ -323,7 +321,7 @@ public:
    /*!
     * Returns the name of this cryptographic hashing algorithm: "SHA1".
     */
-   virtual String AlgorithmName() const
+   String AlgorithmName() const override
    {
       return "SHA1";
    }
@@ -335,26 +333,26 @@ public:
     * As reimplemented in %SHA1, this function returns 20, the length in bytes
     * of an SHA-1 digest.
     */
-   virtual size_type HashLength() const
+   size_type HashLength() const override
    {
       return 20;
    }
 
    /*!
     */
-   virtual void Initialize();
+   void Initialize() override;
 
    /*!
     */
-   virtual void Update( const void* data, size_type length );
+   void Update( const void* data, size_type length ) override;
 
 private:
 
-   void* m_context; // RFC4634
+   void* m_context = nullptr; // RFC4634
 
    /*!
     */
-   virtual void Finalize( void* hash );
+   void Finalize( void* hash ) override;
 };
 
 // ----------------------------------------------------------------------------
@@ -385,9 +383,7 @@ public:
    /*!
     * Constructs an SHA-224 hash generator.
     */
-   SHA224() : m_context( nullptr )
-   {
-   }
+   SHA224() = default;
 
    /*!
     * Destroys an SHA-224 hash generator.
@@ -397,7 +393,7 @@ public:
    /*!
     * Returns the name of this cryptographic hashing algorithm: "SHA224".
     */
-   virtual String AlgorithmName() const
+   String AlgorithmName() const override
    {
       return "SHA224";
    }
@@ -409,26 +405,26 @@ public:
     * As reimplemented in %SHA224, this function returns 28, the length in
     * bytes of an SHA-224 digest.
     */
-   virtual size_type HashLength() const
+   size_type HashLength() const override
    {
       return 28;
    }
 
    /*!
     */
-   virtual void Initialize();
+   void Initialize() override;
 
    /*!
     */
-   virtual void Update( const void* data, size_type length );
+   void Update( const void* data, size_type length ) override;
 
 private:
 
-   void* m_context; // RFC4634
+   void* m_context = nullptr; // RFC4634
 
    /*!
     */
-   virtual void Finalize( void* hash );
+   void Finalize( void* hash ) override;
 };
 
 // ----------------------------------------------------------------------------
@@ -458,9 +454,7 @@ public:
    /*!
     * Constructs an SHA-256 hash generator.
     */
-   SHA256() : m_context( nullptr )
-   {
-   }
+   SHA256() = default;
 
    /*!
     * Destroys an SHA-256 hash generator.
@@ -470,7 +464,7 @@ public:
    /*!
     * Returns the name of this cryptographic hashing algorithm: "SHA256".
     */
-   virtual String AlgorithmName() const
+   String AlgorithmName() const override
    {
       return "SHA256";
    }
@@ -482,26 +476,26 @@ public:
     * As reimplemented in %SHA256, this function returns 32, the length in
     * bytes of an SHA-256 digest.
     */
-   virtual size_type HashLength() const
+   size_type HashLength() const override
    {
       return 32;
    }
 
    /*!
     */
-   virtual void Initialize();
+   void Initialize() override;
 
    /*!
     */
-   virtual void Update( const void* data, size_type length );
+   void Update( const void* data, size_type length ) override;
 
 private:
 
-   void* m_context; // RFC4634
+   void* m_context = nullptr; // RFC4634
 
    /*!
     */
-   virtual void Finalize( void* hash );
+   void Finalize( void* hash ) override;
 };
 
 // ----------------------------------------------------------------------------
@@ -531,9 +525,7 @@ public:
    /*!
     * Constructs an SHA-384 hash generator.
     */
-   SHA384() : m_context( nullptr )
-   {
-   }
+   SHA384() = default;
 
    /*!
     * Destroys an SHA-384 hash generator.
@@ -543,7 +535,7 @@ public:
    /*!
     * Returns the name of this cryptographic hashing algorithm: "SHA384".
     */
-   virtual String AlgorithmName() const
+   String AlgorithmName() const override
    {
       return "SHA384";
    }
@@ -555,26 +547,26 @@ public:
     * As reimplemented in %SHA384, this function returns 48, the length in
     * bytes of an SHA-384 digest.
     */
-   virtual size_type HashLength() const
+   size_type HashLength() const override
    {
       return 48;
    }
 
    /*!
     */
-   virtual void Initialize();
+   void Initialize() override;
 
    /*!
     */
-   virtual void Update( const void* data, size_type length );
+   void Update( const void* data, size_type length ) override;
 
 private:
 
-   void* m_context; // RFC4634
+   void* m_context = nullptr; // RFC4634
 
    /*!
     */
-   virtual void Finalize( void* hash );
+   void Finalize( void* hash ) override;
 };
 
 // ----------------------------------------------------------------------------
@@ -604,9 +596,7 @@ public:
    /*!
     * Constructs an SHA-512 hash generator.
     */
-   SHA512() : m_context( nullptr )
-   {
-   }
+   SHA512() = default;
 
    /*!
     * Destroys an SHA-512 hash generator.
@@ -616,7 +606,7 @@ public:
    /*!
     * Returns the name of this cryptographic hashing algorithm: "SHA512".
     */
-   virtual String AlgorithmName() const
+   String AlgorithmName() const override
    {
       return "SHA512";
    }
@@ -628,26 +618,26 @@ public:
     * As reimplemented in %SHA512, this function returns 64, the length in
     * bytes of an SHA-512 digest.
     */
-   virtual size_type HashLength() const
+   size_type HashLength() const override
    {
       return 64;
    }
 
    /*!
     */
-   virtual void Initialize();
+   void Initialize() override;
 
    /*!
     */
-   virtual void Update( const void* data, size_type length );
+   void Update( const void* data, size_type length ) override;
 
 private:
 
-   void* m_context; // RFC4634
+   void* m_context = nullptr; // RFC4634
 
    /*!
     */
-   virtual void Finalize( void* hash );
+   void Finalize( void* hash ) override;
 };
 
 // ----------------------------------------------------------------------------
@@ -712,7 +702,7 @@ public:
    /*!
     * Returns the name of this cryptographic hashing algorithm.
     */
-   virtual String AlgorithmName() const
+   String AlgorithmName() const override
    {
       return m_hash->AlgorithmName();
    }
@@ -721,7 +711,7 @@ public:
     * Returns the length in bytes of a hash sequence (or message digest)
     * calculated with this cryptographic hashing algorithm.
     */
-   virtual size_type HashLength() const
+   size_type HashLength() const override
    {
       return m_hash->HashLength();
    }
@@ -729,7 +719,7 @@ public:
    /*!
     * Initializes this cryptographic hash generator.
     */
-   virtual void Initialize()
+   void Initialize() override
    {
       m_hash->Initialize();
    }
@@ -738,7 +728,7 @@ public:
     * Updates the hash generator with a new \a data chunk of the specified
     * \a length in bytes.
     */
-   virtual void Update( const void* data, size_type length )
+   void Update( const void* data, size_type length ) override
    {
       m_hash->Update( data, length );
    }
@@ -747,7 +737,7 @@ private:
 
    AutoPointer<CryptographicHash> m_hash;
 
-   virtual void Finalize( void* hash )
+   void Finalize( void* hash ) override
    {
       m_hash->Finalize( hash );
    }
@@ -1027,7 +1017,7 @@ public:
    /*!
     * Returns "AES256", the name of this cipher algorithm.
     */
-   virtual String AlgorithmName() const
+   String AlgorithmName() const override
    {
       return "AES256";
    }
@@ -1035,7 +1025,7 @@ public:
    /*!
     * Returns 32, the length in bytes of a key in the AES-256 cipher algorithm.
     */
-   virtual size_type KeyLength() const
+   size_type KeyLength() const override
    {
       return 32;
    }
@@ -1056,7 +1046,7 @@ public:
     * function throws an Error exception. If necessary, the source data must
     * be padded with zeros or spaces, as required to achieve a valid length.
     */
-   virtual void Encrypt( void* output, const void* input, size_type length ) const;
+   void Encrypt( void* output, const void* input, size_type length ) const override;
 
    /*!
     * AES buffer decryption (CBC mode).
@@ -1073,7 +1063,7 @@ public:
     * If the specified \a length is not an integer multiple of 16 bytes, this
     * function throws an Error exception.
     */
-   virtual void Decrypt( void* output, const void* input, size_type length ) const;
+   void Decrypt( void* output, const void* input, size_type length ) const override;
 
    /*!
     * AES block encryption (ECB mode).
@@ -1113,4 +1103,4 @@ private:
 #endif   // __PCL_Cryptography_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Cryptography.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Cryptography.h - Released 2018-11-01T11:06:36Z

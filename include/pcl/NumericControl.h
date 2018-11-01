@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/NumericControl.h - Released 2017-08-01T14:23:31Z
+// pcl/NumericControl.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -175,7 +175,7 @@ public:
     */
    int Precision() const
    {
-      return int( m_precision );
+      return m_precision;
    }
 
    /*! #
@@ -297,15 +297,15 @@ protected:
 
    AutoPointer<EventHandlers> m_handlers;
 
-   double   m_value;             // current value
-   double   m_lowerBound;        // acceptable range, lower bound
-   double   m_upperBound;        // acceptable range, upper bound
-   unsigned m_precision     : 4; // number of decimal digits in non-sci mode, [0,15]
-   bool     m_real          : 1; // whether this is a real or integer parameter
-   bool     m_fixed         : 1; // precision is literal instead of significant digits?
-   bool     m_scientific    : 1; // scientific notation enabled?
-   bool     m_autoEditWidth : 1; // set width of edit control automatically
-   int      m_sciTriggerExp;     // exponent (of ten) to trigger sci notation
+   double m_value = 0;            // current value
+   double m_lowerBound = 0;       // acceptable range, lower bound
+   double m_upperBound = 1;       // acceptable range, upper bound
+   int    m_precision = 6;        // number of decimal digits in non-sci mode, [0,15]
+   bool   m_real = true;          // whether this is a real or integer parameter
+   bool   m_fixed = false;        // precision is literal instead of significant digits?
+   bool   m_scientific = false;   // scientific notation enabled?
+   bool   m_autoEditWidth = true; // set width of edit control automatically
+   int    m_sciTriggerExp = -1;   // exponent (of ten) to trigger sci notation
 
    PCL_MEMBER_REENTRANCY_GUARD( EditCompleted )
 
@@ -360,7 +360,7 @@ public:
     * If the resulting lower bound is negative, the exponential slider response
     * feature will be implicitly disabled.
     */
-   virtual void SetRange( double lower, double upper );
+   void SetRange( double lower, double upper ) override;
 
    /*!
     * Returns true if the slider component of this %NumericControl has
@@ -425,15 +425,15 @@ public:
 
 protected:
 
-   virtual void UpdateControls();
+   void UpdateControls() override;
 
    virtual void ValueUpdated( Slider&, int );
-   virtual void KeyPressed( Control&, int, unsigned, bool& );
-   virtual void GetFocus( Control& );
+   void KeyPressed( Control&, int, unsigned, bool& ) override;
+   void GetFocus( Control& ) override;
 
 private:
 
-   bool m_exponential : 1;
+   bool m_exponential = false;
 
    double SliderValueToControl( int ) const;
    int ControlValueToSlider( double ) const;
@@ -446,4 +446,4 @@ private:
 #endif   // __PCL_NumericControl_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/NumericControl.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/NumericControl.h - Released 2018-11-01T11:06:36Z

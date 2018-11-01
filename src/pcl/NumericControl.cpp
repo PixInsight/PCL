@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/NumericControl.cpp - Released 2017-08-01T14:23:38Z
+// pcl/NumericControl.cpp - Released 2018-11-01T11:06:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,16 +58,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 NumericEdit::NumericEdit( Control& parent ) :
-   Control( parent ),
-   m_value( 0 ),
-   m_lowerBound( 0 ),
-   m_upperBound( 1 ),
-   m_precision( 6 ),
-   m_real( true ),
-   m_fixed( false ),
-   m_scientific( false ),
-   m_autoEditWidth( true ),
-   m_sciTriggerExp( -1 )
+   Control( parent )
 {
    SetSizer( sizer );
 
@@ -111,7 +102,7 @@ String NumericEdit::ValueAsString( double v ) const
       if ( m_scientific )
          if ( m_sciTriggerExp < 0 || v != 0 && (Abs( v ) > Pow10I<double>()( +m_sciTriggerExp ) ||
                                                 Abs( v ) < Pow10I<double>()( -m_sciTriggerExp )) )
-            return String().Format( "%.*e", int( m_precision ), v );
+            return String().Format( "%.*e", m_precision, v );
 
       return String().Format( "%.*f", PrecisionForValue( v ), v );
    }
@@ -127,7 +118,7 @@ int NumericEdit::PrecisionForValue( double value ) const
    {
       value = Abs( value );
       if ( value >= 10 )
-         return Max( 0, int( m_precision ) - Max( 0, TruncInt( Log( value ) ) ) );
+         return Max( 0, m_precision - Max( 0, TruncInt( Log( value ) ) ) );
    }
    return m_precision;
 }
@@ -178,7 +169,7 @@ void NumericEdit::SetRange( double lr, double ur )
 
 void NumericEdit::SetPrecision( int n )
 {
-   m_precision = unsigned( Range( n, 0, 15 ) );
+   m_precision = Range( n, 0, 15 );
    if ( m_autoEditWidth )
       AdjustEditWidth();
    UpdateControls();
@@ -297,6 +288,7 @@ void NumericEdit::KeyPressed( Control& sender, int key, unsigned modifiers, bool
 
 void NumericEdit::ReturnPressed( Edit& /*sender*/ )
 {
+   // placeholder
 }
 
 // ----------------------------------------------------------------------------
@@ -332,8 +324,7 @@ void NumericEdit::MousePress( Control& sender, const pcl::Point& pos, int button
 // ----------------------------------------------------------------------------
 
 NumericControl::NumericControl( Control& parent ) :
-   NumericEdit( parent ),
-   m_exponential( false )
+   NumericEdit( parent )
 {
    sizer.Add( slider, 100 );
 
@@ -378,7 +369,7 @@ double NumericControl::SliderValueToControl( int sliderValue ) const
    double sliderDelta = sliderMaxValue - sliderMinValue;
    double sliderNormValue = (sliderValue - sliderMinValue)/sliderDelta;
    return Range( Round( m_exponential ?
-                              (1 + m_lowerBound)*Exp( Ln( (1 + m_upperBound)/(1 + m_lowerBound) )*sliderNormValue ) - 1:
+                              (1 + m_lowerBound)*Exp( Ln( (1 + m_upperBound)/(1 + m_lowerBound) )*sliderNormValue ) - 1 :
                               m_lowerBound + (m_upperBound - m_lowerBound)*sliderNormValue,
                         m_real ? Max( 0, TruncInt( Log( sliderDelta ) ) ) : 0 ), m_lowerBound, m_upperBound );
 }
@@ -479,4 +470,4 @@ void NumericControl::KeyPressed( Control& sender, int key, unsigned modifiers, b
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/NumericControl.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/NumericControl.cpp - Released 2018-11-01T11:06:51Z

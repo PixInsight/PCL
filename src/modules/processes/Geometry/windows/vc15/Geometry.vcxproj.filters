@@ -1,0 +1,535 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+######################################################################
+# PixInsight Makefile Generator Script v1.107
+# Copyright (C) 2009-2018 Pleiades Astrophoto
+######################################################################
+# Generated on .... 2018-11-01T11:08:59.211Z
+# Project id ...... Geometry
+# Project type .... Module
+# Platform ........ Windows/vc15
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Additional preprocessor definitions:
+# _CRT_SECURE_NO_WARNINGS
+######################################################################
+-->
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>6f87d4a8-085f-412e-bef1-cdff50fdbb20</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>1baaefd9-b77e-4885-bf48-8864f2770b8c</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Image Files">
+      <UniqueIdentifier>15b3492e-dd5b-4aea-a63f-22cd69987789</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\ChannelMatchInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ChannelMatchInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ChannelMatchParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ChannelMatchProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CommonParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CropInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CropInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CropParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CropProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DynamicCropInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DynamicCropInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DynamicCropParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DynamicCropPreferencesDialog.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DynamicCropProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FastRotationActions.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FastRotationInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FastRotationInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FastRotationParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FastRotationProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GeometryModule.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\IntegerResampleInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\IntegerResampleInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\IntegerResampleParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\IntegerResampleProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResampleInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResampleInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResampleParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ResampleProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RotationInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RotationInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RotationParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RotationProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\ChannelMatchInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ChannelMatchInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ChannelMatchParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ChannelMatchProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CommonParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CropInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CropInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CropParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CropProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DynamicCropInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DynamicCropInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DynamicCropParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DynamicCropPreferencesDialog.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DynamicCropProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FastRotationActions.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FastRotationInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FastRotationInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FastRotationParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FastRotationProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GeometryModule.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\IntegerResampleInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\IntegerResampleInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\IntegerResampleParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\IntegerResampleProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ResampleInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ResampleInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ResampleParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ResampleProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\RotationInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\RotationInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\RotationParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\RotationProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\ChannelMatchIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\CropIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\DynamicCropIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\FastRotationIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\HorizontalMirrorActionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\IntegerResampleIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ResampleIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\Rotate180ActionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\Rotate90CCWActionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\Rotate90CWActionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\RotationIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\VerticalMirrorActionIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\1.5\move.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\1.5\move_drag.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\1.5\move_point.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\1.5\move_point_drag.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\1.5\resize_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\1.5\resize_left.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\1.5\resize_left_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\1.5\resize_left_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\1.5\resize_right.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\1.5\resize_right_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\1.5\resize_right_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\1.5\resize_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\1.5\rotate.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.0\move.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.0\move_drag.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.0\move_point.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.0\move_point_drag.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.0\resize_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.0\resize_left.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.0\resize_left_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.0\resize_left_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.0\resize_right.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.0\resize_right_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.0\resize_right_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.0\resize_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.0\rotate.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.5\move.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.5\move_drag.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.5\move_point.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.5\move_point_drag.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.5\resize_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.5\resize_left.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.5\resize_left_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.5\resize_left_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.5\resize_right.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.5\resize_right_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.5\resize_right_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.5\resize_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\2.5\rotate.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.0\move.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.0\move_drag.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.0\move_point.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.0\move_point_drag.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.0\resize_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.0\resize_left.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.0\resize_left_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.0\resize_left_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.0\resize_right.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.0\resize_right_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.0\resize_right_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.0\resize_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.0\rotate.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.5\move.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.5\move_drag.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.5\move_point.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.5\move_point_drag.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.5\resize_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.5\resize_left.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.5\resize_left_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.5\resize_left_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.5\resize_right.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.5\resize_right_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.5\resize_right_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.5\resize_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\3.5\rotate.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\4.0\move.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\4.0\move_drag.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\4.0\move_point.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\4.0\move_point_drag.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\4.0\resize_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\4.0\resize_left.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\4.0\resize_left_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\4.0\resize_left_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\4.0\resize_right.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\4.0\resize_right_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\4.0\resize_right_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\4.0\resize_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\4.0\rotate.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\move.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\move_drag.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\move_point.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\move_point_drag.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\resize_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\resize_left.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\resize_left_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\resize_left_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\resize_right.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\resize_right_bottom.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\resize_right_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\resize_top.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\cursors\rotate.png">
+        <Filter>Image Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

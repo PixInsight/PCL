@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.06.00.0281
+// Standard Debayer Process Module Version 01.07.00.0301
 // ----------------------------------------------------------------------------
-// DebayerInstance.h - Released 2017-08-01T14:26:58Z
+// DebayerInstance.h - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -149,9 +149,27 @@ private:
    };
    Array<OutputFileData> o_outputFileData;
 
-   pcl_enum CFAPatternFromTarget( const View& ) const;
-   pcl_enum CFAPatternFromTarget( FileFormatInstance& ) const;
-   static pcl_enum CFAPatternFromTargetProperty( const Variant& );
+   pcl_enum BayerPatternFromTarget( const View& ) const;
+   pcl_enum BayerPatternFromTarget( FileFormatInstance& ) const;
+   static pcl_enum BayerPatternFromTargetProperty( const Variant& );
+
+   static IsoString CFAPatternIdFromTarget( const View& );
+   static IsoString CFAPatternIdFromTarget( FileFormatInstance& );
+   static IsoString CFAPatternIdFromTargetProperty( const Variant& );
+
+   static IsoString CFAPatternNameFromTarget( const View& );
+   static IsoString CFAPatternNameFromTarget( FileFormatInstance& );
+   static IsoString CFAPatternNameFromTargetProperty( const Variant& );
+
+   static IMatrix XTransPatternFiltersFromTarget( const View& );
+   static IMatrix XTransPatternFiltersFromTarget( FileFormatInstance& );
+   static IMatrix XTransPatternFiltersFromTargetProperty( const Variant& );
+
+   static FMatrix sRGBConversionMatrixFromTarget( const View& );
+   static FMatrix sRGBConversionMatrixFromTarget( FileFormatInstance& );
+   static FMatrix sRGBConversionMatrixFromTargetProperty( const Variant& );
+
+   void EvaluateNoise( FVector& noiseEstimates, FVector& noiseFractions, StringList& noiseAlgorithms, const Image& ) const;
 
    void ApplyErrorPolicy();
 
@@ -169,4 +187,4 @@ private:
 #endif   // __DebayerInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF DebayerInstance.h - Released 2017-08-01T14:26:58Z
+// EOF DebayerInstance.h - Released 2018-11-01T11:07:21Z

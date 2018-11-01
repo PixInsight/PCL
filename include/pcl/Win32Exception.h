@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Win32Exception.h - Released 2017-08-01T14:23:31Z
+// pcl/Win32Exception.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -137,7 +137,7 @@ public:
     * overflow" and "illegal instruction", returned by specific derived
     * classes.
     */
-   virtual String Message() const
+   String Message() const override
    {
       return "Undefined system exception";
    }
@@ -145,7 +145,7 @@ public:
    /*!
     * Returns a formatted error message with information on this exception.
     */
-   virtual String FormatInfo() const
+   String FormatInfo() const override
    {
       return String().Format( "At address %p with exception code %X :\n",
                               ExceptionAddress(), ExceptionCode() ) + Message();
@@ -156,7 +156,7 @@ public:
     * a message box. As reimplemented in this class, this member function
     * returns the string "PCL Win32 System Exception".
     */
-   virtual String Caption() const
+   String Caption() const override
    {
       return "PCL Win32 System Exception";
    }
@@ -183,16 +183,13 @@ class PCL_CLASS Win32AccessViolationException : public Win32Exception
 public:
 
    Win32AccessViolationException( exception_code _c, exception_data_pointer _d ) :
-   Win32Exception( _c, _d )
+      Win32Exception( _c, _d )
    {
    }
 
-   Win32AccessViolationException( const Win32AccessViolationException& x ) :
-   Win32Exception( x )
-   {
-   }
+   Win32AccessViolationException( const Win32AccessViolationException& ) = default;
 
-   virtual String Message() const;
+   String Message() const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -202,13 +199,11 @@ public:
    {                                                                          \
    public:                                                                    \
       className( exception_code _c, exception_data_pointer _d ) :             \
-      pcl::Win32Exception( _c, _d )                                           \
+         pcl::Win32Exception( _c, _d )                                        \
       {                                                                       \
       }                                                                       \
-      className( const className& x ) : pcl::Win32Exception( x )              \
-      {                                                                       \
-      }                                                                       \
-      virtual String Message() const                                          \
+      className( const className& ) = default;                                \
+      String Message() const override                                         \
       {                                                                       \
          return message;                                                      \
       }                                                                       \
@@ -284,4 +279,4 @@ DECLARE_WIN32_EXCEPTION( EWin32StackOverflow,
 #endif   // __PCL_Win32Exception_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Win32Exception.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Win32Exception.h - Released 2018-11-01T11:06:36Z

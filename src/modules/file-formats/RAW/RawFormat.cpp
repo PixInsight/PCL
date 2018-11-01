@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard RAW File Format Module Version 01.05.00.0399
+// Standard RAW File Format Module Version 01.05.00.0405
 // ----------------------------------------------------------------------------
-// RawFormat.cpp - Released 2018-02-07T11:38:44Z
+// RawFormat.cpp - Released 2018-11-01T11:07:09Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RAW PixInsight module.
 //
@@ -125,7 +125,7 @@ uint32 RawFormat::Version() const
 
 String RawFormat::Description() const
 {
-   return "Digital camera rAW file format decoder based on LibRaw";
+   return "Digital camera raw file format decoder based on LibRaw";
 }
 
 // ----------------------------------------------------------------------------
@@ -137,10 +137,10 @@ String RawFormat::Implementation() const
    "<html>"
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
-   "<p>This implementation of digital camera raw format decoding uses LibRaw.</p>"
+   "<p>This implementation of digital camera raw format decoding uses LibRaw version 0.19.0.</p>"
 
    "<p>LibRaw library:<br/>"
-   "Copyright (c) 2008-2017 LibRaw LLC (info@libraw.org)<br/>"
+   "Copyright (c) 2008-2018 LibRaw LLC (info@libraw.org)<br/>"
    "The LibRaw library includes source code from:</p>"
 
    "<p>dcraw.c, Dave Coffin's raw photo decoder. Copyright (c) 1997-2016 by Dave Coffin</p>"
@@ -372,4 +372,4 @@ bool RawFormat::EditPreferences() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RawFormat.cpp - Released 2018-02-07T11:38:44Z
+// EOF RawFormat.cpp - Released 2018-11-01T11:07:09Z

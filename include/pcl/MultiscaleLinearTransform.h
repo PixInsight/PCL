@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/MultiscaleLinearTransform.h - Released 2017-08-01T14:23:31Z
+// pcl/MultiscaleLinearTransform.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -159,9 +159,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    MultiscaleLinearTransform( MultiscaleLinearTransform&& ) = default;
-#endif
 
    /*!
     * Destroys this %MultiscaleLinearTransform object. All existing transform
@@ -174,20 +172,12 @@ public:
    /*!
     * Copy assignment operator. Returns a reference to this object.
     */
-   MultiscaleLinearTransform& operator =( const MultiscaleLinearTransform& x )
-   {
-      (void)RedundantMultiscaleTransform::operator =( x );
-      return *this;
-   }
+   MultiscaleLinearTransform& operator =( const MultiscaleLinearTransform& ) = default;
 
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-   MultiscaleLinearTransform& operator =( MultiscaleLinearTransform&& x )
-   {
-      (void)RedundantMultiscaleTransform::operator =( std::move( x ) );
-      return *this;
-   }
+   MultiscaleLinearTransform& operator =( MultiscaleLinearTransform&& ) = default;
 
    /*!
     * Returns true iff this transform applies block average filters instead of
@@ -212,18 +202,18 @@ protected:
    /*
     * Whether we should use mean (block average) or Gaussian separable filters.
     */
-   bool m_useMeanFilters : 1;
+   bool m_useMeanFilters = false;
 
    /*
     * Transform (decomposition)
     */
-   virtual void Transform( const pcl::Image& );
-   virtual void Transform( const pcl::DImage& );
-   virtual void Transform( const pcl::ComplexImage& );
-   virtual void Transform( const pcl::DComplexImage& );
-   virtual void Transform( const pcl::UInt8Image& );
-   virtual void Transform( const pcl::UInt16Image& );
-   virtual void Transform( const pcl::UInt32Image& );
+   void Transform( const pcl::Image& ) override;
+   void Transform( const pcl::DImage& ) override;
+   void Transform( const pcl::ComplexImage& ) override;
+   void Transform( const pcl::DComplexImage& ) override;
+   void Transform( const pcl::UInt8Image& ) override;
+   void Transform( const pcl::UInt16Image& ) override;
+   void Transform( const pcl::UInt32Image& ) override;
 
    friend class MLTDecomposition;
 };
@@ -235,4 +225,4 @@ protected:
 #endif   // __PCL_MultiscaleLinearTransform_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MultiscaleLinearTransform.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/MultiscaleLinearTransform.h - Released 2018-11-01T11:06:36Z

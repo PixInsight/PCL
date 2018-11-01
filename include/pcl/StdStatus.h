@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/StdStatus.h - Released 2017-08-01T14:23:31Z
+// pcl/StdStatus.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -102,15 +102,27 @@ public:
    /*!
     * Constructs a default %StandardStatus object.
     */
-   StandardStatus() : StatusCallback(), m_console(), m_last( -1 ), m_thread( 0 )
+   StandardStatus() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   StandardStatus( const StandardStatus& x ) :
+      StatusCallback( x ),
+      m_last( x.m_last )
    {
    }
 
    /*!
-    * Constructs a %StandardStatus object as a copy of an existing instance.
+    * Move constructor.
     */
-   StandardStatus( const StandardStatus& x ) : StatusCallback( x ), m_console(), m_last( -1 ), m_thread( 0 )
+   StandardStatus( StandardStatus&& x ) :
+      StatusCallback( std::move( x ) ),
+      m_console( std::move( x.m_console ) ),
+      m_last( x.m_last ),
+      m_thread( x.m_thread )
    {
+      x.m_thread = nullptr;
    }
 
    /*!
@@ -121,34 +133,60 @@ public:
    }
 
    /*!
+    * Copy constructor. Returns a reference to this object.
+    */
+   StandardStatus& operator =( const StandardStatus& x )
+   {
+      (void)StatusCallback::operator =( x );
+      m_last = x.m_last;
+      return *this;
+   }
+
+   /*!
+    * Move constructor. Returns a reference to this object.
+    */
+   StandardStatus& operator =( StandardStatus&& x )
+   {
+      if ( this != &x )
+      {
+         (void)StatusCallback::operator =( std::move( x ) );
+         m_console = std::move( x.m_console );
+         m_last = x.m_last;
+         m_thread = x.m_thread;
+         x.m_thread = nullptr;
+      }
+      return *this;
+   }
+
+   /*!
     * This function is called by a status \a monitor object when a new
     * monitored process is about to start.
     */
-   virtual int Initialized( const StatusMonitor& monitor ) const;
+   int Initialized( const StatusMonitor& monitor ) const override;
 
    /*!
     * Function called by a status \a monitor object to signal an update of the
     * progress count for the current process.
     */
-   virtual int Updated( const StatusMonitor& monitor ) const;
+   int Updated( const StatusMonitor& monitor ) const override;
 
    /*!
     * Function called by a status \a monitor object to signal that the current
     * process has finished.
     */
-   virtual int Completed( const StatusMonitor& monitor ) const;
+   int Completed( const StatusMonitor& monitor ) const override;
 
    /*!
     * Function called by a status \a monitor object when the progress
     * information for the current process has been changed.
     */
-   virtual void InfoUpdated( const StatusMonitor& monitor ) const;
+   void InfoUpdated( const StatusMonitor& monitor ) const override;
 
 private:
 
    mutable pcl::Console m_console;
-   mutable int          m_last;
-   mutable void*        m_thread;
+   mutable int          m_last = -1;
+   mutable void*        m_thread = nullptr;
 };
 
 // ----------------------------------------------------------------------------
@@ -160,4 +198,4 @@ private:
 #endif   // __PCL_StdStatus_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/StdStatus.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/StdStatus.h - Released 2018-11-01T11:06:36Z

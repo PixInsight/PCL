@@ -86,7 +86,7 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
 **[PCL]/src/modules/processes/[module_name]/windows/vc14**
 
 <dl><dd>
-   Project files (.vcxproj) for Microsoft Visual C++ 2015
+   Project files (.vcxproj) for Microsoft Visual C++ 2017
 </dd></dl>
 
 **[PCL]/src/pcl**
@@ -102,21 +102,23 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
 </dd></dl>
 
 
-
 ## Supported Compilers
-
-**Important Note** *The information about supported compilers below is now outdated. The next version 2.1.9 of PCL is currently been developed with GCC 7.3.0 on Red Hat Enterprise Linux 7.4. As soon as we have a new release on all platforms, the list of supported compilers will be updated. Sorry for the inconvenience.*
 
 The current version of PCL has been built and tested with:
 
-   * FreeBSD 10.3: System clang compiler
-   * Red Hat Enterprise Linux 7.2: GCC C++ compiler 4.9.1
+   * Red Hat Enterprise Linux 7.4: GCC C++ compiler 7.3.0
    * macOS 10.11: Clang C++ compiler with Xcode 8.2.1
-   * Windows 10: Microsoft Visual C++ 2015 Community Edition
+
+We are currently working on the ports to FreeBSD and Windows:
+
+   * FreeBSD 10.4: System clang compiler
+   * Windows 10: Microsoft Visual C++ 2017 Community Edition
+
+** Important ** We still cannot guarantee compilation without errors on these platforms. As soon as we get PCL fully tested on FreeBSD and Windows we'll modify the information given in this document.
 
 The GCC and clang C++ compilers provide higher conformance to ISO C++ standards and are high quality development tools. On FreeBSD and macOS we rely on the Clang/LLVM compiler included with the latest versions of Xcode and FreeBSD.
 
-On Windows, we provide project files for the Microsoft Visual Studio integrated development environment (.vcxproj files). As of PCL version 2.1.3, we support Visual C++ 2015 exclusively.
+On Windows, we provide project files for the Microsoft Visual Studio integrated development environment (.vcxproj files). As of PCL version 2.1.10, we support Visual C++ 2017 exclusively.
 
 
 ## Environment Variables

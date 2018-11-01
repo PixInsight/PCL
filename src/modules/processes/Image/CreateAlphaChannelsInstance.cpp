@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard Image Process Module Version 01.02.09.0410
 // ----------------------------------------------------------------------------
-// CreateAlphaChannelsInstance.cpp - Released 2017-08-01T14:26:58Z
+// CreateAlphaChannelsInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -76,11 +76,15 @@ CreateAlphaChannelsInstance::CreateAlphaChannelsInstance( const MetaProcess* P )
 {
 }
 
+// ----------------------------------------------------------------------------
+
 CreateAlphaChannelsInstance::CreateAlphaChannelsInstance( const CreateAlphaChannelsInstance& x ) :
    ProcessImplementation( x )
 {
    Assign( x );
 }
+
+// ----------------------------------------------------------------------------
 
 void CreateAlphaChannelsInstance::Assign( const ProcessImplementation& p )
 {
@@ -97,10 +101,21 @@ void CreateAlphaChannelsInstance::Assign( const ProcessImplementation& p )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool CreateAlphaChannelsInstance::IsMaskable( const View&, const ImageWindow& ) const
 {
    return false;
 }
+
+// ----------------------------------------------------------------------------
+
+UndoFlags CreateAlphaChannelsInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
+}
+
+// ----------------------------------------------------------------------------
 
 bool CreateAlphaChannelsInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) const
 {
@@ -112,6 +127,9 @@ bool CreateAlphaChannelsInstance::CanExecuteOn( const View& view, pcl::String& w
 
    return true;
 }
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 template <class P1, class P2>
 static void CreateAlphaFromImage( GenericImage<P1>& image, int w, int h,
@@ -231,6 +249,8 @@ static void CreateAlphaFromImage( GenericImage<P1>& image, int w, int h,
    }
 }
 
+// ----------------------------------------------------------------------------
+
 template <class P1>
 static void CreateAlphaFromImage( GenericImage<P1>& image, int w, int h,
                                   const ImageVariant& source, const Point& p0,
@@ -261,6 +281,8 @@ static void CreateAlphaFromImage( GenericImage<P1>& image, int w, int h,
       }
 }
 
+// ----------------------------------------------------------------------------
+
 static void CreateAlphaFromImage( ImageVariant& image, int w, int h,
                                   const ImageVariant& source, const Point& p0,
                                   bool invert, int c0, int n )
@@ -290,7 +312,8 @@ static void CreateAlphaFromImage( ImageVariant& image, int w, int h,
       }
 }
 
-//
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 template <class P>
 static void CreateAlphaFromTransparency( GenericImage<P>& image, double t, int c0, int n )
@@ -306,6 +329,8 @@ static void CreateAlphaFromTransparency( GenericImage<P>& image, double t, int c
       image.Fill( f );
    }
 }
+
+// ----------------------------------------------------------------------------
 
 static void CreateAlphaFromTransparency( ImageVariant& image, double t, int c0, int n )
 {
@@ -334,6 +359,9 @@ static void CreateAlphaFromTransparency( ImageVariant& image, double t, int c0, 
       }
 }
 
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
 template <class P>
 static int CreateAlphaChannels( GenericImage<P>& image, bool replace, int n )
 {
@@ -348,6 +376,8 @@ static int CreateAlphaChannels( GenericImage<P>& image, bool replace, int n )
 
    return c0;
 }
+
+// ----------------------------------------------------------------------------
 
 static int CreateAlphaChannels( ImageVariant& image, bool replace, int n )
 {
@@ -372,7 +402,8 @@ static int CreateAlphaChannels( ImageVariant& image, bool replace, int n )
    return 0; // ??
 }
 
-//
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 bool CreateAlphaChannelsInstance::ExecuteOn( View& view )
 {
@@ -430,6 +461,8 @@ bool CreateAlphaChannelsInstance::ExecuteOn( View& view )
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 void* CreateAlphaChannelsInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
 {
    if ( p == TheCAFromImageParameter )
@@ -446,8 +479,10 @@ void* CreateAlphaChannelsInstance::LockParameter( const MetaParameter* p, size_t
       return &replace;
    if ( p == TheCAChannelCountParameter )
       return &count;
-   return 0;
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool CreateAlphaChannelsInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {
@@ -462,6 +497,8 @@ bool CreateAlphaChannelsInstance::AllocateParameter( size_type sizeOrLength, con
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 size_type CreateAlphaChannelsInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
    if ( p == TheCASourceImageIdentifierParameter )
@@ -474,4 +511,4 @@ size_type CreateAlphaChannelsInstance::ParameterLength( const MetaParameter* p, 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CreateAlphaChannelsInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF CreateAlphaChannelsInstance.cpp - Released 2018-11-01T11:07:21Z

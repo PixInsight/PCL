@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ZenithalProjections.h - Released 2017-08-01T14:23:31Z
+// pcl/ZenithalProjections.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -93,24 +93,24 @@ protected:
    /*!
     * Returns a dynamically allocated duplicate of this object.
     */
-   virtual ProjectionBase* Clone() const = 0;
+   virtual ProjectionBase* Clone() const override = 0;
 
    /*!
     * Returns the WCS projection identifier for this projection system.
     */
-   virtual IsoString ProjCode() const = 0;
+   virtual IsoString ProjCode() const override = 0;
 
    /*!
     * Returns the readable name of this projection system.
     */
-   virtual IsoString Name() const = 0;
+   virtual IsoString Name() const override = 0;
 
 protected:
 
    /*!
     * Transforms from world coordinates to native spherical coordinates.
     */
-   virtual bool Project( DPoint& pW, const DPoint& pN ) const noexcept
+   bool Project( DPoint& pW, const DPoint& pN ) const noexcept override
    {
       double rTheta = GetRTheta( pN );
       double sinTheta, cosTheta;
@@ -123,7 +123,7 @@ protected:
    /*!
     * Transforms from native spherical coordinates to world coordinates.
     */
-   virtual bool Unproject( DPoint& pN, const DPoint& pW ) const noexcept
+   bool Unproject( DPoint& pN, const DPoint& pW ) const noexcept override
    {
       pN.x = Deg( ArcTan( pW.x, -pW.y ) );
       pN.y = GetTheta( Sqrt( pW.x*pW.x + pW.y*pW.y ) );
@@ -159,7 +159,7 @@ public:
    /*!
     * Returns a dynamically allocated duplicate of this object.
     */
-   virtual ProjectionBase* Clone() const
+   ProjectionBase* Clone() const override
    {
       return new ZenithalEqualAreaProjection( *this );
    }
@@ -167,7 +167,7 @@ public:
    /*!
     * Returns the WCS projection identifier for this projection system.
     */
-   virtual IsoString ProjCode() const
+   IsoString ProjCode() const override
    {
       return "ZEA";
    }
@@ -175,7 +175,7 @@ public:
    /*!
     * Returns the readable name of this projection system.
     */
-   virtual IsoString Name() const
+   IsoString Name() const override
    {
       return "Zenithal Equal Area";
    }
@@ -183,7 +183,7 @@ public:
    /*!
     *
     */
-   virtual bool CheckBrokenLine( const DPoint& cp1, const DPoint& cp2 ) const noexcept
+   bool CheckBrokenLine( const DPoint& cp1, const DPoint& cp2 ) const noexcept override
    {
       DPoint np1 = m_sph.CelestialToNative( cp1 );
       DPoint np2 = m_sph.CelestialToNative( cp2 );
@@ -193,12 +193,12 @@ public:
 
 private:
 
-   virtual double GetRTheta( const DPoint& np ) const
+   double GetRTheta( const DPoint& np ) const override
    {
       return 2 * Deg( Sin( Rad( (90 - np.y)/2 ) ) );
    }
 
-   virtual double GetTheta( double rTheta ) const
+   double GetTheta( double rTheta ) const override
    {
       return 90 - 2*Deg( ArcSin( Rad( rTheta )/2 ) );
    }
@@ -229,7 +229,7 @@ public:
    /*!
     * Returns a dynamically allocated duplicate of this object.
     */
-   virtual ProjectionBase* Clone() const
+   ProjectionBase* Clone() const override
    {
       return new StereographicProjection( *this );
    }
@@ -237,7 +237,7 @@ public:
    /*!
     * Returns the WCS projection identifier for this projection system.
     */
-   virtual IsoString ProjCode() const
+   IsoString ProjCode() const override
    {
       return "STG";
    }
@@ -245,7 +245,7 @@ public:
    /*!
     * Returns the readable name of this projection system.
     */
-   virtual IsoString Name() const
+   IsoString Name() const override
    {
       return "Stereographic";
    }
@@ -253,19 +253,19 @@ public:
    /*!
     *
     */
-   virtual bool CheckBrokenLine(const DPoint& cp1, const DPoint& cp2) const noexcept
+   bool CheckBrokenLine(const DPoint& cp1, const DPoint& cp2) const noexcept override
    {
       return true;
    }
 
 private:
 
-   virtual double GetRTheta( const DPoint& np ) const
+   double GetRTheta( const DPoint& np ) const override
    {
       return 2 * Deg( Tan( Rad( (90 - np.y)/2 ) ) );
    }
 
-   virtual double GetTheta( double rTheta ) const
+   double GetTheta( double rTheta ) const override
    {
       return 90 - 2*Deg( ArcTan( Rad( rTheta )/2 ) );
    }
@@ -278,4 +278,4 @@ private:
 #endif   // __PCL_ZenithalProjections_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ZenithalProjections.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/ZenithalProjections.h - Released 2018-11-01T11:06:36Z

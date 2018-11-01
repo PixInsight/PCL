@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Math.h - Released 2017-08-01T14:23:31Z
+// pcl/Math.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -409,6 +409,26 @@ inline constexpr unsigned char Abs( unsigned char x )
 // ----------------------------------------------------------------------------
 
 /*!
+ * The pi constant: 3.141592...
+ * \ingroup mathematical_functions
+ */
+inline constexpr long double Pi()
+{
+   return (long double)( 0.31415926535897932384626433832795029e+01L );
+}
+
+/*!
+ * Twice the pi constant: 0.6283185...
+ * \ingroup mathematical_functions
+ */
+inline constexpr long double TwoPi()
+{
+   return (long double)( 0.62831853071795864769252867665590058e+01L );
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
  * Merges a complex angle given by degrees and arcminutes into single degrees.
  * \ingroup mathematical_functions
  */
@@ -483,7 +503,7 @@ template <typename T> inline T ArcTan2Pi( T y, T x )
 {
    T r = ArcTan( y, x );
    if ( r < 0 )
-      r = static_cast<T>( r + 0.62831853071795864769252867665590058e+01L );
+      r = static_cast<T>( r + TwoPi() );
    return r;
 }
 
@@ -764,20 +784,14 @@ template <typename T> inline constexpr T Mod( T x, T y )
 // ----------------------------------------------------------------------------
 
 /*!
- * The pi constant: 3.141592...
- * \ingroup mathematical_functions
- */
-inline constexpr long double Pi()
-{
-   return (long double)( 0.31415926535897932384626433832795029e+01L );
-}
-
-// ----------------------------------------------------------------------------
-
-/*!
- * Horner's algorithm to evaluate the polynomial function:
+ * Horner's algorithm to evaluate the polynomial function with the specified
+ * array \a c of \a n + 1 coefficients:
  *
- * <tt>y = c0 + c1*x + c2*x**2 + ... + cn*x**n</tt>
+ * <tt>y = c[0] + c[1]*x + c[2]*x**2 + ... + c[n]*x**n</tt>
+ *
+ * The array \a c of coefficients must provide contiguous storage for at least
+ * \a n + 1 values of type T. The degree \a n must be >= 0; otherwise this
+ * function invokes undefined behavior.
  *
  * \ingroup mathematical_functions
  */
@@ -785,12 +799,28 @@ template <typename T, typename C> inline T Poly( T x, C c, int n )
 {
    PCL_PRECONDITION( n >= 0 )
    T y;
-   for ( c += n, y = *c; n != 0; --n )
+   for ( c += n, y = *c; n > 0; --n )
    {
       y *= x;
       y += *--c;
    }
    return y;
+}
+
+/*!
+ * Horner's algorithm to evaluate the polynomial function:
+ *
+ * <tt>y = c[0] + c[1]*x + c[2]*x**2 + ... + c[n]*x**n</tt>
+ *
+ * The specified coefficients initializer_list \a c must not be empty;
+ * otherwise this function invokes undefined behavior.
+ *
+ * \ingroup mathematical_functions
+ */
+template <typename T> inline T Poly( T x, std::initializer_list<T> c )
+{
+   PCL_PRECONDITION( c.size() > 0 )
+   return Poly( x, c.begin(), c.size()-1 );
 }
 
 // ----------------------------------------------------------------------------
@@ -1720,6 +1750,60 @@ template <typename T> inline constexpr T SecRad( T x )
    return Rad( x/3600 );
 }
 
+/*!
+ * Conversion from arcseconds to radians (a synonym for SecRad()).
+ * \ingroup mathematical_functions
+ */
+template <typename T> inline constexpr T AsRad( T x )
+{
+   return SecRad( x );
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * Conversion from milliarcseconds (mas) to radians.
+ * \ingroup mathematical_functions
+ */
+template <typename T> inline constexpr T MasRad( T x )
+{
+   return Rad( x/3600000 );
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * Conversion from microarcseconds (uas) to radians.
+ * \ingroup mathematical_functions
+ */
+template <typename T> inline constexpr T UasRad( T x )
+{
+   return Rad( x/3600000000 );
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * An angle in radians reduced to the (-2pi,+2pi) range, that is, the remainder
+ * of x/(2*pi).
+ * \ingroup mathematical_functions
+ */
+template <typename T> inline constexpr T Mod2Pi( T x )
+{
+   return Mod( x, static_cast<T>( TwoPi() ) );
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * An angle in radians normalized to the [0,2pi) range.
+ * \ingroup mathematical_functions
+ */
+template <typename T> inline constexpr T Norm2Pi( T x )
+{
+   return ((x = Mod2Pi( x )) < 0) ? x + static_cast<T>( TwoPi() ) : x;
+}
+
 // ----------------------------------------------------------------------------
 
 /*!
@@ -1885,9 +1969,9 @@ template <typename T> inline double Norm( const T* i, const T* j )
 // ----------------------------------------------------------------------------
 
 /*!
- * Computes the Julian day number (JD) corresponding to a time point expressed
- * as a date and a day fraction, providing the result by its separate integer
- * and fractional parts.
+ * Computes the Julian date (JD) corresponding to a time point expressed as a
+ * date and a day fraction, providing the result by its separate integer and
+ * fractional parts.
  *
  * \param jdi     On output, the integer part of the resulting JD.
  *
@@ -1910,9 +1994,9 @@ template <typename T> inline double Norm( const T* i, const T* j )
  *
  * This routine, as well as JDToComplexTime(), implement modified versions of
  * the original algorithms due to Jean Meeus. Our modifications allow for
- * negative Julian day numbers, which extends the range of allowed dates to the
- * past considerably. We developed these modifications in the context of
- * large-scale solar system ephemeris calculations.
+ * negative Julian dates, which extends the range of allowed dates to the past
+ * considerably. We developed these modifications in the context of large-scale
+ * solar system ephemeris calculations.
  *
  * The computed value is the JD corresponding to the specified date and day
  * fraction, which is equal to the sum of the \a jdi and \a jdf variables.
@@ -1927,8 +2011,8 @@ template <typename T> inline double Norm( const T* i, const T* j )
 void PCL_FUNC ComplexTimeToJD( int& jdi, double& jdf, int year, int month, int day, double dayf = 0 );
 
 /*!
- * Computes the Julian day number (JD) corresponding to a time point expressed
- * as a date and a day fraction.
+ * Computes the Julian date (JD) corresponding to a time point expressed as a
+ * date and a day fraction.
  *
  * \param year    The year of the date. Positive and negative years are
  *                supported. Years are counted arithmetically: the year zero is
@@ -1947,9 +2031,9 @@ void PCL_FUNC ComplexTimeToJD( int& jdi, double& jdf, int year, int month, int d
  *
  * This routine, as well as JDToComplexTime(), implement modified versions of
  * the original algorithms due to Jean Meeus. Our modifications allow for
- * negative Julian day numbers, which extends the range of allowed dates to the
- * past considerably. We developed these modifications in the context of
- * large-scale solar system ephemeris calculations.
+ * negative Julian dates, which extends the range of allowed dates to the past
+ * considerably. We developed these modifications in the context of large-scale
+ * solar system ephemeris calculations.
  *
  * The returned value is the JD corresponding to the specified date and day
  * fraction.
@@ -1975,8 +2059,8 @@ inline double ComplexTimeToJD( int year, int month, int day, double dayf = 0 )
 
 /*!
  * Computes the date and day fraction corresponding to a time point expressed
- * as a Julian day number (JD), specified by its separate integer and
- * fractional parts.
+ * as a Julian date (JD), specified by its separate integer and fractional
+ * parts.
  *
  * \param[out] year  On output, this variable receives the year of the
  *                   resulting date.
@@ -1992,9 +2076,9 @@ inline double ComplexTimeToJD( int year, int month, int day, double dayf = 0 )
  * \param[out] dayf  On output, this variable receives the day fraction for the
  *                   specified time point, in the [0,1) range.
  *
- * \param jdi        The integer part of the input Julian day number.
+ * \param jdi        The integer part of the input Julian date.
  *
- * \param jdf        The fractional part of the input Julian day number.
+ * \param jdf        The fractional part of the input Julian date.
  *
  * The input time point must be equal to the sum of \a jdi and \a jdf.
  *
@@ -2007,7 +2091,7 @@ void PCL_FUNC JDToComplexTime( int& year, int& month, int& day, double& dayf, in
 
 /*!
  * Computes the date and day fraction corresponding to a time point expressed
- * as a Julian day number (JD).
+ * as a Julian date (JD).
  *
  * \param[out] year  On output, this variable receives the year of the
  *                   resulting date.
@@ -2023,7 +2107,7 @@ void PCL_FUNC JDToComplexTime( int& year, int& month, int& day, double& dayf, in
  * \param[out] dayf  On output, this variable receives the day fraction for the
  *                   specified time point, in the [0,1) range.
  *
- * \param jd         The input time point as a Julian day number.
+ * \param jd         The input time point as a Julian date.
  *
  * Because of the numerical precision of the double type (IEEE 64-bit floating
  * point), this routine can handle JD values accurate only to within one
@@ -2045,7 +2129,7 @@ inline void JDToComplexTime( int& year, int& month, int& day, double& dayf, doub
  * Conversion of a decimal scalar \a d to the equivalent sexagesimal decimal
  * components \a sign, \a s1, \a s2 and \a s3, such that:
  *
- * d = sign * (s1 + s2/60 + s3/3600)
+ * d = sign * (s1 + (s2 + s3/60)/60)
  *
  * with the following constraints:
  *
@@ -3594,4 +3678,4 @@ inline uint32 Hash32( const void* data, size_type size, uint32 seed = 0 )
 #endif   // __PCL_Math_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Math.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Math.h - Released 2018-11-01T11:06:36Z

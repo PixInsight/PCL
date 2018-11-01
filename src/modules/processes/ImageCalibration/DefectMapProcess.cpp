@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.01.0332
+// Standard ImageCalibration Process Module Version 01.04.01.0345
 // ----------------------------------------------------------------------------
-// DefectMapProcess.cpp - Released 2017-08-01T14:26:58Z
+// DefectMapProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -69,7 +69,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-DefectMapProcess* TheDefectMapProcess = 0;
+DefectMapProcess* TheDefectMapProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -84,49 +84,67 @@ DefectMapProcess::DefectMapProcess() : MetaProcess()
    new DMPIsCFA( this );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString DefectMapProcess::Id() const
 {
    return "DefectMap";
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString DefectMapProcess::Category() const
 {
    return "ImageCalibration,Preprocessing";
 }
 
+// ----------------------------------------------------------------------------
+
 uint32 DefectMapProcess::Version() const
 {
    return 0x100;
 }
 
+// ----------------------------------------------------------------------------
+
 String DefectMapProcess::Description() const
 {
    return
-   "<p>DefectMap uses a <i>defect map</i> image to find defective pixels, "
+   "<p>DefectMap uses a <i>defect map image</i> to find defective pixels, "
    "then it replaces all defective pixels with data computed from neighbor pixels.</p>"
    "<p>In a defect map image, defective pixels are signaled by zero pixel values.</p>";
 }
+
+// ----------------------------------------------------------------------------
 
 const char** DefectMapProcess::IconImageXPM() const
 {
    return DefectMapIcon_XPM;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessInterface* DefectMapProcess::DefaultInterface() const
 {
    return TheDefectMapInterface;
 }
+
+// ----------------------------------------------------------------------------
 
 ProcessImplementation* DefectMapProcess::Create() const
 {
    return new DefectMapInstance( this );
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* DefectMapProcess::Clone( const ProcessImplementation& p ) const
 {
    const DefectMapInstance* instPtr = dynamic_cast<const DefectMapInstance*>( &p );
-   return (instPtr != 0) ? new DefectMapInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new DefectMapInstance( *instPtr ) : nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool DefectMapProcess::CanProcessCommandLines() const
 {
@@ -192,7 +210,7 @@ static void ShowHelp()
 int DefectMapProcess::ProcessCommandLine( const StringList& argv ) const
 {
    ArgumentList arguments =
-   ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
+      ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
    DefectMapInstance instance( this );
 
    bool launchInterface = false;
@@ -284,4 +302,4 @@ int DefectMapProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DefectMapProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF DefectMapProcess.cpp - Released 2018-11-01T11:07:21Z

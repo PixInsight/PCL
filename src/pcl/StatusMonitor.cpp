@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/StatusMonitor.cpp - Released 2017-08-01T14:23:38Z
+// pcl/StatusMonitor.cpp - Released 2018-11-01T11:06:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -90,11 +90,9 @@ class MonitorDispatcherThread : public Thread
 {
 public:
 
-   MonitorDispatcherThread() : Thread()
-   {
-   }
+   MonitorDispatcherThread() = default;
 
-   virtual void Run()
+   void Run() override
    {
       for ( ;; )
       {
@@ -195,6 +193,8 @@ void StatusMonitor::Initialize( const String& s, size_type n )
       s_thread->Start( ThreadPriority::Lowest );
 }
 
+// ----------------------------------------------------------------------------
+
 void StatusMonitor::SetRefreshRate( unsigned ms )
 {
    volatile AutoLock lock( s_mutex );
@@ -219,6 +219,8 @@ void StatusMonitor::Reset()
    m_total = m_count = 0;
 }
 
+// ----------------------------------------------------------------------------
+
 void StatusMonitor::Assign( const StatusMonitor& x )
 {
    volatile AutoLock lock( s_mutex );
@@ -239,6 +241,8 @@ void StatusMonitor::Assign( const StatusMonitor& x )
    if ( s_activeMonitors.Contains( &x ) )
       s_activeMonitors.Add( this );
 }
+
+// ----------------------------------------------------------------------------
 
 void StatusMonitor::Update()
 {
@@ -267,4 +271,4 @@ void StatusMonitor::Update()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/StatusMonitor.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/StatusMonitor.cpp - Released 2018-11-01T11:06:52Z

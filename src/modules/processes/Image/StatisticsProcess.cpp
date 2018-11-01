@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard Image Process Module Version 01.02.09.0410
 // ----------------------------------------------------------------------------
-// StatisticsProcess.cpp - Released 2017-08-01T14:26:58Z
+// StatisticsProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,7 +58,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-StatisticsProcess* TheStatisticsProcess = 0;
+StatisticsProcess* TheStatisticsProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -71,45 +71,63 @@ StatisticsProcess::StatisticsProcess() : MetaProcess()
    TheStatisticsProcess = this;
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString StatisticsProcess::Id() const
 {
    return "Statistics";
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString StatisticsProcess::Category() const
 {
    return "Image,ImageInspection";
 }
 
+// ----------------------------------------------------------------------------
+
 uint32 StatisticsProcess::Version() const
 {
    return 0x100;
 }
+
+// ----------------------------------------------------------------------------
 
 String StatisticsProcess::Description() const
 {
    return "";
 }
 
+// ----------------------------------------------------------------------------
+
 const char** StatisticsProcess::IconImageXPM() const
 {
    return StatisticsIcon_XPM;
 }
+
+// ----------------------------------------------------------------------------
 
 ProcessInterface* StatisticsProcess::DefaultInterface() const
 {
    return TheStatisticsInterface;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* StatisticsProcess::Create() const
 {
-   return 0;
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 ProcessImplementation* StatisticsProcess::Clone( const ProcessImplementation& ) const
 {
-   return 0;
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool StatisticsProcess::IsAssignable() const
 {
@@ -121,4 +139,4 @@ bool StatisticsProcess::IsAssignable() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF StatisticsProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF StatisticsProcess.cpp - Released 2018-11-01T11:07:21Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/KernelFilter.h - Released 2017-08-01T14:23:31Z
+// pcl/KernelFilter.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -104,8 +104,7 @@ public:
     * Constructs an empty %KernelFilter object with optional \a name.
     */
    KernelFilter( const String& name = String() ) :
-      filterName( name ),
-      flipped( false )
+      filterName( name )
    {
    }
 
@@ -119,8 +118,7 @@ public:
     */
    KernelFilter( int n, const String& name = String() ) :
       coefficients( PCL_VALID_KERNEL_SIZE( n ), PCL_VALID_KERNEL_SIZE( n ) ),
-      filterName( name ),
-      flipped( false )
+      filterName( name )
    {
       PCL_PRECONDITION( n == 0 || n >= 3 )
       PCL_PRECONDITION( n == 0 || (n & 1) )
@@ -133,8 +131,7 @@ public:
    template <typename T>
    KernelFilter( int n, const T& x, const String& name = String() ) :
       coefficients( x, PCL_VALID_KERNEL_SIZE( n ), PCL_VALID_KERNEL_SIZE( n ) ),
-      filterName( name ),
-      flipped( false )
+      filterName( name )
    {
       PCL_PRECONDITION( n == 0 || n >= 3 )
       PCL_PRECONDITION( n == 0 || (n & 1) )
@@ -146,8 +143,7 @@ public:
     */
    KernelFilter( const coefficient_matrix& F, const String& name = String() ) :
       coefficients( F ),
-      filterName( name ),
-      flipped( false )
+      filterName( name )
    {
    }
 
@@ -159,8 +155,7 @@ public:
    template <typename T>
    KernelFilter( const T* k, int n, const String& name = String() ) :
       coefficients( k, PCL_VALID_KERNEL_SIZE( n ), PCL_VALID_KERNEL_SIZE( n ) ),
-      filterName( name ),
-      flipped( false )
+      filterName( name )
    {
       PCL_PRECONDITION( n == 0 || n >= 3 )
       PCL_PRECONDITION( n == 0 || (n & 1) )
@@ -174,16 +169,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    KernelFilter( KernelFilter&& ) = default;
-#else
-   KernelFilter( KernelFilter&& x ) :
-      coefficients( std::move( x.coefficients ) ),
-      filterName( std::move( x.filterName ) ),
-      flipped( x.flipped )
-   {
-   }
-#endif
 
    /*!
     * Virtual destructor.
@@ -249,17 +235,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-#ifndef _MSC_VER
    KernelFilter& operator =( KernelFilter&& ) = default;
-#else
-   KernelFilter& operator =( KernelFilter&& x )
-   {
-      coefficients = std::move( x.coefficients );
-      filterName = std::move( x.filterName );
-      flipped = x.flipped;
-      return *this;
-   }
-#endif
 
    /*!
     * Assigns the specified filter coefficient matrix \a F to this object.
@@ -544,21 +520,11 @@ public:
       flipped = false;
    }
 
-   /*!
-    * Exchanges two kernel filters \a x1 and \a x2.
-    */
-   friend void Swap( KernelFilter& x1, KernelFilter& x2 )
-   {
-      pcl::Swap( x1.coefficients, x2.coefficients );
-      pcl::Swap( x1.filterName, x2.filterName );
-      bool b = x1.flipped; x1.flipped = x2.flipped; x2.flipped = b;
-   }
-
 #ifndef __PCL_NO_MATRIX_IMAGE_RENDERING
 
    /*!
     * Renders this filter as an image. The contents of the specified target
-    * image \a img will be replaced with a grayscale rendition of this filter,
+    * \a image will be replaced with a grayscale rendition of this filter,
     * where each image pixel has a value proportional to its corresponding
     * filter coefficient counterpart.
     *
@@ -573,9 +539,9 @@ public:
     * pixel values to the normalized [0,1] range after calling this function.
     */
    template <class P>
-   void ToImage( GenericImage<P>& img ) const
+   void ToImage( GenericImage<P>& image ) const
    {
-      coefficients.ToImage( img );
+      coefficients.ToImage( image );
    }
 
    /*!
@@ -600,9 +566,9 @@ public:
 
 protected:
 
-   coefficient_matrix coefficients; // filter coefficients, size*size elements
-   String             filterName;   // identifying name
-   bool               flipped : 1;  // flag true when filter rotated
+   coefficient_matrix coefficients;    // filter coefficients, size*size elements
+   String             filterName;      // identifying name
+   bool               flipped = false; // flag true when filter rotated
 };
 
 // ----------------------------------------------------------------------------
@@ -612,4 +578,4 @@ protected:
 #endif   // __PCL_KernelFilter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/KernelFilter.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/KernelFilter.h - Released 2018-11-01T11:06:36Z

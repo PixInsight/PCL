@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Compression.h - Released 2017-08-01T14:23:31Z
+// pcl/Compression.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,6 +58,7 @@
 #include <pcl/Diagnostics.h>
 
 #include <pcl/ByteArray.h>
+#include <pcl/ParallelProcess.h>
 #include <pcl/String.h>
 
 namespace pcl
@@ -79,13 +80,13 @@ namespace pcl
  * \ingroup compression_classes
  * \sa ZLibCompression, LZ4Compression, LZ4HCCompression, BloscLZCompression
  */
-class PCL_CLASS Compression
+class PCL_CLASS Compression : public ParallelProcess
 {
 public:
 
    /*!
-    * A structure to hold the compressed data and uncompressed length of
-    * compression subblock.
+    * \struct pcl::Compression::Subblock
+    * \brief Compression subblock data.
     */
    struct Subblock
    {
@@ -95,7 +96,8 @@ public:
    };
 
    /*!
-    * A structure to hold compression/decompression performance measurements.
+    * \struct pcl::Compression::Performance
+    * \brief Compression/decompression performance measurements.
     */
    struct Performance
    {
@@ -105,7 +107,7 @@ public:
    };
 
    /*!
-    * An ordered list of compression subblocks.
+    * A dynamic, ordered list of compression subblocks.
     */
    typedef Array<Subblock>    subblock_list;
 
@@ -128,16 +130,7 @@ public:
     * \li Parallel processing: Enabled to use the maximum possible number of
     * processors.
     */
-   Compression() :
-      m_compressionLevel( 0 ), // use default
-      m_subblockSize( 0 ), // use largest possible subblocks
-      m_itemSize( 1 ),
-      m_byteShuffle( true ),
-      m_checksums( true ),
-      m_parallel( true ),
-      m_maxProcessors( PCL_MAX_PROCESSORS )
-   {
-   }
+   Compression()  = default;
 
    /*!
     * Copy constructor.
@@ -468,84 +461,13 @@ public:
       return Uncompress( subblock_list() << subblock, perf );
    }
 
-   /*!
-    * Returns true iff this object is allowed to use multiple parallel
-    * execution threads (when multiple threads are permitted and available).
-    */
-   bool IsParallelProcessingEnabled() const
-   {
-      return m_parallel;
-   }
-
-   /*!
-    * Enables parallel processing for this object.
-    *
-    * \param enable  Whether to enable or disable parallel processing. True by
-    *                default.
-    *
-    * \param maxProcessors    The maximum number of processors allowed for this
-    *                instance. If \a enable is false this parameter is ignored.
-    *                A value <= 0 is ignored. The default value is zero.
-    */
-   void EnableParallelProcessing( bool enable = true, int maxProcessors = 0 )
-   {
-      m_parallel = enable;
-      if ( enable && maxProcessors > 0 )
-         SetMaxProcessors( maxProcessors );
-   }
-
-   /*!
-    * Disables parallel processing for this object.
-    *
-    * This is a convenience function, equivalent to:
-    * EnableParallelProcessing( !disable )
-    */
-   void DisableParallelProcessing( bool disable = true )
-   {
-      EnableParallelProcessing( !disable );
-   }
-
-   /*!
-    * Returns the maximum number of processors allowed for this object.
-    *
-    * Irrespective of the value returned by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   int MaxProcessors() const
-   {
-      return m_maxProcessors;
-   }
-
-   /*!
-    * Sets the maximum number of processors allowed for this object.
-    *
-    * In the current version of PCL, a module can use a maximum of 1023
-    * processors. The term \e processor actually refers to the number of
-    * threads a module can execute concurrently.
-    *
-    * Irrespective of the value specified by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   void SetMaxProcessors( int maxProcessors )
-   {
-      m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
-   }
-
 private:
 
-   int       m_compressionLevel;
-   size_type m_subblockSize;
-   uint8     m_itemSize;
-   bool      m_byteShuffle   : 1;
-   bool      m_checksums     : 1;
-   bool      m_parallel      : 1;
-   unsigned  m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT;
+   int       m_compressionLevel = 0; // 0 = use codec's default
+   size_type m_subblockSize = 0;     // 0 = use largest possible subblocks
+   uint8     m_itemSize = 1;
+   bool      m_byteShuffle = true;
+   bool      m_checksums = true;
 
 protected:
 
@@ -697,43 +619,43 @@ public:
    /*!
     * Returns the name of this data compression algorithm (ZLib).
     */
-   virtual String AlgorithmName() const
+   String AlgorithmName() const override
    {
       return "ZLib";
    }
 
    /*!
     */
-   virtual int MaxCompressionLevel() const;
+   int MaxCompressionLevel() const override;
 
    /*!
     */
-   virtual int DefaultCompressionLevel() const;
+   int DefaultCompressionLevel() const override;
 
 
 private:
 
    /*!
     */
-   virtual size_type MinBlockSize() const;
+   size_type MinBlockSize() const override;
 
    /*!
     */
-   virtual size_type MaxBlockSize() const;
+   size_type MaxBlockSize() const override;
 
    /*!
     */
-   virtual size_type MaxCompressedBlockSize( size_type size ) const;
+   size_type MaxCompressedBlockSize( size_type size ) const override;
 
    /*!
     */
-   virtual size_type CompressBlock( void* outputData, size_type outputSize,
-                                    const void* inputData, size_type inputSize, int level ) const;
+   size_type CompressBlock( void* outputData, size_type outputSize,
+                            const void* inputData, size_type inputSize, int level ) const override;
 
    /*!
     */
-   virtual size_type UncompressBlock( void* outputData, size_type outputSize,
-                                      const void* inputData, size_type inputSize ) const;
+   size_type UncompressBlock( void* outputData, size_type outputSize,
+                              const void* inputData, size_type inputSize ) const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -767,43 +689,43 @@ public:
    /*!
     * Returns the name of this data compression algorithm (LZ4-HC).
     */
-   virtual String AlgorithmName() const
+   String AlgorithmName() const override
    {
       return "LZ4";
    }
 
    /*!
     */
-   virtual int MaxCompressionLevel() const;
+   int MaxCompressionLevel() const override;
 
    /*!
     */
-   virtual int DefaultCompressionLevel() const;
+   int DefaultCompressionLevel() const override;
 
 
 private:
 
    /*!
     */
-   virtual size_type MinBlockSize() const;
+   size_type MinBlockSize() const override;
 
    /*!
     */
-   virtual size_type MaxBlockSize() const;
+   size_type MaxBlockSize() const override;
 
    /*!
     */
-   virtual size_type MaxCompressedBlockSize( size_type size ) const;
+   size_type MaxCompressedBlockSize( size_type size ) const override;
 
    /*!
     */
-   virtual size_type CompressBlock( void* outputData, size_type outputSize,
-                                    const void* inputData, size_type inputSize, int level ) const;
+   size_type CompressBlock( void* outputData, size_type outputSize,
+                            const void* inputData, size_type inputSize, int level ) const override;
 
    /*!
     */
-   virtual size_type UncompressBlock( void* outputData, size_type outputSize,
-                                      const void* inputData, size_type inputSize ) const;
+   size_type UncompressBlock( void* outputData, size_type outputSize,
+                              const void* inputData, size_type inputSize ) const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -838,43 +760,43 @@ public:
    /*!
     * Returns the name of this data compression algorithm (LZ4-HC).
     */
-   virtual String AlgorithmName() const
+   String AlgorithmName() const override
    {
       return "LZ4-HC";
    }
 
    /*!
     */
-   virtual int MaxCompressionLevel() const;
+   int MaxCompressionLevel() const override;
 
    /*!
     */
-   virtual int DefaultCompressionLevel() const;
+   int DefaultCompressionLevel() const override;
 
 
 private:
 
    /*!
     */
-   virtual size_type MinBlockSize() const;
+   size_type MinBlockSize() const override;
 
    /*!
     */
-   virtual size_type MaxBlockSize() const;
+   size_type MaxBlockSize() const override;
 
    /*!
     */
-   virtual size_type MaxCompressedBlockSize( size_type size ) const;
+   size_type MaxCompressedBlockSize( size_type size ) const override;
 
    /*!
     */
-   virtual size_type CompressBlock( void* outputData, size_type outputSize,
-                                    const void* inputData, size_type inputSize, int level ) const;
+   size_type CompressBlock( void* outputData, size_type outputSize,
+                            const void* inputData, size_type inputSize, int level ) const override;
 
    /*!
     */
-   virtual size_type UncompressBlock( void* outputData, size_type outputSize,
-                                      const void* inputData, size_type inputSize ) const;
+   size_type UncompressBlock( void* outputData, size_type outputSize,
+                              const void* inputData, size_type inputSize ) const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -884,4 +806,4 @@ private:
 #endif   // __PCL_Compression_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Compression.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Compression.h - Released 2018-11-01T11:06:36Z

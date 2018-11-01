@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0348
+// Standard ColorSpaces Process Module Version 01.01.00.0357
 // ----------------------------------------------------------------------------
-// GrayscaleRGBInstances.cpp - Released 2017-08-01T14:26:57Z
+// GrayscaleRGBInstances.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -63,15 +63,22 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 ConvertToGrayscaleInstance::ConvertToGrayscaleInstance( const MetaProcess* m ) :
-ProcessImplementation( m )
+   ProcessImplementation( m )
 {
 }
 
 // ----------------------------------------------------------------------------
 
 ConvertToGrayscaleInstance::ConvertToGrayscaleInstance( const ConvertToGrayscaleInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
+}
+
+// ----------------------------------------------------------------------------
+
+UndoFlags ConvertToGrayscaleInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
 }
 
 // ----------------------------------------------------------------------------
@@ -115,15 +122,22 @@ bool ConvertToGrayscaleInstance::ExecuteOn( View& view )
 // ----------------------------------------------------------------------------
 
 ConvertToRGBColorInstance::ConvertToRGBColorInstance( const MetaProcess* m ) :
-ProcessImplementation( m )
+   ProcessImplementation( m )
 {
 }
 
 // ----------------------------------------------------------------------------
 
 ConvertToRGBColorInstance::ConvertToRGBColorInstance( const ConvertToRGBColorInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
+}
+
+// ----------------------------------------------------------------------------
+
+UndoFlags ConvertToRGBColorInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
 }
 
 // ----------------------------------------------------------------------------
@@ -174,4 +188,4 @@ bool ConvertToRGBColorInstance::ExecuteOn( View& view )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF GrayscaleRGBInstances.cpp - Released 2017-08-01T14:26:57Z
+// EOF GrayscaleRGBInstances.cpp - Released 2018-11-01T11:07:20Z

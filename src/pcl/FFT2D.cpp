@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/FFT2D.cpp - Released 2017-08-01T14:23:38Z
+// pcl/FFT2D.cpp - Released 2018-11-01T11:06:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -162,11 +162,12 @@ private:
    {
    public:
 
-      RowThread( PCL_FFT2DEngine& e, int r0, int r1 ) : m_engine( e ), m_firstRow( r0 ), m_endRow( r1 )
+      RowThread( PCL_FFT2DEngine& e, int r0, int r1 ) :
+         m_engine( e ), m_firstRow( r0 ), m_endRow( r1 )
       {
       }
 
-      virtual void Run()
+      void Run() override
       {
          void* h = (m_engine.m_dir == PCL_FFT_FORWARD) ?
                this->Create( m_engine.m_cols, (complex*)0 ) : this->CreateInv( m_engine.m_cols, (complex*)0 );
@@ -207,11 +208,12 @@ private:
    {
    public:
 
-      ColThread( PCL_FFT2DEngine& e, int c0, int c1 ) : m_engine( e ), m_firstCol( c0 ), m_endCol( c1 )
+      ColThread( PCL_FFT2DEngine& e, int c0, int c1 ) :
+         m_engine( e ), m_firstCol( c0 ), m_endCol( c1 )
       {
       }
 
-      virtual void Run()
+      void Run() override
       {
          void* h = (m_engine.m_dir == PCL_FFT_FORWARD) ?
                this->Create( m_engine.m_rows, (complex*)0 ) : this->CreateInv( m_engine.m_rows, (complex*)0 );
@@ -315,11 +317,12 @@ private:
    {
    public:
 
-      RowThread( PCL_FFT2DRealEngine& e, int r0, int r1 ) : m_engine( e ), m_firstRow( r0 ), m_endRow( r1 )
+      RowThread( PCL_FFT2DRealEngine& e, int r0, int r1 ) :
+         m_engine( e ), m_firstRow( r0 ), m_endRow( r1 )
       {
       }
 
-      virtual void Run()
+      void Run() override
       {
          void* h = this->Create( m_engine.m_cols, (scalar*)0 );
          for ( int i = m_firstRow; i < m_endRow; ++i )
@@ -340,11 +343,12 @@ private:
    {
    public:
 
-      ColThread( PCL_FFT2DRealEngine& e, int c0, int c1 ) : m_engine( e ), m_firstCol( c0 ), m_endCol( c1 )
+      ColThread( PCL_FFT2DRealEngine& e, int c0, int c1 ) :
+         m_engine( e ), m_firstCol( c0 ), m_endCol( c1 )
       {
       }
 
-      virtual void Run()
+      void Run() override
       {
          void* h = this->Create( m_engine.m_rows, (complex*)0 );
 
@@ -426,11 +430,12 @@ private:
    {
    public:
 
-      ColThread( PCL_FFT2DRealInverseEngine& e, int c0, int c1 ) : m_engine( e ), m_firstCol( c0 ), m_endCol( c1 )
+      ColThread( PCL_FFT2DRealInverseEngine& e, int c0, int c1 ) :
+         m_engine( e ), m_firstCol( c0 ), m_endCol( c1 )
       {
       }
 
-      virtual void Run()
+      void Run() override
       {
          void* h = this->CreateInv( m_engine.m_rows, (complex*)0 );
 
@@ -464,11 +469,12 @@ private:
    {
    public:
 
-      RowThread( PCL_FFT2DRealInverseEngine& e, int r0, int r1 ) : m_engine( e ), m_firstRow( r0 ), m_endRow( r1 )
+      RowThread( PCL_FFT2DRealInverseEngine& e, int r0, int r1 ) :
+         m_engine( e ), m_firstRow( r0 ), m_endRow( r1 )
       {
       }
 
-      virtual void Run()
+      void Run() override
       {
          void* h = this->CreateInv( m_engine.m_cols, (scalar*)0 );
          for ( int i = m_firstRow; i < m_endRow; ++i )
@@ -521,4 +527,4 @@ void FFT2DBase::Transform( int rows, int cols, double* y, const dcomplex* x, Sta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FFT2D.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/FFT2D.cpp - Released 2018-11-01T11:06:52Z

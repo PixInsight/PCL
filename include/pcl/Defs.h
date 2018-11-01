@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Defs.h - Released 2017-08-01T14:23:31Z
+// pcl/Defs.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,21 +59,21 @@
  *
  * <div style="margin-top: 3em; text-align: center;">
  *    <h1>
- *       PCL - PixInsight Class Library Version 2.1
+ *       PixInsight Class Library
  *    </h1>
- *    <h1>
+ *    <h2>
  *       Reference Documentation
- *    </h1>
+ *    </h2>
  *    <p>
- *       <strong>Copyright (c) 2003-2017, The PixInsight Development Team.
+ *       <strong>Copyright (c) 2003-2018, The PixInsight Development Team.
  *       All Rights Reserved</strong>
  *    </p>
  * </div>
  * <div style="margin-top: 3em; margin-bottom: 3em;">
  *    <p>
  *       <a href="http://pixinsight.com/">PixInsight</a> is an advanced image
- *       processing software platform designed specifically for
- *       astrophotography and other technical imaging fields. PixInsight is a
+ *       processing software platform designed specifically for astronomical
+ *       applications and other technical imaging fields. PixInsight is a
  *       modular, open-architecture system where the entire processing and file
  *       handling capabilities are implemented as external installable modules.
  *    </p>
@@ -92,7 +92,11 @@
  *       by PCL. Along with a core communication API, PCL includes a
  *       comprehensive set of image processing algorithms, ranging from
  *       geometrical transformations to multiscale analysis algorithms, most of
- *       them available as multithreaded parallel implementations.
+ *       them available as multithreaded parallel implementations. PCL provides
+ *       also rigorous and efficient implementations of essential astronomical
+ *       algorithms, including state-of-the-art solar system ephemerides,
+ *       vector astrometry, and reduction of positions of solar system and
+ *       stellar objects.
  *    </p>
  *    <p>
  *       PCL is highly portable code. As of writing this document, it is
@@ -131,10 +135,10 @@
 
 /*!
  * \namespace pcl
- * \brief PCL root namespace
+ * \brief PCL root namespace.
  *
  * pcl is the main namespace of the PixInsight Class Library (PCL), where all
- * public PCL classes and functions are defined.
+ * public PCL classes, functions and data are defined.
  */
 
 // ----------------------------------------------------------------------------
@@ -362,6 +366,16 @@
 #  include <type_traits>
 #  ifndef __type_traits_h
 #    define __type_traits_h
+#  endif
+#endif
+
+/*
+ * C++11: std::initializer_list.
+ */
+#ifndef __initializer_list_h
+#  include <initializer_list>
+#  ifndef __initializer_list_h
+#    define __initializer_list_h
 #  endif
 #endif
 
@@ -1114,4 +1128,4 @@ typedef int64                 fsize_type;
 #endif   // __PCL_Defs_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Defs.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Defs.h - Released 2018-11-01T11:06:36Z

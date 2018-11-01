@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ReadoutOptions.cpp - Released 2017-08-01T14:23:38Z
+// pcl/ReadoutOptions.cpp - Released 2018-11-01T11:06:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -64,19 +64,24 @@ ReadoutOptions ReadoutOptions::GetCurrentOptions()
    (*API->Global->GetReadoutOptions)( &a );
 
    ReadoutOptions o;
-   o.data          = ReadoutOptions::readout_data( a.data );
-   o.mode          = ReadoutOptions::readout_mode( a.mode );
-   o.probeSize     = a.probeSize;
-   o.previewSize   = a.previewSize;
-   o.previewZoom   = a.previewZoom;
-   o.precision     = a.precision;
-   o.range         = a.range;
-   o.showAlpha     = a.showAlpha;
-   o.showMask      = a.showMask;
-   o.showPreview   = a.showPreview;
-   o.previewCenter = a.previewCenter;
-   o.broadcast     = a.broadcast;
-   o.real          = a.real;
+   o.data                = ReadoutOptions::readout_data( a.data );
+   o.mode                = ReadoutOptions::readout_mode( a.mode );
+   o.probeSize           = a.probeSize;
+   o.previewSize         = a.previewSize;
+   o.previewZoom         = a.previewZoom;
+   o.precision           = a.precision;
+   o.range               = a.range;
+   o.showAlpha           = a.showAlpha;
+   o.showMask            = a.showMask;
+   o.showPreview         = a.showPreview;
+   o.previewCenter       = a.previewCenter;
+   o.showEquatorial      = a.showEquatorial;
+   o.showEcliptic        = a.showEcliptic;
+   o.showGalactic        = a.showGalactic;
+   o.coordinateItems     = a.coordinateItems;
+   o.coordinatePrecision = a.coordinatePrecision;
+   o.broadcast           = a.broadcast;
+   o.real                = a.real;
 
    return o;
 }
@@ -86,20 +91,25 @@ ReadoutOptions ReadoutOptions::GetCurrentOptions()
 void ReadoutOptions::SetCurrentOptions( const ReadoutOptions& o )
 {
    api_readout_options a;
-   a.data          = int32( o.data );
-   a.mode          = int32( o.mode );
-   a.probeSize     = o.probeSize;
-   a.previewSize   = o.previewSize;
-   a.previewZoom   = o.previewZoom;
-   a.precision     = o.precision;
-   a.range         = o.range;
-   a.showAlpha     = o.showAlpha;
-   a.showMask      = o.showMask;
-   a.showPreview   = o.showPreview;
-   a.previewCenter = o.previewCenter;
-   a.broadcast     = o.broadcast;
-   a.real          = o.real;
-   a.__r__         = 0;
+   a.data                = int32( o.data );
+   a.mode                = int32( o.mode );
+   a.probeSize           = o.probeSize;
+   a.previewSize         = o.previewSize;
+   a.previewZoom         = o.previewZoom;
+   a.precision           = o.precision;
+   a.range               = o.range;
+   a.showAlpha           = o.showAlpha;
+   a.showMask            = o.showMask;
+   a.showPreview         = o.showPreview;
+   a.previewCenter       = o.previewCenter;
+   a.showEquatorial      = o.showEquatorial;
+   a.showEcliptic        = o.showEcliptic;
+   a.showGalactic        = o.showGalactic;
+   a.coordinateItems     = o.coordinateItems;
+   a.coordinatePrecision = o.coordinatePrecision;
+   a.broadcast           = o.broadcast;
+   a.real                = o.real;
+   a.__r__               = 0;
 
    (*API->Global->SetReadoutOptions)( &a );
 }
@@ -109,4 +119,4 @@ void ReadoutOptions::SetCurrentOptions( const ReadoutOptions& o )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ReadoutOptions.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/ReadoutOptions.cpp - Released 2018-11-01T11:06:52Z

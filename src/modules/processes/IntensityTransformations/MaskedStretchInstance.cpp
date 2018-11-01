@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// MaskedStretchInstance.cpp - Released 2017-08-01T14:26:58Z
+// MaskedStretchInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -104,6 +104,13 @@ void MaskedStretchInstance::Assign( const ProcessImplementation& p )
       p_roi                       = x->p_roi;
       p_maskType                  = x->p_maskType;
    }
+}
+
+// ----------------------------------------------------------------------------
+
+UndoFlags MaskedStretchInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
 }
 
 // ----------------------------------------------------------------------------
@@ -496,4 +503,4 @@ size_type MaskedStretchInstance::ParameterLength( const MetaParameter* p, size_t
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF MaskedStretchInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF MaskedStretchInstance.cpp - Released 2018-11-01T11:07:21Z

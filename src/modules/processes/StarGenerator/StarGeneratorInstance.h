@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0297
+// Standard StarGenerator Process Module Version 01.01.00.0305
 // ----------------------------------------------------------------------------
-// StarGeneratorInstance.h - Released 2017-08-01T14:26:58Z
+// StarGeneratorInstance.h - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,8 +60,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// StarGeneratorInstance
-// ----------------------------------------------------------------------------
 
 class StarGeneratorInstance : public ProcessImplementation
 {
@@ -71,34 +69,31 @@ public:
    StarGeneratorInstance( const StarGeneratorInstance& );
 
    virtual void Assign( const ProcessImplementation& );
-
    virtual bool CanExecuteOn( const View&, String& whyNot ) const;
    virtual bool IsHistoryUpdater( const View& v ) const;
-
    virtual bool CanExecuteGlobal( String& whyNot ) const;
    virtual bool ExecuteGlobal();
-
    virtual void* LockParameter( const MetaParameter*, size_type tableRow );
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
 
 private:
 
-   String   starDatabasePath;    // path to the star database file
-   double   centerRA;            // center right ascension, degrees
-   double   centerDec;           // center declination, degrees
-   double   epoch;               // picture epoch, JD
-   pcl_enum projectionSystem;    // conformal/automatic or Gnomonic
-   float    focalLength;         // effective focal length in mm
-   float    pixelSize;           // pixel size, micrometers
-   int32    sensorWidth;         // sensor width in pixels
-   int32    sensorHeight;        // sensor height in pixels
-   float    limitMagnitude;      // limiting magnitude
-   float    starFWHM;            // star FWHM, arcseconds
-   pcl_bool nonlinear;           // apply a nonlinear transformation (output image only)
-   float    targetMinimumValue;  // target minimum sample value for nonlinear output (output image only)
-   pcl_enum outputMode;          // generate an output image or a CSV text file
-   String   outputFilePath;      // path to the output CSV file
+   String   starDatabasePath;   // path to the star database file
+   double   centerRA;           // center right ascension, degrees
+   double   centerDec;          // center declination, degrees
+   double   epoch;              // picture epoch, JD
+   pcl_enum projectionSystem;   // conformal/automatic or Gnomonic
+   float    focalLength;        // effective focal length in mm
+   float    pixelSize;          // pixel size, micrometers
+   int32    sensorWidth;        // sensor width in pixels
+   int32    sensorHeight;       // sensor height in pixels
+   float    limitMagnitude;     // limiting magnitude
+   float    starFWHM;           // star FWHM, arcseconds
+   pcl_bool nonlinear;          // apply a nonlinear transformation (output image only)
+   float    targetMinimumValue; // target minimum sample value for nonlinear output (output image only)
+   pcl_enum outputMode;         // generate an output image or a CSV text file
+   String   outputFilePath;     // path to the output CSV file
 
    friend class StarGeneratorEngine;
    friend class StarGeneratorProcess;
@@ -113,4 +108,4 @@ private:
 #endif   // __StarGeneratorInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF StarGeneratorInstance.h - Released 2017-08-01T14:26:58Z
+// EOF StarGeneratorInstance.h - Released 2018-11-01T11:07:21Z

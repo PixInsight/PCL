@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/PolarTransform.h - Released 2017-08-01T14:23:31Z
+// pcl/PolarTransform.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,6 +58,7 @@
 #include <pcl/Diagnostics.h>
 
 #include <pcl/GeometricTransformation.h>
+#include <pcl/ParallelProcess.h>
 
 namespace pcl
 {
@@ -82,7 +83,8 @@ namespace pcl
  *
  * \sa PolarTransform, LogPolarTransform, FFTRegistrationEngine
  */
-class PCL_CLASS PolarTransformBase : public InterpolatingGeometricTransformation
+class PCL_CLASS PolarTransformBase : public InterpolatingGeometricTransformation,
+                                     public ParallelProcess
 {
 public:
 
@@ -92,9 +94,7 @@ public:
     * while this %PolarTransformBase object exists.
     */
    PolarTransformBase( PixelInterpolation& p ) :
-      InterpolatingGeometricTransformation( p ),
-      m_initialAngle( 0 ), m_finalAngle( pcl::Const<float>::_2pi() ),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      InterpolatingGeometricTransformation( p )
    {
    }
 
@@ -158,7 +158,7 @@ public:
 
    /*!
     */
-   virtual void GetNewSizes( int& w, int& h ) const
+   void GetNewSizes( int& w, int& h ) const override
    {
       // No change
    }
@@ -171,81 +171,10 @@ public:
       return false;
    }
 
-   /*!
-    * Returns true iff this object is allowed to use multiple parallel execution
-    * threads (when multiple threads are permitted and available).
-    */
-   bool IsParallelProcessingEnabled() const
-   {
-      return m_parallel;
-   }
-
-   /*!
-    * Enables parallel processing for this instance.
-    *
-    * \param enable  Whether to enable or disable parallel processing. True by
-    *                default.
-    *
-    * \param maxProcessors    The maximum number of processors allowed for this
-    *                instance. If \a enable is false this parameter is ignored.
-    *                A value <= 0 is ignored. The default value is zero.
-    */
-   void EnableParallelProcessing( bool enable = true, int maxProcessors = 0 )
-   {
-      m_parallel = enable;
-      if ( enable && maxProcessors > 0 )
-         SetMaxProcessors( maxProcessors );
-   }
-
-   /*!
-    * Disables parallel processing for this instance.
-    *
-    * This is a convenience function, equivalent to:
-    * EnableParallelProcessing( !disable )
-    */
-   void DisableParallelProcessing( bool disable = true )
-   {
-      EnableParallelProcessing( !disable );
-   }
-
-   /*!
-    * Returns the maximum number of processors allowed for this instance of.
-    *
-    * Irrespective of the value returned by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   int MaxProcessors() const
-   {
-      return m_maxProcessors;
-   }
-
-   /*!
-    * Sets the maximum number of processors allowed for this instance.
-    *
-    * In the current version of PCL, a module can use a maximum of 1023
-    * processors. The term \e processor actually refers to the number of
-    * threads a module can execute concurrently.
-    *
-    * Irrespective of the value specified by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   void SetMaxProcessors( int maxProcessors )
-   {
-      m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
-   }
-
 protected:
 
-   float    m_initialAngle; // angles in radians!
-   float    m_finalAngle;
-   bool     m_parallel      : 1;
-   unsigned m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT; // Maximum number of processors allowed
+   float m_initialAngle = 0; // in radians
+   float m_finalAngle = pcl::Const<float>::_2pi();
 };
 
 // ----------------------------------------------------------------------------
@@ -292,11 +221,11 @@ public:
 protected:
 
    // Inherited from ImageTransformation.
-   virtual void Apply( pcl::Image& ) const;
-   virtual void Apply( pcl::DImage& ) const;
-   virtual void Apply( pcl::UInt8Image& ) const;
-   virtual void Apply( pcl::UInt16Image& ) const;
-   virtual void Apply( pcl::UInt32Image& ) const;
+   void Apply( pcl::Image& ) const override;
+   void Apply( pcl::DImage& ) const override;
+   void Apply( pcl::UInt8Image& ) const override;
+   void Apply( pcl::UInt16Image& ) const override;
+   void Apply( pcl::UInt32Image& ) const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -343,7 +272,7 @@ public:
    /*!
     * \internal
     */
-   virtual bool IsLogPolar() const
+   bool IsLogPolar() const override
    {
       return true;
    }
@@ -351,11 +280,11 @@ public:
 protected:
 
    // Inherited from ImageTransformation.
-   virtual void Apply( pcl::Image& ) const;
-   virtual void Apply( pcl::DImage& ) const;
-   virtual void Apply( pcl::UInt8Image& ) const;
-   virtual void Apply( pcl::UInt16Image& ) const;
-   virtual void Apply( pcl::UInt32Image& ) const;
+   void Apply( pcl::Image& ) const override;
+   void Apply( pcl::DImage& ) const override;
+   void Apply( pcl::UInt8Image& ) const override;
+   void Apply( pcl::UInt16Image& ) const override;
+   void Apply( pcl::UInt32Image& ) const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -365,4 +294,4 @@ protected:
 #endif   // __PCL_PolarTransform_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/PolarTransform.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/PolarTransform.h - Released 2018-11-01T11:06:36Z

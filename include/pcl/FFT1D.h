@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/FFT1D.h - Released 2017-08-01T14:23:31Z
+// pcl/FFT1D.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -194,8 +194,7 @@ public:
    /*!
     * Constructs an %AbstractFFT object of the specified \a length.
     */
-   AbstractFFT( int length ) :
-      m_length( length ), m_handle( 0 ), m_handleInv( 0 ), m_dft()
+   AbstractFFT( int length ) : m_length( length )
    {
    }
 
@@ -288,10 +287,10 @@ public:
     */
    virtual void Release()
    {
-      if ( m_handle != 0 )
-         this->Destroy( m_handle ), m_handle = 0;
-      if ( m_handleInv != 0 )
-         this->Destroy( m_handleInv ), m_handleInv = 0;
+      if ( m_handle != nullptr )
+         this->Destroy( m_handle ), m_handle = nullptr;
+      if ( m_handleInv != nullptr )
+         this->Destroy( m_handleInv ), m_handleInv = nullptr;
       m_dft = transform();
    }
 
@@ -301,9 +300,9 @@ private:
 
 protected:
 
-   mutable void*     m_handle;      // Opaque pointers to internal control structures
-   mutable void*     m_handleInv;
-           transform m_dft;         // DFT of complex or real data
+   mutable void*     m_handle = nullptr; // Opaque pointers to internal control structures
+   mutable void*     m_handleInv = nullptr;
+           transform m_dft; // DFT of complex or real data
 };
 
 // ----------------------------------------------------------------------------
@@ -401,8 +400,8 @@ public:
    {
       if ( m_dft.IsEmpty() )
          m_dft = transform( m_length );
-      if ( m_handle == 0 )
-         m_handle = this->Create( m_length, (complex*)0 );
+      if ( m_handle == nullptr )
+         m_handle = this->Create( m_length, static_cast<complex*>( nullptr ) );
       this->Transform( m_handle, *m_dft, x );
       return *this;
    }
@@ -423,8 +422,8 @@ public:
    {
       if ( m_dft.IsEmpty() )
          throw Error( "Invalid out-of-place inverse FFT: No FFT has been performed." );
-      if ( m_handleInv == 0 )
-         m_handleInv = this->CreateInv( m_length, (complex*)0 );
+      if ( m_handleInv == nullptr )
+         m_handleInv = this->CreateInv( m_length, static_cast<complex*>( nullptr ) );
       this->Transform( m_handleInv, y, *m_dft );
       return *this;
    }
@@ -498,14 +497,14 @@ public:
    {
       if ( dir == PCL_FFT_BACKWARD )
       {
-         if ( m_handleInv == 0 )
-            m_handleInv = this->CreateInv( m_length, (complex*)0 );
+         if ( m_handleInv == nullptr )
+            m_handleInv = this->CreateInv( m_length, static_cast<complex*>( nullptr ) );
          this->Transform( m_handleInv, y, x );
       }
       else
       {
-         if ( m_handle == 0 )
-            m_handle = this->Create( m_length, (complex*)0 );
+         if ( m_handle == nullptr )
+            m_handle = this->Create( m_length, static_cast<complex*>( nullptr ) );
          this->Transform( m_handle, y, x );
       }
       return const_cast<GenericFFT&>( *this );
@@ -520,7 +519,7 @@ public:
     */
    static int OptimizedLength( int n )
    {
-      return FFT1DBase::OptimizedLength( n, (complex*)0 );
+      return FFT1DBase::OptimizedLength( n, static_cast<complex*>( nullptr ) );
    }
 };
 
@@ -619,8 +618,8 @@ public:
    {
       if ( m_dft.IsEmpty() )
          m_dft = transform( m_length/2 + 1 );
-      if ( m_handle == 0 )
-         m_handle = this->Create( m_length, (scalar*)0 );
+      if ( m_handle == nullptr )
+         m_handle = this->Create( m_length, static_cast<scalar*>( nullptr ) );
       this->Transform( m_handle, *m_dft, x );
       return *this;
    }
@@ -641,8 +640,8 @@ public:
    {
       if ( m_dft.IsEmpty() )
          throw Error( "Invalid out-of-place inverse FFT: No FFT has been performed." );
-      if ( m_handleInv == 0 )
-         m_handleInv = this->CreateInv( m_length, (scalar*)0 );
+      if ( m_handleInv == nullptr )
+         m_handleInv = this->CreateInv( m_length, static_cast<scalar*>( nullptr ) );
       this->Transform( m_handleInv, y, *m_dft );
       return *this;
    }
@@ -703,8 +702,8 @@ public:
     */
    GenericRealFFT& operator()( complex* y, const scalar* x ) const
    {
-      if ( m_handle == 0 )
-         m_handle = this->Create( m_length, (scalar*)0 );
+      if ( m_handle == nullptr )
+         m_handle = this->Create( m_length, static_cast<scalar*>( nullptr ) );
       this->Transform( m_handle, y, x );
       return const_cast<GenericRealFFT&>( *this );
    }
@@ -734,8 +733,8 @@ public:
     */
    GenericRealFFT& operator()( scalar* y, const complex* x ) const
    {
-      if ( m_handleInv == 0 )
-         m_handleInv = this->CreateInv( m_length, (scalar*)0 );
+      if ( m_handleInv == nullptr )
+         m_handleInv = this->CreateInv( m_length, static_cast<scalar*>( nullptr ) );
       this->Transform( m_handleInv, y, x );
       return const_cast<GenericRealFFT&>( *this );
    }
@@ -749,7 +748,7 @@ public:
     */
    static int OptimizedLength( int n )
    {
-      return FFT1DBase::OptimizedLength( n, (scalar*)0 );
+      return FFT1DBase::OptimizedLength( n, static_cast<scalar*>( nullptr ) );
    }
 };
 
@@ -833,4 +832,4 @@ typedef FRealFFT                    RealFFT;
 #endif   // __PCL_FFT1D_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FFT1D.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/FFT1D.h - Released 2018-11-01T11:06:36Z

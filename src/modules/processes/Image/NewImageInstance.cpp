@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard Image Process Module Version 01.02.09.0410
 // ----------------------------------------------------------------------------
-// NewImageInstance.cpp - Released 2017-08-01T14:26:58Z
+// NewImageInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -148,7 +148,7 @@ bool NewImageInstance::Validate( pcl::String& info )
 void NewImageInstance::Assign( const ProcessImplementation& p )
 {
    const NewImageInstance* x = dynamic_cast<const NewImageInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       id               = x->id;
       width            = x->width;
@@ -178,6 +178,7 @@ bool NewImageInstance::CanExecuteGlobal( pcl::String& whyNot ) const
    return true;
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 template <class P>
@@ -213,6 +214,8 @@ static void FillImage( GenericImage<P>& image, double v0, double v1, double v2, 
       }
    }
 }
+
+// ----------------------------------------------------------------------------
 
 bool NewImageInstance::ExecuteGlobal()
 {
@@ -284,7 +287,7 @@ void* NewImageInstance::LockParameter( const MetaParameter* p, size_type /*table
       return &v2;
    if ( p == TheNewImageVAParameter )
       return &va;
-   return 0;
+   return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -381,4 +384,4 @@ size_type NewImageInstance::ParameterLength( const MetaParameter* p, size_type t
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF NewImageInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF NewImageInstance.cpp - Released 2018-11-01T11:07:21Z

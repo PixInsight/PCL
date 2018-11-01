@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/TimePoint.h - Released 2017-08-01T14:23:31Z
+// pcl/TimePoint.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,11 +60,14 @@
 #include <pcl/String.h>
 
 /*
- * N.B.: Remove conflicting names defined by 3rd-party packages used by some
- * standard modules.
+ * N.B.: Remove potentially conflicting names that may be defined by 3rd-party
+ * packages used by some standard modules.
  */
 #ifdef J2000
 # undef J2000
+#endif
+#ifdef J2100
+# undef J2100
 #endif
 #ifdef B1950
 # undef B1950
@@ -85,12 +88,13 @@ struct FileTime;
 
 /*!
  * \class TimePoint
- * \brief A time point in an arbitrary time scale
+ * \brief An instant in any timescale
  *
- * %TimePoint represents an instant in any time scale. The internal
- * representation of time consists of the separate integer and fractional
- * components of a Julian day number. This guarantees a resolution better than
- * one nanosecond and fast time arithmetic operations.
+ * %TimePoint represents an instant, an infinitesimal point in time, in any
+ * timescale. The internal representation of time consists of the separate
+ * integer and fractional components of a Julian date. This guarantees a
+ * numerical resolution better than one nanosecond, as well as fast time
+ * relational and arithmetic operations.
  *
  * \ingroup time_representation
  * \sa ISO8601ConversionOptions, IsoString::ParseISO8601DateTime()
@@ -107,7 +111,7 @@ public:
 
    /*!
     * Constructs a %TimePoint object for a given instant represented as a
-    * Julian day number.
+    * Julian date.
     */
    TimePoint( double jd ) :
       m_jdi( TruncInt( jd ) ), m_jdf( Frac( jd ) )
@@ -115,11 +119,19 @@ public:
    }
 
    /*!
-    * Constructs a %TimePoint object from the separate integer and fractional
-    * parts of a Julian day number, \a jdi and \a jdf respectively.
+    * Constructs a %TimePoint object from two separate Julian date components,
+    * \a jd1 and \a jd2, where the resulting JD is jd1 + jd2.
+    *
+    * Specifying a JD in two parts greatly improves the accuracy of time
+    * representation, by increasing the effective bit length used to store time
+    * points. To maximize time resolution and calculation efficiency,
+    * %TimePoint normalizes its internal representation as the separate integer
+    * and fractional components of a JD. This guarantees a numerical resolution
+    * better than one nanosecond.
     */
-   TimePoint( int jdi, double jdf ) :
-      m_jdi( jdi ), m_jdf( jdf )
+   TimePoint( double jd1, double jd2 ) :
+      m_jdi( TruncInt( jd1 ) + TruncInt( jd2 ) ),
+      m_jdf( Frac( jd1 ) + Frac( jd2 ) )
    {
       Normalize();
    }
@@ -156,7 +168,7 @@ public:
     * If the source representation specifies a nonzero time zone, it will be
     * subtracted from the time point represented by this object. In other
     * words, the newly constructed object will always transport a time point in
-    * the UTC time scale.
+    * the UTC timescale.
     */
    TimePoint( const IsoString& dateTime )
    {
@@ -173,7 +185,7 @@ public:
     * If the source representation specifies a nonzero time zone, it will be
     * subtracted from the time point represented by this object. In other
     * words, the newly constructed object will always transport a time point in
-    * the UTC time scale.
+    * the UTC timescale.
     */
    TimePoint( const String& dateTime )
    {
@@ -520,8 +532,8 @@ public:
    }
 
    /*!
-    * Returns the integer part of the Julian day number corresponding to this
-    * time point.
+    * Returns the integer part of the Julian date (also referred to as
+    * <em>Julian day number</em>) corresponding to this time point.
     */
    constexpr int JDI() const
    {
@@ -529,8 +541,8 @@ public:
    }
 
    /*!
-    * Returns the fractional part of the Julian day number corresponding to
-    * this time point.
+    * Returns the fractional part of the Julian date corresponding to this time
+    * point.
     */
    constexpr double JDF() const
    {
@@ -538,7 +550,7 @@ public:
    }
 
    /*!
-    * Returns the Julian day number corresponding to this time point.
+    * Returns the Julian date corresponding to this time point.
     *
     * The time point representation returned by this member function only has
     * millisecond resolution. For higher resolution time point representations
@@ -547,12 +559,61 @@ public:
     *
     * If this is an invalid %TimePoint (for example, a default constructed
     * instance), the value returned by this function is meaningless as a Julian
-    * day number.
+    * date.
     */
    constexpr double JD() const
    {
       return m_jdi + m_jdf;
    }
+
+   /*!
+    * Returns the modified Julian date (MJD) corresponding to this time point.
+    *
+    * This function returns JD() - 2400000.5. Refer to the JD() member function
+    * for more information.
+    */
+   constexpr double MJD() const
+   {
+      return (m_jdi-2400000) + (m_jdf-0.5);
+   }
+
+   /*!
+    * Returns the value of Delta T, or the difference TT-UT1, corresponding to
+    * this time point.
+    *
+    * If possible, this member function returns an interpolated value from the
+    * global Delta T database, which will be loaded and parsed upon the first
+    * call to this function as a thread-safe procedure. See
+    * EphemerisFile::DeltaTDataFilePath() and
+    * EphemerisFile::OverrideDeltaTDataFilePath() for more information.
+    *
+    * Otherwise, if this time point falls outside the Delta T database time
+    * span, this function will use the polynomial expressions for Delta T
+    * included in <em>Five Millennium Canon of Solar Eclipses</em>, by Fred
+    * Espenak and Jean Meeus (NASA/TP–2006–214141, Revision 1.0, 2007).
+    *
+    * The returned value is the difference TT-UT1 in seconds.
+    */
+   double DeltaT() const;
+
+   /*!
+    * Returns the value of Delta AT, or the difference TAI-UTC, corresponding
+    * to this time point, which is assumed to represent an instant in the UTC
+    * timescale.
+    *
+    * If possible, this member function returns an interpolated value from the
+    * global Delta AT database, which will be loaded and parsed upon the first
+    * call to this function as a thread-safe procedure. See
+    * EphemerisFile::DeltaATDataFilePath() and
+    * EphemerisFile::OverrideDeltaATDataFilePath() for more information.
+    *
+    * UTC does not exist before 1960, so calling this function for a TimePoint
+    * before that year is a conceptual error. For convenience, zero is returned
+    * in such case instead of throwing an exception.
+    *
+    * The returned value is the difference TAI-UTC in seconds.
+    */
+   double DeltaAT() const;
 
    /*!
     * Adds the specified number of \a days to this time point. Returns a
@@ -703,7 +764,7 @@ public:
 
    /*!
     * Returns this time point represented as Local Standard Time (LST),
-    * assuming that this object represents a time point in the UTC time scale.
+    * assuming that this object represents a time point in the UTC timescale.
     */
    TimePoint UTCToLocalTime() const
    {
@@ -721,7 +782,7 @@ public:
 
    /*!
     * Returns a %TimePoint object corresponding to the current date and time in
-    * the UTC time scale.
+    * the UTC timescale.
     */
    static TimePoint Now();
 
@@ -733,6 +794,18 @@ public:
    {
       TimePoint t;
       t.m_jdi = 2451545;
+      t.m_jdf = 0;
+      return t;
+   }
+
+   /*!
+    * Returns a %TimePoint object corresponding to the standard J2100 epoch,
+    * namely JD 2488070.0, corresponding to the midday of 2100 January 1.
+    */
+   static TimePoint J2100()
+   {
+      TimePoint t;
+      t.m_jdi = 2488070;
       t.m_jdf = 0;
       return t;
    }
@@ -771,7 +844,7 @@ public:
     * If the source representation specifies a nonzero time zone, it will be
     * subtracted from the time point constructed by this function. In other
     * words, the newly constructed object will always transport a time point in
-    * the UTC time scale without offset.
+    * the UTC timescale without offset.
     *
     * \sa TryFromString( TimePoint&, double&, const IsoString& ),
     * IsoString::ParseISO8601DateTime()
@@ -794,7 +867,7 @@ public:
     * If the source representation specifies a nonzero time zone, it will be
     * subtracted from the time point constructed by this function. In other
     * words, the newly constructed object will always transport a time point in
-    * the UTC time scale without offset.
+    * the UTC timescale without offset.
     *
     * \sa TryFromString( TimePoint&, double&, const String& ),
     * String::ParseISO8601DateTime()
@@ -814,7 +887,7 @@ public:
     * If the source representation specifies a nonzero time zone, it will be
     * subtracted from the time point constructed by this function. In other
     * words, the newly constructed object will always transport a time point in
-    * the UTC time scale without offset.
+    * the UTC timescale without offset.
     *
     * \sa TryFromString( TimePoint&, const IsoString& ),
     * IsoString::ParseISO8601DateTime()
@@ -831,7 +904,7 @@ public:
     * If the source representation specifies a nonzero time zone, it will be
     * subtracted from the time point constructed by this function. In other
     * words, the newly constructed object will always transport a time point in
-    * the UTC time scale without offset.
+    * the UTC timescale without offset.
     *
     * \sa TryFromString( TimePoint&, const String& ),
     * String::ParseISO8601DateTime()
@@ -855,7 +928,7 @@ public:
     *
     * If the source string contains a time zone offset, it is subtracted from
     * the evaluated time point. In other words, the %TimePoint value stored in
-    * \a t is always represented in the UTC time scale without any offset.
+    * \a t is always represented in the UTC timescale without any offset.
     *
     * \sa FromString( const IsoString& ), IsoString::TryParseISO8601DateTime()
     */
@@ -885,7 +958,7 @@ public:
     *
     * If the source string contains a time zone offset, it is subtracted from
     * the evaluated time point. In other words, the %TimePoint value stored in
-    * \a t is always represented in the UTC time scale without any offset.
+    * \a t is always represented in the UTC timescale without any offset.
     *
     * \sa FromString( const String& ), String::TryParseISO8601DateTime()
     */
@@ -914,7 +987,7 @@ public:
     *
     * If the source string contains a time zone offset, it is subtracted from
     * the evaluated time point. In other words, the %TimePoint value stored in
-    * \a t is always represented in the UTC time scale without any offset.
+    * \a t is always represented in the UTC timescale without any offset.
     *
     * \sa FromString( const IsoString& ), IsoString::TryParseISO8601DateTime()
     */
@@ -937,7 +1010,7 @@ public:
     *
     * If the source string contains a time zone offset, it is subtracted from
     * the evaluated time point. In other words, the %TimePoint value stored in
-    * \a t is always represented in the UTC time scale without any offset.
+    * \a t is always represented in the UTC timescale without any offset.
     *
     * \sa FromString( const String& ), String::TryParseISO8601DateTime()
     */
@@ -954,7 +1027,7 @@ private:
 
    /*!
     * \internal
-    * Ensures that the internal Julian day separate representation is optimal
+    * Ensures that the internal Julian date separate representation is optimal
     * in terms of time resolution by constraining JDF to [0,1).
     */
    void Normalize()
@@ -1003,7 +1076,7 @@ inline constexpr bool operator ==( const TimePoint& t1, const TimePoint& t2 )
 
 /*!
  * Returns true iff a %TimePoint object \a t1 represents the specified time
- * point \a jd2, expressed as a Julian day number.
+ * point \a jd2, expressed as a Julian date.
  * \ingroup time_representation
  */
 inline constexpr bool operator ==( const TimePoint& t1, double jd2 )
@@ -1013,7 +1086,7 @@ inline constexpr bool operator ==( const TimePoint& t1, double jd2 )
 
 /*!
  * Returns true iff a %TimePoint object \a t2 represents the specified time
- * point \a jd1, expressed as a Julian day number. This operator implements the
+ * point \a jd1, expressed as a Julian date. This operator implements the
  * commutative property of scalar time point equality.
  * \ingroup time_representation
  */
@@ -1039,7 +1112,7 @@ inline constexpr bool operator <( const TimePoint& t1, const TimePoint& t2 )
 
 /*!
  * Returns true iff a %TimePoint object \a t1 represents a time point that
- * precedes another time point \a jd2, expressed as a Julian day number.
+ * precedes another time point \a jd2, expressed as a Julian date.
  *
  * Invalid %TimePoint instances are always in the <em>infinite past:</em> if
  * \a t1 is invalid, this function returns true.
@@ -1052,8 +1125,8 @@ inline constexpr bool operator <( const TimePoint& t1, double jd2 )
 }
 
 /*!
- * Returns true iff a time point \a jd1, expressed as a Julian day number,
- * precedes the time point represented by a %TimePoint object \a t2.
+ * Returns true iff a time point \a jd1, expressed as a Julian date, precedes
+ * the time point represented by a %TimePoint object \a t2.
  *
  * Invalid %TimePoint instances are always in the <em>infinite past:</em> if
  * \a t2 is invalid, this function returns false.
@@ -1115,4 +1188,4 @@ inline TimePoint operator -( const TimePoint& t, double d )
 #endif   // __PCL_TimePoint_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/TimePoint.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/TimePoint.h - Released 2018-11-01T11:06:36Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard Image Process Module Version 01.02.09.0410
 // ----------------------------------------------------------------------------
-// SampleFormatConversionInstance.h - Released 2017-08-01T14:26:58Z
+// SampleFormatConversionInstance.h - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -61,8 +61,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// SampleFormatConversionInstance
-// ----------------------------------------------------------------------------
 
 class SampleFormatConversionInstance : public ProcessImplementation
 {
@@ -72,15 +70,11 @@ public:
    SampleFormatConversionInstance( const SampleFormatConversionInstance& );
 
    virtual void Assign( const ProcessImplementation& );
-
    virtual bool IsMaskable( const View&, const ImageWindow& ) const;
-
+   virtual UndoFlags UndoMode( const View& ) const;
    virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
    virtual bool ExecuteOn( View& );
-
    virtual void* LockParameter( const MetaParameter*, size_type /*tableRow*/ );
-
-   // -------------------------------------------------------------------------
 
 private:
 
@@ -97,4 +91,4 @@ private:
 #endif   // __SampleFormatConversionInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF SampleFormatConversionInstance.h - Released 2017-08-01T14:26:58Z
+// EOF SampleFormatConversionInstance.h - Released 2018-11-01T11:07:21Z

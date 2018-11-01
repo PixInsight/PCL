@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Array.h - Released 2017-08-01T14:23:31Z
+// pcl/Array.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -168,6 +168,19 @@ public:
       m_data->Allocate( size_type( pcl::Distance( i, j ) ) );
       if ( m_data->begin != nullptr )
          m_data->Build( m_data->begin, i, j );
+   }
+
+   /*!
+    * Constructs an array that stores a copy of the objects in the specified
+    * initializer list \a l.
+    *
+    * This constructor is equivalent to:
+    *
+    * \code Array( l.begin(), l.end() ) \endcode
+    */
+   template <typename T1>
+   Array( std::initializer_list<T1> l ) : Array( l.begin(), l.end() )
+   {
    }
 
    /*!
@@ -2121,4 +2134,4 @@ Array<T,A>& operator <<( Array<T,A>&& x1, const Array<T,A>& x2 )
 #endif  // __PCL_Array_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Array.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Array.h - Released 2018-11-01T11:06:36Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0378
+// Standard Global Process Module Version 01.02.07.0386
 // ----------------------------------------------------------------------------
-// PreferencesParameters.cpp - Released 2017-08-01T14:26:58Z
+// PreferencesParameters.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -78,6 +78,13 @@ IMPLEMENT_STRING_METAPARAMETER  ( Application, lowResFont )
 IMPLEMENT_STRING_METAPARAMETER  ( Application, highResFont )
 IMPLEMENT_STRING_METAPARAMETER  ( Application, lowResMonoFont )
 IMPLEMENT_STRING_METAPARAMETER  ( Application, highResMonoFont )
+IMPLEMENT_STRING_METAPARAMETER  ( Application, fundamentalEphemeridesFile )
+IMPLEMENT_STRING_METAPARAMETER  ( Application, shortTermFundamentalEphemeridesFile )
+IMPLEMENT_STRING_METAPARAMETER  ( Application, nutationModelFile )
+IMPLEMENT_STRING_METAPARAMETER  ( Application, shortTermNutationModelFile )
+IMPLEMENT_STRING_METAPARAMETER  ( Application, deltaTDataFile )
+IMPLEMENT_STRING_METAPARAMETER  ( Application, deltaATDataFile )
+IMPLEMENT_STRING_METAPARAMETER  ( Application, cipITRSDataFile )
 
 // ----------------------------------------------------------------------------
 
@@ -157,6 +164,7 @@ IMPLEMENT_INT32_METAPARAMETER   ( ImageWindow, fastScreenRenditionThreshold )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, highDPIRenditions );
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, default24BitScreenLUT )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, createPreviewsFromCoreProperties )
+IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, loadAstrometricSolutions )
 IMPLEMENT_TABLE_METAPARAMETER   ( ImageWindow, swapDirectories )
 IMPLEMENT_ROW_STRING_METAPARAMETER( ImageWindow, swapDirectory )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, swapCompression )
@@ -211,4 +219,4 @@ IMPLEMENT_BOOLEAN_METAPARAMETER ( Process, enableLaunchStatistics )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesParameters.cpp - Released 2017-08-01T14:26:58Z
+// EOF PreferencesParameters.cpp - Released 2018-11-01T11:07:20Z

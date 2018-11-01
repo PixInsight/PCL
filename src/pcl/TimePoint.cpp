@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/TimePoint.cpp - Released 2017-08-01T14:23:38Z
+// pcl/TimePoint.cpp - Released 2018-11-01T11:06:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,8 +59,9 @@
 
 #include <time.h>
 
+#include <pcl/AkimaInterpolation.h>
 #include <pcl/AutoLock.h>
-#include <pcl/File.h>
+#include <pcl/EphemerisFile.h>
 #include <pcl/TimePoint.h>
 
 // ----------------------------------------------------------------------------
@@ -119,6 +120,237 @@ TimePoint::TimePoint( const FileTime& fileTime )
 {
    ComplexTimeToJD( m_jdi, m_jdf, fileTime.year, fileTime.month, fileTime.day,
                     (fileTime.hour + (fileTime.minute + (fileTime.second + 0.001*fileTime.milliseconds)/60)/60)/24 );
+}
+
+// ----------------------------------------------------------------------------
+
+static AkimaInterpolation<double> s_deltaT;
+static TimePoint                  s_deltaTStart;
+static TimePoint                  s_deltaTEnd;
+static AtomicInt                  s_deltaTInitialized;
+static Mutex                      s_deltaTMutex;
+
+double TimePoint::DeltaT() const
+{
+   if ( !s_deltaTInitialized )
+   {
+      /*
+       * Load the Delta T plain text database, thread-safe.
+       */
+      volatile AutoLock lock( s_deltaTMutex );
+      if ( s_deltaTInitialized.Load() == 0 )
+      {
+         Array<double> T, D;
+         IsoStringList lines = File::ReadLines( EphemerisFile::DeltaTDataFilePath() );
+         for ( IsoString line : lines )
+         {
+            line.Trim();
+            if ( line.IsEmpty() || line.StartsWith( '/' ) ) // empty line or comment
+               continue;
+            IsoStringList tokens;
+            line.Break( tokens, ' ', true/*trim*/ );
+            tokens.Remove( IsoString() );
+            TimePoint t;
+            double d;
+            switch ( tokens.Length() )
+            {
+            case 2:
+               // YY.yyy DeltaT
+               {
+                  double y = tokens[0].ToDouble();
+                  t = TimePoint( TruncInt( y ), 1, 1.0 ) + Frac( y )*365.25;
+                  d = tokens[1].ToDouble();
+               }
+               break;
+            case 4:
+               // YY MM DD.ddd DeltaT
+               t = TimePoint( tokens[0].ToInt(), tokens[1].ToInt(), tokens[2].ToDouble() );
+               d = tokens[3].ToDouble();
+               break;
+            default:
+               // Invalid format, ignore.
+               continue;
+            }
+
+            // Make sure that dates are valid and lines are sorted in ascending
+            // date order.
+            if ( t.IsValid() )
+            {
+               if ( T.IsEmpty() )
+                  s_deltaTStart = t;
+               else if ( t <= s_deltaTEnd )
+                  continue;
+
+               T << t.YearsSinceJ2000();
+               D << d;
+               s_deltaTEnd = t;
+            }
+         }
+
+         // Check for reasonable minimum data.
+         if ( T.Length() < 10 )
+            throw Error( "Insufficient DeltaT data items." );
+         if ( (s_deltaTEnd - s_deltaTStart) < 365 )
+            throw Error( "The DeltaT data covers an insufficient time span." );
+
+         s_deltaT.Initialize( Vector( T.Begin(), T.Length() ), Vector( D.Begin(), D.Length() ) );
+         s_deltaTInitialized.Store( 1 );
+      }
+   }
+
+   /*
+    * Return an interpolated value when possible.
+    */
+   if ( *this >= s_deltaTStart )
+      if ( *this <= s_deltaTEnd )
+         return s_deltaT( YearsSinceJ2000() );
+
+   /*
+    * Use Espenak/Meeus polynomials otherwise.
+    */
+   int year, month, dum1;
+   double dum2;
+   GetComplexTime( year, month, dum1, dum2 );
+   double y = year + (month - 0.5)/12;
+
+   if ( year > 2005 )
+   {
+      if ( year <= 2050 )
+         return Poly( y - 2000, { 62.92, 0.32217, 0.005589 } );
+
+      double u = (y - 1820)/100;
+
+      if ( year <= 2150 )
+         return -20 + 32*u*u - 0.5628*(2150 - y);
+
+      return -20 + 32*u*u;
+   }
+
+   if ( year < -500 )
+      return Poly( (y - 1820)/100, { -20.0, 1.0, 32.0 } );
+
+   if ( year <= +500 )
+      return Poly( y/100, { 10583.6, -1014.41, 33.78311, -5.952053, -0.1798452, 0.022174192, 0.0090316521 } );
+
+   if ( year <= 1600 )
+      return Poly( (y - 1000)/100, { 1574.2, -556.01, 71.23472, 0.319781, -0.8503463, -0.005050998, 0.0083572073 } );
+
+   if ( year <= 1700 )
+      return Poly( y - 1600, { 120.0, -0.9808, -0.01532, 1.0/7129 } );
+
+   if ( year <= 1800 )
+      return Poly( y - 1700, { 8.83, 0.1603, -0.0059285, 0.00013336, -1.0/1174000 } );
+
+   if ( year <= 1860 )
+      return Poly( y - 1800, { 13.72, -0.332447, 0.0068612, 0.0041116, -0.00037436, 0.0000121272, -0.0000001699, 0.000000000875 } );
+
+   if ( year <= 1900 )
+      return Poly( y - 1860, { 7.62, 0.5737, -0.251754, 0.01680668, -0.0004473624, 1.0/233174 } );
+
+   if ( year <= 1920 )
+      return Poly( y - 1900, { -2.79, 1.494119, -0.0598939, 0.0061966, -0.000197 } );
+
+   if ( year <= 1941 )
+      return Poly( y - 1920, { 21.20, 0.84493, -0.076100, 0.0020936 } );
+
+   if ( year <= 1961 )
+      return Poly( y - 1950, { 29.07, 0.407, -1.0/233, 1.0/2547 } );
+
+   if ( year <= 1986 )
+      return Poly( y - 1975, { 45.45, 1.067, -1.0/260, -1.0/718 } );
+
+   //if ( year <= 2005 )
+   return Poly( y - 2000,  { 63.86, 0.3345, -0.060374, 0.0017275, 0.000651814, 0.00002373599 } );
+}
+
+// ----------------------------------------------------------------------------
+
+struct DeltaATItem
+{
+   int    jdi;
+   double DeltaAT;
+   double D1;
+   double D2;
+};
+
+static Array<DeltaATItem> s_deltaAT;
+static TimePoint          s_deltaATStart;
+static TimePoint          s_deltaATEnd;
+static AtomicInt          s_deltaATInitialized;
+static Mutex              s_deltaATMutex;
+
+double TimePoint::DeltaAT() const
+{
+   if ( !s_deltaATInitialized )
+   {
+      /*
+       * Load the Delta AT plain text database, thread-safe.
+       */
+      volatile AutoLock lock( s_deltaATMutex );
+      if ( s_deltaATInitialized.Load() == 0 )
+      {
+         IsoStringList lines = File::ReadLines( EphemerisFile::DeltaTDataFilePath() );
+         for ( IsoString line : lines )
+         {
+            line.Trim();
+            if ( line.IsEmpty() || line.StartsWith( '/' ) ) // empty line or comment
+               continue;
+            IsoStringList tokens;
+            line.Break( tokens, ' ', true/*trim*/ );
+            tokens.Remove( IsoString() );
+            if ( tokens.Length() < 2 ) // malformed
+               continue;
+            TimePoint t( tokens[0].ToDouble() );
+            double d = tokens[1].ToDouble();
+            double d1 = 0, d2 = 0;
+            if ( tokens.Length() > 2 )
+            {
+               if ( tokens.Length() != 4 ) // malformed
+                  continue;
+               d1 = tokens[2].ToDouble();
+               d2 = tokens[3].ToDouble();
+            }
+
+            // Make sure that dates are valid and lines are sorted in ascending
+            // date order.
+            if ( t.IsValid() )
+            {
+               if ( s_deltaAT.IsEmpty() )
+                  s_deltaATStart = t;
+               else if ( t.JDI() <= s_deltaATEnd.JDI() )
+                  continue;
+
+               s_deltaAT << DeltaATItem{ t.JDI(), d, d1, d2 };
+               s_deltaATEnd = t;
+            }
+         }
+
+         // UTC does not exist before 1960.0
+         if ( s_deltaATStart < TimePoint( 1960, 1, 1.0 ) )
+            throw Error( "Invalid DeltaAT time span." );
+
+         // Check for reasonable data.
+         if ( s_deltaAT.Length() < 40 )
+            throw Error( "Insufficient DeltaAT data items." );
+         if ( (s_deltaATEnd - s_deltaATStart) < 40*365.25 )
+            throw Error( "The DeltaAT data covers an insufficient time span." );
+
+         s_deltaATInitialized.Store( 1 );
+      }
+   }
+
+   if ( m_jdi < 2436934 ) // 1960
+      return 0; // pre-UTC!
+
+   for ( int i = int( s_deltaAT.Length() ); --i >= 0; )
+      if ( m_jdi >= s_deltaAT[i].jdi )
+      {
+         if ( m_jdi >= 2441317 ) // 1972
+            return s_deltaAT[i].DeltaAT;
+         return s_deltaAT[i].DeltaAT + (m_jdi + m_jdf - 2400000.5 - s_deltaAT[i].D1)*s_deltaAT[i].D2;
+      }
+
+   return 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -262,4 +494,4 @@ String TimePoint::ToString( const String& format ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/TimePoint.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/TimePoint.cpp - Released 2018-11-01T11:06:51Z

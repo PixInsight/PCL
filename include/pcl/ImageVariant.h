@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ImageVariant.h - Released 2017-08-01T14:23:31Z
+// pcl/ImageVariant.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -387,7 +387,7 @@ public:
    /*!
     * Destroys an %ImageVariant instance.
     *
-    * If the transported image exists ans is owned by %ImageVariant, and there
+    * If the transported image exists and is owned by %ImageVariant, and there
     * are no more %ImageVariant references to it, then it is also destroyed.
     */
    virtual ~ImageVariant()
@@ -727,7 +727,7 @@ public:
    /*!
     * Constrains a rectangular region \a r in image coordinates to fit into the
     * boundaries of this image. Also ensures coherence of clipped rectangular
-    * coordinates such that r.x0 <= r.x1 and r.y0 <= r.y1.
+    * coordinates such that r.x0 &le; r.x1 and r.y0 &le; r.y1.
     *
     * Returns true iff the original rectangle intersects this image.
     *
@@ -741,9 +741,9 @@ public:
    }
 
    /*!
-    * Constrains a rectangular region, given by its separate image
-    * coordinates, to fit into the boundaries of this image. Also ensures
-    * coherence of rectangular coordinates, such that x0 <= x1 and y0 <= y1.
+    * Constrains a rectangular region, given by its separate image coordinates,
+    * to fit into the boundaries of this image. Also ensures coherence of
+    * rectangular coordinates, such that x0 &le; x1 and y0 &le; y1.
     *
     * \param[out] x0,y0   Upper left corner coordinates (horizontal, vertical)
     *             of the rectangle that will be clipped.
@@ -765,7 +765,7 @@ public:
    /*!
     * Selects a single channel.
     *
-    * \param c    Channel index, 0 <= \a c < \a n, where \a n is the total
+    * \param c    Channel index, 0 &le; \a c < \a n, where \a n is the total
     *             number of channels in this image, including alpha channels.
     */
    void SelectChannel( int c ) const
@@ -1271,7 +1271,7 @@ public:
     *
     * \param maxProcessors    The maximum number of processors allowed for this
     *                image. If \a enable is false this parameter is ignored. A
-    *                value <= 0 is ignored. The default value is zero.
+    *                value &le; 0 is ignored. The default value is zero.
     *
     * If this object does not transport an image, calling this member function
     * has no effect.
@@ -6178,9 +6178,9 @@ public:
     * is the FileFormatInstance class, which can be used to perform file I/O
     * operations by invoking any installed file format support module on the
     * platform. %FileFormatInstance requires shared images to read/write images
-    * from/to disk files ( you can actually pass a local image to
+    * from/to disk files (you can actually pass a local image to
     * %FileFormatInstance, but then PCL will generate and use a temporary
-    * \e shared working image on the fly, wasting memory unnecessarily ).
+    * \e shared working image on the fly, wasting memory unnecessarily).
     */
    ImageVariant& CreateSharedImage( bool isFloat, bool isComplex, int bitSize )
    {
@@ -6876,14 +6876,14 @@ public:
     * index.
     *
     * \param x          Horizontal coordinate (or column index) of the desired
-    *                   pixel, 0 <= \a x < \a w, where \a w is the width in
+    *                   pixel, 0 &le; \a x < \a w, where \a w is the width in
     *                   pixels of this image.
     *
     * \param y          Vertical coordinate (or row index) of the desired scan
-    *                   line, 0 <= \a y < \a h, where \a h is the height in
+    *                   line, 0 &le; \a y < \a h, where \a h is the height in
     *                   pixels of this image.
     *
-    * \param channel    Channel index, 0 <= \a channel < \a n, where \a n is
+    * \param channel    Channel index, 0 &le; \a channel < \a n, where \a n is
     *                   the number of channels in this image, including nominal
     *                   and alpha channels. The default value is zero.
     *
@@ -7040,4 +7040,4 @@ GenericImage<P>& GenericImage<P>::SetLightness( const ImageVariant& L, const Poi
 #endif   // __PCL_ImageVariant_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageVariant.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/ImageVariant.h - Released 2018-11-01T11:06:36Z

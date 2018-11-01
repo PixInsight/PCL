@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/CubicSplineInterpolation.h - Released 2017-08-01T14:23:31Z
+// pcl/CubicSplineInterpolation.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -187,15 +187,14 @@ public:
     * The length of the \a y vector (and also the length of a nonempty \a x
     * vector) must be \e n >= 2.
     */
-   virtual void Initialize( const vector_type& x, const vector_type& y )
+   void Initialize( const vector_type& x, const vector_type& y ) override
    {
       if ( y.Length() < 2 )
          throw Error( "Need two or more data points in CubicSplineInterpolation::Initialize()" );
 
-      Clear();
-
       try
       {
+         Clear();
          UnidimensionalInterpolation<T>::Initialize( x, y );
          m_dy2 = vector_type( this->Length() );
          m_current = -1;   // prepare for 1st interpolation
@@ -227,9 +226,9 @@ public:
     * Cubic spline interpolation. Returns an interpolated value at the
     * specified point \a x.
     */
-   virtual double operator()( double x ) const
+   double operator()( double x ) const override
    {
-      PCL_PRECONDITION( this->m_y && m_dy2 )
+      PCL_PRECONDITION( IsValid() )
 
       if ( this->m_x )
          // Cubic spline with explicit x[i] for i = {0,...,n-1}
@@ -243,10 +242,19 @@ public:
     * Resets this cubic spline interpolation, deallocating all internal
     * working structures.
     */
-   virtual void Clear()
+   void Clear() override
    {
       UnidimensionalInterpolation<T>::Clear();
       m_dy2.Clear();
+   }
+
+   /*!
+    * Returns true iff this interpolation is valid, i.e. if it has been
+    * correctly initialized and is ready to interpolate function values.
+    */
+   bool IsValid() const override
+   {
+      return m_dy2;
    }
 
 private:
@@ -264,4 +272,4 @@ private:
 #endif  // __PCL_CubicSplineInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/CubicSplineInterpolation.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/CubicSplineInterpolation.h - Released 2018-11-01T11:06:36Z

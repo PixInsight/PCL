@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard JPEG File Format Module Version 01.00.04.0346
+// Standard JPEG File Format Module Version 01.00.04.0352
 // ----------------------------------------------------------------------------
-// JPEGOptionsDialog.cpp - Released 2017-08-01T14:26:50Z
+// JPEGOptionsDialog.cpp - Released 2018-11-01T11:07:09Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,7 +58,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 JPEGOptionsDialog::JPEGOptionsDialog( const ImageOptions& o, const JPEGImageOptions& t ) :
-Dialog(), options( o ), jpegOptions( t )
+   options( o ), jpegOptions( t )
 {
    pcl::Font fnt = Font();
    int labelWidth = fnt.Width( String( "Quality:" ) + String( 'M', 3 ) );
@@ -221,4 +221,4 @@ void JPEGOptionsDialog::Dialog_Return( Dialog& /*sender*/, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF JPEGOptionsDialog.cpp - Released 2017-08-01T14:26:50Z
+// EOF JPEGOptionsDialog.cpp - Released 2018-11-01T11:07:09Z

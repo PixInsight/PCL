@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// IntensityTransformationsModule.cpp - Released 2017-08-01T14:26:58Z
+// IntensityTransformationsModule.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,11 +53,11 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     07
 #define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0405
+#define MODULE_VERSION_BUILD     0413
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     8
+#define MODULE_RELEASE_YEAR      2018
+#define MODULE_RELEASE_MONTH     11
 #define MODULE_RELEASE_DAY       1
 
 #include "AdaptiveStretchCurveGraphInterface.h"
@@ -128,7 +128,7 @@ String IntensityTransformationsModule::Author() const
 
 String IntensityTransformationsModule::Copyright() const
 {
-   return "Copyright (c) 2005-2017, Pleiades Astrophoto";
+   return "Copyright (c) 2005-2018, Pleiades Astrophoto";
 }
 
 String IntensityTransformationsModule::TradeMarks() const
@@ -212,4 +212,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF IntensityTransformationsModule.cpp - Released 2017-08-01T14:26:58Z
+// EOF IntensityTransformationsModule.cpp - Released 2018-11-01T11:07:21Z

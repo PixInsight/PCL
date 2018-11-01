@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0348
+// Standard ColorSpaces Process Module Version 01.01.00.0357
 // ----------------------------------------------------------------------------
-// ExtractCIELAction.cpp - Released 2017-08-01T14:26:57Z
+// ExtractCIELAction.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,7 +56,7 @@
 #include "ExtractCIELAction.h"
 
 #include <pcl/ButtonCodes.h>
-#include <pcl/GlobalSettings.h>
+// #include <pcl/GlobalSettings.h>
 #include <pcl/KeyCodes.h>
 
 namespace pcl
@@ -71,7 +71,12 @@ namespace pcl
 ExtractCIELAction::ExtractCIELAction() :
    Action( "Image > Extract > Lightness (CIE L*)",
            Bitmap( ExtractCIELActionIcon_XPM ),
-           (PixInsightSettings::GlobalInteger( "MainWindow/LogicalScreenWidth" ) > 1920) ? "Image" : "" )
+           /*
+            * Don't hide this toolbar button because a lot of people loves it:
+            * https://pixinsight.com/forum/index.php?topic=11298.0
+            */
+//            (PixInsightSettings::GlobalInteger( "MainWindow/LogicalScreenWidth" ) > 1920) ? "Image" : "" )
+           "Image" )
 {
    SetToolTip( "Extract CIE L* component" );
 }
@@ -98,4 +103,4 @@ bool ExtractCIELAction::IsEnabled( ActionInfo info ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ExtractCIELAction.cpp - Released 2017-08-01T14:26:57Z
+// EOF ExtractCIELAction.cpp - Released 2018-11-01T11:07:20Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard Image Process Module Version 01.02.09.0410
 // ----------------------------------------------------------------------------
-// CreateAlphaChannelsProcess.cpp - Released 2017-08-01T14:26:58Z
+// CreateAlphaChannelsProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -65,7 +65,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-CreateAlphaChannelsProcess* TheCreateAlphaChannelsProcess = 0;
+CreateAlphaChannelsProcess* TheCreateAlphaChannelsProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -141,7 +141,7 @@ ProcessImplementation* CreateAlphaChannelsProcess::Create() const
 ProcessImplementation* CreateAlphaChannelsProcess::Clone( const ProcessImplementation& p ) const
 {
    const CreateAlphaChannelsInstance* instPtr = dynamic_cast<const CreateAlphaChannelsInstance*>( &p );
-   return (instPtr != 0) ? new CreateAlphaChannelsInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new CreateAlphaChannelsInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -199,7 +199,7 @@ static void ShowHelp()
 int CreateAlphaChannelsProcess::ProcessCommandLine( const StringList& argv ) const
 {
    ArgumentList arguments =
-   ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
+      ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
 
    CreateAlphaChannelsInstance instance( this );
 
@@ -300,4 +300,4 @@ int CreateAlphaChannelsProcess::ProcessCommandLine( const StringList& argv ) con
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CreateAlphaChannelsProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF CreateAlphaChannelsProcess.cpp - Released 2018-11-01T11:07:21Z

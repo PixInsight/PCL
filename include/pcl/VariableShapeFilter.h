@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/VariableShapeFilter.h - Released 2017-08-01T14:23:31Z
+// pcl/VariableShapeFilter.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -93,9 +93,9 @@ namespace pcl
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>\e sigma</td>   <td>Standard deviation of the filter distribution on the X axis (sigma > 0).</td></tr>
- * <tr><td>\e shape</td>   <td>Filter shape: 2 = Gaussian, \< 2 = leptokurtic, \> 2 = platykurtic (shape > 0).</td></tr>
- * <tr><td>\e rho</td>     <td>The ratio sy/sx (see equation above) of the generated filter distribution (0 <= rho <= 1).</td></tr>
- * <tr><td>\e theta</td>   <td>Rotation angle of the horizontal axis in radians (0 <= theta < PI). This parameter only makes sense when rho < 1.</td></tr>
+ * <tr><td>\e shape</td>   <td>Filter shape: 2 = Gaussian, < 2 = leptokurtic, > 2 = platykurtic (shape > 0).</td></tr>
+ * <tr><td>\e rho</td>     <td>The ratio sy/sx (see equation above) of the generated filter distribution (0 &le; rho &le; 1).</td></tr>
+ * <tr><td>\e theta</td>   <td>Rotation angle of the horizontal axis in radians (0 &le; theta < PI). This parameter only makes sense when rho < 1.</td></tr>
  * <tr><td>\e epsilon</td> <td>Maximum truncation error of the computed filter coefficients (eps > 0).</td></tr>
  * </table>
  *
@@ -109,19 +109,14 @@ public:
     * Constructs an empty %VariableShapeFilter object with default functional
     * parameters: sigma=2, shape=2, epsilon=0.01, rho=1, theta=0.
     */
-   VariableShapeFilter() :
-      KernelFilter(),
-      m_sigma( 2 ), m_shape( 2 ), m_rho( 1 ), m_theta( 0 ), m_epsilon( 0.01F )
-   {
-   }
+   VariableShapeFilter() = default;
 
    /*!
     * Constructs a %VariableShapeFilter object given the standard deviation
     * \a sigma > 0, \a shape > 0, and coefficient truncation \a epsilon > 0.
     * Assigns an optional \a name to the new filter object.
     */
-   VariableShapeFilter( float sigma, float shape = 2, float epsilon = 0.01, const String& name = String() ) :
-      KernelFilter()
+   VariableShapeFilter( float sigma, float shape = 2, float epsilon = 0.01, const String& name = String() )
    {
       Initialize( sigma, shape, epsilon, 1, 0 );
       Rename( name );
@@ -133,8 +128,7 @@ public:
     * aspect ratio 0 <= \a rho <= 1, and rotation angle 0 <= \a theta <= PI in
     * radians. Assigns an optional \a name to the new filter object.
     */
-   VariableShapeFilter( float sigma, float shape, float epsilon, float rho, float theta = 0, const String& name = String() ) :
-      KernelFilter()
+   VariableShapeFilter( float sigma, float shape, float epsilon, float rho, float theta = 0, const String& name = String() )
    {
       Initialize( sigma, shape, epsilon, rho, theta );
       Rename( name );
@@ -145,8 +139,7 @@ public:
     * \a n >= 3, \a shape > 0, and coefficient truncation error \a epsilon > 0.
     * Assigns an optional \a name to the new filter object.
     */
-   VariableShapeFilter( int n, float shape = 2, float epsilon = 0.01, const String& name = String() ) :
-      KernelFilter()
+   VariableShapeFilter( int n, float shape = 2, float epsilon = 0.01, const String& name = String() )
    {
       Initialize( n, shape, epsilon, 1, 0 );
       Rename( name );
@@ -158,8 +151,7 @@ public:
     * ratio 0 <= \a rho <= 1, and rotation angle 0 <= \a theta <= PI in
     * radians. Assigns an optional \a name to the new filter object.
     */
-   VariableShapeFilter( int n, float shape, float epsilon, float rho, float theta = 0, const String& name = String() ) :
-      KernelFilter()
+   VariableShapeFilter( int n, float shape, float epsilon, float rho, float theta = 0, const String& name = String() )
    {
       Initialize( n, shape, epsilon, rho, theta );
       Rename( name );
@@ -168,26 +160,18 @@ public:
    /*!
     * Copy constructor.
     */
-   VariableShapeFilter( const VariableShapeFilter& x ) :
-      KernelFilter( x ),
-      m_sigma( x.m_sigma ), m_shape( x.m_shape ), m_rho( x.m_rho ), m_theta( x.m_theta ), m_epsilon( x.m_epsilon )
-   {
-   }
+   VariableShapeFilter( const VariableShapeFilter& ) = default;
 
    /*!
     * Move constructor.
     */
-   VariableShapeFilter( VariableShapeFilter&& x ) :
-      KernelFilter( std::move( x ) ),
-      m_sigma( x.m_sigma ), m_shape( x.m_shape ), m_rho( x.m_rho ), m_theta( x.m_theta ), m_epsilon( x.m_epsilon )
-   {
-   }
+   VariableShapeFilter( VariableShapeFilter&& ) = default;
 
    /*!
     * Returns a pointer to a dynamically allocated duplicate of this kernel
     * filter.
     */
-   virtual KernelFilter* Clone() const
+   KernelFilter* Clone() const override
    {
       return new VariableShapeFilter( *this );
    }
@@ -201,7 +185,7 @@ public:
     * circular (rho=1). Otherwise an empty SeparableFilter object is returned
     * because this filter is not separable.
     */
-   virtual SeparableFilter AsSeparableFilter( float tolerance = __PCL_DEFAULT_FILTER_SEPARABILITY_TOLERANCE ) const
+   SeparableFilter AsSeparableFilter( float tolerance = __PCL_DEFAULT_FILTER_SEPARABILITY_TOLERANCE ) const override
    {
       if ( m_shape == 2 && m_rho == 1 )
       {
@@ -218,7 +202,7 @@ public:
     * Gaussian distribution. This is only true when shape=2 and the filter is
     * circular (rho=1).
     */
-   virtual bool IsSeparable() const
+   bool IsSeparable() const override
    {
       return m_shape == 2 && m_rho == 1;
    }
@@ -226,30 +210,12 @@ public:
    /*!
     * Copy assignment operator. Returns a reference to this object.
     */
-   VariableShapeFilter& operator =( const VariableShapeFilter& g )
-   {
-      (void)KernelFilter::operator =( g );
-      m_sigma = g.m_sigma;
-      m_shape = g.m_shape;
-      m_rho = g.m_rho;
-      m_theta = g.m_theta;
-      m_epsilon = g.m_epsilon;
-      return *this;
-   }
+   VariableShapeFilter& operator =( const VariableShapeFilter& ) = default;
 
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-   VariableShapeFilter& operator =( VariableShapeFilter&& g )
-   {
-      (void)KernelFilter::operator =( std::move( g ) );
-      m_sigma = g.m_sigma;
-      m_shape = g.m_shape;
-      m_rho = g.m_rho;
-      m_theta = g.m_theta;
-      m_epsilon = g.m_epsilon;
-      return *this;
-   }
+   VariableShapeFilter& operator =( VariableShapeFilter&& ) = default;
 
    /*!
     * Returns the standard deviation of the filter distribution on the X
@@ -453,20 +419,18 @@ public:
     * filter function on a matrix of the specified size, preserving the
     * current shape, coefficient truncation, aspect ratio and rotation angle.
     */
-   virtual void Resize( int n )  // Inherited from KernelFilter
+   void Resize( int n ) override
    {
       Initialize( n, m_shape, m_epsilon, m_rho, m_theta );
    }
 
-   // -------------------------------------------------------------------------
-
 private:
 
-   float m_sigma;   // standard deviation, horizontal axis
-   float m_shape;   // controls the kurtosis of the filter distribution (2=normal)
-   float m_rho;     // vertical:horizontal axes ratio
-   float m_theta;   // rotation angle in radians, [0,+pi]
-   float m_epsilon; // maximum truncation error in sigma units
+   float m_sigma = 2.0F;    // standard deviation, horizontal axis
+   float m_shape = 2.0F;    // controls the kurtosis of the filter distribution (2=normal)
+   float m_rho = 1.0F;      // vertical:horizontal axes ratio
+   float m_theta = 0.0F;    // rotation angle in radians, [0,+pi]
+   float m_epsilon = 0.01F; // maximum truncation error in sigma units
 
    void Initialize( float s, float k, float e, float r, float a )
    {
@@ -564,4 +528,4 @@ private:
 #endif   // __PCL_VariableShapeFilter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/VariableShapeFilter.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/VariableShapeFilter.h - Released 2018-11-01T11:06:36Z

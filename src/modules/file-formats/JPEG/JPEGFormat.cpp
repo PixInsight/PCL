@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard JPEG File Format Module Version 01.00.04.0346
+// Standard JPEG File Format Module Version 01.00.04.0352
 // ----------------------------------------------------------------------------
-// JPEGFormat.cpp - Released 2017-08-01T14:26:50Z
+// JPEGFormat.cpp - Released 2018-11-01T11:07:09Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -109,7 +109,7 @@ String JPEGFormat::Implementation() const
    "Copyright (c) 2016, Thomas G. Lane, Guido Vollbeding</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2017, Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2018, Pleiades Astrophoto</p>"
 
    "<p style=\"white-space:pre;\">"
 "\n-------------------------------------------------------------------------------"
@@ -294,4 +294,4 @@ JPEGFormat::FormatOptions* JPEGFormat::FormatOptions::FromGenericDataBlock( cons
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF JPEGFormat.cpp - Released 2017-08-01T14:26:50Z
+// EOF JPEGFormat.cpp - Released 2018-11-01T11:07:09Z

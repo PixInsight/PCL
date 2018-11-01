@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Sandbox Process Module Version 01.00.02.0261
+// Standard Sandbox Process Module Version 01.00.02.0269
 // ----------------------------------------------------------------------------
-// SandboxParameters.h - Released 2017-08-01T14:26:58Z
+// SandboxParameters.h - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Sandbox PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,6 +58,8 @@
 namespace pcl
 {
 
+// ----------------------------------------------------------------------------
+
 PCL_BEGIN_LOCAL
 
 // ----------------------------------------------------------------------------
@@ -68,13 +70,11 @@ public:
 
    SandboxParameterOne( MetaProcess* );
 
-   virtual IsoString Id() const;
-
-   virtual int Precision() const;
-
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
+   double MinimumValue() const override;
+   double MaximumValue() const override;
 };
 
 extern SandboxParameterOne* TheSandboxParameterOneParameter;
@@ -87,11 +87,10 @@ public:
 
    SandboxParameterTwo( MetaProcess* );
 
-   virtual IsoString Id() const;
-
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
+   IsoString Id() const override;
+   double DefaultValue() const override;
+   double MinimumValue() const override;
+   double MaximumValue() const override;
 };
 
 extern SandboxParameterTwo* TheSandboxParameterTwoParameter;
@@ -104,9 +103,8 @@ public:
 
    SandboxParameterThree( MetaProcess* );
 
-   virtual IsoString Id() const;
-
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern SandboxParameterThree* TheSandboxParameterThreeParameter;
@@ -125,12 +123,11 @@ public:
 
    SandboxParameterFour( MetaProcess* );
 
-   virtual IsoString Id() const;
-
-   virtual size_type NumberOfElements() const;
-   virtual IsoString ElementId( size_type ) const;
-   virtual int ElementValue( size_type ) const;
-   virtual size_type DefaultValueIndex() const;
+   IsoString Id() const override;
+   size_type NumberOfElements() const override;
+   IsoString ElementId( size_type ) const override;
+   int ElementValue( size_type ) const override;
+   size_type DefaultValueIndex() const override;
 };
 
 extern SandboxParameterFour* TheSandboxParameterFourParameter;
@@ -143,8 +140,8 @@ public:
 
    SandboxParameterFive( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual size_type MinLength() const;
+   IsoString Id() const override;
+   size_type MinLength() const override;
 };
 
 extern SandboxParameterFive* TheSandboxParameterFiveParameter;
@@ -153,9 +150,11 @@ extern SandboxParameterFive* TheSandboxParameterFiveParameter;
 
 PCL_END_LOCAL
 
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 #endif   // __SandboxParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF SandboxParameters.h - Released 2017-08-01T14:26:58Z
+// EOF SandboxParameters.h - Released 2018-11-01T11:07:21Z

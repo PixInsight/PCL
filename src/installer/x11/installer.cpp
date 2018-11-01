@@ -7,7 +7,7 @@
 // ----------------------------------------------------------------------------
 // This file is part of PixInsight X11 UNIX/Linux Installer
 // ----------------------------------------------------------------------------
-// 2017/08/01 15:56:43 UTC
+// 2018/11/01 11:08:26 UTC
 // installer.cpp
 // ----------------------------------------------------------------------------
 // Copyright (c) 2013-2017 Pleiades Astrophoto S.L.
@@ -767,7 +767,7 @@ void PixInsightX11Installer::ShowLogo()
    std::cout <<
    "\n-------------------------------------------------------------------------------"
    "\nPixInsight X11 UNIX/Linux installer version " << VersionString() <<
-   "\nCopyright (C) 2003-2017 Pleiades Astrophoto. All Rights Reserved"
+   "\nCopyright (C) 2003-" PI_VERSION_YEAR " Pleiades Astrophoto. All Rights Reserved"
    "\n-------------------------------------------------------------------------------"
    "\n";
 }
@@ -1076,5 +1076,5 @@ int main( int argc, const char** argv )
 }
 
 // ----------------------------------------------------------------------------
-// 2017/08/01 15:56:43 UTC
+// 2018/11/01 11:08:26 UTC
 // installer.cpp

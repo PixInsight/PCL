@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.01.0332
+// Standard ImageCalibration Process Module Version 01.04.01.0345
 // ----------------------------------------------------------------------------
-// LocalNormalizationInstance.h - Released 2017-08-01T14:26:58Z
+// LocalNormalizationInstance.h - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -69,15 +69,12 @@ public:
    LocalNormalizationInstance( const LocalNormalizationInstance& );
 
    virtual void Assign( const ProcessImplementation& );
-
    virtual bool IsHistoryUpdater( const View& ) const;
    virtual UndoFlags UndoMode( const View& ) const;
    virtual bool CanExecuteOn( const View&, String& whyNot ) const;
    virtual bool ExecuteOn( View& );
-
    virtual bool CanExecuteGlobal( String& whyNot ) const;
    virtual bool ExecuteGlobal();
-
    virtual void* LockParameter( const MetaParameter*, size_type tableRow );
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter*, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter*, size_type tableRow ) const;
@@ -105,7 +102,8 @@ private:
    typedef Array<Item>  item_list;
 
    // Working parameters
-   int32       p_scale;                     // working scale in pixels
+   int32       p_scale;                      // working scale in pixels
+   pcl_bool    p_noScale;                    // only compute offset component with scale = 1
    pcl_bool    p_rejection;
    float       p_backgroundRejectionLimit;
    float       p_referenceRejectionThreshold;
@@ -123,8 +121,8 @@ private:
    String      p_outputHints;
 
    // Working modes
-   pcl_enum    p_generateNormalizedImages;  // apply to target images
-   pcl_bool    p_generateNormalizationData; // generate .xnml files
+   pcl_enum    p_generateNormalizedImages;   // apply to target images
+   pcl_bool    p_generateNormalizationData;  // generate .xnml files
    pcl_bool    p_showBackgroundModels;
    pcl_bool    p_showRejectionMaps;
    pcl_enum    p_plotNormalizationFunctions;
@@ -164,4 +162,4 @@ private:
 #endif   // __LocalNormalizationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF LocalNormalizationInstance.h - Released 2017-08-01T14:26:58Z
+// EOF LocalNormalizationInstance.h - Released 2018-11-01T11:07:21Z

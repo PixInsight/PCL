@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// AdaptiveStretchProcess.cpp - Released 2017-08-01T14:26:58Z
+// AdaptiveStretchProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -64,7 +64,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-AdaptiveStretchProcess* TheAdaptiveStretchProcess = 0;
+AdaptiveStretchProcess* TheAdaptiveStretchProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -83,45 +83,61 @@ AdaptiveStretchProcess::AdaptiveStretchProcess()
    new ASROIY1( this );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString AdaptiveStretchProcess::Id() const
 {
    return "AdaptiveStretch";
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString AdaptiveStretchProcess::Category() const
 {
    return "IntensityTransformations";
 }
 
+// ----------------------------------------------------------------------------
+
 uint32 AdaptiveStretchProcess::Version() const
 {
    return 0x100;
 }
+
+// ----------------------------------------------------------------------------
 
 String AdaptiveStretchProcess::Description() const
 {
    return "";
 }
 
+// ----------------------------------------------------------------------------
+
 const char** AdaptiveStretchProcess::IconImageXPM() const
 {
    return AdaptiveStretchIcon_XPM;
 }
+
+// ----------------------------------------------------------------------------
 
 ProcessInterface* AdaptiveStretchProcess::DefaultInterface() const
 {
    return TheAdaptiveStretchInterface;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* AdaptiveStretchProcess::Create() const
 {
    return new AdaptiveStretchInstance( this );
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* AdaptiveStretchProcess::Clone( const ProcessImplementation& p ) const
 {
    const AdaptiveStretchInstance* instPtr = dynamic_cast<const AdaptiveStretchInstance*>( &p );
-   return (instPtr != 0) ? new AdaptiveStretchInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new AdaptiveStretchInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -129,4 +145,4 @@ ProcessImplementation* AdaptiveStretchProcess::Clone( const ProcessImplementatio
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AdaptiveStretchProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF AdaptiveStretchProcess.cpp - Released 2018-11-01T11:07:21Z

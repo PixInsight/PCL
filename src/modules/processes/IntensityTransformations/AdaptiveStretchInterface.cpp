@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// AdaptiveStretchInterface.cpp - Released 2017-08-01T14:26:58Z
+// AdaptiveStretchInterface.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,22 +66,23 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-AdaptiveStretchInterface* TheAdaptiveStretchInterface = 0;
+AdaptiveStretchInterface* TheAdaptiveStretchInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 AdaptiveStretchInterface::AdaptiveStretchInterface() :
-ProcessInterface(),
-m_instance( TheAdaptiveStretchProcess ), m_realTimeThread( 0 ), GUI( 0 )
+   m_instance( TheAdaptiveStretchProcess )
 {
    TheAdaptiveStretchInterface = this;
 }
 
+// ----------------------------------------------------------------------------
+
 AdaptiveStretchInterface::~AdaptiveStretchInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -123,7 +124,7 @@ void AdaptiveStretchInterface::ApplyInstance() const
 
 void AdaptiveStretchInterface::RealTimePreviewUpdated( bool active )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( active )
          RealTimePreview::SetOwner( *this ); // implicitly updates the r-t preview
       else
@@ -142,7 +143,7 @@ void AdaptiveStretchInterface::ResetInstance()
 
 bool AdaptiveStretchInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "AdaptiveStretch" );
@@ -197,9 +198,12 @@ bool AdaptiveStretchInterface::RequiresRealTimePreviewUpdate( const UInt16Image&
 // ----------------------------------------------------------------------------
 
 AdaptiveStretchInterface::RealTimeThread::RealTimeThread( const View& view ) :
-Thread(), m_instance( TheAdaptiveStretchProcess ), m_view( view )
+   m_instance( TheAdaptiveStretchProcess ),
+   m_view( view )
 {
 }
+
+// ----------------------------------------------------------------------------
 
 void AdaptiveStretchInterface::RealTimeThread::Reset( const UInt16Image& image, const AdaptiveStretchInstance& instance )
 {
@@ -208,10 +212,14 @@ void AdaptiveStretchInterface::RealTimeThread::Reset( const UInt16Image& image, 
    m_instance.Assign( instance );
 }
 
+// ----------------------------------------------------------------------------
+
 void AdaptiveStretchInterface::RealTimeThread::Run()
 {
    m_curve = m_instance.Preview( m_image, m_view );
 }
+
+// ----------------------------------------------------------------------------
 
 bool AdaptiveStretchInterface::GenerateRealTimePreview( UInt16Image& image, const View& view, int, String& ) const
 {
@@ -232,7 +240,7 @@ bool AdaptiveStretchInterface::GenerateRealTimePreview( UInt16Image& image, cons
             m_realTimeThread->Wait();
 
             delete m_realTimeThread;
-            m_realTimeThread = 0;
+            m_realTimeThread = nullptr;
             return false;
          }
       }
@@ -244,7 +252,7 @@ bool AdaptiveStretchInterface::GenerateRealTimePreview( UInt16Image& image, cons
             UpdateCurveGraph( m_realTimeThread->m_curve );
 
          delete m_realTimeThread;
-         m_realTimeThread = 0;
+         m_realTimeThread = nullptr;
          return true;
       }
    }
@@ -267,15 +275,19 @@ void AdaptiveStretchInterface::UpdateControls()
    GUI->ROIHeight_NumericEdit.SetValue( m_instance.p_roi.Height() );
 }
 
+// ----------------------------------------------------------------------------
+
 void AdaptiveStretchInterface::UpdateRealTimePreview()
 {
    if ( IsRealTimePreviewActive() )
    {
-      if ( m_realTimeThread != 0 )
+      if ( m_realTimeThread != nullptr )
          m_realTimeThread->Abort();
       GUI->UpdateRealTimePreview_Timer.Start();
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void AdaptiveStretchInterface::OpenCurveGraph() const
 {
@@ -283,11 +295,15 @@ void AdaptiveStretchInterface::OpenCurveGraph() const
       TheAdaptiveStretchCurveGraphInterface->Launch();
 }
 
+// ----------------------------------------------------------------------------
+
 void AdaptiveStretchInterface::CloseCurveGraph() const
 {
    if ( TheAdaptiveStretchCurveGraphInterface->IsVisible() )
       TheAdaptiveStretchCurveGraphInterface->Hide();
 }
+
+// ----------------------------------------------------------------------------
 
 void AdaptiveStretchInterface::UpdateCurveGraph( const StretchCurve& curve ) const
 {
@@ -295,6 +311,7 @@ void AdaptiveStretchInterface::UpdateCurveGraph( const StretchCurve& curve ) con
    TheAdaptiveStretchCurveGraphInterface->UpdateGraph( curve );
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void AdaptiveStretchInterface::__ValueUpdated( NumericEdit& sender, double value )
@@ -317,6 +334,8 @@ void AdaptiveStretchInterface::__ValueUpdated( NumericEdit& sender, double value
    UpdateControls();
    UpdateRealTimePreview();
 }
+
+// ----------------------------------------------------------------------------
 
 void AdaptiveStretchInterface::__Click( Button& sender, bool checked )
 {
@@ -350,6 +369,8 @@ void AdaptiveStretchInterface::__Click( Button& sender, bool checked )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void AdaptiveStretchInterface::__SectionBarCheck( SectionBar& sender, bool checked )
 {
    if ( sender == GUI->ROI_SectionBar )
@@ -360,10 +381,14 @@ void AdaptiveStretchInterface::__SectionBarCheck( SectionBar& sender, bool check
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void AdaptiveStretchInterface::__Hide( Control& sender )
 {
    CloseCurveGraph();
 }
+
+// ----------------------------------------------------------------------------
 
 void AdaptiveStretchInterface::__UpdateRealTimePreview_Timer( Timer& sender )
 {
@@ -375,11 +400,15 @@ void AdaptiveStretchInterface::__UpdateRealTimePreview_Timer( Timer& sender )
       RealTimePreview::Update();
 }
 
+// ----------------------------------------------------------------------------
+
 void AdaptiveStretchInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
 {
    if ( sender == GUI->ROI_SectionBar || sender == GUI->ROI_Control || sender == GUI->ROISelectPreview_Button )
       wantsView = view.IsPreview();
 }
+
+// ----------------------------------------------------------------------------
 
 void AdaptiveStretchInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
 {
@@ -555,4 +584,4 @@ AdaptiveStretchInterface::GUIData::GUIData( AdaptiveStretchInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AdaptiveStretchInterface.cpp - Released 2017-08-01T14:26:58Z
+// EOF AdaptiveStretchInterface.cpp - Released 2018-11-01T11:07:21Z

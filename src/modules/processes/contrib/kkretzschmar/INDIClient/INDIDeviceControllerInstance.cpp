@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0217
+// Standard INDIClient Process Module Version 01.00.15.0225
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerInstance.cpp - Released 2017-08-01T14:26:58Z
+// INDIDeviceControllerInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2017 Klaus Kretzschmar
+// Copyright (c) 2014-2018 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -460,4 +460,4 @@ void INDIDeviceControllerInstance::AcquireINDIClientProperties()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF INDIDeviceControllerInstance.cpp - Released 2018-11-01T11:07:21Z

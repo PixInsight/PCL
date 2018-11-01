@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ATrousWaveletTransform.h - Released 2017-08-01T14:23:31Z
+// pcl/ATrousWaveletTransform.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -244,16 +244,7 @@ public:
       /*!
        * Move assignment operator. Returns a reference to this object.
        */
-#ifdef _MSC_VER
-      WaveletScalingFunction& operator =( WaveletScalingFunction&& x )
-      {
-         kernelFilter = std::move( x.kernelFilter );
-         separableFilter = std::move( x.separableFilter );
-         return *this;
-      }
-#else
       WaveletScalingFunction& operator =( WaveletScalingFunction&& ) = default;
-#endif
 
       /*!
        * Returns true if this scaling function is a separable filter; false if
@@ -418,15 +409,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    ATrousWaveletTransform( ATrousWaveletTransform&& ) = default;
-#else
-   ATrousWaveletTransform( ATrousWaveletTransform&& x ) :
-      RedundantMultiscaleTransform( std::move( x ) ),
-      m_scalingFunction( std::move( x.m_scalingFunction ) )
-   {
-   }
-#endif
 
    /*!
     * Destroys this %ATrousWaveletTransform object. All existing wavelet layers
@@ -445,16 +428,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-#ifdef _MSC_VER
-   ATrousWaveletTransform& operator =( ATrousWaveletTransform&& x )
-   {
-      RedundantMultiscaleTransform::operator =( std::move( x ) );
-      m_scalingFunction = std::move( x.m_scalingFunction );
-      return *this;
-   }
-#else
    ATrousWaveletTransform& operator =( ATrousWaveletTransform&& ) = default;
-#endif
 
    /*!
     * Returns a reference to the (immutable) scaling function used by this
@@ -666,13 +640,13 @@ private:
    /*
     * Transform (decomposition)
     */
-   virtual void Transform( const pcl::Image& );
-   virtual void Transform( const pcl::DImage& );
-   virtual void Transform( const pcl::ComplexImage& );
-   virtual void Transform( const pcl::DComplexImage& );
-   virtual void Transform( const pcl::UInt8Image& );
-   virtual void Transform( const pcl::UInt16Image& );
-   virtual void Transform( const pcl::UInt32Image& );
+   void Transform( const pcl::Image& ) override;
+   void Transform( const pcl::DImage& ) override;
+   void Transform( const pcl::ComplexImage& ) override;
+   void Transform( const pcl::DComplexImage& ) override;
+   void Transform( const pcl::UInt8Image& ) override;
+   void Transform( const pcl::UInt16Image& ) override;
+   void Transform( const pcl::UInt32Image& ) override;
 
    void ValidateScalingFunction() const;
 
@@ -701,4 +675,4 @@ typedef ATrousWaveletTransform   StarletTransform;
 #endif   // __PCL_ATrousWaveletTransform_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ATrousWaveletTransform.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/ATrousWaveletTransform.h - Released 2018-11-01T11:06:36Z

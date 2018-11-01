@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard NoiseGeneration Process Module Version 01.00.02.0325
+// Standard NoiseGeneration Process Module Version 01.00.02.0333
 // ----------------------------------------------------------------------------
-// NoiseGeneratorProcess.cpp - Released 2017-08-01T14:26:58Z
+// NoiseGeneratorProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard NoiseGeneration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,7 +60,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-NoiseGeneratorProcess* TheNoiseGeneratorProcess = 0;
+NoiseGeneratorProcess* TheNoiseGeneratorProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -133,7 +133,7 @@ ProcessImplementation* NoiseGeneratorProcess::Create() const
 ProcessImplementation* NoiseGeneratorProcess::Clone( const ProcessImplementation& p ) const
 {
    const NoiseGeneratorInstance* instPtr = dynamic_cast<const NoiseGeneratorInstance*>( &p );
-   return (instPtr != 0) ? new NoiseGeneratorInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new NoiseGeneratorInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -141,4 +141,4 @@ ProcessImplementation* NoiseGeneratorProcess::Clone( const ProcessImplementation
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF NoiseGeneratorProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF NoiseGeneratorProcess.cpp - Released 2018-11-01T11:07:21Z

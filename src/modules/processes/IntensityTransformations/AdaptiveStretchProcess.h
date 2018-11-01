@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// AdaptiveStretchProcess.h - Released 2017-08-01T14:26:58Z
+// AdaptiveStretchProcess.h - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,8 +59,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// AdaptiveStretchProcess
-// ----------------------------------------------------------------------------
 
 class AdaptiveStretchProcess : public MetaProcess
 {
@@ -70,20 +68,19 @@ public:
 
    virtual IsoString Id() const;
    virtual IsoString Category() const;
-
    virtual uint32 Version() const;
-
    virtual String Description() const;
-
    virtual const char** IconImageXPM() const;
-
    virtual ProcessInterface* DefaultInterface() const;
-
    virtual ProcessImplementation* Create() const;
    virtual ProcessImplementation* Clone( const ProcessImplementation& ) const;
 };
 
+// ----------------------------------------------------------------------------
+
+PCL_BEGIN_LOCAL
 extern AdaptiveStretchProcess* TheAdaptiveStretchProcess;
+PCL_END_LOCAL
 
 // ----------------------------------------------------------------------------
 
@@ -92,4 +89,4 @@ extern AdaptiveStretchProcess* TheAdaptiveStretchProcess;
 #endif   // __AdaptiveStretchProcess_h
 
 // ----------------------------------------------------------------------------
-// EOF AdaptiveStretchProcess.h - Released 2017-08-01T14:26:58Z
+// EOF AdaptiveStretchProcess.h - Released 2018-11-01T11:07:21Z

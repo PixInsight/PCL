@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Histogram.h - Released 2017-08-01T14:23:31Z
+// pcl/Histogram.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,6 +58,7 @@
 #include <pcl/Diagnostics.h>
 
 #include <pcl/ImageVariant.h>
+#include <pcl/ParallelProcess.h>
 #include <pcl/Vector.h>
 
 namespace pcl
@@ -71,7 +72,7 @@ namespace pcl
  *
  * ### TODO: Write a detailed description for %Histogram.
  */
-class PCL_CLASS Histogram
+class PCL_CLASS Histogram : public ParallelProcess
 {
 public:
 
@@ -96,20 +97,23 @@ public:
     * (also known as a <em>16-bit histogram</em>).
     */
    Histogram( int resolution = 0x10000L ) :
-      m_histogram(), m_resolution( pcl::Max( 2, resolution ) ), m_peakLevel( 0 ),
-      m_rect( 0 ), m_channel( -1 ),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      m_resolution( pcl::Max( 2, resolution ) )
    {
       PCL_PRECONDITION( resolution > 1 )
    }
 
    /*!
+    * Constructs a %Histogram object by importing a copy of the specified
+    * \a data vector as its internal vector of histogram function values.
+    * Automatically sets the histogram resolution equal to the length of the
+    * \a data vector, and calculates the peak level of the newly constructed
+    * histogram.
     *
+    * If the specified \a data vector has less than two components, this
+    * constructor will yield an empty histogram with the default 16-bit
+    * resolution.
     */
-   Histogram( const histogram_type& data ) :
-      m_histogram(), m_resolution( 0x10000L ), m_peakLevel( 0 ),
-      m_rect( 0 ), m_channel( -1 ),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+   Histogram( const histogram_type& data )
    {
       SetHistogramData( data );
    }
@@ -117,23 +121,12 @@ public:
    /*!
     * Copy constructor.
     */
-   Histogram( const Histogram& x ) :
-      m_histogram( x.m_histogram ), m_resolution( x.m_resolution ), m_peakLevel( x.m_peakLevel ),
-      m_rect( x.m_rect ), m_channel( x.m_channel ),
-      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
-   {
-   }
+   Histogram( const Histogram& ) = default;
 
    /*!
     * Move constructor.
     */
-   Histogram( Histogram&& x ) :
-      m_histogram( std::move( x.m_histogram ) ), m_resolution( x.m_resolution ), m_peakLevel( x.m_peakLevel ),
-      m_rect( x.m_rect ), m_channel( x.m_channel ),
-      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
-   {
-      x.m_peakLevel = 0;
-   }
+   Histogram( Histogram&& ) = default;
 
    /*!
     * Destroys a %Histogram object.
@@ -143,42 +136,21 @@ public:
    }
 
    /*!
-    * Assigns another %Histogram object \a x to this object.
-    */
-   void Assign( const Histogram& x )
-   {
-      m_histogram = x.m_histogram;
-      m_resolution = x.m_resolution;
-      m_peakLevel = x.m_peakLevel;
-      m_rect = x.m_rect;
-      m_channel = x.m_channel;
-      m_parallel = x.m_parallel;
-      m_maxProcessors = x.m_maxProcessors;
-   }
-
-   /*!
     * Copy assignment operator. Returns a reference to this object.
     */
-   Histogram& operator =( const Histogram& x )
-   {
-      Assign( x );
-      return *this;
-   }
+   Histogram& operator =( const Histogram& ) = default;
 
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-   Histogram& operator =( Histogram&& x )
+   Histogram& operator =( Histogram&& ) = default;
+
+   /*!
+    * Assigns another %Histogram object \a x to this object.
+    */
+   void Assign( const Histogram& x )
    {
-      m_histogram = std::move( x.m_histogram );
-      m_resolution = x.m_resolution;
-      m_peakLevel = x.m_peakLevel;
-      m_rect = x.m_rect;
-      m_channel = x.m_channel;
-      m_parallel = x.m_parallel;
-      m_maxProcessors = x.m_maxProcessors;
-      x.m_peakLevel = 0;
-      return *this;
+      (void)operator =( x );
    }
 
    /*!
@@ -263,7 +235,7 @@ public:
     */
    int PeakLevel() const
    {
-      return m_peakLevel;
+      return m_histogram.IsEmpty() ? 0 : m_peakLevel;
    }
 
    /*!
@@ -272,7 +244,7 @@ public:
     */
    double NormalizedPeakLevel() const
    {
-      return NormalizedLevel( m_peakLevel );
+      return NormalizedLevel( PeakLevel() );
    }
 
    /*!
@@ -498,9 +470,9 @@ public:
     */
    void GetData( count_type* where, int fromLevel = 0, int toLevel = -1 ) const
    {
-      PCL_PRECONDITION( where != 0 )
+      PCL_PRECONDITION( where != nullptr )
       PCL_PRECONDITION( fromLevel >= 0 )
-      if ( where != 0 )
+      if ( where != nullptr )
          if ( !m_histogram.IsEmpty() )
          {
             fromLevel = pcl::Range( fromLevel, 0, m_histogram.Length()-1 );
@@ -666,101 +638,13 @@ public:
       m_channel = -1;
    }
 
-   /*!
-    * Returns true iff this object is allowed to use multiple parallel execution
-    * threads (when multiple threads are permitted and available).
-    */
-   bool IsParallelProcessingEnabled() const
-   {
-      return m_parallel;
-   }
-
-   /*!
-    * Enables parallel processing for this instance of %Histogram.
-    *
-    * \param enable  Whether to enable or disable parallel processing. True by
-    *                default.
-    *
-    * \param maxProcessors    The maximum number of processors allowed for this
-    *                instance of %Histogram. If \a enable is false
-    *                this parameter is ignored. A value <= 0 is ignored. The
-    *                default value is zero.
-    */
-   void EnableParallelProcessing( bool enable = true, int maxProcessors = 0 )
-   {
-      m_parallel = enable;
-      if ( enable && maxProcessors > 0 )
-         SetMaxProcessors( maxProcessors );
-   }
-
-   /*!
-    * Disables parallel processing for this instance of %Histogram.
-    *
-    * This is a convenience function, equivalent to:
-    * EnableParallelProcessing( !disable )
-    */
-   void DisableParallelProcessing( bool disable = true )
-   {
-      EnableParallelProcessing( !disable );
-   }
-
-   /*!
-    * Returns the maximum number of processors allowed for this instance of
-    * %Histogram.
-    *
-    * Irrespective of the value returned by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   int MaxProcessors() const
-   {
-      return m_maxProcessors;
-   }
-
-   /*!
-    * Sets the maximum number of processors allowed for this instance of
-    * %Histogram.
-    *
-    * In the current version of PCL, a module can use a maximum of 1023
-    * processors. The term \e processor actually refers to the number of
-    * threads a module can execute concurrently.
-    *
-    * Irrespective of the value specified by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   void SetMaxProcessors( int maxProcessors )
-   {
-      m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
-   }
-
-   /*!
-    * Exchanges two %Histogram objects \a x1 and \a x2.
-    */
-   friend void Swap( Histogram& x1, Histogram& x2 )
-   {
-      pcl::Swap( x1.m_histogram,  x2.m_histogram );
-      pcl::Swap( x1.m_resolution, x2.m_resolution );
-      pcl::Swap( x1.m_peakLevel,  x2.m_peakLevel );
-      pcl::Swap( x1.m_rect,       x2.m_rect );
-      pcl::Swap( x1.m_channel,    x2.m_channel );
-      bool b = x1.m_parallel; x1.m_parallel = x2.m_parallel; x2.m_parallel = b;
-      unsigned u = x1.m_maxProcessors; x1.m_maxProcessors = x2.m_maxProcessors; x2.m_maxProcessors = u;
-   }
-
 protected:
 
-   histogram_type m_histogram;         // Discrete histogram levels
-   int            m_resolution;        // Number of histogram levels
-   int            m_peakLevel;         // Maximum level (index of maximum count)
-   Rect           m_rect;              // ROI, Rect( 0 ) to use target image's selection
-   int            m_channel;           // < 0 to use target image's selection
-   bool           m_parallel      : 1; // Use multiple execution threads
-   unsigned       m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT; // Maximum number of processors allowed
+   histogram_type m_histogram;             // Discrete histogram levels
+   int            m_resolution = 0x10000L; // Number of histogram levels
+   int            m_peakLevel = 0;         // Maximum level (index of maximum count)
+   Rect           m_rect = 0;              // ROI, Rect( 0 ) to use target image's selection
+   int            m_channel = -1;          // < 0 to use target image's selection
 
    friend class View;
    friend class HistogramTransformation;
@@ -773,4 +657,4 @@ protected:
 #endif  // __PCL_Histogram_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Histogram.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Histogram.h - Released 2018-11-01T11:06:36Z

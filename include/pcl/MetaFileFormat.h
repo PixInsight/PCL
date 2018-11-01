@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/MetaFileFormat.h - Released 2017-08-01T14:23:31Z
+// pcl/MetaFileFormat.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -136,11 +136,11 @@ public:
 
    /*!
     */
-   virtual IsoString Name() const = 0;
+   virtual IsoString Name() const override = 0;
 
    /*!
     */
-   virtual StringList FileExtensions() const = 0;
+   virtual StringList FileExtensions() const override = 0;
 
    /*!
     * Returns a list of MIME types corresponding to the data supported by
@@ -159,14 +159,14 @@ public:
     * MIME types. This is legal, but considered bad practice when the format
     * implements a standard image format recognized by IANA.
     */
-   virtual IsoStringList MimeTypes() const
+   IsoStringList MimeTypes() const override
    {
       return IsoStringList();
    }
 
    /*!
     */
-   virtual uint32 Version() const;
+   uint32 Version() const override;
 
    /*!
     * Returns a brief description text for this file format.
@@ -182,7 +182,7 @@ public:
     * legal, but it is considered bad practice, so this function \e should be
     * reimplemented.
     */
-   virtual String Description() const
+   String Description() const override
    {
       return String();
    }
@@ -209,7 +209,7 @@ public:
     * description. This is legal, but it is considered bad practice, so this
     * function \e should be reimplemented.
     */
-   virtual String Implementation() const
+   String Implementation() const override
    {
       return String();
    }
@@ -230,7 +230,7 @@ public:
     * \note    The default implementation of this function returns an empty
     * string, so by default a format does not provide any status information.
     */
-   virtual String Status() const
+   String Status() const override
    {
       return String();
    }
@@ -248,16 +248,16 @@ public:
     * 32-bit RGBA color images (including an alpha channel) are fully
     * supported.
     *
-    * If this function returns zero, a default icon will be assigned to this
+    * If this function returns nullptr, a default icon will be assigned to this
     * file format automatically.
     *
-    * \note    The default implementation of this function returns zero.
+    * \note    The default implementation of this function returns nullptr.
     *
     * \sa IconImageFile()
     */
    virtual const char** IconImageXPM() const
    {
-      return 0;
+      return nullptr;
    }
 
    /*!
@@ -332,11 +332,11 @@ public:
 
    /*!
     */
-   virtual Bitmap Icon() const;
+   Bitmap Icon() const override;
 
    /*!
     */
-   virtual Bitmap SmallIcon() const;
+   Bitmap SmallIcon() const override;
 
    /*!
     * Returns true only if this file format implementation can read an entire
@@ -344,7 +344,7 @@ public:
     *
     * The default implementation returns true.
     */
-   virtual bool CanRead() const
+   bool CanRead() const override
    {
       return true;
    }
@@ -355,7 +355,7 @@ public:
     *
     * The default implementation returns true.
     */
-   virtual bool CanWrite() const
+   bool CanWrite() const override
    {
       return true;
    }
@@ -369,7 +369,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool CanReadIncrementally() const
+   bool CanReadIncrementally() const override
    {
       return false;
    }
@@ -383,7 +383,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool CanWriteIncrementally() const
+   bool CanWriteIncrementally() const override
    {
       return false;
    }
@@ -394,7 +394,7 @@ public:
     *
     * The default implementation returns true.
     */
-   virtual bool CanStore8Bit() const
+   bool CanStore8Bit() const override
    {
       return true;
    }
@@ -405,7 +405,7 @@ public:
     *
     * The default implementation returns true.
     */
-   virtual bool CanStore16Bit() const
+   bool CanStore16Bit() const override
    {
       return true;
    }
@@ -416,7 +416,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool CanStore32Bit() const
+   bool CanStore32Bit() const override
    {
       return false;
    }
@@ -427,7 +427,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool CanStore64Bit() const
+   bool CanStore64Bit() const override
    {
       return false;
    }
@@ -439,7 +439,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool CanStoreFloat() const
+   bool CanStoreFloat() const override
    {
       return false;
    }
@@ -451,7 +451,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool CanStoreDouble() const
+   bool CanStoreDouble() const override
    {
       return false;
    }
@@ -463,7 +463,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool CanStoreComplex() const
+   bool CanStoreComplex() const override
    {
       return false;
    }
@@ -475,7 +475,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool CanStoreDComplex() const
+   bool CanStoreDComplex() const override
    {
       return false;
    }
@@ -486,7 +486,7 @@ public:
     *
     * The default implementation returns true.
     */
-   virtual bool CanStoreGrayscale() const
+   bool CanStoreGrayscale() const override
    {
       return true;
    }
@@ -497,7 +497,7 @@ public:
     *
     * The default implementation returns true.
     */
-   virtual bool CanStoreRGBColor() const
+   bool CanStoreRGBColor() const override
    {
       return true;
    }
@@ -508,7 +508,7 @@ public:
     *
     * The default implementation returns true.
     */
-   virtual bool CanStoreAlphaChannels() const
+   bool CanStoreAlphaChannels() const override
    {
       return true;
    }
@@ -519,7 +519,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool CanStoreResolution() const
+   bool CanStoreResolution() const override
    {
       return false;
    }
@@ -530,7 +530,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool CanStoreKeywords() const
+   bool CanStoreKeywords() const override
    {
       return false;
    }
@@ -541,7 +541,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool CanStoreICCProfiles() const
+   bool CanStoreICCProfiles() const override
    {
       return false;
    }
@@ -552,7 +552,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool CanStoreThumbnails() const
+   bool CanStoreThumbnails() const override
    {
       return false;
    }
@@ -571,7 +571,7 @@ public:
     *
     * \sa CanStoreImageProperties(), SupportsViewProperties()
     */
-   virtual bool CanStoreProperties() const
+   bool CanStoreProperties() const override
    {
       return false;
    }
@@ -584,7 +584,7 @@ public:
     *
     * \sa CanStoreProperties(), SupportsViewProperties()
     */
-   virtual bool CanStoreImageProperties() const
+   bool CanStoreImageProperties() const override
    {
       return false;
    }
@@ -595,7 +595,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool CanStoreRGBWS() const
+   bool CanStoreRGBWS() const override
    {
       return false;
    }
@@ -606,7 +606,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool CanStoreDisplayFunctions() const
+   bool CanStoreDisplayFunctions() const override
    {
       return false;
    }
@@ -617,7 +617,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool CanStoreColorFilterArrays() const
+   bool CanStoreColorFilterArrays() const override
    {
       return false;
    }
@@ -636,7 +636,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool SupportsCompression() const
+   bool SupportsCompression() const override
    {
       return false;
    }
@@ -652,7 +652,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool SupportsMultipleImages() const
+   bool SupportsMultipleImages() const override
    {
       return false;
    }
@@ -678,7 +678,7 @@ public:
     * \sa CanStoreProperties(), CanStoreImageProperties(),
     * View::PropertyValue(), View::SetPropertyValue()
     */
-   virtual bool SupportsViewProperties() const
+   bool SupportsViewProperties() const override
    {
       return false;
    }
@@ -692,7 +692,7 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool CanEditPreferences() const
+   bool CanEditPreferences() const override
    {
       return false;
    }
@@ -708,7 +708,7 @@ public:
     *
     * \sa ValidateFormatSpecificData(), DisposeFormatSpecificData()
     */
-   virtual bool UsesFormatSpecificData() const
+   bool UsesFormatSpecificData() const override
    {
       return false;
    }
@@ -723,18 +723,32 @@ public:
     *
     * The default implementation returns false.
     */
-   virtual bool IsDeprecated() const
+   bool IsDeprecated() const override
    {
       return false;
    }
 
    /*!
     */
-   virtual bool ValidateFormatSpecificData( const void* data ) const;
+   bool ValidateFormatSpecificData( const void* data ) const override;
 
    /*!
     */
-   virtual void DisposeFormatSpecificData( void* data ) const;
+   void DisposeFormatSpecificData( void* data ) const override;
+
+   /*!
+    * Handles a request to edit format preferences. Returns true iff the
+    * preferences were successfully edited.
+    *
+    * When implemented, this procedure should open a dialog box to let the
+    * user edit format-specific preferences and operating options. This
+    * function should only return true if the user accepts the new settings
+    * (e.g. by clicking the dialog's OK button).
+    *
+    * \note This member function will never be called if the
+    * CanEditPreferences() member function is not reimplemented to return true.
+    */
+   bool EditPreferences() const override;
 
    /*!
     * Creates a new instance of this file format.
@@ -749,23 +763,9 @@ public:
     */
    virtual FileFormatImplementation* Create() const = 0;
 
-   /*!
-    * Handles a request to edit format preferences. Returns true iff the
-    * preferences were successfully edited.
-    *
-    * When implemented, this procedure should open a dialog box to let the
-    * user edit format-specific preferences and operating options. This
-    * function should only return true if the user accepts the new settings
-    * (e.g. by clicking the dialog's OK button).
-    *
-    * \note This member function will never be called if the
-    * CanEditPreferences() member function is not reimplemented to return true.
-    */
-   virtual bool EditPreferences() const;
-
 private:
 
-   virtual void PerformAPIDefinitions() const;
+   void PerformAPIDefinitions() const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -777,4 +777,4 @@ private:
 #endif   // __PCL_MetaFileFormat_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaFileFormat.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/MetaFileFormat.h - Released 2018-11-01T11:06:36Z

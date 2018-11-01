@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/AstrometricMetadata.cpp - Released 2017-08-01T14:23:38Z
+// pcl/AstrometricMetadata.cpp - Released 2018-11-01T11:06:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -63,6 +63,21 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+AstrometricMetadata::AstrometricMetadata( ProjectionBase* projection,
+                                          WorldTransformation* worldTransformation, int width, int height ) :
+   m_projection( projection ),
+   m_transformWI( worldTransformation ),
+   m_width( width ),
+   m_height( height )
+{
+   LinearTransformation linearTransIW = m_transformWI->ApproximateLinearTransform();
+   double resx = Sqrt( linearTransIW.A00() * linearTransIW.A00() + linearTransIW.A01() * linearTransIW.A01() );
+   double resy = Sqrt( linearTransIW.A10() * linearTransIW.A10() + linearTransIW.A11() * linearTransIW.A11() );
+   m_resolution = (resx + resy)/2;
+}
+
+// ----------------------------------------------------------------------------
+
 void AstrometricMetadata::Build( const FITSKeywordArray& keywords, const ByteArray& controlPoints, int width, int height )
 {
    WCSKeywords wcs( keywords );
@@ -71,9 +86,10 @@ void AstrometricMetadata::Build( const FITSKeywordArray& keywords, const ByteArr
    m_dateobs = wcs.dateobs;
    m_width = width;
    m_height = height;
+   m_resolution = 0;
 
-   if ( wcs.ctype1.Substring( 0, 4 ) == "RA--" &&
-        wcs.ctype2.Substring( 0, 4 ) == "DEC-" &&
+   if ( wcs.ctype1.StartsWith( "RA--" ) &&
+        wcs.ctype2.StartsWith( "DEC-" ) &&
         wcs.crpix1.IsDefined() && wcs.crpix2.IsDefined() && wcs.crval1.IsDefined() && wcs.crval2.IsDefined() )
    {
       m_projection = ProjectionFactory::Create( wcs );
@@ -150,11 +166,11 @@ AstrometricMetadata::AstrometricMetadata( XISFReader& reader )
 void AstrometricMetadata::Write( ImageWindow& window, bool notify ) const
 {
    if ( !IsValid() )
-      throw Error( "AstrometricMetadata::Write(): Invalid or uninitialized metadata" );
+      throw Error( "AstrometricMetadata::Write(): Invalid or uninitialized metadata." );
 
    View view = window.MainView();
    if( view.Width() != m_width || view.Height() != m_height )
-      throw Error( "AstrometricMetadata::Write(): Metadata not compatible with the dimensions of the image" );
+      throw Error( "AstrometricMetadata::Write(): Metadata not compatible with the dimensions of the image." );
 
    FITSKeywordArray keywords = window.Keywords();
    UpdateBasicKeywords( keywords );
@@ -177,7 +193,7 @@ void AstrometricMetadata::Write( ImageWindow& window, bool notify ) const
 void AstrometricMetadata::Write( XISFWriter& writer ) const
 {
    if ( !IsValid() )
-      throw Error( "AstrometricMetadata::Write(): Invalid or uninitialized metadata" );
+      throw Error( "AstrometricMetadata::Write(): Invalid or uninitialized metadata." );
 
    FITSKeywordArray keywords = writer.FITSKeywords();
    UpdateBasicKeywords( keywords );
@@ -197,30 +213,30 @@ void AstrometricMetadata::Write( XISFWriter& writer ) const
 
 // ----------------------------------------------------------------------------
 
-void AstrometricMetadata::Validate() const
+void AstrometricMetadata::Verify( double& ex, double& ey ) const
 {
    try
    {
       if ( !IsValid() )
-         throw Error( "Invalid or uninitialized metadata" );
+         throw Error( "Invalid or uninitialized metadata." );
 
       /*
        * Does a full cycle transformation (image > celestial > image) and
-       * checks if the result is the same as the input.
+       * reports the resulting absolute differences in pixels.
        */
       DPoint pI0( m_width/2.0, m_height/2.0 );
       DPoint pRD;
       if ( !ImageToCelestial( pRD, pI0 ) )
-         throw Error( "Failed to perform ImageToCelestial() coordinate transformation" );
+         throw Error( "Failed to perform ImageToCelestial() coordinate transformation." );
       DPoint pI1;
       if ( !CelestialToImage( pI1, pRD ) )
-         throw Error( "Failed to perform CelestialToImage() coordinate transformation" );
-      if ( Abs( pI0.x - pI1.x ) > 1.0e-05 || Abs( pI0.y - pI1.y ) > 1.0e-03 )
-         throw Error( "Inconsistent coordinate transformation results" );
+         throw Error( "Failed to perform CelestialToImage() coordinate transformation." );
+      ex = Abs( pI0.x - pI1.x );
+      ey = Abs( pI0.y - pI1.y );
    }
    catch ( const Exception& x )
    {
-      throw Error( "AstrometricMetadata::Validate(): " + x.Message() );
+      throw Error( "AstrometricMetadata::Verify(): " + x.Message() );
    }
    catch ( ... )
    {
@@ -230,10 +246,20 @@ void AstrometricMetadata::Validate() const
 
 // ----------------------------------------------------------------------------
 
+void AstrometricMetadata::Validate( double tolerance ) const
+{
+   double ex, ey;
+   Verify( ex, ey );
+   if ( ex > tolerance || ey > tolerance )
+      throw Error( "AstrometricMetadata::Validate(): Inconsistent coordinate transformation results." );
+}
+
+// ----------------------------------------------------------------------------
+
 double AstrometricMetadata::Rotation( bool& flipped ) const
 {
    if ( m_transformWI.IsNull() )
-      throw Error( "Invalid call to AstrometricMetadata::Rotation(): No world transformation defined" );
+      throw Error( "Invalid call to AstrometricMetadata::Rotation(): No world transformation defined." );
 
    LinearTransformation linearTransIW = m_transformWI->ApproximateLinearTransform();
    double det = linearTransIW.A01() * linearTransIW.A10() - linearTransIW.A00() * linearTransIW.A11();
@@ -267,12 +293,8 @@ static String CelestialToString( const DPoint& pRD )
    if ( ra < 0 )
       ra += 360;
    return String()
-   << "RA: "   << String().ToSexagesimal( ra/15,
-                     SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/,
-                                                   2/*width*/, ' '/*separator*/, '0'/*padding*/ ) )
-   << " Dec: " << String().ToSexagesimal( pRD.y,
-                     SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/,
-                                                   3/*width*/, ' '/*separator*/, '0'/*padding*/ ) );
+      << "RA: "    << String().ToSexagesimal( ra/15, RAConversionOptions( 3/*precision*/ ) )
+      << "  Dec: " << String().ToSexagesimal( pRD.y, DecConversionOptions( 2/*precision*/ ) );
 }
 
 static String ImageToCelestialToString( const AstrometricMetadata* A, const DPoint& pI )
@@ -286,39 +308,47 @@ static String ImageToCelestialToString( const AstrometricMetadata* A, const DPoi
 String AstrometricMetadata::Summary() const
 {
    if ( !IsValid() )
-      throw Error( "Invalid call to AstrometricMetadata::Summary(): No astrometric solution" );
+      throw Error( "Invalid call to AstrometricMetadata::Summary(): No astrometric solution." );
 
    LinearTransformation linearTransIW = m_transformWI->ApproximateLinearTransform();
-   DPoint projOrgPx = linearTransIW.TransformInverse( DPoint( 0, 0 ) );
+   DPoint projOrgPx = linearTransIW.TransformInverse( DPoint( 0 ) );
    DPoint projOrgRD = m_projection->ProjectionOrigin();
    bool flipped;
    double rotation = Rotation( flipped );
+   double ex, ey;
+   Verify( ex, ey );
 
    String summary;
-   summary  << "Referentiation Matrix (World = Matrix * Coords[x,y]):" << '\n'
+   summary  << "Referentiation Matrix (world[ra,dec] = matrix * image[x,y]):" << '\n'
             << linearTransIW.ToString( 3 ) << '\n'
-            << "Projection .......... " << m_projection->Name() << '\n'
-            << "Projection origin ... " << String().Format( "[%.6f %.6f]px", projOrgPx.x, projOrgPx.y )
-                                        << " -> [" << CelestialToString( projOrgRD ) << ']' << '\n'
-            << "Resolution .......... " << String().Format( "%.3f arcsec/px", m_resolution*3600 ) << '\n'
-            << "Rotation ............ " << String().Format( "%.3f deg", rotation ) << (flipped ? " (flipped)" : "") << '\n';
+            << "WCS transformation ...... " << (HasSplineWorldTransformation() ? "2-D surface splines" : "linear") << '\n'
+            << "Projection .............. " << m_projection->Name() << '\n'
+            << "Projection origin ....... " << String().Format( "[%.6f %.6f]px", projOrgPx.x, projOrgPx.y )
+                                            << " -> [" << CelestialToString( projOrgRD ) << ']' << '\n'
+            << "Resolution .............. " << String().Format( "%.3f arcsec/px", m_resolution*3600 ) << '\n'
+            << "Rotation ................ " << String().Format( "%.3f deg", rotation ) << (flipped ? " (flipped)" : "") << '\n'
+            << "Transformation errors ... " << String().Format( "ex=%.3g ey=%.3g px", ex, ey ) << '\n';
+
+   if ( m_dateobs.IsDefined() )
+      summary
+            << "Observation date ........ " << TimePoint( m_dateobs() ).ToString( "%Y-%M-%D %h:%m:%s0" ) << '\n';
 
    if ( m_xpixsz.IsDefined() )
       if ( m_xpixsz() > 0 )
          if ( m_focal.IsDefined() )
          {
             summary
-            << "Focal ............... " << String().Format( "%.2f mm", m_focal() ) << '\n'
-            << "Pixel size .......... " << String().Format( "%.2f um", m_xpixsz() ) << '\n';
+            << "Focal distance .......... " << String().Format( "%.2f mm", m_focal() ) << '\n'
+            << "Pixel size .............. " << String().Format( "%.2f um", m_xpixsz() ) << '\n';
          }
 
-   summary  << "Field of view ....... " << FieldString( m_width*m_resolution ) << " x " << FieldString( m_height*m_resolution ) << '\n'
-            << "Image center ........ " << ImageToCelestialToString( this, DPoint( m_width/2.0, m_height/2.0 ) ) << '\n'
+   summary  << "Field of view ........... " << FieldString( m_width*m_resolution ) << " x " << FieldString( m_height*m_resolution ) << '\n'
+            << "Image center ............ " << ImageToCelestialToString( this, DPoint( m_width/2.0, m_height/2.0 ) ) << '\n'
             << "Image bounds:" << '\n'
-            << "   top-left ......... " << ImageToCelestialToString( this, DPoint( 0, 0 ) ) << '\n'
-            << "   top-right ........ " << ImageToCelestialToString( this, DPoint( m_width, 0 ) ) << '\n'
-            << "   bottom-left ...... " << ImageToCelestialToString( this, DPoint( 0, m_height ) ) << '\n'
-            << "   bottom-right ..... " << ImageToCelestialToString( this, DPoint( m_width, m_height ) ) << '\n';
+            << "   top-left ............. " << ImageToCelestialToString( this, DPoint( 0, 0 ) ) << '\n'
+            << "   top-right ............ " << ImageToCelestialToString( this, DPoint( m_width, 0 ) ) << '\n'
+            << "   bottom-left .......... " << ImageToCelestialToString( this, DPoint( 0, m_height ) ) << '\n'
+            << "   bottom-right ......... " << ImageToCelestialToString( this, DPoint( m_width, m_height ) ) << '\n';
 
    return summary;
 }
@@ -349,7 +379,7 @@ static void RemoveKeyword( FITSKeywordArray& keywords, IsoString name )
 void AstrometricMetadata::UpdateBasicKeywords( FITSKeywordArray& keywords ) const
 {
    if ( m_focal.IsDefined() && m_focal() > 0 )
-      ModifyKeyword( keywords, "FOCALLEN", IsoString().Format( "%.2f", m_focal() ), "Focal length (mm)" );
+      ModifyKeyword( keywords, "FOCALLEN", IsoString().Format( "%.3f", m_focal() ), "Focal length (mm)" );
    else
       RemoveKeyword( keywords, "FOCALLEN" );
 
@@ -368,10 +398,12 @@ void AstrometricMetadata::UpdateBasicKeywords( FITSKeywordArray& keywords ) cons
    DPoint center;
    if ( ImageToCelestial( center, DPoint( m_width/2.0, m_height/2.0 ) ) )
    {
+      if ( center.x < 0 )
+         center.x += 360;
       ModifyKeyword( keywords, "OBJCTRA",
                '\'' + IsoString::ToSexagesimal( center.x/15,
                            SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 0/*width*/, ' '/*separator*/ ) ) + '\'',
-               "Right Ascension of the center of the image" );
+               "Right ascension of the center of the image" );
       ModifyKeyword( keywords, "OBJCTDEC",
                '\'' + IsoString::ToSexagesimal( center.y,
                            SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 0/*width*/, ' '/*separator*/ ) ) + '\'',
@@ -408,38 +440,38 @@ void AstrometricMetadata::UpdateWCSKeywords( FITSKeywordArray& keywords ) const
    {
       WCSKeywords wcs = GetWCSvalues();
 
-      keywords << FITSHeaderKeyword( "EQUINOX", "2000.0", "Equinox of the celestial coordinate system" )
+      keywords << FITSHeaderKeyword( "EQUINOX", "2000.0", "Coordinates referred to ICRS / J2000.0" )
                << FITSHeaderKeyword( "CTYPE1", wcs.ctype1, "Axis1 projection: " + m_projection->Name() )
                << FITSHeaderKeyword( "CTYPE2", wcs.ctype2, "Axis2 projection: " + m_projection->Name() )
-               << FITSHeaderKeyword( "CRPIX1", IsoString().Format( "%.6f", wcs.crpix1() ), "Axis1 reference pixel" )
-               << FITSHeaderKeyword( "CRPIX2", IsoString().Format( "%.6f", wcs.crpix2() ), "Axis2 reference pixel" );
+               << FITSHeaderKeyword( "CRPIX1", IsoString().Format( "%.8g", wcs.crpix1() ), "Axis1 reference pixel" )
+               << FITSHeaderKeyword( "CRPIX2", IsoString().Format( "%.8g", wcs.crpix2() ), "Axis2 reference pixel" );
 
       if ( wcs.crval1.IsDefined() )
-         keywords << FITSHeaderKeyword( "CRVAL1", IsoString().Format( "%.12g", wcs.crval1() ), "Axis1 reference value" );
+         keywords << FITSHeaderKeyword( "CRVAL1", IsoString().Format( "%.16g", wcs.crval1() ), "Axis1 reference value" );
       if ( wcs.crval2.IsDefined() )
-         keywords << FITSHeaderKeyword( "CRVAL2", IsoString().Format( "%.12g", wcs.crval2() ), "Axis2 reference value" );
+         keywords << FITSHeaderKeyword( "CRVAL2", IsoString().Format( "%.16g", wcs.crval2() ), "Axis2 reference value" );
       if ( wcs.pv1_1.IsDefined() )
-         keywords << FITSHeaderKeyword( "PV1_1", IsoString().Format( "%.12g", wcs.pv1_1() ), "Native longitude of the reference point" );
+         keywords << FITSHeaderKeyword( "PV1_1", IsoString().Format( "%.16g", wcs.pv1_1() ), "Native longitude of the reference point (deg)" );
       if ( wcs.pv1_2.IsDefined() )
-         keywords << FITSHeaderKeyword( "PV1_2", IsoString().Format( "%.12g", wcs.pv1_2() ), "Native latitude of the reference point" );
+         keywords << FITSHeaderKeyword( "PV1_2", IsoString().Format( "%.16g", wcs.pv1_2() ), "Native latitude of the reference point (deg)" );
       if ( wcs.lonpole.IsDefined() )
-         keywords << FITSHeaderKeyword( "LONPOLE", IsoString().Format( "%.12g", wcs.lonpole() ), "Longitude of the celestial pole" );
+         keywords << FITSHeaderKeyword( "LONPOLE", IsoString().Format( "%.16g", wcs.lonpole() ), "Longitude of the celestial pole (deg)" );
       if ( wcs.latpole.IsDefined() )
-         keywords << FITSHeaderKeyword( "LATPOLE", IsoString().Format( "%.12g", wcs.latpole() ), "Latitude of the celestial pole" );
+         keywords << FITSHeaderKeyword( "LATPOLE", IsoString().Format( "%.16g", wcs.latpole() ), "Latitude of the celestial pole (deg)" );
 
-      keywords << FITSHeaderKeyword( "CD1_1", IsoString().Format( "%.12g", wcs.cd1_1() ), "Scale matrix (1,1)" )
-               << FITSHeaderKeyword( "CD1_2", IsoString().Format( "%.12g", wcs.cd1_2() ), "Scale matrix (1,2)" )
-               << FITSHeaderKeyword( "CD2_1", IsoString().Format( "%.12g", wcs.cd2_1() ), "Scale matrix (2,1)" )
-               << FITSHeaderKeyword( "CD2_2", IsoString().Format( "%.12g", wcs.cd2_2() ), "Scale matrix (2,2)" );
+      keywords << FITSHeaderKeyword( "CD1_1", IsoString().Format( "%.16g", wcs.cd1_1() ), "Scale matrix (1,1)" )
+               << FITSHeaderKeyword( "CD1_2", IsoString().Format( "%.16g", wcs.cd1_2() ), "Scale matrix (1,2)" )
+               << FITSHeaderKeyword( "CD2_1", IsoString().Format( "%.16g", wcs.cd2_1() ), "Scale matrix (2,1)" )
+               << FITSHeaderKeyword( "CD2_2", IsoString().Format( "%.16g", wcs.cd2_2() ), "Scale matrix (2,2)" );
 
       if ( HasSplineWorldTransformation() )
-         keywords << FITSHeaderKeyword( "REFSPLINE", "T", "Coordinates stored in properties as splines" );
+         keywords << FITSHeaderKeyword( "REFSPLINE", "T", "Spline-based astrometric solution available" );
 
       // AIPS keywords (CDELT1, CDELT2, CROTA1, CROTA2)
-      keywords << FITSHeaderKeyword( "CDELT1", IsoString().Format( "%.12g", wcs.cdelt1() ), "Axis1 scale" )
-               << FITSHeaderKeyword( "CDELT2", IsoString().Format( "%.12g", wcs.cdelt2() ), "Axis2 scale" )
-               << FITSHeaderKeyword( "CROTA1", IsoString().Format( "%.12g", wcs.crota1() ), "Axis1 rotation angle (deg)" )
-               << FITSHeaderKeyword( "CROTA2", IsoString().Format( "%.12g", wcs.crota2() ), "Axis2 rotation angle (deg)" );
+      keywords << FITSHeaderKeyword( "CDELT1", IsoString().Format( "%.16g", wcs.cdelt1() ), "Axis1 scale" )
+               << FITSHeaderKeyword( "CDELT2", IsoString().Format( "%.16g", wcs.cdelt2() ), "Axis2 scale" )
+               << FITSHeaderKeyword( "CROTA1", IsoString().Format( "%.16g", wcs.crota1() ), "Axis1 rotation angle (deg)" )
+               << FITSHeaderKeyword( "CROTA2", IsoString().Format( "%.16g", wcs.crota2() ), "Axis2 rotation angle (deg)" );
    }
 }
 
@@ -470,7 +502,7 @@ WCSKeywords AstrometricMetadata::GetWCSvalues() const
    /*
     * CDELT1, CDELT2 and CROTA2 are computed using the formulas in section 6.2
     * of http://fits.gsfc.nasa.gov/fits_wcs.html "Representations of celestial
-    * coordinates in FITS"
+    * coordinates in FITS".
     */
    double rot1, rot2;
    if ( wcs.cd2_1() > 0 )
@@ -513,4 +545,4 @@ WCSKeywords AstrometricMetadata::GetWCSvalues() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AstrometricMetadata.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/AstrometricMetadata.cpp - Released 2018-11-01T11:06:52Z

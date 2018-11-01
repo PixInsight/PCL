@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard NoiseGeneration Process Module Version 01.00.02.0325
+// Standard NoiseGeneration Process Module Version 01.00.02.0333
 // ----------------------------------------------------------------------------
-// NoiseGeneratorInterface.cpp - Released 2017-08-01T14:26:58Z
+// NoiseGeneratorInterface.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard NoiseGeneration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,7 +58,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-NoiseGeneratorInterface* TheNoiseGeneratorInterface = 0;
+NoiseGeneratorInterface* TheNoiseGeneratorInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -67,36 +67,48 @@ NoiseGeneratorInterface* TheNoiseGeneratorInterface = 0;
 // ----------------------------------------------------------------------------
 
 NoiseGeneratorInterface::NoiseGeneratorInterface() :
-ProcessInterface(), instance( TheNoiseGeneratorProcess ), GUI( 0 )
+   instance( TheNoiseGeneratorProcess )
 {
    TheNoiseGeneratorInterface = this;
 }
 
+// ----------------------------------------------------------------------------
+
 NoiseGeneratorInterface::~NoiseGeneratorInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString NoiseGeneratorInterface::Id() const
 {
    return "NoiseGenerator";
 }
 
+// ----------------------------------------------------------------------------
+
 MetaProcess* NoiseGeneratorInterface::Process() const
 {
    return TheNoiseGeneratorProcess;
 }
+
+// ----------------------------------------------------------------------------
 
 const char** NoiseGeneratorInterface::IconImageXPM() const
 {
    return NoiseGeneratorIcon_XPM;
 }
 
+// ----------------------------------------------------------------------------
+
 void NoiseGeneratorInterface::ApplyInstance() const
 {
    instance.LaunchOnCurrentView();
 }
+
+// ----------------------------------------------------------------------------
 
 void NoiseGeneratorInterface::ResetInstance()
 {
@@ -104,9 +116,11 @@ void NoiseGeneratorInterface::ResetInstance()
    ImportProcess( defaultInstance );
 }
 
+// ----------------------------------------------------------------------------
+
 bool NoiseGeneratorInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "NoiseGenerator" );
@@ -117,10 +131,14 @@ bool NoiseGeneratorInterface::Launch( const MetaProcess& P, const ProcessImpleme
    return &P == TheNoiseGeneratorProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* NoiseGeneratorInterface::NewProcess() const
 {
    return new NoiseGeneratorInstance( instance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool NoiseGeneratorInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
@@ -130,10 +148,14 @@ bool NoiseGeneratorInterface::ValidateProcess( const ProcessImplementation& p, p
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool NoiseGeneratorInterface::RequiresInstanceValidation() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool NoiseGeneratorInterface::ImportProcess( const ProcessImplementation& p )
 {
@@ -165,6 +187,8 @@ void NoiseGeneratorInterface::__ValueUpdated( NumericEdit& sender, double value 
       instance.p_impulsionalNoiseProbability = value;
 }
 
+// ----------------------------------------------------------------------------
+
 void NoiseGeneratorInterface::__Click( Button& sender, bool checked )
 {
    if ( sender == GUI->Uniform_RadioButton )
@@ -179,6 +203,7 @@ void NoiseGeneratorInterface::__Click( Button& sender, bool checked )
    GUI->ImpulsionalProb_NumericControl.Enable( instance.p_distribution == NGNoiseDistribution::Impulsional );
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 NoiseGeneratorInterface::GUIData::GUIData( NoiseGeneratorInterface& w )
@@ -238,4 +263,4 @@ NoiseGeneratorInterface::GUIData::GUIData( NoiseGeneratorInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF NoiseGeneratorInterface.cpp - Released 2017-08-01T14:26:58Z
+// EOF NoiseGeneratorInterface.cpp - Released 2018-11-01T11:07:21Z

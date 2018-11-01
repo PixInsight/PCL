@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/BicubicFilterInterpolation.h - Released 2017-08-01T14:23:31Z
+// pcl/BicubicFilterInterpolation.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -210,14 +210,14 @@ public:
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       return "Mitchell-Netravali cubic filter";
    }
 
    /*!
     */
-   virtual CubicFilter* Clone() const
+   CubicFilter* Clone() const override
    {
       return new MitchellNetravaliCubicFilter( *this );
    }
@@ -257,14 +257,14 @@ public:
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       return "Catmull-Rom spline filter";
    }
 
    /*!
     */
-   virtual CubicFilter* Clone() const
+   CubicFilter* Clone() const override
    {
       return new CatmullRomSplineFilter( *this );
    }
@@ -304,14 +304,14 @@ public:
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       return "Cubic B-spline filter";
    }
 
    /*!
     */
-   virtual CubicFilter* Clone() const
+   CubicFilter* Clone() const override
    {
       return new CubicBSplineFilter( *this );
    }
@@ -382,7 +382,7 @@ public:
 
    /*!
     */
-   virtual void Initialize( const T* data, int dataWidth, int dataHeight )
+   void Initialize( const T* data, int dataWidth, int dataHeight ) override
    {
       BidimensionalInterpolation<T>::Initialize( data, dataWidth, dataHeight );
 
@@ -404,8 +404,8 @@ public:
     * columns and 2*ry + 1 rows, where rx and ry are the horizontal and
     * vertical interpolation radii, respectively.
     */
-   virtual PCL_HOT_FUNCTION
-   double operator()( double x, double y ) const
+   PCL_HOT_FUNCTION
+   double operator()( double x, double y ) const override
    {
       PCL_PRECONDITION( m_data != nullptr )
       PCL_PRECONDITION( m_width > 0 && m_height > 0 )
@@ -662,4 +662,4 @@ protected:
 #endif   // __PCL_BicubicFilterInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/BicubicFilterInterpolation.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/BicubicFilterInterpolation.h - Released 2018-11-01T11:06:36Z

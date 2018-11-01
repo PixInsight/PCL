@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard Image Process Module Version 01.02.09.0410
 // ----------------------------------------------------------------------------
-// FITSHeaderInstance.cpp - Released 2017-08-01T14:26:58Z
+// FITSHeaderInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -61,15 +61,19 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 FITSHeaderInstance::FITSHeaderInstance( const MetaProcess* m ) :
-   ProcessImplementation( m ), keywords()
+   ProcessImplementation( m )
 {
 }
 
+// ----------------------------------------------------------------------------
+
 FITSHeaderInstance::FITSHeaderInstance( const FITSHeaderInstance& x ) :
-   ProcessImplementation( x ), keywords()
+   ProcessImplementation( x )
 {
    keywords = x.keywords;
 }
+
+// ----------------------------------------------------------------------------
 
 void FITSHeaderInstance::Assign( const ProcessImplementation& p )
 {
@@ -78,15 +82,21 @@ void FITSHeaderInstance::Assign( const ProcessImplementation& p )
       keywords = x->keywords;
 }
 
+// ----------------------------------------------------------------------------
+
 UndoFlags FITSHeaderInstance::UndoMode( const View& ) const
 {
    return UndoFlag::Keywords;
 }
 
+// ----------------------------------------------------------------------------
+
 bool FITSHeaderInstance::IsMaskable( const View&, const ImageWindow& /*mask*/ ) const
 {
    return false;
 }
+
+// ----------------------------------------------------------------------------
 
 bool FITSHeaderInstance::CanExecuteOn( const View& v, pcl::String& whyNot ) const
 {
@@ -98,6 +108,8 @@ bool FITSHeaderInstance::CanExecuteOn( const View& v, pcl::String& whyNot ) cons
 
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool FITSHeaderInstance::ExecuteOn( View& view )
 {
@@ -121,6 +133,8 @@ bool FITSHeaderInstance::ExecuteOn( View& view )
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 void* FITSHeaderInstance::LockParameter( const MetaParameter* p, size_type tableRow )
 {
    if ( p == TheFITSKeywordNameParameter )
@@ -131,6 +145,8 @@ void* FITSHeaderInstance::LockParameter( const MetaParameter* p, size_type table
       return keywords[tableRow].comment.Begin();
    return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool FITSHeaderInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {
@@ -164,6 +180,8 @@ bool FITSHeaderInstance::AllocateParameter( size_type sizeOrLength, const MetaPa
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 size_type FITSHeaderInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
    if ( p == TheFITSKeywordNameParameter )
@@ -189,6 +207,8 @@ void FITSHeaderInstance::ImportKeywords( const ImageWindow& w )
    for ( FITSKeywordArray::const_iterator i = K.Begin(); i != K.End(); ++i )
       keywords << Keyword( i->name, i->value, i->comment );
 }
+
+// ----------------------------------------------------------------------------
 
 bool FITSHeaderInstance::IsReservedKeyword( const String& id )
 {
@@ -240,4 +260,4 @@ bool FITSHeaderInstance::IsReservedKeyword( const String& id )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITSHeaderInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF FITSHeaderInstance.cpp - Released 2018-11-01T11:07:21Z

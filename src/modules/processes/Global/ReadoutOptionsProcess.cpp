@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0378
+// Standard Global Process Module Version 01.02.07.0386
 // ----------------------------------------------------------------------------
-// ReadoutOptionsProcess.cpp - Released 2017-08-01T14:26:58Z
+// ReadoutOptionsProcess.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -65,7 +65,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ReadoutOptionsProcess* TheReadoutOptionsProcess = 0;
+ReadoutOptionsProcess* TheReadoutOptionsProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -89,6 +89,11 @@ ReadoutOptionsProcess::ReadoutOptionsProcess() : MetaProcess()
    new ReadoutMask( this );
    new ReadoutPreview( this );
    new ReadoutPreviewCenter( this );
+   new ReadoutShowEquatorial( this );
+   new ReadoutShowEcliptic( this );
+   new ReadoutShowGalactic( this );
+   new ReadoutCoordinateItems( this );
+   new ReadoutCoordinatePrecision( this );
    new ReadoutBroadcast( this );
    new ReadoutReal( this );
 }
@@ -122,20 +127,21 @@ String ReadoutOptionsProcess::Description() const
 
    "<html>"
    "<p>ReadoutOptions provides access to the parameters that define how PixInsight "
-   "calculates and presents numerical pixel data obtained directly from images.</p>"
+   "calculates and presents numerical pixel data and coordinates obtained directly from "
+   "images and their associated metadata.</p>"
 
    "<p>Readouts are generated dynamically when you move the mouse cursor over an image "
-   "in PixInsight. Readout data are shown on the Readout toolbar, usually located at the "
-   "bottom of the application's main window. Furthermore, when you press the mouse cursor "
-   "over an image, readout values are sent to interface windows that request them, as the "
+   "in PixInsight. Pixel readout data are shown on the Readout toolbar, usually located at "
+   "the bottom of the application's main window. Furthermore, when you click with the mouse "
+   "on an image, readout values are sent to interface windows that request them, as the "
    "standard HistogramTransformation and CurvesTransformation interfaces, for example. "
    "This is called <i>readout broadcasting</i>. When an interface receives readout values, "
    "it usually gives you some visual feedback, or use them to modify its behavior, as "
-   "appropriate.</p>"
+   "appropriate in each case.</p>"
 
-   "<p>With ReadoutOptions you can specify two sets of parameters: a set that defines "
-   "how readout values are calcualted, and a second set that indicates how the obtained "
-   "numerical readout values are presented to you.</p>"
+   "<p>With ReadoutOptions you can specify two sets of parameters to control generation of "
+   "pixel readouts: a set that defines how readout values are calcualted, and a second set "
+   "that indicates how the obtained numerical readout values are presented to you.</p>"
 
    "<p>The first parameter set includes the color space in which data is generated "
    "(e.g. RGB, HSV, CIE L*a*b*, etc.), the calculation mode used (average, median, minimum "
@@ -147,11 +153,17 @@ String ReadoutOptionsProcess::Description() const
    "digits shown (from 0 to 15). Integer readouts are given in the range from zero to an "
    "arbitrary maximum value that you can specify from 1 to 2<sup>32</sup>.</p>"
 
-   "<p>Finally, ReadoutOptions allows you to control generation of <i>readout previews</i>. "
-   "A readout preview is a real-time rendition of a small image area at the cursor location, "
-   "which is shown when you hold the primary mouse button pressed for more than about 0.4 "
-   "seconds in the <i>readout</i> and <i>center</i> navigation modes. With ReadoutOptions "
-   "you can define the size, magnification and appearance of readout previews.</p>"
+   "<p>ReadoutOptions allows you to control generation of <i>readout previews</i>. A readout "
+   "preview is a real-time rendition of a small image area at the cursor location, which is "
+   "shown when you hold the primary mouse button pressed for more than about 0.4 seconds in "
+   "the <i>readout</i> and <i>center</i> image navigation modes. With ReadoutOptions you can "
+   "define the size, magnification and appearance of readout previews.</p>"
+
+   "<p>Finally, celestial coordinate readouts are generated when the image has a valid "
+   "astrometric solution and you click on it to open a readout preview. You can control "
+   "generation of equatorial, ecliptic and galactic coordinates, as well as the number of "
+   "items and decimal digits used in sexagesimal representations.</p>"
+
    "</html>";
 }
 
@@ -181,7 +193,7 @@ ProcessImplementation* ReadoutOptionsProcess::Create() const
 ProcessImplementation* ReadoutOptionsProcess::Clone( const ProcessImplementation& p ) const
 {
    const ReadoutOptionsInstance* instPtr = dynamic_cast<const ReadoutOptionsInstance*>( &p );
-   return (instPtr != 0) ? new ReadoutOptionsInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new ReadoutOptionsInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -240,60 +252,60 @@ static void ShowHelp()
 "\n"
 "\n      Display pixel readouts in the HSI (aka HSL) color ordering system."
 "\n"
-"\n-alpha[+|-]"
+"\n-A[+|-] | --alpha[+|-]"
 "\n"
 "\n      Enables/disables alpha channel readouts."
 "\n"
-"\n-mask[+|-]"
+"\n-K[+|-] | --mask[+|-]"
 "\n"
 "\n      Enables/disables mask channel readouts."
 "\n"
 "\n* Arguments controlling the calculation mode for readout generation."
 "\n"
-"\n-m | -mean"
+"\n-m | --mean"
 "\n"
 "\n      Generate arithmetic mean pixel readouts."
 "\n"
-"\n-n | -median"
+"\n-n | --median"
 "\n"
 "\n      Generate median pixel readouts."
 "\n"
-"\n-M | -max"
+"\n-M | --maximum"
 "\n"
 "\n      Generate maximum pixel readouts."
 "\n"
-"\n-N | -min"
+"\n-N | --minimum"
 "\n"
 "\n      Generate minimum pixel readouts."
 "\n"
 "\n* Arguments controlling the readout probe and the readout preview."
 "\n"
-"\n-s=<n> | -size=<n>"
+"\n-s=<n> | --probe-size=<n>"
 "\n"
 "\n      <n> is the size in pixels of the square readout probe."
 "\n      Valid sizes are: 1,3,5,7,9,11,13,15."
 "\n"
-"\n-ps=<n> | -preview-size=<n>"
+"\n-pr[+|-] | -preview[+|-]"
+"\n"
+"\n      Enables/disables generation of readout previews."
+"\n"
+"\n-ps=<n> | --preview-size=<n>"
 "\n"
 "\n      <n> is the size in pixels of the square readout preview box."
 "\n      <n> must be an odd integer 15 <= n <= 127."
 "\n"
-"\n-pz=<n> | -preview-zoom=<n>"
+"\n-pz=<n> | --preview-zoom=<n>"
 "\n"
 "\n      <n> is the zoom ratio for generation of readout previews."
 "\n      <n> must be an integer 1 <= n <= 16."
 "\n"
-"\n-preview[+|-]"
-"\n"
-"\n      Enables/disables generation of readout previews."
-"\n"
-"\n-preview-center[+|-]"
+"\n-pc[+|-] | -preview-center[+|-]"
 "\n"
 "\n      Enables/disables drawing of readout preview center lines."
 "\n"
 "\n* Arguments controlling readout data types for output."
 "\n"
-"\n-r=<n> | -real=<n>"
+"\n-r=<n> | --real=<n>"
 "\n"
 "\n      Display normalized real readout values in the [0,1] range."
 "\n      <n> is the number of decimal digits to show, 0 <= n <= 15"
@@ -322,13 +334,37 @@ static void ShowHelp()
 "\n"
 "\n      Display 32-bit integer pixel readouts in the [0,4294967295] range."
 "\n"
-"\n-i=<n> | integer=<n>"
+"\n-i=<n> | --integer=<n>"
 "\n"
 "\n      Display integer readouts in an arbitrary range from 0 to <n>."
 "\n"
+"\n* Arguments controlling generation of celestial coordinates in readout previews."
+"\n"
+"\n-cq[+|-] | --equatorial[+|-]"
+"\n"
+"\n      Enables/disables generation of equatorial coordinates."
+"\n"
+"\n-ce[+|-] | --ecliptic[+|-]"
+"\n"
+"\n      Enables/disables generation of ecliptic coordinates."
+"\n"
+"\n-cg[+|-] | --galactic[+|-]"
+"\n"
+"\n      Enables/disables generation of galactic coordinates."
+"\n"
+"\n-cn=<n> | --coordinate-items=<n>"
+"\n"
+"\n      Display celestial coordinates with <n> sexagesimal items. <n> must be in"
+"\n      the range [1,3]."
+"\n"
+"\n-cp=<n> | --coordinate-precision=<n>"
+"\n"
+"\n      Display celestial coordinates with <n> decimal digits in the last"
+"\n      sexagesimal item represented. <n> must be in the range [0,8]."
+"\n"
 "\n* Miscellaneous arguments."
 "\n"
-"\n-broadcast[+|-]"
+"\n--broadcast[+|-]"
 "\n"
 "\n      Enables/disables broadcasting of generated pixel readouts."
 "\n"
@@ -359,28 +395,28 @@ int ReadoutOptionsProcess::ProcessCommandLine( const StringList& argv ) const
 
       if ( arg.IsNumeric() )
       {
-         if ( arg.Id() == "s" || arg.Id() == "size" )
+         if ( arg.Id() == "s" || arg.Id() == "-probe-size" )
          {
             int sz = int( arg.NumericValue() );
             if ( (sz & 1) == 0 || sz < 1 || sz > ReadoutOptions::MaxProbeSize )
                throw Error( "Invalid readout probe size: " + arg.Token() );
             options.SetProbeSize( sz );
          }
-         else if ( arg.Id() == "ps" || arg.Id() == "preview-size" )
+         else if ( arg.Id() == "ps" || arg.Id() == "-preview-size" )
          {
             int sz = int( arg.NumericValue() );
             if ( (sz & 1) == 0 || sz < ReadoutOptions::MinPreviewSize || sz > ReadoutOptions::MaxPreviewSize )
                throw Error( "Invalid readout preview size: " + arg.Token() );
             options.SetPreviewSize( sz );
          }
-         else if ( arg.Id() == "pz" || arg.Id() == "preview-zoom" )
+         else if ( arg.Id() == "pz" || arg.Id() == "-preview-zoom" )
          {
             int sz = int( arg.NumericValue() );
             if ( sz < 1 || sz > ReadoutOptions::MaxPreviewZoomFactor )
                throw Error( "Invalid readout preview zoom factor: " + arg.Token() );
             options.SetPreviewZoomFactor( sz );
          }
-         else if ( arg.Id() == "r" || arg.Id() == "real" )
+         else if ( arg.Id() == "r" || arg.Id() == "-real" )
          {
             options.SetReal();
             int n = int( arg.NumericValue() );
@@ -388,13 +424,29 @@ int ReadoutOptionsProcess::ProcessCommandLine( const StringList& argv ) const
                throw Error( "Invalid readout real precision: " + arg.Token() );
             options.SetPrecision( n );
          }
-         else if ( arg.Id() == "i" || arg.Id() == "integer" )
+         else if ( arg.Id() == "i" || arg.Id() == "-integer" )
          {
             options.SetInteger();
             double n = arg.NumericValue();
             if ( n < 1 || n > uint32_max )
                throw Error( "Invalid integer readout range: " + arg.Token() );
             options.SetIntegerRange( unsigned( n ) );
+         }
+         else if ( arg.Id() == "cn" || arg.Id() == "-coordinate-items" )
+         {
+            options.SetInteger();
+            double n = arg.NumericValue();
+            if ( n < 1 || n > 3 )
+               throw Error( "Invalid number of coordinate items: " + arg.Token() );
+            options.SetCoordinateItems( int( n ) );
+         }
+         else if ( arg.Id() == "cp" || arg.Id() == "-coordinate-precision" )
+         {
+            options.SetInteger();
+            double n = arg.NumericValue();
+            if ( n < 0 || n > 8 )
+               throw Error( "Invalid coordinate precision: " + arg.Token() );
+            options.SetCoordinatePrecision( int( n ) );
          }
          else
             throw Error( "Unknown numeric argument: " + arg.Token() );
@@ -403,28 +455,34 @@ int ReadoutOptionsProcess::ProcessCommandLine( const StringList& argv ) const
          throw Error( "Unknown string argument: " + arg.Token() );
       else if ( arg.IsSwitch() )
       {
-         if ( arg.Id() == "alpha" )
+         if ( arg.Id() == "A" || arg.Id() == "-alpha" )
             options.EnableAlphaChannel( arg.SwitchState() );
-         else if ( arg.Id() == "mask" )
+         else if ( arg.Id() == "K" || arg.Id() == "-mask" )
             options.EnableMaskChannel( arg.SwitchState() );
-         else if ( arg.Id() == "preview" )
+         else if ( arg.Id() == "pr" || arg.Id() == "-preview" )
             options.EnablePreview( arg.SwitchState() );
-         else if ( arg.Id() == "preview-center" )
+         else if ( arg.Id() == "pc" || arg.Id() == "-preview-center" )
             options.EnablePreviewCenter( arg.SwitchState() );
-         else if ( arg.Id() == "broadcast" )
+         else if ( arg.Id() == "cq" || arg.Id() == "-equatorial" )
+            options.EnableEquatorialCoordinates( arg.SwitchState() );
+         else if ( arg.Id() == "ce" || arg.Id() == "-ecliptic" )
+            options.EnableEclipticCoordinates( arg.SwitchState() );
+         else if ( arg.Id() == "cg" || arg.Id() == "-galactic" )
+            options.EnableGalacticCoordinates( arg.SwitchState() );
+         else if ( arg.Id() == "-broadcast" )
             options.EnableBroadcast( arg.SwitchState() );
          else
             throw Error( "Unknown switch argument: " + arg.Token() );
       }
       else if ( arg.IsLiteral() )
       {
-         if ( arg.Id() == "m" || arg.Id() == "mean" )
+         if ( arg.Id() == "m" || arg.Id() == "-mean" )
             options.SetMode( ReadoutMode::Mean );
-         else if ( arg.Id() == "n" || arg.Id() == "median" )
+         else if ( arg.Id() == "n" || arg.Id() == "-median" )
             options.SetMode( ReadoutMode::Median );
-         else if ( arg.Id() == "M" || arg.Id() == "max" || arg.Id() == "maximum" )
+         else if ( arg.Id() == "M" || arg.Id() == "-maximum" )
             options.SetMode( ReadoutMode::Maximum );
-         else if ( arg.Id() == "N" || arg.Id() == "min" || arg.Id() == "minimum" )
+         else if ( arg.Id() == "N" || arg.Id() == "-minimum" )
             options.SetMode( ReadoutMode::Minimum );
          else if ( arg.Id() == "rgb" || arg.Id() == "RGB" )
             options.SetData( ReadoutData::RGBK );
@@ -472,15 +530,21 @@ int ReadoutOptionsProcess::ProcessCommandLine( const StringList& argv ) const
             options.SetInteger();
             options.SetIntegerRange( 4294967295ul );
          }
-         else if ( arg.Id() == "alpha" )
+         else if ( arg.Id() == "A" || arg.Id() == "-alpha" )
             options.EnableAlphaChannel();
-         else if ( arg.Id() == "mask" )
+         else if ( arg.Id() == "K" || arg.Id() == "-mask" )
             options.EnableMaskChannel();
-         else if ( arg.Id() == "preview" )
+         else if ( arg.Id() == "pr" || arg.Id() == "-preview" )
             options.EnablePreview();
-         else if ( arg.Id() == "preview-center" )
+         else if ( arg.Id() == "pc" || arg.Id() == "-preview-center" )
             options.EnablePreviewCenter();
-         else if ( arg.Id() == "broadcast" )
+         else if ( arg.Id() == "cq" || arg.Id() == "-equatorial" )
+            options.EnableEquatorialCoordinates();
+         else if ( arg.Id() == "ce" || arg.Id() == "-ecliptic" )
+            options.EnableEclipticCoordinates();
+         else if ( arg.Id() == "cg" || arg.Id() == "-galactic" )
+            options.EnableGalacticCoordinates();
+         else if ( arg.Id() == "-broadcast" )
             options.EnableBroadcast();
          else if ( arg.Id() == "-load" )
             options = ReadoutOptions::GetCurrentOptions();
@@ -515,4 +579,4 @@ int ReadoutOptionsProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ReadoutOptionsProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF ReadoutOptionsProcess.cpp - Released 2018-11-01T11:07:20Z

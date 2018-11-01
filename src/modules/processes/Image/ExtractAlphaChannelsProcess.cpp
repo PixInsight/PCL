@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard Image Process Module Version 01.02.09.0410
 // ----------------------------------------------------------------------------
-// ExtractAlphaChannelsProcess.cpp - Released 2017-08-01T14:26:58Z
+// ExtractAlphaChannelsProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -65,7 +65,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ExtractAlphaChannelsProcess* TheExtractAlphaChannelsProcess = 0;
+ExtractAlphaChannelsProcess* TheExtractAlphaChannelsProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -138,7 +138,7 @@ ProcessImplementation* ExtractAlphaChannelsProcess::Create() const
 ProcessImplementation* ExtractAlphaChannelsProcess::Clone( const ProcessImplementation& p ) const
 {
    const ExtractAlphaChannelsInstance* instPtr = dynamic_cast<const ExtractAlphaChannelsInstance*>( &p );
-   return (instPtr != 0) ? new ExtractAlphaChannelsInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new ExtractAlphaChannelsInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -200,8 +200,8 @@ static void ShowHelp()
 int ExtractAlphaChannelsProcess::ProcessCommandLine( const StringList& argv ) const
 {
    ArgumentList arguments =
-   ExtractArguments( argv, ArgumentItemMode::AsViews,
-                     ArgumentOption::AllowWildcards|ArgumentOption::NoPreviews );
+      ExtractArguments( argv, ArgumentItemMode::AsViews,
+                        ArgumentOption::AllowWildcards|ArgumentOption::NoPreviews );
 
    ExtractAlphaChannelsInstance instance( this );
 
@@ -304,4 +304,4 @@ int ExtractAlphaChannelsProcess::ProcessCommandLine( const StringList& argv ) co
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ExtractAlphaChannelsProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF ExtractAlphaChannelsProcess.cpp - Released 2018-11-01T11:07:21Z

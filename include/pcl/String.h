@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/String.h - Released 2017-08-01T14:23:31Z
+// pcl/String.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -141,18 +141,25 @@ typedef Flags<RandomizationOption::mask_type>  RandomizationOptions;
 // ----------------------------------------------------------------------------
 
 /*!
- * \class SexagesimalConversionOptions
- * \brief Formatting options for string sexagesimal representations
+ * \defgroup sexagesimal_conversion Sexagesimal String Representation and Parsing
+ */
+
+/*!
+ * \struct SexagesimalConversionOptions
+ * \brief Formatting options for string sexagesimal representations.
  *
- * \sa IsoString::ToSexagesimal(), String::ToSexagesimal()
+ * \ingroup sexagesimal_conversion
+ * \sa IsoString::ToSexagesimal(), String::ToSexagesimal(),
+ * AngleConversionOptions, LongitudeConversionOptions, RAConversionOptions,
+ * LatitudeConversionOptions, DecConversionOptions
  */
 struct PCL_CLASS SexagesimalConversionOptions
 {
    /*!
     * Number of represented items. Can be 1, 2 or 3. All items but the last one
     * are represented as integer values. The last item is represented as a
-    * floating point value with the specified precision. The default value is 3
-    * items.
+    * floating point value with the specified precision. The default value is
+    * three items.
     */
    unsigned items     : 2;
 
@@ -193,12 +200,12 @@ struct PCL_CLASS SexagesimalConversionOptions
    /*!
     * Default constructor.
     */
-   SexagesimalConversionOptions( unsigned items_     = 3,
-                                 unsigned precision_ = 2,
-                                 bool     sign_      = false,
-                                 unsigned width_     = 0,
-                                 char     separator_ = ':',
-                                 char     padding_   = ' ' ) :
+   constexpr SexagesimalConversionOptions( unsigned items_     = 3,
+                                           unsigned precision_ = 2,
+                                           bool     sign_      = false,
+                                           unsigned width_     = 0,
+                                           char     separator_ = ':',
+                                           char     padding_   = ' ' ) :
       items( items_ ),
       precision( precision_ ),
       sign( sign_ ),
@@ -222,19 +229,161 @@ struct PCL_CLASS SexagesimalConversionOptions
 // ----------------------------------------------------------------------------
 
 /*!
- * \class ISO8601ConversionOptions
+ * \struct AngleConversionOptions
+ * \brief A set of options specific for string representations of angles.
+ *
+ * This is a convenience structure to ease string representations of angles in
+ * the range [0&deg;,360&deg;) as degrees, minutes and seconds of arc.
+ *
+ * \ingroup sexagesimal_conversion
+ * \sa IsoString::ToSexagesimal(), String::ToSexagesimal(),
+ * SexagesimalConversionOptions, LongitudeConversionOptions,
+ * RAConversionOptions, LatitudeConversionOptions, DecConversionOptions
+ */
+struct PCL_CLASS AngleConversionOptions : public SexagesimalConversionOptions
+{
+   /*!
+    * Constructs an %AngleConversionOptions structure initialized for the
+    * specified \a precision and first item \a padding character. The string
+    * representation will consist of three items separated by spaces. The first
+    * item will be represented left-padded with a length of three characters.
+    */
+   constexpr AngleConversionOptions( unsigned precision = 2, char padding = ' ' ) :
+      SexagesimalConversionOptions( 3/*items*/, precision, false/*sign*/, 3/*width*/, ' '/*separator*/, padding )
+   {}
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \struct LongitudeConversionOptions
+ * \brief A set of options specific for string representations of longitude
+ * angles.
+ *
+ * This is a convenience structure to ease string representations of angles in
+ * the range [-180&deg;,+180&deg;] as degrees, minutes and seconds of arc.
+ *
+ * \ingroup sexagesimal_conversion
+ * \sa IsoString::ToSexagesimal(), String::ToSexagesimal(),
+ * SexagesimalConversionOptions, AngleConversionOptions, RAConversionOptions,
+ * LatitudeConversionOptions, DecConversionOptions
+ */
+struct PCL_CLASS LongitudeConversionOptions : public SexagesimalConversionOptions
+{
+   /*!
+    * Constructs a %LongitudeConversionOptions structure initialized for the
+    * specified \a precision and first item \a padding character. The string
+    * representation will consist of three items separated by spaces. The first
+    * item will be represented left-padded with a length of four characters,
+    * including a leading sign character.
+    */
+   constexpr LongitudeConversionOptions( unsigned precision = 2, char padding = ' ' ) :
+      SexagesimalConversionOptions( 3/*items*/, precision, true/*sign*/, 4/*width*/, ' '/*separator*/, padding )
+   {}
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \struct RAConversionOptions
+ * \brief A set of options specific for string representations of right
+ * ascensions.
+ *
+ * This is a convenience structure to ease string representations of hour
+ * angles in the range [0<sup>h</sup>,24<sup>h</sup>) as hours, minutes and
+ * seconds.
+ *
+ * \ingroup sexagesimal_conversion
+ * \sa IsoString::ToSexagesimal(), String::ToSexagesimal(),
+ * SexagesimalConversionOptions, AngleConversionOptions,
+ * LongitudeConversionOptions, LatitudeConversionOptions, DecConversionOptions
+ */
+struct PCL_CLASS RAConversionOptions : public SexagesimalConversionOptions
+{
+   /*!
+    * Constructs a %RAConversionOptions structure initialized for the specified
+    * \a precision and first item \a padding character. The string
+    * representation will consist of three items separated by spaces. The first
+    * item will be represented left-padded with a length of two characters.
+    */
+   constexpr RAConversionOptions( unsigned precision = 3, char padding = ' ' ) :
+      SexagesimalConversionOptions( 3/*items*/, precision, false/*sign*/, 2/*width*/, ' '/*separator*/, padding )
+   {}
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \struct LatitudeConversionOptions
+ * \brief A set of options specific for string representations of latitude
+ * angles.
+ *
+ * This is a convenience structure to ease string representations of angles in
+ * the range [-90&deg;,+90&deg;] as degrees, minutes and seconds of arc.
+ *
+ * \ingroup sexagesimal_conversion
+ * \sa IsoString::ToSexagesimal(), String::ToSexagesimal(),
+ * SexagesimalConversionOptions, AngleConversionOptions,
+ * LongitudeConversionOptions, RAConversionOptions, DecConversionOptions
+ */
+struct PCL_CLASS LatitudeConversionOptions : public SexagesimalConversionOptions
+{
+   /*!
+    * Constructs a %LatitudeConversionOptions structure initialized for the
+    * specified \a precision and first item \a padding character. The string
+    * representation will consist of three items separated by spaces. The first
+    * item will be represented left-padded with a length of three characters,
+    * including a leading sign character.
+    */
+   constexpr LatitudeConversionOptions( unsigned precision = 2, char padding = ' ' ) :
+      SexagesimalConversionOptions( 3/*items*/, precision, true/*sign*/, 3/*width*/, ' '/*separator*/, padding )
+   {}
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \struct DecConversionOptions
+ * \brief A set of options specific for string representations of declination
+ * angles.
+ *
+ * This structure is a convenience alias of LatitudeConversionOptions.
+ *
+ * \ingroup sexagesimal_conversion
+ * \sa IsoString::ToSexagesimal(), String::ToSexagesimal(),
+ * SexagesimalConversionOptions, AngleConversionOptions,
+ * LongitudeConversionOptions, RAConversionOptions, LatitudeConversionOptions
+ */
+struct PCL_CLASS DecConversionOptions : public LatitudeConversionOptions
+{
+   /*!
+    * Constructs a %DecConversionOptions structure initialized for the
+    * specified \a precision and first item \a padding character. The string
+    * representation will consist of three items separated by spaces. The first
+    * item will be represented left-padded with a length of three characters,
+    * including a leading sign character.
+    */
+   constexpr DecConversionOptions( unsigned precision = 2, char padding = ' ' ) :
+      LatitudeConversionOptions( precision, padding )
+   {}
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \struct ISO8601ConversionOptions
  * \brief Formatting options for string representations of dates and times in
  * ISO 8601 format.
  *
  * \sa IsoString::ToISO8601DateTime(), String::ToISO8601DateTime()
  */
-struct ISO8601ConversionOptions
+struct PCL_CLASS ISO8601ConversionOptions
 {
    /*!
     * Number of represented time items. Can be 0, 1, 2 or 3. All items but the
     * last one are represented as integer values. The last item is represented
     * as a floating point value with the specified precision. The default value
-    * is 3 time items.
+    * is three time items.
     */
    unsigned timeItems : 2;
 
@@ -259,10 +408,10 @@ struct ISO8601ConversionOptions
    /*!
     * Default constructor.
     */
-   ISO8601ConversionOptions( unsigned timeItems_ = 3,
-                             unsigned precision_ = 3,
-                             bool     timeZone_  = true,
-                             bool     zuluTime_  = true ) :
+   constexpr ISO8601ConversionOptions( unsigned timeItems_ = 3,
+                                       unsigned precision_ = 3,
+                                       bool     timeZone_  = true,
+                                       bool     zuluTime_  = true ) :
       timeItems( timeItems_ ),
       precision( precision_ ),
       timeZone( timeZone_ ),
@@ -285,14 +434,15 @@ struct ISO8601ConversionOptions
 
 /*!
  * \class GenericString
- * \brief Generic string.
+ * \brief Generic character string.
  *
- * %GenericString is a finite ordered sequence of characters implemented as a
- * reference-counted, dynamic array of T objects, whose fundamental behavior is
- * specified by an instantiation R of GenericCharTraits for the character type
- * T (typically GenericCharTraits, or a derived class such as CharTraits or
- * IsoCharTraits), and where A provides dynamic allocation for contiguous
- * sequences of elements of type T (StandardAllocator is used by default).
+ * %GenericString is a finite, ordered sequence of characters implemented as a
+ * reference-counted, dynamic array of objects of type T, whose fundamental
+ * behavior is specified by an instantiation type R of GenericCharTraits for
+ * the character type T (typically GenericCharTraits, or a derived class such
+ * as CharTraits or IsoCharTraits), and where the type A provides dynamic
+ * allocation for contiguous sequences of elements of type T (StandardAllocator
+ * is used by default).
  *
  * On the PixInsight platform, all dynamically allocated strings have been
  * implemented as two instantiations of the %GenericString template class,
@@ -439,6 +589,18 @@ public:
       }
       else
          m_data = Data::New();
+   }
+
+   /*!
+    * Constructs a string and initializes it with characters taken from the
+    * specified initializer list \a l.
+    *
+    * This constructor is equivalent to:
+    *
+    * \code GenericString( l.begin(), l.end() ) \endcode
+    */
+   GenericString( std::initializer_list<char_type> l ) : GenericString( l.begin(), l.end() )
+   {
    }
 
    /*!
@@ -1106,6 +1268,17 @@ public:
       }
       else
          Clear();
+   }
+
+   /*!
+    * Assigns a sequence of characters defined by the specified initializer
+    * list \a l to this string. This function is equivalent to:
+    *
+    * \code Assign( l.begin(), l.end() ) \endcode
+    */
+   void Assign( std::initializer_list<char_type> l )
+   {
+      Assign( l.begin(), l.end() );
    }
 
    /*!
@@ -5387,6 +5560,18 @@ public:
    }
 
    /*!
+    * Constructs an %IsoString with a copy of the character sequence stored in
+    * the specified initializer list \a l.
+    *
+    * This constructor is equivalent to:
+    *
+    * \code IsoString( l.begin(), l.end() ) \endcode
+    */
+   IsoString( std::initializer_list<char_type> l ) : IsoString( l.begin(), l.end() )
+   {
+   }
+
+   /*!
     * Constructs an %IsoString as a copy of the null-terminated Unicode
     * (UTF-16) string \a t, transformed to ISO/IEC-8859-1.
     *
@@ -6922,6 +7107,7 @@ public:
     * the range of \c double is exceeded, this member function throws a
     * ParseError exception.
     *
+    * \ingroup sexagesimal_conversion
     * \sa TrySexagesimalToDouble(), ParseSexagesimal(), TryParseSexagesimal()
     */
    double SexagesimalToDouble( const IsoString& separator = ':' ) const
@@ -6951,6 +7137,7 @@ public:
     * occurrence of a character contained by \a separators will be valid as a
     * token separator.
     *
+    * \ingroup sexagesimal_conversion
     * \sa TrySexagesimalToDouble( double&, const Array<>& )
     */
    double SexagesimalToDouble( const Array<char_type>& separators ) const
@@ -6974,6 +7161,7 @@ public:
     * function returns \c false and does not change the \a value variable. This
     * function does not throw any exception.
     *
+    * \ingroup sexagesimal_conversion
     * \sa SexagesimalToDouble(), ParseSexagesimal(), TryParseSexagesimal()
     */
    bool TrySexagesimalToDouble( double& value, const IsoString& separator = ':' ) const
@@ -7006,6 +7194,7 @@ public:
     * separator characters is specified as a dynamic array. Any occurrence of a
     * character contained by \a separators will be valid as a token separator.
     *
+    * \ingroup sexagesimal_conversion
     * \sa SexagesimalToDouble( const Array<>& )
     */
    bool TrySexagesimalToDouble( double& value, const Array<char_type>& separators ) const
@@ -7042,6 +7231,7 @@ public:
     * the range of \c double is exceeded, this member function throws a
     * ParseError exception.
     *
+    * \ingroup sexagesimal_conversion
     * \sa TryParseSexagesimal(), SexagesimalToDouble(), TrySexagesimalToDouble()
     */
    void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator = ':' ) const;
@@ -7067,6 +7257,7 @@ public:
     * occurrence of a character contained by \a separators will be valid as a
     * token separator.
     *
+    * \ingroup sexagesimal_conversion
     * \sa TryParseSexagesimal( int&, int&, int&, double&, const Array<>& )
     */
    void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
@@ -7082,6 +7273,7 @@ public:
     * function returns \c false and does not change any of the \a sign, \a s1,
     * \a s2 and \a s3 variables. This function does not throw any exception.
     *
+    * \ingroup sexagesimal_conversion
     * \sa ParseSexagesimal(), SexagesimalToDouble(), TrySexagesimalToDouble()
     */
    bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator = ':' ) const;
@@ -7106,6 +7298,7 @@ public:
     * occurrence of a character contained by \a separators will be valid as a
     * token separator.
     *
+    * \ingroup sexagesimal_conversion
     * \sa ParseSexagesimal( int&, int&, int&, double&, const Array<>& )
     */
    bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
@@ -7129,7 +7322,10 @@ public:
     *
     * irrespective of the original \a s2 and \a s3 argument values.
     *
-    * \sa SexagesimalToDouble(), SexagesimalConversionOptions
+    * \ingroup sexagesimal_conversion
+    * \sa SexagesimalToDouble(), SexagesimalConversionOptions,
+    * AngleConversionOptions, LongitudeConversionOptions, RAConversionOptions,
+    * LatitudeConversionOptions, DecConversionOptions
     */
    static IsoString ToSexagesimal( int sign, double s1, double s2, double s3,
                                    const SexagesimalConversionOptions& options = SexagesimalConversionOptions() );
@@ -7141,6 +7337,8 @@ public:
     * Calling this member function is equivalent to:
     *
     * \code ToSexagesimal( (d < 0) ? -1 : +1, Abs( d ), 0, 0, options ); \endcode
+    *
+    * \ingroup sexagesimal_conversion
     */
    static IsoString ToSexagesimal( double d, const SexagesimalConversionOptions& options = SexagesimalConversionOptions() )
    {
@@ -7859,6 +8057,18 @@ public:
    }
 
    /*!
+    * Constructs a %String with a copy of the character sequence stored in the
+    * specified initializer list \a l.
+    *
+    * This constructor is equivalent to:
+    *
+    * \code String( l.begin(), l.end() ) \endcode
+    */
+   String( std::initializer_list<char_type> l ) : String( l.begin(), l.end() )
+   {
+   }
+
+   /*!
     * Constructs a %String as a copy of a null-terminated string \a t of
     * \c wchar_t characters.
     */
@@ -7910,6 +8120,18 @@ public:
    String( const_char8_iterator i, const_char8_iterator j ) : string_base()
    {
       Assign( i, j );
+   }
+
+   /*!
+    * Constructs a %String with a copy of the 8-bit ISO/IEC-8859-1 character
+    * sequence stored in the specified initializer list \a l.
+    *
+    * This constructor is equivalent to:
+    *
+    * \code String( l.begin(), l.end() ) \endcode
+    */
+   String( std::initializer_list<char8_type> l ) : String( l.begin(), l.end() )
+   {
    }
 
    /*!
@@ -8272,6 +8494,17 @@ public:
    }
 
    /*!
+    * Assigns a sequence of characters defined by the specified initializer
+    * list \a l to this string. This function is equivalent to:
+    *
+    * \code Assign( l.begin(), l.end() ) \endcode
+    */
+   void Assign( std::initializer_list<char_type> l )
+   {
+      Assign( l.begin(), l.end() );
+   }
+
+   /*!
     * Assigns a contiguous segment of at most \a n characters of a
     * null-terminated sequence \a t, starting from its \a i-th character, to
     * this string.
@@ -8377,6 +8610,18 @@ public:
       }
       else
          Clear();
+   }
+
+   /*!
+    * Assigns a sequence of 8-bit ISO/IEC-8859-1 characters defined by the
+    * specified initializer list \a l to this string. This function is
+    * equivalent to:
+    *
+    * \code Assign( l.begin(), l.end() ) \endcode
+    */
+   void Assign( std::initializer_list<char8_type> l )
+   {
+      Assign( l.begin(), l.end() );
    }
 
    /*!
@@ -11054,6 +11299,7 @@ public:
     * the range of \c double is exceeded, this member function throws a
     * ParseError exception.
     *
+    * \ingroup sexagesimal_conversion
     * \sa TrySexagesimalToDouble(), ParseSexagesimal(), TryParseSexagesimal()
     */
    double SexagesimalToDouble( const String& separator = ':' ) const
@@ -11073,6 +11319,7 @@ public:
     * occurrence of a character contained by \a separators will be valid as a
     * token separator.
     *
+    * \ingroup sexagesimal_conversion
     * \sa TrySexagesimalToDouble( double&, const Array<>& )
     */
    double SexagesimalToDouble( const Array<char_type>& separators ) const
@@ -11096,6 +11343,7 @@ public:
     * function returns \c false and does not change the \a value variable. This
     * function does not throw any exception.
     *
+    * \ingroup sexagesimal_conversion
     * \sa SexagesimalToDouble(), ParseSexagesimal(), TryParseSexagesimal()
     */
    bool TrySexagesimalToDouble( double& value, const String& separator = ':' ) const
@@ -11118,6 +11366,7 @@ public:
     * characters is specified as a dynamic array. Any occurrence of a character
     * contained by \a separators will be valid as a token separator.
     *
+    * \ingroup sexagesimal_conversion
     * \sa SexagesimalToDouble( const Array<>& )
     */
    bool TrySexagesimalToDouble( double& value, const Array<char_type>& separators ) const
@@ -11154,6 +11403,7 @@ public:
     * the range of \c double is exceeded, this member function throws a
     * ParseError exception.
     *
+    * \ingroup sexagesimal_conversion
     * \sa TryParseSexagesimal(), SexagesimalToDouble(), TrySexagesimalToDouble()
     */
    void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const String& separator = ':' ) const;
@@ -11169,6 +11419,7 @@ public:
     * of a character contained by \a separators will be valid as a token
     * separator.
     *
+    * \ingroup sexagesimal_conversion
     * \sa TryParseSexagesimal( int&, int&, int&, double&, const Array<>& )
     */
    void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
@@ -11184,6 +11435,7 @@ public:
     * function returns \c false and does not change any of the \a sign, \a s1,
     * \a s2 and \a s3 variables. This function does not throw any exception.
     *
+    * \ingroup sexagesimal_conversion
     * \sa ParseSexagesimal(), SexagesimalToDouble(), TrySexagesimalToDouble()
     */
    bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const String& separator = ':' ) const;
@@ -11198,6 +11450,7 @@ public:
     * occurrence of a character contained by \a separators will be valid as a
     * token separator.
     *
+    * \ingroup sexagesimal_conversion
     * \sa ParseSexagesimal( int&, int&, int&, double&, const Array<>& )
     */
    bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
@@ -11221,7 +11474,10 @@ public:
     *
     * irrespective of the original \a s2 and \a s3 argument values.
     *
-    * \sa SexagesimalToDouble(), SexagesimalConversionOptions
+    * \ingroup sexagesimal_conversion
+    * \sa SexagesimalToDouble(), SexagesimalConversionOptions,
+    * AngleConversionOptions, LongitudeConversionOptions, RAConversionOptions,
+    * LatitudeConversionOptions, DecConversionOptions
     */
    static String ToSexagesimal( int sign, double s1, double s2, double s3,
                                 const SexagesimalConversionOptions& options = SexagesimalConversionOptions() );
@@ -11233,6 +11489,8 @@ public:
     * Calling this member function is equivalent to:
     *
     * \code ToSexagesimal( (d < 0) ? -1 : +1, Abs( d ), 0, 0, options ); \endcode
+    *
+    * \ingroup sexagesimal_conversion
     */
    static String ToSexagesimal( double d, const SexagesimalConversionOptions& options = SexagesimalConversionOptions() )
    {
@@ -12628,7 +12886,7 @@ inline std::wostream& operator <<( std::wostream& o, const String& s )
 
 inline std::ostream& operator <<( std::ostream& o, const String& s )
 {
-   return o << IsoString( s );
+   return o << s.ToUTF8();
 }
 
 #endif   // __PCL_NO_STRING_OSTREAM
@@ -12640,4 +12898,4 @@ inline std::ostream& operator <<( std::ostream& o, const String& s )
 #endif   // __PCL_String_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/String.h - Released 2018-11-01T11:06:36Z

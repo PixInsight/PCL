@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ToolButton.h - Released 2017-08-01T14:23:31Z
+// pcl/ToolButton.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -94,7 +94,7 @@ public:
    /*!
     * Returns \c true, since tool buttons are pushable buttons.
     */
-   virtual bool IsPushable() const
+   bool IsPushable() const override
    {
       return true;
    }
@@ -104,7 +104,7 @@ public:
     *
     * \sa SetCheckable()
     */
-   virtual bool IsCheckable() const;
+   bool IsCheckable() const override;
 
    /*!
     * Enables or disables the <em>checkable state</em> of this %ToolButton.
@@ -123,4 +123,4 @@ public:
 #endif   // __PCL_ToolButton_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ToolButton.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/ToolButton.h - Released 2018-11-01T11:06:36Z

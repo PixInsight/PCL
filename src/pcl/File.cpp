@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/File.cpp - Released 2017-08-01T14:23:38Z
+// pcl/File.cpp - Released 2018-11-01T11:06:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -662,16 +662,6 @@ void File::Open( const String& filePath, FileModes mode )
          howToOpen += '+';
    }
    howToOpen += 'b'; // always in binary mode
-
-   /*
-    * ### TODO: Can we emulate fsopen() on Linux?
-    *
-   int howToShare = mode.IsFlagSet( FileMode::ShareRead ) ?
-      (mode.IsFlagSet( FileMode::ShareWrite ) ? SH_DENYNO : SH_DENYWR) :
-      (mode.IsFlagSet( FileMode::ShareWrite ) ? SH_DENYRD : SH_DENYRW);
-
-   m_fileHandle = (handle)::fsopen( filePath.c_str(), howToOpen.c_str(), howToShare );
-    */
 
    errno = 0;
    IsoString utf8 = filePath.ToUTF8();
@@ -2510,4 +2500,4 @@ bool File::IsValidHandle( handle h ) const
 }  // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/File.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/File.cpp - Released 2018-11-01T11:06:52Z

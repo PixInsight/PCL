@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/MetaParameter.h - Released 2017-08-01T14:23:31Z
+// pcl/MetaParameter.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -374,7 +374,7 @@ public:
 
 protected:
 
-   virtual void PerformAPIDefinitions() const;
+   void PerformAPIDefinitions() const override;
 
    virtual void PerformTypeAPIDefinitions() const
    {
@@ -441,14 +441,14 @@ public:
 
    /*!
     */
-   virtual bool IsNumeric() const
+   bool IsNumeric() const override
    {
       return true;
    }
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
    /*!
     * Returns true iff this metaparameter represents a real (floating-point)
@@ -507,8 +507,8 @@ public:
 
 protected:
 
-   virtual void PerformTypeAPIDefinitions() const;
-   virtual uint32 APIParType() const = 0;
+   void PerformTypeAPIDefinitions() const override;
+   virtual uint32 APIParType() const override = 0;
 };
 
 // ----------------------------------------------------------------------------
@@ -558,14 +558,14 @@ public:
 
    /*!
     */
-   virtual bool IsInteger() const
+   bool IsInteger() const override
    {
       return true;
    }
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
    /*!
     * Returns true if this metaparameter represents a signed integer process
@@ -575,7 +575,7 @@ public:
 
 private:
 
-   virtual uint32 APIParType() const = 0;
+   virtual uint32 APIParType() const override = 0;
 };
 
 // ----------------------------------------------------------------------------
@@ -619,18 +619,18 @@ public:
 
    /*!
     */
-   virtual bool IsSigned() const
+   bool IsSigned() const override
    {
       return false;
    }
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
 private:
 
-   virtual uint32 APIParType() const = 0;
+   virtual uint32 APIParType() const override = 0;
 };
 
 // ----------------------------------------------------------------------------
@@ -674,18 +674,18 @@ public:
 
    /*!
     */
-   virtual bool IsSigned() const
+   bool IsSigned() const override
    {
       return true;
    }
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
 private:
 
-   virtual uint32 APIParType() const = 0;
+   virtual uint32 APIParType() const override = 0;
 };
 
 // ----------------------------------------------------------------------------
@@ -729,11 +729,11 @@ public:
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
 private:
 
-   virtual uint32 APIParType() const;
+   uint32 APIParType() const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -777,11 +777,11 @@ public:
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
 private:
 
-   virtual uint32 APIParType() const;
+   uint32 APIParType() const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -825,11 +825,11 @@ public:
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
 private:
 
-   virtual uint32 APIParType() const;
+   uint32 APIParType() const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -871,11 +871,11 @@ public:
    {
    }
 
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
 private:
 
-   virtual uint32 APIParType() const;
+   uint32 APIParType() const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -919,11 +919,11 @@ public:
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
 private:
 
-   virtual uint32 APIParType() const;
+   uint32 APIParType() const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -967,11 +967,11 @@ public:
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
 private:
 
-   virtual uint32 APIParType() const;
+   uint32 APIParType() const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -1015,11 +1015,11 @@ public:
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
 private:
 
-   virtual uint32 APIParType() const;
+   uint32 APIParType() const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -1063,11 +1063,11 @@ public:
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
 private:
 
-   virtual uint32 APIParType() const;
+   uint32 APIParType() const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -1111,7 +1111,7 @@ public:
 
    /*!
     */
-   virtual bool IsReal() const
+   bool IsReal() const override
    {
       return true;
    }
@@ -1171,12 +1171,12 @@ public:
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
 private:
 
-   virtual void PerformTypeAPIDefinitions() const;
-   virtual uint32 APIParType() const = 0;
+   void PerformTypeAPIDefinitions() const override;
+   virtual uint32 APIParType() const override = 0;
 };
 
 // ----------------------------------------------------------------------------
@@ -1221,11 +1221,11 @@ public:
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
 private:
 
-   virtual uint32 APIParType() const;
+   uint32 APIParType() const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -1270,11 +1270,11 @@ public:
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
 private:
 
-   virtual uint32 APIParType() const;
+   uint32 APIParType() const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -1326,7 +1326,7 @@ public:
 
    /*!
     */
-   virtual bool IsBoolean() const
+   bool IsBoolean() const override
    {
       return true;
    }
@@ -1344,12 +1344,12 @@ public:
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
 private:
 
-   virtual void PerformTypeAPIDefinitions() const;
-   virtual uint32 APIParType() const;
+   void PerformTypeAPIDefinitions() const override;
+   uint32 APIParType() const override;
 };
 
 /*!
@@ -1386,7 +1386,8 @@ public:
     * The T template argument type must have integer equality comparison
     * semantics.
     */
-   template <typename T> pcl_bool( const T& value ) : m_value( value ? 1 : 0 )
+   template <typename T> pcl_bool( const T& value ) :
+      m_value( value ? 1 : 0 )
    {
    }
 
@@ -1398,14 +1399,15 @@ public:
     */
    template <typename T> pcl_bool& operator =( const T& value )
    {
-      m_value = value ? 1 : 0; return *this;
+      m_value = value ? 1 : 0;
+      return *this;
    }
 
    /*!
     * bool type conversion operator. Returns the current logical state of this
     * %pcl_bool instance as a bool object.
     */
-   operator bool() const
+   constexpr operator bool() const
    {
       return m_value != 0;
    }
@@ -1416,19 +1418,19 @@ public:
     * int type conversion operator. Returns zero if the current logical state
     * of this %pcl_bool object is false; one if it is true.
     */
-   operator int() const
+   constexpr operator int() const
    {
       return int( m_value );
    }
 
 #endif // !_MSC_VER
 
-   bool operator ==( const pcl_bool& b ) const
+   constexpr bool operator ==( const pcl_bool& b ) const
    {
       return m_value == b.m_value;
    }
 
-   bool operator <( const pcl_bool& b ) const
+   constexpr bool operator <( const pcl_bool& b ) const
    {
       return m_value < b.m_value;
    }
@@ -1488,14 +1490,14 @@ public:
 
    /*!
     */
-   virtual bool IsEnumeration() const
+   bool IsEnumeration() const override
    {
       return true;
    }
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
    /*!
     * Returns the number of enumeration elements defined in the enumerated
@@ -1582,8 +1584,8 @@ public:
 
 private:
 
-   virtual void PerformTypeAPIDefinitions() const;
-   virtual uint32 APIParType() const;
+   void PerformTypeAPIDefinitions() const override;
+   uint32 APIParType() const override;
 };
 
 /*!
@@ -1641,14 +1643,14 @@ public:
 
    /*!
     */
-   virtual bool IsVariableLength() const
+   bool IsVariableLength() const override
    {
       return true;
    }
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
    /*!
     * Returns the minimum valid length for the variable length process
@@ -1679,8 +1681,8 @@ public:
 
 private:
 
-   virtual void PerformTypeAPIDefinitions() const = 0;
-   virtual uint32 APIParType() const = 0;
+   virtual void PerformTypeAPIDefinitions() const override = 0;
+   virtual uint32 APIParType() const override = 0;
 };
 
 // ----------------------------------------------------------------------------
@@ -1723,14 +1725,14 @@ public:
 
    /*!
     */
-   virtual bool IsString() const
+   bool IsString() const override
    {
       return true;
    }
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
    /*!
     * Returns the default value of the string process parameter represented by
@@ -1764,8 +1766,8 @@ public:
 
 private:
 
-   virtual void PerformTypeAPIDefinitions() const;
-   virtual uint32 APIParType() const;
+   void PerformTypeAPIDefinitions() const override;
+   uint32 APIParType() const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -1803,14 +1805,14 @@ public:
 
    /*!
     */
-   virtual bool IsTable() const
+   bool IsTable() const override
    {
       return true;
    }
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
    /*!
     * Returns the address of a metaparameter representing the process
@@ -1826,8 +1828,8 @@ private:
    // Nested tables are not allowed.
    MetaTable( MetaTable* );
 
-   virtual void PerformTypeAPIDefinitions() const;
-   virtual uint32 APIParType() const;
+   void PerformTypeAPIDefinitions() const override;
+   uint32 APIParType() const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -1875,14 +1877,14 @@ public:
 
    /*!
     */
-   virtual bool IsBlock() const
+   bool IsBlock() const override
    {
       return true;
    }
 
    /*!
     */
-   virtual IsoString Id() const = 0;
+   virtual IsoString Id() const override = 0;
 
    /*!
     * %MetaBlock data interpretation modes used for automatic script
@@ -1940,8 +1942,8 @@ public:
 
 private:
 
-   virtual void PerformTypeAPIDefinitions() const;
-   virtual uint32 APIParType() const;
+   void PerformTypeAPIDefinitions() const override;
+   uint32 APIParType() const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -1953,4 +1955,4 @@ private:
 #endif   // __PCL_MetaParameter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaParameter.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/MetaParameter.h - Released 2018-11-01T11:06:36Z

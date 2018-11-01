@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/AstrometricMetadata.h - Released 2017-08-01T14:23:31Z
+// pcl/AstrometricMetadata.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -68,6 +68,13 @@
  * Based on original work contributed by Andrés del Pozo.
  */
 
+#ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
+namespace pi
+{
+   class ImageWindow;
+}
+#endif
+
 namespace pcl
 {
 
@@ -87,7 +94,10 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+#ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 class PCL_CLASS ImageWindow;
+#endif
+
 class PCL_CLASS XISFReader;
 class PCL_CLASS XISFWriter;
 
@@ -126,22 +136,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    AstrometricMetadata( AstrometricMetadata&& ) = default;
-#else
-   AstrometricMetadata( AstrometricMetadata&& x ) :
-      m_projection( x.m_projection.Release() ),
-      m_transformWI( x.m_transformWI.Release() ),
-      m_width( x.m_width ),
-      m_height( x.m_height ),
-      m_xpixsz( x.m_xpixsz ),
-      m_dateobs( x.m_dateobs ),
-      m_resolution( x.m_resolution ),
-      m_focal( x.m_focal ),
-      m_useFocal( x.m_useFocal )
-   {
-   }
-#endif
 
    /*!
     * Constructor from minimal data.
@@ -162,23 +157,18 @@ public:
     * objects will be transferred to this object, which will destroy and
     * deallocate them when appropriate.
     */
-   AstrometricMetadata( ProjectionBase* projection, WorldTransformation* worldTransformation, int width, int height ) :
-      m_projection( projection ),
-      m_transformWI( worldTransformation ),
-      m_width( width ),
-      m_height( height )
-   {
-      LinearTransformation linearTransIW = m_transformWI->ApproximateLinearTransform();
-      double resx = Sqrt( linearTransIW.A00() * linearTransIW.A00() + linearTransIW.A01() * linearTransIW.A01() );
-      double resy = Sqrt( linearTransIW.A10() * linearTransIW.A10() + linearTransIW.A11() * linearTransIW.A11() );
-      m_resolution = (resx + resy)/2;
-   }
+   AstrometricMetadata( ProjectionBase* projection, WorldTransformation* worldTransformation, int width, int height );
 
+#ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
+   // Implemented in /core/Components/ImageWindow.cpp
+   AstrometricMetadata( const pi::ImageWindow* );
+#else
    /*!
     * Constructs an %AstrometricMetadata object from the existing keywords and
     * properties of an image \a window.
     */
    AstrometricMetadata( const ImageWindow& window );
+#endif
 
    /*!
     * Constructs an %AstrometricMetadata object from the existing keywords and
@@ -213,19 +203,7 @@ public:
    /*!
     * Move constructor. Returns a reference to this object.
     */
-   AstrometricMetadata& operator =( AstrometricMetadata&& x )
-   {
-      m_projection  = x.m_projection.Release();
-      m_transformWI = x.m_transformWI.Release();
-      m_width       = x.m_width;
-      m_height      = x.m_height;
-      m_xpixsz      = x.m_xpixsz;
-      m_dateobs     = x.m_dateobs;
-      m_resolution  = x.m_resolution;
-      m_focal       = x.m_focal;
-      m_useFocal    = x.m_useFocal;
-      return *this;
-   }
+   AstrometricMetadata& operator =( AstrometricMetadata&& ) = default;
 
    /*!
     * Returns true iff this object is valid. A valid %AstrometricMetadata
@@ -237,20 +215,57 @@ public:
    }
 
    /*!
-    * Checks that this metadata is valid and can perform coherent coordinate
-    * transformations.
+    * Checks that this astrometric solution is valid and can perform coherent
+    * coordinate transformations, and returns the transformation errors
+    * observed at the center of the image.
+    *
+    * \param[out] ex    Error on the X axis in pixels.
+    *
+    * \param[out] ey    Error on the Y axis in pixels.
+    *
+    * This routine performs two successive coordinate transformations, from
+    * image to celestial and from celestial to image coordinates, computed for
+    * the geometric center of the image. The reported values in the specified
+    * \a ex and \a ey variables are the differences between the initial and
+    * final image coordinates in pixels.
+    *
+    * This function throws an Error exception if the solution has not been
+    * initialized, or if it cannot perform valid coordinate transformations.
     */
-   void Validate() const;
+   void Verify( double& ex, double& ey ) const;
+
+   /*!
+    * Checks that this astrometric solution is valid and can perform coherent
+    * coordinate transformations.
+    *
+    * \param tolerance     Maximum difference in pixels allowed for validation.
+    *                      The default value is 0.01 pixels.
+    *
+    * This routine performs two successive coordinate transformations, from
+    * image to celestial and from celestial to image coordinates, computed for
+    * the geometric center of the image. If the difference between the initial
+    * and final image coordinates is larger than the specified tolerance in
+    * pixels, for one or both axes, an Error exception is thrown.
+    *
+    * This function also throws an Error exception if the solution has not been
+    * initialized, or if it cannot perform valid coordinate transformations.
+    */
+   void Validate( double tolerance = 0.01 ) const;
 
    /*!
     * Returns true if this object uses a world transformation based on 2-D
-    * surface splines, false if a WCS linear transformation is being used.
+    * surface splines (or <em>thin plates</em>), false if a WCS linear
+    * transformation is being used.
     */
    bool HasSplineWorldTransformation() const
    {
       return dynamic_cast<const SplineWorldTransformation*>( m_transformWI.Pointer() ) != nullptr;
    }
 
+#ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
+   // Implemented in /core/Components/ImageWindow.cpp
+   void Write( pi::ImageWindow* window, bool notify = true ) const;
+#else
    /*!
     * Updates the keywords and properties of an image \a window to store the
     * astrometric metadata represented by this object.
@@ -260,6 +275,7 @@ public:
     * will throw an Error exception.
     */
    void Write( ImageWindow& window, bool notify = true ) const;
+#endif
 
    /*!
     * Updates the keywords and properties of the current image in an XISF
@@ -267,8 +283,8 @@ public:
     *
     * The caller must ensure that the pixel dimensions of the current image in
     * the target %XISF \a writer, that is, the width and height of the image
-    * being generated, are coherent with this astrometric solution. This
-    * condition cannot be verified by this member function.
+    * being generated, are coherent with this astrometric solution. Currently
+    * this condition cannot be verified by this member function.
     */
    void Write( XISFWriter& writer ) const;
 
@@ -291,8 +307,8 @@ public:
    }
 
    /*!
-    * Returns the projection system of this astrometric solution. Returns
-    * \c nullptr if this object is not valid.
+    * Returns a pointer to the projection system of this astrometric solution.
+    * Returns \c nullptr if this object is not valid.
     */
    const ProjectionBase* Projection() const
    {
@@ -300,8 +316,8 @@ public:
    }
 
    /*!
-    * Returns the world transformation of this astrometric solution. Returns
-    * \c nullptr if this object is not valid.
+    * Returns a pointer to the world coordinate transformation of this
+    * astrometric solution. Returns \c nullptr if this object is not valid.
     */
    const WorldTransformation* WorldTransform() const
    {
@@ -309,7 +325,8 @@ public:
    }
 
    /*!
-    *
+    * Returns the image resolution in seconds of arc per pixel, calculated from
+    * the specified \a focal distance in millimeters.
     */
    double ResolutionFromFocal( double focal ) const
    {
@@ -317,7 +334,8 @@ public:
    }
 
    /*!
-    *
+    * Returns the focal distance in millimeters, calculated from the specified
+    * image \a resolution expressed in seconds of arc per pixel.
     */
    double FocalFromResolution( double resolution ) const
    {
@@ -325,7 +343,14 @@ public:
    }
 
    /*!
+    * Returns the angle of rotation of the Y axis of the image with respect to
+    * the north direction, as represented on a flat projection of the celestial
+    * sphere. A rotation angle of zero aligns north along the positive Y axis.
+    * A positive rotation angle rotates the Y axis from north to east.
     *
+    * The returned value is the rotation angle of the projection in degrees.
+    * The \a flipped variable will be true iff the projection is mirrored on
+    * the east-west direction.
     */
    double Rotation( bool& flipped ) const;
 
@@ -341,7 +366,7 @@ public:
    }
 
    /*!
-    * Returns the Julian day number of the observation.
+    * Returns the Julian date of the observation.
     */
    Optional<double> DateObs() const
    {
@@ -349,7 +374,7 @@ public:
    }
 
    /*!
-    * Sets the julian date of the observation
+    * Sets the Julian date of the observation.
     */
    void SetDateObs( double dateObsJD )
    {
@@ -357,7 +382,7 @@ public:
    }
 
    /*!
-    *
+    * Returns the physical pixel size in micrometers, if available.
     */
    Optional<double> PixelSize() const
    {
@@ -365,7 +390,8 @@ public:
    }
 
    /*!
-    *
+    * Redefines the physical pixel size in micrometers. Recalculates the focal
+    * distance as a function of the pixel size.
     */
    void SetPixelSize( double pixelSize )
    {
@@ -375,22 +401,43 @@ public:
    }
 
    /*!
-    * Transforms from image coordinates to celestial coordinates
+    * Transformation from image coordinates to celestial coordinates.
+    *
+    * \param pRD  Reference to a point where the output equatorial spherical
+    *             coordinates will be stored, expressed in degrees. \a pRD.x
+    *             will be the right ascension and \a pRD.y the declination.
+    *
+    * \param pI   Input image coordinates in pixels. The specified location can
+    *             lie outside of the image bounds defined by
+    *             [0,0]-(Width(),Height()).
+    *
+    * Returns true iff the specified point \a pI can be projected on the
+    * celestial sphere using this astrometric solution.
     */
    bool ImageToCelestial( DPoint& pRD, const DPoint& pI ) const
    {
       if ( !IsValid() )
-         throw Error( "Invalid call to AstrometricMetadata::ImageToCelestial(): No astrometric solution" );
+         throw Error( "Invalid call to AstrometricMetadata::ImageToCelestial(): No astrometric solution." );
       return m_projection->Inverse( pRD, m_transformWI->Inverse( pI ) );
    }
 
    /*!
-    * Transforms from celestial coordinates to image coordinates.
+    * Transformation from celestial coordinates to image coordinates.
+    *
+    * \param pI   Reference to a point where the output image coordinates will
+    *             be stored.
+    *
+    * \param pRD  Input equatorial spherical coordinates expressed in degrees.
+    *             \a pRD.x is the right ascension and \a pRD.y is declination.
+    *
+    * Returns true iff the specified celestial coordinates can be reprojected
+    * on the image coordinate system. Note that the output image coordinates
+    * can lie outside of the image bounds defined by [0,0]-(Width(),Height()).
     */
    bool CelestialToImage( DPoint& pI, const DPoint& pRD ) const
    {
       if ( !IsValid() )
-         throw Error( "Invalid call to AstrometricMetadata::CelestialToImage(): No astrometric solution" );
+         throw Error( "Invalid call to AstrometricMetadata::CelestialToImage(): No astrometric solution." );
       DPoint pW;
       if ( m_projection->Direct( pW, pRD ) )
       {
@@ -406,6 +453,60 @@ public:
     */
    String Summary() const;
 
+   /*!
+    * Regenerates the astrometric solution from standardized metadata.
+    *
+    * \param keywords         A list of FITS header keywords, which should
+    *                         contain at least a minimal set of standard WCS
+    *                         keywords to define a linear world transformation
+    *                         from celestial to image coordinates.
+    *
+    * \param controlPoints    If not empty, this array must contain a list of
+    *                         spline control points and generation parameters
+    *                         serialized in raw binary format. See the
+    *                         SplineWorldTransformation class for more
+    *                         information.
+    *
+    * \param width            Width in pixels of the image with which this
+    *                         astrometric solution is associated.
+    *
+    * \param height           Height in pixels of the image with which this
+    *                         astrometric solution is associated.
+    *
+    * If the specified \a controlPoints array contains a valid serialization of
+    * spline control points, the astrometric solution will use a high-precision
+    * world transformation based on two-dimensional surface splines, also knwon
+    * as <em>thin plates</em>, which is capable of modeling local image
+    * distortions that are intractable with WCS linear transformations.
+    *
+    * If this object contains valid metadata before calling this function, it
+    * will be disposed as appropriate, and a completely new astrometric
+    * solution will be constructed.
+    *
+    * This member function can throw exceptions (of the Error class) if either
+    * the specified \a controlPoints array is not empty and does not contain a
+    * valid raw serialization of a spline-based transformation, or if the
+    * generated coordinate transformations are not invalid (in the numerical or
+    * geometric sense).
+    */
+   void Build( const FITSKeywordArray& keywords, const ByteArray& controlPoints, int width, int height );
+
+   /*!
+    * Updates the specified \a keywords array with basic astrometric FITS
+    * header keywords: FOCALLEN, XPIXSZ, YPIXSZ, and the nonstandard but
+    * customary keywords OBJCTRA and OBJCTDEC.
+    */
+   void UpdateBasicKeywords( FITSKeywordArray& keywords ) const;
+
+   /*!
+    * Updates the specified \a keywords array with the set of standard WCS FITS
+    * header keywords: EQUINOX, CTYPE1, CTYPE2, CRPIX1, CRPIX2, CRVAL1, CRVAL2,
+    * PV1_1, PV1_2, LONPOLE, LATPOLE, CD1_1, CD1_2, CD2_1, CD2_2, CDELT1,
+    * CDELT2, CROTA1, CROTA2 and, if appropriate, a custom REFSPLINE keyword to
+    * signal the availability of a spline-based astrometric solution.
+    */
+   void UpdateWCSKeywords( FITSKeywordArray& keywords ) const;
+
 private:
 
    AutoPointer<ProjectionBase>      m_projection;
@@ -414,13 +515,10 @@ private:
    int                              m_height = 0;
    Optional<double>                 m_xpixsz;
    Optional<double>                 m_dateobs;
-   double                           m_resolution = 0;   // deg/px
-   Optional<double>                 m_focal;            // mm
+   double                           m_resolution = 0; // deg/px
+   Optional<double>                 m_focal;          // mm
    bool                             m_useFocal = false;
 
-   void Build( const FITSKeywordArray&, const ByteArray&, int, int );
-   void UpdateBasicKeywords( FITSKeywordArray& ) const;
-   void UpdateWCSKeywords( FITSKeywordArray& ) const;
    WCSKeywords GetWCSvalues() const;
 };
 
@@ -429,4 +527,4 @@ private:
 #endif // __AstrometricMetadata_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AstrometricMetadata.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/AstrometricMetadata.h - Released 2018-11-01T11:06:36Z

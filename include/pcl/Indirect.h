@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Indirect.h - Released 2017-08-01T14:23:31Z
+// pcl/Indirect.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -81,31 +81,32 @@ class PCL_CLASS IndirectUnaryFunction
 public:
 
    /*!
-    * Constructs an %IndirectUnaryFunction to wrap a unary function \a f.
+    * Constructs an %IndirectUnaryFunction to wrap a unary m_function \a f.
     */
-   IndirectUnaryFunction( UF f ) : function( f )
+   IndirectUnaryFunction( UF f ) : m_function( f )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   IndirectUnaryFunction( IndirectUnaryFunction<TPtr, UF>& x ) : function( x.function )
-   {
-   }
+   IndirectUnaryFunction( IndirectUnaryFunction<TPtr, UF>& ) = default;
 
    /*!
     * Function call operator. Applies the wrapped unary function to \a *ptr.
+    *
+    * If \a ptr is nullptr, the function is not invoked and calling this member
+    * function has no effect.
     */
    void operator()( TPtr ptr ) const
    {
       if ( ptr != nullptr )
-         function( *ptr );
+         m_function( *ptr );
    }
 
 private:
 
-   UF function;
+   UF m_function;
 };
 
 // ----------------------------------------------------------------------------
@@ -133,30 +134,32 @@ public:
    /*!
     * Constructs an %IndirectBinaryFunction to wrap a binary function \a f.
     */
-   IndirectBinaryFunction( BF f ) : function( f )
+   IndirectBinaryFunction( BF f ) : m_function( f )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   IndirectBinaryFunction( const IndirectBinaryFunction<T1Ptr, T2Ptr, BF>& x ) : function( x.function )
-   {
-   }
+   IndirectBinaryFunction( const IndirectBinaryFunction<T1Ptr, T2Ptr, BF>& ) = default;
 
    /*!
     * Function call operator. Applies the wrapped binary function to \a *ptr1
     * and \a *ptr2.
+    *
+    * If either \a ptr1 or \a ptr2 is nullptr, the function is not invoked and
+    * calling this member function has no effect.
     */
    void operator()( T1Ptr ptr1, T2Ptr ptr2 ) const
    {
-      if ( ptr1 != nullptr && ptr2 != nullptr )
-         function( *ptr1, *ptr2 );
+      if ( ptr1 != nullptr )
+         if ( ptr2 != nullptr )
+            m_function( *ptr1, *ptr2 );
    }
 
 private:
 
-   BF function;
+   BF m_function;
 };
 
 // ----------------------------------------------------------------------------
@@ -183,29 +186,29 @@ public:
    /*!
     * Constructs an %IndirectUnaryFunction to wrap a unary predicate \a p.
     */
-   IndirectUnaryPredicate( UP p ) : predicate( p )
+   IndirectUnaryPredicate( UP p ) : m_predicate( p )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   IndirectUnaryPredicate( const IndirectUnaryPredicate<TPtr, UP>& x ) : predicate( x.predicate )
-   {
-   }
+   IndirectUnaryPredicate( const IndirectUnaryPredicate<TPtr, UP>& ) = default;
 
    /*!
     * Function call operator. Applies the wrapped unary predicate to \a *ptr
     * and returns its resulting value.
+    *
+    * If \a ptr is nullptr, the predicate is not invoked and false is returned.
     */
    bool operator()( TPtr ptr ) const
    {
-      return ptr != nullptr && predicate( *ptr );
+      return ptr != nullptr && m_predicate( *ptr );
    }
 
 private:
 
-   UP predicate;
+   UP m_predicate;
 };
 
 // ----------------------------------------------------------------------------
@@ -233,29 +236,30 @@ public:
    /*!
     * Constructs an %IndirectBinaryPredicate to wrap a binary predicate \a p.
     */
-   IndirectBinaryPredicate( BP p ) : predicate( p )
+   IndirectBinaryPredicate( BP p ) : m_predicate( p )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   IndirectBinaryPredicate( const IndirectBinaryPredicate<T1Ptr, T2Ptr, BP>& x ) : predicate( x.predicate )
-   {
-   }
+   IndirectBinaryPredicate( const IndirectBinaryPredicate<T1Ptr, T2Ptr, BP>& ) = default;
 
    /*!
     * Function call operator. Applies the wrapped binary predicate to \a *ptr1
     * and \a *ptr2, and returns its resulting value.
+    *
+    * If either of \a ptr1 or \a ptr2 is nullptr, the predicate is not invoked
+    * and false is returned.
     */
    bool operator()( T1Ptr ptr1, T2Ptr ptr2 ) const
    {
-      return ptr1 != nullptr && ptr2 != nullptr && predicate( *ptr1, *ptr2 );
+      return ptr1 != nullptr && ptr2 != nullptr && m_predicate( *ptr1, *ptr2 );
    }
 
 private:
 
-   BP predicate;
+   BP m_predicate;
 };
 
 // ----------------------------------------------------------------------------
@@ -268,6 +272,12 @@ private:
 template <class TPtr>
 struct PCL_CLASS IndirectEqual
 {
+   /*!
+    * Function call operator. Returns true iff \a *ptr1 == \a *ptr2.
+    *
+    * If either of \a ptr1 or \a ptr2 is nullptr, no operation is performed on
+    * any pointed object and the return value is \a ptr1 == \a ptr2.
+    */
    bool operator ()( TPtr ptr1, TPtr ptr2 ) const
    {
       return (ptr1 != nullptr && ptr2 != nullptr) ? *ptr1 == *ptr2 : ptr1 == ptr2;
@@ -284,8 +294,17 @@ struct PCL_CLASS IndirectEqual
 template <class TPtr>
 struct PCL_CLASS IndirectLess
 {
+   /*!
+    * Function call operator. Returns true iff \a *ptr1 < \a *ptr2.
+    *
+    * If either of \a ptr1 or \a ptr2 is nullptr, no operation is performed on
+    * any pointed object and the return value is \a ptr2 < \a ptr1. This
+    * ensures that when sorting lists of pointers indirectly, all null pointers
+    * will be packed at the bottom of the sorted list.
+    */
    bool operator ()( TPtr ptr1, TPtr ptr2 ) const
    {
+      // When sorting a list, make sure all null pointers are packed at the bottom.
       return ptr1 != nullptr && (ptr2 == nullptr || *ptr1 < *ptr2);
    }
 };
@@ -297,4 +316,4 @@ struct PCL_CLASS IndirectLess
 #endif  // __PCL_Indirect_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Indirect.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Indirect.h - Released 2018-11-01T11:06:36Z

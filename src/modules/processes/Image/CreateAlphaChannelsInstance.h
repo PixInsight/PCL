@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard Image Process Module Version 01.02.09.0410
 // ----------------------------------------------------------------------------
-// CreateAlphaChannelsInstance.h - Released 2017-08-01T14:26:58Z
+// CreateAlphaChannelsInstance.h - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -61,8 +61,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// CreateAlphaChannelsInstance
-// ----------------------------------------------------------------------------
 
 class CreateAlphaChannelsInstance : public ProcessImplementation
 {
@@ -72,17 +70,13 @@ public:
    CreateAlphaChannelsInstance( const CreateAlphaChannelsInstance& );
 
    virtual void Assign( const ProcessImplementation& );
-
    virtual bool IsMaskable( const View&, const ImageWindow& ) const;
-
+   virtual UndoFlags UndoMode( const View& ) const;
    virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
    virtual bool ExecuteOn( View& );
-
    virtual void* LockParameter( const MetaParameter*, size_type tableRow );
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
-
-   // -------------------------------------------------------------------------
 
 private:
 
@@ -92,7 +86,7 @@ private:
    pcl_bool closeSourceImage;
    double   transparency;
    pcl_bool replace;
-   int32    count; // only accesible through command-line interface
+   int32    count; // only accesible through the command-line interface
 
    friend class CreateAlphaChannelsProcess;
    friend class CreateAlphaChannelsInterface;
@@ -105,4 +99,4 @@ private:
 #endif   // __CreateAlphaChannelsInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF CreateAlphaChannelsInstance.h - Released 2017-08-01T14:26:58Z
+// EOF CreateAlphaChannelsInstance.h - Released 2018-11-01T11:07:21Z

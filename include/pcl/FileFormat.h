@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/FileFormat.h - Released 2017-08-01T14:23:31Z
+// pcl/FileFormat.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -141,10 +141,10 @@ public:
     * try
     * {
     *    // Find a format able to read XISF files
-    *    FileFormat fitsFormat( ".xisf", true );
+    *    FileFormat xisfFormat( ".xisf", true );
     *
     *    // Create a format instance
-    *    FileFormatInstance myXISFFile( fitsFormat );
+    *    FileFormatInstance myXISFFile( xisfFormat );
     *
     *    // Use the instance to open an existing file
     *    myXISFFile.Open( "/path/to/test.xisf" );
@@ -183,171 +183,171 @@ public:
 
    /*!
     */
-   virtual IsoString Name() const;
+   IsoString Name() const override;
 
    /*!
     */
-   virtual StringList FileExtensions() const;
+   StringList FileExtensions() const override;
 
    /*!
     */
-   virtual IsoStringList MimeTypes() const;
+   IsoStringList MimeTypes() const override;
 
    /*!
     */
-   virtual uint32 Version() const;
+   uint32 Version() const override;
 
    /*!
     */
-   virtual String Description() const;
+   String Description() const override;
 
    /*!
     */
-   virtual String Implementation() const;
+   String Implementation() const override;
 
    /*!
     */
-   virtual String Status() const;
+   String Status() const override;
 
    /*!
     */
-   virtual Bitmap Icon() const;
+   Bitmap Icon() const override;
 
    /*!
     */
-   virtual Bitmap SmallIcon() const;
+   Bitmap SmallIcon() const override;
 
    /*!
     */
-   virtual bool CanRead() const;
+   bool CanRead() const override;
 
    /*!
     */
-   virtual bool CanWrite() const;
+   bool CanWrite() const override;
 
    /*!
     */
-   virtual bool CanReadIncrementally() const;
+   bool CanReadIncrementally() const override;
 
    /*!
     */
-   virtual bool CanWriteIncrementally() const;
+   bool CanWriteIncrementally() const override;
 
    /*!
     */
-   virtual bool CanStore8Bit() const;
+   bool CanStore8Bit() const override;
 
    /*!
     */
-   virtual bool CanStore16Bit() const;
+   bool CanStore16Bit() const override;
 
    /*!
     */
-   virtual bool CanStore32Bit() const;
+   bool CanStore32Bit() const override;
 
    /*!
     */
-   virtual bool CanStore64Bit() const;
+   bool CanStore64Bit() const override;
 
    /*!
     */
-   virtual bool CanStoreFloat() const;
+   bool CanStoreFloat() const override;
 
    /*!
     */
-   virtual bool CanStoreDouble() const;
+   bool CanStoreDouble() const override;
 
    /*!
     */
-   virtual bool CanStoreComplex() const;
+   bool CanStoreComplex() const override;
 
    /*!
     */
-   virtual bool CanStoreDComplex() const;
+   bool CanStoreDComplex() const override;
 
    /*!
     */
-   virtual bool CanStoreGrayscale() const;
+   bool CanStoreGrayscale() const override;
 
    /*!
     */
-   virtual bool CanStoreRGBColor() const;
+   bool CanStoreRGBColor() const override;
 
    /*!
     */
-   virtual bool CanStoreAlphaChannels() const;
+   bool CanStoreAlphaChannels() const override;
 
    /*!
     */
-   virtual bool CanStoreResolution() const;
+   bool CanStoreResolution() const override;
 
    /*!
     */
-   virtual bool CanStoreKeywords() const;
+   bool CanStoreKeywords() const override;
 
    /*!
     */
-   virtual bool CanStoreICCProfiles() const;
+   bool CanStoreICCProfiles() const override;
 
    /*!
     */
-   virtual bool CanStoreThumbnails() const;
+   bool CanStoreThumbnails() const override;
 
    /*!
     */
-   virtual bool CanStoreProperties() const;
+   bool CanStoreProperties() const override;
 
    /*!
     */
-   virtual bool CanStoreImageProperties() const;
+   bool CanStoreImageProperties() const override;
 
    /*!
     */
-   virtual bool CanStoreRGBWS() const;
+   bool CanStoreRGBWS() const override;
 
    /*!
     */
-   virtual bool CanStoreDisplayFunctions() const;
+   bool CanStoreDisplayFunctions() const override;
 
    /*!
     */
-   virtual bool CanStoreColorFilterArrays() const;
+   bool CanStoreColorFilterArrays() const override;
 
    /*!
     */
-   virtual bool SupportsCompression() const;
+   bool SupportsCompression() const override;
 
    /*!
     */
-   virtual bool SupportsMultipleImages() const;
+   bool SupportsMultipleImages() const override;
 
    /*!
     */
-   virtual bool SupportsViewProperties() const;
+   bool SupportsViewProperties() const override;
 
    /*!
     */
-   virtual bool CanEditPreferences() const;
+   bool CanEditPreferences() const override;
 
    /*!
     */
-   virtual bool UsesFormatSpecificData() const;
+   bool UsesFormatSpecificData() const override;
 
    /*!
     */
-   virtual bool IsDeprecated() const;
+   bool IsDeprecated() const override;
 
    /*!
     */
-   virtual bool ValidateFormatSpecificData( const void* data ) const;
+   bool ValidateFormatSpecificData( const void* data ) const override;
 
    /*!
     */
-   virtual void DisposeFormatSpecificData( void* data ) const;
+   void DisposeFormatSpecificData( void* data ) const override;
 
    /*!
     */
-   virtual bool EditPreferences() const;
+   bool EditPreferences() const override;
 
    /*!
     * Returns a list with all installed file formats in the PixInsight core
@@ -420,6 +420,8 @@ public:
     *
     * Currently this function looks for files with the .xnml suffix (XML local
     * normalization data format, XNML).
+    *
+    * \sa LocalNormalizationData
     */
    static StringList LocalNormalizationFiles( const String& dirPath, bool recursive = false, bool followLinks = true );
 
@@ -441,8 +443,33 @@ public:
     *
     * Currently this function looks for files with the .drz (compatibility text
     * drizzle format) and .xdrz (XML drizzle data format, XDRZ) suffixes.
+    *
+    * \sa DrizzleData
     */
    static StringList DrizzleFiles( const String& dirPath, bool recursive = false, bool followLinks = true );
+
+   /*!
+    * Returns a list with the full file paths of all ephemeris data files in a
+    * given directory of the local filesystem.
+    *
+    * \param dirPath    Path to an existing directory in the local filesystem,
+    *                   where ephemeris data files will be looked for.
+    *
+    * \param recursive  True to search for files recursively throughout the
+    *                   entire subtree rooted at \a dirPath. False to restrict
+    *                   the file search operation to existing files on
+    *                   \a dirPath. This parameter is false by default.
+    *
+    * \param followLinks   True to follow symbolic links to directories and
+    *                   files, on platforms supporting symbolic links. This is
+    *                   true by default. This parameter is ignored on Windows.
+    *
+    * Currently this function looks for files with the .xeph suffix (Extensible
+    * Ephemeris Data format, XEPH).
+    *
+    * \sa EphemerisFile
+    */
+   static StringList EphemerisFiles( const String& dirPath, bool recursive = false, bool followLinks = true );
 
 private:
 
@@ -465,4 +492,4 @@ private:
 #endif   // __PCL_FileFormat_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormat.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/FileFormat.h - Released 2018-11-01T11:06:36Z

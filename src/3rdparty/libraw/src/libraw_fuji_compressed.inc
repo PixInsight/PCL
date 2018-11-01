@@ -83,7 +83,7 @@ static unsigned sgetn(int n, uchar *s)
 void LibRaw::init_fuji_compr(struct fuji_compressed_params *info)
 {
   int cur_val, i;
-  char *qt;
+  int8_t *qt;
 
   if ((libraw_internal_data.unpacker_data.fuji_block_width % 3 &&
        libraw_internal_data.unpacker_data.fuji_raw_type == 16) ||
@@ -91,7 +91,7 @@ void LibRaw::init_fuji_compr(struct fuji_compressed_params *info)
        libraw_internal_data.unpacker_data.fuji_raw_type == 0))
     derror();
 
-  info->q_table = (char *)malloc(32768);
+  info->q_table = (int8_t *)malloc(32768);
   merror(info->q_table, "init_fuji_compr()");
 
   if (libraw_internal_data.unpacker_data.fuji_raw_type == 16)
@@ -903,7 +903,12 @@ void LibRaw::fuji_decode_strip(const struct fuji_compressed_params *info_common,
 
   cur_block_width = libraw_internal_data.unpacker_data.fuji_block_width;
   if (cur_block + 1 == libraw_internal_data.unpacker_data.fuji_total_blocks)
+  {
+    cur_block_width = imgdata.sizes.raw_width - (libraw_internal_data.unpacker_data.fuji_block_width * cur_block);
+    /* Old code, may get incorrect results on GFX50, but luckily large optical black
     cur_block_width = imgdata.sizes.raw_width % libraw_internal_data.unpacker_data.fuji_block_width;
+    */
+  }
 
   struct i_pair
   {
@@ -1022,8 +1027,8 @@ void LibRaw::parse_fuji_compressed_header()
 
   // general validation
   if (signature != 0x4953 || version != 1 || h_raw_height > 0x3000 || h_raw_height < 6 || h_raw_height % 6 ||
-      h_raw_width > 0x3000 || h_raw_width < 0x300 || h_raw_width % 24 || h_raw_rounded_width > 0x3000 ||
-      h_raw_rounded_width < h_block_size || h_raw_rounded_width % h_block_size ||
+      h_block_size < 1 || h_raw_width > 0x3000 || h_raw_width < 0x300 || h_raw_width % 24 ||
+      h_raw_rounded_width > 0x3000 || h_raw_rounded_width < h_block_size || h_raw_rounded_width % h_block_size ||
       h_raw_rounded_width - h_raw_width >= h_block_size || h_block_size != 0x300 || h_blocks_in_row > 0x10 ||
       h_blocks_in_row == 0 || h_blocks_in_row != h_raw_rounded_width / h_block_size || h_total_lines > 0x800 ||
       h_total_lines == 0 || h_total_lines != h_raw_height / 6 || (h_raw_bits != 12 && h_raw_bits != 14) ||

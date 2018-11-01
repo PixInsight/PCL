@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Sandbox Process Module Version 01.00.02.0261
+// Standard Sandbox Process Module Version 01.00.02.0269
 // ----------------------------------------------------------------------------
-// SandboxInstance.cpp - Released 2017-08-01T14:26:58Z
+// SandboxInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Sandbox PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -73,11 +73,15 @@ SandboxInstance::SandboxInstance( const MetaProcess* m ) :
 {
 }
 
+// ----------------------------------------------------------------------------
+
 SandboxInstance::SandboxInstance( const SandboxInstance& x ) :
    ProcessImplementation( x )
 {
    Assign( x );
 }
+
+// ----------------------------------------------------------------------------
 
 void SandboxInstance::Assign( const ProcessImplementation& p )
 {
@@ -92,6 +96,22 @@ void SandboxInstance::Assign( const ProcessImplementation& p )
    }
 }
 
+// ----------------------------------------------------------------------------
+
+UndoFlags SandboxInstance::UndoMode( const View& ) const
+{
+   /*
+    * The following flag assumes that your process modifies pixel sample values
+    * *exclusively*. If you are going to change anything else, such as image
+    * geometry, keywords, etc., or maybe nothing at all (in case you are
+    * implementing an image observer process), see the UpdateFlag enumeration
+    * in pcl/ImageWindow.h for complete information.
+    */
+   return UndoFlag::PixelData;
+}
+
+// ----------------------------------------------------------------------------
+
 bool SandboxInstance::CanExecuteOn( const View& view, String& whyNot ) const
 {
    if ( view.Image().IsComplexSample() )
@@ -101,6 +121,9 @@ bool SandboxInstance::CanExecuteOn( const View& view, String& whyNot ) const
    }
    return true;
 }
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 class SandboxEngine
 {
@@ -115,6 +138,8 @@ public:
       Console().WriteLn( "<end><cbr>Ah, did I mention that I do just <em>nothing</em> at all? ;D" );
    }
 };
+
+// ----------------------------------------------------------------------------
 
 bool SandboxInstance::ExecuteOn( View& view )
 {
@@ -146,6 +171,8 @@ bool SandboxInstance::ExecuteOn( View& view )
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 void* SandboxInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
 {
    if ( p == TheSandboxParameterOneParameter )
@@ -162,6 +189,8 @@ void* SandboxInstance::LockParameter( const MetaParameter* p, size_type /*tableR
    return nullptr;
 }
 
+// ----------------------------------------------------------------------------
+
 bool SandboxInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {
    if ( p == TheSandboxParameterFiveParameter )
@@ -176,6 +205,8 @@ bool SandboxInstance::AllocateParameter( size_type sizeOrLength, const MetaParam
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 size_type SandboxInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
    if ( p == TheSandboxParameterFiveParameter )
@@ -189,4 +220,4 @@ size_type SandboxInstance::ParameterLength( const MetaParameter* p, size_type ta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SandboxInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF SandboxInstance.cpp - Released 2018-11-01T11:07:21Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// AutoHistogramProcess.cpp - Released 2017-08-01T14:26:58Z
+// AutoHistogramProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -69,11 +69,11 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-AutoHistogramProcess* TheAutoHistogramProcess = 0;
+AutoHistogramProcess* TheAutoHistogramProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
-AutoHistogramProcess::AutoHistogramProcess() : MetaProcess()
+AutoHistogramProcess::AutoHistogramProcess()
 {
    TheAutoHistogramProcess = this;
 
@@ -94,41 +94,57 @@ AutoHistogramProcess::AutoHistogramProcess() : MetaProcess()
    new AHTargetMedianB( this );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString AutoHistogramProcess::Id() const
 {
    return "AutoHistogram";
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString AutoHistogramProcess::Category() const
 {
    return "IntensityTransformations";
 }
 
+// ----------------------------------------------------------------------------
+
 uint32 AutoHistogramProcess::Version() const
 {
    return 0x100;
 }
+
+// ----------------------------------------------------------------------------
 
 const char** AutoHistogramProcess::IconImageXPM() const
 {
    return AutoHistogramIcon_XPM;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessInterface* AutoHistogramProcess::DefaultInterface() const
 {
    return TheAutoHistogramInterface;
 }
+
+// ----------------------------------------------------------------------------
 
 ProcessImplementation* AutoHistogramProcess::Create() const
 {
    return new AutoHistogramInstance( this );
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* AutoHistogramProcess::Clone( const ProcessImplementation& p ) const
 {
    const AutoHistogramInstance* instPtr = dynamic_cast<const AutoHistogramInstance*>( &p );
-   return (instPtr != 0) ? new AutoHistogramInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new AutoHistogramInstance( *instPtr ) : nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool AutoHistogramProcess::CanProcessCommandLines() const
 {
@@ -184,6 +200,8 @@ static void ShowHelp()
 "</raw>" );
 }
 
+// ----------------------------------------------------------------------------
+
 static double ArgumentPercentageValue( const Argument& arg )
 {
    if ( arg.NumericValue() < 0 || arg.NumericValue() > 100 )
@@ -191,12 +209,16 @@ static double ArgumentPercentageValue( const Argument& arg )
    return arg.NumericValue();
 }
 
+// ----------------------------------------------------------------------------
+
 static double ArgumentTargetMedianValue( const Argument& arg )
 {
    if ( arg.NumericValue() < 0 || arg.NumericValue() > 1 )
       throw Error( "Target median value out of range: " + arg.Token() );
    return arg.NumericValue();
 }
+
+// ----------------------------------------------------------------------------
 
 int AutoHistogramProcess::ProcessCommandLine( const StringList& argv ) const
 {
@@ -305,4 +327,4 @@ int AutoHistogramProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AutoHistogramProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF AutoHistogramProcess.cpp - Released 2018-11-01T11:07:21Z

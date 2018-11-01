@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Arguments.cpp - Released 2017-08-01T14:23:38Z
+// pcl/Arguments.cpp - Released 2018-11-01T11:06:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -81,7 +81,7 @@ void Argument::Parse( const char16_type* argv )
    if ( nsep != String::notFound )
    {
       if ( n < nsep+2 )
-         throw ParseError( "Expected argument value", a, int( nsep+1 ) );
+         throw ParseError( "Expected an argument value", a, int( nsep+1 ) );
 
       char16_type c = a[nsep+1];
 
@@ -89,7 +89,7 @@ void Argument::Parse( const char16_type* argv )
       {
          type = numeric_arg;
 
-         char16_type* endptr = 0;
+         char16_type* endptr = nullptr;
 
          errno = 0;
 
@@ -106,11 +106,11 @@ void Argument::Parse( const char16_type* argv )
             endptr = a.Begin() + nsep + 1 + (wendptr - w.Begin());
 #endif
          if ( errno == ERANGE )
-            throw ParseError( "Numeric value out of representable range", a );
+            throw ParseError( "Numeric value out of the representable range", a );
 
-         if ( errno != 0 || (endptr != 0 && *endptr != 0) )
+         if ( errno != 0 || (endptr != nullptr && *endptr != 0) )
             throw ParseError( "Invalid immediate numeric expression", a,
-                              (endptr != 0 && *endptr != 0) ? endptr - a.c_str() : -1 );
+                              (endptr != nullptr && *endptr != 0) ? endptr - a.c_str() : -1 );
       }
       else
       {
@@ -423,4 +423,4 @@ String ReplaceEnvironmentVariables( const String& s0 )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Arguments.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/Arguments.cpp - Released 2018-11-01T11:06:52Z

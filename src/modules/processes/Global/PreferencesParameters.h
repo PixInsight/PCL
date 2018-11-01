@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0378
+// Standard Global Process Module Version 01.02.07.0386
 // ----------------------------------------------------------------------------
-// PreferencesParameters.h - Released 2017-08-01T14:26:58Z
+// PreferencesParameters.h - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -221,28 +221,35 @@ PCL_BEGIN_LOCAL
 
 // ----------------------------------------------------------------------------
 
-DECLARE_STRING_METAPARAMETER  ( Application, styleSheetFile,                   "core-standard.qss" )
-DECLARE_STRING_METAPARAMETER  ( Application, resourceFile01,                   "core-icons.rcc" )
-DECLARE_STRING_METAPARAMETER  ( Application, resourceFile02,                   "core-compat-1.7.rcc" )
-DECLARE_STRING_METAPARAMETER  ( Application, resourceFile03,                   String() )
-DECLARE_STRING_METAPARAMETER  ( Application, resourceFile04,                   String() )
-DECLARE_STRING_METAPARAMETER  ( Application, resourceFile05,                   String() )
-DECLARE_STRING_METAPARAMETER  ( Application, resourceFile06,                   String() )
-DECLARE_STRING_METAPARAMETER  ( Application, resourceFile07,                   String() )
-DECLARE_STRING_METAPARAMETER  ( Application, resourceFile08,                   String() )
-DECLARE_STRING_METAPARAMETER  ( Application, resourceFile09,                   String() )
-DECLARE_STRING_METAPARAMETER  ( Application, resourceFile10,                   String() )
-DECLARE_BOOLEAN_METAPARAMETER ( Application, autoUIScaling,                    true )
-DECLARE_DOUBLE_METAPARAMETER  ( Application, uiScalingFactor,                  1.0, 1.0, 4.0 )
-DECLARE_INT32_METAPARAMETER   ( Application, fontResolution,                   100, 1, 1000 )
+DECLARE_STRING_METAPARAMETER  ( Application, styleSheetFile,                      "core-standard.qss" )
+DECLARE_STRING_METAPARAMETER  ( Application, resourceFile01,                      "core-icons.rcc" )
+DECLARE_STRING_METAPARAMETER  ( Application, resourceFile02,                      "core-compat-1.7.rcc" )
+DECLARE_STRING_METAPARAMETER  ( Application, resourceFile03,                      String() )
+DECLARE_STRING_METAPARAMETER  ( Application, resourceFile04,                      String() )
+DECLARE_STRING_METAPARAMETER  ( Application, resourceFile05,                      String() )
+DECLARE_STRING_METAPARAMETER  ( Application, resourceFile06,                      String() )
+DECLARE_STRING_METAPARAMETER  ( Application, resourceFile07,                      String() )
+DECLARE_STRING_METAPARAMETER  ( Application, resourceFile08,                      String() )
+DECLARE_STRING_METAPARAMETER  ( Application, resourceFile09,                      String() )
+DECLARE_STRING_METAPARAMETER  ( Application, resourceFile10,                      String() )
+DECLARE_BOOLEAN_METAPARAMETER ( Application, autoUIScaling,                       true )
+DECLARE_DOUBLE_METAPARAMETER  ( Application, uiScalingFactor,                     1.0, 1.0, 4.0 )
+DECLARE_INT32_METAPARAMETER   ( Application, fontResolution,                      100, 1, 1000 )
 #ifdef __PCL_WINDOWS
-DECLARE_STRING_METAPARAMETER  ( Application, lowResFont,                       "Verdana" )
+DECLARE_STRING_METAPARAMETER  ( Application, lowResFont,                          "Verdana" )
 #else
-DECLARE_STRING_METAPARAMETER  ( Application, lowResFont,                       "DejaVu Sans" )
+DECLARE_STRING_METAPARAMETER  ( Application, lowResFont,                          "DejaVu Sans" )
 #endif
-DECLARE_STRING_METAPARAMETER  ( Application, highResFont,                      "DejaVu Sans" )
-DECLARE_STRING_METAPARAMETER  ( Application, lowResMonoFont,                   "DejaVu Sans Mono" )
-DECLARE_STRING_METAPARAMETER  ( Application, highResMonoFont,                  "DejaVu Sans Mono" )
+DECLARE_STRING_METAPARAMETER  ( Application, highResFont,                         "DejaVu Sans" )
+DECLARE_STRING_METAPARAMETER  ( Application, lowResMonoFont,                      "DejaVu Sans Mono" )
+DECLARE_STRING_METAPARAMETER  ( Application, highResMonoFont,                     "DejaVu Sans Mono" )
+DECLARE_STRING_METAPARAMETER  ( Application, fundamentalEphemeridesFile,          "core-fundamental.xeph" )
+DECLARE_STRING_METAPARAMETER  ( Application, shortTermFundamentalEphemeridesFile, "core-fundamental-s.xeph" )
+DECLARE_STRING_METAPARAMETER  ( Application, nutationModelFile,                   "core-nutation.xeph" )
+DECLARE_STRING_METAPARAMETER  ( Application, shortTermNutationModelFile,          "core-nutation-s.xeph" )
+DECLARE_STRING_METAPARAMETER  ( Application, deltaTDataFile,                      "core-deltat.txt" )
+DECLARE_STRING_METAPARAMETER  ( Application, deltaATDataFile,                     "core-deltaat.txt" )
+DECLARE_STRING_METAPARAMETER  ( Application, cipITRSDataFile,                     "core-cip_itrs.txt" )
 
 // ----------------------------------------------------------------------------
 
@@ -326,6 +333,7 @@ DECLARE_INT32_METAPARAMETER   ( ImageWindow, fastScreenRenditionThreshold,     6
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, highDPIRenditions,                true )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, default24BitScreenLUT,            false )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, createPreviewsFromCoreProperties, true )
+DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, loadAstrometricSolutions,         true )
 DECLARE_TABLE_METAPARAMETER   ( ImageWindow, swapDirectories )
 DECLARE_ROW_STRING_METAPARAMETER( ImageWindow, swapDirectory,                  String() )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, swapCompression,                  false )
@@ -384,4 +392,4 @@ PCL_END_LOCAL
 #endif   // __PreferencesParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesParameters.h - Released 2017-08-01T14:26:58Z
+// EOF PreferencesParameters.h - Released 2018-11-01T11:07:20Z

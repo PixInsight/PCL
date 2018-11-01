@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// CurvesTransformationProcess.cpp - Released 2017-08-01T14:26:58Z
+// CurvesTransformationProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,7 +60,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-CurvesTransformationProcess* TheCurvesTransformationProcess = 0;
+CurvesTransformationProcess* TheCurvesTransformationProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -68,7 +68,7 @@ CurvesTransformationProcess* TheCurvesTransformationProcess = 0;
 
 // ----------------------------------------------------------------------------
 
-CurvesTransformationProcess::CurvesTransformationProcess() : MetaProcess()
+CurvesTransformationProcess::CurvesTransformationProcess()
 {
    TheCurvesTransformationProcess = this;
 
@@ -228,7 +228,7 @@ ProcessImplementation* CurvesTransformationProcess::Create() const
 ProcessImplementation* CurvesTransformationProcess::Clone( const ProcessImplementation& p ) const
 {
    const CurvesTransformationInstance* instPtr = dynamic_cast<const CurvesTransformationInstance*>( &p );
-   return (instPtr != 0) ? new CurvesTransformationInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new CurvesTransformationInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -243,4 +243,4 @@ bool CurvesTransformationProcess::NeedsValidation() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CurvesTransformationProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF CurvesTransformationProcess.cpp - Released 2018-11-01T11:07:21Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/PyramidalWaveletTransform.h - Released 2017-08-01T14:23:31Z
+// pcl/PyramidalWaveletTransform.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -81,9 +81,7 @@ public:
    /*!
     * Constructs a default %WaveletFilter object.
     */
-   WaveletFilter() : Kc ( nullptr ), Kr(), N( 0 ), ioff( 0 ), joff( 0 )
-   {
-   }
+   WaveletFilter() = default;
 
    /*!
     * Destroys a %WaveletFilter object.
@@ -116,11 +114,11 @@ public:
 
 protected:
 
-   const double* Kc;   // Wavelet filter coefficients
-   Vector        Kr;   // Transpose filter coefficients
-   int           N;    // Number of coefficients
-   int           ioff;
-   int           joff;
+   const double* Kc = nullptr; // wavelet filter coefficients
+   Vector        Kr;           // transpose of filter coefficients
+   int           N = 0;        // number of coefficients
+   int           ioff = 0;
+   int           joff = 0;
 
    void Initialize()
    {
@@ -160,7 +158,7 @@ public:
 
    /*!
     */
-   virtual String Name() const
+   String Name() const override
    {
       return "Daubechies-4";
    }
@@ -186,7 +184,7 @@ public:
 
    /*!
     */
-   virtual String Name() const
+   String Name() const override
    {
       return "Daubechies-6";
    }
@@ -212,7 +210,7 @@ public:
 
    /*!
     */
-   virtual String Name() const
+   String Name() const override
    {
       return "Daubechies-8";
    }
@@ -238,7 +236,7 @@ public:
 
    /*!
     */
-   virtual String Name() const
+   String Name() const override
    {
       return "Daubechies-10";
    }
@@ -264,7 +262,7 @@ public:
 
    /*!
     */
-   virtual String Name() const
+   String Name() const override
    {
       return "Daubechies-12";
    }
@@ -290,7 +288,7 @@ public:
 
    /*!
     */
-   virtual String Name() const
+   String Name() const override
    {
       return "Daubechies-20";
    }
@@ -327,19 +325,14 @@ public:
     * used prior to initializing it with a reference to a WaveletFilter, which
     * will be used as the scaling function of the wavelet transform.
     */
-   PyramidalWaveletTransform() :
-      BidirectionalImageTransformation(),
-      m_scalingFunction( nullptr ), m_nonstandard( true ), m_transform()
-   {
-   }
+   PyramidalWaveletTransform() = default;
 
    /*!
     * Constructs a %PyramidalWaveletTransform instance with the specified
     * wavelet filter \a f.
     */
    PyramidalWaveletTransform( const WaveletFilter& f ) :
-      BidirectionalImageTransformation(),
-      m_scalingFunction( &f ), m_nonstandard( true ), m_transform()
+      m_scalingFunction( &f )
    {
       PCL_CHECK( m_scalingFunction != nullptr )
    }
@@ -347,20 +340,12 @@ public:
    /*!
     * Copy constructor.
     */
-   PyramidalWaveletTransform( const PyramidalWaveletTransform& x ) :
-      BidirectionalImageTransformation( x ),
-      m_scalingFunction( x.m_scalingFunction ), m_nonstandard( x.m_nonstandard ), m_transform( x.m_transform )
-   {
-   }
+   PyramidalWaveletTransform( const PyramidalWaveletTransform& ) = default;
 
    /*!
     * Move constructor.
     */
-   PyramidalWaveletTransform( PyramidalWaveletTransform&& x ) :
-      BidirectionalImageTransformation( x ),
-      m_scalingFunction( x.m_scalingFunction ), m_nonstandard( x.m_nonstandard ), m_transform( std::move( x.m_transform ) )
-   {
-   }
+   PyramidalWaveletTransform( PyramidalWaveletTransform&& ) = default;
 
    /*!
     * Destroys this %PyramidalWaveletTransform object. The existing wavelet
@@ -373,26 +358,12 @@ public:
    /*!
     * Copy assignment operator. Returns a reference to this object.
     */
-   PyramidalWaveletTransform& operator =( const PyramidalWaveletTransform& x )
-   {
-      (void)BidirectionalImageTransformation::operator =( x );
-      m_scalingFunction = x.m_scalingFunction;
-      m_nonstandard = x.m_nonstandard;
-      m_transform = x.m_transform;
-      return *this;
-   }
+   PyramidalWaveletTransform& operator =( const PyramidalWaveletTransform& ) = default;
 
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-   PyramidalWaveletTransform& operator =( PyramidalWaveletTransform&& x )
-   {
-      (void)BidirectionalImageTransformation::operator =( x );
-      m_scalingFunction = x.m_scalingFunction;
-      m_nonstandard = x.m_nonstandard;
-      m_transform = std::move( x.m_transform );
-      return *this;
-   }
+   PyramidalWaveletTransform& operator =( PyramidalWaveletTransform&& ) = default;
 
    /*!
     * Returns a reference to the <em>scaling function</em> (or
@@ -501,13 +472,13 @@ protected:
    /*
     * Scaling function, or wavelet filter.
     */
-   const WaveletFilter* m_scalingFunction;
+   const WaveletFilter* m_scalingFunction = nullptr;
 
    /*
     * Flag true if nonstandard transforms are being used.
     * Standard transforms are used otherwise (and by default).
     */
-   bool m_nonstandard : 1;
+   bool m_nonstandard = true;
 
    /*
     * Wavelet transform
@@ -518,22 +489,22 @@ protected:
    void DoTransform( StatusMonitor& );
 
    // Transform (decomposition)
-   virtual void Transform( const pcl::Image& );
-   virtual void Transform( const pcl::DImage& );
-   virtual void Transform( const pcl::ComplexImage& );
-   virtual void Transform( const pcl::DComplexImage& );
-   virtual void Transform( const pcl::UInt8Image& );
-   virtual void Transform( const pcl::UInt16Image& );
-   virtual void Transform( const pcl::UInt32Image& );
+   void Transform( const pcl::Image& ) override;
+   void Transform( const pcl::DImage& ) override;
+   void Transform( const pcl::ComplexImage& ) override;
+   void Transform( const pcl::DComplexImage& ) override;
+   void Transform( const pcl::UInt8Image& ) override;
+   void Transform( const pcl::UInt16Image& ) override;
+   void Transform( const pcl::UInt32Image& ) override;
 
    // Inverse transform (reconstruction)
-   virtual void Apply( pcl::Image& ) const;
-   virtual void Apply( pcl::DImage& ) const;
-   virtual void Apply( pcl::ComplexImage& ) const;
-   virtual void Apply( pcl::DComplexImage& ) const;
-   virtual void Apply( pcl::UInt8Image& ) const;
-   virtual void Apply( pcl::UInt16Image& ) const;
-   virtual void Apply( pcl::UInt32Image& ) const;
+   void Apply( pcl::Image& ) const override;
+   void Apply( pcl::DImage& ) const override;
+   void Apply( pcl::ComplexImage& ) const override;
+   void Apply( pcl::DComplexImage& ) const override;
+   void Apply( pcl::UInt8Image& ) const override;
+   void Apply( pcl::UInt16Image& ) const override;
+   void Apply( pcl::UInt32Image& ) const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -543,4 +514,4 @@ protected:
 #endif   // __PCL_PyramidalWaveletTransform_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/PyramidalWaveletTransform.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/PyramidalWaveletTransform.h - Released 2018-11-01T11:06:36Z

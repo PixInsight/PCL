@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0378
+// Standard Global Process Module Version 01.02.07.0386
 // ----------------------------------------------------------------------------
-// ReadoutOptionsInstance.h - Released 2017-08-01T14:26:58Z
+// ReadoutOptionsInstance.h - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -71,12 +71,9 @@ public:
    ReadoutOptionsInstance( const ReadoutOptionsInstance& );
 
    virtual void Assign( const ProcessImplementation& );
-
    virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
    virtual bool CanExecuteGlobal( pcl::String& whyNot ) const;
-
    virtual bool ExecuteGlobal();
-
    virtual void* LockParameter( const MetaParameter*, size_type /*tableRow*/ );
    virtual bool ValidateParameter( void* value, const MetaParameter*, size_type tableRow ) const;
 
@@ -94,6 +91,11 @@ public:
       o.EnableMaskChannel( showMask );
       o.EnablePreview( showPreview );
       o.EnablePreviewCenter( previewCenter );
+      o.EnableEquatorialCoordinates( showEquatorial );
+      o.EnableEclipticCoordinates( showEcliptic );
+      o.EnableGalacticCoordinates( showGalactic );
+      o.SetCoordinateItems( coordinateItems );
+      o.SetCoordinatePrecision( coordinatePrecision );
       o.EnableBroadcast( broadcast );
       o.SetReal( real );
       return o;
@@ -108,10 +110,15 @@ public:
       previewZoom = o.PreviewZoomFactor();
       precision = o.Precision();
       range = o.IntegerRange();
-      showAlpha = o.IsAlphaChannelEnabled();
-      showMask = o.IsMaskChannelEnabled();
-      showPreview = o.IsPreviewEnabled();
-      previewCenter = o.IsPreviewCenterEnabled();
+      showAlpha = o.ShowAlphaChannel();
+      showMask = o.ShowMaskChannel();
+      showPreview = o.ShowPreview();
+      previewCenter = o.ShowPreviewCenter();
+      showEquatorial = o.ShowEquatorialCoordinates();
+      showEcliptic = o.ShowEclipticCoordinates();
+      showGalactic = o.ShowGalacticCoordinates();
+      coordinateItems = o.CoordinateItems();
+      coordinatePrecision = o.CoordinatePrecision();
       broadcast = o.IsBroadcastEnabled();
       real = o.IsReal();
    }
@@ -122,17 +129,22 @@ private:
 
    pcl_enum data;
    pcl_enum mode;
-   int32    probeSize;     // size of the square probe - must be an odd number
-   int32    previewSize;   // size of the square preview - must be an odd number
-   int32    previewZoom;   // readout preview zoom factor >= 1
-   int32    precision;     // number of decimal digits if real==true
-   uint32   range;         // maximum discrete value if real==false
-   pcl_bool showAlpha;     // show alpha channel readouts?
-   pcl_bool showMask;      // show mask channel readouts?
-   pcl_bool showPreview;   // show real-time readout previews?
-   pcl_bool previewCenter; // plot center hairlines on real-time readout previews?
-   pcl_bool broadcast;     // broadcast readouts?
-   pcl_bool real;          // true=real, false=integer
+   int32    probeSize;           // size of the square probe - must be an odd number
+   int32    previewSize;         // size of the square preview - must be an odd number
+   int32    previewZoom;         // readout preview zoom factor >= 1
+   int32    precision;           // number of decimal digits if real==true
+   uint32   range;               // maximum discrete value if real==false
+   pcl_bool showAlpha;           // show alpha channel readouts?
+   pcl_bool showMask;            // show mask channel readouts?
+   pcl_bool showPreview;         // show real-time readout previews?
+   pcl_bool previewCenter;       // plot center hairlines on real-time readout previews?
+   pcl_bool showEquatorial;      // show equatorial coordinates
+   pcl_bool showEcliptic;        // show ecliptic coordinates
+   pcl_bool showGalactic;        // show galactic coordinates
+   int32    coordinateItems;     // 1=degrees/hours 2=minutes 3=seconds
+   int32    coordinatePrecision; // decimal digits of last represented item
+   pcl_bool broadcast;           // broadcast readouts?
+   pcl_bool real;                // true=real, false=integer
 };
 
 // ----------------------------------------------------------------------------
@@ -142,4 +154,4 @@ private:
 #endif   // __ReadoutOptionsInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF ReadoutOptionsInstance.h - Released 2017-08-01T14:26:58Z
+// EOF ReadoutOptionsInstance.h - Released 2018-11-01T11:07:20Z

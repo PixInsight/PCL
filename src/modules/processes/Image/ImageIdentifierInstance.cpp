@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard Image Process Module Version 01.02.09.0410
 // ----------------------------------------------------------------------------
-// ImageIdentifierInstance.cpp - Released 2017-08-01T14:26:58Z
+// ImageIdentifierInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -61,25 +61,33 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ImageIdentifierInstance::ImageIdentifierInstance( const MetaProcess* m ) : ProcessImplementation( m ), id()
+ImageIdentifierInstance::ImageIdentifierInstance( const MetaProcess* m ) :
+   ProcessImplementation( m )
 {
 }
 
-ImageIdentifierInstance::ImageIdentifierInstance( const ImageIdentifierInstance& x ) : ProcessImplementation( x ), id( x.id )
+// ----------------------------------------------------------------------------
+
+ImageIdentifierInstance::ImageIdentifierInstance( const ImageIdentifierInstance& x ) :
+   ProcessImplementation( x ),
+   id( x.id )
 {
 }
+
+// ----------------------------------------------------------------------------
 
 bool ImageIdentifierInstance::Validate( pcl::String& info )
 {
    id.Trim();
 
-   // The identifier can either be empty, meaning that a default image
-   // identifier will be automatically assigned by the PixInsight core
-   // application, or a valid C identifier.
-   //
-   // We only have to check validity of our identifier here. Uniqueness in any
-   // particular naming context is enforced by the core application.
-
+   /*
+    * The identifier can either be empty, meaning that a default image
+    * identifier will be automatically assigned by the PixInsight core
+    * application, or a valid C identifier.
+    *
+    * We only have to check validity of our identifier here. Uniqueness in any
+    * particular naming context is enforced by the core application.
+    */
    if ( !id.IsEmpty() && !id.IsValidIdentifier() ) // String::IsValidIdentifier() does the job
    {
       info = '\'' + id + "' is not a valid identifier.";
@@ -90,12 +98,30 @@ bool ImageIdentifierInstance::Validate( pcl::String& info )
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageIdentifierInstance::Assign( const ProcessImplementation& p )
 {
    const ImageIdentifierInstance* x = dynamic_cast<const ImageIdentifierInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
       id = x->id;
 }
+
+// ----------------------------------------------------------------------------
+
+bool ImageIdentifierInstance::IsMaskable( const View&, const ImageWindow& /*mask*/ ) const
+{
+   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+UndoFlags ImageIdentifierInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::ImageId;
+}
+
+// ----------------------------------------------------------------------------
 
 bool ImageIdentifierInstance::CanExecuteOn( const View& v, pcl::String& whyNot ) const
 {
@@ -108,15 +134,7 @@ bool ImageIdentifierInstance::CanExecuteOn( const View& v, pcl::String& whyNot )
    return true;
 }
 
-bool ImageIdentifierInstance::IsMaskable( const View&, const ImageWindow& /*mask*/ ) const
-{
-   return false;
-}
-
-UndoFlags ImageIdentifierInstance::UndoMode( const View& ) const
-{
-   return UndoFlag::ImageId;
-}
+// ----------------------------------------------------------------------------
 
 bool ImageIdentifierInstance::ExecuteOn( View& view )
 {
@@ -125,12 +143,16 @@ bool ImageIdentifierInstance::ExecuteOn( View& view )
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 void* ImageIdentifierInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
 {
    if ( p == TheImageIdentifierParameter )
       return id.Begin();
-   return 0;
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ImageIdentifierInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type /*tableRow*/ )
 {
@@ -144,6 +166,8 @@ bool ImageIdentifierInstance::AllocateParameter( size_type sizeOrLength, const M
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 size_type ImageIdentifierInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
    if ( p == TheImageIdentifierParameter )
@@ -156,4 +180,4 @@ size_type ImageIdentifierInstance::ParameterLength( const MetaParameter* p, size
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIdentifierInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF ImageIdentifierInstance.cpp - Released 2018-11-01T11:07:21Z

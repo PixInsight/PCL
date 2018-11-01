@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0378
+// Standard Global Process Module Version 01.02.07.0386
 // ----------------------------------------------------------------------------
-// ReadoutOptionsInterface.h - Released 2017-08-01T14:26:58Z
+// ReadoutOptionsInterface.h - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -140,6 +140,18 @@ private:
                Label             ArbitraryInteger_Label;
                SpinBox           ArbitraryInteger_SpinBox;
                CheckBox          ArbitraryInteger_CheckBox;
+            HorizontalSizer   ShowEquatorial_Sizer;
+               CheckBox          ShowEquatorial_CheckBox;
+            HorizontalSizer   ShowEcliptic_Sizer;
+               CheckBox          ShowEcliptic_CheckBox;
+            HorizontalSizer   ShowGalactic_Sizer;
+               CheckBox          ShowGalactic_CheckBox;
+            HorizontalSizer   CoordinateItems_Sizer;
+               Label             CoordinateItems_Label;
+               ComboBox          CoordinateItems_ComboBox;
+            HorizontalSizer   CoordinatePrecision_Sizer;
+               Label             CoordinatePrecision_Label;
+               SpinBox           CoordinatePrecision_SpinBox;
             HorizontalSizer   Broadcast_Sizer;
                CheckBox          Broadcast_CheckBox;
             HorizontalSizer   LoadCurrentOptions_Sizer;
@@ -170,4 +182,4 @@ PCL_END_LOCAL
 #endif   // __ReadoutOptionsInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF ReadoutOptionsInterface.h - Released 2017-08-01T14:26:58Z
+// EOF ReadoutOptionsInterface.h - Released 2018-11-01T11:07:20Z

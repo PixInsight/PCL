@@ -19,7 +19,7 @@ The official reference documentation for PCL has been generated automatically fr
 
 [PCL Reference Documentation - HTML Format](http://pixinsight.com/developer/pcl/doc/html/index.html)
 
-Currently the PCL documentation is rather complete, although there are still some classes and functions lacking detailed descriptions. If you find errors or inaccuracies in our documentation, we'd like to hear you to get them fixed. If you want to collaborate with us to enhance the existing PCL documentation, you are also welcome.
+Currently the PCL documentation is fairly complete, although there are still some classes and functions lacking detailed descriptions. If you find errors or inaccuracies in our documentation, we'd like to hear you to get them fixed. If you want to collaborate with us to enhance the existing PCL documentation, you are also welcome.
 
 
 ## PCL Repository

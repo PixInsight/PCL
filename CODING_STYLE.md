@@ -1,7 +1,7 @@
 PixInsight Class Library - Coding Style Guidelines
 --------------------------------------------------
 
-Version 0.4 - 2018 November 1<br/>
+Version 0.5 - 2018 November 2<br/>
 
 --------------------------------------------------
 
@@ -126,8 +126,8 @@ Version 0.4 - 2018 November 1<br/>
 
    2.4. Do not place spaces before comma and semicolon.
 
-      delete foo, foo = 0;            // right
-      delete foo , foo = 0;           // wrong
+      delete foo, foo = nullptr;      // right
+      delete foo , foo = nullptr;     // wrong
 
       for ( int i = 0; i < 3; ++i )   // right
       for ( int i = 0 ; i < 3 ; ++i ) // wrong
@@ -601,6 +601,21 @@ Version 0.4 - 2018 November 1<br/>
 
       void GetPositionVector( int planetNumber, double julianDay,   // wrong
                               double& x, double& y, double& z );
+                              
+   6.3. Always use the 'nullptr' keyword to represent a null pointer literal. Do not use literal zero pointer values.
+   
+      int IsThisFooBar( const int* x )
+      {
+         if ( x != nullptr )
+            return *x + 1;
+         return 0;
+      }
+    
+      std::cout << IsThisFooBar( nullptr ) << '\n'; // right
+      std::cout << IsThisFooBar( 0 ) << '\n';       // wrong
+      
+      if ( ptr == 0 ) // wrong
+         ...
 
 
 ### 7. Virtual Member Functions

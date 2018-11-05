@@ -139,7 +139,9 @@ namespace GlobalVariableType
  * <tr><td>ImageWindow/FileFormatWarnings</td><td></td></tr>
  * <tr><td>ImageWindow/FollowDownloadLocations</td><td></td></tr>
  * <tr><td>ImageWindow/HighDPIRenditions</td><td></td></tr>
+ * <tr><td>ImageWindow/LoadAstrometricSolutions</td><td></td></tr>
  * <tr><td>ImageWindow/NativeFileDialogs</td><td></td></tr>
+ * <tr><td>ImageWindow/ProjectVerifyIncrementalChecksums</td><td></td></tr>
  * <tr><td>ImageWindow/RememberFileOpenType</td><td></td></tr>
  * <tr><td>ImageWindow/RememberFileSaveType</td><td></td></tr>
  * <tr><td>ImageWindow/ShowActiveSTFIndicators</td><td></td></tr>
@@ -271,6 +273,8 @@ namespace GlobalVariableType
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>Application/AppDirectory</td><td>Full path to the distribution's core application bundle. Read-only. macOS only,</td></tr>
+ * <tr><td>Application/AsteroidEphemeridesFile</td><td>File name or path of the distribution's asteroid ephemerides file (XEPH format).</td></tr>
+ * <tr><td>Application/AsteroidEphemeridesFilePath</td><td>Full path to the current distribution's asteroid ephemerides file (XEPH format). Read-only.</td></tr>
  * <tr><td>Application/BaseDirectory</td><td>Base directory of the core distribution. Read-only.</td></tr>
  * <tr><td>Application/BinDirectory</td><td>Full path to the distribution's bin directory. Read-only.</td></tr>
  * <tr><td>Application/CIP_ITRSDataFile</td><td>File name or path of the distribution's data file of CIP coordinates in the ITRS (plain text).</td></tr>
@@ -305,6 +309,8 @@ namespace GlobalVariableType
  * <tr><td>Application/ResourceFile09</td><td>Core resource file #9.</td></tr>
  * <tr><td>Application/ResourceFile10</td><td>Core resource file #10.</td></tr>
  * <tr><td>Application/RscDirectory</td><td>Full path to the distribution's rsc directory. Read-only.</td></tr>
+ * <tr><td>Application/ShortTermAsteroidEphemeridesFile</td><td>File name or path of the distribution's asteroid ephemerides file (XEPH format) - short-term version (reduced time span).</td></tr>
+ * <tr><td>Application/ShortTermAsteroidEphemeridesFilePath</td><td>Full path to the current distribution's asteroid ephemerides file (XEPH format) - short-term version (reduced time span). Read-only.</td></tr>
  * <tr><td>Application/ShortTermFundamentalEphemeridesFile</td><td>File name or path of the distribution's fundamental ephemerides file (XEPH format) - short-term version (reduced time span).</td></tr>
  * <tr><td>Application/ShortTermFundamentalEphemeridesFilePath</td><td>Full path to the current distribution's fundamental ephemerides file (XEPH format) - short-term version (reduced time span). Read-only.</td></tr>
  * <tr><td>Application/ShortTermNutationModelFile</td><td>File name or path of the distribution's nutation model file (XEPH format) - short-term version (reduced time span).</td></tr>

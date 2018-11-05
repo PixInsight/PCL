@@ -271,6 +271,8 @@ struct PCL_CLASS SerializableEphemerisData
  * covered by the previous instance. These conditions are enforced by the
  * EphemerisFile::Serialize() static member function, which is the standard
  * resource for generation of ephemeris files in XEPH format.
+ *
+ * \ingroup solar_system_ephemerides
  */
 typedef Array<SerializableEphemerisData> SerializableEphemerisDataList;
 
@@ -334,8 +336,8 @@ struct PCL_CLASS SerializableEphemerisObjectData
 
    /*!
     * Optional Name of the object or item for which ephemeris data have been
-    * generated. This can be an arbitrary string, such as 'Saturn', '7 Iris',
-    * or 'C/1996 B2'. However, bear in mind that ephemeris data can be accessed
+    * generated. This can be an arbitrary string, such as 'Saturn', 'Iris', or
+    * 'C/1996 B2'. However, bear in mind that ephemeris data can be accessed
     * both by object identifiers and object names, so there should be no
     * duplicate names. Object names are considered as case-insensitive in XEPH
     * files, so all of 'Jupiter', 'jupiter' and 'JUPITER' are equivalent.
@@ -396,8 +398,109 @@ struct PCL_CLASS SerializableEphemerisObjectData
 /*!
  * \class pcl::SerializableEphemerisObjectDataList
  * \brief Dynamic list of per-object data for ephemeris serialization.
+ * \ingroup solar_system_ephemerides
  */
 typedef Array<SerializableEphemerisObjectData> SerializableEphemerisObjectDataList;
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \struct EphemerisObject
+ * \brief Identifiers and descriptive data of an object available in an
+ * ephemeris file.
+ *
+ * This structure associates the unique identifier, origin identifier, name and
+ * description of an object or item available for ephemeris calculations. All
+ * of the data members in this structure are specific to a particular ephemeris
+ * file. A dynamic list of %EphemerisObject instances (EphemerisObjectList) is
+ * returned by the EphemerisFile::Objects() member function.
+ *
+ * \sa EphemerisFile::Objects()
+ * \ingroup solar_system_ephemerides
+ */
+struct PCL_CLASS EphemerisObject
+{
+   /*!
+    * Unique identifier of an object or item for which ephemeris data are
+    * available. This is a short string that uniquely identifies the object in
+    * the context of an ephemeris file.
+    *
+    * For example, standard XEPH files serializing JPL DE/LE ephemerides use a
+    * two/three letter convention for object identifiers: 'Me', 'Ve', 'EMB',
+    * 'Ea', 'Ma', etc, respectively for Mercury, Venus, Earth-Moon barycenter,
+    * Earth, Mars, etc. Object identifiers are considered as case-sensitive in
+    * XEPH files.
+    */
+   IsoString                     objectId;
+
+   /*!
+    * Identifier of the origin of coordinates (case-sensitive). This can be the
+    * unique identifier of a solar system object, or the identifier of an
+    * arbitrary object or location, specific to a particular ephemeris file.
+    *
+    * For example, if the object provides geocentric coordinates, this member
+    * should be "Ea", which is the unique identifier of the Earth's center in
+    * standard fundamental ephemerides files. Similarly, if the ephemerides are
+    * heliocentric, this member should be "Sn". If the ephemeris data are with
+    * respect to the solar system barycenter, this member must be "SSB", also
+    * for coherence with fundamental ephemerides.
+    */
+   IsoString                     originId;
+
+   /*!
+    * Optional Name of the object or item for which ephemeris data are
+    * available. This can be an arbitrary string, such as 'Saturn', 'Iris', or
+    * 'C/1996 B2'. Object names are considered as case-insensitive in XEPH
+    * files, so all of 'Jupiter', 'jupiter' and 'JUPITER' are equivalent.
+    */
+   String                        objectName;
+
+   /*!
+    * Optional information about the object and/or the ephemeris data.
+    */
+   String                        objectDescription;
+
+   /*!
+    * Memberwise constructor.
+    */
+   EphemerisObject( const IsoString& id,
+                    const IsoString& origin,
+                    const String& name = String(),
+                    const String& description = String() ) :
+      objectId( id ),
+      originId( origin ),
+      objectName( name ),
+      objectDescription( description )
+   {
+   }
+
+   /*!
+    * Copy constructor.
+    */
+   EphemerisObject( const EphemerisObject& ) = default;
+
+   /*!
+    * Move constructor.
+    */
+   EphemerisObject( EphemerisObject&& ) = default;
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
+    */
+   EphemerisObject& operator =( const EphemerisObject& ) = default;
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   EphemerisObject& operator =( EphemerisObject&& ) = default;
+};
+
+/*!
+ * \class pcl::EphemerisObjectList
+ * \brief Dynamic list of object identifiers and descriptions.
+ * \ingroup solar_system_ephemerides
+ */
+typedef Array<EphemerisObject> EphemerisObjectList;
 
 // ----------------------------------------------------------------------------
 
@@ -586,7 +689,7 @@ public:
     * this member function returns the list of constants used by the
     * corresponding DE/LE numerical integration.
     *
-    * The returned list has been sorted by constant name in ascending order.
+    * The returned list is sorted by constant name in ascending order.
     */
    const EphemerisConstantList& Constants() const
    {
@@ -617,6 +720,21 @@ public:
       if ( i == m_constants.End() )
          throw Error( "Undefined ephemeris constant '" + name + '\'' );
       return i->value;
+   }
+
+   /*!
+    * Returns a dynamic list of EphemerisObject instances describing all of the
+    * objects available in this file for ephemeris calculations.
+    *
+    * The returned list is sorted by object and origin identifiers (in that
+    * order of precedence) in ascending order.
+    */
+   EphemerisObjectList Objects() const
+   {
+      EphemerisObjectList objects;
+      for ( const Index& ix : m_index )
+         objects << EphemerisObject( ix.objectId, ix.originId, ix.objectName, ix.objectDescription );
+      return objects;
    }
 
    /*!
@@ -830,6 +948,69 @@ public:
    static const EphemerisFile& ShortTermFundamentalEphemerides();
 
    /*!
+    * Returns a reference to the global asteroid ephemerides file currently
+    * defined by the running PixInsight platform.
+    *
+    * Under normal running conditions, the returned object provides ephemeris
+    * data for a set of asteroids with relevant masses. In a standard asteroid
+    * ephemeris file, object identifiers are asteroid numbers and object names
+    * are asteroid designations; for example:
+    *
+    * <table border="1" cellpadding="4" cellspacing="0">
+    * <tr><td>Identifier</td><td>Name</td></tr>
+    * <tr><td>1</td><td>Ceres</td></tr>
+    * <tr><td>2</td><td>Pallas</td></tr>
+    * <tr><td>3</td><td>Juno</td></tr>
+    * <tr><td>4</td><td>Vesta</td></tr>
+    * <tr><td>5</td><td>Astraea</td></tr>
+    * <tr><td>...</td><td>...</td></tr>
+    * <tr><td>702</td><td>Alauda</td></tr>
+    * <tr><td>703</td><td>Noemi</td></tr>
+    * <tr><td>704</td><td>Interamnia</td></tr>
+    * <tr><td>...</td><td>...</td></tr>
+    * </table>
+    *
+    * Asteroid ephemeris data are provided relative to the solar system
+    * barycenter ("SSB" identifier), with position and velocity coordinates
+    * coherent with global fundamental ephemerides.
+    *
+    * As of writing this documentation, the standard asteroid ephemeris file
+    * provides the complete set of 343 asteroids used for the numerical
+    * integration of DE430 ephemerides, with barycentric coordinates coherent
+    * with DE438.
+    *
+    * The asteroid ephemeris file can be overridden by the caller module. See
+    * the OverrideAsteroidEphemerides() member function for more information.
+    *
+    * This static member function is thread-safe. It can be called safely from
+    * multiple execution threads running concurrently.
+    */
+   static const EphemerisFile& AsteroidEphemerides();
+
+   /*!
+    * Returns a reference to the global short-term asteroid ephemerides file
+    * currently defined by the running PixInsight platform.
+    *
+    * See the AsteroidEphemerides() static member function for information
+    * on asteroid ephemerides and their status in current versions of
+    * PixInsight.
+    *
+    * Under normal running conditions, the returned object should be a
+    * shortened version (that is, covering a shorter time span) of the standard
+    * asteroid ephemerides file. As of writing this documentation, the
+    * standard short-term asteroid ephemeris file covers the period from 1950
+    * January 1.0 to 2100 January 32.0.
+    *
+    * The short-term asteroid ephemeris file can be overridden by the caller
+    * module. See the OverrideShortTermAsteroidEphemerides() member function
+    * for more information.
+    *
+    * This static member function is thread-safe. It can be called safely from
+    * multiple execution threads running concurrently.
+    */
+   static const EphemerisFile& ShortTermAsteroidEphemerides();
+
+   /*!
     * Returns a reference to the global nutation model ephemeris file currently
     * defined by the running PixInsight platform.
     *
@@ -941,7 +1122,20 @@ public:
    static String DeltaATDataFilePath();
 
    /*!
+    * Returns the path to the global database file of CIP positions referred to
+    * the ITRS.
     *
+    * The position of the Celestial Intermediate Pole (CIP) in the
+    * International Terrestrial Reference System (ITRS) is necessary to compute
+    * polar motion corrections applied to topocentric coordinates of solar
+    * system bodies. These corrections are relevant for the topocentric
+    * position of the Moon at the milliarcsecond level.
+    *
+    * In current versions of PixInsight the CIP_ITRS database is a plain text
+    * file generated with values provided by the IERS Rapid Service/Prediction
+    * Center. As of writing this documentation, the main online reference is:
+    *
+    * http://hpiers.obspm.fr/iers/eop/eopc01/eopc01.iau2000.1846-now
     */
    static String CIP_ITRSDataFilePath();
 
@@ -981,6 +1175,42 @@ public:
     * retrieve the default file names and directories from global settings.
     */
    static void OverrideShortTermFundamentalEphemerides( const String& filePath );
+
+   /*!
+    * Override the default asteroid ephemerides file.
+    *
+    * The specified \a filePath must be a valid path to an existing file in
+    * XEPH format, which must provide asteroid ephemerides coherent with the
+    * global fundamental ephemerides being used. See the AsteroidEphemerides()
+    * member function for a more comprehensive description.
+    *
+    * After calling this member function, all asteroid ephemerides will be
+    * calculated using the specified XEPH file, which will be installed
+    * automatically upon the first call to AsteroidEphemerides().
+    *
+    * This function is useful to build standalone applications that don't
+    * depend on a running PixInsight core application, which is necessary to
+    * retrieve the default file names and directories from global settings.
+    */
+   static void OverrideAsteroidEphemerides( const String& filePath );
+
+   /*!
+    * Override the default short-term asteroid ephemerides file.
+    *
+    * The specified \a filePath must be a valid path to an existing file in
+    * XEPH format, which must provide asteroid ephemerides coherent with the
+    * global fundamental ephemerides being used. See the AsteroidEphemerides()
+    * member function for a more comprehensive description.
+    *
+    * After calling this member function, all short-term asteroid ephemerides
+    * will be calculated using the specified XEPH file, which will be installed
+    * automatically upon the first call to ShortTermAsteroidEphemerides().
+    *
+    * This function is useful to build standalone applications that don't
+    * depend on a running PixInsight core application, which is necessary to
+    * retrieve the default file names and directories from global settings.
+    */
+   static void OverrideShortTermAsteroidEphemerides( const String& filePath );
 
    /*!
     * Override the global nutation model ephemeris file.
@@ -1062,7 +1292,24 @@ public:
    static void OverrideDeltaATDataFilePath( const String& filePath );
 
    /*!
+    * Override the global database of CIP positions in the ITRS.
     *
+    * The specified \a filePath must be a valid path to an existing file in a
+    * plain text database format compatible with the standard CIP_ITRS database
+    * included in PixInsight distributions. See the CIP_ITRSDataFilePath()
+    * member function for more details.
+    *
+    * After calling this member function, CIP coordinates in the ITRS will be
+    * calculated by interpolation from the data provided by the specified file,
+    * which will be loaded and parsed automatically upon the first call
+    * (explicit or implicit) to Position::CIP_ITRS(). However, for performance
+    * and modularization reasons, once a CIP_ITRS database has been loaded
+    * there is no way to change it, so calling this function again will have no
+    * effect.
+    *
+    * This function is useful to build standalone applications that don't
+    * depend on a running PixInsight core application, which is necessary to
+    * retrieve the default file names and directories from global settings.
     */
    static void OverrideCIP_ITRSDataFilePath( const String& filePath );
 
@@ -1111,13 +1358,20 @@ private:
     */
    struct Index
    {
-      IsoString        objectId;    // Object identifier (case-sensitive).
-      IsoString        originId;    // Identifier of the origin of coordinates (case-sensitive).
-      String           objectName;  // Object name (optional, case-insensitive).
-      Array<IndexNode> nodes[ 2 ];  // Expansion indexes: 0=function 1=derivative.
+      IsoString        objectId;          // Object identifier (mandatory, case-sensitive).
+      IsoString        originId;          // Identifier of the origin of coordinates (mandatory, case-sensitive).
+      String           objectName;        // Object name (optional, case-insensitive).
+      String           objectDescription; // Object description (optional, arbitrary)
+      Array<IndexNode> nodes[ 2 ];        // Expansion indexes: 0=function 1=derivative.
 
-      Index( const IsoString& object, const IsoString& origin = IsoString(), const String& name = String() ) :
-         objectId( object.Trimmed() ), originId( origin.Trimmed() ), objectName( name.Trimmed() )
+      Index( const IsoString& object,
+             const IsoString& origin = IsoString(),
+             const String& name = String(),
+             const String& description = String() ) :
+         objectId( object.Trimmed() ),
+         originId( origin.Trimmed() ),
+         objectName( name.Trimmed() ),
+         objectDescription( description.Trimmed() )
       {
       }
 
@@ -1150,6 +1404,8 @@ private:
    // If empty, i.e. if not overridden, use platform defaults.
    static String s_ephFilePath;
    static String s_ephFilePath_s;
+   static String s_astFilePath;
+   static String s_astFilePath_s;
    static String s_nutFilePath;
    static String s_nutFilePath_s;
    static String s_deltaTFilePath;

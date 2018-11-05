@@ -83,6 +83,8 @@ struct ApplicationPreferences
    String      highResMonoFont;
    String      fundamentalEphemeridesFile;
    String      shortTermFundamentalEphemeridesFile;
+   String      asteroidEphemeridesFile;
+   String      shortTermAsteroidEphemeridesFile;
    String      nutationModelFile;
    String      shortTermNutationModelFile;
    String      deltaTDataFile;

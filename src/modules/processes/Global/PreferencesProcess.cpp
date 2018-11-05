@@ -97,6 +97,8 @@ PreferencesProcess::PreferencesProcess() : MetaProcess()
    new METAPARAMETER_ID( Application, highResMonoFont )( this );
    new METAPARAMETER_ID( Application, fundamentalEphemeridesFile )( this );
    new METAPARAMETER_ID( Application, shortTermFundamentalEphemeridesFile )( this );
+   new METAPARAMETER_ID( Application, asteroidEphemeridesFile )( this );
+   new METAPARAMETER_ID( Application, shortTermAsteroidEphemeridesFile )( this );
    new METAPARAMETER_ID( Application, nutationModelFile )( this );
    new METAPARAMETER_ID( Application, shortTermNutationModelFile )( this );
    new METAPARAMETER_ID( Application, deltaTDataFile )( this );

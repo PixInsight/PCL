@@ -245,6 +245,8 @@ DECLARE_STRING_METAPARAMETER  ( Application, lowResMonoFont,                    
 DECLARE_STRING_METAPARAMETER  ( Application, highResMonoFont,                     "DejaVu Sans Mono" )
 DECLARE_STRING_METAPARAMETER  ( Application, fundamentalEphemeridesFile,          "core-fundamental.xeph" )
 DECLARE_STRING_METAPARAMETER  ( Application, shortTermFundamentalEphemeridesFile, "core-fundamental-s.xeph" )
+DECLARE_STRING_METAPARAMETER  ( Application, asteroidEphemeridesFile,             "core-asteroids.xeph" )
+DECLARE_STRING_METAPARAMETER  ( Application, shortTermAsteroidEphemeridesFile,    "core-asteroids-s.xeph" )
 DECLARE_STRING_METAPARAMETER  ( Application, nutationModelFile,                   "core-nutation.xeph" )
 DECLARE_STRING_METAPARAMETER  ( Application, shortTermNutationModelFile,          "core-nutation-s.xeph" )
 DECLARE_STRING_METAPARAMETER  ( Application, deltaTDataFile,                      "core-deltat.txt" )

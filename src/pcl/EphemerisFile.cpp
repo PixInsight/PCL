@@ -65,6 +65,8 @@ namespace pcl
 
 String EphemerisFile::s_ephFilePath;
 String EphemerisFile::s_ephFilePath_s;
+String EphemerisFile::s_astFilePath;
+String EphemerisFile::s_astFilePath_s;
 String EphemerisFile::s_nutFilePath;
 String EphemerisFile::s_nutFilePath_s;
 String EphemerisFile::s_deltaTFilePath;
@@ -75,6 +77,8 @@ String EphemerisFile::s_cipITRSFilePath;
 
 static EphemerisFile* s_E = nullptr;
 static EphemerisFile* s_Es = nullptr;
+static EphemerisFile* s_A = nullptr;
+static EphemerisFile* s_As = nullptr;
 static EphemerisFile* s_N = nullptr;
 static EphemerisFile* s_Ns = nullptr;
 
@@ -235,6 +239,10 @@ void EphemerisFile::Open( const String& filePath )
                      m_file.Read( node );
                      index.nodes[order] << node;
                   }
+               }
+               else if ( element.Name() == "Description" )
+               {
+                  index.objectDescription = element.Text().Trimmed();
                }
                else
                   WarnOnUnknownChildElement( element, "Object" );
@@ -791,6 +799,72 @@ const EphemerisFile& EphemerisFile::ShortTermFundamentalEphemerides()
 
 // ----------------------------------------------------------------------------
 
+const EphemerisFile& EphemerisFile::AsteroidEphemerides()
+{
+   volatile AutoLock lock( s_mutex );
+
+   if ( s_A != nullptr )
+      return *s_A;
+
+   String filePath = s_astFilePath;
+   if ( filePath.IsEmpty() )
+   {
+      filePath = PixInsightSettings::GlobalString( "Application/AsteroidEphemeridesFilePath" );
+      if ( filePath.IsEmpty() )
+         throw Error( "The asteroid ephemerides file has not been defined." );
+   }
+   if ( !File::Exists( filePath ) )
+      throw Error( "The asteroid ephemerides file does not exist: " + filePath );
+
+   try
+   {
+      return *(s_A = new EphemerisFile( filePath ));
+   }
+   catch ( const Exception& x )
+   {
+      throw Error( "Loading asteroid ephemerides file: " + x.Message() );
+   }
+   catch ( ... )
+   {
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+const EphemerisFile& EphemerisFile::ShortTermAsteroidEphemerides()
+{
+   volatile AutoLock lock( s_mutex );
+
+   if ( s_As != nullptr )
+      return *s_As;
+
+   String filePath = s_astFilePath_s;
+   if ( filePath.IsEmpty() )
+   {
+      filePath = PixInsightSettings::GlobalString( "Application/ShortTermAsteroidEphemeridesFilePath" );
+      if ( filePath.IsEmpty() )
+         throw Error( "The short-term asteroid ephemerides file has not been defined." );
+   }
+   if ( !File::Exists( filePath ) )
+      throw Error( "The short-term asteroid ephemerides file does not exist: " + filePath );
+
+   try
+   {
+      return *(s_As = new EphemerisFile( filePath ));
+   }
+   catch ( const Exception& x )
+   {
+      throw Error( "Loading short-term asteroid ephemerides file: " + x.Message() );
+   }
+   catch ( ... )
+   {
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
 const EphemerisFile& EphemerisFile::NutationModel()
 {
    volatile AutoLock lock( s_mutex );
@@ -953,6 +1027,34 @@ void EphemerisFile::OverrideShortTermFundamentalEphemerides( const String& fileP
       s_Es = nullptr;
    }
    s_ephFilePath_s = filePath.Trimmed();
+}
+
+// ----------------------------------------------------------------------------
+
+void EphemerisFile::OverrideAsteroidEphemerides( const String& filePath )
+{
+   volatile AutoLock lock( s_mutex );
+
+   if ( s_A != nullptr )
+   {
+      delete s_A;
+      s_A = nullptr;
+   }
+   s_astFilePath = filePath.Trimmed();
+}
+
+// ----------------------------------------------------------------------------
+
+void EphemerisFile::OverrideShortTermAsteroidEphemerides( const String& filePath )
+{
+   volatile AutoLock lock( s_mutex );
+
+   if ( s_As != nullptr )
+   {
+      delete s_As;
+      s_As = nullptr;
+   }
+   s_astFilePath_s = filePath.Trimmed();
 }
 
 // ----------------------------------------------------------------------------

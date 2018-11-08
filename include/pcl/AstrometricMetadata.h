@@ -112,6 +112,31 @@ class PCL_CLASS AstrometricMetadata
 public:
 
    /*!
+    * \struct pcl::AstrometricMetadata::DescriptionItems
+    * \brief A collection of strings describing the properties and parameters
+    * of an astrometric solution.
+    */
+   struct DescriptionItems
+   {
+      String referenceMatrix;
+      String wcsTransformationType;
+      String projectionName;
+      String projectionOrigin;
+      String resolution;
+      String rotation;
+      String transformationErrors;
+      String observationDate;
+      String focalDistance;
+      String pixelSize;
+      String fieldOfView;
+      String centerCoordinates;
+      String topLeftCoordinates;
+      String topRightCoordinates;
+      String bottomLeftCoordinates;
+      String bottomRightCoordinates;
+   };
+
+   /*!
     * Default constructor. Constructs an uninitialized %AstrometricMetadata
     * object.
     */
@@ -448,12 +473,6 @@ public:
    }
 
    /*!
-    * Returns a printable textual representation of the metadata properties and
-    * parameters of the astrometric solution represented by this object.
-    */
-   String Summary() const;
-
-   /*!
     * Regenerates the astrometric solution from standardized metadata.
     *
     * \param keywords         A list of FITS header keywords, which should
@@ -507,6 +526,27 @@ public:
     */
    void UpdateWCSKeywords( FITSKeywordArray& keywords ) const;
 
+   /*!
+    * Returns a printable textual representation of the metadata properties and
+    * parameters of the astrometric solution represented by this object.
+    */
+   String Summary() const;
+
+   /*!
+    * Returns a collection of strings describing the metadata properties and
+    * parameters of this astrometric solution.
+    *
+    * The returned object is a copy of an internal structure that is generated
+    * automatically as necessary and cached between successive function calls.
+    * This allows for efficient real-time representations of astrometric
+    * metadata and parameters.
+    */
+   DescriptionItems Description() const
+   {
+      UpdateDescription();
+      return m_description.IsNull() ? DescriptionItems() : *m_description;
+   }
+
 private:
 
    AutoPointer<ProjectionBase>      m_projection;
@@ -518,8 +558,11 @@ private:
    double                           m_resolution = 0; // deg/px
    Optional<double>                 m_focal;          // mm
    bool                             m_useFocal = false;
+   mutable
+   AutoPointer<DescriptionItems>    m_description;
 
    WCSKeywords GetWCSvalues() const;
+   void UpdateDescription() const;
 };
 
 } //pcl

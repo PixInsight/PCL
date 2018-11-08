@@ -80,6 +80,8 @@ AstrometricMetadata::AstrometricMetadata( ProjectionBase* projection,
 
 void AstrometricMetadata::Build( const FITSKeywordArray& keywords, const ByteArray& controlPoints, int width, int height )
 {
+   m_description.Destroy();
+
    WCSKeywords wcs( keywords );
 
    m_xpixsz = wcs.xpixsz();
@@ -276,79 +278,39 @@ double AstrometricMetadata::Rotation( bool& flipped ) const
 
 // ----------------------------------------------------------------------------
 
-static String FieldString( double field )
-{
-   int sign, s1, s2; double s3;
-   IsoString::ToSexagesimal( field ).ParseSexagesimal( sign, s1, s2, s3 );
-   if ( s1 > 0 )
-      return String().Format( "%dd %d' %.1f\"", s1, s2, s3 );
-   if ( s2 > 0 )
-      return String().Format( "%d' %.1f\"", s2, s3 );
-   return String().Format( "%.2f\"", s3 );
-}
-
-static String CelestialToString( const DPoint& pRD )
-{
-   double ra = pRD.x;
-   if ( ra < 0 )
-      ra += 360;
-   return String()
-      << "RA: "    << String().ToSexagesimal( ra/15, RAConversionOptions( 3/*precision*/ ) )
-      << "  Dec: " << String().ToSexagesimal( pRD.y, DecConversionOptions( 2/*precision*/ ) );
-}
-
-static String ImageToCelestialToString( const AstrometricMetadata* A, const DPoint& pI )
-{
-   DPoint pRD;
-   if ( A->ImageToCelestial( pRD, pI ) )
-      return CelestialToString( pRD );
-   return "------";
-}
-
 String AstrometricMetadata::Summary() const
 {
    if ( !IsValid() )
       throw Error( "Invalid call to AstrometricMetadata::Summary(): No astrometric solution." );
 
-   LinearTransformation linearTransIW = m_transformWI->ApproximateLinearTransform();
-   DPoint projOrgPx = linearTransIW.TransformInverse( DPoint( 0 ) );
-   DPoint projOrgRD = m_projection->ProjectionOrigin();
-   bool flipped;
-   double rotation = Rotation( flipped );
-   double ex, ey;
-   Verify( ex, ey );
+   UpdateDescription();
 
    String summary;
-   summary  << "Referentiation Matrix (world[ra,dec] = matrix * image[x,y]):" << '\n'
-            << linearTransIW.ToString( 3 ) << '\n'
-            << "WCS transformation ...... " << (HasSplineWorldTransformation() ? "2-D surface splines" : "linear") << '\n'
-            << "Projection .............. " << m_projection->Name() << '\n'
-            << "Projection origin ....... " << String().Format( "[%.6f %.6f]px", projOrgPx.x, projOrgPx.y )
-                                            << " -> [" << CelestialToString( projOrgRD ) << ']' << '\n'
-            << "Resolution .............. " << String().Format( "%.3f arcsec/px", m_resolution*3600 ) << '\n'
-            << "Rotation ................ " << String().Format( "%.3f deg", rotation ) << (flipped ? " (flipped)" : "") << '\n'
-            << "Transformation errors ... " << String().Format( "ex=%.3g ey=%.3g px", ex, ey ) << '\n';
+   summary    << "Reference matrix (world[ra,dec] = matrix * image[x,y]):" << '\n'
+              << m_description->referenceMatrix << '\n'
+              << "WCS transformation ...... " << m_description->wcsTransformationType << '\n'
+              << "Projection .............. " << m_description->projectionName << '\n'
+              << "Projection origin ....... " << m_description->projectionOrigin << '\n'
+              << "Resolution .............. " << m_description->resolution << '\n'
+              << "Rotation ................ " << m_description->rotation << '\n'
+              << "Transformation errors ... " << m_description->transformationErrors << '\n';
 
-   if ( m_dateobs.IsDefined() )
-      summary
-            << "Observation date ........ " << TimePoint( m_dateobs() ).ToString( "%Y-%M-%D %h:%m:%s0" ) << '\n';
+   if ( !m_description->observationDate.IsEmpty() )
+      summary << "Observation date ........ " << m_description->observationDate << '\n';
 
-   if ( m_xpixsz.IsDefined() )
-      if ( m_xpixsz() > 0 )
-         if ( m_focal.IsDefined() )
-         {
-            summary
-            << "Focal distance .......... " << String().Format( "%.2f mm", m_focal() ) << '\n'
-            << "Pixel size .............. " << String().Format( "%.2f um", m_xpixsz() ) << '\n';
-         }
+   if ( !m_description->focalDistance.IsEmpty() )
+      summary << "Focal distance .......... " << m_description->focalDistance << '\n';
 
-   summary  << "Field of view ........... " << FieldString( m_width*m_resolution ) << " x " << FieldString( m_height*m_resolution ) << '\n'
-            << "Image center ............ " << ImageToCelestialToString( this, DPoint( m_width/2.0, m_height/2.0 ) ) << '\n'
-            << "Image bounds:" << '\n'
-            << "   top-left ............. " << ImageToCelestialToString( this, DPoint( 0, 0 ) ) << '\n'
-            << "   top-right ............ " << ImageToCelestialToString( this, DPoint( m_width, 0 ) ) << '\n'
-            << "   bottom-left .......... " << ImageToCelestialToString( this, DPoint( 0, m_height ) ) << '\n'
-            << "   bottom-right ......... " << ImageToCelestialToString( this, DPoint( m_width, m_height ) ) << '\n';
+   if ( !m_description->pixelSize.IsEmpty() )
+      summary << "Pixel size .............. " << m_description->pixelSize << '\n';
+
+   summary    << "Field of view ........... " << m_description->fieldOfView << '\n'
+              << "Image center ............ " << m_description->centerCoordinates << '\n'
+              << "Image bounds:" << '\n'
+              << "   top-left ............. " << m_description->topLeftCoordinates << '\n'
+              << "   top-right ............ " << m_description->topRightCoordinates << '\n'
+              << "   bottom-left .......... " << m_description->bottomLeftCoordinates << '\n'
+              << "   bottom-right ......... " << m_description->bottomRightCoordinates << '\n';
 
    return summary;
 }
@@ -538,6 +500,81 @@ WCSKeywords AstrometricMetadata::GetWCSvalues() const
    wcs.crota2 = Deg( rot2 );
 
    return wcs;
+}
+
+// ----------------------------------------------------------------------------
+
+static String FieldString( double field )
+{
+   int sign, s1, s2; double s3;
+   IsoString::ToSexagesimal( field ).ParseSexagesimal( sign, s1, s2, s3 );
+   if ( s1 > 0 )
+      return String().Format( "%dd %d' %.1f\"", s1, s2, s3 );
+   if ( s2 > 0 )
+      return String().Format( "%d' %.1f\"", s2, s3 );
+   return String().Format( "%.2f\"", s3 );
+}
+
+static String CelestialToString( const DPoint& pRD )
+{
+   double ra = pRD.x;
+   if ( ra < 0 )
+      ra += 360;
+   return String()
+      << "RA: "    << String().ToSexagesimal( ra/15, RAConversionOptions( 3/*precision*/ ) )
+      << "  Dec: " << String().ToSexagesimal( pRD.y, DecConversionOptions( 2/*precision*/ ) );
+}
+
+static String ImageToCelestialToString( const AstrometricMetadata* A, const DPoint& pI )
+{
+   DPoint pRD;
+   if ( A->ImageToCelestial( pRD, pI ) )
+      return CelestialToString( pRD );
+   return "------";
+}
+
+void AstrometricMetadata::UpdateDescription() const
+{
+   if ( m_description.IsNull() )
+      if ( IsValid() )
+      {
+         LinearTransformation linearTransIW = m_transformWI->ApproximateLinearTransform();
+         DPoint projOrgPx = linearTransIW.TransformInverse( DPoint( 0 ) );
+         DPoint projOrgRD = m_projection->ProjectionOrigin();
+         bool flipped;
+         double rotation = Rotation( flipped );
+         double ex, ey;
+         Verify( ex, ey );
+
+         m_description = new DescriptionItems;
+
+         m_description->referenceMatrix = linearTransIW.ToString();
+         m_description->wcsTransformationType = HasSplineWorldTransformation() ? "2-D surface splines" : "linear";
+         m_description->projectionName = m_projection->Name();
+         m_description->projectionOrigin = String().Format( "[%.6f %.6f]px", projOrgPx.x, projOrgPx.y )
+                                             << " -> [" << CelestialToString( projOrgRD ) << ']';
+         m_description->resolution = String().Format( "%.3f arcsec/px", m_resolution*3600 );
+         m_description->rotation = String().Format( "%.3f deg", rotation ) << (flipped ? " (flipped)" : "");
+         m_description->transformationErrors = String().Format( "ex=%.3g ey=%.3g px", ex, ey );
+
+         if ( m_dateobs.IsDefined() )
+            m_description->observationDate = TimePoint( m_dateobs() ).ToString( "%Y-%M-%D %h:%m:%s0" );
+
+         if ( m_xpixsz.IsDefined() )
+            if ( m_xpixsz() > 0 )
+               if ( m_focal.IsDefined() )
+               {
+                  m_description->focalDistance = String().Format( "%.2f mm", m_focal() );
+                  m_description->pixelSize = String().Format( "%.2f um", m_xpixsz() );
+               }
+
+         m_description->fieldOfView = FieldString( m_width*m_resolution ) << " x " << FieldString( m_height*m_resolution );
+         m_description->centerCoordinates = ImageToCelestialToString( this, DPoint( m_width/2.0, m_height/2.0 ) );
+         m_description->topLeftCoordinates = ImageToCelestialToString( this, DPoint( 0, 0 ) );
+         m_description->topRightCoordinates = ImageToCelestialToString( this, DPoint( m_width, 0 ) );
+         m_description->bottomLeftCoordinates = ImageToCelestialToString( this, DPoint( 0, m_height ) );
+         m_description->bottomRightCoordinates = ImageToCelestialToString( this, DPoint( m_width, m_height ) );
+      }
 }
 
 // ----------------------------------------------------------------------------

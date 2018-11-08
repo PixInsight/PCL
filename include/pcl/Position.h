@@ -76,7 +76,7 @@ namespace pcl
  * Position::Astrometric( const StarPosition& ) \n
  * Position::Proper( const StarPosition& ) \n
  * Position::Apparent( const StarPosition& ) \n
- * Position::Topocentric( const StarPosition& )
+ * Position::Intermediate( const StarPosition& )
  *
  * \ingroup solar_system_ephemerides
  */

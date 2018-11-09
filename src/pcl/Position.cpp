@@ -386,7 +386,7 @@ Vector Position::CIP_ITRS() const
    if ( !s_cipITRSInitialized )
    {
       /*
-       * Load the Delta T plain text database, thread-safe.
+       * Load the CIP_ITRS plain text database, thread-safe.
        */
       volatile AutoLock lock( s_cipITRSMutex );
       if ( s_cipITRSInitialized.Load() == 0 )

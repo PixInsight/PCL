@@ -289,7 +289,7 @@ double TimePoint::DeltaAT() const
       volatile AutoLock lock( s_deltaATMutex );
       if ( s_deltaATInitialized.Load() == 0 )
       {
-         IsoStringList lines = File::ReadLines( EphemerisFile::DeltaTDataFilePath() );
+         IsoStringList lines = File::ReadLines( EphemerisFile::DeltaATDataFilePath() );
          for ( IsoString line : lines )
          {
             line.Trim();

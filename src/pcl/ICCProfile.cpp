@@ -682,19 +682,19 @@ bool ICCProfile::SupportsRenderingIntent( ICCProfile::handle h,
    uint32 cmsIntent;
    switch ( intent )
    {
-   case ICCRenderingIntent::Perceptual:           cmsIntent = INTENT_PERCEPTUAL;
-   case ICCRenderingIntent::RelativeColorimetric: cmsIntent = INTENT_RELATIVE_COLORIMETRIC;
-   case ICCRenderingIntent::Saturation:           cmsIntent = INTENT_SATURATION;
-   case ICCRenderingIntent::AbsoluteColorimetric: cmsIntent = INTENT_ABSOLUTE_COLORIMETRIC;
+   case ICCRenderingIntent::Perceptual:           cmsIntent = INTENT_PERCEPTUAL; break;
+   case ICCRenderingIntent::RelativeColorimetric: cmsIntent = INTENT_RELATIVE_COLORIMETRIC; break;
+   case ICCRenderingIntent::Saturation:           cmsIntent = INTENT_SATURATION; break;
+   case ICCRenderingIntent::AbsoluteColorimetric: cmsIntent = INTENT_ABSOLUTE_COLORIMETRIC; break;
    default: return false; // ?!
    }
 
    uint32 cmsDirection;
    switch ( direction )
    {
-   case ICCRenderingDirection::Input:    cmsDirection = LCMS_USED_AS_INPUT;
-   case ICCRenderingDirection::Output:   cmsDirection = LCMS_USED_AS_OUTPUT;
-   case ICCRenderingDirection::Proofing: cmsDirection = LCMS_USED_AS_PROOF;
+   case ICCRenderingDirection::Input:    cmsDirection = LCMS_USED_AS_INPUT; break;
+   case ICCRenderingDirection::Output:   cmsDirection = LCMS_USED_AS_OUTPUT; break;
+   case ICCRenderingDirection::Proofing: cmsDirection = LCMS_USED_AS_PROOF; break;
    default: return false; // ?!
    }
 

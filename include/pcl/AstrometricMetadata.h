@@ -431,10 +431,12 @@ public:
     * \param pRD  Reference to a point where the output equatorial spherical
     *             coordinates will be stored, expressed in degrees. \a pRD.x
     *             will be the right ascension and \a pRD.y the declination.
+    *             Output right ascensions are constrained to the [0,360)
+    *             range. Output declinations are in the range [-90,+90].
     *
     * \param pI   Input image coordinates in pixels. The specified location can
-    *             lie outside of the image bounds defined by
-    *             [0,0]-(Width(),Height()).
+    *             legally lie outside of the image bounds defined by
+    *             [0,0]-[Width(),Height()].
     *
     * Returns true iff the specified point \a pI can be projected on the
     * celestial sphere using this astrometric solution.
@@ -443,7 +445,16 @@ public:
    {
       if ( !IsValid() )
          throw Error( "Invalid call to AstrometricMetadata::ImageToCelestial(): No astrometric solution." );
-      return m_projection->Inverse( pRD, m_transformWI->Inverse( pI ) );
+      bool valid = m_projection->Inverse( pRD, m_transformWI->Inverse( pI ) );
+      if ( valid )
+      {
+         // Constrain right ascension to the [0,360) range.
+         if ( pRD.x < 0 )
+            pRD.x += 360;
+         else if ( pRD.x >= 360 )
+            pRD.x -= 360;
+      }
+      return valid;
    }
 
    /*!
@@ -457,7 +468,7 @@ public:
     *
     * Returns true iff the specified celestial coordinates can be reprojected
     * on the image coordinate system. Note that the output image coordinates
-    * can lie outside of the image bounds defined by [0,0]-(Width(),Height()).
+    * can lie outside of the image bounds defined by [0,0]-[Width(),Height()].
     */
    bool CelestialToImage( DPoint& pI, const DPoint& pRD ) const
    {

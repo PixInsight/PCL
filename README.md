@@ -100,15 +100,13 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
 
 The current version of PCL has been built and tested with:
 
-   * Red Hat Enterprise Linux 7.4: GCC C++ compiler 7.3.0
-   * macOS 10.11: Clang C++ compiler with Xcode 8.2.1
+   * Red Hat Enterprise Linux 7.4: GCC C++ compiler 7.3.0.
+   * macOS 10.11: Clang C++ compiler with Xcode 8.2.1, as provided by Apple.
+   * Windows 10: Microsoft Visual C++ 2017 Community Edition.
 
-We are currently working on the ports to FreeBSD and Windows:
+We are currently working on the port to FreeBSD:
 
-   * FreeBSD 10.4: System clang compiler
-   * Windows 10: Microsoft Visual C++ 2017 Community Edition
-
-** Important ** We still cannot guarantee compilation without errors on these platforms. As soon as we get PCL fully tested on FreeBSD and Windows we'll modify the information given in this document.
+   * FreeBSD 10.4: System clang compiler.
 
 The GCC and clang C++ compilers provide higher conformance to ISO C++ standards and are high quality development tools. On FreeBSD and macOS we rely on the Clang/LLVM compiler included with the latest versions of Xcode and FreeBSD.
 

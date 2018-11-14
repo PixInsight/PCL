@@ -7918,6 +7918,16 @@ public:
     */
    typedef string_base::const_c_string          const_c_string;
 
+   /*
+    * Null-terminated UTF-16 string - C++11 compatibility.
+    */
+   typedef char16_t*                            c16_string;
+
+   /*
+    * Immutable null-terminated UTF-16 string - C++11 compatibility.
+    */
+   typedef const char16_t*                      const_c16_string;
+
    /*!
     * %String iterator.
     */
@@ -8065,6 +8075,30 @@ public:
     * \code String( l.begin(), l.end() ) \endcode
     */
    String( std::initializer_list<char_type> l ) : String( l.begin(), l.end() )
+   {
+   }
+
+   /*!
+    * Constructs a %String as a copy of a null-terminated string \a t of
+    * \c char16_t characters.
+    */
+   String( const char16_t* t ) : string_base( reinterpret_cast<const_iterator>( t ) )
+   {
+   }
+
+   /*!
+    * Constructs a %String with the \a n first characters of the
+    * null-terminated string \a t of \c char16_t characters, starting from its
+    * \a i-th character.
+    */
+   String( const char16_t* t, size_type i, size_type n ) : string_base( reinterpret_cast<const_iterator>( t ), i, n )
+   {
+   }
+
+   /*!
+    * Constructs a %String with \a n copies of a \c char16_t character \a c.
+    */
+   String( char16_t c, size_type n ) : string_base( char_type( c ), n )
    {
    }
 
@@ -8393,6 +8427,26 @@ public:
    }
 
    /*!
+    * Assigns a copy of the null-terminated string \a t of \c char16_t to this
+    * string. Returns a reference to this object.
+    */
+   String& operator =( const char16_t* t )
+   {
+      string_base::Assign( reinterpret_cast<const_iterator>( t ) );
+      return *this;
+   }
+
+   /*!
+    * Assigns a single copy of a \c char16_t character \a c to this string.
+    * Returns a reference to this object.
+    */
+   String& operator =( char16_t c )
+   {
+      string_base::Assign( char_type( c ) );
+      return *this;
+   }
+
+   /*!
     * Assigns a copy of the null-terminated string \a t of \c wchar_t to this
     * string. Returns a reference to this object.
     */
@@ -8520,6 +8574,32 @@ public:
    void Assign( char_type c, size_type n = 1 )
    {
       string_base::Assign( c, n );
+   }
+
+   /*!
+    * Assigns a null-terminated string \a t of \c char16_t to this string.
+    */
+   void Assign( const char16_t* t )
+   {
+      string_base::Assign( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   /*!
+    * Assigns a contiguous segment of \a n characters of a null-terminated
+    * string \a t of \c char16_t, starting from its \a i-th character, to this
+    * string.
+    */
+   void Assign( const char16_t* t, size_type i, size_type n )
+   {
+      string_base::Assign( reinterpret_cast<const_iterator>( t ), i, n );
+   }
+
+   /*!
+    * Assigns \a n copies of a \c char16_t character \a c to this string.
+    */
+   void Assign( char16_t c, size_type n = 1 )
+   {
+      string_base::Assign( char_type( c ), n );
    }
 
    /*!
@@ -8659,6 +8739,16 @@ public:
       string_base::Insert( i, c, n );
    }
 
+   void Insert( size_type i, const char16_t* t )
+   {
+      string_base::Insert( i, reinterpret_cast<const_iterator>( t ) );
+   }
+
+   void Insert( size_type i, char16_t c, size_type n = 1 )
+   {
+      string_base::Insert( i, String( c, n ) );
+   }
+
    void Insert( size_type i, const wchar_t* t )
    {
 #ifdef __PCL_WINDOWS
@@ -8780,6 +8870,28 @@ public:
       return *this;
    }
 
+   void Append( const char16_t* t )
+   {
+      string_base::Append( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   String& operator +=( const char16_t* t )
+   {
+      Append( t );
+      return *this;
+   }
+
+   void Append( char16_t c, size_type n = 1 )
+   {
+      string_base::Append( char_type( c ), n );
+   }
+
+   String& operator +=( char16_t c )
+   {
+      Append( c );
+      return *this;
+   }
+
    void Append( const wchar_t* t )
    {
 #ifdef __PCL_WINDOWS
@@ -8879,6 +8991,16 @@ public:
       Append( c, n );
    }
 
+   void Add( const char16_t* t )
+   {
+      Append( t );
+   }
+
+   void Add( char16_t c, size_type n = 1 )
+   {
+      Append( c, n );
+   }
+
    void Add( const wchar_t* t )
    {
       Append( t );
@@ -8959,6 +9081,28 @@ public:
    }
 
    String& operator -=( char_type c )
+   {
+      Prepend( c );
+      return *this;
+   }
+
+   void Prepend( const char16_t* t )
+   {
+      string_base::Prepend( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   String& operator -=( const char16_t* t )
+   {
+      Prepend( t );
+      return *this;
+   }
+
+   void Prepend( char16_t c, size_type n = 1 )
+   {
+      string_base::Prepend( char_type( c ), n );
+   }
+
+   String& operator -=( char16_t c )
    {
       Prepend( c );
       return *this;
@@ -9055,6 +9199,16 @@ public:
       string_base::Replace( i, n, c, nc );
    }
 
+   void Replace( size_type i, size_type n, const char16_t* t )
+   {
+      string_base::Replace( i, n, reinterpret_cast<const_iterator>( t ) );
+   }
+
+   void Replace( size_type i, size_type n, char16_t c, size_type nc = 1 )
+   {
+      string_base::Replace( i, n, char_type( c ), nc );
+   }
+
    void Replace( size_type i, size_type n, const wchar_t* t )
    {
 #ifdef __PCL_WINDOWS
@@ -9118,6 +9272,16 @@ public:
       string_base::ReplaceCharIC( c1, c2, i, n );
    }
 
+   void ReplaceChar( char16_t c1, char16_t c2, size_type i = 0, size_type n = maxPos )
+   {
+      string_base::ReplaceChar( char_type( c1 ), char_type( c2 ), i, n );
+   }
+
+   void ReplaceCharIC( char16_t c1, char16_t c2, size_type i = 0, size_type n = maxPos )
+   {
+      string_base::ReplaceCharIC( char_type( c1 ), char_type( c2 ), i, n );
+   }
+
    void ReplaceChar( wchar_t c1, wchar_t c2, size_type i = 0, size_type n = maxPos )
    {
       string_base::ReplaceChar( char_type( c1 ), char_type( c2 ), i, n );
@@ -9158,6 +9322,18 @@ public:
    void ReplaceStringIC( const_iterator t1, const_iterator t2, size_type i = 0 )
    {
       string_base::ReplaceStringIC( t1, t2, i );
+   }
+
+   void ReplaceString( const char16_t* t1, const char16_t* t2, size_type i = 0 )
+   {
+      string_base::ReplaceString( reinterpret_cast<const_iterator>( t1 ),
+                                  reinterpret_cast<const_iterator>( t2 ), i );
+   }
+
+   void ReplaceStringIC( const char16_t* t1, const char16_t* t2, size_type i = 0 )
+   {
+      string_base::ReplaceStringIC( reinterpret_cast<const_iterator>( t1 ),
+                                    reinterpret_cast<const_iterator>( t2 ), i );
    }
 
    void ReplaceString( const wchar_t* t1, const wchar_t* t2, size_type i = 0 )
@@ -9202,6 +9378,16 @@ public:
       string_base::DeleteCharIC( c, i );
    }
 
+   void DeleteChar( char16_t c, size_type i = 0 )
+   {
+      string_base::DeleteChar( char_type( c ), i );
+   }
+
+   void DeleteCharIC( char16_t c, size_type i = 0 )
+   {
+      string_base::DeleteCharIC( char_type( c ), i );
+   }
+
    void DeleteChar( wchar_t c, size_type i = 0 )
    {
       string_base::DeleteChar( char_type( c ), i );
@@ -9242,6 +9428,16 @@ public:
    void DeleteStringIC( const_iterator t, size_type i = 0 )
    {
       string_base::DeleteStringIC( t, i );
+   }
+
+   void DeleteString( const char16_t* t, size_type i = 0 )
+   {
+      string_base::DeleteString( reinterpret_cast<const_iterator>( t ), i );
+   }
+
+   void DeleteStringIC( const char16_t* t, size_type i = 0 )
+   {
+      string_base::DeleteStringIC( reinterpret_cast<const_iterator>( t ), i );
    }
 
    void DeleteString( const wchar_t* t, size_type i = 0 )
@@ -9302,6 +9498,26 @@ public:
    bool StartsWithIC( char_type c ) const
    {
       return string_base::StartsWithIC( c );
+   }
+
+   bool StartsWith( const char16_t* t ) const
+   {
+      return string_base::StartsWith( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   bool StartsWith( char16_t c ) const
+   {
+      return string_base::StartsWith( char_type( c ) );
+   }
+
+   bool StartsWithIC( const char16_t* t ) const
+   {
+      return string_base::StartsWithIC( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   bool StartsWithIC( char16_t c ) const
+   {
+      return string_base::StartsWithIC( char_type( c ) );
    }
 
    bool StartsWith( const wchar_t* t ) const
@@ -9396,7 +9612,27 @@ public:
       return string_base::EndsWithIC( c );
    }
 
-    bool EndsWith( const wchar_t* t ) const
+   bool EndsWith( const char16_t* t ) const
+   {
+      return string_base::EndsWith( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   bool EndsWith( char16_t c ) const
+   {
+      return string_base::EndsWith( char_type( c ) );
+   }
+
+   bool EndsWithIC( const char16_t* t ) const
+   {
+      return string_base::EndsWithIC( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   bool EndsWithIC( char16_t c ) const
+   {
+      return string_base::EndsWithIC( char_type( c ) );
+   }
+
+   bool EndsWith( const wchar_t* t ) const
    {
 #ifdef __PCL_WINDOWS
       return string_base::EndsWith( reinterpret_cast<const_iterator>( t ) );
@@ -9488,6 +9724,26 @@ public:
       return string_base::FindFirstIC( c, i );
    }
 
+   size_type FindFirst( const char16_t* t, size_type i = 0 ) const
+   {
+      return string_base::FindFirst( reinterpret_cast<const_iterator>( t ), i );
+   }
+
+   size_type FindFirst( char16_t c, size_type i = 0 ) const
+   {
+      return string_base::FindFirst( char_type( c ), i );
+   }
+
+   size_type FindFirstIC( const char16_t* t, size_type i = 0 ) const
+   {
+      return string_base::FindFirstIC( reinterpret_cast<const_iterator>( t ), i );
+   }
+
+   size_type FindFirstIC( char16_t c, size_type i = 0 ) const
+   {
+      return string_base::FindFirstIC( char_type( c ), i );
+   }
+
    size_type FindFirst( const wchar_t* t, size_type i = 0 ) const
    {
 #ifdef __PCL_WINDOWS
@@ -9553,6 +9809,16 @@ public:
       return FindFirst( c, i );
    }
 
+   size_type Find( const char16_t* t, size_type i = 0 ) const
+   {
+      return FindFirst( t, i );
+   }
+
+   size_type Find( char16_t c, size_type i = 0 ) const
+   {
+      return FindFirst( c, i );
+   }
+
    size_type Find( const wchar_t* t, size_type i = 0 ) const
    {
       return FindFirst( t, i );
@@ -9584,6 +9850,16 @@ public:
    }
 
    size_type FindIC( char_type c, size_type i = 0 ) const
+   {
+      return FindFirstIC( c, i );
+   }
+
+   size_type FindIC( const char16_t* t, size_type i = 0 ) const
+   {
+      return FindFirstIC( t, i );
+   }
+
+   size_type FindIC( char16_t c, size_type i = 0 ) const
    {
       return FindFirstIC( c, i );
    }
@@ -9638,6 +9914,26 @@ public:
    size_type FindLastIC( char_type c, size_type r = maxPos ) const
    {
       return string_base::FindLastIC( c, r );
+   }
+
+   size_type FindLast( const char16_t* t, size_type r = maxPos ) const
+   {
+      return string_base::FindLast( reinterpret_cast<const_iterator>( t ), r );
+   }
+
+   size_type FindLast( char16_t c, size_type r = maxPos ) const
+   {
+      return string_base::FindLast( char_type( c ), r );
+   }
+
+   size_type FindLastIC( const char16_t* t, size_type r = maxPos ) const
+   {
+      return string_base::FindLastIC( reinterpret_cast<const_iterator>( t ), r );
+   }
+
+   size_type FindLastIC( char16_t c, size_type r = maxPos ) const
+   {
+      return string_base::FindLastIC( char_type( c ), r );
    }
 
    size_type FindLast( const wchar_t* t, size_type r = maxPos ) const
@@ -9720,6 +10016,26 @@ public:
       return string_base::ContainsIC( c );
    }
 
+   bool Contains( const char16_t* t ) const
+   {
+      return string_base::Contains( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   bool Contains( char16_t c ) const
+   {
+      return string_base::Contains( char_type( c ) );
+   }
+
+   bool ContainsIC( const char16_t* t ) const
+   {
+      return string_base::ContainsIC( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   bool ContainsIC( char16_t c ) const
+   {
+      return string_base::ContainsIC( char_type( c ) );
+   }
+
    bool Contains( const wchar_t* t ) const
    {
 #ifdef __PCL_WINDOWS
@@ -9785,6 +10101,16 @@ public:
       return string_base::CompareCodePoints( c, caseSensitive );
    }
 
+   int CompareCodePoints( const char16_t* t, bool caseSensitive = true ) const
+   {
+      return string_base::CompareCodePoints( reinterpret_cast<const_iterator>( t ), caseSensitive );
+   }
+
+   int CompareCodePoints( char16_t c, bool caseSensitive = true ) const
+   {
+      return string_base::CompareCodePoints( char_type( c ), caseSensitive );
+   }
+
    int CompareCodePoints( const wchar_t* t, bool caseSensitive = true ) const
    {
 #ifdef __PCL_WINDOWS
@@ -9839,6 +10165,26 @@ public:
    int CompareIC( char_type c, bool localeAware = true ) const
    {
       return string_base::CompareIC( c, localeAware );
+   }
+
+   int Compare( const char16_t* t, bool caseSensitive = true, bool localeAware = true ) const
+   {
+      return string_base::Compare( reinterpret_cast<const_iterator>( t ), caseSensitive, localeAware );
+   }
+
+   int Compare( char16_t c, bool caseSensitive = true, bool localeAware = true ) const
+   {
+      return string_base::Compare( char_type( c ), caseSensitive, localeAware );
+   }
+
+   int CompareIC( const char16_t* t, bool localeAware = true ) const
+   {
+      return string_base::CompareIC( reinterpret_cast<const_iterator>( t ), localeAware );
+   }
+
+   int CompareIC( char16_t c, bool localeAware = true ) const
+   {
+      return string_base::CompareIC( char_type( c ), localeAware );
    }
 
    int Compare( const wchar_t* t, bool caseSensitive = true, bool localeAware = true ) const
@@ -11894,6 +12240,150 @@ inline String operator +( String::char_type c1, String&& s2 )
 
 /*!
  * Returns a UTF-16 string with the concatenation of a UTF-16 string \a s1 and
+ * a null-terminated string of \c char16_t \a t2.
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( const String::string_base& s1, const char16_t* t2 )
+{
+   String s = s1;
+   s.Append( t2 );
+   return s;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a UTF-16 string \a s1
+ * (rvalue reference) and a null-terminated string of \c char16_t \a t2.
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( String::string_base&& s1, const char16_t* t2 )
+{
+   String s = std::move( s1 );
+   s.Append( t2 );
+   return s;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a UTF-16 string \a s1
+ * (rvalue reference) and a null-terminated string of \c char16_t \a t2.
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( String&& s1, const char16_t* t2 )
+{
+   s1.Append( t2 );
+   return s1;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a null-terminated string
+ * of \c char16_t \a t1 and a UTF-16 string \a s2.
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( const char16_t* t1, const String::string_base& s2 )
+{
+   String s = s2;
+   s.Prepend( t1 );
+   return s;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a null-terminated string
+ * of \c char16_t \a t1 and a UTF-16 string \a s2 (rvalue reference).
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( const char16_t* t1, String::string_base&& s2 )
+{
+   String s = std::move( s2 );
+   s.Prepend( t1 );
+   return s;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a null-terminated string
+ * of \c char16_t \a t1 and a UTF-16 string \a s2 (rvalue reference).
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( const char16_t* t1, String&& s2 )
+{
+   s2.Prepend( t1 );
+   return s2;
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a UTF-16 string \a s1 and
+ * a single \c char16_t character \a c2.
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( const String::string_base& s1, char16_t c2 )
+{
+   String s = s1;
+   s.Append( c2 );
+   return s;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a UTF-16 string \a s1
+ * (rvalue reference) and a single \c char16_t character \a c2.
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( String::string_base&& s1, char16_t c2 )
+{
+   String s = std::move( s1 );
+   s.Append( c2 );
+   return s;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a UTF-16 string \a s1
+ * (rvalue reference) and a single \c char16_t character \a c2.
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( String&& s1, char16_t c2 )
+{
+   s1.Append( c2 );
+   return s1;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a single \c char16_t
+ * character \a c1 and a UTF-16 string \a s2.
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( char16_t c1, const String::string_base& s2 )
+{
+   String s = s2;
+   s.Prepend( c1 );
+   return s;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a single \c char16_t
+ * character \a c1 and a UTF-16 string \a s2 (rvalue reference).
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( char16_t c1, String::string_base&& s2 )
+{
+   String s = std::move( s2 );
+   s.Prepend( c1 );
+   return s;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a single \c char16_t
+ * character \a c1 and a UTF-16 string \a s2 (rvalue reference).
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( char16_t c1, String&& s2 )
+{
+   s2.Prepend( c1 );
+   return s2;
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a UTF-16 string \a s1 and
  * a null-terminated string of \c wchar_t \a t2.
  * \ingroup string_concatenation_ops
  */
@@ -12317,6 +12807,50 @@ inline String& operator <<( String&& s1, String::char_type c2 )
 }
 
 /*!
+ * Appends a null-terminated string \a t2 of \c char16_t to a UTF-16 string
+ * \a s1. Returns a reference to the left-hand operand string \a s1.
+ * \ingroup string_concatenation_ops
+ */
+inline String& operator <<( String& s1, const char16_t* t2 )
+{
+   s1.Append( t2 );
+   return s1;
+}
+
+/*!
+ * Appends a null-terminated string \a t2 of \c char16_t to a UTF-16 string
+ * \a s1. Returns a reference to the left-hand operand string \a s1.
+ * \ingroup string_concatenation_ops
+ */
+inline String& operator <<( String&& s1, const char16_t* t2 )
+{
+   s1.Append( t2 );
+   return s1;
+}
+
+/*!
+ * Appends a single \c char16_t character \a c2 to a UTF-16 string \a s1.
+ * Returns a reference to the left-hand operand string \a s1.
+ * \ingroup string_concatenation_ops
+ */
+inline String& operator <<( String& s1, char16_t c2 )
+{
+   s1.Append( c2 );
+   return s1;
+}
+
+/*!
+ * Appends a single \c char16_t character \a c2 to a UTF-16 string \a s1.
+ * Returns a reference to the left-hand operand string \a s1.
+ * \ingroup string_concatenation_ops
+ */
+inline String& operator <<( String&& s1, char16_t c2 )
+{
+   s1.Append( c2 );
+   return s1;
+}
+
+/*!
  * Appends a null-terminated string \a t2 of \c wchar_t to a UTF-16 string
  * \a s1. Returns a reference to the left-hand operand string \a s1.
  * \ingroup string_concatenation_ops
@@ -12431,6 +12965,226 @@ inline String& operator <<( String&& s1, String::char8_type c2 )
 /*!
  * \defgroup string_relational_ops String Relational Operators
  */
+
+/*!
+ * Equality operator.
+ * \ingroup string_relational_ops
+ */
+inline bool operator ==( const String& s1, const char16_t* t2 )
+{
+   return s1.CompareCodePoints( t2 ) == 0;
+}
+
+/*!
+ * <em>Less than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator  <( const String& s1, const char16_t* t2 )
+{
+   return s1.CompareCodePoints( t2 ) < 0;
+}
+
+/*!
+ * <em>Less than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator <=( const String& s1, const char16_t* t2 )
+{
+   return s1.CompareCodePoints( t2 ) <= 0;
+}
+
+/*!
+ * <em>Greater than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator  >( const String& s1, const char16_t* t2 )
+{
+   return s1.CompareCodePoints( t2 ) > 0;
+}
+
+/*!
+ * <em>Greater than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator >=( const String& s1, const char16_t* t2 )
+{
+   return s1.CompareCodePoints( t2 ) >= 0;
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * Equality operator.
+ * \ingroup string_relational_ops
+ */
+inline bool operator ==( const char16_t* t1, const String& s2 )
+{
+   return s2.CompareCodePoints( t1 ) == 0;
+}
+
+/*!
+ * <em>Less than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator  <( const char16_t* t1, const String& s2 )
+{
+   return s2.CompareCodePoints( t1 ) > 0;
+}
+
+/*!
+ * <em>Less than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator <=( const char16_t* t1, const String& s2 )
+{
+   return s2.CompareCodePoints( t1 ) >= 0;
+}
+
+/*!
+ * <em>Greater than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator  >( const char16_t* t1, const String& s2 )
+{
+   return s2.CompareCodePoints( t1 ) < 0;
+}
+
+/*!
+ * <em>Greater than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator >=( const char16_t* t1, const String& s2 )
+{
+   return s2.CompareCodePoints( t1 ) <= 0;
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * Equality operator.
+ * \ingroup string_relational_ops
+ */
+inline bool operator ==( const String& s1, char16_t c2 )
+{
+   return s1.CompareCodePoints( c2 ) == 0;
+}
+
+/*!
+ * <em>Less than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator  <( const String& s1, char16_t c2 )
+{
+   return s1.CompareCodePoints( c2 ) < 0;
+}
+
+/*!
+ * <em>Less than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator <=( const String& s1, char16_t c2 )
+{
+   return s1.CompareCodePoints( c2 ) <= 0;
+}
+
+/*!
+ * <em>Greater than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator  >( const String& s1, char16_t c2 )
+{
+   return s1.CompareCodePoints( c2 ) > 0;
+}
+
+/*!
+ * <em>Greater than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator >=( const String& s1, char16_t c2 )
+{
+   return s1.CompareCodePoints( c2 ) >= 0;
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * Equality operator.
+ * \ingroup string_relational_ops
+ */
+inline bool operator ==( char16_t c1, const String& s2 )
+{
+   return s2.CompareCodePoints( c1 ) == 0;
+}
+
+/*!
+ * <em>Less than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator  <( char16_t c1, const String& s2 )
+{
+   return s2.CompareCodePoints( c1 ) > 0;
+}
+
+/*!
+ * <em>Less than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator <=( char16_t c1, const String& s2 )
+{
+   return s2.CompareCodePoints( c1 ) >= 0;
+}
+
+/*!
+ * <em>Greater than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator  >( char16_t c1, const String& s2 )
+{
+   return s2.CompareCodePoints( c1 ) < 0;
+}
+
+/*!
+ * <em>Greater than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator >=( char16_t c1, const String& s2 )
+{
+   return s2.CompareCodePoints( c1 ) <= 0;
+}
+
+// ----------------------------------------------------------------------------
 
 /*!
  * Equality operator.

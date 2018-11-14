@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0410
+// Standard Image Process Module Version 01.02.09.0412
 // ----------------------------------------------------------------------------
-// DynamicPSFInstance.h - Released 2018-11-01T11:07:21Z
+// DynamicPSFInstance.h - Released 2018-11-13T16:55:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -55,9 +55,9 @@
 
 #include <pcl/ProcessImplementation.h>
 
-#include "StarDetector.h"
-#include "PSF.h"
 #include "DynamicPSFParameters.h"
+#include "PSF.h"
+#include "StarDetector.h"
 
 namespace pcl
 {
@@ -75,13 +75,13 @@ public:
 
    virtual ~DynamicPSFInstance();
 
-   virtual void Assign( const ProcessImplementation& );
-   virtual bool CanExecuteOn( const View& v, String& whyNot ) const;
-   virtual bool CanExecuteGlobal( String& whyNot ) const;
-   virtual bool ExecuteGlobal();
-   virtual void* LockParameter( const MetaParameter*, size_type tableRow );
-   virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
-   virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
+   void Assign( const ProcessImplementation& ) override;
+   bool CanExecuteOn( const View& v, String& whyNot ) const override;
+   bool CanExecuteGlobal( String& whyNot ) const override;
+   bool ExecuteGlobal() override;
+   void* LockParameter( const MetaParameter*, size_type tableRow ) override;
+   bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow ) override;
+   size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const override;
 
    void AssignOptions( const DynamicPSFInstance& );
 
@@ -90,7 +90,7 @@ private:
    /*
     * View identifiers
     */
-   StringList     views;
+   StringList     p_views;
 
    /*
     * Stars
@@ -106,7 +106,7 @@ private:
       {
       }
    };
-   Array<Star>    stars;
+   Array<Star>    p_stars;
 
    /*
     * PSF fittings
@@ -122,7 +122,7 @@ private:
       {
       }
    };
-   Array<PSF>     psfs;
+   Array<PSF>     p_psfs;
 
    /*
     * PSF fitting functions
@@ -141,34 +141,36 @@ private:
       pcl_bool  moffat15;
       pcl_bool  lorentzian;
    };
-   PSFOptions     psfOptions;
+   PSFOptions     p_psfOptions;
 
-   pcl_bool       signedAngles;  // show rotation angles in [0,180[ or ]-90,+90]
+   pcl_bool       p_signedAngles; // show rotation angles in [0,180] or [-90,+90]
 
-   pcl_bool       regenerate;    // do a regeneration or a recalculation in ExecuteGlobal()?
+   pcl_bool       p_regenerate;   // do a regeneration or a recalculation in ExecuteGlobal()?
+
+   pcl_bool       p_astrometry;   // compute celestial coordinates using existing astrometric solutions
 
    /*
     * Star detection parameters
     */
-   int32          searchRadius;  // star search radius in pixels
-   float          threshold;     // background threshold, sigma units
-   pcl_bool       autoAperture;  // automatic sampling aperture
+   int32          p_searchRadius;  // star search radius in pixels
+   float          p_threshold;     // background threshold, sigma units
+   pcl_bool       p_autoAperture;  // automatic sampling aperture
 
    /*
     * Image scale parameters
     */
-   pcl_enum       scaleMode;     // std keyword (FOCALLEN), custom keyword or literal value
-   float          scaleValue;    // image scale in arc seconds per pixel
-   String         scaleKeyword;  // custom image scale keyword
+   pcl_enum       p_scaleMode;     // std keyword (FOCALLEN), custom keyword or literal value
+   float          p_scaleValue;    // image scale in arc seconds per pixel
+   String         p_scaleKeyword;  // custom image scale keyword
 
    /*
     * Interface options
     */
-   uint32         starColor;              // drawing color, normal stars
-   uint32         selectedStarColor;      // drawing color, selected star
-   uint32         selectedStarFillColor;  // fill color, selected star
-   uint32         badStarColor;           // drawing color, failed fit
-   uint32         badStarFillColor;       // filling color, failed fit
+   uint32         p_starColor;              // drawing color, normal stars
+   uint32         p_selectedStarColor;      // drawing color, selected star
+   uint32         p_selectedStarFillColor;  // fill color, selected star
+   uint32         p_badStarColor;           // drawing color, failed fit
+   uint32         p_badStarFillColor;       // filling color, failed fit
 
    friend class DynamicPSFInterface;
 };
@@ -180,4 +182,4 @@ private:
 #endif   // __DynamicPSFInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF DynamicPSFInstance.h - Released 2018-11-01T11:07:21Z
+// EOF DynamicPSFInstance.h - Released 2018-11-13T16:55:32Z

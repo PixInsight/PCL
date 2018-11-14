@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0410
+// Standard Image Process Module Version 01.02.09.0412
 // ----------------------------------------------------------------------------
-// DynamicPSFParameters.cpp - Released 2018-11-01T11:07:21Z
+// DynamicPSFParameters.cpp - Released 2018-11-13T16:55:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -57,62 +57,66 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-DPViewTable*             TheDPViewTableParameter = 0;
-DPViewId*                TheDPViewIdParameter = 0;
+DPViewTable*             TheDPViewTableParameter = nullptr;
+DPViewId*                TheDPViewIdParameter = nullptr;
 
-DPStarTable*             TheDPStarTableParameter = 0;
-DPStarViewIndex*         TheDPStarViewIndexParameter = 0;
-DPStarChannel*           TheDPStarChannelParameter = 0;
-DPStarStatus*            TheDPStarStatusParameter = 0;
-DPStarRectX0*            TheDPStarRectX0Parameter = 0;
-DPStarRectY0*            TheDPStarRectY0Parameter = 0;
-DPStarRectX1*            TheDPStarRectX1Parameter = 0;
-DPStarRectY1*            TheDPStarRectY1Parameter = 0;
-DPStarPosX*              TheDPStarPosXParameter = 0;
-DPStarPosY*              TheDPStarPosYParameter = 0;
+DPStarTable*             TheDPStarTableParameter = nullptr;
+DPStarViewIndex*         TheDPStarViewIndexParameter = nullptr;
+DPStarChannel*           TheDPStarChannelParameter = nullptr;
+DPStarStatus*            TheDPStarStatusParameter = nullptr;
+DPStarRectX0*            TheDPStarRectX0Parameter = nullptr;
+DPStarRectY0*            TheDPStarRectY0Parameter = nullptr;
+DPStarRectX1*            TheDPStarRectX1Parameter = nullptr;
+DPStarRectY1*            TheDPStarRectY1Parameter = nullptr;
+DPStarPosX*              TheDPStarPosXParameter = nullptr;
+DPStarPosY*              TheDPStarPosYParameter = nullptr;
 
-DPPSFTable*              TheDPPSFTableParameter = 0;
-DPPSFStarIndex*          TheDPPSFStarIndexParameter = 0;
-DPPSFFunction*           TheDPPSFFunctionParameter = 0;
-DPPSFCircular*           TheDPPSFCircularParameter = 0;
-DPPSFStatus*             TheDPPSFStatusParameter = 0;
-DPPSFBackground*         TheDPPSFBackgroundParameter = 0;
-DPPSFAmplitude*          TheDPPSFAmplitudeParameter = 0;
-DPPSFCentroidX*          TheDPPSFCentroidXParameter = 0;
-DPPSFCentroidY*          TheDPPSFCentroidYParameter = 0;
-DPPSFRadiusX*            TheDPPSFRadiusXParameter = 0;
-DPPSFRadiusY*            TheDPPSFRadiusYParameter = 0;
-DPPSFRotationAngle*      TheDPPSFRotationAngleParameter = 0;
-DPPSFBeta*               TheDPPSFBetaParameter = 0;
-DPPSFMAD*                TheDPPSFMADParameter = 0;
+DPPSFTable*              TheDPPSFTableParameter = nullptr;
+DPPSFStarIndex*          TheDPPSFStarIndexParameter = nullptr;
+DPPSFFunction*           TheDPPSFFunctionParameter = nullptr;
+DPPSFCircular*           TheDPPSFCircularParameter = nullptr;
+DPPSFStatus*             TheDPPSFStatusParameter = nullptr;
+DPPSFBackground*         TheDPPSFBackgroundParameter = nullptr;
+DPPSFAmplitude*          TheDPPSFAmplitudeParameter = nullptr;
+DPPSFCentroidX*          TheDPPSFCentroidXParameter = nullptr;
+DPPSFCentroidY*          TheDPPSFCentroidYParameter = nullptr;
+DPPSFRadiusX*            TheDPPSFRadiusXParameter = nullptr;
+DPPSFRadiusY*            TheDPPSFRadiusYParameter = nullptr;
+DPPSFRotationAngle*      TheDPPSFRotationAngleParameter = nullptr;
+DPPSFBeta*               TheDPPSFBetaParameter = nullptr;
+DPPSFMAD*                TheDPPSFMADParameter = nullptr;
+DPPSFCelestial*          TheDPPSFCelestialParameter = nullptr;
+DPPSFCentroidRA*         TheDPPSFCentroidRAParameter = nullptr;
+DPPSFCentroidDec*        TheDPPSFCentroidDecParameter = nullptr;
 
-DPAutoPSF*               TheDPAutoPSFParameter = 0;
-DPCircularPSF*           TheDPCircularPSFParameter = 0;
-DPGaussianPSF*           TheDPGaussianPSFParameter = 0;
-DPMoffatPSF*             TheDPMoffatPSFParameter = 0;
-DPMoffat10PSF*           TheDPMoffat10PSFParameter = 0;
-DPMoffat8PSF*            TheDPMoffat8PSFParameter = 0;
-DPMoffat6PSF*            TheDPMoffat6PSFParameter = 0;
-DPMoffat4PSF*            TheDPMoffat4PSFParameter = 0;
-DPMoffat25PSF*           TheDPMoffat25PSFParameter = 0;
-DPMoffat15PSF*           TheDPMoffat15PSFParameter = 0;
-DPLorentzianPSF*         TheDPLorentzianPSFParameter = 0;
+DPAutoPSF*               TheDPAutoPSFParameter = nullptr;
+DPCircularPSF*           TheDPCircularPSFParameter = nullptr;
+DPGaussianPSF*           TheDPGaussianPSFParameter = nullptr;
+DPMoffatPSF*             TheDPMoffatPSFParameter = nullptr;
+DPMoffat10PSF*           TheDPMoffat10PSFParameter = nullptr;
+DPMoffat8PSF*            TheDPMoffat8PSFParameter = nullptr;
+DPMoffat6PSF*            TheDPMoffat6PSFParameter = nullptr;
+DPMoffat4PSF*            TheDPMoffat4PSFParameter = nullptr;
+DPMoffat25PSF*           TheDPMoffat25PSFParameter = nullptr;
+DPMoffat15PSF*           TheDPMoffat15PSFParameter = nullptr;
+DPLorentzianPSF*         TheDPLorentzianPSFParameter = nullptr;
 
-DPSignedAngles*          TheDPSignedAnglesParameter = 0;
-DPRegenerate*            TheDPRegenerateParameter = 0;
+DPSignedAngles*          TheDPSignedAnglesParameter = nullptr;
+DPRegenerate*            TheDPRegenerateParameter = nullptr;
+DPAstrometry*            TheDPAstrometryParameter = nullptr;
 
-DPSearchRadius*          TheDPSearchRadiusParameter = 0;
-DPThreshold*             TheDPThresholdParameter = 0;
-DPAutoAperture*          TheDPAutoApertureParameter = 0;
-DPScaleMode*             TheDPScaleModeParameter = 0;
-DPScaleValue*            TheDPScaleValueParameter = 0;
-DPScaleKeyword*          TheDPScaleKeywordParameter = 0;
+DPSearchRadius*          TheDPSearchRadiusParameter = nullptr;
+DPThreshold*             TheDPThresholdParameter = nullptr;
+DPAutoAperture*          TheDPAutoApertureParameter = nullptr;
+DPScaleMode*             TheDPScaleModeParameter = nullptr;
+DPScaleValue*            TheDPScaleValueParameter = nullptr;
+DPScaleKeyword*          TheDPScaleKeywordParameter = nullptr;
 
-DPStarColor*             TheDPStarColorParameter = 0;
-DPSelectedStarColor*     TheDPSelectedStarColorParameter = 0;
-DPSelectedStarFillColor* TheDPSelectedStarFillColorParameter = 0;
-DPBadStarColor*          TheDPBadStarColorParameter = 0;
-DPBadStarFillColor*      TheDPBadStarFillColorParameter = 0;
+DPStarColor*             TheDPStarColorParameter = nullptr;
+DPSelectedStarColor*     TheDPSelectedStarColorParameter = nullptr;
+DPSelectedStarFillColor* TheDPSelectedStarFillColorParameter = nullptr;
+DPBadStarColor*          TheDPBadStarColorParameter = nullptr;
+DPBadStarFillColor*      TheDPBadStarFillColorParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -717,6 +721,67 @@ double DPPSFMAD::DefaultValue() const
 
 // ----------------------------------------------------------------------------
 
+DPPSFCelestial::DPPSFCelestial( MetaTable* T ) : MetaBoolean( T )
+{
+   TheDPPSFCelestialParameter = this;
+}
+
+IsoString DPPSFCelestial::Id() const
+{
+   return "celestial";
+}
+
+bool DPPSFCelestial::DefaultValue() const
+{
+   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+DPPSFCentroidRA::DPPSFCentroidRA( MetaTable* T ) : MetaDouble( T )
+{
+   TheDPPSFCentroidRAParameter = this;
+}
+
+IsoString DPPSFCentroidRA::Id() const
+{
+   return "alpha";
+}
+
+int DPPSFCentroidRA::Precision() const
+{
+   return 8;
+}
+
+double DPPSFCentroidRA::DefaultValue() const
+{
+   return 0;
+}
+
+// ----------------------------------------------------------------------------
+
+DPPSFCentroidDec::DPPSFCentroidDec( MetaTable* T ) : MetaDouble( T )
+{
+   TheDPPSFCentroidDecParameter = this;
+}
+
+IsoString DPPSFCentroidDec::Id() const
+{
+   return "delta";
+}
+
+int DPPSFCentroidDec::Precision() const
+{
+   return 8;
+}
+
+double DPPSFCentroidDec::DefaultValue() const
+{
+   return 0;
+}
+
+// ----------------------------------------------------------------------------
+
 DPAutoPSF::DPAutoPSF( MetaProcess* P ) : MetaBoolean( P )
 {
    TheDPAutoPSFParameter = this;
@@ -932,6 +997,23 @@ IsoString DPRegenerate::Id() const
 }
 
 bool DPRegenerate::DefaultValue() const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
+DPAstrometry::DPAstrometry( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheDPAstrometryParameter = this;
+}
+
+IsoString DPAstrometry::Id() const
+{
+   return "astrometry";
+}
+
+bool DPAstrometry::DefaultValue() const
 {
    return true;
 }
@@ -1185,4 +1267,4 @@ double DPBadStarFillColor::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicPSFParameters.cpp - Released 2018-11-01T11:07:21Z
+// EOF DynamicPSFParameters.cpp - Released 2018-11-13T16:55:32Z

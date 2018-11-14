@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0410
+// Standard Image Process Module Version 01.02.09.0412
 // ----------------------------------------------------------------------------
-// DynamicPSFInstance.cpp - Released 2018-11-01T11:07:21Z
+// DynamicPSFInstance.cpp - Released 2018-11-13T16:55:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -62,30 +62,31 @@ namespace pcl
 
 DynamicPSFInstance::DynamicPSFInstance( const MetaProcess* P ) :
    ProcessImplementation( P ),
-   signedAngles( TheDPSignedAnglesParameter->DefaultValue() ),
-   regenerate( TheDPRegenerateParameter->DefaultValue() ),
-   searchRadius( TheDPSearchRadiusParameter->DefaultValue() ),
-   threshold( TheDPThresholdParameter->DefaultValue() ),
-   autoAperture( TheDPAutoApertureParameter->DefaultValue() ),
-   scaleMode( DPScaleMode::Default ),
-   scaleValue( TheDPScaleValueParameter->DefaultValue() ),
-   starColor( TheDPStarColorParameter->DefaultValue() ),
-   selectedStarColor( TheDPSelectedStarColorParameter->DefaultValue() ),
-   selectedStarFillColor( TheDPSelectedStarFillColorParameter->DefaultValue() ),
-   badStarColor( TheDPBadStarColorParameter->DefaultValue() ),
-   badStarFillColor( TheDPBadStarFillColorParameter->DefaultValue() )
+   p_signedAngles( TheDPSignedAnglesParameter->DefaultValue() ),
+   p_regenerate( TheDPRegenerateParameter->DefaultValue() ),
+   p_astrometry( TheDPAstrometryParameter->DefaultValue() ),
+   p_searchRadius( TheDPSearchRadiusParameter->DefaultValue() ),
+   p_threshold( TheDPThresholdParameter->DefaultValue() ),
+   p_autoAperture( TheDPAutoApertureParameter->DefaultValue() ),
+   p_scaleMode( DPScaleMode::Default ),
+   p_scaleValue( TheDPScaleValueParameter->DefaultValue() ),
+   p_starColor( TheDPStarColorParameter->DefaultValue() ),
+   p_selectedStarColor( TheDPSelectedStarColorParameter->DefaultValue() ),
+   p_selectedStarFillColor( TheDPSelectedStarFillColorParameter->DefaultValue() ),
+   p_badStarColor( TheDPBadStarColorParameter->DefaultValue() ),
+   p_badStarFillColor( TheDPBadStarFillColorParameter->DefaultValue() )
 {
-   psfOptions.autoPSF = TheDPAutoPSFParameter->DefaultValue();
-   psfOptions.circular = TheDPCircularPSFParameter->DefaultValue();
-   psfOptions.gaussian = TheDPGaussianPSFParameter->DefaultValue();
-   psfOptions.moffat = TheDPMoffatPSFParameter->DefaultValue();
-   psfOptions.moffatA = TheDPMoffat10PSFParameter->DefaultValue();
-   psfOptions.moffat8 = TheDPMoffat8PSFParameter->DefaultValue();
-   psfOptions.moffat6 = TheDPMoffat6PSFParameter->DefaultValue();
-   psfOptions.moffat4 = TheDPMoffat4PSFParameter->DefaultValue();
-   psfOptions.moffat25 = TheDPMoffat25PSFParameter->DefaultValue();
-   psfOptions.moffat15 = TheDPMoffat15PSFParameter->DefaultValue();
-   psfOptions.lorentzian = TheDPLorentzianPSFParameter->DefaultValue();
+   p_psfOptions.autoPSF = TheDPAutoPSFParameter->DefaultValue();
+   p_psfOptions.circular = TheDPCircularPSFParameter->DefaultValue();
+   p_psfOptions.gaussian = TheDPGaussianPSFParameter->DefaultValue();
+   p_psfOptions.moffat = TheDPMoffatPSFParameter->DefaultValue();
+   p_psfOptions.moffatA = TheDPMoffat10PSFParameter->DefaultValue();
+   p_psfOptions.moffat8 = TheDPMoffat8PSFParameter->DefaultValue();
+   p_psfOptions.moffat6 = TheDPMoffat6PSFParameter->DefaultValue();
+   p_psfOptions.moffat4 = TheDPMoffat4PSFParameter->DefaultValue();
+   p_psfOptions.moffat25 = TheDPMoffat25PSFParameter->DefaultValue();
+   p_psfOptions.moffat15 = TheDPMoffat15PSFParameter->DefaultValue();
+   p_psfOptions.lorentzian = TheDPLorentzianPSFParameter->DefaultValue();
 }
 
 // ----------------------------------------------------------------------------
@@ -110,33 +111,34 @@ void DynamicPSFInstance::Assign( const ProcessImplementation& p )
    if ( x != nullptr )
       if ( x != this )
       {
-         views = x->views;
-         stars = x->stars;
-         psfs = x->psfs;
-         psfOptions.autoPSF = x->psfOptions.autoPSF;
-         psfOptions.circular = x->psfOptions.circular;
-         psfOptions.gaussian = x->psfOptions.gaussian;
-         psfOptions.moffat = x->psfOptions.moffat;
-         psfOptions.moffatA = x->psfOptions.moffatA;
-         psfOptions.moffat8 = x->psfOptions.moffat8;
-         psfOptions.moffat6 = x->psfOptions.moffat6;
-         psfOptions.moffat4 = x->psfOptions.moffat4;
-         psfOptions.moffat25 = x->psfOptions.moffat25;
-         psfOptions.moffat15 = x->psfOptions.moffat15;
-         psfOptions.lorentzian = x->psfOptions.lorentzian;
-         signedAngles = x->signedAngles;
-         regenerate = x->regenerate;
-         searchRadius = x->searchRadius;
-         threshold = x->threshold;
-         autoAperture = x->autoAperture;
-         scaleMode = x->scaleMode;
-         scaleValue = x->scaleValue;
-         scaleKeyword = x->scaleKeyword;
-         starColor = x->starColor;
-         selectedStarColor = x->selectedStarColor;
-         selectedStarFillColor = x->selectedStarFillColor;
-         badStarColor = x->badStarColor;
-         badStarFillColor = x->badStarFillColor;
+         p_views = x->p_views;
+         p_stars = x->p_stars;
+         p_psfs = x->p_psfs;
+         p_psfOptions.autoPSF = x->p_psfOptions.autoPSF;
+         p_psfOptions.circular = x->p_psfOptions.circular;
+         p_psfOptions.gaussian = x->p_psfOptions.gaussian;
+         p_psfOptions.moffat = x->p_psfOptions.moffat;
+         p_psfOptions.moffatA = x->p_psfOptions.moffatA;
+         p_psfOptions.moffat8 = x->p_psfOptions.moffat8;
+         p_psfOptions.moffat6 = x->p_psfOptions.moffat6;
+         p_psfOptions.moffat4 = x->p_psfOptions.moffat4;
+         p_psfOptions.moffat25 = x->p_psfOptions.moffat25;
+         p_psfOptions.moffat15 = x->p_psfOptions.moffat15;
+         p_psfOptions.lorentzian = x->p_psfOptions.lorentzian;
+         p_signedAngles = x->p_signedAngles;
+         p_regenerate = x->p_regenerate;
+         p_astrometry = x->p_astrometry;
+         p_searchRadius = x->p_searchRadius;
+         p_threshold = x->p_threshold;
+         p_autoAperture = x->p_autoAperture;
+         p_scaleMode = x->p_scaleMode;
+         p_scaleValue = x->p_scaleValue;
+         p_scaleKeyword = x->p_scaleKeyword;
+         p_starColor = x->p_starColor;
+         p_selectedStarColor = x->p_selectedStarColor;
+         p_selectedStarFillColor = x->p_selectedStarFillColor;
+         p_badStarColor = x->p_badStarColor;
+         p_badStarFillColor = x->p_badStarFillColor;
       }
 }
 
@@ -144,33 +146,34 @@ void DynamicPSFInstance::Assign( const ProcessImplementation& p )
 
 void DynamicPSFInstance::AssignOptions( const DynamicPSFInstance& x )
 {
-   views.Clear();
-   stars.Clear();
-   psfs.Clear();
-   psfOptions.autoPSF = x.psfOptions.autoPSF;
-   psfOptions.circular = x.psfOptions.circular;
-   psfOptions.gaussian = x.psfOptions.gaussian;
-   psfOptions.moffat = x.psfOptions.moffat;
-   psfOptions.moffatA = x.psfOptions.moffatA;
-   psfOptions.moffat8 = x.psfOptions.moffat8;
-   psfOptions.moffat6 = x.psfOptions.moffat6;
-   psfOptions.moffat4 = x.psfOptions.moffat4;
-   psfOptions.moffat25 = x.psfOptions.moffat25;
-   psfOptions.moffat15 = x.psfOptions.moffat15;
-   psfOptions.lorentzian = x.psfOptions.lorentzian;
-   signedAngles = x.signedAngles;
-   regenerate = x.regenerate;
-   searchRadius = x.searchRadius;
-   threshold = x.threshold;
-   autoAperture = x.autoAperture;
-   scaleMode = x.scaleMode;
-   scaleValue = x.scaleValue;
-   scaleKeyword = x.scaleKeyword;
-   starColor = x.starColor;
-   selectedStarColor = x.selectedStarColor;
-   selectedStarFillColor = x.selectedStarFillColor;
-   badStarColor = x.badStarColor;
-   badStarFillColor = x.badStarFillColor;
+   p_views.Clear();
+   p_stars.Clear();
+   p_psfs.Clear();
+   p_psfOptions.autoPSF = x.p_psfOptions.autoPSF;
+   p_psfOptions.circular = x.p_psfOptions.circular;
+   p_psfOptions.gaussian = x.p_psfOptions.gaussian;
+   p_psfOptions.moffat = x.p_psfOptions.moffat;
+   p_psfOptions.moffatA = x.p_psfOptions.moffatA;
+   p_psfOptions.moffat8 = x.p_psfOptions.moffat8;
+   p_psfOptions.moffat6 = x.p_psfOptions.moffat6;
+   p_psfOptions.moffat4 = x.p_psfOptions.moffat4;
+   p_psfOptions.moffat25 = x.p_psfOptions.moffat25;
+   p_psfOptions.moffat15 = x.p_psfOptions.moffat15;
+   p_psfOptions.lorentzian = x.p_psfOptions.lorentzian;
+   p_signedAngles = x.p_signedAngles;
+   p_regenerate = x.p_regenerate;
+   p_astrometry = x.p_astrometry;
+   p_searchRadius = x.p_searchRadius;
+   p_threshold = x.p_threshold;
+   p_autoAperture = x.p_autoAperture;
+   p_scaleMode = x.p_scaleMode;
+   p_scaleValue = x.p_scaleValue;
+   p_scaleKeyword = x.p_scaleKeyword;
+   p_starColor = x.p_starColor;
+   p_selectedStarColor = x.p_selectedStarColor;
+   p_selectedStarFillColor = x.p_selectedStarFillColor;
+   p_badStarColor = x.p_badStarColor;
+   p_badStarFillColor = x.p_badStarFillColor;
 }
 
 // ----------------------------------------------------------------------------
@@ -194,9 +197,9 @@ bool DynamicPSFInstance::ExecuteGlobal()
 {
    DynamicPSFInterface::ExecuteInstance( *this );
    Console console;
-   console.WriteLn( "<end><cbr>" + String( views.Length() ) + " view(s)" );
-   console.WriteLn( String( stars.Length() ) + " star(s)" );
-   console.WriteLn( String( psfs.Length() ) + " PSF fittings" );
+   console.WriteLn( "<end><cbr>" + String( p_views.Length() ) + " view(s)" );
+   console.WriteLn( String( p_stars.Length() ) + " star(s)" );
+   console.WriteLn( String( p_psfs.Length() ) + " PSF fittings" );
    return true;
 }
 
@@ -205,105 +208,113 @@ bool DynamicPSFInstance::ExecuteGlobal()
 void* DynamicPSFInstance::LockParameter( const MetaParameter* p, size_type tableRow )
 {
    if ( p == TheDPViewIdParameter )
-      return views[tableRow].Begin();
+      return p_views[tableRow].Begin();
 
    if ( p == TheDPStarViewIndexParameter )
-      return &stars[tableRow].view;
+      return &p_stars[tableRow].view;
    if ( p == TheDPStarChannelParameter )
-      return &stars[tableRow].channel;
+      return &p_stars[tableRow].channel;
    if ( p == TheDPStarStatusParameter )
-      return &stars[tableRow].status;
+      return &p_stars[tableRow].status;
    if ( p == TheDPStarRectX0Parameter )
-      return &stars[tableRow].rect.x0;
+      return &p_stars[tableRow].rect.x0;
    if ( p == TheDPStarRectY0Parameter )
-      return &stars[tableRow].rect.y0;
+      return &p_stars[tableRow].rect.y0;
    if ( p == TheDPStarRectX1Parameter )
-      return &stars[tableRow].rect.x1;
+      return &p_stars[tableRow].rect.x1;
    if ( p == TheDPStarRectY1Parameter )
-      return &stars[tableRow].rect.y1;
+      return &p_stars[tableRow].rect.y1;
    if ( p == TheDPStarPosXParameter )
-      return &stars[tableRow].pos.x;
+      return &p_stars[tableRow].pos.x;
    if ( p == TheDPStarPosYParameter )
-      return &stars[tableRow].pos.y;
+      return &p_stars[tableRow].pos.y;
 
    if ( p == TheDPPSFStarIndexParameter )
-      return &psfs[tableRow].star;
+      return &p_psfs[tableRow].star;
    if ( p == TheDPPSFFunctionParameter )
-      return &psfs[tableRow].function;
+      return &p_psfs[tableRow].function;
    if ( p == TheDPPSFCircularParameter )
-      return &psfs[tableRow].circular;
+      return &p_psfs[tableRow].circular;
    if ( p == TheDPPSFStatusParameter )
-      return &psfs[tableRow].status;
+      return &p_psfs[tableRow].status;
    if ( p == TheDPPSFBackgroundParameter )
-      return &psfs[tableRow].B;
+      return &p_psfs[tableRow].B;
    if ( p == TheDPPSFAmplitudeParameter )
-      return &psfs[tableRow].A;
+      return &p_psfs[tableRow].A;
    if ( p == TheDPPSFCentroidXParameter )
-      return &psfs[tableRow].c0.x;
+      return &p_psfs[tableRow].c0.x;
    if ( p == TheDPPSFCentroidYParameter )
-      return &psfs[tableRow].c0.y;
+      return &p_psfs[tableRow].c0.y;
    if ( p == TheDPPSFRadiusXParameter )
-      return &psfs[tableRow].sx;
+      return &p_psfs[tableRow].sx;
    if ( p == TheDPPSFRadiusYParameter )
-      return &psfs[tableRow].sy;
+      return &p_psfs[tableRow].sy;
    if ( p == TheDPPSFRotationAngleParameter )
-      return &psfs[tableRow].theta;
+      return &p_psfs[tableRow].theta;
    if ( p == TheDPPSFBetaParameter )
-      return &psfs[tableRow].beta;
+      return &p_psfs[tableRow].beta;
    if ( p == TheDPPSFMADParameter )
-      return &psfs[tableRow].mad;
+      return &p_psfs[tableRow].mad;
+   if ( p == TheDPPSFCelestialParameter )
+      return &p_psfs[tableRow].celestial;
+   if ( p == TheDPPSFCentroidRAParameter )
+      return &p_psfs[tableRow].q0.x;
+   if ( p == TheDPPSFCentroidDecParameter )
+      return &p_psfs[tableRow].q0.y;
 
    if ( p == TheDPAutoPSFParameter )
-      return &psfOptions.autoPSF;
+      return &p_psfOptions.autoPSF;
    if ( p == TheDPCircularPSFParameter )
-      return &psfOptions.circular;
+      return &p_psfOptions.circular;
    if ( p == TheDPGaussianPSFParameter )
-      return &psfOptions.gaussian;
+      return &p_psfOptions.gaussian;
    if ( p == TheDPMoffatPSFParameter )
-      return &psfOptions.moffat;
+      return &p_psfOptions.moffat;
    if ( p == TheDPMoffat10PSFParameter )
-      return &psfOptions.moffatA;
+      return &p_psfOptions.moffatA;
    if ( p == TheDPMoffat8PSFParameter )
-      return &psfOptions.moffat8;
+      return &p_psfOptions.moffat8;
    if ( p == TheDPMoffat6PSFParameter )
-      return &psfOptions.moffat6;
+      return &p_psfOptions.moffat6;
    if ( p == TheDPMoffat4PSFParameter )
-      return &psfOptions.moffat4;
+      return &p_psfOptions.moffat4;
    if ( p == TheDPMoffat25PSFParameter )
-      return &psfOptions.moffat25;
+      return &p_psfOptions.moffat25;
    if ( p == TheDPMoffat15PSFParameter )
-      return &psfOptions.moffat15;
+      return &p_psfOptions.moffat15;
    if ( p == TheDPLorentzianPSFParameter )
-      return &psfOptions.lorentzian;
+      return &p_psfOptions.lorentzian;
 
    if ( p == TheDPSignedAnglesParameter )
-      return &signedAngles;
+      return &p_signedAngles;
    if ( p == TheDPRegenerateParameter )
-      return &regenerate;
+      return &p_regenerate;
+   if ( p == TheDPAstrometryParameter )
+      return &p_astrometry;
 
    if ( p == TheDPSearchRadiusParameter )
-      return &searchRadius;
+      return &p_searchRadius;
    if ( p == TheDPThresholdParameter )
-      return &threshold;
+      return &p_threshold;
    if ( p == TheDPAutoApertureParameter )
-      return &autoAperture;
+      return &p_autoAperture;
    if ( p == TheDPScaleModeParameter )
-      return &scaleMode;
+      return &p_scaleMode;
    if ( p == TheDPScaleValueParameter )
-      return &scaleValue;
+      return &p_scaleValue;
    if ( p == TheDPScaleKeywordParameter )
-      return scaleKeyword.Begin();
+      return p_scaleKeyword.Begin();
 
    if ( p == TheDPStarColorParameter )
-      return &starColor;
+      return &p_starColor;
    if ( p == TheDPSelectedStarColorParameter )
-      return &selectedStarColor;
+      return &p_selectedStarColor;
    if ( p == TheDPSelectedStarFillColorParameter )
-      return &selectedStarFillColor;
+      return &p_selectedStarFillColor;
    if ( p == TheDPBadStarColorParameter )
-      return &badStarColor;
+      return &p_badStarColor;
    if ( p == TheDPBadStarFillColorParameter )
-      return &badStarFillColor;
+      return &p_badStarFillColor;
 
    return nullptr;
 }
@@ -314,33 +325,33 @@ bool DynamicPSFInstance::AllocateParameter( size_type sizeOrLength, const MetaPa
 {
    if ( p == TheDPViewTableParameter )
    {
-      views.Clear();
+      p_views.Clear();
       if ( sizeOrLength > 0 )
-         views = StringList( sizeOrLength );
+         p_views = StringList( sizeOrLength );
    }
    else if ( p == TheDPViewIdParameter )
    {
-      views[tableRow].Clear();
+      p_views[tableRow].Clear();
       if ( sizeOrLength > 0 )
-         views[tableRow].SetLength( sizeOrLength );
+         p_views[tableRow].SetLength( sizeOrLength );
    }
    else if ( p == TheDPStarTableParameter )
    {
-      stars.Clear();
+      p_stars.Clear();
       if ( sizeOrLength > 0 )
-         stars = Array<Star>( sizeOrLength );
+         p_stars = Array<Star>( sizeOrLength );
    }
    else if ( p == TheDPPSFTableParameter )
    {
-      psfs.Clear();
+      p_psfs.Clear();
       if ( sizeOrLength > 0 )
-         psfs = Array<PSF>( sizeOrLength );
+         p_psfs = Array<PSF>( sizeOrLength );
    }
    else if ( p == TheDPScaleKeywordParameter )
    {
-      scaleKeyword.Clear();
+      p_scaleKeyword.Clear();
       if ( sizeOrLength > 0 )
-         scaleKeyword.SetLength( sizeOrLength );
+         p_scaleKeyword.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -353,15 +364,15 @@ bool DynamicPSFInstance::AllocateParameter( size_type sizeOrLength, const MetaPa
 size_type DynamicPSFInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
    if ( p == TheDPViewTableParameter )
-      return views.Length();
+      return p_views.Length();
    if ( p == TheDPViewIdParameter )
-      return views[tableRow].Length();
+      return p_views[tableRow].Length();
    if ( p == TheDPStarTableParameter )
-      return stars.Length();
+      return p_stars.Length();
    if ( p == TheDPPSFTableParameter )
-      return psfs.Length();
+      return p_psfs.Length();
    if ( p == TheDPScaleKeywordParameter )
-      return scaleKeyword.Length();
+      return p_scaleKeyword.Length();
 
    return 0;
 }
@@ -371,4 +382,4 @@ size_type DynamicPSFInstance::ParameterLength( const MetaParameter* p, size_type
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicPSFInstance.cpp - Released 2018-11-01T11:07:21Z
+// EOF DynamicPSFInstance.cpp - Released 2018-11-13T16:55:32Z

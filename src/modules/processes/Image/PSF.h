@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0410
+// Standard Image Process Module Version 01.02.09.0412
 // ----------------------------------------------------------------------------
-// PSF.h - Released 2018-11-01T11:07:21Z
+// PSF.h - Released 2018-11-13T16:55:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -64,16 +64,19 @@ namespace pcl
 
 struct PSFData
 {
-   pcl_enum function;   // PSF fitting function (PSFFit::Function)
-   pcl_bool circular;   // circular or elliptical PSF
-   pcl_enum status;     // error code (PSFFit::Status)
-   double   B;          // local background
-   double   A;          // amplitude
-   DPoint   c0;         // centroid position
-   double   sx, sy;     // sigma in pixels on X and Y axes, sx >= sy
-   double   theta;      // rotation angle of the sx axis in the [0,180[ range
-   double   beta;       // shape parameter
-   double   mad;        // mean absolute deviation
+   pcl_enum function = 0;      // PSF fitting function (PSFFit::Function).
+   pcl_bool circular = false;  // circular or elliptical PSF.
+   pcl_enum status = 0;        // error code (PSFFit::Status).
+   double   B = 0;             // local background.
+   double   A = 0;             // amplitude.
+   DPoint   c0 = 0.0;          // centroid position.
+   DPoint   q0 = 0.0;          // centroid equatorial coordinates.
+   pcl_bool celestial = false; // true iff celestial coordinates available.
+   double   sx = 0;            // sigma in pixels on the X axis, sx >= sy.
+   double   sy = 0;            // sigma in pixels on the Y axis, sx >= sy.
+   double   theta = 0;         // rotation angle of the sx axis in the [0,180) range.
+   double   beta = 0;          // shape parameter.
+   double   mad = 0;           // mean absolute deviation.
 
    operator bool() const;
 
@@ -90,12 +93,23 @@ struct PSFData
       return FWHM( function, sy, beta );
    }
 
-   DRect Bounds() const;
+   DRect Bounds() const
+   {
+      double d = (circular ? FWHMx() : Max( FWHMx(), FWHMy() ))/2;
+      return DRect( c0.x-d, c0.y-d, c0.x+d, c0.y+d );
+   }
+
+   bool HasCelestialCoordinates() const
+   {
+      return celestial;
+   }
 
    void ToImage( Image& ) const;
 
    static double FWHM( int function, double sigma, double beta );
 };
+
+// ----------------------------------------------------------------------------
 
 class PSFFit
 {
@@ -127,7 +141,9 @@ public:
 
    PSFData psf;
 
-   PSFFit( const ImageVariant&, const DPoint&, const DRect&, Function, bool circular );
+   PSFFit( const ImageVariant& image,
+           const DPoint& barycenter, const DRect& samplingRegion,
+           Function psfFunction, bool circular );
 
    PSFFit( const PSFFit& x ) : psf( x.psf )
    {
@@ -150,11 +166,11 @@ private:
    Vector P; // vector of function parameters
    mutable double beta0;
 
-   double AbsoluteDeviation( Function, bool circular, double bestSoFar = 0 ) const;
+   double Deviation( Function, bool circular ) const;
 
    typedef int (*cminpack_callback)( void*, int, int, const double*, double*, int );
 
-   // Levenberg-Marquadt - CMINPACK - Finite differences
+   // CMINPACK - Levenberg-Marquadt / finite differences.
    static int FitGaussian( void* p, int m, int n, const double* a, double* fvec, int iflag );
    static int FitCircularGaussian( void* p, int m, int n, const double* a, double* fvec, int iflag );
    static int FitMoffat( void* p, int m, int n, const double* a, double* fvec, int iflag );
@@ -163,6 +179,12 @@ private:
    static int FitCircularMoffatWithFixedBeta( void* p, int m, int n, const double* a, double* fvec, int iflag );
    static Status CminpackInfoToStatus( int info );
 };
+
+// ----------------------------------------------------------------------------
+
+/*
+ * Inline PSFData member functions requiring a full declaration of PSFFit.
+ */
 
 inline PSFData::operator bool() const
 {
@@ -201,12 +223,6 @@ inline String PSFData::StatusToString() const
    }
 }
 
-inline DRect PSFData::Bounds() const
-{
-   double d = (circular ? FWHMx() : Max( FWHMx(), FWHMy() ))/2;
-   return DRect( c0.x-d, c0.y-d, c0.x+d, c0.y+d );
-}
-
 inline double PSFData::FWHM( int function, double sigma, double beta )
 {
    switch ( function )
@@ -231,4 +247,4 @@ inline double PSFData::FWHM( int function, double sigma, double beta )
 #endif   // __PSF_h
 
 // ----------------------------------------------------------------------------
-// EOF PSF.h - Released 2018-11-01T11:07:21Z
+// EOF PSF.h - Released 2018-11-13T16:55:32Z

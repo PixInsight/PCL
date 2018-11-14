@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0410
+// Standard Image Process Module Version 01.02.09.0412
 // ----------------------------------------------------------------------------
-// ImageModule.h - Released 2018-11-01T11:07:21Z
+// ImageModule.h - Released 2018-11-13T16:55:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -59,26 +59,23 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// ImageModule
-// ----------------------------------------------------------------------------
 
 class ImageModule : public MetaModule
 {
 public:
 
-   ImageModule();
+   ImageModule() = default;
 
-   virtual const char* Version() const;
-   virtual IsoString Name() const;
-   virtual String Description() const;
-   virtual String Company() const;
-   virtual String Author() const;
-   virtual String Copyright() const;
-   virtual String TradeMarks() const;
-   virtual String OriginalFileName() const;
-   virtual void GetReleaseDate( int& year, int& month, int& day ) const;
-
-   virtual void OnLoad();
+   const char* Version() const override;
+   IsoString Name() const override;
+   String Description() const override;
+   String Company() const override;
+   String Author() const override;
+   String Copyright() const override;
+   String TradeMarks() const override;
+   String OriginalFileName() const override;
+   void GetReleaseDate( int& year, int& month, int& day ) const override;
+   void OnLoad() override;
 };
 
 // ----------------------------------------------------------------------------
@@ -88,4 +85,4 @@ public:
 #endif   // __ImageModule_h
 
 // ----------------------------------------------------------------------------
-// EOF ImageModule.h - Released 2018-11-01T11:07:21Z
+// EOF ImageModule.h - Released 2018-11-13T16:55:32Z

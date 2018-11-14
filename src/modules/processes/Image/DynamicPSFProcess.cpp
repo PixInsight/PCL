@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0410
+// Standard Image Process Module Version 01.02.09.0412
 // ----------------------------------------------------------------------------
-// DynamicPSFProcess.cpp - Released 2018-11-01T11:07:21Z
+// DynamicPSFProcess.cpp - Released 2018-11-13T16:55:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -67,7 +67,7 @@ DynamicPSFProcess* TheDynamicPSFProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
-DynamicPSFProcess::DynamicPSFProcess() : MetaProcess()
+DynamicPSFProcess::DynamicPSFProcess()
 {
    TheDynamicPSFProcess = this;
 
@@ -99,6 +99,9 @@ DynamicPSFProcess::DynamicPSFProcess() : MetaProcess()
    new DPPSFRotationAngle( TheDPPSFTableParameter );
    new DPPSFBeta( TheDPPSFTableParameter );
    new DPPSFMAD( TheDPPSFTableParameter );
+   new DPPSFCelestial( TheDPPSFTableParameter );
+   new DPPSFCentroidRA( TheDPPSFTableParameter );
+   new DPPSFCentroidDec( TheDPPSFTableParameter );
 
    new DPAutoPSF( this );
    new DPCircularPSF( this );
@@ -114,6 +117,7 @@ DynamicPSFProcess::DynamicPSFProcess() : MetaProcess()
 
    new DPSignedAngles( this );
    new DPRegenerate( this );
+   new DPAstrometry( this );
 
    new DPSearchRadius( this );
    new DPThreshold( this );
@@ -191,4 +195,4 @@ ProcessImplementation* DynamicPSFProcess::Clone( const ProcessImplementation& p 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicPSFProcess.cpp - Released 2018-11-01T11:07:21Z
+// EOF DynamicPSFProcess.cpp - Released 2018-11-13T16:55:32Z

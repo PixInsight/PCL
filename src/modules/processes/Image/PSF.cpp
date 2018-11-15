@@ -272,7 +272,7 @@ PSFFit::PSFFit( const ImageVariant& image,
           */
          psf.sx = psf.sy = P[4];
          psf.theta = 0;
-         psf.mad = Deviation( function, true/*circular*/ );
+         psf.mad = GoodnessOfFit( function, true/*circular*/ );
       }
       else
       {
@@ -285,7 +285,7 @@ PSFFit::PSFFit( const ImageVariant& image,
              * Circular PSF (incidental)
              */
             psf.theta = 0;
-            psf.mad = Deviation( function, false/*circular*/ );
+            psf.mad = GoodnessOfFit( function, false/*circular*/ );
          }
          else
          {
@@ -315,12 +315,12 @@ PSFFit::PSFFit( const ImageVariant& image,
 
             // Generate the four models and compute absolute differences
             P[6] = a[0];
-            psf.mad = Deviation( function, false/*circular*/ );
+            psf.mad = GoodnessOfFit( function, false/*circular*/ );
             int imin = 0;
             for ( int i = 1; i < 4; ++i )
             {
                P[6] = a[i];
-               double di = Deviation( function, false/*circular*/ );
+               double di = GoodnessOfFit( function, false/*circular*/ );
                if ( di < psf.mad )
                {
                   imin = i;
@@ -666,9 +666,10 @@ int PSFFit::FitCircularMoffatWithFixedBeta( void* p, int m, int n, const double*
 // ----------------------------------------------------------------------------
 
 /*
- * Robust estimate of the difference between sampled pixel data and PSF model.
+ * Robust estimate of the difference between sampled pixel data and
+ * the fitted PSF model.
  */
-double PSFFit::Deviation( Function function, bool circular ) const
+double PSFFit::GoodnessOfFit( Function function, bool circular ) const
 {
 #define B      P[0]
 #define A      P[1]
@@ -676,10 +677,10 @@ double PSFFit::Deviation( Function function, bool circular ) const
 #define y0     P[3]
 #define sx     P[4]
 
-   int h = S.Rows();
    int w = S.Cols();
-   double w2x0 = (w >> 1) + x0;
-   double h2y0 = (h >> 1) + y0;
+   int h = S.Rows();
+   double w2x0 = 0.5*w + x0;
+   double h2y0 = 0.5*h + y0;
    const double* s = S.Begin();
 
    Vector adev( w*h );
@@ -807,7 +808,20 @@ double PSFFit::Deviation( Function function, bool circular ) const
 #undef y0
 #undef sx
 
-   return 1.1926*adev.Sn();
+   /*
+    * Here we need an estimator of location with a good balance between
+    * robustness and efficiency/sufficiency for the vector of absolute
+    * differences. We use a Winsorized mean with gamma = 0.2.
+    */
+   adev.ReverseSort();
+   int n = adev.Length();
+   int i0 = TruncInt( 0.2*n );
+   int i1 = n - i0;
+   for ( int i = 0; i < i0; ++i ) // Prob( x > x[i0] ) = 0
+      adev[i] = adev[i0];
+   for ( int i = i1; i < n; ++i ) // Prob( x < x[i1] ) = 0
+      adev[i] = adev[i1-1];
+   return adev.Mean();
 }
 
 // ----------------------------------------------------------------------------

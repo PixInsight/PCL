@@ -166,7 +166,7 @@ private:
    Vector P; // vector of function parameters
    mutable double beta0;
 
-   double Deviation( Function, bool circular ) const;
+   double GoodnessOfFit( Function, bool circular ) const;
 
    typedef int (*cminpack_callback)( void*, int, int, const double*, double*, int );
 

@@ -193,6 +193,20 @@ void EphemerisFile::Open( const String& filePath )
             if ( m_index.Contains( index ) )
                throw Error( "Duplicate object '" + id + "' with origin '" + origin + '\'' );
 
+            String
+            s = element.AttributeValue( "H" );
+            if ( !s.IsEmpty() )
+               index.H = s.ToDouble();
+            s = element.AttributeValue( "G" );
+            if ( !s.IsEmpty() )
+               index.G = s.ToDouble();
+            s = element.AttributeValue( "B_V" );
+            if ( !s.IsEmpty() )
+               index.B_V = s.ToDouble();
+            s = element.AttributeValue( "D" );
+            if ( !s.IsEmpty() )
+               index.D = s.ToDouble();
+
             for ( const XMLNode& node : element )
             {
                if ( !node.IsElement() )
@@ -603,6 +617,15 @@ void EphemerisFile::Serialize( const String& filePath,
          objectElement->SetAttribute( "origin", o.originId );
          if ( !o.objectName.IsEmpty() )
             objectElement->SetAttribute( "name", o.objectName );
+
+         if ( o.H.IsDefined() )
+            objectElement->SetAttribute( "H", String().Format( "%.2f", o.H() ) );
+         if ( o.G.IsDefined() )
+            objectElement->SetAttribute( "G", String().Format( "%.2f", o.G() ) );
+         if ( o.B_V.IsDefined() )
+            objectElement->SetAttribute( "B_V", String().Format( "%.2f", o.B_V() ) );
+         if ( o.D.IsDefined() )
+            objectElement->SetAttribute( "D", String().Format( "%.2f", o.D() ) );
 
          if ( !o.description.IsEmpty() )
             *(new XMLElement( *objectElement, "Description" )) << new XMLText( o.description );

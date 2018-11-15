@@ -60,6 +60,7 @@
 #include <pcl/ChebyshevFit.h>
 #include <pcl/File.h>
 #include <pcl/Mutex.h>
+#include <pcl/Optional.h>
 #include <pcl/TimePoint.h>
 
 #ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
@@ -360,6 +361,35 @@ struct PCL_CLASS SerializableEphemerisObjectData
     */
    SerializableEphemerisDataList data[ 2 ];
 
+   /*
+    * Absolute magnitude. H is the visual magnitude of the object as seen at 1
+    * au of the Earth, 1 au from the Sun, and with a phase angle of 0 degrees.
+    *
+    * <b>References</b>
+    *
+    * E. Bowell et al., <em>Asteroids II</em>, R. P. Binzel et al. (eds.), The
+    * University of Arizona Press, Tucson, 1989, pp. 549-554.
+    *
+    * Urban, Sean E., Kenneth Seidelmann, P., ed. (2013), <em>The Explanatory
+    * Supplement to the Astronomical Almanac</em> 3rd Edition, Section 10.4.3.
+    */
+   Optional<double>              H;
+
+   /*
+    * Slope parameter. See the H data member for references.
+    */
+   Optional<double>              G;
+
+   /*
+    * Color index B-V in magnitudes.
+    */
+   Optional<double>              B_V;
+
+   /*
+    * Diameter of the object in km.
+    */
+   Optional<double>              D;
+
    /*!
     * Memberwise constructor.
     */
@@ -460,17 +490,54 @@ struct PCL_CLASS EphemerisObject
     */
    String                        objectDescription;
 
+   /*
+    * Absolute magnitude. H is the visual magnitude of the object as seen at 1
+    * au of the Earth, 1 au from the Sun, and with a phase angle of 0 degrees.
+    *
+    * <b>References</b>
+    *
+    * E. Bowell et al., <em>Asteroids II</em>, R. P. Binzel et al. (eds.), The
+    * University of Arizona Press, Tucson, 1989, pp. 549-554.
+    *
+    * Urban, Sean E., Kenneth Seidelmann, P., ed. (2013), <em>The Explanatory
+    * Supplement to the Astronomical Almanac</em> 3rd Edition, Section 10.4.3.
+    */
+   Optional<double>              H;
+
+   /*
+    * Slope parameter. See the H data member for references.
+    */
+   Optional<double>              G;
+
+   /*
+    * Color index B-V in magnitudes.
+    */
+   Optional<double>              B_V;
+
+   /*
+    * Diameter of the object in km.
+    */
+   Optional<double>              D;
+
    /*!
     * Memberwise constructor.
     */
-   EphemerisObject( const IsoString& id,
-                    const IsoString& origin,
-                    const String& name = String(),
-                    const String& description = String() ) :
-      objectId( id ),
-      originId( origin ),
-      objectName( name ),
-      objectDescription( description )
+   EphemerisObject( const IsoString& objectId_,
+                    const IsoString& originId_,
+                    const String&    objectName_ = String(),
+                    const String&    objectDescription_ = String(),
+                    Optional<double> H_ = Optional<double>(),
+                    Optional<double> G_ = Optional<double>(),
+                    Optional<double> B_V_ = Optional<double>(),
+                    Optional<double> D_ = Optional<double>() ) :
+      objectId( objectId_ ),
+      originId( originId_ ),
+      objectName( objectName_ ),
+      objectDescription( objectDescription_ ),
+      H( H_ ),
+      G( G_ ),
+      B_V( B_V_ ),
+      D( D_ )
    {
    }
 
@@ -733,7 +800,9 @@ public:
    {
       EphemerisObjectList objects;
       for ( const Index& ix : m_index )
-         objects << EphemerisObject( ix.objectId, ix.originId, ix.objectName, ix.objectDescription );
+         objects << EphemerisObject( ix.objectId, ix.originId,
+                                     ix.objectName, ix.objectDescription,
+                                     ix.H, ix.G, ix.B_V, ix.D );
       return objects;
    }
 
@@ -1362,16 +1431,20 @@ private:
       IsoString        originId;          // Identifier of the origin of coordinates (mandatory, case-sensitive).
       String           objectName;        // Object name (optional, case-insensitive).
       String           objectDescription; // Object description (optional, arbitrary)
+      Optional<double> H;                 // Absolute magnitude.
+      Optional<double> G;                 // Slope parameter.
+      Optional<double> B_V;               // Color index B-V in magnitudes.
+      Optional<double> D;                 // Diameter of the object in km.
       Array<IndexNode> nodes[ 2 ];        // Expansion indexes: 0=function 1=derivative.
 
-      Index( const IsoString& object,
-             const IsoString& origin = IsoString(),
-             const String& name = String(),
-             const String& description = String() ) :
-         objectId( object.Trimmed() ),
-         originId( origin.Trimmed() ),
-         objectName( name.Trimmed() ),
-         objectDescription( description.Trimmed() )
+      Index( const IsoString& objectId_,
+             const IsoString& originId_ = IsoString(),
+             const String& objectName_ = String(),
+             const String& objectDescription_ = String() ) :
+         objectId( objectId_.Trimmed() ),
+         originId( originId_.Trimmed() ),
+         objectName( objectName_.Trimmed() ),
+         objectDescription( objectDescription_.Trimmed() )
       {
       }
 
@@ -1774,6 +1847,50 @@ public:
       bool HasDerivative() const
       {
          return m_index->HasDerivative();
+      }
+
+      /*!
+       * Returns the absolute magnitude of the object. H is the visual
+       * magnitude of the object as seen at 1 au of the Earth, 1 au from the
+       * Sun, and with a phase angle of 0 degrees.
+       *
+       * <b>References</b>
+       *
+       * E. Bowell et al., <em>Asteroids II</em>, R. P. Binzel et al. (eds.),
+       * The University of Arizona Press, Tucson, 1989, pp. 549-554.
+       *
+       * Urban, Sean E., Kenneth Seidelmann, P., ed. (2013), <em>The
+       * Explanatory Supplement to the Astronomical Almanac</em> 3rd Edition,
+       * Section 10.4.3.
+       */
+      const Optional<double>& H() const
+      {
+         return m_index->H;
+      }
+
+      /*!
+       * Slope parameter. See H() for references.
+       */
+      const Optional<double>& G() const
+      {
+         return m_index->G;
+      }
+
+      /*!
+       * Color index B-V, in magnitudes.
+       */
+      const Optional<double>& B_V() const
+      {
+         return m_index->B_V;
+      }
+
+      /*!
+       * Diameter of the object in km. When available, this is normally an IRAS
+       * diameter for an asteroid.
+       */
+      const Optional<double>& D() const
+      {
+         return m_index->D;
       }
 
    private:

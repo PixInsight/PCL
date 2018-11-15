@@ -1793,6 +1793,26 @@ public:
    }
 
    /*!
+    * Sorts the elements of this matrix in reverse (descending) order.
+    */
+   void ReverseSort()
+   {
+      EnsureUnique();
+      pcl::Sort( m_data->Begin(), m_data->End(),
+                 []( const element& a, const element& b ){ return b < a; } );
+   }
+
+   /*!
+    * Returns a reverse sorted copy of this matrix.
+    */
+   GenericMatrix ReverseSorted() const
+   {
+      GenericMatrix R( *this );
+      R.ReverseSort();
+      return R;
+   }
+
+   /*!
     * Sorts the elements of this matrix in ascending order. Ordering of matrix
     * elements is defined such that for any pair a, b of matrix elements, the
     * specified binary predicate p( a, b ) is true if a precedes b.

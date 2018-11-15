@@ -774,6 +774,26 @@ public:
    }
 
    /*!
+    * Sorts the components of this vector in reverse (descending) order.
+    */
+   void ReverseSort()
+   {
+      EnsureUnique();
+      pcl::Sort( m_data->Begin(), m_data->End(),
+                 []( const scalar& a, const scalar& b ){ return b < a; } );
+   }
+
+   /*!
+    * Returns a reverse sorted copy of this vector.
+    */
+   GenericVector ReverseSorted() const
+   {
+      GenericVector R( *this );
+      R.ReverseSort();
+      return R;
+   }
+
+   /*!
     * Sorts the components of this vector in ascending order. Ordering of
     * vector components is defined such that for any pair a, b of vector
     * components, the specified binary predicate p( a, b ) is true if a

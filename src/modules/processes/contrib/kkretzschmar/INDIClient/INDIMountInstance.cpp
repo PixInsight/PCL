@@ -926,17 +926,23 @@ void AbstractINDIMountExecution::Perform()
             case IMCAlignmentMethod::AnalyticalModel:
             case IMCAlignmentMethod::None:
             {
-            	AutoPointer<AlignmentModel> aModel = AlignmentModel::create(m_instance.p_alignmentFile);
-            	SyncDataPoint syncPoint;
-            	syncPoint.creationTime      = TimePoint::Now();
-            	syncPoint.localSiderialTime = m_instance.o_currentLST;
-            	syncPoint.celestialRA       = targetRA;
-            	syncPoint.celestialDEC      = targetDec;
-            	syncPoint.telecopeRA        = m_instance.o_currentRA;
-            	syncPoint.telecopeDEC       = m_instance.o_currentDec;
-               syncPoint.pierSide          = m_instance.p_pierSide;
-            	aModel->addSyncDataPoint(syncPoint);
-            	aModel->writeObject(m_instance.p_alignmentFile);
+               try {
+                  AutoPointer<AlignmentModel> aModel = AlignmentModel::create(m_instance.p_alignmentFile);
+                  SyncDataPoint syncPoint;
+                  syncPoint.creationTime      = TimePoint::Now();
+                  syncPoint.localSiderialTime = m_instance.o_currentLST;
+                  syncPoint.celestialRA       = targetRA;
+                  syncPoint.celestialDEC      = targetDec;
+                  syncPoint.telecopeRA        = m_instance.o_currentRA;
+                  syncPoint.telecopeDEC       = m_instance.o_currentDec;
+                  syncPoint.pierSide          = m_instance.p_pierSide;
+                  aModel->addSyncDataPoint(syncPoint);
+                  aModel->writeObject(m_instance.p_alignmentFile);
+               } catch (...) {
+                  EndMountEvent();
+                  throw;
+               }
+
             	break;
             }
             break;

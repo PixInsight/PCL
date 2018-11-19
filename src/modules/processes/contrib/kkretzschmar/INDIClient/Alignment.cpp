@@ -411,8 +411,11 @@ void AlignmentModel::readSyncData( const String& fileName )
 
 AlignmentModel* AlignmentModel::create( const String& fileName )
 {
+   if (fileName.IsEmpty()) {
+      throw Error("Pointing model: file name is empty.");
+   }
    if ( !File::Exists( fileName ) )
-      throw Error( "AlignmentModel::create: xtpm file does not exist." );
+      throw Error( "PointingModel: xtpm file does not exist." );
 
    IsoString text = File::ReadTextFile( fileName );
    XMLDocument xml;

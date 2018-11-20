@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0297
+// Standard StarGenerator Process Module Version 01.01.00.0305
 // ----------------------------------------------------------------------------
-// StarGeneratorInterface.cpp - Released 2017-08-01T14:26:58Z
+// StarGeneratorInterface.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -63,7 +63,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-StarGeneratorInterface* TheStarGeneratorInterface = 0;
+StarGeneratorInterface* TheStarGeneratorInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -72,41 +72,55 @@ StarGeneratorInterface* TheStarGeneratorInterface = 0;
 // ----------------------------------------------------------------------------
 
 StarGeneratorInterface::StarGeneratorInterface() :
-ProcessInterface(), instance( TheStarGeneratorProcess ), GUI( 0 )
+   instance( TheStarGeneratorProcess )
 {
    TheStarGeneratorInterface = this;
 }
 
+// ----------------------------------------------------------------------------
+
 StarGeneratorInterface::~StarGeneratorInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString StarGeneratorInterface::Id() const
 {
    return "StarGenerator";
 }
 
+// ----------------------------------------------------------------------------
+
 MetaProcess* StarGeneratorInterface::Process() const
 {
    return TheStarGeneratorProcess;
 }
+
+// ----------------------------------------------------------------------------
 
 const char** StarGeneratorInterface::IconImageXPM() const
 {
    return StarGeneratorIcon_XPM;
 }
 
+// ----------------------------------------------------------------------------
+
 InterfaceFeatures StarGeneratorInterface::Features() const
 {
    return InterfaceFeature::DefaultGlobal;
 }
 
+// ----------------------------------------------------------------------------
+
 void StarGeneratorInterface::ApplyInstance() const
 {
    instance.LaunchGlobal();
 }
+
+// ----------------------------------------------------------------------------
 
 void StarGeneratorInterface::ResetInstance()
 {
@@ -114,9 +128,11 @@ void StarGeneratorInterface::ResetInstance()
    ImportProcess( defaultInstance );
 }
 
+// ----------------------------------------------------------------------------
+
 bool StarGeneratorInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "StarGenerator" );
@@ -127,10 +143,14 @@ bool StarGeneratorInterface::Launch( const MetaProcess& P, const ProcessImplemen
    return &P == TheStarGeneratorProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* StarGeneratorInterface::NewProcess() const
 {
    return new StarGeneratorInstance( instance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool StarGeneratorInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
@@ -140,10 +160,14 @@ bool StarGeneratorInterface::ValidateProcess( const ProcessImplementation& p, St
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool StarGeneratorInterface::RequiresInstanceValidation() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool StarGeneratorInterface::ImportProcess( const ProcessImplementation& p )
 {
@@ -152,10 +176,14 @@ bool StarGeneratorInterface::ImportProcess( const ProcessImplementation& p )
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 void StarGeneratorInterface::SaveSettings() const
 {
    Settings::Write( SettingsKey() + "StarDatabasePath", instance.starDatabasePath );
 }
+
+// ----------------------------------------------------------------------------
 
 void StarGeneratorInterface::LoadSettings()
 {
@@ -163,6 +191,7 @@ void StarGeneratorInterface::LoadSettings()
    GUI->StarDatabase_Edit.SetText( instance.starDatabasePath );
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void StarGeneratorInterface::UpdateControls()
@@ -202,6 +231,8 @@ void StarGeneratorInterface::UpdateControls()
    GUI->TargetMinimumValue_NumericEdit.SetValue( instance.targetMinimumValue );
 }
 
+// ----------------------------------------------------------------------------
+
 void StarGeneratorInterface::UpdateRAControls()
 {
    double hh = instance.centerRA/15;
@@ -224,6 +255,8 @@ void StarGeneratorInterface::UpdateRAControls()
    GUI->RAMins_SpinBox.SetValue( int( hm ) );
    GUI->RASecs_NumericEdit.SetValue( hs );
 }
+
+// ----------------------------------------------------------------------------
 
 void StarGeneratorInterface::UpdateDecControls()
 {
@@ -248,6 +281,8 @@ void StarGeneratorInterface::UpdateDecControls()
    GUI->DecSecs_NumericEdit.SetValue( ds );
    GUI->DecSouth_CheckBox.SetChecked( instance.centerDec < 0 );
 }
+
+// ----------------------------------------------------------------------------
 
 void StarGeneratorInterface::UpdateEpochControls()
 {
@@ -275,6 +310,8 @@ void StarGeneratorInterface::GetRA()
    UpdateRAControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void StarGeneratorInterface::GetDec()
 {
    instance.centerDec = Range( Abs( GUI->DecDegs_SpinBox.Value() )
@@ -291,6 +328,8 @@ void StarGeneratorInterface::GetDec()
    UpdateDecControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void StarGeneratorInterface::GetEpoch()
 {
    instance.epoch = ComplexTimeToJD( GUI->EpochYear_SpinBox.Value(),
@@ -299,6 +338,7 @@ void StarGeneratorInterface::GetEpoch()
                                      0.5 /*always at noon*/ );
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void StarGeneratorInterface::__EditCompleted( Edit& sender )
@@ -316,6 +356,8 @@ void StarGeneratorInterface::__EditCompleted( Edit& sender )
       sender.SetText( path );
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void StarGeneratorInterface::__RealValueUpdated( NumericEdit& sender, double value )
 {
@@ -339,6 +381,8 @@ void StarGeneratorInterface::__RealValueUpdated( NumericEdit& sender, double val
       instance.targetMinimumValue = value;
 }
 
+// ----------------------------------------------------------------------------
+
 void StarGeneratorInterface::__IntegerValueUpdated( SpinBox& sender, int value )
 {
    if ( sender == GUI->RAHours_SpinBox || sender == GUI->RAMins_SpinBox )
@@ -348,6 +392,8 @@ void StarGeneratorInterface::__IntegerValueUpdated( SpinBox& sender, int value )
    else if ( sender == GUI->EpochYear_SpinBox || sender == GUI->EpochMonth_SpinBox || sender == GUI->EpochDay_SpinBox )
       GetEpoch();
 }
+
+// ----------------------------------------------------------------------------
 
 void StarGeneratorInterface::__Button_Clicked( Button& sender, bool checked )
 {
@@ -390,6 +436,8 @@ void StarGeneratorInterface::__Button_Clicked( Button& sender, bool checked )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void StarGeneratorInterface::__ItemSelected( ComboBox& sender, int itemIndex )
 {
    if ( sender == GUI->ProjectionSystem_ComboBox )
@@ -401,6 +449,7 @@ void StarGeneratorInterface::__ItemSelected( ComboBox& sender, int itemIndex )
    }
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 StarGeneratorInterface::GUIData::GUIData( StarGeneratorInterface& w )
@@ -715,4 +764,4 @@ StarGeneratorInterface::GUIData::GUIData( StarGeneratorInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF StarGeneratorInterface.cpp - Released 2017-08-01T14:26:58Z
+// EOF StarGeneratorInterface.cpp - Released 2018-11-01T11:07:21Z

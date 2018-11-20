@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.03.02.0309
+// Standard ColorCalibration Process Module Version 01.03.03.0319
 // ----------------------------------------------------------------------------
-// PhotometricColorCalibrationInstance.cpp - Released 2017-08-01T14:26:57Z
+// PhotometricColorCalibrationInstance.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -199,7 +199,9 @@ void PhotometricColorCalibrationInstance::Assign( const ProcessImplementation& p
 
 UndoFlags PhotometricColorCalibrationInstance::UndoMode( const View& ) const
 {
-   return p_applyCalibration ? UndoFlag::Keywords|UndoFlag::PixelData : UndoFlag::Keywords;
+   return p_applyCalibration ? UndoFlag::Keywords
+                             | UndoFlag::PixelData
+                             | UndoFlag::AstrometricSolution : UndoFlag::Keywords;
 }
 
 // ----------------------------------------------------------------------------
@@ -1259,4 +1261,4 @@ size_type PhotometricColorCalibrationInstance::ParameterLength( const MetaParame
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PhotometricColorCalibrationInstance.cpp - Released 2017-08-01T14:26:57Z
+// EOF PhotometricColorCalibrationInstance.cpp - Released 2018-11-01T11:07:20Z

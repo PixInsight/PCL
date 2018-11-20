@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/WorldTransformation.h - Released 2017-08-01T14:23:31Z
+// pcl/WorldTransformation.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -156,15 +156,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    LinearWorldTransformation( LinearWorldTransformation&& ) = default;
-#else
-   LinearWorldTransformation( LinearWorldTransformation&& x ) :
-      m_transWI( std::move( x.m_transWI ) ),
-      m_transIW( std::move( x.m_transIW ) )
-   {
-   }
-#endif
 
    /*!
     * Virtual destructor.
@@ -176,7 +168,7 @@ public:
    /*!
     * Returns false, since a linear WCS transformation cannot be empty.
     */
-   virtual bool IsEmpty() const
+   bool IsEmpty() const override
    {
       return false;
    }
@@ -184,7 +176,7 @@ public:
    /*!
     * Returns a dynamically allocated copy of this object.
     */
-   virtual WorldTransformation* Clone() const
+   WorldTransformation* Clone() const override
    {
       return new LinearWorldTransformation( *this );
    }
@@ -192,7 +184,7 @@ public:
    /*!
     * Transforms from world coordinates to image coordinates.
     */
-   virtual DPoint Direct( const DPoint& p ) const
+   DPoint Direct( const DPoint& p ) const override
    {
       return m_transWI.Transform( p );
    }
@@ -200,16 +192,16 @@ public:
    /*!
     * Transforms from image coordinates to world coordinates.
     */
-   virtual DPoint Inverse( const DPoint& p ) const
+   DPoint Inverse( const DPoint& p ) const override
    {
       return m_transIW.Transform( p );
    }
 
    /*!
-    * Returns a reference to the internal linear transformation (from world to
-    * image coordinates).
+    * Returns a reference to the internal linear transformation (from image to
+    * world coordinates).
     */
-   virtual const LinearTransformation& ApproximateLinearTransform() const
+   const LinearTransformation& ApproximateLinearTransform() const override
    {
       return m_transIW;
    }
@@ -336,23 +328,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    SplineWorldTransformation( SplineWorldTransformation&& ) = default;
-#else
-   SplineWorldTransformation( SplineWorldTransformation&& x ) :
-      m_controlPointsW( std::move( x.m_controlPointsW ) ),
-      m_controlPointsI( std::move( x.m_controlPointsI ) ),
-      m_order( x.m_order ),
-      m_smoothness( x.m_smoothness ),
-      m_weights( std::move( x.m_weights ) ),
-      m_splineWI( std::move( x.m_splineWI ) ),
-      m_splineIW( std::move( x.m_splineIW ) ),
-      m_gridWI( std::move( x.m_gridWI ) ),
-      m_gridIW( std::move( x.m_gridIW ) ),
-      m_linearIW( std::move( x.m_linearIW ) )
-   {
-   }
-#endif
 
    /*!
     * Virtual destructor.
@@ -369,24 +345,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-#ifndef _MSC_VER
    SplineWorldTransformation& operator =( SplineWorldTransformation&& ) = default;
-#else
-   SplineWorldTransformation& operator =( SplineWorldTransformation&& x )
-   {
-      m_controlPointsW = std::move( x.m_controlPointsW );
-      m_controlPointsI = std::move( x.m_controlPointsI );
-      m_order = x.m_order;
-      m_smoothness = x.m_smoothness;
-      m_weights = std::move( x.m_weights );
-      m_splineWI = std::move( x.m_splineWI );
-      m_splineIW = std::move( x.m_splineIW );
-      m_gridWI = std::move( x.m_gridWI );
-      m_gridIW = std::move( x.m_gridIW );
-      m_linearIW = std::move( x.m_linearIW );
-      return *this;
-   }
-#endif
 
    /*!
     * Returns true iff this object has no working data.
@@ -394,7 +353,7 @@ public:
     * With the restrictions imposed by class constructors, this can only happen
     * if this object is an xvalue after move construction or assignment.
     */
-   virtual bool IsEmpty() const
+   bool IsEmpty() const override
    {
       return m_controlPointsW.IsEmpty() || m_controlPointsI.IsEmpty();
    }
@@ -402,7 +361,7 @@ public:
    /*!
     * Returns a dynamically allocated copy of this object.
     */
-   virtual WorldTransformation* Clone() const
+   WorldTransformation* Clone() const override
    {
       return new SplineWorldTransformation( *this );
    }
@@ -419,7 +378,7 @@ public:
     *
     * \sa Inverse(), InitializeGridInterpolations()
     */
-   virtual DPoint Direct( const DPoint& p ) const
+   DPoint Direct( const DPoint& p ) const override
    {
       if ( m_gridWI.IsValid() )
          return m_gridWI( p );
@@ -438,7 +397,7 @@ public:
     *
     * \sa Direct(), InitializeGridInterpolations()
     */
-   virtual DPoint Inverse( const DPoint& p ) const
+   DPoint Inverse( const DPoint& p ) const override
    {
       if ( m_gridIW.IsValid() )
          return m_gridIW( p );
@@ -449,7 +408,7 @@ public:
     * Returns an approximate linear transformation from Image to World
     * coordinates, computed from the internal point surface splines.
     */
-   virtual const LinearTransformation& ApproximateLinearTransform() const
+   const LinearTransformation& ApproximateLinearTransform() const override
    {
       return m_linearIW;
    }
@@ -498,4 +457,4 @@ private:
 #endif   // __PCL_WorldTransformation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/WorldTransformation.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/WorldTransformation.h - Released 2018-11-01T11:06:36Z

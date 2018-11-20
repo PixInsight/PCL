@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Morphology Process Module Version 01.00.00.0331
+// Standard Morphology Process Module Version 01.00.00.0339
 // ----------------------------------------------------------------------------
-// MorphologicalTransformationInstance.cpp - Released 2017-08-01T14:26:58Z
+// MorphologicalTransformationInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Morphology PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -64,35 +64,39 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 MorphologicalTransformationInstance::MorphologicalTransformationInstance( const MetaProcess* P ) :
-ProcessImplementation( P ),
-morphologicalOperator( TheMorphologicalOpParameter->Default ),
-interlacingDistance( uint32( TheInterlacingDistanceParameter->DefaultValue() ) ),
-lowThreshold( TheLowThresholdParameter->DefaultValue() ),
-highThreshold( TheHighThresholdParameter->DefaultValue() ),
-numberOfIterations( uint32( TheNumberOfIterationsParameter->DefaultValue() ) ),
-amount( TheAmountParameter->DefaultValue() ),
-selectionPoint( TheSelectionPointParameter->DefaultValue() ),
-structure( 1, unsigned( TheStructureSizeParameter->DefaultValue() ), TheStructureNameParameter->DefaultValue() )
+   ProcessImplementation( P ),
+   morphologicalOperator( TheMorphologicalOpParameter->Default ),
+   interlacingDistance( uint32( TheInterlacingDistanceParameter->DefaultValue() ) ),
+   lowThreshold( TheLowThresholdParameter->DefaultValue() ),
+   highThreshold( TheHighThresholdParameter->DefaultValue() ),
+   numberOfIterations( uint32( TheNumberOfIterationsParameter->DefaultValue() ) ),
+   amount( TheAmountParameter->DefaultValue() ),
+   selectionPoint( TheSelectionPointParameter->DefaultValue() ),
+   structure( 1, unsigned( TheStructureSizeParameter->DefaultValue() ), TheStructureNameParameter->DefaultValue() )
 {
 }
 
+// ----------------------------------------------------------------------------
+
 MorphologicalTransformationInstance::MorphologicalTransformationInstance( const MorphologicalTransformationInstance& x ) :
-ProcessImplementation( x ),
-morphologicalOperator( x.morphologicalOperator ),
-interlacingDistance( x.interlacingDistance ),
-lowThreshold( x.lowThreshold ),
-highThreshold( x.highThreshold ),
-numberOfIterations( x.numberOfIterations ),
-amount( x.amount ),
-selectionPoint( x.selectionPoint ),
-structure( x.structure )
+   ProcessImplementation( x ),
+   morphologicalOperator( x.morphologicalOperator ),
+   interlacingDistance( x.interlacingDistance ),
+   lowThreshold( x.lowThreshold ),
+   highThreshold( x.highThreshold ),
+   numberOfIterations( x.numberOfIterations ),
+   amount( x.amount ),
+   selectionPoint( x.selectionPoint ),
+   structure( x.structure )
 {
 }
+
+// ----------------------------------------------------------------------------
 
 void MorphologicalTransformationInstance::Assign( const ProcessImplementation& p )
 {
    const MorphologicalTransformationInstance* x = dynamic_cast<const MorphologicalTransformationInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       morphologicalOperator = x->morphologicalOperator;
       interlacingDistance = x->interlacingDistance;
@@ -104,6 +108,15 @@ void MorphologicalTransformationInstance::Assign( const ProcessImplementation& p
       structure = x->structure;
    }
 }
+
+// ----------------------------------------------------------------------------
+
+UndoFlags MorphologicalTransformationInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
+}
+
+// ----------------------------------------------------------------------------
 
 bool MorphologicalTransformationInstance::CanExecuteOn( const View& view, String& whyNot ) const
 {
@@ -263,6 +276,8 @@ private:
    }
 };
 
+// ----------------------------------------------------------------------------
+
 bool MorphologicalTransformationInstance::ExecuteOn( View& view )
 {
    AutoViewLock lock( view );
@@ -280,6 +295,8 @@ bool MorphologicalTransformationInstance::ExecuteOn( View& view )
 
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void* MorphologicalTransformationInstance::LockParameter( const MetaParameter* p, size_type tableRow )
 {
@@ -303,8 +320,10 @@ void* MorphologicalTransformationInstance::LockParameter( const MetaParameter* p
       return &structure.size;
    if ( p == TheStructureWayMaskParameter )
       return structure.mask[tableRow].Begin();
-   return 0;
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool MorphologicalTransformationInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {
@@ -332,6 +351,8 @@ bool MorphologicalTransformationInstance::AllocateParameter( size_type sizeOrLen
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 size_type MorphologicalTransformationInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
    if ( p == TheStructureNameParameter )
@@ -348,4 +369,4 @@ size_type MorphologicalTransformationInstance::ParameterLength( const MetaParame
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF MorphologicalTransformationInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF MorphologicalTransformationInstance.cpp - Released 2018-11-01T11:07:21Z

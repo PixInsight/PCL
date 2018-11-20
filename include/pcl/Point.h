@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Point.h - Released 2017-08-01T14:23:31Z
+// pcl/Point.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -108,14 +108,14 @@ public:
    /*
     * Point coordinates
     */
-   component x; //!< Abscissa (horizontal coordinate).
-   component y; //!< Ordinate (vertical coordinate).
+   component x; //!< Abscissa (horizontal, or X-axis coordinate).
+   component y; //!< Ordinate (vertical, or Y-axis coordinate).
 
    /*!
     * Constructs a default %GenericPoint instance. Point coordinates are not
     * initialized, so they'll have unpredictable garbage values.
     */
-   GenericPoint()
+   constexpr GenericPoint()
    {
       PCL_ASSERT_POINT_SIZE();
    }
@@ -128,33 +128,79 @@ public:
     * with numeric conversion semantics.
     */
    template <typename T1>
-   GenericPoint( T1 xPos, T1 yPos ) : x( component( xPos ) ), y( component( yPos ) )
+   constexpr GenericPoint( T1 xPos, T1 yPos ) :
+      x( component( xPos ) ), y( component( yPos ) )
    {
       PCL_ASSERT_POINT_SIZE();
    }
 
    /*!
-    * Copy constructor for %GenericPoint.
+    * Constructs a %GenericPoint instance with both point coordinates equal to
+    * the specified scalar \a d.
     */
-   GenericPoint( component p )
+   constexpr GenericPoint( component d ) : GenericPoint( d, d )
    {
       PCL_ASSERT_POINT_SIZE();
-      x = y = p;
    }
 
    /*!
-    * Constructs a %GenericPoint instance as a copy (possibly involving a
-    * conversion between numerical types) of another point \a p with different
-    * template argument.
+    * Constructs a %GenericPoint instance from coordinates taken from the
+    * specified initializer list \a l.
+    *
+    * This constructor will copy 2, 1 or zero point coordinates, depending on
+    * the number of values in the initializer list. Coordinates that cannot be
+    * initialized from list values will be set to zero. For example, the
+    * following code:
+    *
+    * \code
+    *    Point p1 = {};
+    *    Point p2 = { 1 };
+    *    Point p3 = { 1, 2 };
+    * \endcode
+    *
+    * is functionally equivalent to:
+    *
+    * \code
+    *    Point p1( 0, 0 );
+    *    Point p2( 1, 0 );
+    *    Point p3( 1, 2 );
+    * \endcode
     */
    template <typename T1>
-   GenericPoint( const GenericPoint<T1>& p ) : x( component( p.x ) ), y( component( p.y ) )
+   GenericPoint( std::initializer_list<T1> l )
+   {
+      PCL_ASSERT_POINT_SIZE();
+      switch ( l.size() )
+      {
+      default:
+      case 2: y = component( l.begin()[1] );
+      case 1: x = component( l.begin()[0] );
+      case 0: break;
+      }
+      switch ( l.size() )
+      {
+      case 0: x = component( 0 );
+      case 1: y = component( 0 );
+      default:
+      case 2: break;
+      }
+   }
+
+   /*!
+    * Nontrivial copy constructor. Constructs a %GenericPoint instance as a
+    * copy (possibly involving a conversion between different numerical types)
+    * of another point \a p with different template argument.
+    */
+   template <typename T1>
+   GenericPoint( const GenericPoint<T1>& p ) :
+      GenericPoint( component( p.x ), component( p.y ) )
    {
       PCL_ASSERT_POINT_SIZE();
    }
 
 #ifdef __PCL_QT_INTERFACE
-   GenericPoint( const QPoint& p ) : x( component( p.x() ) ), y( component( p.y() ) )
+   GenericPoint( const QPoint& p ) :
+      GenericPoint( component( p.x() ), component( p.y() ) )
    {
       PCL_ASSERT_POINT_SIZE();
    }
@@ -714,6 +760,50 @@ public:
       return GenericPoint( -x, -y );
    }
 
+   /*
+    * Returns a point whose coordinates are the coordinates of this point
+    * converted to radians, assuming that this point has coordinates expressed
+    * in degrees.
+    */
+   GenericPoint Rad() const
+   {
+      return GenericPoint( pcl::Rad( x ), pcl::Rad( y ) );
+   }
+
+   /*!
+    * Returns a point whose coordinates are the coordinates of this point
+    * converted to degrees, assuming that this point has coordinates expressed
+    * in radians.
+    */
+   GenericPoint Deg() const
+   {
+      return GenericPoint( pcl::Deg( x ), pcl::Deg( y ) );
+   }
+
+   /*!
+    * Converts the coordinates of this point to radians, assuming that they are
+    * expressed in degrees before calling this function. Returns a reference to
+    * this object.
+    */
+   GenericPoint& ToRad()
+   {
+      x = pcl::Rad( x );
+      y = pcl::Rad( y );
+      return *this;
+   }
+
+   /*!
+    * Converts the coordinates of this point to degrees, assuming that they are
+    * expressed in radians before calling this function. Returns a reference to
+    * this object.
+    */
+   GenericPoint& ToDeg()
+   {
+      x = pcl::Deg( x );
+      y = pcl::Deg( y );
+      return *this;
+   }
+
    /*!
     * Returns a reference to a point component. Returns a reference to the X
     * point coordinate if the specified index \a i is zero, or a reference to
@@ -1257,4 +1347,4 @@ typedef F64Point                    DPoint;
 #endif  // __PCL_Point_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Point.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Point.h - Released 2018-11-01T11:06:36Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ImageVariant.cpp - Released 2017-08-01T14:23:38Z
+// pcl/ImageVariant.cpp - Released 2018-11-01T11:06:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -357,17 +357,14 @@ public:
                      size_type offsetBegin, size_type offsetEnd,
                      const Compression* compressor,
                      const SwapFileHeader* header ) :
-
       SwapFileThread( path, offsetBegin, offsetEnd, header != nullptr ),
       m_image( image ),
       m_compressor( compressor ),
-      m_header( header ),
-      m_outputSize( 0 ),
-      m_compressionTime( 0 )
+      m_header( header )
    {
    }
 
-   virtual void Run()
+   void Run() override
    {
       try
       {
@@ -409,12 +406,12 @@ public:
       }
    }
 
-   virtual size_type TransferSize() const
+   size_type TransferSize() const override
    {
       return m_outputSize;
    }
 
-   virtual double CompressorTime() const
+   double CompressorTime() const override
    {
       return m_compressionTime;
    }
@@ -422,10 +419,10 @@ public:
 private:
 
    const GenericImage<P>& m_image;
-   const Compression*     m_compressor;
-   const SwapFileHeader*  m_header;
-         size_type        m_outputSize;
-         double           m_compressionTime;
+   const Compression*     m_compressor = nullptr;
+   const SwapFileHeader*  m_header = nullptr;
+         size_type        m_outputSize = 0;
+         double           m_compressionTime = 0;
 };
 
 // ----------------------------------------------------------------------------
@@ -440,16 +437,13 @@ public:
                      size_type offsetBegin, size_type offsetEnd,
                      const Compression* compressor,
                      bool hasHeader ) :
-
       SwapFileThread( path, offsetBegin, offsetEnd, hasHeader ),
       m_image( image ),
-      m_compressor( compressor ),
-      m_inputSize( 0 ),
-      m_decompressionTime( 0 )
+      m_compressor( compressor )
    {
    }
 
-   virtual void Run()
+   void Run() override
    {
       try
       {
@@ -491,12 +485,12 @@ public:
       }
    }
 
-   virtual size_type TransferSize() const
+   size_type TransferSize() const override
    {
       return m_inputSize;
    }
 
-   virtual double CompressorTime() const
+   double CompressorTime() const override
    {
       return m_decompressionTime;
    }
@@ -504,9 +498,9 @@ public:
 private:
 
          GenericImage<P>& m_image;
-   const Compression*     m_compressor;
-         size_type        m_inputSize;
-         double           m_decompressionTime;
+   const Compression*     m_compressor = nullptr;
+         size_type        m_inputSize = 0;
+         double           m_decompressionTime = 0;
 };
 
 // ----------------------------------------------------------------------------
@@ -522,7 +516,6 @@ public:
                      size_type offsetBegin, size_type offsetEnd,
                      const Compression* compressor,
                      bool hasHeader ) :
-
       SwapFileThread( srcPath, offsetBegin, offsetEnd, hasHeader ),
       m_image( image ),
       m_mask( mask ),
@@ -531,7 +524,7 @@ public:
    {
    }
 
-   virtual void Run()
+   void Run() override
    {
       try
       {
@@ -606,8 +599,8 @@ private:
 
          GenericImage<P>& m_image;
    const GenericImage<M>& m_mask;
-         bool             m_invert;
-   const Compression*     m_compressor;
+         bool             m_invert = false;
+   const Compression*     m_compressor = nullptr;
 };
 
 // ----------------------------------------------------------------------------
@@ -1378,4 +1371,4 @@ void ImageVariant::MaskImage( const ImageVariant& src, const ImageVariant& mask,
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageVariant.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/ImageVariant.cpp - Released 2018-11-01T11:06:52Z

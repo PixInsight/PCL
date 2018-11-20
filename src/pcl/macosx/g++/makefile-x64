@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.104
-# Copyright (C) 2009-2017 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.107
+# Copyright (C) 2009-2018 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-08-01T15:57:03.292Z
+# Generated on .... 2018-11-01T11:08:42.807Z
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ MacOSX/g++
@@ -55,6 +55,7 @@ SRC_FILES= \
 ../../DisplayFunction.cpp \
 ../../DrizzleData.cpp \
 ../../Edit.cpp \
+../../EphemerisFile.cpp \
 ../../Exception.cpp \
 ../../ExternalProcess.cpp \
 ../../FFT1D.cpp \
@@ -117,6 +118,7 @@ SRC_FILES= \
 ../../OrthographicProjection.cpp \
 ../../Pen.cpp \
 ../../PolarTransform.cpp \
+../../Position.cpp \
 ../../PreviewSelectionDialog.cpp \
 ../../Process.cpp \
 ../../ProcessImplementation.cpp \
@@ -228,6 +230,7 @@ OBJ_FILES= \
 ./x64/Release/DisplayFunction.o \
 ./x64/Release/DrizzleData.o \
 ./x64/Release/Edit.o \
+./x64/Release/EphemerisFile.o \
 ./x64/Release/Exception.o \
 ./x64/Release/ExternalProcess.o \
 ./x64/Release/FFT1D.o \
@@ -290,6 +293,7 @@ OBJ_FILES= \
 ./x64/Release/OrthographicProjection.o \
 ./x64/Release/Pen.o \
 ./x64/Release/PolarTransform.o \
+./x64/Release/Position.o \
 ./x64/Release/PreviewSelectionDialog.o \
 ./x64/Release/Process.o \
 ./x64/Release/ProcessImplementation.o \
@@ -401,6 +405,7 @@ DEP_FILES= \
 ./x64/Release/DisplayFunction.d \
 ./x64/Release/DrizzleData.d \
 ./x64/Release/Edit.d \
+./x64/Release/EphemerisFile.d \
 ./x64/Release/Exception.d \
 ./x64/Release/ExternalProcess.d \
 ./x64/Release/FFT1D.d \
@@ -463,6 +468,7 @@ DEP_FILES= \
 ./x64/Release/OrthographicProjection.d \
 ./x64/Release/Pen.d \
 ./x64/Release/PolarTransform.d \
+./x64/Release/Position.d \
 ./x64/Release/PreviewSelectionDialog.d \
 ./x64/Release/Process.d \
 ./x64/Release/ProcessImplementation.d \

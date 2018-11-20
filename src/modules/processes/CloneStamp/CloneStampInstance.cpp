@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard CloneStamp Process Module Version 01.00.02.0336
+// Standard CloneStamp Process Module Version 01.00.02.0344
 // ----------------------------------------------------------------------------
-// CloneStampInstance.cpp - Released 2017-08-01T14:26:57Z
+// CloneStampInstance.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CloneStamp PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,8 +66,6 @@ namespace pcl
 
 CloneStampInstance::CloneStampInstance( const MetaProcess* P ) :
    ProcessImplementation( P ),
-   actions(),
-   cloner(),
    width( 0 ), height( 0 ), // don't rescale coordinates
    color( uint32( TheCSColorParameter->DefaultValue() ) ),
    boundsColor( uint32( TheCSBoundsColorParameter->DefaultValue() ) ),
@@ -75,11 +73,15 @@ CloneStampInstance::CloneStampInstance( const MetaProcess* P ) :
 {
 }
 
+// ----------------------------------------------------------------------------
+
 CloneStampInstance::CloneStampInstance( const CloneStampInstance& x ) :
    ProcessImplementation( x )
 {
    Assign( x );
 }
+
+// ----------------------------------------------------------------------------
 
 void CloneStampInstance::Assign( const ProcessImplementation& p )
 {
@@ -97,6 +99,8 @@ void CloneStampInstance::Assign( const ProcessImplementation& p )
    isInterfaceInstance = false;
 }
 
+// ----------------------------------------------------------------------------
+
 void CloneStampInstance::TestAssign( const ProcessImplementation& p )
 {
    const CloneStampInstance* x = dynamic_cast<const CloneStampInstance*>( &p );
@@ -112,6 +116,15 @@ void CloneStampInstance::TestAssign( const ProcessImplementation& p )
 
    isInterfaceInstance = false;
 }
+
+// ----------------------------------------------------------------------------
+
+UndoFlags CloneStampInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
+}
+
+// ----------------------------------------------------------------------------
 
 bool CloneStampInstance::CanExecuteOn( const View& view, String& whyNot ) const
 {
@@ -728,4 +741,4 @@ size_type CloneStampInstance::ParameterLength( const MetaParameter* p, size_type
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CloneStampInstance.cpp - Released 2017-08-01T14:26:57Z
+// EOF CloneStampInstance.cpp - Released 2018-11-01T11:07:20Z

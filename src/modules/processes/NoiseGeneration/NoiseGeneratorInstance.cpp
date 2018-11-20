@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard NoiseGeneration Process Module Version 01.00.02.0325
+// Standard NoiseGeneration Process Module Version 01.00.02.0333
 // ----------------------------------------------------------------------------
-// NoiseGeneratorInstance.cpp - Released 2017-08-01T14:26:58Z
+// NoiseGeneratorInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard NoiseGeneration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -65,18 +65,18 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 NoiseGeneratorInstance::NoiseGeneratorInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-p_amount( TheNGNoiseAmountParameter->DefaultValue() ),
-p_distribution( NGNoiseDistribution::Default ),
-p_impulsionalNoiseProbability( TheNGImpulsionalNoiseProbabilityParameter->DefaultValue() ),
-p_preserveBrightness( false /*NGPreserveBrightness::Default*/ ) // ### deprecated
+   ProcessImplementation( m ),
+   p_amount( TheNGNoiseAmountParameter->DefaultValue() ),
+   p_distribution( NGNoiseDistribution::Default ),
+   p_impulsionalNoiseProbability( TheNGImpulsionalNoiseProbabilityParameter->DefaultValue() ),
+   p_preserveBrightness( false /*NGPreserveBrightness::Default*/ ) // ### deprecated
 {
 }
 
 // ----------------------------------------------------------------------------
 
 NoiseGeneratorInstance::NoiseGeneratorInstance( const NoiseGeneratorInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -86,13 +86,20 @@ ProcessImplementation( x )
 void NoiseGeneratorInstance::Assign( const ProcessImplementation& p )
 {
    const NoiseGeneratorInstance* x = dynamic_cast<const NoiseGeneratorInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       p_amount = x->p_amount;
       p_distribution = x->p_distribution;
       p_impulsionalNoiseProbability = x->p_impulsionalNoiseProbability;
       p_preserveBrightness = x->p_preserveBrightness; // ### deprecated
    }
+}
+
+// ----------------------------------------------------------------------------
+
+UndoFlags NoiseGeneratorInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
 }
 
 // ----------------------------------------------------------------------------
@@ -165,6 +172,8 @@ public:
    }
 };
 
+// ----------------------------------------------------------------------------
+
 bool NoiseGeneratorInstance::ExecuteOn( View& view )
 {
    AutoViewLock lock( view );
@@ -206,7 +215,7 @@ void* NoiseGeneratorInstance::LockParameter( const MetaParameter* p, size_type /
       return &p_impulsionalNoiseProbability;
    if ( p == TheNGPreserveBrightnessParameter ) // ### deprecated
       return &p_preserveBrightness;
-   return 0;
+   return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -214,4 +223,4 @@ void* NoiseGeneratorInstance::LockParameter( const MetaParameter* p, size_type /
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF NoiseGeneratorInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF NoiseGeneratorInstance.cpp - Released 2018-11-01T11:07:21Z

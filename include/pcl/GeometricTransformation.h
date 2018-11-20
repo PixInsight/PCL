@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/GeometricTransformation.h - Released 2017-08-01T14:23:31Z
+// pcl/GeometricTransformation.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -140,18 +140,18 @@ public:
     * different pixel interpolation.
     */
    InterpolatingGeometricTransformation( PixelInterpolation& p ) :
-      GeometricTransformation(), m_interpolation( &p ), m_unclipped( false )
+      m_interpolation( &p )
    {
       PCL_CHECK( m_interpolation != nullptr )
    }
 
    /*!
     * Copy constructor. The constructed object will use the same pixel
-    * interpolation as the source object \a x.
+    * interpolation as the specified source object.
     *
     * The PixelInterpolation object used by both this object and the source
-    * object \a x must remain valid and accessible as long as at least one of
-    * both objects is associated with it.
+    * object must remain valid and accessible as long as at least one of both
+    * objects is associated with it.
     */
    InterpolatingGeometricTransformation( const InterpolatingGeometricTransformation& ) = default;
 
@@ -168,12 +168,12 @@ public:
     * Copy assignment operator. Returns a reference to this object.
     *
     * After assignment, this object will use the same pixel interpolation as
-    * the source object \a x. The previously used pixel interpolation is simply
-    * forgotten by this object, which will no longer depend on it.
+    * the specified source object. The previously used pixel interpolation is
+    * simply forgotten by this object, which will no longer depend on it.
     *
     * The PixelInterpolation object used by both this object and the source
-    * object \a x must remain valid and accessible as long as at least one of
-    * both objects is associated with it.
+    * object must remain valid and accessible as long as at least one of both
+    * objects is associated with it.
     */
    InterpolatingGeometricTransformation& operator =( const InterpolatingGeometricTransformation& ) = default;
 
@@ -261,8 +261,8 @@ public:
 
 protected:
 
-   PixelInterpolation* m_interpolation;
-   bool                m_unclipped : 1;
+   PixelInterpolation* m_interpolation = nullptr;
+   bool                m_unclipped = false;
 };
 
 // ----------------------------------------------------------------------------
@@ -272,4 +272,4 @@ protected:
 #endif   // __PCL_GeometricTransformation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/GeometricTransformation.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/GeometricTransformation.h - Released 2018-11-01T11:06:36Z

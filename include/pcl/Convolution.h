@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Convolution.h - Released 2017-08-01T14:23:31Z
+// pcl/Convolution.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,6 +60,7 @@
 #include <pcl/AutoPointer.h>
 #include <pcl/InterlacedTransformation.h>
 #include <pcl/KernelFilter.h>
+#include <pcl/ParallelProcess.h>
 #include <pcl/ThresholdedTransformation.h>
 
 #define __PCL_CONVOLUTION_TINY_WEIGHT 1.0e-20
@@ -79,7 +80,8 @@ namespace pcl
  * \note ImageTransformation is a virtual base class of %Convolution.
  */
 class PCL_CLASS Convolution : public InterlacedTransformation,
-                              public ThresholdedTransformation
+                              public ThresholdedTransformation,
+                              public ParallelProcess
 {                          // NB: ImageTransformation is a virtual base class
 public:
 
@@ -89,13 +91,7 @@ public:
     * \note This constructor yields an uninitialized instance that cannot be
     * used before explicit association with a KernelFilter instance.
     */
-   Convolution() :
-      InterlacedTransformation(), ThresholdedTransformation(),
-      m_weight( 0 ),
-      m_highPass( false ), m_rawHighPass( false ), m_rescaleHighPass( false ),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
-   {
-   }
+   Convolution() = default;
 
    /*!
     * Constructs a %Convolution instance with the specified filter.
@@ -106,11 +102,7 @@ public:
     *                private copy of the filter (note that KernelFilter is a
     *                reference-counted class).
     */
-   Convolution( const KernelFilter& filter ) :
-      InterlacedTransformation(), ThresholdedTransformation(),
-      m_weight( 0 ),
-      m_highPass( false ), m_rawHighPass( false ), m_rescaleHighPass( false ),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+   Convolution( const KernelFilter& filter )
    {
       SetFilter( filter );
    }
@@ -119,10 +111,11 @@ public:
     * Copy constructor.
     */
    Convolution( const Convolution& x ) :
-      InterlacedTransformation( x ), ThresholdedTransformation( x ),
+      InterlacedTransformation( x ),
+      ThresholdedTransformation( x ),
+      ParallelProcess( x ),
       m_weight( x.m_weight ),
-      m_highPass( x.m_highPass ), m_rawHighPass( x.m_rawHighPass ), m_rescaleHighPass( x.m_rescaleHighPass ),
-      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
+      m_highPass( x.m_highPass ), m_rawHighPass( x.m_rawHighPass ), m_rescaleHighPass( x.m_rescaleHighPass )
    {
       if ( !x.m_filter.IsNull() )
          m_filter = x.m_filter->Clone();
@@ -131,15 +124,7 @@ public:
    /*!
     * Move constructor.
     */
-   Convolution( Convolution&& x ) :
-      InterlacedTransformation( x ), ThresholdedTransformation( x ),
-      m_filter( x.m_filter ),
-      m_weight( x.m_weight ),
-      m_highPass( x.m_highPass ), m_rawHighPass( x.m_rawHighPass ), m_rescaleHighPass( x.m_rescaleHighPass ),
-      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
-   {
-      //x.m_filter = nullptr; // already done by AutoPointer
-   }
+   Convolution( Convolution&& ) = default;
 
    /*!
     * Destroys this %Convolution object.
@@ -157,6 +142,7 @@ public:
       {
          (void)InterlacedTransformation::operator =( x );
          (void)ThresholdedTransformation::operator =( x );
+         (void)ParallelProcess::operator =( x );
          if ( x.m_filter.IsNull() )
             m_filter.Destroy();
          else
@@ -165,8 +151,6 @@ public:
          m_highPass = x.m_highPass;
          m_rawHighPass = x.m_rawHighPass;
          m_rescaleHighPass = x.m_rescaleHighPass;
-         m_parallel = x.m_parallel;
-         m_maxProcessors = x.m_maxProcessors;
       }
       return *this;
    }
@@ -174,23 +158,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-   Convolution& operator =( Convolution&& x )
-   {
-      if ( &x != this )
-      {
-         (void)InterlacedTransformation::operator =( x );
-         (void)ThresholdedTransformation::operator =( x );
-         m_filter = x.m_filter;
-         m_weight = x.m_weight;
-         m_highPass = x.m_highPass;
-         m_rawHighPass = x.m_rawHighPass;
-         m_rescaleHighPass = x.m_rescaleHighPass;
-         m_parallel = x.m_parallel;
-         m_maxProcessors = x.m_maxProcessors;
-         //x.m_filter = nullptr; // already done by AutoPointer
-      }
-      return *this;
-   }
+   Convolution& operator =( Convolution&& ) = default;
 
    /*!
     * Returns a reference to the kernel filter currently associated with this
@@ -331,78 +299,6 @@ public:
       return m_filter->Size() + (m_filter->Size() - 1)*(InterlacingDistance() - 1);
    }
 
-   /*!
-    * Returns true iff this object is allowed to use multiple parallel
-    * execution threads (when multiple threads are permitted and available).
-    */
-   bool IsParallelProcessingEnabled() const
-   {
-      return m_parallel;
-   }
-
-   /*!
-    * Enables parallel processing for this instance of %Convolution.
-    *
-    * \param enable  Whether to enable or disable parallel processing. True by
-    *                default.
-    *
-    * \param maxProcessors    The maximum number of processors allowed for this
-    *                instance of %Convolution. If \a enable is false
-    *                this parameter is ignored. A value <= 0 is ignored. The
-    *                default value is zero.
-    */
-   void EnableParallelProcessing( bool enable = true, int maxProcessors = 0 )
-   {
-      m_parallel = enable;
-      if ( enable && maxProcessors > 0 )
-         SetMaxProcessors( maxProcessors );
-   }
-
-   /*!
-    * Disables parallel processing for this instance of %Convolution.
-    *
-    * This is a convenience function, equivalent to:
-    * EnableParallelProcessing( !disable )
-    */
-   void DisableParallelProcessing( bool disable = true )
-   {
-      EnableParallelProcessing( !disable );
-   }
-
-   /*!
-    * Returns the maximum number of processors allowed for this instance of
-    * %Convolution.
-    *
-    * Irrespective of the value returned by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   int MaxProcessors() const
-   {
-      return m_maxProcessors;
-   }
-
-   /*!
-    * Sets the maximum number of processors allowed for this instance of
-    * %Convolution.
-    *
-    * In the current version of PCL, a module can use a maximum of 1023
-    * processors. The term \e processor actually refers to the number of
-    * threads a module can execute concurrently.
-    *
-    * Irrespective of the value specified by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   void SetMaxProcessors( int maxProcessors )
-   {
-      m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
-   }
-
 protected:
 
    /*
@@ -413,25 +309,23 @@ protected:
    /*
     * Cached filter properties.
     */
-   double        m_weight;              // filter weight for low-pass normalization
-   bool          m_highPass        : 1; // true if this is a high-pass filter
+   double m_weight = 0;       // filter weight for low-pass normalization
+   bool   m_highPass = false; // true if this is a high-pass filter
 
    /*
     * User-selectable options
     */
-   bool          m_rawHighPass     : 1; // neither truncate nor normalize out-of-range values
-   bool          m_rescaleHighPass : 1; // truncate out-of-range values instead of normalize
-   bool          m_parallel        : 1; // use multiple threads
-   unsigned      m_maxProcessors   : PCL_MAX_PROCESSORS_BITCOUNT; // Maximum number of processors allowed
+   bool   m_rawHighPass = false;     // neither truncate nor normalize out-of-range values
+   bool   m_rescaleHighPass = false; // truncate out-of-range values instead of normalize
 
    /*
     * In-place 2-D nonseparable convolution algorithm in the spatial domain.
     */
-   virtual void Apply( pcl::Image& ) const;
-   virtual void Apply( pcl::DImage& ) const;
-   virtual void Apply( pcl::UInt8Image& ) const;
-   virtual void Apply( pcl::UInt16Image& ) const;
-   virtual void Apply( pcl::UInt32Image& ) const;
+   void Apply( pcl::Image& ) const override;
+   void Apply( pcl::DImage& ) const override;
+   void Apply( pcl::UInt8Image& ) const override;
+   void Apply( pcl::UInt16Image& ) const override;
+   void Apply( pcl::UInt32Image& ) const override;
 
 private:
 
@@ -456,4 +350,4 @@ private:
 #endif   // __PCL_Convolution_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Convolution.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Convolution.h - Released 2018-11-01T11:06:36Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/AkimaInterpolation.h - Released 2017-08-01T14:23:31Z
+// pcl/AkimaInterpolation.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -116,16 +116,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    AkimaInterpolation( AkimaInterpolation&& ) = default;
-#else
-   AkimaInterpolation( AkimaInterpolation&& x ) :
-      m_b( std::move( x.m_b ) ),
-      m_c( std::move( x.m_c ) ),
-      m_d( std::move( x.m_d ) )
-   {
-   }
-#endif
 
    /*!
     * Destroys an %AkimaInterpolation object.
@@ -150,94 +141,102 @@ public:
     * vector) must be \e n >= 5. This is because Akima interpolation requires
     * at least 4 subintervals.
     */
-   virtual void Initialize( const vector_type& x, const vector_type& y )
+   void Initialize( const vector_type& x, const vector_type& y ) override
    {
       if ( y.Length() < 5 )
          throw Error( "Need five or more data items in AkimaInterpolation::Initialize()" );
 
-      Clear();
-      UnidimensionalInterpolation<T>::Initialize( x, y );
-
-      int n = this->m_y.Length();
-      int N = n-1; // Number of subintervals
-
-      m_b = coefficient_vector( N );
-      m_c = coefficient_vector( N );
-      m_d = coefficient_vector( N );
-
-      // Chordal slopes
-      coefficient_vector m0( N+4 ); // room for 4 additional prescribed slopes
-      T* m = m0.At( 2 );            // allow negative subscripts m[-1] and m[-2]
-
-      // Akima left-hand slopes to support corners
-      coefficient_vector tL( n );
-
-      // Calculate chordal slopes for each subinterval
-      if ( this->m_x )
-         for ( int i = 0; i < N; ++i )
-         {
-            T h = this->m_x[i+1] - this->m_x[i];
-            if ( 1 + h*h == 1 )
-               throw Error( "Null interpolation subinterval in AkimaInterpolation::Initialize()" );
-            m[i] = (this->m_y[i+1] - this->m_y[i])/h;
-         }
-      else
-         for ( int i = 0; i < N; ++i )
-            m[i] = this->m_y[i+1] - this->m_y[i];
-
-      // Prescribed slopes at ending locations
-      m[-2 ] = 3*m[  0] - 2*m[  1];
-      m[-1 ] = 2*m[  0] -   m[  1];
-      m[ N ] = 2*m[N-1] -   m[N-2];
-      m[N+1] = 3*m[N-1] - 2*m[N-2];
-
-      /*
-       * Akima left-hand and right-hand slopes.
-       * Right-hand slopes are just the interpolation coefficients bi.
-       */
-      for ( int i = 0; i < n; ++i )
+      try
       {
-         T f = Abs( m[i-1] - m[i-2] );
-         T e = Abs( m[i+1] - m[i] ) + f;
-         if ( 1 + e != 1 )
-         {
-            tL[i] = m[i-1] + f*(m[i] - m[i-1])/e;
-            if ( i < N )
-               m_b[i] = tL[i];
-         }
+         Clear();
+         UnidimensionalInterpolation<T>::Initialize( x, y );
+
+         int n = this->m_y.Length();
+         int N = n-1; // Number of subintervals
+
+         m_b = coefficient_vector( N );
+         m_c = coefficient_vector( N );
+         m_d = coefficient_vector( N );
+
+         // Chordal slopes
+         coefficient_vector m0( N+4 ); // room for 4 additional prescribed slopes
+         T* m = m0.At( 2 );            // allow negative subscripts m[-1] and m[-2]
+
+         // Akima left-hand slopes to support corners
+         coefficient_vector tL( n );
+
+         // Calculate chordal slopes for each subinterval
+         if ( this->m_x )
+            for ( int i = 0; i < N; ++i )
+            {
+               T h = this->m_x[i+1] - this->m_x[i];
+               if ( 1 + h*h == 1 )
+                  throw Error( "Null interpolation subinterval in AkimaInterpolation::Initialize()" );
+               m[i] = (this->m_y[i+1] - this->m_y[i])/h;
+            }
          else
+            for ( int i = 0; i < N; ++i )
+               m[i] = this->m_y[i+1] - this->m_y[i];
+
+         // Prescribed slopes at ending locations
+         m[-2 ] = 3*m[  0] - 2*m[  1];
+         m[-1 ] = 2*m[  0] -   m[  1];
+         m[ N ] = 2*m[N-1] -   m[N-2];
+         m[N+1] = 3*m[N-1] - 2*m[N-2];
+
+         /*
+         * Akima left-hand and right-hand slopes.
+         * Right-hand slopes are just the interpolation coefficients bi.
+         */
+         for ( int i = 0; i < n; ++i )
          {
-            tL[i] = m[i-1];
-            if ( i < N )
-               m_b[i] = m[i];
+            T f = Abs( m[i-1] - m[i-2] );
+            T e = Abs( m[i+1] - m[i] ) + f;
+            if ( 1 + e != 1 )
+            {
+               tL[i] = m[i-1] + f*(m[i] - m[i-1])/e;
+               if ( i < N )
+                  m_b[i] = tL[i];
+            }
+            else
+            {
+               tL[i] = m[i-1];
+               if ( i < N )
+                  m_b[i] = m[i];
+            }
+         }
+
+         /*
+         * Interpolation coefficients m_b[i], m_c[i], m_d[i]. 'ai' coefficients
+         * are the this->m_y[i] ordinate values.
+         */
+         for ( int i = 0; i < N; ++i )
+         {
+            m_c[i] = 3*m[i] - 2*m_b[i] - tL[i+1];
+            m_d[i] = m_b[i] + tL[i+1] - 2*m[i];
+
+            if ( this->m_x )
+            {
+               T h = this->m_x[i+1] - this->m_x[i];
+               m_c[i] /= h;
+               m_d[i] /= h*h;
+            }
          }
       }
-
-      /*
-       * Interpolation coefficients m_b[i], m_c[i], m_d[i]. 'ai' coefficients
-       * are the this->m_y[i] ordinate values.
-       */
-      for ( int i = 0; i < N; ++i )
+      catch ( ... )
       {
-         m_c[i] = 3*m[i] - 2*m_b[i] - tL[i+1];
-         m_d[i] = m_b[i] + tL[i+1] - 2*m[i];
-
-         if ( this->m_x )
-         {
-            T h = this->m_x[i+1] - this->m_x[i];
-            m_c[i] /= h;
-            m_d[i] /= h*h;
-         }
+         Clear();
+         throw;
       }
    }
 
    /*!
     * Returns an interpolated function value at \a x location.
     */
-   virtual PCL_HOT_FUNCTION
-   double operator()( double x ) const
+   PCL_HOT_FUNCTION
+   double operator()( double x ) const override
    {
-      PCL_PRECONDITION( m_b && m_c && m_d )
+      PCL_PRECONDITION( IsValid() )
 
       /*
        * Find the subinterval i0 such that this->m_x[i0] <= x < this->m_x[i0+1].
@@ -278,12 +277,21 @@ public:
    /*!
     * Frees internal data structures in this AkimaInterpolation object.
     */
-   virtual void Clear()
+   void Clear() override
    {
       m_b.Clear();
       m_c.Clear();
       m_d.Clear();
       UnidimensionalInterpolation<T>::Clear();
+   }
+
+   /*!
+    * Returns true iff this interpolation is valid, i.e. if it has been
+    * correctly initialized and is ready to interpolate function values.
+    */
+   bool IsValid() const override
+   {
+      return m_b && m_c && m_d;
    }
 
 protected:
@@ -304,4 +312,4 @@ protected:
 #endif  // __PCL_AkimaInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AkimaInterpolation.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/AkimaInterpolation.h - Released 2018-11-01T11:06:36Z

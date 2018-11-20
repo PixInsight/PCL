@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/LinearFilter.h - Released 2017-08-01T14:23:31Z
+// pcl/LinearFilter.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -88,17 +88,14 @@ public:
     * Constructs an empty %LinearFilter object with default functional
     * parameters: size=5, centralValue=1, outerValue=0.01.
     */
-   LinearFilter() :
-      KernelFilter(), m_centralValue( 1.0f ), m_outerValue( 0.01f )
-   {
-   }
+   LinearFilter() = default;
 
    /*!
     * Constructs a %LinearFilter object given the odd filter size \a n >= 3,
     * central value \a v0, and outer value \a v1. Assigns an optional \a name
     * to the new filter object.
     */
-   LinearFilter( int n, float v0 = 1.0f, float v1 = 0.01f, const String& name = String() ) :
+   LinearFilter( int n, float v0 = 1.0F, float v1 = 0.01F, const String& name = String() ) :
       KernelFilter( n, name )
    {
       Initialize( v0, v1 );
@@ -107,22 +104,16 @@ public:
    /*!
     * Copy constructor.
     */
-   LinearFilter( const LinearFilter& x ) :
-      KernelFilter( x ), m_centralValue( x.m_centralValue ), m_outerValue( x.m_outerValue )
-   {
-   }
+   LinearFilter( const LinearFilter& ) = default;
 
    /*!
     * Move constructor.
     */
-   LinearFilter( LinearFilter&& x ) :
-      KernelFilter( std::move( x ) ), m_centralValue( x.m_centralValue ), m_outerValue( x.m_outerValue )
-   {
-   }
+   LinearFilter( LinearFilter&& ) = default;
 
    /*!
     */
-   virtual KernelFilter* Clone() const
+   KernelFilter* Clone() const override
    {
       return new LinearFilter( *this );
    }
@@ -130,24 +121,12 @@ public:
    /*!
     * Copy assignment operator. Returns a reference to this object.
     */
-   LinearFilter& operator =( const LinearFilter& x )
-   {
-      (void)KernelFilter::operator =( x );
-      m_centralValue = x.m_centralValue;
-      m_outerValue = x.m_outerValue;
-      return *this;
-   }
+   LinearFilter& operator =( const LinearFilter& ) = default;
 
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-   LinearFilter& operator =( LinearFilter&& x )
-   {
-      (void)KernelFilter::operator =( std::move( x ) );
-      m_centralValue = x.m_centralValue;
-      m_outerValue = x.m_outerValue;
-      return *this;
-   }
+   LinearFilter& operator =( LinearFilter&& ) = default;
 
    /*!
     * Returns the central filter coefficient value.
@@ -187,33 +166,23 @@ public:
     * Recalculates filter coefficients for the given kernel size \a n >= 3. The
     * current central and outer coefficient values are not varied.
     */
-   virtual void Resize( int n )
+   void Resize( int n ) override
    {
       KernelFilter::Resize( n );
       Initialize( m_centralValue, m_outerValue );
    }
 
-   /*!
-    * Exchanges two linear filters \a x1 and \a x2.
-    */
-   friend void Swap( LinearFilter& x1, LinearFilter& x2 )
-   {
-      pcl::Swap( static_cast<KernelFilter&>( x1 ), static_cast<KernelFilter&>( x2 ) );
-      pcl::Swap( x1.m_centralValue, x2.m_centralValue );
-      pcl::Swap( x1.m_outerValue,   x2.m_outerValue );
-   }
-
 private:
 
-   float m_centralValue;
-   float m_outerValue;
+   float m_centralValue = 1.0F;
+   float m_outerValue = 0.01F;
 
    void Initialize( float v0, float v1 )
    {
       m_centralValue = v0;
       m_outerValue = v1;
       float* h = *coefficients;
-      if ( h != 0 )
+      if ( h != nullptr )
       {
          int n2 = Size() >> 1;
          float dvn2 = (v1 - v0)/n2;
@@ -231,4 +200,4 @@ private:
 #endif   // __PCL_LinearFilter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/LinearFilter.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/LinearFilter.h - Released 2018-11-01T11:06:36Z

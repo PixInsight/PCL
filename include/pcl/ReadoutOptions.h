@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ReadoutOptions.h - Released 2017-08-01T14:23:31Z
+// pcl/ReadoutOptions.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -193,22 +193,7 @@ public:
    /*!
     * Constructs a default %ReadoutOptions object.
     */
-   ReadoutOptions() :
-      data( ReadoutData::RGBK ),
-      mode( ReadoutMode::Mean ),
-      probeSize( 1 ),
-      previewSize( 25 ),
-      previewZoom( 8 ),
-      precision( 4 ),
-      range( uint16_max ),
-      showAlpha( true ),
-      showMask( true ),
-      showPreview( true ),
-      previewCenter( true ),
-      broadcast( true ),
-      real( true )
-   {
-   }
+   ReadoutOptions() = default;
 
    /*!
     * Copy constructor.
@@ -221,7 +206,8 @@ public:
    ReadoutOptions& operator =( const ReadoutOptions& ) = default;
 
    /*!
-    * Returns the current readout options from the PixInsight core application.
+    * Returns the current readout options retrieved from the PixInsight core
+    * application.
     */
    static ReadoutOptions GetCurrentOptions();
 
@@ -266,7 +252,7 @@ public:
     * Returns true iff this %ReadoutOptions object enables presentation of alpha
     * channel pixel readouts.
     */
-   bool IsAlphaChannelEnabled() const
+   bool ShowAlphaChannel() const
    {
       return showAlpha;
    }
@@ -294,7 +280,7 @@ public:
     * Returns true iff this %ReadoutOptions object enables presentation of mask
     * channel pixel readouts.
     */
-   bool IsMaskChannelEnabled() const
+   bool ShowMaskChannel() const
    {
       return showMask;
    }
@@ -377,7 +363,7 @@ public:
     * Returns true iff this %ReadoutOptions object enables generation of
     * real-time readout previews.
     */
-   bool IsPreviewEnabled() const
+   bool ShowPreview() const
    {
       return showPreview;
    }
@@ -402,7 +388,7 @@ public:
     * Returns true iff this %ReadoutOptions object enables crosshair center
     * lines on real-time readout previews.
     */
-   bool IsPreviewCenterEnabled() const
+   bool ShowPreviewCenter() const
    {
       return previewCenter;
    }
@@ -421,6 +407,148 @@ public:
    void DisablePreviewCenter( bool disable = true )
    {
       EnablePreviewCenter( !disable );
+   }
+
+   /*!
+    * Returns true iff this %ReadoutOptions object enables equatorial
+    * coordinates, which can be shown when the image has a valid astrometric
+    * solution.
+    */
+   bool ShowEquatorialCoordinates() const
+   {
+      return showEquatorial;
+   }
+
+   /*!
+    * Enables equatorial coordinates, which can be shown when the image has a
+    * valid astrometric solution.
+    */
+   void EnableEquatorialCoordinates( bool enable = true )
+   {
+      showEquatorial = enable;
+   }
+
+   /*!
+    * Disables equatorial coordinates, which can be shown when the image has a
+    * valid astrometric solution.
+    */
+   void DisableEquatorialCoordinates( bool disable = true )
+   {
+      EnableEquatorialCoordinates( !disable );
+   }
+
+   /*!
+    * Returns true iff this %ReadoutOptions object enables ecliptic
+    * coordinates, which can be shown  when the image has a valid astrometric
+    * solution.
+    */
+   bool ShowEclipticCoordinates() const
+   {
+      return showEcliptic;
+   }
+
+   /*!
+    * Enables ecliptic coordinates, which can be shown when the image has a
+    * valid astrometric solution.
+    */
+   void EnableEclipticCoordinates( bool enable = true )
+   {
+      showEcliptic = enable;
+   }
+
+   /*!
+    * Disables ecliptic coordinates, which can be shown when the image has a
+    * valid astrometric solution.
+    */
+   void DisableEclipticCoordinates( bool disable = true )
+   {
+      EnableEclipticCoordinates( !disable );
+   }
+
+   /*!
+    * Returns true iff this %ReadoutOptions object enables galactic
+    * coordinates, which can be shown when the image has a valid astrometric
+    * solution.
+    */
+   bool ShowGalacticCoordinates() const
+   {
+      return showGalactic;
+   }
+
+   /*!
+    * Enables galactic coordinates, which can be shown when the image has a
+    * valid astrometric solution.
+    */
+   void EnableGalacticCoordinates( bool enable = true )
+   {
+      showGalactic = enable;
+   }
+
+   /*!
+    * Disables galactic coordinates, which can be shown when the image has a
+    * valid astrometric solution.
+    */
+   void DisableGalacticCoordinates( bool disable = true )
+   {
+      EnableGalacticCoordinates( !disable );
+   }
+
+   /*!
+    * Returns the number of items used in sexagesimal representations of
+    * celestial spherical coordinates. The returned value can be one of:
+    *
+    * \li 1 - degrees/hours only.
+    * \li 2 - degrees/hours and minutes.
+    * \li 3 - degrees/hours, minutes and secons.
+    */
+   int CoordinateItems() const
+   {
+      return coordinateItems;
+   }
+
+   /*!
+    * Sets the number of items used in sexagesimal representations of celestial
+    * spherical coordinates. The specified value \a n must be one of:
+    *
+    * \li 1 - degrees/hours only.
+    * \li 2 - degrees/hours and minutes.
+    * \li 3 - degrees/hours, minutes and secons.
+    */
+   void SetCoordinateItems( int n )
+   {
+      coordinateItems = Range( n, 1, 3 );
+   }
+
+   /*!
+    * Returns the number of decimal digits represented for the last item in
+    * sexagesimal representations of celestial spherical coordinates. The
+    * returned value is an integer in the range [0,8].
+    */
+   int CoordinatePrecision() const
+   {
+      return coordinatePrecision;
+   }
+
+   /*!
+    * Returns the actual number of decimal digits that should be used to
+    * represent spherical coordinates, as a function of the number of
+    * represented sexagesimal items. Returns a maximum of 3, 5 and 7 digits,
+    * respectively for 3, 2 and 1 represented items. These constraints allow
+    * for the representation of coordinates with milliarcsecond precision.
+    */
+   int RealCoordinatePrecision() const
+   {
+      return Range( coordinatePrecision, 0, 3 + 2*(3 - coordinateItems) );
+   }
+
+   /*!
+    * Sets the number of decimal digits represented for the last item in
+    * sexagesimal representations of celestial spherical coordinates. The
+    * specified value \a n must be in the range [0,8].
+    */
+   void SetCoordinatePrecision( int n )
+   {
+      coordinatePrecision = Range( n, 0, 8 );
    }
 
    /*!
@@ -566,19 +694,24 @@ protected:
 private:
 #endif
 
-   readout_data data;
-   readout_mode mode;
-   int          probeSize;    // size of the square probe - must be an odd number
-   int          previewSize;  // size of the square preview - must be an odd number
-   int          previewZoom;  // readout preview zoom factor >= 1
-   int          precision;    // number of decimal digits if real==true
-   unsigned     range;        // maximum discrete value if real==false
-   bool         showAlpha     : 1;  // show alpha channel readouts?
-   bool         showMask      : 1;  // show mask channel readouts?
-   bool         showPreview   : 1;  // show real-time readout previews?
-   bool         previewCenter : 1;  // draw center crosshairs on readout previews?
-   bool         broadcast     : 1;  // broadcast readouts?
-   bool         real          : 1;  // true=real, false=integer
+   readout_data data = ReadoutData::RGBK;
+   readout_mode mode = ReadoutMode::Mean;
+   int          probeSize = 1;           // size of the square probe - must be an odd number
+   int          previewSize = 25;        // size of the square preview - must be an odd number
+   int          previewZoom = 8;         // readout preview zoom factor >= 1
+   int          precision = 4;           // number of decimal digits if real==true
+   unsigned     range = uint16_max;      // maximum discrete value if real==false
+   bool         showAlpha = true;        // show alpha channel readouts?
+   bool         showMask = true;         // show mask channel readouts?
+   bool         showPreview = true;      // show real-time readout previews?
+   bool         previewCenter = true;    // draw center crosshairs on readout previews?
+   bool         showEquatorial = true;   // show equatorial coordinates
+   bool         showEcliptic = false;    // show ecliptic coordinates
+   bool         showGalactic = false;    // show galactic coordinates
+   int          coordinateItems = 3;     // 1=degrees/hours 2=minutes 3=seconds
+   int          coordinatePrecision = 2; // decimal digits of last represented item
+   bool         broadcast = true;        // broadcast readouts?
+   bool         real = true;             // true=real, false=integer
 };
 
 // ----------------------------------------------------------------------------
@@ -588,4 +721,4 @@ private:
 #endif   // __PCL_ReadoutOptions_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ReadoutOptions.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/ReadoutOptions.h - Released 2018-11-01T11:06:36Z

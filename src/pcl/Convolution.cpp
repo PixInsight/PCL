@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Convolution.cpp - Released 2017-08-01T14:23:38Z
+// pcl/Convolution.cpp - Released 2018-11-01T11:06:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -231,13 +231,12 @@ private:
       typedef GenericMultiVector<typename P::sample>  raw_data;
 
       Thread( ThreadData<P>& data, int startRow, int endRow, bool upperOvRgn, bool lowerOvRgn ) :
-         pcl::Thread(),
          m_data( data ), m_firstRow( startRow ), m_endRow( endRow ),
          m_haveUpperOvRgn( upperOvRgn ), m_haveLowerOvRgn( lowerOvRgn )
       {
       }
 
-      virtual PCL_HOT_FUNCTION void Run()
+      PCL_HOT_FUNCTION void Run() override
       {
          INIT_THREAD_MONITOR()
 
@@ -498,4 +497,4 @@ void Convolution::ValidateFilter() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Convolution.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/Convolution.cpp - Released 2018-11-01T11:06:52Z

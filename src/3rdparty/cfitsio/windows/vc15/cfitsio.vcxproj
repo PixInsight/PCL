@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+######################################################################
+# PixInsight Makefile Generator Script v1.107
+# Copyright (C) 2009-2018 Pleiades Astrophoto
+######################################################################
+# Generated on .... 2018-11-01T11:08:43.494Z
+# Project id ...... cfitsio
+# Project type .... StaticLibrary
+# Platform ........ Windows/vc15
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Additional preprocessor definitions:
+# f2cFortran
+# _CRT_SECURE_NO_WARNINGS
+# _MBCS
+# FF_NO_UNISTD_H
+######################################################################
+-->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{970A5D7C-4180-46F2-9ED1-0410114B04EE}</ProjectGuid>
+    <RootNamespace>PixInsight</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v141_xp</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v141_xp</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(PCLLIBDIR64)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(PCLLIBDIR32)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(PCLLIBDIR64)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(PCLLIBDIR32)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cfitsio-pxi</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cfitsio-pxi</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cfitsio-pxi</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cfitsio-pxi</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;f2cFortran;_CRT_SECURE_NO_WARNINGS;_MBCS;FF_NO_UNISTD_H;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat></DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(PCLLIBDIR64)\cfitsio-pxi.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;f2cFortran;_CRT_SECURE_NO_WARNINGS;_MBCS;FF_NO_UNISTD_H;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat></DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(PCLLIBDIR32)\cfitsio-pxi.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;f2cFortran;_CRT_SECURE_NO_WARNINGS;_MBCS;FF_NO_UNISTD_H;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(PCLLIBDIR64)\cfitsio-pxi.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;f2cFortran;_CRT_SECURE_NO_WARNINGS;_MBCS;FF_NO_UNISTD_H;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(PCLLIBDIR32)\cfitsio-pxi.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\buffers.c"/>
+    <ClCompile Include="..\..\cfileio.c"/>
+    <ClCompile Include="..\..\checksum.c"/>
+    <ClCompile Include="..\..\drvrfile.c"/>
+    <ClCompile Include="..\..\drvrgsiftp.c"/>
+    <ClCompile Include="..\..\drvrmem.c"/>
+    <ClCompile Include="..\..\drvrnet.c"/>
+    <ClCompile Include="..\..\drvrsmem.c"/>
+    <ClCompile Include="..\..\editcol.c"/>
+    <ClCompile Include="..\..\edithdu.c"/>
+    <ClCompile Include="..\..\eval_f.c"/>
+    <ClCompile Include="..\..\eval_l.c"/>
+    <ClCompile Include="..\..\eval_y.c"/>
+    <ClCompile Include="..\..\f77_wrap1.c"/>
+    <ClCompile Include="..\..\f77_wrap2.c"/>
+    <ClCompile Include="..\..\f77_wrap3.c"/>
+    <ClCompile Include="..\..\f77_wrap4.c"/>
+    <ClCompile Include="..\..\fits_hcompress.c"/>
+    <ClCompile Include="..\..\fits_hdecompress.c"/>
+    <ClCompile Include="..\..\fitscore.c"/>
+    <ClCompile Include="..\..\getcol.c"/>
+    <ClCompile Include="..\..\getcolb.c"/>
+    <ClCompile Include="..\..\getcold.c"/>
+    <ClCompile Include="..\..\getcole.c"/>
+    <ClCompile Include="..\..\getcoli.c"/>
+    <ClCompile Include="..\..\getcolj.c"/>
+    <ClCompile Include="..\..\getcolk.c"/>
+    <ClCompile Include="..\..\getcoll.c"/>
+    <ClCompile Include="..\..\getcols.c"/>
+    <ClCompile Include="..\..\getcolsb.c"/>
+    <ClCompile Include="..\..\getcolui.c"/>
+    <ClCompile Include="..\..\getcoluj.c"/>
+    <ClCompile Include="..\..\getcoluk.c"/>
+    <ClCompile Include="..\..\getkey.c"/>
+    <ClCompile Include="..\..\group.c"/>
+    <ClCompile Include="..\..\grparser.c"/>
+    <ClCompile Include="..\..\histo.c"/>
+    <ClCompile Include="..\..\imcompress.c"/>
+    <ClCompile Include="..\..\iraffits.c"/>
+    <ClCompile Include="..\..\modkey.c"/>
+    <ClCompile Include="..\..\pliocomp.c"/>
+    <ClCompile Include="..\..\putcol.c"/>
+    <ClCompile Include="..\..\putcolb.c"/>
+    <ClCompile Include="..\..\putcold.c"/>
+    <ClCompile Include="..\..\putcole.c"/>
+    <ClCompile Include="..\..\putcoli.c"/>
+    <ClCompile Include="..\..\putcolj.c"/>
+    <ClCompile Include="..\..\putcolk.c"/>
+    <ClCompile Include="..\..\putcoll.c"/>
+    <ClCompile Include="..\..\putcols.c"/>
+    <ClCompile Include="..\..\putcolsb.c"/>
+    <ClCompile Include="..\..\putcolu.c"/>
+    <ClCompile Include="..\..\putcolui.c"/>
+    <ClCompile Include="..\..\putcoluj.c"/>
+    <ClCompile Include="..\..\putcoluk.c"/>
+    <ClCompile Include="..\..\putkey.c"/>
+    <ClCompile Include="..\..\quantize.c"/>
+    <ClCompile Include="..\..\region.c"/>
+    <ClCompile Include="..\..\ricecomp.c"/>
+    <ClCompile Include="..\..\scalnull.c"/>
+    <ClCompile Include="..\..\simplerng.c"/>
+    <ClCompile Include="..\..\swapproc.c"/>
+    <ClCompile Include="..\..\wcssub.c"/>
+    <ClCompile Include="..\..\wcsutil.c"/>
+    <ClCompile Include="..\..\zlib\adler32.c"/>
+    <ClCompile Include="..\..\zlib\crc32.c"/>
+    <ClCompile Include="..\..\zlib\deflate.c"/>
+    <ClCompile Include="..\..\zlib\infback.c"/>
+    <ClCompile Include="..\..\zlib\inffast.c"/>
+    <ClCompile Include="..\..\zlib\inflate.c"/>
+    <ClCompile Include="..\..\zlib\inftrees.c"/>
+    <ClCompile Include="..\..\zlib\trees.c"/>
+    <ClCompile Include="..\..\zlib\uncompr.c"/>
+    <ClCompile Include="..\..\zlib\zcompress.c"/>
+    <ClCompile Include="..\..\zlib\zuncompress.c"/>
+    <ClCompile Include="..\..\zlib\zutil.c"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\cfortran.h"/>
+    <ClInclude Include="..\..\drvrgsiftp.h"/>
+    <ClInclude Include="..\..\drvrsmem.h"/>
+    <ClInclude Include="..\..\eval_defs.h"/>
+    <ClInclude Include="..\..\eval_tab.h"/>
+    <ClInclude Include="..\..\f77_wrap.h"/>
+    <ClInclude Include="..\..\fitsio.h"/>
+    <ClInclude Include="..\..\fitsio2.h"/>
+    <ClInclude Include="..\..\group.h"/>
+    <ClInclude Include="..\..\grparser.h"/>
+    <ClInclude Include="..\..\longnam.h"/>
+    <ClInclude Include="..\..\region.h"/>
+    <ClInclude Include="..\..\simplerng.h"/>
+    <ClInclude Include="..\..\zlib\crc32.h"/>
+    <ClInclude Include="..\..\zlib\deflate.h"/>
+    <ClInclude Include="..\..\zlib\inffast.h"/>
+    <ClInclude Include="..\..\zlib\inffixed.h"/>
+    <ClInclude Include="..\..\zlib\inflate.h"/>
+    <ClInclude Include="..\..\zlib\inftrees.h"/>
+    <ClInclude Include="..\..\zlib\trees.h"/>
+    <ClInclude Include="..\..\zlib\zconf.h"/>
+    <ClInclude Include="..\..\zlib\zlib.h"/>
+    <ClInclude Include="..\..\zlib\zutil.h"/>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

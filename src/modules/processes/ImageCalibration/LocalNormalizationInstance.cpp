@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.01.0332
+// Standard ImageCalibration Process Module Version 01.04.01.0345
 // ----------------------------------------------------------------------------
-// LocalNormalizationInstance.cpp - Released 2017-08-01T14:26:58Z
+// LocalNormalizationInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -70,11 +70,15 @@
 #include <pcl/PixelInterpolation.h>
 #include <pcl/Resample.h>
 #include <pcl/SeparableConvolution.h>
+#include <pcl/ShepardInterpolation.h>
 #include <pcl/StdStatus.h>
-#include <pcl/SurfacePolynomial.h>
 #include <pcl/SurfaceSpline.h>
 #include <pcl/Version.h>
 #include <pcl/View.h>
+
+#define TINY_SAMPLE_VALUE  4.5e-5   // approx. 3/65535
+
+#include <iostream>
 
 namespace pcl
 {
@@ -84,6 +88,7 @@ namespace pcl
 LocalNormalizationInstance::LocalNormalizationInstance( const MetaProcess* P ) :
    ProcessImplementation( P ),
    p_scale( TheLNScaleParameter->DefaultValue() ),
+   p_noScale( TheLNNoScaleParameter->DefaultValue() ),
    p_rejection( TheLNRejectionParameter->DefaultValue() ),
    p_backgroundRejectionLimit( TheLNBackgroundRejectionLimitParameter->DefaultValue() ),
    p_referenceRejectionThreshold( TheLNReferenceRejectionThresholdParameter->DefaultValue() ),
@@ -134,6 +139,7 @@ void LocalNormalizationInstance::Assign( const ProcessImplementation& p )
    if ( x != nullptr )
    {
       p_scale                       = x->p_scale;
+      p_noScale                     = x->p_noScale;
       p_rejection                   = x->p_rejection;
       p_backgroundRejectionLimit    = x->p_backgroundRejectionLimit;
       p_referenceRejectionThreshold = x->p_referenceRejectionThreshold;
@@ -181,7 +187,7 @@ bool LocalNormalizationInstance::IsHistoryUpdater( const View& view ) const
 
 UndoFlags LocalNormalizationInstance::UndoMode( const View& view ) const
 {
-   return UndoFlag::DefaultMode;
+   return UndoFlag::PixelData;
 }
 
 // ----------------------------------------------------------------------------
@@ -206,7 +212,7 @@ static void RunGnuplot( const String& gnuFilePath )
    Module->ProcessEvents();
 
    console.Write( "<end><cbr>Running gnuplot:  " );
-   for ( int n = 0; !P.WaitForFinished( 250 ); ++n )
+   for ( int n = 0; P.IsRunning() && !P.WaitForFinished( 250 ); ++n )
    {
       console.Write( String( "<end>\b" ) + "-/|\\"[n%4] );
       Module->ProcessEvents();
@@ -231,9 +237,11 @@ class LocalNormalizationThread : public Thread
 {
 public:
 
-   typedef SurfacePolynomial<double>   background_model;
+   typedef ShepardInterpolation<double>   background_interpolation;
 
-   typedef Array<background_model>     background_models;
+   typedef GridShepardInterpolation       background_model;
+
+   typedef Array<background_model>        background_models;
 
    LocalNormalizationThread( const LocalNormalizationInstance& instance,
                              const ImageVariant& referenceImage,
@@ -362,9 +370,9 @@ private:
    {
    public:
 
-      FixZeroThread( Image& image, const background_model& P, int channel, int startRow, int endRow ) :
+      FixZeroThread( Image& image, const background_model& G, int channel, int startRow, int endRow ) :
          m_image( image ),
-         m_P( P ),
+         m_G( G ),
          m_channel( channel ),
          m_startRow( startRow ),
          m_endRow( endRow )
@@ -378,13 +386,13 @@ private:
          for ( int y = m_startRow; y < m_endRow; ++y )
             for ( int x = 0; x < m_image.Width(); ++x, ++r )
                if ( *r == 0 )
-                  *r = m_P( x, y );
+                  *r = m_G( x, y );
       }
 
    private:
 
       Image&                  m_image;
-      const background_model& m_P;
+      const background_model& m_G;
       int                     m_channel;
       int                     m_startRow;
       int                     m_endRow;
@@ -399,9 +407,9 @@ private:
       const int dx2 = dx >> 1;
       const int dy2 = dy >> 1;
 
-      background_models B;
-
       image.SetRangeClipping( 0, 0.92 );
+
+      background_models B;
 
       for ( int c = 0; c < image.NumberOfChannels(); ++c )
       {
@@ -433,15 +441,18 @@ private:
          if ( X.Length() < 16 )
             throw Error( "LocalNormalizationThread::FixZero(): Insufficient data to sample background image pixels, channel " + String( c ) );
 
-         background_model P;
-         P.SetDegree( 3 );
-         P.Initialize( X.Begin(), Y.Begin(), Z.Begin(), X.Length() );
+         background_interpolation S;
+         S.SetRadius( 0.1 );
+         S.Initialize( X.Begin(), Y.Begin(), Z.Begin(), X.Length() );
+
+         background_model G;
+         G.Initialize( image.Bounds(), 16/*delta*/, S, false/*verbose*/ );
 
          int numberOfThreads = Thread::NumberOfThreads( image.Height(), 4 );
          int rowsPerThread = image.Height()/numberOfThreads;
          ReferenceArray<FixZeroThread> threads;
          for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
-            threads << new FixZeroThread( image, P, c,
+            threads << new FixZeroThread( image, G, c,
                                  i*rowsPerThread,
                                  (j < numberOfThreads) ? j*rowsPerThread : image.Height() );
          if ( numberOfThreads > 1 )
@@ -456,7 +467,7 @@ private:
 
          threads.Destroy();
 
-         B << P;
+         B << G;
 
          m_monitor += image.NumberOfPixels();
       }
@@ -548,7 +559,7 @@ private:
             }
 
       /*
-       * Initial exclusion of black pixel samples.
+       * Initial exclusion of black or insignificant pixel samples.
        */
       for ( int c = 0; c < R.NumberOfChannels(); ++c )
       {
@@ -556,10 +567,8 @@ private:
          UInt8Image::sample_iterator tm( Tmap, c );
          for ( Image::sample_iterator r( R, c ), t( T, c ); r; ++r, ++t )
          {
-            if ( *r == 0 /*|| *r == 1*/ )
-               *t = 0;
-            else if ( *t == 0 /*|| *t == 1*/ )
-               *r = 0;
+            if ( *r < TINY_SAMPLE_VALUE || *t < TINY_SAMPLE_VALUE )
+               *r = *t = 0;
 
             if ( haveMaps )
             {
@@ -575,6 +584,21 @@ private:
        */
       background_models Rz = FixZero( R );   // N
       background_models Tz = FixZero( T );   // N
+//       {
+//          Image RZ, TZ;
+//          RZ.AllocateData( R.Width(), R.Height(), 1 );
+//          TZ.AllocateData( T.Width(), T.Height(), 1 );
+//          Image::sample_iterator r( RZ ), t( TZ );
+//          for ( int y = 0; y < R.Height(); ++y )
+//             for ( int x = 0; x < R.Width(); ++x, ++r, ++t )
+//             {
+//                *r = Rz[0]( x, y );
+//                *t = Tz[0]( x, y );
+//             }
+//
+//          CreateImageWindow( RZ, "LN_RZ" );
+//          CreateImageWindow( TZ, "LN_TZ" );
+//       }
 
       /*
        * Optional hot/cold pixel removal.
@@ -812,10 +836,10 @@ private:
 
       BuildThread( AbstractImage::ThreadData& data,
                    const Image& R, const Image& T, const Image& RB, const Image& TB,
-                   DImage& A0, DImage& A1, distance_type start, distance_type end ) :
+                   DImage& A0, DImage& A1, bool noScale, distance_type start, distance_type end ) :
          m_data( data ),
          m_R( R ), m_T( T ), m_RB( RB ), m_TB( TB ),
-         m_A0( A0 ), m_A1( A1 ),
+         m_A0( A0 ), m_A1( A1 ), m_noScale( noScale ),
          m_start( start ), m_end( end )
       {
       }
@@ -833,7 +857,7 @@ private:
             for ( distance_type p = m_start; p < m_end; ++p, ++r, ++t, ++rb, ++tb, ++a0, ++a1 )
             {
                *a0 = *rb - *tb;
-               *a1 = (*r  - *a0) / *t;
+               *a1 = m_noScale ? 1.0 : (*r  - *a0) / *t;
 
                UPDATE_THREAD_MONITOR( 65536 )
             }
@@ -849,6 +873,7 @@ private:
       const Image&                     m_TB;
             DImage&                    m_A0;
             DImage&                    m_A1;
+            bool                       m_noScale;
             distance_type              m_start;
             distance_type              m_end;
    };
@@ -892,7 +917,7 @@ private:
       AbstractImage::ThreadData data( m_monitor, R.NumberOfSamples() );
       ReferenceArray<BuildThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
-         threads << new BuildThread( data, R, T, RB, TB, m_A0, m_A1,
+         threads << new BuildThread( data, R, T, RB, TB, m_A0, m_A1, m_instance.p_noScale,
                                      i*pixelsPerThread,
                                      (j < numberOfThreads) ? j*pixelsPerThread : R.NumberOfPixels() );
       AbstractImage::RunThreads( threads, data ); // N
@@ -919,7 +944,8 @@ private:
          if ( ExecutedOnView() )
          {
             Plot( 0 );
-            Plot( 1 );
+            if ( !m_instance.p_noScale )
+               Plot( 1 );
          }
    }
 
@@ -1698,6 +1724,8 @@ void* LocalNormalizationInstance::LockParameter( const MetaParameter* p, size_ty
 {
    if ( p == TheLNScaleParameter )
       return &p_scale;
+   if ( p == TheLNNoScaleParameter )
+      return &p_noScale;
    if ( p == TheLNRejectionParameter )
       return &p_rejection;
    if ( p == TheLNBackgroundRejectionLimitParameter )
@@ -1871,4 +1899,4 @@ size_type LocalNormalizationInstance::ParameterLength( const MetaParameter* p, s
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LocalNormalizationInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF LocalNormalizationInstance.cpp - Released 2018-11-01T11:07:21Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/APIInterface.h - Released 2017-08-01T14:23:31Z
+// pcl/APIInterface.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,7 +56,7 @@
 
 // Global namespace
 
-#define PCL_API_Version 0x0161
+#define PCL_API_Version 0x0162
 
 extern "C"
 {
@@ -2433,6 +2433,11 @@ struct api_context ImageWindowContext
    void           (api_func* AddImageWindowKeyword)( window_handle, const char*, const char*, const char* );
    void           (api_func* ResetImageWindowKeywords)( window_handle );
 
+   api_bool       (api_func* GetImageWindowHasAstrometricSolution)( const_window_handle );
+   api_bool       (api_func* RegenerateImageWindowAstrometricSolution)( window_handle, api_bool, api_bool );
+   void           (api_func* ClearImageWindowAstrometricSolution)( window_handle, api_bool );
+   void           (api_func* UpdateImageWindowAstrometryMetadata)( window_handle, api_bool );
+
    void           (api_func* GetImageWindowResolution)( const_window_handle, double*, double*, api_bool* );
    void           (api_func* SetImageWindowResolution)( window_handle, double, double, api_bool );
 
@@ -3008,4 +3013,4 @@ extern "C" void* api_func APIFunctionResolver( const char* );
 #endif   // __PCL_API_APIInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/APIInterface.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/APIInterface.h - Released 2018-11-01T11:06:36Z

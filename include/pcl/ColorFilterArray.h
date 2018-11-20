@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ColorFilterArray.h - Released 2017-08-01T14:23:31Z
+// pcl/ColorFilterArray.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -137,9 +137,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    ColorFilterArray( ColorFilterArray&& ) = default;
-#endif
 
    /*!
     * Copy assignment operator.
@@ -149,9 +147,7 @@ public:
    /*!
     * Move assignment operator.
     */
-#ifndef _MSC_VER
    ColorFilterArray& operator =( ColorFilterArray&& ) = default;
-#endif
 
    /*!
     * Returns a reference to the CFA pattern in this object.
@@ -342,4 +338,4 @@ public:
 #endif   // __PCL_ColorFilterArray_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ColorFilterArray.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/ColorFilterArray.h - Released 2018-11-01T11:06:36Z

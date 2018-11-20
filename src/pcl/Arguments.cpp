@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Arguments.cpp - Released 2017-08-01T14:23:38Z
+// pcl/Arguments.cpp - Released 2018-11-01T11:06:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -55,8 +55,7 @@
 #include <pcl/ImageWindow.h>
 #include <pcl/View.h>
 
-#include <errno.h>
-#include <stdlib.h> // for getenv()
+#include <stdlib.h> // getenv()
 
 namespace pcl
 {
@@ -67,91 +66,61 @@ void Argument::Parse( const char16_type* argv )
 {
    Initialize();
 
-   String a( argv );
-   a.Trim();
+   token = String( argv ).Trimmed();
+   if ( token.IsEmpty() )
+      throw Error( "No argument identifier." );
 
-   size_type n = a.Length();
-   if ( n == 0 )
-      throw Error( "No argument identifier" );
-
-   token = a;
-
-   size_type nsep = a.Find( '=' );
+   size_type nsep = token.Find( '=' );
 
    if ( nsep != String::notFound )
    {
-      if ( n < nsep+2 )
-         throw ParseError( "Expected argument value", a, int( nsep+1 ) );
+      /*
+       * Arguments with value:
+       *
+       * - Numeric arguments, when numeric conversion of value succeeds.
+       * - String arguments, when numeric conversion of value fails.
+       */
+      String argValue = token.Substring( nsep+1 ).Trimmed();
+      if ( argValue.IsEmpty() )
+         throw ParseError( "Expected a numeric or string argument value", token, int( nsep+1 ) );
 
-      char16_type c = a[nsep+1];
-
-      if ( c >= '0' && c <= '9' || c == '+' || c == '-' || c == '.' )
-      {
+      if ( argValue.TryToDouble( asNumeric ) )
          type = numeric_arg;
-
-         char16_type* endptr = 0;
-
-         errno = 0;
-
-#ifdef __PCL_WINDOWS
-         asNumeric = ::wcstod( reinterpret_cast<const wchar_t*>( a.c_str() )+nsep+1,
-                              &reinterpret_cast<wchar_t*&>( endptr ) );
-#else
-         Array<wchar_t> w = a.ToWCharArray( nsep+1 );
-
-         wchar_t* wendptr = 0;
-         asNumeric = ::wcstod( w.Begin(), &wendptr );
-
-         if ( wendptr != 0 )
-            endptr = a.Begin() + nsep + 1 + (wendptr - w.Begin());
-#endif
-         if ( errno == ERANGE )
-            throw ParseError( "Numeric value out of representable range", a );
-
-         if ( errno != 0 || (endptr != 0 && *endptr != 0) )
-            throw ParseError( "Invalid immediate numeric expression", a,
-                              (endptr != 0 && *endptr != 0) ? endptr - a.c_str() : -1 );
-      }
       else
       {
          type = string_arg;
-
-         size_type pos = nsep+1;
-
-         if ( c == '\"' )
-            ++pos;
-
-         asString = a.Substring( pos );
-
-         if ( c == '\"' )
-         {
-            size_type l = asString.Length();
-            if ( l != 0 && asString[l-1] == '\"' )
-               asString.Delete( l-1 );
-         }
-
+         asString = argValue.Unquoted();
          if ( asString.IsEmpty() )
-            throw ParseError( "Expected string value", a, int( pos ) );
+            throw ParseError( "Expected a nonempty string argument value", token, int( nsep+1 ) );
       }
 
-      id = a.Left( nsep );
-   }
-   else if ( a[n-1] == '+' )
-   {
-      type = switch_arg;
-      asSwitch = true;
-      id = a.Left( n-1 );
-   }
-   else if ( a[n-1] == '-' )
-   {
-      type = switch_arg;
-      asSwitch = false;
-      id = a.Left( n-1 );
+      id = token.Left( nsep );
    }
    else
    {
-      type = literal_arg;
-      id = a;
+      /*
+       * Arguments without value:
+       *
+       * - Switch arguments, when the token ends with either '+' or '-'.
+       * - Literal arguments otherwise.
+       */
+      if ( token.EndsWith( '+' ) )
+      {
+         type = switch_arg;
+         asSwitch = true;
+         id = token.Left( token.UpperBound() );
+      }
+      else if ( token.EndsWith( '-' ) )
+      {
+         type = switch_arg;
+         asSwitch = false;
+         id = token.Left( token.UpperBound() );
+      }
+      else
+      {
+         type = literal_arg;
+         id = token;
+      }
    }
 }
 
@@ -284,10 +253,10 @@ ArgumentList ExtractArguments( const StringList& argv, argument_item_mode mode, 
             else if ( arg.IsLiteral() )
                recursiveSearch = true;
             else
-               arguments.Add( arg );
+               arguments << arg;
          }
          else
-            arguments.Add( arg );
+            arguments << arg;
       }
       else
       {
@@ -298,15 +267,9 @@ ArgumentList ExtractArguments( const StringList& argv, argument_item_mode mode, 
 
          if ( itemsAsFiles )
          {
-            String fileName = token;
-            if ( fileName.StartsWith( '\"' ) )
-               fileName.Delete( 0 );
-            if ( fileName.EndsWith( '\"' ) )
-               fileName.Delete( fileName.UpperBound() );
-
-            fileName.Trim();
+            String fileName = token.Unquoted().Trimmed();
             if ( fileName.IsEmpty() )
-               throw ParseError( "Empty path specification", token );
+               throw ParseError( "Empty file path specification", token );
 
             fileName = File::FullPath( fileName );
 
@@ -314,11 +277,10 @@ ArgumentList ExtractArguments( const StringList& argv, argument_item_mode mode, 
             {
                if ( !allowWildcards )
                   throw ParseError( "Wildcards not allowed", fileName );
-
                items = SearchDirectory( fileName, recursiveSearch );
             }
             else
-               items.Add( fileName );
+               items << fileName;
          }
          else if ( itemsAsViews )
          {
@@ -367,10 +329,9 @@ ArgumentList ExtractArguments( const StringList& argv, argument_item_mode mode, 
             }
          }
          else
-            items.Add( token );
+            items << token;
 
-         Argument arg( token, items );
-         arguments.Add( arg );
+         arguments << Argument( token, items );
       }
    }
 
@@ -423,4 +384,4 @@ String ReplaceEnvironmentVariables( const String& s0 )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Arguments.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/Arguments.cpp - Released 2018-11-01T11:06:52Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Sandbox Process Module Version 01.00.02.0261
+// Standard Sandbox Process Module Version 01.00.02.0269
 // ----------------------------------------------------------------------------
-// SandboxInterface.h - Released 2017-08-01T14:26:58Z
+// SandboxInterface.h - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Sandbox PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -76,26 +76,27 @@ public:
    SandboxInterface();
    virtual ~SandboxInterface();
 
-   virtual IsoString Id() const;
-   virtual MetaProcess* Process() const;
-   virtual const char** IconImageXPM() const;
-
-   virtual void ApplyInstance() const;
-   virtual void ResetInstance();
-
-   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
-
-   virtual ProcessImplementation* NewProcess() const;
-
-   virtual bool ValidateProcess( const ProcessImplementation&, String& whyNot ) const;
-   virtual bool RequiresInstanceValidation() const;
-
-   virtual bool ImportProcess( const ProcessImplementation& );
+   IsoString Id() const override;
+   MetaProcess* Process() const override;
+   const char** IconImageXPM() const override;
+   void ApplyInstance() const override;
+   void ResetInstance() override;
+   bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ ) override;
+   ProcessImplementation* NewProcess() const override;
+   bool ValidateProcess( const ProcessImplementation&, String& whyNot ) const override;
+   bool RequiresInstanceValidation() const override;
+   bool ImportProcess( const ProcessImplementation& ) override;
 
 private:
 
+   /*
+    * The instance being defined.
+    */
    SandboxInstance instance;
 
+   /*
+    * Child controls.
+    */
    struct GUIData
    {
       GUIData( SandboxInterface& );
@@ -117,14 +118,20 @@ private:
 
    GUIData* GUI = nullptr;
 
+   /*
+    * GUI updates.
+    */
    void UpdateControls();
 
-   void __RealValueUpdated( NumericEdit& sender, double value );
-   void __IntegerValueUpdated( SpinBox& sender, int value );
-   void __ItemClicked( Button& sender, bool checked );
-   void __ItemSelected( ComboBox& sender, int itemIndex );
-   void __EditGetFocus( Control& sender );
-   void __EditCompleted( Edit& sender );
+   /*
+    * Event handlers.
+    */
+   void e_RealValueUpdated( NumericEdit& sender, double value );
+   void e_IntegerValueUpdated( SpinBox& sender, int value );
+   void e_ItemClicked( Button& sender, bool checked );
+   void e_ItemSelected( ComboBox& sender, int itemIndex );
+   void e_EditGetFocus( Control& sender );
+   void e_EditCompleted( Edit& sender );
 
    friend struct GUIData;
 };
@@ -142,4 +149,4 @@ PCL_END_LOCAL
 #endif   // __SandboxInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF SandboxInterface.h - Released 2017-08-01T14:26:58Z
+// EOF SandboxInterface.h - Released 2018-11-01T11:07:21Z

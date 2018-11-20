@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/APIException.h - Released 2017-08-01T14:23:31Z
+// pcl/APIException.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -87,9 +87,9 @@ public:
       GetAPIErrorCode();
    }
 
-   virtual String FormatInfo() const;
+   String FormatInfo() const override;
 
-   virtual String Caption() const
+   String Caption() const override
    {
       return "PixInsight API Error";
    }
@@ -124,4 +124,4 @@ public:
 #endif   // __PCL_API_APIException_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/APIException.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/APIException.h - Released 2018-11-01T11:06:36Z

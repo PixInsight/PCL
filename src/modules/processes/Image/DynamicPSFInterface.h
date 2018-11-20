@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard Image Process Module Version 01.02.09.0412
 // ----------------------------------------------------------------------------
-// DynamicPSFInterface.h - Released 2017-08-01T14:26:58Z
+// DynamicPSFInterface.h - Released 2018-11-13T16:55:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,6 +53,7 @@
 #ifndef __DynamicPSFInterface_h
 #define __DynamicPSFInterface_h
 
+#include <pcl/AstrometricMetadata.h>
 #include <pcl/Atomic.h>
 #include <pcl/CheckBox.h>
 #include <pcl/ComboBox.h>
@@ -90,40 +91,40 @@ public:
    DynamicPSFInterface();
    virtual ~DynamicPSFInterface();
 
-   virtual IsoString Id() const;
-   virtual MetaProcess* Process() const;
-   virtual const char** IconImageXPM() const;
+   IsoString Id() const override;
+   MetaProcess* Process() const override;
+   const char** IconImageXPM() const override;
 
-   virtual InterfaceFeatures Features() const;
+   InterfaceFeatures Features() const override;
 
-   virtual void ResetInstance();
+   void ResetInstance() override;
 
-   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& flags );
+   bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& flags ) override;
 
-   virtual ProcessImplementation* NewProcess() const;
+   ProcessImplementation* NewProcess() const override;
 
-   virtual bool ValidateProcess( const ProcessImplementation&, String& whyNot ) const;
-   virtual bool RequiresInstanceValidation() const;
+   bool ValidateProcess( const ProcessImplementation&, String& whyNot ) const override;
+   bool RequiresInstanceValidation() const override;
 
-   virtual bool ImportProcess( const ProcessImplementation& );
+   bool ImportProcess( const ProcessImplementation& ) override;
 
-   virtual bool IsDynamicInterface() const;
+   bool IsDynamicInterface() const override;
 
-   virtual void ExitDynamicMode();
+   void ExitDynamicMode() override;
 
-   virtual void DynamicMouseEnter( View& );
-   virtual void DynamicMouseLeave( View& );
-   virtual void DynamicMouseMove( View&, const DPoint&, unsigned buttons, unsigned modifiers );
-   virtual void DynamicMousePress( View&, const DPoint&, int button, unsigned buttons, unsigned modifiers );
-   virtual void DynamicMouseRelease( View&, const DPoint&, int button, unsigned buttons, unsigned modifiers );
-   virtual void DynamicMouseDoubleClick( View&, const DPoint&, unsigned buttons, unsigned modifiers );
-   virtual bool DynamicKeyPress( View& v, int key, unsigned modifiers );
+   void DynamicMouseEnter( View& ) override;
+   void DynamicMouseLeave( View& ) override;
+   void DynamicMouseMove( View&, const DPoint&, unsigned buttons, unsigned modifiers ) override;
+   void DynamicMousePress( View&, const DPoint&, int button, unsigned buttons, unsigned modifiers ) override;
+   void DynamicMouseRelease( View&, const DPoint&, int button, unsigned buttons, unsigned modifiers ) override;
+   void DynamicMouseDoubleClick( View&, const DPoint&, unsigned buttons, unsigned modifiers ) override;
+   bool DynamicKeyPress( View& v, int key, unsigned modifiers );
 
-   virtual bool RequiresDynamicUpdate( const View&, const DRect& ) const;
-   virtual void DynamicPaint( const View&, VectorGraphics&, const DRect& ) const;
+   bool RequiresDynamicUpdate( const View&, const DRect& ) const override;
+   void DynamicPaint( const View&, VectorGraphics&, const DRect& ) const override;
 
-   virtual void SaveSettings() const;
-   virtual void LoadSettings();
+   void SaveSettings() const override;
+   void LoadSettings() override;
 
    static void ExecuteInstance( DynamicPSFInstance& );
 
@@ -232,14 +233,15 @@ private:
    struct Star;
    struct PSFCollection;
 
+   // -------------------------------------------------------------------------
+
    struct PSF : public PSFData
    {
-      Star*    star; // star being fitted
+      Star*    star = nullptr; // star being fitted
       PSFNode* node = nullptr;
 
       PSF( const PSFData& data, Star* s ) :
-         PSFData( data ),
-         star( s )
+         PSFData( data ), star( s )
       {
       }
 
@@ -251,29 +253,27 @@ private:
       }
    };
 
+   // -------------------------------------------------------------------------
+
    typedef ReferenceArray<PSF>  psf_list;
 
    struct Star : public StarData
    {
       typedef DynamicPSFInterface::psf_list psf_list;
 
-      PSFCollection* collection;     // the view to which this star pertains
+      PSFCollection* collection = nullptr; // the view to which this star pertains
       psf_list       psfs;           // fitted PSFs
       StarNode*      node = nullptr;
       unsigned       uniqueId = 0;
       bool           selected = false;
 
       Star( PSFCollection* c ) :
-         StarData(),
-         collection( c ),
-         uniqueId( c->UniqueStarId() )
+         collection( c ), uniqueId( c->UniqueStarId() )
       {
       }
 
       Star( const StarData& data, PSFCollection* c ) :
-         StarData( data ),
-         collection( c ),
-         uniqueId( c->UniqueStarId() )
+         StarData( data ), collection( c ), uniqueId( c->UniqueStarId() )
       {
       }
 
@@ -287,6 +287,8 @@ private:
       PSF* AddPSF( const PSFData& data )
       {
          PSF* psf = new PSF( data, this );
+         psf->celestial = collection->astrometricSolution != nullptr &&
+                          collection->astrometricSolution->ImageToCelestial( psf->q0, psf->c0 + collection->offset );
          psfs << psf;
          rect |= psf->Bounds();
          return psf;
@@ -318,34 +320,41 @@ private:
 
       View               view;
       IsoString          viewId; // required in case view.IsNull()
+      AutoPointer<AstrometricMetadata>
+                         astrometricSolution;
+      DPoint             offset = 0.0;
       float              xScale = 0; // image scale in arcsec/px
       float              yScale = 0;
-      Image              image;  // detection image, low-pass filtered
+      Image              image;  // detection image, preprocessed.
       star_list          stars;
       PSFCollectionNode* node = nullptr;
 
-      PSFCollection( const IsoString& id ) :
+      PSFCollection( const IsoString& id, bool astrometry = true ) :
          view( View::ViewById( id ) ), viewId( id )
       {
          if ( !view.IsNull() )
          {
             view.AddToDynamicTargets();
             UpdateDetectionImage();
+            if ( astrometry )
+               GetAstrometricSolution();
          }
       }
 
-      template <class S> PSFCollection( const S& id ) :
-         PSFCollection( IsoString( id ) )
+      template <class S> PSFCollection( const S& id, bool astrometry = true ) :
+         PSFCollection( IsoString( id ), astrometry )
       {
       }
 
-      PSFCollection( const View& v ) :
+      PSFCollection( const View& v, bool astrometry = true ) :
          view( v ), viewId( v.FullId() )
       {
          if ( !view.IsNull() )
          {
             view.AddToDynamicTargets();
             UpdateDetectionImage();
+            if ( astrometry )
+               GetAstrometricSolution();
          }
       }
 
@@ -394,6 +403,7 @@ private:
       AtomicInt nextStarId = 1;
 
       void UpdateDetectionImage();
+      void GetAstrometricSolution();
 
       class StarThread : public Thread
       {
@@ -426,7 +436,7 @@ private:
          {
          }
 
-         virtual void Run()
+         void Run() override
          {
             for ( star_list::iterator s = m_begin; s != m_end; ++s )
                s->Regenerate( m_image, m_threshold, m_autoAperture, m_options );
@@ -448,7 +458,7 @@ private:
          {
          }
 
-         virtual void Run()
+         void Run() override
          {
             for ( star_list::iterator s = m_begin; s != m_end; ++s )
                s->Recalculate( m_image, m_threshold, m_autoAperture );
@@ -548,4 +558,4 @@ PCL_END_LOCAL
 #endif   // __DynamicPSFInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF DynamicPSFInterface.h - Released 2017-08-01T14:26:58Z
+// EOF DynamicPSFInterface.h - Released 2018-11-13T16:55:32Z

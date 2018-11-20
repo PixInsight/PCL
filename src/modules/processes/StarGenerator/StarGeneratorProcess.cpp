@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0297
+// Standard StarGenerator Process Module Version 01.01.00.0305
 // ----------------------------------------------------------------------------
-// StarGeneratorProcess.cpp - Released 2017-08-01T14:26:58Z
+// StarGeneratorProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -69,11 +69,11 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-StarGeneratorProcess* TheStarGeneratorProcess = 0;
+StarGeneratorProcess* TheStarGeneratorProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
-StarGeneratorProcess::StarGeneratorProcess() : MetaProcess()
+StarGeneratorProcess::StarGeneratorProcess()
 {
    TheStarGeneratorProcess = this;
 
@@ -147,7 +147,7 @@ ProcessImplementation* StarGeneratorProcess::Create() const
 ProcessImplementation* StarGeneratorProcess::Clone( const ProcessImplementation& p ) const
 {
    const StarGeneratorInstance* instPtr = dynamic_cast<const StarGeneratorInstance*>( &p );
-   return (instPtr != 0) ? new StarGeneratorInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new StarGeneratorInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -227,4 +227,4 @@ int StarGeneratorProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF StarGeneratorProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF StarGeneratorProcess.cpp - Released 2018-11-01T11:07:21Z

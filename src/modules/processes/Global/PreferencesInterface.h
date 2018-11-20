@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0378
+// Standard Global Process Module Version 01.02.07.0386
 // ----------------------------------------------------------------------------
-// PreferencesInterface.h - Released 2017-08-01T14:26:58Z
+// PreferencesInterface.h - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -91,7 +91,7 @@ public:
 
    GlobalFlagControl();
 
-   virtual void Synchronize();
+   void Synchronize() override;
 
    pcl_bool* item = nullptr;
    CheckBox  checkBox;
@@ -111,7 +111,7 @@ public:
 
    GlobalIntegerControl();
 
-   virtual void Synchronize();
+   void Synchronize() override;
 
    int32*          item = nullptr;
    Label           label;
@@ -131,7 +131,7 @@ public:
 
    GlobalUnsignedControl();
 
-   virtual void Synchronize();
+   void Synchronize() override;
 
    uint32*         item = nullptr;
    Label           label;
@@ -151,7 +151,7 @@ public:
 
    GlobalSetControl();
 
-   virtual void Synchronize();
+   void Synchronize() override;
 
    int32*          item = nullptr;
    int             minValue = 0;
@@ -172,7 +172,7 @@ public:
 
    GlobalRealControl();
 
-   virtual void Synchronize();
+   void Synchronize() override;
 
    double*         item = nullptr;
    Label           label;
@@ -192,7 +192,7 @@ public:
 
    GlobalStringControl();
 
-   virtual void Synchronize();
+   void Synchronize() override;
 
    String*  item = nullptr;
    Label    label;
@@ -215,11 +215,12 @@ public:
 
    GlobalDirectoryControl();
 
-   PushButton selectDirButton;
+   HorizontalSizer buttonSizer;
+      PushButton selectDirButton;
 
 private:
 
-   virtual String GetText( const String& s );
+   String GetText( const String& s ) override;
 
    void __SelectDir( Button& sender, bool checked );
    void __FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
@@ -236,11 +237,12 @@ public:
 
    StringList fileExtensions;
    String     dialogTitle;
-   PushButton selectFileButton;
+   HorizontalSizer buttonSizer;
+      PushButton selectFileButton;
 
 private:
 
-   virtual String GetText( const String& s );
+   String GetText( const String& s ) override;
 
    void __SelectFile( Button& sender, bool checked );
    void __FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
@@ -257,7 +259,7 @@ public:
 
 private:
 
-   virtual String GetText( const String& s );
+   String GetText( const String& s ) override;
 };
 
 // ----------------------------------------------------------------------------
@@ -270,7 +272,7 @@ public:
 
 private:
 
-   virtual String GetText( const String& s );
+   String GetText( const String& s ) override;
 };
 
 // ----------------------------------------------------------------------------
@@ -281,7 +283,7 @@ public:
 
    GlobalColorControl();
 
-   virtual void Synchronize();
+   void Synchronize() override;
 
    uint32*         item = nullptr;
    Label           label;
@@ -304,7 +306,7 @@ public:
 
    GlobalFontControl();
 
-   virtual void Synchronize();
+   void Synchronize() override;
 
    String*         item         = nullptr;
    int32*          itemSize     = nullptr;
@@ -332,7 +334,7 @@ public:
 
    GlobalDirectoryListControl();
 
-   virtual void Synchronize();
+   void Synchronize() override;
 
    StringList*     item = nullptr;
    String          dialogTitle;
@@ -359,7 +361,7 @@ public:
 
    GlobalFileSetControl();
 
-   virtual void Synchronize();
+   void Synchronize() override;
 
    Array<String*>  items;
    StringList      fileExtensions;
@@ -465,11 +467,11 @@ public:                                                                       \
    {                                                                          \
    }                                                                          \
                                                                               \
-   virtual String Title() { return title; }                                   \
+   String Title() override { return title; }                                  \
                                                                               \
 private:                                                                      \
                                                                               \
-   virtual PreferencesCategoryPage* NewPage( PreferencesInstance& instance )  \
+   PreferencesCategoryPage* NewPage( PreferencesInstance& instance ) override \
    {                                                                          \
       return new name##PreferencesPage( instance );                           \
    }                                                                          \
@@ -484,7 +486,7 @@ public:
 
    MainWindowPreferencesPage( PreferencesInstance& );
 
-   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
+   void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from ) override;
 
    GlobalFlagControl          MaximizeAtStartup_Flag;
    GlobalFlagControl          FullScreenAtStartup_Flag;
@@ -517,7 +519,7 @@ public:
 
    ResourcesPreferencesPage( PreferencesInstance& );
 
-   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
+   void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from ) override;
 
    GlobalFileControl          StyleSheet_File;
    GlobalFileSetControl       Resources_FileSet;
@@ -543,7 +545,7 @@ public:
 
    WallpapersPreferencesPage( PreferencesInstance& );
 
-   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
+   void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from ) override;
 
    GlobalFileSetControl       Wallpapers_FileSet;
    GlobalFlagControl          UseWallpapers_Flag;
@@ -553,13 +555,36 @@ DEFINE_PREFERENCES_CATEGORY( Wallpapers, "Core Wallpapers" )
 
 // ----------------------------------------------------------------------------
 
+class EphemeridesPreferencesPage : public PreferencesCategoryPage
+{
+public:
+
+   EphemeridesPreferencesPage( PreferencesInstance& );
+
+   void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from ) override;
+
+   GlobalFileControl          FundamentalEphemerides_File;
+   GlobalFileControl          ShortTermFundamentalEphemerides_File;
+   GlobalFileControl          AsteroidEphemerides_File;
+   GlobalFileControl          ShortTermAsteroidEphemerides_File;
+   GlobalFileControl          NutationModel_File;
+   GlobalFileControl          ShortTermNutationModel_File;
+   GlobalFileControl          DeltaTData_File;
+   GlobalFileControl          DeltaATData_File;
+   GlobalFileControl          CIPITRSData_File;
+};
+
+DEFINE_PREFERENCES_CATEGORY( Ephemerides, "Core Ephemerides" )
+
+// ----------------------------------------------------------------------------
+
 class GUIEffectsPreferencesPage : public PreferencesCategoryPage
 {
 public:
 
    GUIEffectsPreferencesPage( PreferencesInstance& );
 
-   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
+   void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from ) override;
 
    GlobalFlagControl          HoverableAutoHideWindows_Flag;
    GlobalFlagControl          DesktopSettingsAware_Flag;
@@ -590,7 +615,7 @@ public:
 
    FileIOPreferencesPage( PreferencesInstance& );
 
-   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
+   void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from ) override;
 
    GlobalFlagControl          BackupFiles_Flag;
    GlobalFileExtensionControl DefaultFileExtension_Ext;
@@ -613,7 +638,7 @@ public:
 
    DirectoriesAndNetworkPreferencesPage( PreferencesInstance& );
 
-   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
+   void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from ) override;
 
    GlobalDirectoryListControl SwapDirectories_DirList;
    GlobalFlagControl          SwapCompression_Flag;
@@ -632,7 +657,7 @@ public:
 
    DefaultImageResolutionPreferencesPage( PreferencesInstance& );
 
-   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
+   void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from ) override;
 
    GlobalRealControl          DefaultHorizontalResolution_Real;
    GlobalRealControl          DefaultVerticalResolution_Real;
@@ -649,7 +674,7 @@ public:
 
    DefaultMaskSettingsPreferencesPage( PreferencesInstance& );
 
-   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
+   void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from ) override;
 
    GlobalFlagControl          DefaultMasksShown_Flag;
    GlobalSetControl           DefaultMaskMode_Set;
@@ -665,7 +690,7 @@ public:
 
    DefaultTransparencySettingsPreferencesPage( PreferencesInstance& );
 
-   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
+   void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from ) override;
 
    GlobalSetControl           DefaultTransparencyMode_Set;
    GlobalSetControl           TransparencyBrush_Set;
@@ -681,7 +706,7 @@ public:
 
    MiscImageWindowSettingsPreferencesPage( PreferencesInstance& );
 
-   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
+   void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from ) override;
 
    GlobalFlagControl          ShowCaptionCurrentChannels_Flag;
    GlobalFlagControl          ShowCaptionZoomRatios_Flag;
@@ -698,6 +723,7 @@ public:
    GlobalFlagControl          HighDPIRenditions_Flag;
    GlobalFlagControl          Default24BitScreenLUT_Flag;
    GlobalFlagControl          CreatePreviewsFromCoreProperties_Flag;
+   GlobalFlagControl          LoadAstrometricSolutions_Flag;
 };
 
 DEFINE_PREFERENCES_CATEGORY( MiscImageWindowSettings, "Miscellaneous Image Window Settings" )
@@ -710,7 +736,7 @@ public:
 
    IdentifiersPreferencesPage( PreferencesInstance& );
 
-   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
+   void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from ) override;
 
    GlobalFlagControl          UseFileNamesAsImageIdentifiers_Flag;
    GlobalIdentifierControl    WorkspacePrefix_Id;
@@ -731,7 +757,7 @@ public:
 
    StringsPreferencesPage( PreferencesInstance& );
 
-   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
+   void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from ) override;
 
    GlobalStringControl        NewImageCaption_String;
    GlobalStringControl        NoViewsAvailableText_String;
@@ -751,8 +777,8 @@ public:
 
    ParallelProcessingPreferencesPage( PreferencesInstance& );
 
-   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
-   virtual void PerformAdditionalUpdates();
+   void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from ) override;
+   void PerformAdditionalUpdates() override;
 
    GlobalFlagControl          EnableParallelProcessing_Flag;
    GlobalFlagControl          EnableParallelCoreRendering_Flag;
@@ -776,7 +802,7 @@ public:
 
    MiscProcessingPreferencesPage( PreferencesInstance& );
 
-   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
+   void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from ) override;
 
    GlobalFlagControl          BackupPSMFiles_Flag;
    GlobalFlagControl          GenerateScriptComments_Flag;
@@ -798,7 +824,7 @@ public:
 
    TransparencyColorsPreferencesPage( PreferencesInstance& );
 
-   virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
+   void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from ) override;
 
    GlobalColorControl         TransparencyBrushForegroundColor_Color;
    GlobalColorControl         TransparencyBrushBackgroundColor_Color;
@@ -816,21 +842,21 @@ public:
    PreferencesInterface();
    virtual ~PreferencesInterface();
 
-   virtual IsoString Id() const;
-   virtual MetaProcess* Process() const;
-   virtual const char** IconImageXPM() const;
+   IsoString Id() const override;
+   MetaProcess* Process() const override;
+   const char** IconImageXPM() const override;
 
-   virtual InterfaceFeatures Features() const;
+   InterfaceFeatures Features() const override;
 
-   virtual void ResetInstance();
+   void ResetInstance() override;
 
-   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
+   bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ ) override;
 
-   virtual ProcessImplementation* NewProcess() const;
+   ProcessImplementation* NewProcess() const override;
 
-   virtual bool ValidateProcess( const ProcessImplementation&, pcl::String& whyNot ) const;
-   virtual bool RequiresInstanceValidation() const;
-   virtual bool ImportProcess( const ProcessImplementation& );
+   bool ValidateProcess( const ProcessImplementation&, pcl::String& whyNot ) const override;
+   bool RequiresInstanceValidation() const override;
+   bool ImportProcess( const ProcessImplementation& ) override;
 
 private:
 
@@ -919,4 +945,4 @@ PCL_END_LOCAL
 #endif   // __PreferencesInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInterface.h - Released 2017-08-01T14:26:58Z
+// EOF PreferencesInterface.h - Released 2018-11-01T11:07:20Z

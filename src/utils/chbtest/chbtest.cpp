@@ -112,20 +112,20 @@ int main( int argc, const char* argv[] )
       ScalarChebyshevFit Td = T.Derivative();
       ScalarChebyshevFit Ti = T.Integral();
 
-      std::cout << IsoString().Format( "n = %d  e = %.3lg\n", T.Length(), T.TruncationError() );
+      std::cout << IsoString().Format( "n = %d  e = %.3g\n", T.Length(), T.TruncationError() );
 
       // Truncate the expansions to a given error bound.
       T.Truncate( eps );
       Td.Truncate( eps );
       Ti.Truncate( eps );
-      std::cout << IsoString().Format( "Tn  = %d  Te  = %.3lg\n", T.TruncatedLength(), T.TruncationError() );
-      std::cout << IsoString().Format( "Tdn = %d  Tde = %.3lg\n", Td.TruncatedLength(), Td.TruncationError() );
-      std::cout << IsoString().Format( "Tin = %d  Tie = %.3lg\n", Ti.TruncatedLength(), Ti.TruncationError() );
+      std::cout << IsoString().Format( "Tn  = %d  Te  = %.3g\n", T.TruncatedLength(), T.TruncationError() );
+      std::cout << IsoString().Format( "Tdn = %d  Tde = %.3g\n", Td.TruncatedLength(), Td.TruncationError() );
+      std::cout << IsoString().Format( "Tin = %d  Tie = %.3g\n", Ti.TruncatedLength(), Ti.TruncationError() );
 
       // Set the arbitrary constant of integration to vanish the indefinite
       // integral at x = x1.
       double C = fi( x1 );
-      std::cout << IsoString().Format( "C = %+.15le\n", C );
+      std::cout << IsoString().Format( "C = %+.15e\n", C );
 
       // Tabulate values for the function, its derivative and integral, with
       // approximation errors.
@@ -147,9 +147,9 @@ int main( int argc, const char* argv[] )
 //          1         2         3
 // 1234567890123456789012345678901234
 //      +7.000 +1.122537831027176e+03
-         std::cout << IsoString().Format( "%+11.3lf %+.15le %+.15le %+.15le\n"
-                                                 "%+34.15le %+.15le %+.15le\n"
-                                                  "%22.3le %22.3le %22.3le\n",
+         std::cout << IsoString().Format( "%+11.3f %+.15e %+.15e %+.15e\n"
+                                                "%+34.15e %+.15e %+.15e\n"
+                                                 "%22.3e %22.3e %22.3e\n",
                                           x, y, yd, yi,
                                           yT, yTd, yTi,
                                           Abs( yT - y ), Abs( yTd - yd ), Abs( yTi - yi ) );

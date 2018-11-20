@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// MaskedStretchProcess.cpp - Released 2017-08-01T14:26:58Z
+// MaskedStretchProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -69,11 +69,11 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-MaskedStretchProcess* TheMaskedStretchProcess = 0;
+MaskedStretchProcess* TheMaskedStretchProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
-MaskedStretchProcess::MaskedStretchProcess() : MetaProcess()
+MaskedStretchProcess::MaskedStretchProcess()
 {
    TheMaskedStretchProcess = this;
 
@@ -92,41 +92,57 @@ MaskedStretchProcess::MaskedStretchProcess() : MetaProcess()
    new MSMaskType( this );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString MaskedStretchProcess::Id() const
 {
    return "MaskedStretch";
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString MaskedStretchProcess::Category() const
 {
    return "IntensityTransformations";
 }
 
+// ----------------------------------------------------------------------------
+
 uint32 MaskedStretchProcess::Version() const
 {
    return 0x100;
 }
+
+// ----------------------------------------------------------------------------
 
 const char** MaskedStretchProcess::IconImageXPM() const
 {
    return MaskedStretchIcon_XPM;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessInterface* MaskedStretchProcess::DefaultInterface() const
 {
    return TheMaskedStretchInterface;
 }
+
+// ----------------------------------------------------------------------------
 
 ProcessImplementation* MaskedStretchProcess::Create() const
 {
    return new MaskedStretchInstance( this );
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* MaskedStretchProcess::Clone( const ProcessImplementation& p ) const
 {
    const MaskedStretchInstance* instPtr = dynamic_cast<const MaskedStretchInstance*>( &p );
-   return (instPtr != 0) ? new MaskedStretchInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new MaskedStretchInstance( *instPtr ) : nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool MaskedStretchProcess::CanProcessCommandLines() const
 {
@@ -173,10 +189,12 @@ static void ShowHelp()
    );
 }
 
+// ----------------------------------------------------------------------------
+
 int MaskedStretchProcess::ProcessCommandLine( const StringList& argv ) const
 {
    ArgumentList arguments =
-   ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
+      ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
 
    MaskedStretchInstance instance( this );
 
@@ -273,4 +291,4 @@ int MaskedStretchProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF MaskedStretchProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF MaskedStretchProcess.cpp - Released 2018-11-01T11:07:21Z

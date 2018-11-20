@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.09.0165
+// Standard XISF File Format Module Version 01.00.09.0171
 // ----------------------------------------------------------------------------
-// XISFFormat.cpp - Released 2017-08-01T14:26:50Z
+// XISFFormat.cpp - Released 2018-11-01T11:07:09Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,25 +66,35 @@ XISFFormat::XISFFormat() : MetaFileFormat()
 {
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString XISFFormat::Name() const
 {
    return "XISF";
 }
+
+// ----------------------------------------------------------------------------
 
 StringList XISFFormat::FileExtensions() const
 {
    return StringList() << ".xisf";
 }
 
+// ----------------------------------------------------------------------------
+
 IsoStringList XISFFormat::MimeTypes() const
 {
    return IsoStringList();
 }
 
+// ----------------------------------------------------------------------------
+
 uint32 XISFFormat::Version() const
 {
    return 0x100;
 }
+
+// ----------------------------------------------------------------------------
 
 String XISFFormat::Description() const
 {
@@ -102,6 +112,8 @@ String XISFFormat::Description() const
    "</html>";
 }
 
+// ----------------------------------------------------------------------------
+
 String XISFFormat::Implementation() const
 {
    return
@@ -110,7 +122,7 @@ String XISFFormat::Implementation() const
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2017, Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2018, Pleiades Astrophoto</p>"
 
    "<p style=\"white-space:pre;\">"
 "\n-------------------------------------------------------------------------------"
@@ -209,125 +221,175 @@ String XISFFormat::Implementation() const
    "</html>";
 }
 
+// ----------------------------------------------------------------------------
+
 String XISFFormat::IconImageFile() const
 {
    return ":/file-format/xisf-format-icon.png";
 }
+
+// ----------------------------------------------------------------------------
 
 bool XISFFormat::CanReadIncrementally() const
 {
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool XISFFormat::CanWriteIncrementally() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool XISFFormat::CanStore32Bit() const
 {
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool XISFFormat::CanStore64Bit() const
 {
    return false;
 }
+
+// ----------------------------------------------------------------------------
 
 bool XISFFormat::CanStoreFloat() const
 {
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool XISFFormat::CanStoreDouble() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool XISFFormat::CanStoreComplex() const
 {
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool XISFFormat::CanStoreDComplex() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool XISFFormat::CanStoreResolution() const
 {
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool XISFFormat::CanStoreKeywords() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool XISFFormat::CanStoreICCProfiles() const
 {
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool XISFFormat::CanStoreThumbnails() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool XISFFormat::CanStoreProperties() const
 {
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool XISFFormat::CanStoreImageProperties() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool XISFFormat::CanStoreRGBWS() const
 {
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool XISFFormat::CanStoreDisplayFunctions() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool XISFFormat::CanStoreColorFilterArrays() const
 {
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool XISFFormat::SupportsCompression() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool XISFFormat::SupportsMultipleImages() const
 {
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool XISFFormat::SupportsViewProperties() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool XISFFormat::CanEditPreferences() const
 {
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool XISFFormat::UsesFormatSpecificData() const
 {
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool XISFFormat::ValidateFormatSpecificData( const void* data ) const
 {
    return FormatOptions::FromGenericDataBlock( data ) != nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 void XISFFormat::DisposeFormatSpecificData( void* data ) const
 {
@@ -335,10 +397,14 @@ void XISFFormat::DisposeFormatSpecificData( void* data ) const
       delete o;
 }
 
+// ----------------------------------------------------------------------------
+
 FileFormatImplementation* XISFFormat::Create() const
 {
    return new XISFInstance( this );
 }
+
+// ----------------------------------------------------------------------------
 
 bool XISFFormat::EditPreferences() const
 {
@@ -381,6 +447,8 @@ bool XISFFormat::EditPreferences() const
 
    return false;
 }
+
+// ----------------------------------------------------------------------------
 
 XISFOptions XISFFormat::DefaultOptions()
 {
@@ -436,6 +504,8 @@ XISFOptions XISFFormat::DefaultOptions()
    return options;
 }
 
+// ----------------------------------------------------------------------------
+
 XISFFormat::EmbeddingOverrides XISFFormat::DefaultEmbeddingOverrides()
 {
    EmbeddingOverrides overrides;
@@ -480,4 +550,4 @@ XISFFormat::FormatOptions* XISFFormat::FormatOptions::FromGenericDataBlock( cons
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFFormat.cpp - Released 2017-08-01T14:26:50Z
+// EOF XISFFormat.cpp - Released 2018-11-01T11:07:09Z

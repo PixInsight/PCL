@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard GREYCstoration Process Module Version 01.00.02.0322
+// Standard GREYCstoration Process Module Version 01.00.02.0330
 // ----------------------------------------------------------------------------
-// GREYCstorationInstance.cpp - Released 2017-08-01T14:26:58Z
+// GREYCstorationInstance.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard GREYCstoration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -96,24 +96,26 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 GREYCstorationInstance::GREYCstorationInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-amplitude( TheGREYCsAmplitudeParameter->DefaultValue() ),
-numberOfIterations( int32( TheGREYCsIterationsParameter->DefaultValue() ) ),
-sharpness( TheGREYCsSharpnessParameter->DefaultValue() ),
-anisotropy( TheGREYCsAnisotropyParameter->DefaultValue() ),
-alpha( TheGREYCsAlphaParameter->DefaultValue() ),
-sigma( TheGREYCsSigmaParameter->DefaultValue() ),
-fastApproximation( TheGREYCsFastApproximationParameter->DefaultValue() ),
-precision( TheGREYCsPrecisionParameter->DefaultValue() ),
-spatialStepSize( TheGREYCsSpatialStepSizeParameter->DefaultValue() ),
-angularStepSize( TheGREYCsAngularStepSizeParameter->DefaultValue() ),
-interpolation( GREYCsInterpolation::Default ),
-coupledChannels( TheGREYCsCoupledChannelsParameter->DefaultValue() )
+   ProcessImplementation( m ),
+   amplitude( TheGREYCsAmplitudeParameter->DefaultValue() ),
+   numberOfIterations( int32( TheGREYCsIterationsParameter->DefaultValue() ) ),
+   sharpness( TheGREYCsSharpnessParameter->DefaultValue() ),
+   anisotropy( TheGREYCsAnisotropyParameter->DefaultValue() ),
+   alpha( TheGREYCsAlphaParameter->DefaultValue() ),
+   sigma( TheGREYCsSigmaParameter->DefaultValue() ),
+   fastApproximation( TheGREYCsFastApproximationParameter->DefaultValue() ),
+   precision( TheGREYCsPrecisionParameter->DefaultValue() ),
+   spatialStepSize( TheGREYCsSpatialStepSizeParameter->DefaultValue() ),
+   angularStepSize( TheGREYCsAngularStepSizeParameter->DefaultValue() ),
+   interpolation( GREYCsInterpolation::Default ),
+   coupledChannels( TheGREYCsCoupledChannelsParameter->DefaultValue() )
 {
 }
 
+// ----------------------------------------------------------------------------
+
 GREYCstorationInstance::GREYCstorationInstance( const GREYCstorationInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -123,7 +125,7 @@ ProcessImplementation( x )
 void GREYCstorationInstance::Assign( const ProcessImplementation& p )
 {
    const GREYCstorationInstance* x = dynamic_cast<const GREYCstorationInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       amplitude = x->amplitude;
       numberOfIterations = x->numberOfIterations;
@@ -138,6 +140,13 @@ void GREYCstorationInstance::Assign( const ProcessImplementation& p )
       interpolation = x->interpolation;
       coupledChannels = x->coupledChannels;
    }
+}
+
+// ----------------------------------------------------------------------------
+
+UndoFlags GREYCstorationInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
 }
 
 // ----------------------------------------------------------------------------
@@ -163,7 +172,7 @@ public:
    GREYCstorationThread( cimg_library::CImg<T>* aImage,
                          const GREYCstorationInstance& aInstance,
                          int startRow, int endRow ) :
-   cimg( aImage ), instance( aInstance ), y0( startRow ), y1( endRow )
+      cimg( aImage ), instance( aInstance ), y0( startRow ), y1( endRow )
    {
    }
 
@@ -614,4 +623,4 @@ void* GREYCstorationInstance::LockParameter( const MetaParameter* p, size_type/*
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF GREYCstorationInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF GREYCstorationInstance.cpp - Released 2018-11-01T11:07:20Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/File.h - Released 2017-08-01T14:23:31Z
+// pcl/File.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -109,9 +109,9 @@ namespace pcl
  * <tr><td>FileMode::Read</td>         <td>Read access enabled</td></tr>
  * <tr><td>FileMode::Write</td>        <td>Write access enabled</td></tr>
  * <tr><td>FileMode::AccessMode</td>   <td>Mask to isolate read/write flags</td></tr>
- * <tr><td>FileMode::ShareRead</td>    <td>Sharing for reading enabled</td></tr>
- * <tr><td>FileMode::ShareWrite</td>   <td>Sharing for writing enabled</td></tr>
- * <tr><td>FileMode::ShareMode</td>    <td>Mask to isolate share read/write flags</td></tr>
+ * <tr><td>FileMode::ShareRead</td>    <td>(Windows only) Sharing for reading enabled</td></tr>
+ * <tr><td>FileMode::ShareWrite</td>   <td>(Windows only) Sharing for writing enabled</td></tr>
+ * <tr><td>FileMode::ShareMode</td>    <td>(Windows only) Mask to isolate share read/write flags</td></tr>
  * <tr><td>FileMode::Open</td>         <td>Open an existing file</td></tr>
  * <tr><td>FileMode::Create</td>       <td>Create a new file or truncate an existing file</td></tr>
  * <tr><td>FileMode::OpenMode</td>     <td>Mask to isolate open/creation flags</td></tr>
@@ -133,7 +133,7 @@ namespace FileMode
       AccessMode  = 0x0000000F,
 
       /*
-       * Share mode
+       * Share mode (Windows only)
        */
       ShareRead   = 0x00000010,
       ShareWrite  = 0x00000020,
@@ -533,7 +533,7 @@ public:
 
       /*!
        */
-      virtual String ExceptionClass() const
+      String ExceptionClass() const override
       {
          return "File I/O Error";
       }
@@ -555,7 +555,7 @@ public:
 
       /*!
        */
-      virtual String Message() const
+      String Message() const override
       {
          String filePath = FilePath();
          String message = m_message;
@@ -1426,15 +1426,16 @@ public:
     *
     * \param path    The path to the file to be opened or created.
     *
-    * \param mode    Desired file access, share and opening/creation mode. By
-    *                default, an existing file will be opened for exclusive
-    *                read-only access.
+    * \param mode    Desired file access, share (Windows only) and
+    *                opening/creation mode. By default, an existing file will
+    *                be opened for (exclusive on Windows) read-only access.
     */
    virtual void Open( const String& path, FileModes mode = FileMode::Read|FileMode::Open );
 
    /*!
-    * Opens an existing file at the specified \a path for shared read-only
-    * access.
+    * Opens an existing file at the specified \a path. On Windows, the file is
+    * opened for shared read-only access (on UNIX and Linux, file access is
+    * handled automatically, so there is no need to define 'sharing modes').
     */
    virtual void OpenForReading( const String& path )
    {
@@ -1442,8 +1443,10 @@ public:
    }
 
    /*!
-    * Returns an open existing file at the specified \a path, ready for shared
-    * read-only access.
+    * Returns an open existing file at the specified \a path. On Windows, the
+    * file is opened for shared read-only access (on UNIX and Linux, file
+    * access is handled automatically, so there is no need to define 'sharing
+    * modes').
     */
    static File OpenFileForReading( const String& path )
    {
@@ -2293,4 +2296,4 @@ protected:
 #endif   // __PCL_File_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/File.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/File.h - Released 2018-11-01T11:06:36Z

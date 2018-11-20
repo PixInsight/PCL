@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/XML.h - Released 2017-08-01T14:23:31Z
+// pcl/XML.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -1676,7 +1676,7 @@ public:
    }
 
    /*!
-    * Appends a new child \a node to this %XML element.
+    * Appends a child \a node to this %XML element.
     *
     * The specified \a node will be owned by this element, which will destroy
     * it automatically (and recursively) upon destruction.
@@ -1690,13 +1690,39 @@ public:
    }
 
    /*!
-    * Insertion operator. Returns a reference to this object.
+    * Insertion operator: Appends a child \a node to this %XML element. Returns
+    * a reference to this object.
     *
-    * This operator is equivalent to AddChildNode( node ).
+    * This operator does the same as AddChildNode( node ).
     */
    XMLElement& operator <<( XMLNode* node )
    {
       AddChildNode( node );
+      return *this;
+   }
+
+   /*!
+    * Appends an ordered sequence of child \a nodes to this %XML element.
+    *
+    * After calling this function, all existing \a nodes in the specified list
+    * will be owned by this element, which will destroy them automatically (and
+    * recursively) upon destruction.
+    */
+   void AddChildNodes( XMLNodeList& nodes )
+   {
+      for ( XMLNode& node : nodes )
+         AddChildNode( &node );
+   }
+
+   /*!
+    * Insertion operator: Appends an ordered sequence of child \a nodes to this
+    * %XML element. Returns a reference to this object.
+    *
+    * This operator does the same as AddChildNodes( nodes ).
+    */
+   XMLElement& operator <<( XMLNodeList& nodes )
+   {
+      AddChildNodes( nodes );
       return *this;
    }
 
@@ -1724,13 +1750,30 @@ public:
    }
 
    /*!
+    * Releases the child nodes of this %XML element.
+    *
+    * This function returns the (possibly empty) list of child nodes in this
+    * element and causes this object to forget them. The caller will be
+    * responsible for destroying and deallocating all of the returned nodes as
+    * appropriate. After calling this member function, this %XML element will
+    * be empty.
+    */
+   XMLNodeList ReleaseChildNodes()
+   {
+      XMLNodeList nodes = m_childNodes;
+      m_childNodes.Clear();
+      m_childTypes = XMLNodeType::Undefined;
+      return nodes;
+   }
+
+   /*!
     * Recursively serializes this %XML element and its contents. Appends the
     * generated %XML source code to the specified 8-bit \a text string, encoded
     * in UTF-8.
     *
     * See XMLNode::Serialize() for information on function parameters.
     */
-   virtual void Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const;
+   void Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const override;
 
 private:
 
@@ -1852,7 +1895,7 @@ public:
     * the class constructor for information on space preservation options in
     * %XML text blocks.
     */
-   virtual void Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const;
+   void Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const override;
 
    /*!
     * Returns true iff a new line character (\#x0A) can be inserted before
@@ -1863,7 +1906,7 @@ public:
     * enabled, new line characters are forbidden at the beginning and end of
     * the text block serialization.
     */
-   virtual bool NLAfter( const XMLNode& previous ) const
+   bool NLAfter( const XMLNode& previous ) const override
    {
       return !m_preserveSpaces;
    }
@@ -1922,7 +1965,7 @@ public:
     *
     * See XMLNode::Serialize() for information on function parameters.
     */
-   virtual void Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const;
+   void Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const override;
 
 private:
 
@@ -1987,7 +2030,7 @@ public:
     *
     * See XMLNode::Serialize() for information on function parameters.
     */
-   virtual void Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const;
+   void Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const override;
 
 private:
 
@@ -2043,7 +2086,7 @@ public:
     *
     * See XMLNode::Serialize() for information on function parameters.
     */
-   virtual void Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const;
+   void Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const override;
 
 private:
 
@@ -2105,7 +2148,7 @@ public:
     *
     * See XMLNode::Serialize() for information on function parameters.
     */
-   virtual void Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const;
+   void Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const override;
 
 private:
 
@@ -2930,4 +2973,4 @@ private:
 #endif   // __PCL_XML_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/XML.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/XML.h - Released 2018-11-01T11:06:36Z

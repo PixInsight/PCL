@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/SharedPixelData.h - Released 2017-08-01T14:23:31Z
+// pcl/SharedPixelData.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -82,9 +82,7 @@ public:
    /*!
     * Constructs a %SharedPixelData object that represents a local image.
     */
-   SharedPixelData() : m_handle( nullptr )
-   {
-   }
+   SharedPixelData() = default;
 
    /*!
     * References an existing shared image with the specified handle and sample
@@ -134,7 +132,8 @@ public:
     * references the same shared image. If \a x is a local image, this function
     * just copies the null handle and has no further effect.
     */
-   SharedPixelData( const SharedPixelData& x ) : m_handle( x.m_handle )
+   SharedPixelData( const SharedPixelData& x ) :
+      m_handle( x.m_handle )
    {
       Attach();
    }
@@ -218,7 +217,7 @@ public:
 
 private:
 
-   void* m_handle;
+   void* m_handle = nullptr;
 
    void Attach();
    void Detach();
@@ -247,4 +246,4 @@ protected:
 #endif   // __PCL_SharedPixelData_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SharedPixelData.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/SharedPixelData.h - Released 2018-11-01T11:06:36Z

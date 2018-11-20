@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard BMP File Format Module Version 01.00.04.0325
+// Standard BMP File Format Module Version 01.00.04.0331
 // ----------------------------------------------------------------------------
-// BMPFormat.cpp - Released 2017-08-01T14:26:50Z
+// BMPFormat.cpp - Released 2018-11-01T11:07:09Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard BMP PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -107,7 +107,7 @@ String BMPFormat::Implementation() const
    "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2018 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -182,7 +182,7 @@ String GIFFormat::Implementation() const
    "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2018 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -256,7 +256,7 @@ String ICOFormat::Implementation() const
    "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2018 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -330,7 +330,7 @@ String MNGFormat::Implementation() const
    "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2018 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -404,7 +404,7 @@ String PBMFormat::Implementation() const
    "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2018 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -478,7 +478,7 @@ String PGMFormat::Implementation() const
    "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2018 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -552,7 +552,7 @@ String PNGFormat::Implementation() const
    "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2018 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -631,7 +631,7 @@ String PPMFormat::Implementation() const
    "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2018 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -705,7 +705,7 @@ String XBMFormat::Implementation() const
    "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2018 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -779,7 +779,7 @@ String XPMFormat::Implementation() const
    "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2018 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -860,7 +860,7 @@ String TGAFormat::Implementation() const
    "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2018 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -934,7 +934,7 @@ String WEBPFormat::Implementation() const
    "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2018 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -1008,7 +1008,7 @@ String SVGFormat::Implementation() const
    "Copyright (C) 2017 The Qt Company Ltd and other contributors.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2017 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2018 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -1047,4 +1047,4 @@ FileFormatImplementation* SVGFormat::Create() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BMPFormat.cpp - Released 2017-08-01T14:26:50Z
+// EOF BMPFormat.cpp - Released 2018-11-01T11:07:09Z

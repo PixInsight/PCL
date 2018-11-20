@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ICCProfileTransformation.h - Released 2017-08-01T14:23:31Z
+// pcl/ICCProfileTransformation.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,6 +60,7 @@
 #include <pcl/Color.h>
 #include <pcl/ICCProfile.h>
 #include <pcl/ImageTransformation.h>
+#include <pcl/ParallelProcess.h>
 
 // ----------------------------------------------------------------------------
 
@@ -90,7 +91,7 @@ namespace pcl
  * \ingroup color_management
  * \sa ICCProfile, ImageTransformation
  */
-class PCL_CLASS ICCProfileTransformation : public ImageTransformation
+class PCL_CLASS ICCProfileTransformation : public ImageTransformation, public ParallelProcess
 {
 public:
 
@@ -112,31 +113,14 @@ public:
    /*!
     * Constructs an empty %ICCPRofileTransformation object.
     */
-   ICCProfileTransformation() :
-      ImageTransformation(),
-      m_transformation( nullptr ),
-      m_profiles(),
-      m_intent( ICCRenderingIntent::Perceptual ),
-      m_proofingIntent( ICCRenderingIntent::AbsoluteColorimetric ),
-      m_blackPointCompensation( false ),
-      m_forceFloatingPoint( false ),
-      m_highResolutionCLUT( true ),
-      m_lowResolutionCLUT( false ),
-      m_proofingTransformation( false ),
-      m_gamutCheck( false ),
-      m_parallel( true ),
-      m_maxProcessors( PCL_MAX_PROCESSORS ),
-      m_srcRGB( false ),
-      m_dstRGB( false ),
-      m_floatingPoint( false )
-   {
-   }
+   ICCProfileTransformation() = default;
 
    /*!
     * Move constructor.
     */
    ICCProfileTransformation( ICCProfileTransformation&& x ) :
       ImageTransformation( x ),
+      ParallelProcess( x ),
       m_transformation( x.m_transformation ),
       m_profiles( std::move( x.m_profiles ) ),
       m_intent( x.m_intent ),
@@ -147,8 +131,6 @@ public:
       m_lowResolutionCLUT( x.m_lowResolutionCLUT ),
       m_proofingTransformation( x.m_proofingTransformation ),
       m_gamutCheck( x.m_gamutCheck ),
-      m_parallel( x.m_parallel ),
-      m_maxProcessors( x.m_maxProcessors ),
       m_srcRGB( x.m_srcRGB ),
       m_dstRGB( x.m_dstRGB ),
       m_floatingPoint( x.m_floatingPoint )
@@ -162,6 +144,7 @@ public:
    ICCProfileTransformation& operator =( ICCProfileTransformation&& x )
    {
       (void)ImageTransformation::operator =( x );
+      (void)ParallelProcess::operator =( x );
       m_transformation = x.m_transformation;
       m_profiles = std::move( x.m_profiles );
       m_intent = x.m_intent;
@@ -172,8 +155,6 @@ public:
       m_lowResolutionCLUT = x.m_lowResolutionCLUT;
       m_proofingTransformation = x.m_proofingTransformation;
       m_gamutCheck = x.m_gamutCheck;
-      m_parallel = x.m_parallel;
-      m_maxProcessors = x.m_maxProcessors;
       m_srcRGB = x.m_srcRGB;
       m_dstRGB = x.m_dstRGB;
       m_floatingPoint = x.m_floatingPoint;
@@ -466,102 +447,26 @@ public:
       return m_dstRGB;
    }
 
-   /*!
-    * Returns true iff this object is allowed to use multiple parallel execution
-    * threads (when multiple threads are permitted and available).
-    */
-   bool IsParallelProcessingEnabled() const
-   {
-      return m_parallel;
-   }
-
-   /*!
-    * Enables parallel processing for this instance of
-    * %ICCProfileTransformation.
-    *
-    * \param enable  Whether to enable or disable parallel processing. True by
-    *                default.
-    *
-    * \param maxProcessors    The maximum number of processors allowed for this
-    *                instance of %ICCProfileTransformation. If \a enable is
-    *                false this parameter is ignored. A value <= 0 is ignored.
-    *                The default value is zero.
-    */
-   void EnableParallelProcessing( bool enable = true, int maxProcessors = 0 )
-   {
-      m_parallel = enable;
-      if ( enable && maxProcessors > 0 )
-         SetMaxProcessors( maxProcessors );
-   }
-
-   /*!
-    * Disables parallel processing for this instance of
-    * %ICCProfileTransformation.
-    *
-    * This is a convenience function, equivalent to:
-    * EnableParallelProcessing( !disable )
-    */
-   void DisableParallelProcessing( bool disable = true )
-   {
-      EnableParallelProcessing( !disable );
-   }
-
-   /*!
-    * Returns the maximum number of processors allowed for this instance of
-    * %ICCProfileTransformation.
-    *
-    * Irrespective of the value returned by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   int MaxProcessors() const
-   {
-      return m_maxProcessors;
-   }
-
-   /*!
-    * Sets the maximum number of processors allowed for this instance of
-    * %ICCProfileTransformation.
-    *
-    * In the current version of PCL, a module can use a maximum of 1023
-    * processors. The term \e processor actually refers to the number of
-    * threads a module can execute concurrently.
-    *
-    * Irrespective of the value specified by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   void SetMaxProcessors( int maxProcessors )
-   {
-      m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
-   }
-
 protected:
 
    /*
-    * Handle to the profile transformation.
+    * Opaque handle to the profile transformation.
     */
-   mutable transformation_handle m_transformation;
+   mutable transformation_handle m_transformation = nullptr;
 
    /*
-    * The ICC profiles and rendering intent that define this color
-    * transformation.
+    * The ICC profiles, rendering intents and operating parameters that define
+    * this color transformation.
     */
    profile_list     m_profiles;
-   rendering_intent m_intent;
-   rendering_intent m_proofingIntent;
-   bool             m_blackPointCompensation : 1;
-   bool             m_forceFloatingPoint     : 1;
-   bool             m_highResolutionCLUT     : 1;
-   bool             m_lowResolutionCLUT      : 1;
-   bool             m_proofingTransformation : 1;
-   bool             m_gamutCheck             : 1;
-   bool             m_parallel               : 1;
-   unsigned         m_maxProcessors          : PCL_MAX_PROCESSORS_BITCOUNT;
+   rendering_intent m_intent = ICCRenderingIntent::Perceptual;
+   rendering_intent m_proofingIntent = ICCRenderingIntent::AbsoluteColorimetric;
+   bool             m_blackPointCompensation = false;
+   bool             m_forceFloatingPoint = false;
+   bool             m_highResolutionCLUT = true;
+   bool             m_lowResolutionCLUT = false;
+   bool             m_proofingTransformation = false;
+   bool             m_gamutCheck = false;
 
    /*
     * Flags indicating source and destination color spaces.
@@ -569,14 +474,14 @@ protected:
     * buffers, *not* to the color spaces of the profiles involved in the
     * transformation.
     */
-   mutable bool     m_srcRGB                 : 1;
-   mutable bool     m_dstRGB                 : 1;
+   mutable bool     m_srcRGB = false;
+   mutable bool     m_dstRGB = false;
 
    /*
     * Flag indicating whether the current transformation (if any) has been
     * created forcing floating point arithmetics.
     */
-   mutable bool     m_floatingPoint          : 1;
+   mutable bool     m_floatingPoint = false;
 
    void AddAt( size_type, const String& );
    void AddAt( size_type, const ICCProfile& );
@@ -587,11 +492,11 @@ protected:
    void CloseTransformation() const;
 
    // Inherited from ImageTransformation
-   virtual void Apply( pcl::Image& ) const;
-   virtual void Apply( pcl::DImage& ) const;
-   virtual void Apply( pcl::UInt8Image& ) const;
-   virtual void Apply( pcl::UInt16Image& ) const;
-   virtual void Apply( pcl::UInt32Image& ) const;
+   void Apply( pcl::Image& ) const override;
+   void Apply( pcl::DImage& ) const override;
+   void Apply( pcl::UInt8Image& ) const override;
+   void Apply( pcl::UInt16Image& ) const override;
+   void Apply( pcl::UInt32Image& ) const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -629,8 +534,7 @@ public:
    /*!
     * Constructs a default %ICCProofingTransformation object.
     */
-   ICCProofingTransformation() :
-      ICCProfileTransformation()
+   ICCProofingTransformation()
    {
       m_proofingTransformation = true;
       m_profiles.Add( static_cast<ICCProfile::handle>( nullptr ), 3 );
@@ -639,10 +543,7 @@ public:
    /*!
     * Move constructor.
     */
-   ICCProofingTransformation( ICCProofingTransformation&& x ) :
-      ICCProfileTransformation( std::move( x ) )
-   {
-   }
+   ICCProofingTransformation( ICCProofingTransformation&& ) = default;
 
    /*!
     * Destroys an %ICCProofingTransformation object.
@@ -654,11 +555,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-   ICCProofingTransformation& operator =( ICCProofingTransformation&& x )
-   {
-      (void)ICCProfileTransformation::operator =( std::move( x ) );
-      return *this;
-   }
+   ICCProofingTransformation& operator =( ICCProofingTransformation&& ) = default;
 
    /*!
     * Loads an ICC profile from a file at \a profilePath and selects it as the
@@ -791,4 +688,4 @@ public:
 #endif   // __PCL_ICCProfileTransformation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ICCProfileTransformation.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/ICCProfileTransformation.h - Released 2018-11-01T11:06:36Z

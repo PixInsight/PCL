@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Sandbox Process Module Version 01.00.02.0261
+// Standard Sandbox Process Module Version 01.00.02.0269
 // ----------------------------------------------------------------------------
-// SandboxInterface.cpp - Released 2017-08-01T14:26:58Z
+// SandboxInterface.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Sandbox PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -73,37 +73,51 @@ SandboxInterface::SandboxInterface() :
    TheSandboxInterface = this;
 }
 
+// ----------------------------------------------------------------------------
+
 SandboxInterface::~SandboxInterface()
 {
    if ( GUI != nullptr )
       delete GUI, GUI = nullptr;
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString SandboxInterface::Id() const
 {
    return "Sandbox";
 }
+
+// ----------------------------------------------------------------------------
 
 MetaProcess* SandboxInterface::Process() const
 {
    return TheSandboxProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 const char** SandboxInterface::IconImageXPM() const
 {
    return nullptr; // SandboxIcon_XPM; ---> put a nice icon here
 }
+
+// ----------------------------------------------------------------------------
 
 void SandboxInterface::ApplyInstance() const
 {
    instance.LaunchOnCurrentView();
 }
 
+// ----------------------------------------------------------------------------
+
 void SandboxInterface::ResetInstance()
 {
    SandboxInstance defaultInstance( TheSandboxProcess );
    ImportProcess( defaultInstance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool SandboxInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
@@ -118,10 +132,14 @@ bool SandboxInterface::Launch( const MetaProcess& P, const ProcessImplementation
    return &P == TheSandboxProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* SandboxInterface::NewProcess() const
 {
    return new SandboxInstance( instance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool SandboxInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
@@ -131,10 +149,14 @@ bool SandboxInterface::ValidateProcess( const ProcessImplementation& p, String& 
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool SandboxInterface::RequiresInstanceValidation() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool SandboxInterface::ImportProcess( const ProcessImplementation& p )
 {
@@ -143,6 +165,7 @@ bool SandboxInterface::ImportProcess( const ProcessImplementation& p )
    return true;
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void SandboxInterface::UpdateControls()
@@ -155,32 +178,41 @@ void SandboxInterface::UpdateControls()
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
-void SandboxInterface::__RealValueUpdated( NumericEdit& sender, double value )
+void SandboxInterface::e_RealValueUpdated( NumericEdit& sender, double value )
 {
    if ( sender == GUI->ParameterOne_NumericControl )
       instance.p_one = value;
 }
 
-void SandboxInterface::__IntegerValueUpdated( SpinBox& sender, int value )
+// ----------------------------------------------------------------------------
+
+void SandboxInterface::e_IntegerValueUpdated( SpinBox& sender, int value )
 {
    if ( sender == GUI->ParameterTwo_SpinBox )
       instance.p_two = value;
 }
 
-void SandboxInterface::__ItemClicked( Button& sender, bool checked )
+// ----------------------------------------------------------------------------
+
+void SandboxInterface::e_ItemClicked( Button& sender, bool checked )
 {
    if ( sender == GUI->ParameterThree_CheckBox )
       instance.p_three = checked;
 }
 
-void SandboxInterface::__ItemSelected( ComboBox& sender, int itemIndex )
+// ----------------------------------------------------------------------------
+
+void SandboxInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
 {
    if ( sender == GUI->ParameterFour_ComboBox )
       instance.p_four = itemIndex;
 }
 
-void SandboxInterface::__EditGetFocus( Control& sender )
+// ----------------------------------------------------------------------------
+
+void SandboxInterface::e_EditGetFocus( Control& sender )
 {
    if ( sender == GUI->ParameterFive_Edit )
    {
@@ -188,12 +220,15 @@ void SandboxInterface::__EditGetFocus( Control& sender )
    }
 }
 
-void SandboxInterface::__EditCompleted( Edit& sender )
+// ----------------------------------------------------------------------------
+
+void SandboxInterface::e_EditCompleted( Edit& sender )
 {
    if ( sender == GUI->ParameterFive_Edit )
       instance.p_five = sender.Text();
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 SandboxInterface::GUIData::GUIData( SandboxInterface& w )
@@ -213,7 +248,7 @@ SandboxInterface::GUIData::GUIData( SandboxInterface& w )
    ParameterOne_NumericControl.SetPrecision( TheSandboxParameterOneParameter->Precision() );
    ParameterOne_NumericControl.SetToolTip( "<p>This is the first parameter.</p>" );
    ParameterOne_NumericControl.edit.SetFixedWidth( editWidth1 );
-   ParameterOne_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&SandboxInterface::__RealValueUpdated, w );
+   ParameterOne_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&SandboxInterface::e_RealValueUpdated, w );
 
    //
 
@@ -225,7 +260,7 @@ SandboxInterface::GUIData::GUIData( SandboxInterface& w )
    ParameterTwo_SpinBox.SetRange( int( TheSandboxParameterTwoParameter->MinimumValue() ), int( TheSandboxParameterTwoParameter->MaximumValue() ) );
    ParameterTwo_SpinBox.SetFixedWidth( editWidth1 );
    ParameterTwo_SpinBox.SetToolTip( "<p>This is the second parameter.</p>" );
-   ParameterTwo_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&SandboxInterface::__IntegerValueUpdated, w );
+   ParameterTwo_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&SandboxInterface::e_IntegerValueUpdated, w );
 
    ParameterTwo_Sizer.SetSpacing( 4 );
    ParameterTwo_Sizer.Add( ParameterTwo_Label );
@@ -236,7 +271,7 @@ SandboxInterface::GUIData::GUIData( SandboxInterface& w )
 
    ParameterThree_CheckBox.SetText( "Three" );
    ParameterThree_CheckBox.SetToolTip( "<p>This is the third parameter.</p>" );
-   ParameterThree_CheckBox.OnClick( (pcl::Button::click_event_handler)&SandboxInterface::__ItemClicked, w );
+   ParameterThree_CheckBox.OnClick( (pcl::Button::click_event_handler)&SandboxInterface::e_ItemClicked, w );
 
    ParameterThree_Sizer.AddUnscaledSpacing( labelWidth1 + w.LogicalPixelsToPhysical( 4 ) );
    ParameterThree_Sizer.Add( ParameterThree_CheckBox );
@@ -253,7 +288,7 @@ SandboxInterface::GUIData::GUIData( SandboxInterface& w )
    ParameterFour_ComboBox.AddItem( "Second Item" );
    ParameterFour_ComboBox.AddItem( "Third Item" );
    ParameterFour_ComboBox.SetToolTip( "<p>This is the fourth parameter.</p>" );
-   ParameterFour_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&SandboxInterface::__ItemSelected, w );
+   ParameterFour_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&SandboxInterface::e_ItemSelected, w );
 
    ParameterFour_Sizer.SetSpacing( 4 );
    ParameterFour_Sizer.Add( ParameterFour_Label );
@@ -269,8 +304,8 @@ SandboxInterface::GUIData::GUIData( SandboxInterface& w )
 
    ParameterFive_Edit.SetMinWidth( editWidth1 );
    ParameterFive_Edit.SetToolTip( "<p>This is the fifth parameter.</p>" );
-   ParameterFive_Edit.OnGetFocus( (Control::event_handler)&SandboxInterface::__EditGetFocus, w );
-   ParameterFive_Edit.OnEditCompleted( (Edit::edit_event_handler)&SandboxInterface::__EditCompleted, w );
+   ParameterFive_Edit.OnGetFocus( (Control::event_handler)&SandboxInterface::e_EditGetFocus, w );
+   ParameterFive_Edit.OnEditCompleted( (Edit::edit_event_handler)&SandboxInterface::e_EditCompleted, w );
 
    ParameterFive_Sizer.SetSpacing( 4 );
    ParameterFive_Sizer.Add( ParameterFive_Label );
@@ -296,4 +331,4 @@ SandboxInterface::GUIData::GUIData( SandboxInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SandboxInterface.cpp - Released 2017-08-01T14:26:58Z
+// EOF SandboxInterface.cpp - Released 2018-11-01T11:07:21Z

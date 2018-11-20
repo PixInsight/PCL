@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.16.01.0447
+// Standard ImageIntegration Process Module Version 01.16.01.0455
 // ----------------------------------------------------------------------------
-// ImageIntegrationModule.cpp - Released 2017-11-24T09:58:41Z
+// ImageIntegrationModule.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     16
 #define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0447
+#define MODULE_VERSION_BUILD     0455
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2017
+#define MODULE_RELEASE_YEAR      2018
 #define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       24
+#define MODULE_RELEASE_DAY       1
 
 #include "DrizzleIntegrationInstance.h"
 #include "DrizzleIntegrationInterface.h"
@@ -124,7 +124,7 @@ String ImageIntegrationModule::Author() const
 
 String ImageIntegrationModule::Copyright() const
 {
-   return "Copyright (c) 2009-2017, Pleiades Astrophoto";
+   return "Copyright (c) 2009-2018, Pleiades Astrophoto";
 }
 
 // ----------------------------------------------------------------------------
@@ -206,4 +206,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationModule.cpp - Released 2017-11-24T09:58:41Z
+// EOF ImageIntegrationModule.cpp - Released 2018-11-01T11:07:21Z

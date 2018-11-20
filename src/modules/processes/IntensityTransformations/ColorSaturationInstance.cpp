@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// ColorSaturationInstance.cpp - Released 2017-08-01T14:26:58Z
+// ColorSaturationInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -71,13 +71,15 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 ColorSaturationInstance::ColorSaturationInstance( const MetaProcess* P ) :
-ProcessImplementation( P ),
-C(), hueShift( 0 )
+   ProcessImplementation( P ),
+   hueShift( 0 )
 {
 }
 
+// ----------------------------------------------------------------------------
+
 ColorSaturationInstance::ColorSaturationInstance( const ColorSaturationInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -87,11 +89,18 @@ ProcessImplementation( x )
 void ColorSaturationInstance::Assign( const ProcessImplementation& p )
 {
    const ColorSaturationInstance* x = dynamic_cast<const ColorSaturationInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       C = x->C;
       hueShift = x->hueShift;
    }
+}
+
+// ----------------------------------------------------------------------------
+
+UndoFlags ColorSaturationInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
 }
 
 // ----------------------------------------------------------------------------
@@ -103,7 +112,8 @@ bool ColorSaturationInstance::CanExecuteOn( const View& view, pcl::String& whyNo
       whyNot = "ColorSaturation cannot be executed on complex images.";
       return false;
    }
-   else if ( !view.Image()->IsColor() )
+
+   if ( !view.Image()->IsColor() )
    {
       whyNot = "ColorSaturation cannot be executed on grayscale images.";
       return false;
@@ -357,4 +367,4 @@ size_type ColorSaturationInstance::ParameterLength( const MetaParameter* /*p*/, 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ColorSaturationInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF ColorSaturationInstance.cpp - Released 2018-11-01T11:07:21Z

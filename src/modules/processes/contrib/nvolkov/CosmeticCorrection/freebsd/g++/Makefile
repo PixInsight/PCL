@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.104
-# Copyright (C) 2009-2017 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.107
+# Copyright (C) 2009-2018 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2017-08-02T11:08:00.437Z
+# Generated on .... 2018-11-01T11:09:06.828Z
 # Project id ...... CosmeticCorrection
 # Project type .... Module
 # Platform ........ FreeBSD/g++

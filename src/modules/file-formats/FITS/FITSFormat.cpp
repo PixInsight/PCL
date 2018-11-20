@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.05.0411
+// Standard FITS File Format Module Version 01.01.05.0417
 // ----------------------------------------------------------------------------
-// FITSFormat.cpp - Released 2017-08-01T14:26:50Z
+// FITSFormat.cpp - Released 2018-11-01T11:07:09Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -106,7 +106,7 @@ String FITSFormat::Implementation() const
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
    "<p>This implementation of the FITS format is based on the CFITSIO library "
-   "of NASA/HEASARC (CFITSIO version 3.38 - released February 2016).</p>"
+   "of NASA/HEASARC (CFITSIO version 3.45 - released May 2018).</p>"
 
    "<p>The FITSIO software was written by William Pence at the High Energy "
    "Astrophysic Science Archive Research Center (HEASARC) at the NASA "
@@ -117,7 +117,7 @@ String FITSFormat::Implementation() const
    "National Aeronautics and Space Administration.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2017, Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2018, Pleiades Astrophoto</p>"
 
    "<p style=\"white-space:pre;\">"
 "\n-------------------------------------------------------------------------------"
@@ -156,8 +156,16 @@ String FITSFormat::Implementation() const
 "\nproperties              (rw)  Read/write image properties stored as BLOBs in"
 "\n                              FITS image extensions."
 "\n-------------------------------------------------------------------------------"
-"\nno-properties           (rw)  Do not read/write image properties stored as"
-"\n                              BLOBs in FITS image extensions."
+"\nno-properties           (rw)  Do not read/write BLOB image properties."
+"\n-------------------------------------------------------------------------------"
+"\nicc-profile             ( w)  Write ICC profiles stored as special FITS image"
+"\n                              extensions."
+"\n-------------------------------------------------------------------------------"
+"\nno-icc-profile          ( w)  Do not write ICC profile image extensions."
+"\n-------------------------------------------------------------------------------"
+"\nthumbnail               ( w)  Write thumbnail image extensions."
+"\n-------------------------------------------------------------------------------"
+"\nno-thumbnail            ( w)  Do not write thumbnail image extensions."
 "\n-------------------------------------------------------------------------------"
 "\nverbosity n             (rw)  n is a verbosity level in the range [0,3] to"
 "\n                              control the amount of generated messages"
@@ -439,4 +447,4 @@ FITSFormat::FormatOptions* FITSFormat::FormatOptions::FromGenericDataBlock( cons
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITSFormat.cpp - Released 2017-08-01T14:26:50Z
+// EOF FITSFormat.cpp - Released 2018-11-01T11:07:09Z

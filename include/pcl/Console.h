@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Console.h - Released 2017-08-01T14:23:31Z
+// pcl/Console.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -364,6 +364,41 @@ public:
    Console();
 
    /*!
+    * Copy constructor, disabled because %Console instances represent unique
+    * objects that cannot be copied.
+    */
+   Console( const Console& ) = delete;
+
+   /*!
+    * Move constructor.
+    */
+   Console( Console&& x ) :
+      m_handle( x.m_handle ), m_thread( x.m_thread )
+   {
+      x.m_handle = x.m_thread = nullptr;
+   }
+
+   /*!
+    * Copy assignment operator, disabled because %Console instances represent
+    * unique objects that cannot be copied.
+    */
+   Console& operator =( const Console& ) = delete;
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   Console& operator =( Console&& x )
+   {
+      if ( &x != this )
+      {
+         m_handle = x.m_handle;
+         m_thread = x.m_thread;
+         x.m_handle = x.m_thread = nullptr;
+      }
+      return *this;
+   }
+
+   /*!
     * Destroys a %Console object.
     */
    virtual ~Console();
@@ -654,31 +689,68 @@ public:
     *
     * Note that command-line or JavaScript runtime execution errors cannot be
     * reported by this function. That means that this function knows nothing
-    * about whether the script worked or not correctly, or as expected.
+    * about whether the script worked or not correctly, or if it did what was
+    * expected.
+    *
+    * For execution of JavaScript scripts, this function is equivalent to
+    * ExecuteScriptGlobal(), that is, JavaScript scripts are always executed in
+    * the global context by default. When executed, the JavaScript script will
+    * see the following static properties of the %Parameters JS runtime object:
+    *
+    * \c Parameters.isGlobalTarget will be set to true. \n
+    * \c Parameters.isViewTarget will be set to false. \n
+    * \c Parameters.targetView will be set to \c undefined.
+    *
+    * See ExecuteScriptOn() for execution of scripts in view contexts.
     *
     * \note If this function is called from a running thread, an Error
-    * exception will be thrown. In current versions of the PixInsight platform,
-    * scripts can only be executed from the root thread.
+    * exception will be thrown and nothing will be executed. In current
+    * versions of the PixInsight platform, scripts can only be executed from
+    * the root thread. The main reason for this limitation is that the
+    * JavaScript and command-line execution engined are not reentrant.
     */
    void ExecuteScript( const String& filePath, const StringKeyValueList& arguments = StringKeyValueList() );
 
    /*!
+    * Executes a script file in the global context. This is the default
+    * execution execution mode for all scripts.
     *
+    * When a JavaScript script is executed through this member function, the
+    * following static properties of the %Parameters runtime object will be
+    * defined as described below:
+    *
+    * \c Parameters.isGlobalTarget will be set to true. \n
+    * \c Parameters.isViewTarget will be set to false. \n
+    * \c Parameters.targetView will be set to \c undefined.
+    *
+    * See ExecuteScript() for a detailed description of script execution from
+    * PCL/C++ code.
     */
    void ExecuteScriptGlobal( const String& filePath, const StringKeyValueList& arguments = StringKeyValueList() );
 
    /*!
+    * Executes a script file in the context of the specified \a view.
     *
+    * When a JavaScript script is executed through this member function, the
+    * following static properties of the %Parameters runtime object will be
+    * defined as described below:
+    *
+    * \c Parameters.isGlobalTarget will be set to false. \n
+    * \c Parameters.isViewTarget will be set to true. \n
+    * \c Parameters.targetView will reference the specified \a view.
+    *
+    * See ExecuteScript() for a detailed description of script execution from
+    * PCL/C++ code.
     */
    void ExecuteScriptOn( const View& view, const String& filePath, const StringKeyValueList& arguments = StringKeyValueList() );
 
 protected:
 
-   void* m_handle;
+   void* m_handle = nullptr;
 
 private:
 
-   void* m_thread;
+   void* m_thread = nullptr;
 };
 
 // ----------------------------------------------------------------------------
@@ -752,4 +824,4 @@ inline Console& operator >>( Console& o, String& s )
 #endif   // __PCL_Console_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Console.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Console.h - Released 2018-11-01T11:06:36Z

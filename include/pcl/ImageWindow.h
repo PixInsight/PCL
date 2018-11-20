@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ImageWindow.h - Released 2017-08-01T14:23:31Z
+// pcl/ImageWindow.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -219,17 +219,18 @@ namespace TransparencyMode
  * retrieve a history state of an image, e.g. for undo and redo operations.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
- * <tr><td>UndoFlag::DefaultMode</td>          <td>Save pixel data and previews</td></tr>
- * <tr><td>UndoFlag::PixelData</td>            <td>Save pixel data</td></tr>
- * <tr><td>UndoFlag::RGBWS</td>                <td>RGB Working Space data</td></tr>
- * <tr><td>UndoFlag::ICCProfile</td>           <td>ICC profile</td></tr>
- * <tr><td>UndoFlag::Keywords</td>             <td>%FITS keywords</td></tr>
- * <tr><td>UndoFlag::FormatData</td>           <td>Format-specific data</td></tr>
- * <tr><td>UndoFlag::ImageId</td>              <td>%Image identifier</td></tr>
- * <tr><td>UndoFlag::Resolution</td>           <td>%Image resolution</td></tr>
- * <tr><td>UndoFlag::All</td>                  <td>Save all data items</td></tr>
- * <tr><td>UndoFlag::ExcludePreviews</td>      <td>Don't save state of previews</td></tr>
- * <tr><td>UndoFlag::ExcludeMaskRelations</td> <td>Don't save masking dependencies</td></tr>
+ * <tr><td>UndoFlag::DefaultMode</td>          <td>Save pixel data, astrometric solution and previews.</td></tr>
+ * <tr><td>UndoFlag::PixelData</td>            <td>Save pixel data.</td></tr>
+ * <tr><td>UndoFlag::RGBWS</td>                <td>RGB Working Space data.</td></tr>
+ * <tr><td>UndoFlag::ICCProfile</td>           <td>ICC profile.</td></tr>
+ * <tr><td>UndoFlag::Keywords</td>             <td>%FITS keywords.</td></tr>
+ * <tr><td>UndoFlag::FormatData</td>           <td>Format-specific data.</td></tr>
+ * <tr><td>UndoFlag::ImageId</td>              <td>%Image identifier.</td></tr>
+ * <tr><td>UndoFlag::Resolution</td>           <td>%Image resolution.</td></tr>
+ * <tr><td>UndoFlag::AstrometricSolution</td>  <td>Save existing astrometric solution.</td></tr>
+ * <tr><td>UndoFlag::All</td>                  <td>Save all data items.</td></tr>
+ * <tr><td>UndoFlag::ExcludePreviews</td>      <td>Don't save state of previews.</td></tr>
+ * <tr><td>UndoFlag::ExcludeMaskRelations</td> <td>Don't save masking dependencies.</td></tr>
  * </table>
  */
 namespace UndoFlag
@@ -239,7 +240,7 @@ namespace UndoFlag
     */
    enum mask_type
    {
-      DefaultMode          = 0x00000000,  // Save pixel data and previews
+      DefaultMode          = 0x00000000,  // Save pixel data, astrometric solution and previews
       PixelData            = 0x00000001,  // Save pixel data
       RGBWS                = 0x00000002,  // RGB Working Space data
       ICCProfile           = 0x00000004,  // ICC profile
@@ -248,6 +249,7 @@ namespace UndoFlag
       FormatData           = 0x00000020,  // Format-specific data
       ImageId              = 0x00000040,  // %Image identifier
       Resolution           = 0x00000080,  // %Image resolution
+      AstrometricSolution  = 0x00000100,  // Save the current astrometric solution
       All                  = 0x000FFFFF,  // Save all data items
       ExcludePreviews      = 0x80000000,  // Don't save state of previews
       ExcludeMaskRelations = 0x40000000   // Don't save masking dependencies
@@ -1312,6 +1314,64 @@ public:
     * Deletes all existing %FITS header keywords in this image window.
     */
    void ResetKeywords();
+
+   /*!
+    * Returns true iff this image window has a valid astrometric solution.
+    * \ingroup astrometry_support
+    * \sa AstrometricMetadata
+    */
+   bool HasAstrometricSolution() const;
+
+   /*!
+    * Attempts to reconstruct the astrometric solution associated with this
+    * image from existing metadata and image properties.
+    *
+    * \param allowGUIMessages    Whether to report possible error and warning
+    *                            messages through message boxes and other
+    *                            graphical resources that may block the core
+    *                            application's event loop. If this parameter is
+    *                            false, warning and error messages will only be
+    *                            shown on the process console. True by default.
+    *
+    * \param notify              Whether to notify the platform on the property
+    *                            changes. This is true by default.
+    *
+    * Returns true iff a valid astrometric solution has been built for this
+    * image window.
+    *
+    * \ingroup astrometry_support
+    * \sa AstrometricMetadata
+    */
+   bool RegenerateAstrometricSolution( bool allowGUIMessages = true, bool notify = true );
+
+   /*!
+    * Removes an existing astrometric solution from this image window.
+    *
+    * \param notify     Whether to notify the platform on the property changes.
+    *                   This is true by default.
+    *
+    * If the image has no valid astrometric solution, calling this member
+    * function has no effect.
+    *
+    * \ingroup astrometry_support
+    * \sa AstrometricMetadata
+    */
+   void ClearAstrometricSolution( bool notify = true );
+
+   /*!
+    * Updates the set of FITS header keywords and image properties of this
+    * image with metadata defining its current astrometric solution.
+    *
+    * \param notify     Whether to notify the platform on the property changes.
+    *                   This is true by default.
+    *
+    * If the image has no valid astrometric solution, calling this member
+    * function has no effect.
+    *
+    * \ingroup astrometry_support
+    * \sa AstrometricMetadata
+    */
+   void UpdateAstrometryMetadata( bool notify = true );
 
    /*!
     * Gets the current image resolution parameters in this image window.
@@ -2809,4 +2869,4 @@ private:
 #endif   // __PCL_ImageWindow_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageWindow.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/ImageWindow.h - Released 2018-11-01T11:06:36Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// RescaleInstance.cpp - Released 2017-08-01T14:26:58Z
+// RescaleInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -63,21 +63,37 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-RescaleInstance::RescaleInstance( const MetaProcess* m, int r ) : ProcessImplementation( m ), mode( r )
+RescaleInstance::RescaleInstance( const MetaProcess* m, int r ) :
+   ProcessImplementation( m ),
+   mode( r )
 {
 }
 
-RescaleInstance::RescaleInstance( const RescaleInstance& x ) : ProcessImplementation( x )
+// ----------------------------------------------------------------------------
+
+RescaleInstance::RescaleInstance( const RescaleInstance& x ) :
+   ProcessImplementation( x )
 {
    Assign( x );
 }
 
+// ----------------------------------------------------------------------------
+
 void RescaleInstance::Assign( const ProcessImplementation& p )
 {
    const RescaleInstance* x = dynamic_cast<const RescaleInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
       mode = x->mode;
 }
+
+// ----------------------------------------------------------------------------
+
+UndoFlags RescaleInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
+}
+
+// ----------------------------------------------------------------------------
 
 bool RescaleInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) const
 {
@@ -147,7 +163,7 @@ void* RescaleInstance::LockParameter( const MetaParameter* p, size_type /*tableR
 {
    if ( p == TheRescalingModeParameter )
       return &mode;
-   return 0;
+   return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -155,4 +171,4 @@ void* RescaleInstance::LockParameter( const MetaParameter* p, size_type /*tableR
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RescaleInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF RescaleInstance.cpp - Released 2018-11-01T11:07:21Z

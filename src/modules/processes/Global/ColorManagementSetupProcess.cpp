@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0378
+// Standard Global Process Module Version 01.02.07.0386
 // ----------------------------------------------------------------------------
-// ColorManagementSetupProcess.cpp - Released 2017-08-01T14:26:58Z
+// ColorManagementSetupProcess.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -174,27 +174,27 @@ static void ShowHelp()
 "<raw>"
 "Usage: ColorManagementSetup [<arg_list>]"
 "\n"
-"\n-enable"
+"\n-e | --enable"
 "\n"
 "\n      Globally enable color management."
 "\n"
-"\n-disable"
+"\n-d | --disable"
 "\n"
 "\n      Globally disable color management."
 "\n"
-"\n-rgb-profile=<profile_id>"
+"\n-r=<profile_id> | --rgb-profile=<profile_id>"
 "\n"
 "\n      Sets the default ICC profile that will be used for RGB color images."
 "\n      <profile_id> must correspond to an installed RGB profile."
 "\n      (default = the current monitor profile)"
 "\n"
-"\n-grayscale-profile=<profile_id>"
+"\n-g=<profile_id> | --grayscale-profile=<profile_id>"
 "\n"
 "\n      Sets the default ICC profile that will be used for grayscale images."
 "\n      <profile_id> must correspond to an installed RGB or grayscale profile."
 "\n      (default = the current monitor profile)"
 "\n"
-"\n-rendering-intent=<intent>"
+"\n-ri=<intent> | --rendering-intent=<intent>"
 "\n"
 "\n      <intent> is a rendering intent to use in screen color management"
 "\n      transformations. Possible values for <intent> are:"
@@ -205,7 +205,7 @@ static void ShowHelp()
 "\n      colorimetric and absolute colorimetric rendering intents, respectively."
 "\n      (default=perceptual)"
 "\n"
-"\n-on-profile-mismatch=<policy>"
+"\n--on-profile-mismatch=<policy>"
 "\n"
 "\n      <policy> identifies a profile mismatch policy. Valid policies are:"
 "\n"
@@ -215,7 +215,7 @@ static void ShowHelp()
 "\n      discard : Ignore mismatching profile and leave image untagged."
 "\n      disable : Disable color management for mismatching images."
 "\n"
-"\n-on-missing-profile=<policy>"
+"\n--on-missing-profile=<policy>"
 "\n"
 "\n      <policy> identifies a missing profile policy. Valid policies are:"
 "\n"
@@ -224,23 +224,23 @@ static void ShowHelp()
 "\n      ignore  : Leave the image untagged. (default=ignore)"
 "\n      disable : Disable color management for untagged images."
 "\n"
-"\n-proofing-profile=<profile_id>"
+"\n--proofing-profile=<profile_id>"
 "\n"
 "\n      Sets the soft-proofing ICC profile. <profile_id> can be any"
 "\n      installed profile. (default = the current monitor profile)"
 "\n"
-"\n-proofing-intent=<intent>"
+"\n-pi=<intent> | --proofing-intent=<intent>"
 "\n"
 "\n      <intent> is a rendering intent used for soft-proofing color management"
-"\n      transformations. See the -rendering-intent argument for possible"
-"\n      values of <intent>. (default=relative)"
+"\n      transformations. See the -ri argument for possible values of <intent>."
+"\n      (default=relative)"
 "\n"
-"\n-proofing-bpc[+|-]"
+"\n--proofing-bpc[+|-]"
 "\n"
 "\n      Enables or disables black point compensation for proofing color"
 "\n      management transformations. (default=enabled)"
 "\n"
-"\n-gamut-warning-color=<css_color>"
+"\n-gw=<css_color> || --gamut-warning-color=<css_color>"
 "\n"
 "\n      Specifies a RGB color that will be used as the global gamut warning"
 "\n      color (for representation of out-of-gamut pixel values on images with"
@@ -249,19 +249,19 @@ static void ShowHelp()
 "\n      valid CSS color name such as \"white\", \"black\", \"red\", and so on."
 "\n      (default=#A9A9A9)"
 "\n"
-"\n-default-proofing[+|-]"
+"\n--default-proofing[+|-]"
 "\n"
 "\n      Enables or disables color proofing for newly created and just opened"
 "\n      images. (default=disabled)"
 "\n"
-"\n-default-gamut-check[+|-]"
+"\n--default-gamut-check[+|-]"
 "\n"
 "\n      Enables or disables the gamut check feature for newly created and just"
 "\n      opened images. Note that gamut check only works when proofing is"
 "\n      enabled for a particular image. (default=disabled)"
 "\n"
-"\n-embed-rgb[+|-]"
-"\n-embed-grayscale[+|-]"
+"\n--embed-rgb[+|-]"
+"\n--embed-grayscale[+|-]"
 "\n"
 "\n      Enables or disables default profile embedding in written image files,"
 "\n      for RGB color and grayscale images, respectively. Note that each file"
@@ -299,28 +299,29 @@ int ColorManagementSetupProcess::ProcessCommandLine( const StringList& argv ) co
       }
       else if ( arg.IsString() )
       {
-         if ( arg.Id() == "rgb-profile" )
+         if ( arg.Id() == "r" | arg.Id() == "-rgb-profile" )
          {
             instance.defaultRGBProfile = arg.StringValue();
             instance.defaultRGBProfile.Trim();
             if ( instance.defaultRGBProfile.IsEmpty() )
                throw Error( "Empty RGB profile: " + arg.Token() );
          }
-         else if ( arg.Id() == "grayscale-profile" )
+         else if ( arg.Id() == "g" || arg.Id() == "-grayscale-profile" )
          {
             instance.defaultGrayProfile = arg.StringValue();
             instance.defaultGrayProfile.Trim();
             if ( instance.defaultGrayProfile.IsEmpty() )
                throw Error( "Empty grayscale profile: " + arg.Token() );
          }
-         else if ( arg.Id() == "proofing-profile" )
+         else if ( arg.Id() == "-proofing-profile" )
          {
             instance.proofingProfile = arg.StringValue();
             instance.proofingProfile.Trim();
             if ( instance.proofingProfile.IsEmpty() )
                throw Error( "Empty proofing profile: " + arg.Token() );
          }
-         else if ( arg.Id() == "rendering-intent" || arg.Id() == "proofing-intent" )
+         else if ( arg.Id() == "ri" || arg.Id() == "-rendering-intent"
+                || arg.Id() == "pi" || arg.Id() == "-proofing-intent" )
          {
             pcl_enum intent;
             if ( arg.StringValue() == "perceptual" )
@@ -334,12 +335,12 @@ int ColorManagementSetupProcess::ProcessCommandLine( const StringList& argv ) co
             else
                throw Error( "Invalid rendering intent: " + arg.Token() );
 
-            if ( arg.Id() == "rendering-intent" )
+            if ( arg.Id() == "ri" || arg.Id() == "-rendering-intent" )
                instance.defaultRenderingIntent = intent;
             else
                instance.proofingIntent = intent;
          }
-         else if ( arg.Id() == "on-profile-mismatch" )
+         else if ( arg.Id() == "-on-profile-mismatch" )
          {
             if ( arg.StringValue() == "ask" )
                instance.onProfileMismatch = CMSOnProfileMismatch::AskUser;
@@ -354,7 +355,7 @@ int ColorManagementSetupProcess::ProcessCommandLine( const StringList& argv ) co
             else
                throw Error( "Invalid profile mismatch policy: " + arg.Token() );
          }
-         else if ( arg.Id() == "on-missing-profile" )
+         else if ( arg.Id() == "-on-missing-profile" )
          {
             if ( arg.StringValue() == "ask" )
                instance.onMissingProfile = CMSOnMissingProfile::AskUser;
@@ -367,7 +368,7 @@ int ColorManagementSetupProcess::ProcessCommandLine( const StringList& argv ) co
             else
                throw Error( "Invalid missing profile policy: " + arg.Token() );
          }
-         else if ( arg.Id() == "gamut-warning-color" )
+         else if ( arg.Id() == "gw" || arg.Id() == "-gamut-warning-color" )
          {
             instance.gamutWarningColor = RGBAColor( arg.StringValue() );
          }
@@ -376,28 +377,28 @@ int ColorManagementSetupProcess::ProcessCommandLine( const StringList& argv ) co
       }
       else if ( arg.IsSwitch() )
       {
-         if ( arg.Id() == "embed-rgb" )
+         if ( arg.Id() == "-embed-rgb" )
             instance.defaultEmbedProfilesInRGBImages = arg.SwitchState();
-         else if ( arg.Id() == "embed-grayscale" )
+         else if ( arg.Id() == "-embed-grayscale" )
             instance.defaultEmbedProfilesInGrayscaleImages = arg.SwitchState();
-         else if ( arg.Id() == "proofing-bpc" )
+         else if ( arg.Id() == "-proofing-bpc" )
             instance.useProofingBPC = arg.SwitchState();
-         else if ( arg.Id() == "default-proofing" )
+         else if ( arg.Id() == "-default-proofing" )
             instance.defaultProofingEnabled = arg.SwitchState();
-         else if ( arg.Id() == "default-gamut-check" )
+         else if ( arg.Id() == "-default-gamut-check" )
             instance.defaultGamutCheckEnabled = arg.SwitchState();
          else
             throw Error( "Unknown switch argument: " + arg.Token() );
       }
       else if ( arg.IsLiteral() )
       {
-         if ( arg.Id() == "enable" )
+         if ( arg.Id() == "e" || arg.Id() == "-enable" )
             instance.enabled = true;
-         else if ( arg.Id() == "disable" )
+         else if ( arg.Id() == "d" || arg.Id() == "-disable" )
             instance.enabled = false;
-         if ( arg.Id() == "embed-rgb" )
+         if ( arg.Id() == "-embed-rgb" )
             instance.defaultEmbedProfilesInRGBImages = true;
-         else if ( arg.Id() == "embed-grayscale" )
+         else if ( arg.Id() == "-embed-grayscale" )
             instance.defaultEmbedProfilesInGrayscaleImages = true;
          else if ( arg.Id() == "-load" )
             instance.LoadCurrentSettings();
@@ -428,4 +429,4 @@ int ColorManagementSetupProcess::ProcessCommandLine( const StringList& argv ) co
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ColorManagementSetupProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF ColorManagementSetupProcess.cpp - Released 2018-11-01T11:07:20Z

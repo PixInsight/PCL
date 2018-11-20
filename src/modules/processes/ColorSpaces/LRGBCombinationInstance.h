@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0348
+// Standard ColorSpaces Process Module Version 01.01.00.0357
 // ----------------------------------------------------------------------------
-// LRGBCombinationInstance.h - Released 2017-08-01T14:26:57Z
+// LRGBCombinationInstance.h - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -70,23 +70,19 @@ public:
    LRGBCombinationInstance( const LRGBCombinationInstance& );
 
    virtual bool Validate( pcl::String& info );
-
    virtual void Assign( const ProcessImplementation& );
-
+   virtual UndoFlags UndoMode( const View& ) const;
    virtual bool CanExecuteOn( const View& v, String& whyNot ) const;
    virtual bool ExecuteOn( View& );
-
    virtual bool CanExecuteGlobal( String& whyNot ) const;
    virtual bool ExecuteGlobal();
-
    virtual void* LockParameter( const MetaParameter*, size_type tableRow );
-
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
 
 private:
 
-   // Array indices: 0=R, 1=G, 2=B, 3=L
+   // Array indexes: 0=R, 1=G, 2=B, 3=L
 
    pcl_bool channelEnabled[ 4 ];
    String   channelId[ 4 ];
@@ -109,4 +105,4 @@ private:
 #endif   // __LRGBCombinationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF LRGBCombinationInstance.h - Released 2017-08-01T14:26:57Z
+// EOF LRGBCombinationInstance.h - Released 2018-11-01T11:07:20Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0378
+// Standard Global Process Module Version 01.02.07.0386
 // ----------------------------------------------------------------------------
-// PreferencesInstance.h - Released 2017-08-01T14:26:58Z
+// PreferencesInstance.h - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -81,7 +81,18 @@ struct ApplicationPreferences
    String      highResFont;
    String      lowResMonoFont;
    String      highResMonoFont;
+   String      fundamentalEphemeridesFile;
+   String      shortTermFundamentalEphemeridesFile;
+   String      asteroidEphemeridesFile;
+   String      shortTermAsteroidEphemeridesFile;
+   String      nutationModelFile;
+   String      shortTermNutationModelFile;
+   String      deltaTDataFile;
+   String      deltaATDataFile;
+   String      cipITRSDataFile;
 };
+
+// ----------------------------------------------------------------------------
 
 struct MainWindowPreferences
 {
@@ -134,6 +145,8 @@ struct MainWindowPreferences
    pcl_bool    useWallpapers;
 };
 
+// ----------------------------------------------------------------------------
+
 struct ImageWindowPreferences
 {
    pcl_bool    backupFiles;
@@ -162,6 +175,7 @@ struct ImageWindowPreferences
    pcl_bool    highDPIRenditions;
    pcl_bool    default24BitScreenLUT;
    pcl_bool    createPreviewsFromCoreProperties;
+   pcl_bool    loadAstrometricSolutions;
    StringList  swapDirectories;
    pcl_bool    swapCompression;
    String      downloadsDirectory;
@@ -178,6 +192,8 @@ struct ImageWindowPreferences
    uint32      defaultTransparencyColor;
 };
 
+// ----------------------------------------------------------------------------
+
 struct IdentifiersPreferences
 {
    String      workspacePrefix;
@@ -193,6 +209,8 @@ struct IdentifiersPreferences
    String      noPreviewSelectedText;
    String      brokenLinkText;
 };
+
+// ----------------------------------------------------------------------------
 
 struct ProcessPreferences
 {
@@ -223,21 +241,15 @@ public:
    PreferencesInstance( const PreferencesInstance& );
 
    virtual void Assign( const ProcessImplementation& );
-
    virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
    virtual bool CanExecuteGlobal( pcl::String& whyNot ) const;
-
    virtual bool ExecuteGlobal();
-
    virtual void* LockParameter( const MetaParameter*, size_type tableRow );
-
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
 
    void LoadDefaultSettings();
    void LoadCurrentSettings();
-
-   // -------------------------------------------------------------------------
 
 private:
 
@@ -255,6 +267,7 @@ private:
    friend class MainWindowPreferencesPage;
    friend class ResourcesPreferencesPage;
    friend class WallpapersPreferencesPage;
+   friend class EphemeridesPreferencesPage;
    friend class GUIEffectsPreferencesPage;
    friend class FileIOPreferencesPage;
    friend class DirectoriesAndNetworkPreferencesPage;
@@ -276,4 +289,4 @@ private:
 #endif   // __PreferencesInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInstance.h - Released 2017-08-01T14:26:58Z
+// EOF PreferencesInstance.h - Released 2018-11-01T11:07:20Z

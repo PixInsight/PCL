@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/DisplayFunction.h - Released 2017-08-01T14:23:31Z
+// pcl/DisplayFunction.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -144,9 +144,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    DisplayFunction( DisplayFunction&& ) = default;
-#endif
 
    /*!
     * Copy assignment operator. Returns a reference to this object.
@@ -156,9 +154,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-#ifndef _MSC_VER
    DisplayFunction& operator =( DisplayFunction&& ) = default;
-#endif
 
    /*!
     * Virtual destructor.
@@ -435,11 +431,11 @@ private:
    /*
     * Display function transformation.
     */
-   virtual void Apply( pcl::Image& ) const;
-   virtual void Apply( pcl::DImage& ) const;
-   virtual void Apply( pcl::UInt8Image& ) const;
-   virtual void Apply( pcl::UInt16Image& ) const;
-   virtual void Apply( pcl::UInt32Image& ) const;
+   void Apply( pcl::Image& ) const override;
+   void Apply( pcl::DImage& ) const override;
+   void Apply( pcl::UInt8Image& ) const override;
+   void Apply( pcl::UInt16Image& ) const override;
+   void Apply( pcl::UInt32Image& ) const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -449,4 +445,4 @@ private:
 #endif   // __PCL_DisplayFunction_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/DisplayFunction.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/DisplayFunction.h - Released 2018-11-01T11:06:36Z

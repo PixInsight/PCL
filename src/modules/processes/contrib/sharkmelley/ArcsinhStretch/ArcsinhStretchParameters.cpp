@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard ArcsinhStretch Process Module Version 01.00.00.0117
+// Standard ArcsinhStretch Process Module Version 01.00.00.0125
 // ----------------------------------------------------------------------------
-// ArcsinhStretchParameters.cpp - Released 2017-10-12T07:54:05Z
+// ArcsinhStretchParameters.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ArcsinhStretch PixInsight module.
 //
-// Copyright (c) 2017 Mark Shelley
+// Copyright (c) 2017-2018 Mark Shelley
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -183,4 +183,4 @@ bool ArcsinhStretchPreviewClipped::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ArcsinhStretchParameters.cpp - Released 2017-10-12T07:54:05Z
+// EOF ArcsinhStretchParameters.cpp - Released 2018-11-01T11:07:21Z

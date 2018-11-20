@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.06.00.0281
+// Standard Debayer Process Module Version 01.07.00.0301
 // ----------------------------------------------------------------------------
-// DebayerInstance.cpp - Released 2017-08-01T14:26:58Z
+// DebayerInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,6 +54,7 @@
 #include "DebayerParameters.h"
 
 #include <pcl/ATrousWaveletTransform.h>
+#include <pcl/AutoLock.h>
 #include <pcl/AutoViewLock.h>
 #include <pcl/Console.h>
 #include <pcl/ErrorHandler.h>
@@ -67,8 +68,7 @@
 #include <pcl/StdStatus.h>
 #include <pcl/Thread.h>
 #include <pcl/Version.h>
-
-#define SRC_CHANNEL(c) (m_source.IsColor() ? c : 0)
+#include <pcl/WordArray.h>
 
 namespace pcl
 {
@@ -101,6 +101,13 @@ static IsoString ValidFullId( const IsoString& id )
 {
    IsoString validId( id );
    validId.ReplaceString( "->", "_" );
+   return validId;
+}
+
+static IsoString ValidMethodId( const IsoString& id )
+{
+   IsoString validId( id );
+   validId.DeleteChar( '-' );
    return validId;
 }
 
@@ -179,6 +186,93 @@ void DebayerInstance::Assign( const ProcessImplementation& p )
       o_outputFileData           = x->o_outputFileData;
    }
 }
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+class NoiseEvaluationThread : public Thread
+{
+public:
+
+   float     noiseEstimate = 0;
+   float     noiseFraction = 0;
+   IsoString noiseAlgorithm;
+
+   NoiseEvaluationThread( const Image& image, int channel, int algorithm, int numberOfSubthreads ) :
+      m_algorithm( algorithm ),
+      m_numberOfSubthreads( numberOfSubthreads )
+   {
+      image.SelectChannel( channel );
+      m_image = image;
+      image.ResetSelections();
+   }
+
+   virtual void Run()
+   {
+      MuteStatus status;
+      m_image.SetStatusCallback( &status );
+      m_image.Status().DisableInitialization();
+
+      SeparableFilter H( __5x5B3Spline_hv, __5x5B3Spline_hv, 5 );
+
+      switch ( m_algorithm )
+      {
+      case DebayerNoiseEvaluationAlgorithm::KSigma:
+         {
+            ATrousWaveletTransform W( H, 1 );
+            W.EnableParallelProcessing( m_numberOfSubthreads > 1, m_numberOfSubthreads );
+            W << m_image;
+            size_type N;
+            noiseEstimate = W.NoiseKSigma( 0, 3, 0.01, 10, &N )/__5x5B3Spline_kj[0];
+            noiseFraction = float( double( N )/m_image.NumberOfPixels() );
+            noiseAlgorithm = "K-Sigma";
+         }
+         break;
+      default:
+      case DebayerNoiseEvaluationAlgorithm::MRS:
+         {
+            double s0 = 0;
+            float f0 = 0;
+            for ( int n = 4; ; )
+            {
+               ATrousWaveletTransform W( H, n );
+               W.EnableParallelProcessing( m_numberOfSubthreads > 1, m_numberOfSubthreads );
+               W << m_image;
+
+               size_type N;
+               if ( n == 4 )
+               {
+                  s0 = W.NoiseKSigma( 0, 3, 0.01, 10, &N )/__5x5B3Spline_kj[0];
+                  f0 = float( double( N )/m_image.NumberOfPixels() );
+               }
+               noiseEstimate = W.NoiseMRS( ImageVariant( &m_image ), __5x5B3Spline_kj, s0, 3, &N );
+               noiseFraction = float( double( N )/m_image.NumberOfPixels() );
+
+               if ( noiseEstimate > 0 && noiseFraction >= 0.01F )
+               {
+                  noiseAlgorithm = "MRS";
+                  break;
+               }
+
+               if ( --n == 1 )
+               {
+                  noiseEstimate = s0;
+                  noiseFraction = f0;
+                  noiseAlgorithm = "K-Sigma";
+                  break;
+               }
+            }
+         }
+         break;
+      }
+   }
+
+private:
+
+   Image m_image;
+   int   m_algorithm;
+   int   m_numberOfSubthreads;
+};
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -282,56 +376,6 @@ public:
       }
    }
 
-   void EvaluateNoise( FVector& noiseEstimates, FVector& noiseFractions, StringList& noiseAlgorithms )
-   {
-      SpinStatus spin;
-      m_output.SetStatusCallback( &spin );
-      m_output.Status().Initialize( "Noise evaluation" );
-      m_output.Status().DisableInitialization();
-
-      int numberOfThreads = Thread::NumberOfThreads( m_output.NumberOfPixels(), 1 );
-      if ( numberOfThreads >= 3 )
-      {
-         int numberOfSubthreads = RoundInt( numberOfThreads/3.0 );
-         ReferenceArray<NoiseEvaluationThread> threads;
-         threads << new NoiseEvaluationThread( m_output, 0, m_instance.p_noiseEvaluationAlgorithm, numberOfSubthreads )
-                 << new NoiseEvaluationThread( m_output, 1, m_instance.p_noiseEvaluationAlgorithm, numberOfSubthreads )
-                 << new NoiseEvaluationThread( m_output, 2, m_instance.p_noiseEvaluationAlgorithm, numberOfThreads - 2*numberOfSubthreads );
-
-         AbstractImage::ThreadData data( m_output, 0 ); // unbounded
-         AbstractImage::RunThreads( threads, data );
-
-         for ( int i = 0; i < 3; ++i )
-         {
-            noiseEstimates[i] = threads[i].noiseEstimate;
-            noiseFractions[i] = threads[i].noiseFraction;
-            noiseAlgorithms[i] = threads[i].noiseAlgorithm;
-         }
-
-         threads.Destroy();
-      }
-      else
-      {
-         for ( int i = 0; i < 3; ++i )
-         {
-            NoiseEvaluationThread thread( m_output, i, m_instance.p_noiseEvaluationAlgorithm, 1 );
-            thread.Run();
-            noiseEstimates[i] = thread.noiseEstimate;
-            noiseFractions[i] = thread.noiseFraction;
-            noiseAlgorithms[i] = thread.noiseAlgorithm;
-         }
-      }
-
-      m_output.ResetSelections();
-      m_output.Status().Complete();
-
-      Console console;
-      console.WriteLn( "<end><cbr>Gaussian noise estimates:" );
-      for ( int i = 0; i < 3; ++i )
-         console.WriteLn( String().Format( "s%d = %.3e, n%d = %.4f ",
-                              i, noiseEstimates[i], i, noiseFractions[i] ) + '(' + noiseAlgorithms[i] + ')' );
-   }
-
    static IsoString MethodId( pcl_enum debayerMethod )
    {
       switch( debayerMethod )
@@ -398,6 +442,7 @@ private:
 #define m_bayerPattern this->m_bayerPattern
 #define m_start        this->m_start
 #define m_end          this->m_end
+#define SRC_CHANNEL(c) (m_source.IsColor() ? c : 0)
 
    // -------------------------------------------------------------------------
 
@@ -998,93 +1043,6 @@ private:
 
    // -------------------------------------------------------------------------
 
-   class NoiseEvaluationThread : public Thread
-   {
-   public:
-
-      float     noiseEstimate = 0;
-      float     noiseFraction = 0;
-      IsoString noiseAlgorithm;
-
-      NoiseEvaluationThread( const Image& image, int channel, int algorithm, int numberOfSubthreads ) :
-         m_algorithm( algorithm ),
-         m_numberOfSubthreads( numberOfSubthreads )
-      {
-         image.SelectChannel( channel );
-         m_image = image;
-         image.ResetSelections();
-      }
-
-      virtual void Run()
-      {
-         MuteStatus status;
-         m_image.SetStatusCallback( &status );
-         m_image.Status().DisableInitialization();
-
-         SeparableFilter H( __5x5B3Spline_hv, __5x5B3Spline_hv, 5 );
-
-         switch ( m_algorithm )
-         {
-         case DebayerNoiseEvaluationAlgorithm::KSigma:
-            {
-               ATrousWaveletTransform W( H, 1 );
-               W.EnableParallelProcessing( m_numberOfSubthreads > 1, m_numberOfSubthreads );
-               W << m_image;
-               size_type N;
-               noiseEstimate = W.NoiseKSigma( 0, 3, 0.01, 10, &N )/__5x5B3Spline_kj[0];
-               noiseFraction = float( double( N )/m_image.NumberOfPixels() );
-               noiseAlgorithm = "K-Sigma";
-            }
-            break;
-         default:
-         case DebayerNoiseEvaluationAlgorithm::MRS:
-            {
-               double s0 = 0;
-               float f0 = 0;
-               for ( int n = 4; ; )
-               {
-                  ATrousWaveletTransform W( H, n );
-                  W.EnableParallelProcessing( m_numberOfSubthreads > 1, m_numberOfSubthreads );
-                  W << m_image;
-
-                  size_type N;
-                  if ( n == 4 )
-                  {
-                     s0 = W.NoiseKSigma( 0, 3, 0.01, 10, &N )/__5x5B3Spline_kj[0];
-                     f0 = float( double( N )/m_image.NumberOfPixels() );
-                  }
-                  noiseEstimate = W.NoiseMRS( ImageVariant( &m_image ), __5x5B3Spline_kj, s0, 3, &N );
-                  noiseFraction = float( double( N )/m_image.NumberOfPixels() );
-
-                  if ( noiseEstimate > 0 && noiseFraction >= 0.01F )
-                  {
-                     noiseAlgorithm = "MRS";
-                     break;
-                  }
-
-                  if ( --n == 1 )
-                  {
-                     noiseEstimate = s0;
-                     noiseFraction = f0;
-                     noiseAlgorithm = "K-Sigma";
-                     break;
-                  }
-               }
-            }
-            break;
-         }
-      }
-
-   private:
-
-      Image m_image;
-      int   m_algorithm;
-      int   m_numberOfSubthreads;
-
-   }; // NoiseEvaluationThread
-
-   // -------------------------------------------------------------------------
-
    template <class P>
    void DebayerSuperPixel( const GenericImage<P>& source )
    {
@@ -1235,6 +1193,636 @@ private:
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
+class XTransInterpolationEngine
+{
+public:
+
+   XTransInterpolationEngine( const FMatrix& cameraTosRGB, const IMatrix& filters ) :
+      m_filters( filters )
+   {
+      // Validate X-Trans CFA pattern.
+      int n[ 4 ] = { 0 };
+      for ( int row = 0; row < 6; ++row )
+         for ( int col = 0; col < 6; ++col )
+            ++n[FilterColor( row, col )];
+      if ( n[0] <  6 || n[0] > 10 ||
+           n[1] < 16 || n[1] > 24 ||
+           n[2] <  6 || n[2] > 10 ||
+           n[3] > 0 )
+         throw Error( "X-Trans interpolation: Invalid X-Trans CFA pattern" );
+
+      InitXYZLUT();
+
+      m_cameraToXYZ = FMatrix( .0F, 3, cameraTosRGB.Columns() );
+      for ( int i = 0; i < 3; ++i )
+         for ( int j = 0; j < cameraTosRGB.Columns(); ++j )
+            for ( int k = 0; k < 3; ++k )
+               m_cameraToXYZ[i][j] += xyz_rgb[i][k] * cameraTosRGB[k][j]/d65_white[i];
+   }
+
+   void Interpolate( Image& output, const ImageVariant& source, int passes )
+   {
+      if ( source.IsFloatSample() )
+         switch ( source.BitsPerSample() )
+         {
+         case 32: Interpolate( output, static_cast<const Image&>( *source ), passes ); break;
+         case 64: Interpolate( output, static_cast<const DImage&>( *source ), passes ); break;
+         }
+      else
+         switch ( source.BitsPerSample() )
+         {
+         case  8: Interpolate( output, static_cast<const UInt8Image&>( *source ), passes ); break;
+         case 16: Interpolate( output, static_cast<const UInt16Image&>( *source ), passes ); break;
+         case 32: Interpolate( output, static_cast<const UInt32Image&>( *source ), passes ); break;
+         }
+   }
+
+private:
+
+          uint16       (*m_image)[ 4 ] = nullptr;
+          int            m_width = 0;
+          int            m_height = 0;
+          int            m_passes = 0;
+          int            m_ndir = 0;
+          StatusMonitor  m_monitor;
+          IMatrix        m_filters;
+          short          m_allhex[ 3 ][ 3 ][ 2 ][ 8 ];
+          uint16         m_sgrow;
+          uint16         m_sgcol;
+          FMatrix        m_cameraToXYZ;
+   static FVector        m_xyzLUT;
+
+   template <class P>
+   void Interpolate( Image& output, const GenericImage<P>& source, int passes )
+   {
+      m_width = source.Width();
+      m_height = source.Height();
+      m_passes = passes;
+      m_ndir = 4 << (m_passes > 1);
+
+      if ( m_width < TS || m_height < TS )
+         throw Error( String().Format( "X-Trans interpolation: Too small image (%dx%d px minimum required, the image is %dx%d)",
+                                       TS, TS, m_width, m_height ) );
+
+      StandardStatus status;
+      m_monitor.SetCallback( &status );
+      m_monitor.Initialize( "X-Trans demosaicing", size_type( m_height-3-19 )/(TS - 16)
+                                                 * size_type( m_width-3-19 )/(TS - 16)
+                                                 * (4 + 4*m_passes) );
+
+      WordArray data( size_type( m_width ) * size_type( m_height ) * 4, uint16( 0 ) );
+      m_image = reinterpret_cast<uint16 (*)[4]>( data.Begin() );
+      if ( source.NumberOfNominalChannels() == 1 )
+      {
+         typename GenericImage<P>::const_sample_iterator i( source );
+         uint16 (*p)[4] = m_image;
+         for ( int row = 0; row < m_height; ++row )
+            for ( int col = 0; col < m_width; ++col, ++i, ++p )
+               p[0][FilterColor( row, col )] = UInt16PixelTraits::ToSample( *i );
+      }
+      else
+      {
+         typename GenericImage<P>::const_pixel_iterator i( source );
+         uint16 (*p)[4] = m_image;
+         for ( int row = 0; row < m_height; ++row )
+            for ( int col = 0; col < m_width; ++col, ++i, ++p )
+            {
+               int c = FilterColor( row, col );
+               p[0][c] = UInt16PixelTraits::ToSample( i[c] );
+            }
+      }
+
+      InterpolateXTrans();
+
+      output.AllocateData( m_width, m_height, 3, ColorSpace::RGB );
+      {
+         Image::pixel_iterator i( output );
+         const uint16* p = m_image[0];
+         for ( int row = 0; row < m_height; ++row )
+            for ( int col = 0; col < m_width; ++col, ++i, ++p )
+               for ( int c = 0; c < 3; ++c, ++p )
+                  UInt16PixelTraits::FromSample( i[c], *p );
+      }
+
+      m_monitor.Complete();
+   }
+
+   static constexpr int TS = 512; // tile size
+
+   static constexpr int Clip( int x )
+   {
+      return Range( x, 0, 65535 );
+   }
+
+   static const double xyz_rgb[ 3 ][ 3 ];
+   static const double d65_white[ 3 ];
+
+   void InitXYZLUT() const
+   {
+      static AtomicInt xyzLUTInitialized;
+      if ( !xyzLUTInitialized )
+      {
+         static Mutex mutex;
+         volatile AutoLock lock( mutex );
+         if ( xyzLUTInitialized.Load() == 0 )
+         {
+            m_xyzLUT = FVector( 0x10000 );
+            for ( int i = 0; i < 0x10000; ++i )
+            {
+               double r = i/65535.0;
+               m_xyzLUT[i] = float( (r > 0.008856) ? Pow( r, 1.0/3 ) : 7.787*r + 16.0/116 );
+            }
+            xyzLUTInitialized.Store( 1 );
+         }
+      }
+   }
+
+   void RGBToCIELab( short lab[ 3 ], const uint16 rgb[ 3 ] ) const
+   {
+      FVector xyz( 0.5F, 3 );
+      for ( int c = 0; c < m_cameraToXYZ.Columns(); ++c )
+      {
+         xyz[0] += m_cameraToXYZ[0][c] * rgb[c];
+         xyz[1] += m_cameraToXYZ[1][c] * rgb[c];
+         xyz[2] += m_cameraToXYZ[2][c] * rgb[c];
+      }
+      xyz[0] = m_xyzLUT[Clip( (int)xyz[0] )];
+      xyz[1] = m_xyzLUT[Clip( (int)xyz[1] )];
+      xyz[2] = m_xyzLUT[Clip( (int)xyz[2] )];
+      lab[0] = 64 * (116 * xyz[1] - 16);
+      lab[1] = 64 * 500 * (xyz[0] - xyz[1]);
+      lab[2] = 64 * 200 * (xyz[1] - xyz[2]);
+   }
+
+   int FilterColor( int row, int col ) const
+   {
+      return m_filters[(row+6) % 6][(col+6) % 6];
+   }
+
+   void InterpolateBorder( int border )
+   {
+      for ( int row = 0; row < m_height; ++row )
+         for ( int col = 0; col < m_width; ++col )
+         {
+            if ( col == border && row >= border && row < m_height - border )
+               col = m_width - border;
+            double sum[ 4 ] = { 0 };
+            int count[ 4 ] = { 0 };
+            for ( int y = row - 1; y != row + 2; ++y )
+               for ( int x = col - 1; x != col + 2; ++x )
+                  if ( y >= 0 && x >= 0 && y < m_height && x < m_width )
+                  {
+                     int f = FilterColor( y, x );
+                     sum[f] += m_image[y*m_width + x][f];
+                     ++count[f];
+                  }
+            int f = FilterColor( row, col );
+            for ( int c = 0; c < 3; ++c )
+               if ( c != f )
+                  if ( count[c] > 0 )
+                     m_image[row*m_width + col][c] = RoundInt( sum[c]/count[c] );
+         }
+   }
+
+   /*
+    * Frank Markesteijn's algorithm for Fuji X-Trans sensors
+    */
+   void InterpolateXTrans()
+   {
+      static const short
+      orth[ 12 ]       = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
+      patt[  2 ][ 16 ] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1,  1, -1, 0,  0,  0, 0 },
+                           { 0, 1, 0, -2, 1, 0, -2, 0, 1, 1, -2, -2, 1, -1, -1, 1 } };
+
+      /*
+       * Map a green hexagon around each non-green pixel and vice versa
+       */
+      // Init m_allhex table to unreasonable values
+      for ( int i = 0; i < 3; i++ )
+         for ( int j = 0; j < 3; j++ )
+            for ( int k = 0; k < 2; k++ )
+               for ( int l = 0; l < 8; l++ )
+                  m_allhex[i][j][k][l] = 32700;
+      m_sgrow = m_sgcol = 0;
+      {
+         int minv = 0, maxv = 0, minh = 0, maxh = 0;
+         for ( int row = 0; row < 3; row++ )
+            for ( int col = 0; col < 3; col++ )
+               for ( int d = 0, ng = 0; d < 10; d += 2 )
+               {
+                  int g = FilterColor( row, col ) == 1;
+                  if ( FilterColor( row + orth[d], col + orth[d + 2] ) == 1 )
+                     ng = 0;
+                  else
+                     ng++;
+                  if ( ng == 4 )
+                  {
+                     m_sgrow = row;
+                     m_sgcol = col;
+                  }
+                  if ( ng == g + 1 )
+                     for ( int c = 0; c < 8; ++c )
+                     {
+                        int v = orth[d] * patt[g][c * 2] + orth[d + 1] * patt[g][c * 2 + 1];
+                        int h = orth[d + 2] * patt[g][c * 2] + orth[d + 3] * patt[g][c * 2 + 1];
+                        minv = Min( v, minv );
+                        maxv = Max( v, maxv );
+                        minh = Min( v, minh );
+                        maxh = Max( v, maxh );
+                        m_allhex[row][col][0][c ^ (g * 2 & d)] = h + v * m_width;
+                        m_allhex[row][col][1][c ^ (g * 2 & d)] = h + v * TS;
+                     }
+               }
+
+         // Check m_allhex table initialization
+         for ( int i = 0; i < 3; i++ )
+            for ( int j = 0; j < 3; j++ )
+               for ( int k = 0; k < 2; k++ )
+                  for ( int l = 0; l < 8; l++ )
+                     if ( m_allhex[i][j][k][l] > maxh + maxv*m_width + 1 || m_allhex[i][j][k][l] < minh + minv*m_width - 1 )
+                        throw Error( "X-Trans interpolation: Invalid CFA data" );
+      }
+
+      /*
+       * Set green1 and green3 to the minimum and maximum allowed values.
+       */
+      for ( int row = 2, retrycount = 0; row < m_height - 2; row++ )
+      {
+         uint16 min = ~0, max = 0;
+         for ( int col = 2; col < m_width - 2; col++ )
+         {
+            if ( FilterColor( row, col ) == 1 && (min = ~(max = 0)) )
+               continue;
+            uint16 (*pix)[4] = m_image + row * m_width + col;
+            const short* hex = m_allhex[row % 3][col % 3][0];
+            if ( !max )
+               for ( int c = 0; c < 6; ++c )
+               {
+                  uint16 val = pix[hex[c]][1];
+                  if ( min > val )
+                     min = val;
+                  if ( max < val )
+                     max = val;
+               }
+            pix[0][1] = min;
+            pix[0][3] = max;
+            switch ( (row - m_sgrow) % 3 )
+            {
+            case 1:
+               if ( row < m_height - 3 )
+               {
+                  row++;
+                  col--;
+               }
+               break;
+            case 2:
+               if ( (min = ~(max = 0)) && (col += 2) < m_width - 3 && row > 2 )
+               {
+                  row--;
+                  if ( retrycount++ > m_width*m_height )
+                     throw Error( "X-Trans interpolation: Invalid CFA data" );
+               }
+               break;
+            }
+         }
+      }
+
+      int numberOfTiles = ((m_height - 3)/(TS - 16) + ((m_height - 3)%(TS - 16) != 0))
+                        * ((m_width - 3)/(TS - 16) + ((m_width - 3)%(TS - 16) != 0));
+      int numberOfThreads = Thread::NumberOfThreads( numberOfTiles, 1 );
+      int tilesPerThread = numberOfTiles/numberOfThreads;
+      AbstractImage::ThreadData data( m_monitor, numberOfTiles * (4 + 4*m_passes) );
+      ReferenceArray<XTransThread> threads;
+      for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
+         threads.Add( new XTransThread( *this, data, i*tilesPerThread,
+                                        (j < numberOfThreads) ? j*tilesPerThread : numberOfTiles ) );
+      AbstractImage::RunThreads( threads, data );
+      threads.Destroy();
+
+      InterpolateBorder( 8 );
+   }
+
+   class XTransThread : public Thread
+   {
+   public:
+
+      XTransThread( XTransInterpolationEngine& engine,
+                    const AbstractImage::ThreadData& data, int startTile, int endTile ) :
+         m_engine( engine ),
+         m_data( data ), m_startTile( startTile ), m_endTile( endTile )
+      {
+      }
+
+
+#ifdef SQR
+#undef SQR
+#endif
+      template <typename T> static constexpr T SQR( const T& x )
+      {
+         return x*x;
+      }
+
+      virtual void Run()
+      {
+#define m_image  m_engine.m_image
+#define m_width  m_engine.m_width
+#define m_height m_engine.m_height
+#define m_passes m_engine.m_passes
+#define m_ndir   m_engine.m_ndir
+#define m_allhex m_engine.m_allhex
+#define m_sgrow  m_engine.m_sgrow
+#define m_sgcol  m_engine.m_sgcol
+
+         static const short dir[ 4 ] = { 1, TS, TS + 1, TS - 1 };
+
+         INIT_THREAD_MONITOR()
+
+         ByteArray buffer( TS * TS * (m_ndir * 11 + 6) );
+
+         uint16 (*rgb)[ TS ][ TS ][ 3 ] = (uint16(*)[ TS ][ TS ][ 3 ])buffer.Begin();
+         short (*lab)[ TS ][ 3 ] = (short(*)[ TS ][ 3 ])buffer.At( TS * TS * (m_ndir * 6) );
+         float (*drv)[ TS ][ TS ] = (float(*)[ TS ][ TS ])buffer.At( TS * TS * (m_ndir * 6 + 6) );
+         char (*homo)[ TS ][ TS ] = (char(*)[ TS ][ TS ])buffer.At( TS * TS * (m_ndir * 10 + 6) );
+
+         int tilesPerRow = (m_width - 3)/(TS - 16) + ((m_width - 3)%(TS - 16) != 0);
+         for ( int tile = m_startTile; tile < m_endTile; ++tile )
+         {
+            int top = 3 + (TS - 16)*(tile/tilesPerRow);
+            if ( top >= m_height - 19 )
+               continue;
+            int left = 3 + (TS - 16)*(tile%tilesPerRow);
+            if ( left >= m_width - 19 )
+               continue;
+
+            int mrow = Min( top + TS, m_height - 3 );
+            int mcol = Min( left + TS, m_width - 3 );
+            for ( int row = top; row < mrow; row++ )
+               for ( int col = left; col < mcol; col++ )
+                  memcpy( rgb[0][row - top][col - left], m_image[row * m_width + col], 6 );
+            for ( int c = 0; c < 3; ++c )
+               memcpy( rgb[c+1], rgb[0], sizeof( *rgb ) );
+            int color[3][8];
+
+            /*
+             * Interpolate green horizontally, vertically, and along both diagonals.
+             */
+            for ( int row = top; row < mrow; row++ )
+               for ( int col = left; col < mcol; col++ )
+               {
+                  int f = m_engine.FilterColor( row, col );
+                  if ( f == 1 )
+                     continue;
+                  const uint16 (*pix)[4] = m_image + row * m_width + col;
+                  const short* hex = m_allhex[row % 3][col % 3][0];
+                  color[1][0] = 174 * (pix[hex[1]][1] + pix[hex[0]][1]) - 46 * (pix[2 * hex[1]][1] + pix[2 * hex[0]][1]);
+                  color[1][1] = 223 * pix[hex[3]][1] + pix[hex[2]][1] * 33 + 92 * (pix[0][f] - pix[-hex[2]][f]);
+                  for ( int c = 0; c < 2; ++c )
+                     color[1][2+c] = 164 * pix[hex[4+c]][1] + 92 * pix[-2 * hex[4+c]][1] +
+                                    33 * (2 * pix[0][f] - pix[3 * hex[4+c]][f] - pix[-3 * hex[4+c]][f]);
+                  for ( int c = 0; c < 4; ++c )
+                     rgb[c ^ !((row - m_sgrow) % 3)][row - top][col - left][1] = Range( uint16( color[1][c] >> 8 ), pix[0][1], pix[0][3] );
+               }
+
+            UPDATE_THREAD_MONITOR( 1 )
+
+            for ( int pass = 0; pass < m_passes; pass++ )
+            {
+               if ( pass == 1 )
+                  memcpy( rgb += 4, buffer.Begin(), 4 * sizeof( *rgb ) );
+
+               /*
+                * Recalculate green from interpolated values of closer pixels.
+                */
+               if ( pass > 0 )
+               {
+                  for ( int row = top + 2; row < mrow - 2; row++ )
+                     for ( int col = left + 2; col < mcol - 2; col++ )
+                     {
+                        int f = m_engine.FilterColor( row, col );
+                        if ( f == 1 )
+                           continue;
+                        const uint16 (*pix)[4] = m_image + row * m_width + col;
+                        const short* hex = m_allhex[row % 3][col % 3][1];
+                        for ( int d = 3; d < 6; d++ )
+                        {
+                           uint16 (*rix)[3] = &rgb[(d - 2) ^ !((row - m_sgrow) % 3)][row - top][col - left];
+                           uint16 val = rix[-2 * hex[d]][1] + 2 * rix[hex[d]][1] - rix[-2 * hex[d]][f] - 2 * rix[hex[d]][f] + 3 * rix[0][f];
+                           rix[0][1] = Range( uint16( val/3 ), pix[0][1], pix[0][3] );
+                        }
+                     }
+               }
+
+               UPDATE_THREAD_MONITOR( 1 )
+
+               /*
+                * Interpolate red and blue values for solitary green pixels.
+                */
+               for ( int row = (top - m_sgrow + 4) / 3 * 3 + m_sgrow; row < mrow - 2; row += 3 )
+                  for ( int col = (left - m_sgcol + 4) / 3 * 3 + m_sgcol; col < mcol - 2; col += 3 )
+                  {
+                     uint16 (*rix)[3] = &rgb[0][row - top][col - left];
+                     int h = m_engine.FilterColor( row, col + 1 );
+                     float diff[ 6 ];
+                     memset( diff, 0, sizeof( diff ) );
+                     for ( int i = 1, d = 0; d < 6; d++, i ^= TS ^ 1, h ^= 2 )
+                     {
+                        for ( int c = 0; c < 2; c++, h ^= 2 )
+                        {
+                           int g = 2 * rix[0][1] - rix[i << c][1] - rix[-i << c][1];
+                           color[h][d] = g + rix[i << c][h] + rix[-i << c][h];
+                           if ( d > 1 )
+                              diff[d] += SQR( rix[i << c][1] - rix[-i << c][1] - rix[i << c][h] + rix[-i << c][h] ) + SQR( g );
+                        }
+                        if ( d > 1 && (d & 1) )
+                           if ( diff[d - 1] < diff[d] )
+                              for ( int c = 0; c < 2; ++c )
+                                 color[c*2][d] = color[c*2][d-1];
+                        if ( d < 2 || (d & 1) )
+                        {
+                           for ( int c = 0; c < 2; ++c )
+                              rix[0][c*2] = Clip( color[c*2][d] / 2 );
+                           rix += TS * TS;
+                        }
+                     }
+                  }
+
+               UPDATE_THREAD_MONITOR( 1 )
+
+               /*
+                * Interpolate red for blue pixels and vice versa.
+                */
+               for ( int row = top + 3; row < mrow - 3; row++ )
+                  for ( int col = left + 3; col < mcol - 3; col++ )
+                  {
+                     int f = 2 - m_engine.FilterColor( row, col );
+                     if ( f == 1 )
+                        continue;
+                     uint16 (*rix)[3] = &rgb[0][row - top][col - left];
+                     int c = (row - m_sgrow) % 3 ? TS : 1;
+                     int h = 3 * (c ^ TS ^ 1);
+                     for ( int d = 0; d < 4; d++, rix += TS * TS )
+                     {
+                        int i = d > 1 || ((d ^ c) & 1) ||
+                                    ((Abs( rix[0][1] - rix[c][1] ) + Abs( rix[0][1] - rix[-c][1] )) <
+                                       2 * (Abs( rix[0][1] - rix[h][1] ) + Abs( rix[0][1] - rix[-h][1] )))
+                                 ? c
+                                 : h;
+                        rix[0][f] = Clip( (rix[i][f] + rix[-i][f] + 2 * rix[0][1] - rix[i][1] - rix[-i][1]) / 2 );
+                     }
+                  }
+
+               UPDATE_THREAD_MONITOR( 1 )
+
+               /*
+                * Fill in red and blue for 2x2 blocks of green.
+                */
+               for ( int row = top + 2; row < mrow - 2; row++ )
+                  if ( (row - m_sgrow) % 3 )
+                     for ( int col = left + 2; col < mcol - 2; col++ )
+                        if ( (col - m_sgcol) % 3 )
+                        {
+                           uint16 (*rix)[3] = &rgb[0][row - top][col - left];
+                           const short* hex = m_allhex[row % 3][col % 3][1];
+                           for ( int d = 0; d < m_ndir; d += 2, rix += TS * TS )
+                              if ( hex[d] + hex[d + 1] )
+                              {
+                                 int g = 3 * rix[0][1] - 2 * rix[hex[d]][1] - rix[hex[d + 1]][1];
+                                 for ( int c = 0; c < 4; c += 2 )
+                                    rix[0][c] = Clip( (g + 2 * rix[hex[d]][c] + rix[hex[d + 1]][c]) / 3 );
+                              }
+                              else
+                              {
+                                 int g = 2 * rix[0][1] - rix[hex[d]][1] - rix[hex[d + 1]][1];
+                                 for ( int c = 0; c < 4; c += 2 )
+                                    rix[0][c] = Clip( (g + rix[hex[d]][c] + rix[hex[d + 1]][c]) / 2 );
+                              }
+                        }
+
+               UPDATE_THREAD_MONITOR( 1 )
+            }
+            rgb = (uint16(*)[ TS ][ TS ][ 3 ])buffer.Begin();
+            mrow -= top;
+            mcol -= left;
+
+            /*
+             * Convert to CIELab and differentiate in all directions.
+             */
+            for ( int d = 0; d < m_ndir; d++ )
+            {
+               for ( int row = 2; row < mrow - 2; row++ )
+                  for ( int col = 2; col < mcol - 2; col++ )
+                     m_engine.RGBToCIELab( lab[row][col], rgb[d][row][col] );
+               for ( int f = dir[d & 3], row = 3; row < mrow - 3; row++ )
+                  for ( int col = 3; col < mcol - 3; col++ )
+                  {
+                     short (*lix)[ 3 ] = &lab[row][col];
+                     int g = 2 * lix[0][0] - lix[f][0] - lix[-f][0];
+                     drv[d][row][col] = SQR( g ) + SQR( (2 * lix[0][1] - lix[f][1] - lix[-f][1] + g * 500 / 232) ) +
+                                       SQR( (2 * lix[0][2] - lix[f][2] - lix[-f][2] - g * 500 / 580) );
+                  }
+
+            }
+
+            UPDATE_THREAD_MONITOR( 1 )
+
+            /*
+             * Build homogeneity maps from the derivatives.
+             */
+            memset( homo, 0, m_ndir * TS * TS );
+            for ( int row = 4; row < mrow - 4; row++ )
+               for ( int col = 4; col < mcol - 4; col++ )
+               {
+                  float tr = FLT_MAX;
+                  for ( int d = 0; d < m_ndir; d++ )
+                     if ( tr > drv[d][row][col] )
+                        tr = drv[d][row][col];
+                  tr *= 8;
+                  for ( int d = 0; d < m_ndir; d++ )
+                     for ( int v = -1; v <= 1; v++ )
+                        for ( int h = -1; h <= 1; h++ )
+                           if ( drv[d][row + v][col + h] <= tr )
+                              homo[d][row][col]++;
+               }
+
+            UPDATE_THREAD_MONITOR( 1 )
+
+            /*
+             * Average the most homogenous pixels for the final result.
+             */
+            if ( m_height - top < TS + 4 )
+               mrow = m_height - top + 2;
+            if ( m_width - left < TS + 4 )
+               mcol = m_width - left + 2;
+            for ( int row = Min( top, 8 ); row < mrow - 8; row++ )
+               for ( int col = Min( left, 8 ); col < mcol - 8; col++ )
+               {
+                  int hm[ 8 ];
+                  for ( int d = 0; d < m_ndir; d++ )
+                  {
+                     hm[d] = 0;
+                     for ( int v = -2; v <= 2; v++ )
+                        for ( int h = -2; h <= 2; h++ )
+                           hm[d] += homo[d][row + v][col + h];
+                  }
+                  for ( int d = 0; d < m_ndir - 4; d++ )
+                     if ( hm[d] < hm[d + 4] )
+                        hm[d] = 0;
+                     else if ( hm[d] > hm[d + 4] )
+                        hm[d + 4] = 0;
+                  int max = hm[0];
+                  for ( int d = 1; d < m_ndir; d++ )
+                     if ( max < hm[d] )
+                        max = hm[d];
+                  max -= max >> 3;
+                  int avg[ 4 ] = { 0 };
+                  for ( int d = 0; d < m_ndir; d++ )
+                     if ( hm[d] >= max )
+                     {
+                        for ( int c = 0; c < 3; ++c )
+                           avg[c] += rgb[d][row][col][c];
+                        avg[3]++;
+                     }
+                  for ( int c = 0; c < 3; ++c )
+                     m_image[(row + top)*m_width + col + left][c] = avg[c]/avg[3];
+               }
+
+            UPDATE_THREAD_MONITOR( 1 )
+         }
+#undef m_image
+#undef m_width
+#undef m_height
+#undef m_passes
+#undef m_ndir
+#undef m_allhex
+#undef m_sgrow
+#undef m_sgcol
+      }
+
+   private:
+
+            XTransInterpolationEngine& m_engine;
+      const AbstractImage::ThreadData& m_data;
+            int                        m_startTile, m_endTile;
+   };
+};
+
+const double XTransInterpolationEngine::xyz_rgb[ 3 ][ 3 ] =
+{
+   { 0.4124564, 0.3575761, 0.1804375 },
+   { 0.2126729, 0.7151522, 0.0721750 },
+   { 0.0193339, 0.1191920, 0.9503041 }
+};
+
+const double XTransInterpolationEngine::d65_white[ 3 ] =
+{
+   0.95047, 1.0, 1.08883
+};
+
+FVector XTransInterpolationEngine::m_xyzLUT;
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
 class DebayerFileThread : public Thread
 {
 public:
@@ -1326,7 +1914,11 @@ private:
          String           m_targetFilePath;
          OutputFileData   m_fileData;
          ImageVariant     m_targetImage;
+         bool             m_xtrans;
+         IsoString        m_patternId;
          pcl_enum         m_bayerPattern;
+         FMatrix          m_sRGBConversionMatrix;
+         IMatrix          m_xtransPatternFilters;
          FVector          m_noiseEstimates = FVector( 0.0F, 3 );
          FVector          m_noiseFractions = FVector( 0.0F, 3 );
          StringList       m_noiseAlgorithms = StringList( 3 );
@@ -1361,13 +1953,23 @@ private:
       if ( images.Length() > 1 )
          console.NoteLn( String().Format( "* Ignoring %u additional image(s) in target file.", images.Length()-1 ) );
 
-      IsoString methodId = DebayerEngine::MethodId( m_instance.p_debayerMethod );
-      IsoString patternId = DebayerEngine::PatternId( m_bayerPattern = m_instance.CFAPatternFromTarget( file ) );
+      IsoString patternName = DebayerInstance::CFAPatternNameFromTarget( file ).CaseFolded();
+      m_xtrans = patternName == "x-trans" || patternName == "xtrans";
+
+      m_patternId = DebayerInstance::CFAPatternIdFromTarget( file );
+
+      if ( m_xtrans )
+      {
+         m_sRGBConversionMatrix = DebayerInstance::sRGBConversionMatrixFromTarget( file );
+         m_xtransPatternFilters = DebayerInstance::XTransPatternFiltersFromTarget( file );
+      }
+      else
+         m_bayerPattern = m_instance.BayerPatternFromTarget( file );
 
       console.Write( "<end><cbr>CFA pattern" );
-      if ( m_instance.p_bayerPattern == DebayerBayerPatternParameter::Auto )
+      if ( m_xtrans || m_instance.p_bayerPattern == DebayerBayerPatternParameter::Auto )
          console.Write( " (detected)" );
-      console.WriteLn( ": " + patternId );
+      console.WriteLn( ": " + m_patternId );
 
       m_targetImage.CreateSharedImage( images[0].options.ieeefpSampleFormat,
                                        false/*isComplex*/,
@@ -1390,12 +1992,13 @@ private:
 
    void Perform()
    {
-      DebayerEngine E( m_outputImage, m_instance, m_bayerPattern );
-
-      E.Debayer( m_targetImage );
+      if ( m_xtrans )
+         XTransInterpolationEngine( m_sRGBConversionMatrix, m_xtransPatternFilters ).Interpolate( m_outputImage, m_targetImage, 2/*passes*/ );
+      else
+         DebayerEngine( m_outputImage, m_instance, m_bayerPattern ).Debayer( m_targetImage );
 
       if ( m_instance.p_evaluateNoise )
-         E.EvaluateNoise( m_noiseEstimates, m_noiseFractions, m_noiseAlgorithms );
+         m_instance.EvaluateNoise( m_noiseEstimates, m_noiseFractions, m_noiseAlgorithms, m_outputImage );
    }
 
    // -------------------------------------------------------------------------
@@ -1456,14 +2059,13 @@ private:
             if ( outputFormat.ValidateFormatSpecificData( m_fileData.fsData ) )
                outputFile.SetFormatSpecificData( m_fileData.fsData );
 
-      IsoString methodId = DebayerEngine::MethodId( m_instance.p_debayerMethod );
-      IsoString patternId = DebayerEngine::PatternId( m_bayerPattern );
+      IsoString methodId = m_xtrans ? "X-Trans" : DebayerEngine::MethodId( m_instance.p_debayerMethod );
 
       if ( outputFormat.CanStoreImageProperties() && outputFormat.SupportsViewProperties() )
       {
          PropertyArray properties = m_fileData.properties;
          properties << Property( "PCL:CFASourceFilePath", m_targetFilePath )
-                    << Property( "PCL:CFASourcePattern", patternId )
+                    << Property( "PCL:CFASourcePattern", m_patternId )
                     << Property( "PCL:CFASourceInterpolation", methodId );
          outputFile.WriteImageProperties( properties );
       }
@@ -1487,7 +2089,7 @@ private:
          keywords << FITSHeaderKeyword( "COMMENT", IsoString(), "Demosaicing with "  + PixInsightVersion::AsString() )
                   << FITSHeaderKeyword( "HISTORY", IsoString(), "Demosaicing with "  + Module->ReadableVersion() )
                   << FITSHeaderKeyword( "HISTORY", IsoString(), "Demosaicing with Debayer process" )
-                  << FITSHeaderKeyword( "HISTORY", IsoString(), "Debayer.pattern: " + patternId )
+                  << FITSHeaderKeyword( "HISTORY", IsoString(), "Debayer.pattern: " + m_patternId )
                   << FITSHeaderKeyword( "HISTORY", IsoString(), "Debayer.method: "  + methodId );
 
          if ( m_instance.p_evaluateNoise )
@@ -1584,17 +2186,16 @@ bool DebayerInstance::ExecuteOn( View& view )
    AutoViewLock lock( view, false/*lock*/ );
    lock.LockForWrite();
 
+   bool xtrans;
+   {
+      IsoString patternName = CFAPatternNameFromTarget( view ).CaseFolded();
+      xtrans = patternName == "x-trans" || patternName == "xtrans";
+   }
+
+   IsoString patternId = CFAPatternIdFromTarget( view );
+   IsoString methodId = xtrans ? "X-Trans" : DebayerEngine::MethodId( p_debayerMethod );
+
    ImageVariant source = view.Image();
-
-   pcl_enum bayerPattern = CFAPatternFromTarget( view );
-   IsoString methodId = DebayerEngine::MethodId( p_debayerMethod );
-   IsoString patternId = DebayerEngine::PatternId( bayerPattern );
-
-   Console console;
-   console.Write( "<end><cbr>CFA pattern" );
-   if ( p_bayerPattern == DebayerBayerPatternParameter::Auto )
-      console.Write( " (detected)" );
-   console.WriteLn( ": " + patternId );
 
    ImageWindow outputWindow(  1,    // width
                               1,    // height
@@ -1603,16 +2204,25 @@ bool DebayerInstance::ExecuteOn( View& view )
                              true,  // floatSample
                              true,  // color
                              true,  // initialProcessing
-                             ValidFullId( view.FullId() ) + "_RGB_" + methodId );  // imageId
+                             ValidFullId( view.FullId() ) + "_RGB_" + ValidMethodId( methodId ) );  // imageId
 
    ImageVariant t = outputWindow.MainView().Image();
    Image& output = static_cast<Image&>( *t );
 
+   Console console;
+
    console.EnableAbort();
 
-   DebayerEngine E( output, *this, bayerPattern );
+   console.Write( "<end><cbr>CFA pattern" );
+   if ( xtrans || p_bayerPattern == DebayerBayerPatternParameter::Auto )
+      console.Write( " (detected)" );
+   console.WriteLn( ": " + patternId );
 
-   E.Debayer( source );
+   if ( xtrans )
+      XTransInterpolationEngine( sRGBConversionMatrixFromTarget( view ),
+                                 XTransPatternFiltersFromTarget( view ) ).Interpolate( output, source, 2/*passes*/ );
+   else
+      DebayerEngine( output, *this, BayerPatternFromTarget( view ) ).Debayer( source );
 
    outputWindow.MainView().SetProperties( view.GetStorableProperties(), true/*notify*/, ViewPropertyAttribute::Storable );
 
@@ -1629,12 +2239,12 @@ bool DebayerInstance::ExecuteOn( View& view )
 
    keywords << FITSHeaderKeyword( "COMMENT", IsoString(), "Demosaicing with "  + PixInsightVersion::AsString() )
             << FITSHeaderKeyword( "HISTORY", IsoString(), "Demosaicing with "  + Module->ReadableVersion() )
-            << FITSHeaderKeyword( "HISTORY", IsoString(), "Debayer.pattern: " + patternId )
-            << FITSHeaderKeyword( "HISTORY", IsoString(), "Debayer.method: "  + methodId );
+            << FITSHeaderKeyword( "HISTORY", IsoString(), "Demosaic.pattern: " + patternId )
+            << FITSHeaderKeyword( "HISTORY", IsoString(), "Demosaic.method: "  + methodId );
 
    if ( p_evaluateNoise )
    {
-      E.EvaluateNoise( o_noiseEstimates, o_noiseFractions, o_noiseAlgorithms );
+      EvaluateNoise( o_noiseEstimates, o_noiseFractions, o_noiseAlgorithms, output );
 
       /*
        * ### NB: Remove other existing NOISExxx keywords.
@@ -1647,7 +2257,7 @@ bool DebayerInstance::ExecuteOn( View& view )
             ++i;
 
       keywords << FITSHeaderKeyword( "HISTORY", IsoString(), "Noise evaluation with " + Module->ReadableVersion() )
-               << FITSHeaderKeyword( "HISTORY", IsoString(), IsoString().Format( "Debayer.noiseEstimates: %.3e %.3e %.3e",
+               << FITSHeaderKeyword( "HISTORY", IsoString(), IsoString().Format( "Demosaic.noiseEstimates: %.3e %.3e %.3e",
                                                    o_noiseEstimates[0], o_noiseEstimates[1], o_noiseEstimates[2] ) );
       for ( int i = 0; i < 3; ++i )
          keywords << FITSHeaderKeyword( IsoString().Format( "NOISE%02d", i ),
@@ -1933,21 +2543,21 @@ void DebayerInstance::ApplyErrorPolicy()
 
 // ----------------------------------------------------------------------------
 
-pcl_enum DebayerInstance::CFAPatternFromTarget( const View& view ) const
+pcl_enum DebayerInstance::BayerPatternFromTarget( const View& view ) const
 {
    if ( p_bayerPattern == DebayerBayerPatternParameter::Auto )
-      return CFAPatternFromTargetProperty( view.PropertyValue( "PCL:CFASourcePattern" ) );
+      return BayerPatternFromTargetProperty( view.PropertyValue( "PCL:CFASourcePattern" ) );
    return p_bayerPattern;
 }
 
-pcl_enum DebayerInstance::CFAPatternFromTarget( FileFormatInstance& file ) const
+pcl_enum DebayerInstance::BayerPatternFromTarget( FileFormatInstance& file ) const
 {
    if ( p_bayerPattern == DebayerBayerPatternParameter::Auto )
-      return CFAPatternFromTargetProperty( file.ReadImageProperty( "PCL:CFASourcePattern" ) );
+      return BayerPatternFromTargetProperty( file.ReadImageProperty( "PCL:CFASourcePattern" ) );
    return p_bayerPattern;
 }
 
-pcl_enum DebayerInstance::CFAPatternFromTargetProperty( const Variant& cfaSourcePattern )
+pcl_enum DebayerInstance::BayerPatternFromTargetProperty( const Variant& cfaSourcePattern )
 {
    if ( !cfaSourcePattern.IsValid() || !cfaSourcePattern.IsString() )
       throw Error( "Unable to acquire CFA pattern information: Unavailable or invalid image properties." );
@@ -1971,6 +2581,156 @@ pcl_enum DebayerInstance::CFAPatternFromTargetProperty( const Variant& cfaSource
       return DebayerBayerPatternParameter::BGRG;
 
    throw Error( "Unsupported or invalid CFA pattern '" + patternId + '\'' );
+}
+
+// ----------------------------------------------------------------------------
+
+IsoString DebayerInstance::CFAPatternIdFromTarget( const View& view )
+{
+   return CFAPatternIdFromTargetProperty( view.PropertyValue( "PCL:CFASourcePattern" ) );
+}
+
+IsoString DebayerInstance::CFAPatternIdFromTarget( FileFormatInstance& file )
+{
+   return CFAPatternIdFromTargetProperty( file.ReadImageProperty( "PCL:CFASourcePattern" ) );
+}
+
+IsoString DebayerInstance::CFAPatternIdFromTargetProperty( const Variant& cfaSourcePattern )
+{
+   if ( cfaSourcePattern.IsValid() )
+      if ( cfaSourcePattern.IsString() )
+         return cfaSourcePattern.ToIsoString();
+   throw Error( "Missing or invalid CFA pattern description property" );
+}
+
+// ----------------------------------------------------------------------------
+
+IsoString DebayerInstance::CFAPatternNameFromTarget( const View& view )
+{
+   return CFAPatternNameFromTargetProperty( view.PropertyValue( "PCL:CFASourcePatternName" ) );
+}
+
+IsoString DebayerInstance::CFAPatternNameFromTarget( FileFormatInstance& file )
+{
+   return CFAPatternNameFromTargetProperty( file.ReadImageProperty( "PCL:CFASourcePatternName" ) );
+}
+
+IsoString DebayerInstance::CFAPatternNameFromTargetProperty( const Variant& cfaSourcePatternName )
+{
+   if ( cfaSourcePatternName.IsValid() )
+      if ( cfaSourcePatternName.IsString() )
+         return cfaSourcePatternName.ToIsoString();
+   return IsoString();
+}
+
+// ----------------------------------------------------------------------------
+
+IMatrix DebayerInstance::XTransPatternFiltersFromTarget( const View& view )
+{
+   return XTransPatternFiltersFromTargetProperty( view.PropertyValue( "PCL:CFASourcePattern" ) );
+}
+
+IMatrix DebayerInstance::XTransPatternFiltersFromTarget( FileFormatInstance& file )
+{
+   return XTransPatternFiltersFromTargetProperty( file.ReadImageProperty( "PCL:CFASourcePattern" ) );
+}
+
+IMatrix DebayerInstance::XTransPatternFiltersFromTargetProperty( const Variant& cfaSourcePattern )
+{
+   if ( cfaSourcePattern.IsValid() )
+      if ( cfaSourcePattern.IsString() )
+      {
+         IsoString pattern = cfaSourcePattern.ToIsoString();
+         if ( pattern.Length() != 36 )
+            throw Error( String().Format( "Invalid X-Trans CFA pattern length (expected 36 elements, got %u)", pattern.Length() ) );
+
+         IMatrix F( 6, 6 );
+         IsoString::const_iterator s = pattern.Begin();
+         for ( int i = 0; i < 6; ++i )
+            for ( int j = 0; j < 6; ++j, ++s )
+               switch ( *s )
+               {
+               case 'R': F[i][j] = 0; break;
+               case 'G': F[i][j] = 1; break;
+               case 'B': F[i][j] = 2; break;
+               default:
+                  throw Error( String().Format( "Invalid X-Trans CFA pattern element '%%%02X'", int( *s ) ) );
+               }
+         return F;
+      }
+   throw Error( "Missing or invalid X-Trans CFA pattern description property" );
+}
+
+// ----------------------------------------------------------------------------
+
+FMatrix DebayerInstance::sRGBConversionMatrixFromTarget( const View& view )
+{
+   return sRGBConversionMatrixFromTargetProperty( view.PropertyValue( "PCL:sRGBConversionMatrix" ) );
+}
+
+FMatrix DebayerInstance::sRGBConversionMatrixFromTarget( FileFormatInstance& file )
+{
+   return sRGBConversionMatrixFromTargetProperty( file.ReadImageProperty( "PCL:sRGBConversionMatrix" ) );
+}
+
+FMatrix DebayerInstance::sRGBConversionMatrixFromTargetProperty( const Variant& sRGBConversionMatrix )
+{
+   if ( sRGBConversionMatrix.IsValid() )
+      if ( sRGBConversionMatrix.IsMatrix() )
+         return sRGBConversionMatrix.ToFMatrix();
+   return FMatrix::UnitMatrix( 3 );
+}
+
+// ----------------------------------------------------------------------------
+
+void DebayerInstance::EvaluateNoise( FVector& noiseEstimates, FVector& noiseFractions, StringList& noiseAlgorithms, const Image& image ) const
+{
+   SpinStatus spin;
+   image.SetStatusCallback( &spin );
+   image.Status().Initialize( "Noise evaluation" );
+   image.Status().DisableInitialization();
+
+   int numberOfThreads = Thread::NumberOfThreads( image.NumberOfPixels(), 1 );
+   if ( numberOfThreads >= 3 )
+   {
+      int numberOfSubthreads = RoundInt( numberOfThreads/3.0 );
+      ReferenceArray<NoiseEvaluationThread> threads;
+      threads << new NoiseEvaluationThread( image, 0, p_noiseEvaluationAlgorithm, numberOfSubthreads )
+              << new NoiseEvaluationThread( image, 1, p_noiseEvaluationAlgorithm, numberOfSubthreads )
+              << new NoiseEvaluationThread( image, 2, p_noiseEvaluationAlgorithm, numberOfThreads - 2*numberOfSubthreads );
+
+      AbstractImage::ThreadData data( image, 0 ); // unbounded
+      AbstractImage::RunThreads( threads, data );
+
+      for ( int i = 0; i < 3; ++i )
+      {
+         noiseEstimates[i] = threads[i].noiseEstimate;
+         noiseFractions[i] = threads[i].noiseFraction;
+         noiseAlgorithms[i] = threads[i].noiseAlgorithm;
+      }
+
+      threads.Destroy();
+   }
+   else
+   {
+      for ( int i = 0; i < 3; ++i )
+      {
+         NoiseEvaluationThread thread( image, i, p_noiseEvaluationAlgorithm, 1 );
+         thread.Run();
+         noiseEstimates[i] = thread.noiseEstimate;
+         noiseFractions[i] = thread.noiseFraction;
+         noiseAlgorithms[i] = thread.noiseAlgorithm;
+      }
+   }
+
+   image.ResetSelections();
+   image.Status().Complete();
+
+   Console console;
+   console.WriteLn( "<end><cbr>Gaussian noise estimates:" );
+   for ( int i = 0; i < 3; ++i )
+      console.WriteLn( String().Format( "s%d = %.3e, n%d = %.4f ",
+                           i, noiseEstimates[i], i, noiseFractions[i] ) + '(' + noiseAlgorithms[i] + ')' );
 }
 
 // ----------------------------------------------------------------------------
@@ -2236,4 +2996,4 @@ size_type DebayerInstance::ParameterLength( const MetaParameter* p, size_type ta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DebayerInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF DebayerInstance.cpp - Released 2018-11-01T11:07:21Z

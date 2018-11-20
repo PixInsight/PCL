@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0297
+// Standard StarGenerator Process Module Version 01.01.00.0305
 // ----------------------------------------------------------------------------
-// StarGeneratorProcess.h - Released 2017-08-01T14:26:58Z
+// StarGeneratorProcess.h - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,8 +59,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// StarGeneratorProcess
-// ----------------------------------------------------------------------------
 
 class StarGeneratorProcess : public MetaProcess
 {
@@ -70,18 +68,12 @@ public:
 
    virtual IsoString Id() const;
    virtual IsoString Category() const;
-
    virtual uint32 Version() const;
-
    virtual String Description() const;
-
    virtual const char** IconImageXPM() const;
-
    virtual ProcessInterface* DefaultInterface() const;
-
    virtual ProcessImplementation* Create() const;
    virtual ProcessImplementation* Clone( const ProcessImplementation& ) const;
-
    virtual bool CanProcessCommandLines() const;
    virtual int ProcessCommandLine( const StringList& ) const;
 };
@@ -99,4 +91,4 @@ PCL_END_LOCAL
 #endif   // __StarGeneratorProcess_h
 
 // ----------------------------------------------------------------------------
-// EOF StarGeneratorProcess.h - Released 2017-08-01T14:26:58Z
+// EOF StarGeneratorProcess.h - Released 2018-11-01T11:07:21Z

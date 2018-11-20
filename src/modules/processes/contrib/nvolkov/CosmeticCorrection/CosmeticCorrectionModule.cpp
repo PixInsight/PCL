@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard CosmeticCorrection Process Module Version 01.02.05.0201
+// Standard CosmeticCorrection Process Module Version 01.02.05.0209
 // ----------------------------------------------------------------------------
-// CosmeticCorrectionModule.cpp - Released 2017-10-02T10:08:47Z
+// CosmeticCorrectionModule.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
-// Copyright (c) 2011-2017 Nikolay Volkov
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2018 Nikolay Volkov
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,12 +54,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     02
 #define MODULE_VERSION_REVISION  05
-#define MODULE_VERSION_BUILD     0201
+#define MODULE_VERSION_BUILD     0209
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2017
-#define MODULE_RELEASE_MONTH     10
-#define MODULE_RELEASE_DAY       2
+#define MODULE_RELEASE_YEAR      2018
+#define MODULE_RELEASE_MONTH     11
+#define MODULE_RELEASE_DAY       1
 
 #include "CosmeticCorrectionModule.h"
 #include "CosmeticCorrectionProcess.h"
@@ -105,7 +105,7 @@ String CosmeticCorrectionModule::Author() const
 
 String CosmeticCorrectionModule::Copyright() const
 {
-   return "Copyright (c) 2011-2017 Nikolay Volkov";
+   return "Copyright (c) 2011-2018 Nikolay Volkov";
 }
 
 String CosmeticCorrectionModule::TradeMarks() const
@@ -166,4 +166,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF CosmeticCorrectionModule.cpp - Released 2017-10-02T10:08:47Z
+// EOF CosmeticCorrectionModule.cpp - Released 2018-11-01T11:07:21Z

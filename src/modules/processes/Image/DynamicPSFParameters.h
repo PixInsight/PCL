@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard Image Process Module Version 01.02.09.0412
 // ----------------------------------------------------------------------------
-// DynamicPSFParameters.h - Released 2017-08-01T14:26:58Z
+// DynamicPSFParameters.h - Released 2018-11-13T16:55:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -68,7 +68,7 @@ public:
 
    DPViewTable( MetaProcess* );
 
-   virtual IsoString Id() const;
+   IsoString Id() const override;
 };
 
 extern DPViewTable* TheDPViewTableParameter;
@@ -81,9 +81,9 @@ public:
 
    DPViewId( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual size_type MinLength() const;
-   virtual String AllowedCharacters() const;
+   IsoString Id() const override;
+   size_type MinLength() const override;
+   String AllowedCharacters() const override;
 };
 
 extern DPViewId* TheDPViewIdParameter;
@@ -97,7 +97,7 @@ public:
 
    DPStarTable( MetaProcess* );
 
-   virtual IsoString Id() const;
+   IsoString Id() const override;
 };
 
 extern DPStarTable* TheDPStarTableParameter;
@@ -110,8 +110,8 @@ public:
 
    DPStarViewIndex( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   double DefaultValue() const override;
 };
 
 extern DPStarViewIndex* TheDPStarViewIndexParameter;
@@ -124,8 +124,8 @@ public:
 
    DPStarChannel( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   double DefaultValue() const override;
 };
 
 extern DPStarChannel* TheDPStarChannelParameter;
@@ -151,12 +151,11 @@ public:
 
    DPStarStatus( MetaTable* );
 
-   virtual IsoString Id() const;
-
-   virtual size_type NumberOfElements() const;
-   virtual IsoString ElementId( size_type ) const;
-   virtual int ElementValue( size_type ) const;
-   virtual size_type DefaultValueIndex() const;
+   IsoString Id() const override;
+   size_type NumberOfElements() const override;
+   IsoString ElementId( size_type ) const override;
+   int ElementValue( size_type ) const override;
+   size_type DefaultValueIndex() const override;
 };
 
 extern DPStarStatus* TheDPStarStatusParameter;
@@ -169,9 +168,9 @@ public:
 
    DPStarRectX0( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
 };
 
 extern DPStarRectX0* TheDPStarRectX0Parameter;
@@ -184,9 +183,9 @@ public:
 
    DPStarRectY0( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
 };
 
 extern DPStarRectY0* TheDPStarRectY0Parameter;
@@ -199,9 +198,9 @@ public:
 
    DPStarRectX1( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
 };
 
 extern DPStarRectX1* TheDPStarRectX1Parameter;
@@ -214,9 +213,9 @@ public:
 
    DPStarRectY1( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
 };
 
 extern DPStarRectY1* TheDPStarRectY1Parameter;
@@ -229,9 +228,9 @@ public:
 
    DPStarPosX( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
 };
 
 extern DPStarPosX* TheDPStarPosXParameter;
@@ -244,9 +243,9 @@ public:
 
    DPStarPosY( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
 };
 
 extern DPStarPosY* TheDPStarPosYParameter;
@@ -260,7 +259,7 @@ public:
 
    DPPSFTable( MetaProcess* );
 
-   virtual IsoString Id() const;
+   IsoString Id() const override;
 };
 
 extern DPPSFTable* TheDPPSFTableParameter;
@@ -273,8 +272,8 @@ public:
 
    DPPSFStarIndex( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   double DefaultValue() const override;
 };
 
 extern DPPSFStarIndex* TheDPPSFStarIndexParameter;
@@ -302,12 +301,11 @@ public:
 
    DPPSFFunction( MetaTable* );
 
-   virtual IsoString Id() const;
-
-   virtual size_type NumberOfElements() const;
-   virtual IsoString ElementId( size_type ) const;
-   virtual int ElementValue( size_type ) const;
-   virtual size_type DefaultValueIndex() const;
+   IsoString Id() const override;
+   size_type NumberOfElements() const override;
+   IsoString ElementId( size_type ) const override;
+   int ElementValue( size_type ) const override;
+   size_type DefaultValueIndex() const override;
 };
 
 extern DPPSFFunction* TheDPPSFFunctionParameter;
@@ -320,8 +318,8 @@ public:
 
    DPPSFCircular( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DPPSFCircular* TheDPPSFCircularParameter;
@@ -347,12 +345,11 @@ public:
 
    DPPSFStatus( MetaTable* );
 
-   virtual IsoString Id() const;
-
-   virtual size_type NumberOfElements() const;
-   virtual IsoString ElementId( size_type ) const;
-   virtual int ElementValue( size_type ) const;
-   virtual size_type DefaultValueIndex() const;
+   IsoString Id() const override;
+   size_type NumberOfElements() const override;
+   IsoString ElementId( size_type ) const override;
+   int ElementValue( size_type ) const override;
+   size_type DefaultValueIndex() const override;
 };
 
 extern DPPSFStatus* TheDPPSFStatusParameter;
@@ -365,9 +362,9 @@ public:
 
    DPPSFBackground( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
 };
 
 extern DPPSFBackground* TheDPPSFBackgroundParameter;
@@ -380,9 +377,9 @@ public:
 
    DPPSFAmplitude( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
 };
 
 extern DPPSFAmplitude* TheDPPSFAmplitudeParameter;
@@ -395,9 +392,9 @@ public:
 
    DPPSFCentroidX( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
 };
 
 extern DPPSFCentroidX* TheDPPSFCentroidXParameter;
@@ -410,9 +407,9 @@ public:
 
    DPPSFCentroidY( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
 };
 
 extern DPPSFCentroidY* TheDPPSFCentroidYParameter;
@@ -425,9 +422,9 @@ public:
 
    DPPSFRadiusX( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
 };
 
 extern DPPSFRadiusX* TheDPPSFRadiusXParameter;
@@ -440,9 +437,9 @@ public:
 
    DPPSFRadiusY( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
 };
 
 extern DPPSFRadiusY* TheDPPSFRadiusYParameter;
@@ -455,11 +452,11 @@ public:
 
    DPPSFRotationAngle( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
+   double MinimumValue() const override;
+   double MaximumValue() const override;
 };
 
 extern DPPSFRotationAngle* TheDPPSFRotationAngleParameter;
@@ -472,9 +469,9 @@ public:
 
    DPPSFBeta( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
 };
 
 extern DPPSFBeta* TheDPPSFBetaParameter;
@@ -487,13 +484,57 @@ public:
 
    DPPSFMAD( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual bool ScientificNotation() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   bool ScientificNotation() const override;
+   double DefaultValue() const override;
 };
 
 extern DPPSFMAD* TheDPPSFMADParameter;
+
+// ----------------------------------------------------------------------------
+
+class DPPSFCelestial : public MetaBoolean
+{
+public:
+
+   DPPSFCelestial( MetaTable* );
+
+   IsoString Id() const override;
+   bool DefaultValue() const override;
+};
+
+extern DPPSFCelestial* TheDPPSFCelestialParameter;
+
+// ----------------------------------------------------------------------------
+
+class DPPSFCentroidRA : public MetaDouble
+{
+public:
+
+   DPPSFCentroidRA( MetaTable* );
+
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
+};
+
+extern DPPSFCentroidRA* TheDPPSFCentroidRAParameter;
+
+// ----------------------------------------------------------------------------
+
+class DPPSFCentroidDec : public MetaDouble
+{
+public:
+
+   DPPSFCentroidDec( MetaTable* );
+
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
+};
+
+extern DPPSFCentroidDec* TheDPPSFCentroidDecParameter;
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -504,8 +545,8 @@ public:
 
    DPAutoPSF( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DPAutoPSF* TheDPAutoPSFParameter;
@@ -518,8 +559,8 @@ public:
 
    DPCircularPSF( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DPCircularPSF* TheDPCircularPSFParameter;
@@ -532,8 +573,8 @@ public:
 
    DPGaussianPSF( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DPGaussianPSF* TheDPGaussianPSFParameter;
@@ -546,8 +587,8 @@ public:
 
    DPMoffatPSF( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DPMoffatPSF* TheDPMoffatPSFParameter;
@@ -560,8 +601,8 @@ public:
 
    DPMoffat10PSF( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DPMoffat10PSF* TheDPMoffat10PSFParameter;
@@ -574,8 +615,8 @@ public:
 
    DPMoffat8PSF( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DPMoffat8PSF* TheDPMoffat8PSFParameter;
@@ -588,8 +629,8 @@ public:
 
    DPMoffat6PSF( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DPMoffat6PSF* TheDPMoffat6PSFParameter;
@@ -602,8 +643,8 @@ public:
 
    DPMoffat4PSF( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DPMoffat4PSF* TheDPMoffat4PSFParameter;
@@ -616,8 +657,8 @@ public:
 
    DPMoffat25PSF( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DPMoffat25PSF* TheDPMoffat25PSFParameter;
@@ -630,8 +671,8 @@ public:
 
    DPMoffat15PSF( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DPMoffat15PSF* TheDPMoffat15PSFParameter;
@@ -644,8 +685,8 @@ public:
 
    DPLorentzianPSF( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DPLorentzianPSF* TheDPLorentzianPSFParameter;
@@ -658,8 +699,8 @@ public:
 
    DPSignedAngles( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DPSignedAngles* TheDPSignedAnglesParameter;
@@ -672,11 +713,25 @@ public:
 
    DPRegenerate( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DPRegenerate* TheDPRegenerateParameter;
+
+// ----------------------------------------------------------------------------
+
+class DPAstrometry : public MetaBoolean
+{
+public:
+
+   DPAstrometry( MetaProcess* );
+
+   IsoString Id() const override;
+   bool DefaultValue() const override;
+};
+
+extern DPAstrometry* TheDPAstrometryParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -686,10 +741,10 @@ public:
 
    DPSearchRadius( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
+   IsoString Id() const override;
+   double DefaultValue() const override;
+   double MinimumValue() const override;
+   double MaximumValue() const override;
 };
 
 extern DPSearchRadius* TheDPSearchRadiusParameter;
@@ -702,11 +757,11 @@ public:
 
    DPThreshold( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
+   double MinimumValue() const override;
+   double MaximumValue() const override;
 };
 
 extern DPThreshold* TheDPThresholdParameter;
@@ -719,8 +774,8 @@ public:
 
    DPAutoAperture( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DPAutoAperture* TheDPAutoApertureParameter;
@@ -740,12 +795,11 @@ public:
 
    DPScaleMode( MetaProcess* );
 
-   virtual IsoString Id() const;
-
-   virtual size_type NumberOfElements() const;
-   virtual IsoString ElementId( size_type ) const;
-   virtual int ElementValue( size_type ) const;
-   virtual size_type DefaultValueIndex() const;
+   IsoString Id() const override;
+   size_type NumberOfElements() const override;
+   IsoString ElementId( size_type ) const override;
+   int ElementValue( size_type ) const override;
+   size_type DefaultValueIndex() const override;
 };
 
 extern DPScaleMode* TheDPScaleModeParameter;
@@ -758,11 +812,11 @@ public:
 
    DPScaleValue( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
+   double MinimumValue() const override;
+   double MaximumValue() const override;
 };
 
 extern DPScaleValue* TheDPScaleValueParameter;
@@ -775,7 +829,7 @@ public:
 
    DPScaleKeyword( MetaProcess* );
 
-   virtual IsoString Id() const;
+   IsoString Id() const override;
 };
 
 extern DPScaleKeyword* TheDPScaleKeywordParameter;
@@ -788,8 +842,8 @@ public:
 
    DPStarColor( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   double DefaultValue() const override;
 };
 
 extern DPStarColor* TheDPStarColorParameter;
@@ -802,8 +856,8 @@ public:
 
    DPSelectedStarColor( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   double DefaultValue() const override;
 };
 
 extern DPSelectedStarColor* TheDPSelectedStarColorParameter;
@@ -816,8 +870,8 @@ public:
 
    DPSelectedStarFillColor( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   double DefaultValue() const override;
 };
 
 extern DPSelectedStarFillColor* TheDPSelectedStarFillColorParameter;
@@ -830,8 +884,8 @@ public:
 
    DPBadStarColor( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   double DefaultValue() const override;
 };
 
 extern DPBadStarColor* TheDPBadStarColorParameter;
@@ -844,8 +898,8 @@ public:
 
    DPBadStarFillColor( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual double DefaultValue() const;
+   IsoString Id() const override;
+   double DefaultValue() const override;
 };
 
 extern DPBadStarFillColor* TheDPBadStarFillColorParameter;
@@ -859,4 +913,4 @@ PCL_END_LOCAL
 #endif   // __DynamicPSFParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF DynamicPSFParameters.h - Released 2017-08-01T14:26:58Z
+// EOF DynamicPSFParameters.h - Released 2018-11-13T16:55:32Z

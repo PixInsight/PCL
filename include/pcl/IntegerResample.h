@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/IntegerResample.h - Released 2017-08-01T14:23:31Z
+// pcl/IntegerResample.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -108,7 +108,6 @@ public:
     * downsampling mode \a m.
     */
    IntegerResample( int zoom = 0, downsample_mode mode = IntegerDownsampleMode::Average ) :
-      GeometricTransformation(),
       m_zoomFactor( zoom ), m_downsampleMode( mode )
    {
    }
@@ -116,11 +115,7 @@ public:
    /*!
     * Copy constructor.
     */
-   IntegerResample( const IntegerResample& x ) :
-      GeometricTransformation( x ),
-      m_zoomFactor( x.m_zoomFactor ), m_downsampleMode( x.m_downsampleMode )
-   {
-   }
+   IntegerResample( const IntegerResample& ) = default;
 
    /*!
     * Returns the current zoom factor of this %IntegerResample object.
@@ -180,26 +175,26 @@ public:
 
    /*!
     */
-   virtual void GetNewSizes( int& width, int& height ) const;
+   void GetNewSizes( int& width, int& height ) const override;
 
 protected:
 
    /*
     * Zoom factor: > 1 -> zoom in, < 1 -> zoom out, from -1 to +1 -> no change.
     */
-   int m_zoomFactor;
+   int m_zoomFactor = 0;
 
    /*
     * Downsample mode: average, median, maximum, minimum; see enumeration above.
     */
-   downsample_mode m_downsampleMode;
+   downsample_mode m_downsampleMode = IntegerDownsampleMode::Average;
 
    // Inherited from ImageTransformation.
-   virtual void Apply( pcl::Image& ) const;
-   virtual void Apply( pcl::DImage& ) const;
-   virtual void Apply( pcl::UInt8Image& ) const;
-   virtual void Apply( pcl::UInt16Image& ) const;
-   virtual void Apply( pcl::UInt32Image& ) const;
+   void Apply( pcl::Image& ) const override;
+   void Apply( pcl::DImage& ) const override;
+   void Apply( pcl::UInt8Image& ) const override;
+   void Apply( pcl::UInt16Image& ) const override;
+   void Apply( pcl::UInt32Image& ) const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -209,4 +204,4 @@ protected:
 #endif   // __PCL_IntegerResample_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/IntegerResample.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/IntegerResample.h - Released 2018-11-01T11:06:36Z

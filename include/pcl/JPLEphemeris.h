@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/JPLEphemeris.h - Released 2017-08-01T14:23:31Z
+// pcl/JPLEphemeris.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,10 +57,12 @@
 #include <pcl/Defs.h>
 
 #include <pcl/Arguments.h>
+#include <pcl/EphemerisFile.h>
 #include <pcl/ErrorHandler.h>
 #include <pcl/KeyValue.h>
 #include <pcl/MultiVector.h>
 #include <pcl/StringList.h>
+#include <pcl/TimePoint.h>
 
 namespace pcl
 {
@@ -68,7 +70,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup ephemeris_calculation Solar System Ephemerides
+ * \defgroup solar_system_ephemerides Solar System Ephemerides
  */
 
 /*!
@@ -76,10 +78,10 @@ namespace pcl
  * \brief     JPL planetary ephemeris items
  *
  * Defines symbolic constants for native and derived JPL planetary ephemeris
- * items. All items defined by DE432t/LE432t are currently supported.
+ * items. All items defined by DE438t/LE438t are currently supported.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
- * <tr><td>JPLEphemerisItem::Unknown</td>               <td>Unknown item.</td></tr>
+ * <tr><td>JPLEphemerisItem::Unknown</td>               <td>Unknown ephemeris item.</td></tr>
  * <tr><td>JPLEphemerisItem::Mercury</td>               <td></td></tr>
  * <tr><td>JPLEphemerisItem::Venus</td>                 <td></td></tr>
  * <tr><td>JPLEphemerisItem::EarthMoonBarycenter</td>   <td></td></tr>
@@ -95,13 +97,13 @@ namespace pcl
  * <tr><td>JPLEphemerisItem::LunarLibration</td>        <td>Lunar libration angles phi, theta and psi.</td></tr>
  * <tr><td>JPLEphemerisItem::LunarMantleVelocity</td>   <td>Lunar mantle velocity components omega_x, omega_y and omega_z.</td></tr>
  * <tr><td>JPLEphemerisItem::TT_TDB</td>                <td>Difference TT-TDB at the geocenter in seconds</td></tr>
- * <tr><td>JPLEphemerisItem::NumberOfNativeItems</td>   <td></td></tr>
- * <tr><td>JPLEphemerisItem::NumberOfRequiredItems</td> <td></td></tr>
+ * <tr><td>JPLEphemerisItem::NumberOfNativeItems</td>   <td>Number of items directly available in JPL DE/LE ASCII files.</td></tr>
+ * <tr><td>JPLEphemerisItem::NumberOfRequiredItems</td> <td>Number of required items in a valid JPL DE/LE ASCII file.</td></tr>
  * <tr><td>JPLEphemerisItem::Earth</td>                 <td>Geocenter relative to the solar system barycenter, synthesized from Earth-Moon barycenter and geocentric Moon.</td></tr>
  * <tr><td>JPLEphemerisItem::SSBMoon</td>               <td>Moon relative to the solar system barycenter, synthesized from Earth-Moon barycenter and geocentric Moon.</td></tr>
  * </table>
  *
- * \ingroup ephemeris_calculation
+ * \ingroup solar_system_ephemerides
  */
 namespace JPLEphemerisItem
 {
@@ -109,7 +111,7 @@ namespace JPLEphemerisItem
    {
       Unknown = -1,
 
-      // Native JPL DE/LE items, as of 432t
+      // Native JPL DE/LE items, as of 438t
       Mercury = 0,
       Venus,
       EarthMoonBarycenter,
@@ -143,15 +145,17 @@ namespace JPLEphemerisItem
  *
  * This class implements JPL DE/LE planetary ephemerides computed from original
  * files in ASCII format. On the PixInsight/PCL platform, this is a utility
- * class used to generate truncated binary ephemeris files by reinterpolation
- * with Chebyshev polynomials from the original ephemeris data.
+ * class used to generate truncated binary ephemeris files in XEPH format by
+ * reinterpolation with Chebyshev polynomials from the original ephemeris data.
  *
  * Source JPL ephemeris ASCII files, documentation, and original test and
  * utility programs and examples, are available at:
  *
  * ftp://ssd.jpl.nasa.gov/pub/eph/planets/
  *
- * \ingroup ephemeris_calculation
+ * \ingroup solar_system_ephemerides
+ *
+ * \sa EphemerisFile
  */
 class JPLEphemeris
 {
@@ -167,12 +171,12 @@ public:
     * Represents a numerical integration ephemeris constant defined by its
     * name and value.
     */
-   typedef KeyValue<IsoString, double>    constant;
+   typedef EphemerisConstant              constant;
 
    /*!
     * Represents a list of integration ephemeris constants.
     */
-   typedef Array<constant>                constant_list;
+   typedef EphemerisConstantList          constant_list;
 
    /*!
     * Constructs a &JPLEphemeris instance initialized from the specified DE/LE
@@ -254,8 +258,8 @@ public:
    }
 
    /*!
-    * Returns a Julian day number corresponding to the first date covered by
-    * the JPL ephemeris for which this object has been initialized.
+    * Returns a Julian date corresponding to the first date covered by the JPL
+    * ephemeris for which this object has been initialized.
     *
     * The value returned by this function is for informative purposes only.
     * Note that the ephemeris time span does not have to be the same as the
@@ -268,8 +272,8 @@ public:
    }
 
    /*!
-    * Returns a Julian day number corresponding to the last date covered by
-    * the JPL ephemeris for which this object has been initialized.
+    * Returns a Julian date corresponding to the last date covered by the JPL
+    * ephemeris for which this object has been initialized.
     *
     * The value returned by this function is for informative purposes only.
     * Note that the ephemeris time span does not have to be the same as the
@@ -282,8 +286,8 @@ public:
    }
 
    /*!
-    * Returns a Julian day number corresponding to the first date covered by
-    * the ephemeris data loaded in this object.
+    * Returns a Julian date corresponding to the first date covered by the
+    * ephemeris data loaded in this object.
     *
     * The value returned by this function is the smallest time point for which
     * this object can compute ephemerides. The effective ephemeris time span is
@@ -295,8 +299,8 @@ public:
    }
 
    /*!
-    * Returns a Julian day number corresponding to the last date covered by
-    * the ephemeris data loaded in this object.
+    * Returns a Julian date corresponding to the last date covered by the
+    * ephemeris data loaded in this object.
     *
     * The value returned by this function is the largest time point for which
     * this object can compute ephemerides. The effective ephemeris time span is
@@ -328,8 +332,7 @@ public:
    double ConstantValue( const IsoString& name ) const
    {
       constant_list::const_iterator i =
-         BinarySearch( m_constants.Begin(), m_constants.End(), name.Uppercase(),
-                       []( const constant& a, const constant& b ){ return a.key < b.key; } );
+      BinarySearch( m_constants.Begin(), m_constants.End(), EphemerisConstant( name ) );
       if ( i == m_constants.End() )
          throw Error( "Undefined integration constant '" + name + '\'' );
       return i->value;
@@ -366,7 +369,7 @@ public:
    }
 
    /*!
-    * Computes a state vector:
+    * Computes a state vector.
     *
     * \param[out] r     Reference to a vector where the components of the
     *                   computed state will be stored.
@@ -376,7 +379,7 @@ public:
     *
     * \param i          Index of the requested ephemeris item.
     *
-    * Rectangular position coordinates are provided in AU, except for the
+    * Rectangular position coordinates are provided in au, except for the
     * geocentric Moon, whose position is provided in km.
     *
     * Angles are provided in radians.
@@ -410,7 +413,7 @@ public:
    }
 
    /*!
-    * Computes a state vector and its first derivative:
+    * Computes a state vector and its first derivative.
     *
     * \param[out] r     Reference to a vector where the components of the
     *                   computed state will be stored.
@@ -423,8 +426,8 @@ public:
     *
     * \param i          Index of the requested ephemeris item.
     *
-    * Rectangular position and velocity coordinates are provided in AU and
-    * AU/day, respectively, except for the geocentric Moon, whose position and
+    * Rectangular position and velocity coordinates are provided in au and
+    * au/day, respectively, except for the geocentric Moon, whose position and
     * velocity are provided in km and km/day, respectively.
     *
     * Angles and their variations are provided in radians and radians/day.
@@ -465,6 +468,31 @@ public:
    }
 
    /*!
+    * Computes a state vector for the specified time coordinate \a t.
+    *
+    * Calling this member function is equivalent to:
+    *
+    * \code ComputeState( r, t.JDI(), t.JDF(), i ); \endcode
+    */
+   void ComputeState( Vector& r, TimePoint t, item_index i ) const
+   {
+      ComputeState( r, t.JDI(), t.JDF(), i );
+   }
+
+   /*!
+    * Computes a state vector and its first derivative for the specified time
+    * coordinate \a t.
+    *
+    * Calling this member function is equivalent to:
+    *
+    * \code ComputeState( r, v, t.JDI(), t.JDF(), i ); \endcode
+    */
+   void ComputeState( Vector& r, Vector& v, TimePoint t, item_index i ) const
+   {
+      ComputeState( r, v, t.JDI(), t.JDF(), i );
+   }
+
+   /*!
     * Generates a summary of the ephemeris loaded by this object, giving
     * information on general ephemeris properties and a list of integration
     * constants.
@@ -500,8 +528,8 @@ private:
 
    /*!
     * \internal
-    * Chebyshev polynomial evaluation. Special function adapted to JPL
-    * ephemeris data.
+    * Chebyshev polynomial evaluation. Special function adapted to work
+    * directly with JPL DE/LE ephemeris data.
     */
    void Interpolate( double* r, double* v, double jd1, double jd2, item_index n ) const
    {
@@ -555,10 +583,10 @@ private:
       // if requested, compute first derivatives.
       if ( v != nullptr )
       {
+         double vf = 2.0*index.subblocks/m_blockDelta;
          Vector vc( nk );
          vc[0] = 0;
          vc[1] = 1;
-         double vf = (2.0*index.subblocks)/m_blockDelta;
          vc[2] = 2*y2;
          for ( int i = 3; i < nk; ++i )
             vc[i] = y2*vc[i-1] + 2*pc[i-1] - vc[i-2];
@@ -580,4 +608,4 @@ private:
 #endif  // __PCL_JPLEphemeris_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/JPLEphemeris.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/JPLEphemeris.h - Released 2018-11-01T11:06:36Z

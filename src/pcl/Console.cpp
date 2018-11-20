@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Console.cpp - Released 2017-08-01T14:23:38Z
+// pcl/Console.cpp - Released 2018-11-01T11:06:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -61,11 +61,10 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-Console::Console() : m_handle( 0 ), m_thread( 0 )
+Console::Console()
 {
-   if ( (m_handle = (*API->Global->GetConsole)()) == 0 )
+   if ( (m_handle = (*API->Global->GetConsole)()) == nullptr )
       throw APIFunctionError( "GetConsole" );
-
    m_thread = (*API->Thread->GetCurrentThread)();
 }
 
@@ -73,14 +72,14 @@ Console::Console() : m_handle( 0 ), m_thread( 0 )
 
 Console::~Console()
 {
-   m_thread = 0;
+   m_thread = nullptr;
 }
 
 // ----------------------------------------------------------------------------
 
 void Console::Write( const String& s )
 {
-   if ( m_thread == 0 )
+   if ( m_thread == nullptr )
    {
       if ( (*API->Global->WriteConsole)( m_handle, s.c_str(), api_false ) == api_false )
          throw APIFunctionError( "WriteConsole" );
@@ -93,7 +92,7 @@ void Console::Write( const String& s )
 
 void Console::WriteLn( const String& s )
 {
-   if ( m_thread == 0 )
+   if ( m_thread == nullptr )
    {
       if ( (*API->Global->WriteConsole)( m_handle, s.c_str(), api_true ) == api_false )
          throw APIFunctionError( "WriteConsole" );
@@ -106,7 +105,7 @@ void Console::WriteLn( const String& s )
 
 void Console::WriteLn()
 {
-   if ( m_thread == 0 )
+   if ( m_thread == nullptr )
    {
       if ( (*API->Global->WriteConsole)( m_handle, 0, api_true ) == api_false )
          throw APIFunctionError( "WriteConsole" );
@@ -119,7 +118,7 @@ void Console::WriteLn()
 
 int Console::ReadChar()
 {
-   if ( m_thread == 0 )
+   if ( m_thread == nullptr )
       return (*API->Global->ReadConsoleChar)( m_handle );
    return 0;
 }
@@ -128,10 +127,10 @@ int Console::ReadChar()
 
 String Console::ReadString()
 {
-   if ( m_thread == 0 )
+   if ( m_thread == nullptr )
    {
       char16_type* s = (*API->Global->ReadConsoleString)( ModuleHandle(), m_handle );
-      if ( s != 0 )
+      if ( s != nullptr )
       {
          String str( s );
          Module->Deallocate( s );
@@ -151,10 +150,10 @@ String Console::ReadString()
  *
 String Console::Text() const
 {
-   if ( m_thread == 0 )
+   if ( m_thread == nullptr )
    {
       char16_type* s = (*API->Global->GetConsoleText)( ModuleHandle(), m_handle );
-      if ( s != 0 )
+      if ( s != nullptr )
       {
          String str( s );
          Module->Deallocate( s );
@@ -197,7 +196,7 @@ bool Console::AbortRequested() const
 
 void Console::ResetStatus()
 {
-   if ( m_thread == 0 )
+   if ( m_thread == nullptr )
       if ( (*API->Global->ResetProcessStatus)() == api_false )
          throw APIFunctionError( "ResetProcessStatus" );
 }
@@ -206,7 +205,7 @@ void Console::ResetStatus()
 
 void Console::EnableAbort()
 {
-   if ( m_thread == 0 )
+   if ( m_thread == nullptr )
       if ( (*API->Global->EnableAbort)() == api_false )
          throw APIFunctionError( "EnableAbort" );
 }
@@ -215,7 +214,7 @@ void Console::EnableAbort()
 
 void Console::DisableAbort()
 {
-   if ( m_thread == 0 )
+   if ( m_thread == nullptr )
       if ( (*API->Global->DisableAbort)() == api_false )
          throw APIFunctionError( "DisableAbort" );
 }
@@ -224,7 +223,7 @@ void Console::DisableAbort()
 
 void Console::Abort()
 {
-   if ( m_thread == 0 )
+   if ( m_thread == nullptr )
       if ( (*API->Global->Abort)() == api_false )
          throw APIFunctionError( "Abort" );
 }
@@ -233,21 +232,21 @@ void Console::Abort()
 
 bool Console::IsValid() const
 {
-   return m_handle != 0 && (*API->Global->ValidateConsole)( m_handle ) != api_false;
+   return m_handle != nullptr && (*API->Global->ValidateConsole)( m_handle ) != api_false;
 }
 
 // ----------------------------------------------------------------------------
 
 bool Console::IsCurrentThreadConsole() const
 {
-   return m_handle != 0 && m_thread == (*API->Thread->GetCurrentThread)();
+   return m_handle != nullptr && m_thread == (*API->Thread->GetCurrentThread)();
 }
 
 // ----------------------------------------------------------------------------
 
 void Console::Flush()
 {
-   if ( m_thread == 0 )
+   if ( m_thread == nullptr )
       if ( (*API->Global->FlushConsole)( m_handle ) == api_false )
          throw APIFunctionError( "FlushConsole" );
 }
@@ -256,7 +255,7 @@ void Console::Flush()
 
 bool Console::Show( bool show )
 {
-   if ( m_thread == 0 )
+   if ( m_thread == nullptr )
       return (*API->Global->ShowConsole)( m_handle, api_bool( show ) ) != api_false;
    return false;
 }
@@ -265,7 +264,7 @@ bool Console::Show( bool show )
 
 void Console::Clear()
 {
-   if ( m_thread == 0 )
+   if ( m_thread == nullptr )
       Write( "<clr>" );
 }
 
@@ -332,4 +331,4 @@ void Console::ExecuteScriptOn( const View& view, const String& filePath, const S
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Console.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/Console.cpp - Released 2018-11-01T11:06:52Z

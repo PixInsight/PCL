@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// ExponentialTransformationInstance.cpp - Released 2017-08-01T14:26:58Z
+// ExponentialTransformationInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -68,16 +68,18 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 ExponentialTransformationInstance::ExponentialTransformationInstance( const MetaProcess* P ) :
-ProcessImplementation( P ),
-type( TheExponentialFunctionTypeParameter->ElementValue( TheExponentialFunctionTypeParameter->DefaultValueIndex() ) ),
-order( TheExponentialFunctionOrderParameter->DefaultValue() ),
-sigma( TheExponentialFunctionSmoothingParameter->DefaultValue() ),
-useLightnessMask( TheExponentialFunctionMaskParameter->DefaultValue() )
+   ProcessImplementation( P ),
+   type( TheExponentialFunctionTypeParameter->ElementValue( TheExponentialFunctionTypeParameter->DefaultValueIndex() ) ),
+   order( TheExponentialFunctionOrderParameter->DefaultValue() ),
+   sigma( TheExponentialFunctionSmoothingParameter->DefaultValue() ),
+   useLightnessMask( TheExponentialFunctionMaskParameter->DefaultValue() )
 {
 }
 
+// ----------------------------------------------------------------------------
+
 ExponentialTransformationInstance::ExponentialTransformationInstance( const ExponentialTransformationInstance& p ) :
-ProcessImplementation( p )
+   ProcessImplementation( p )
 {
    Assign( p );
 }
@@ -87,13 +89,20 @@ ProcessImplementation( p )
 void ExponentialTransformationInstance::Assign( const ProcessImplementation& p )
 {
    const ExponentialTransformationInstance* x = dynamic_cast<const ExponentialTransformationInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       type = x->type;
       order = x->order;
       sigma = x->sigma;
       useLightnessMask = x->useLightnessMask;
    }
+}
+
+// ----------------------------------------------------------------------------
+
+UndoFlags ExponentialTransformationInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
 }
 
 // ----------------------------------------------------------------------------
@@ -368,4 +377,4 @@ String ExponentialTransformationInstance::TypeAsString() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ExponentialTransformationInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF ExponentialTransformationInstance.cpp - Released 2018-11-01T11:07:21Z

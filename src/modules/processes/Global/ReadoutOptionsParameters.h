@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0378
+// Standard Global Process Module Version 01.02.07.0386
 // ----------------------------------------------------------------------------
-// ReadoutOptionsParameters.h - Released 2017-08-01T14:26:58Z
+// ReadoutOptionsParameters.h - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -71,7 +71,6 @@ public:
    ReadoutOptionsData( MetaProcess* );
 
    virtual IsoString Id() const;
-
    virtual size_type NumberOfElements() const;
    virtual IsoString ElementId( size_type ) const;
    virtual int ElementValue( size_type ) const;
@@ -91,7 +90,6 @@ public:
    ReadoutOptionsMode( MetaProcess* );
 
    virtual IsoString Id() const;
-
    virtual size_type NumberOfElements() const;
    virtual IsoString ElementId( size_type ) const;
    virtual int ElementValue( size_type ) const;
@@ -102,16 +100,14 @@ extern ReadoutOptionsMode* TheReadoutOptionsModeParameter;
 
 // ----------------------------------------------------------------------------
 
-class ReadoutOptionsProbeSize : public MetaUInt8
+class ReadoutOptionsProbeSize : public MetaInt32
 {
 public:
 
    ReadoutOptionsProbeSize( MetaProcess* );
 
    virtual IsoString Id() const;
-
    virtual bool NeedsValidation() const; // to ensure an odd value
-
    virtual double DefaultValue() const;
    virtual double MinimumValue() const;
    virtual double MaximumValue() const;
@@ -121,16 +117,14 @@ extern ReadoutOptionsProbeSize* TheReadoutOptionsProbeSizeParameter;
 
 // ----------------------------------------------------------------------------
 
-class ReadoutOptionsPreviewSize : public MetaUInt8
+class ReadoutOptionsPreviewSize : public MetaInt32
 {
 public:
 
    ReadoutOptionsPreviewSize( MetaProcess* );
 
    virtual IsoString Id() const;
-
    virtual bool NeedsValidation() const; // to ensure an odd value
-
    virtual double DefaultValue() const;
    virtual double MinimumValue() const;
    virtual double MaximumValue() const;
@@ -140,14 +134,13 @@ extern ReadoutOptionsPreviewSize* TheReadoutOptionsPreviewSizeParameter;
 
 // ----------------------------------------------------------------------------
 
-class ReadoutOptionsPreviewZoomFactor : public MetaUInt8
+class ReadoutOptionsPreviewZoomFactor : public MetaInt32
 {
 public:
 
    ReadoutOptionsPreviewZoomFactor( MetaProcess* );
 
    virtual IsoString Id() const;
-
    virtual double DefaultValue() const;
    virtual double MinimumValue() const;
    virtual double MaximumValue() const;
@@ -157,14 +150,13 @@ extern ReadoutOptionsPreviewZoomFactor* TheReadoutOptionsPreviewZoomFactorParame
 
 // ----------------------------------------------------------------------------
 
-class ReadoutRealPrecision : public MetaUInt8
+class ReadoutRealPrecision : public MetaInt32
 {
 public:
 
    ReadoutRealPrecision( MetaProcess* );
 
    virtual IsoString Id() const;
-
    virtual double DefaultValue() const;
    virtual double MinimumValue() const;
    virtual double MaximumValue() const;
@@ -181,7 +173,6 @@ public:
    ReadoutIntegerRange( MetaProcess* );
 
    virtual IsoString Id() const;
-
    virtual double DefaultValue() const;
    virtual double MinimumValue() const;
    virtual double MaximumValue() const;
@@ -198,7 +189,6 @@ public:
    ReadoutAlpha( MetaProcess* );
 
    virtual IsoString Id() const;
-
    virtual bool DefaultValue() const;
 };
 
@@ -213,7 +203,6 @@ public:
    ReadoutMask( MetaProcess* );
 
    virtual IsoString Id() const;
-
    virtual bool DefaultValue() const;
 };
 
@@ -228,7 +217,6 @@ public:
    ReadoutPreview( MetaProcess* );
 
    virtual IsoString Id() const;
-
    virtual bool DefaultValue() const;
 };
 
@@ -243,11 +231,84 @@ public:
    ReadoutPreviewCenter( MetaProcess* );
 
    virtual IsoString Id() const;
-
    virtual bool DefaultValue() const;
 };
 
 extern ReadoutPreviewCenter* TheReadoutPreviewCenterParameter;
+
+// ----------------------------------------------------------------------------
+
+class ReadoutShowEquatorial : public MetaBoolean
+{
+public:
+
+   ReadoutShowEquatorial( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern ReadoutShowEquatorial* TheReadoutShowEquatorialParameter;
+
+// ----------------------------------------------------------------------------
+
+class ReadoutShowEcliptic : public MetaBoolean
+{
+public:
+
+   ReadoutShowEcliptic( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern ReadoutShowEcliptic* TheReadoutShowEclipticParameter;
+
+// ----------------------------------------------------------------------------
+
+class ReadoutShowGalactic : public MetaBoolean
+{
+public:
+
+   ReadoutShowGalactic( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern ReadoutShowGalactic* TheReadoutShowGalacticParameter;
+
+// ----------------------------------------------------------------------------
+
+class ReadoutCoordinateItems : public MetaInt32
+{
+public:
+
+   ReadoutCoordinateItems( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern ReadoutCoordinateItems* TheReadoutCoordinateItemsParameter;
+
+// ----------------------------------------------------------------------------
+
+class ReadoutCoordinatePrecision : public MetaInt32
+{
+public:
+
+   ReadoutCoordinatePrecision( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern ReadoutCoordinatePrecision* TheReadoutCoordinatePrecisionParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -258,7 +319,6 @@ public:
    ReadoutBroadcast( MetaProcess* );
 
    virtual IsoString Id() const;
-
    virtual bool DefaultValue() const;
 };
 
@@ -273,7 +333,6 @@ public:
    ReadoutReal( MetaProcess* );
 
    virtual IsoString Id() const;
-
    virtual bool DefaultValue() const;
 };
 
@@ -288,4 +347,4 @@ PCL_END_LOCAL
 #endif   // __ReadoutOptionsParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF ReadoutOptionsParameters.h - Released 2017-08-01T14:26:58Z
+// EOF ReadoutOptionsParameters.h - Released 2018-11-01T11:07:20Z

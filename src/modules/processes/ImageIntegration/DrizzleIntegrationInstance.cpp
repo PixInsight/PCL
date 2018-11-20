@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.16.01.0447
+// Standard ImageIntegration Process Module Version 01.16.01.0455
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInstance.cpp - Released 2017-11-24T09:58:41Z
+// DrizzleIntegrationInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -1343,7 +1343,7 @@ void DrizzleIntegrationEngine::Perform()
 
    try
    {
-      Rect roi;
+      Rect roi( 0 );
       double totalOutputData = 0;
       bool havePedestal = false;
       bool ignoringPedestal = false;
@@ -1441,6 +1441,7 @@ void DrizzleIntegrationEngine::Perform()
                     m_decoder.ReferenceHeight() != m_referenceHeight ||
                     m_decoder.NumberOfChannels() != m_numberOfChannels )
                   throw Error( "Inconsistent image geometry." );
+               roi = Rect( m_referenceWidth, m_referenceHeight );
             }
 
             if ( !item.nmlPath.IsEmpty() )
@@ -2089,4 +2090,4 @@ size_type DrizzleIntegrationInstance::ParameterLength( const MetaParameter* p, s
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInstance.cpp - Released 2017-11-24T09:58:41Z
+// EOF DrizzleIntegrationInstance.cpp - Released 2018-11-01T11:07:21Z

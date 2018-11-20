@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// ScreenTransferFunctionInstance.h - Released 2017-08-01T14:26:58Z
+// ScreenTransferFunctionInstance.h - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -103,12 +103,9 @@ public:
    ScreenTransferFunctionInstance( const ScreenTransferFunctionInstance& );
 
    virtual void Assign( const ProcessImplementation& );
-
    virtual bool IsHistoryUpdater( const View& ) const;
    virtual bool IsMaskable( const View&, const ImageWindow& ) const;
-
    virtual bool ExecuteOn( View& );
-
    virtual void* LockParameter( const MetaParameter*, size_type tableRow );
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter*, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter*, size_type tableRow ) const;
@@ -150,4 +147,4 @@ private:
 #endif   // __ScreenTransferFunctionInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF ScreenTransferFunctionInstance.h - Released 2017-08-01T14:26:58Z
+// EOF ScreenTransferFunctionInstance.h - Released 2018-11-01T11:07:21Z

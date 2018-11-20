@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.01.0332
+// Standard ImageCalibration Process Module Version 01.04.01.0345
 // ----------------------------------------------------------------------------
-// DefectMapInstance.h - Released 2017-08-01T14:26:58Z
+// DefectMapInstance.h - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -70,10 +70,9 @@ public:
    DefectMapInstance( const DefectMapInstance& );
 
    virtual void Assign( const ProcessImplementation& );
-
+   virtual UndoFlags UndoMode( const View& ) const;
    virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
    virtual bool ExecuteOn( View& );
-
    virtual void* LockParameter( const MetaParameter*, size_type /*tableRow*/ );
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
@@ -96,4 +95,4 @@ private:
 #endif   // __DefectMapInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF DefectMapInstance.h - Released 2017-08-01T14:26:58Z
+// EOF DefectMapInstance.h - Released 2018-11-01T11:07:21Z

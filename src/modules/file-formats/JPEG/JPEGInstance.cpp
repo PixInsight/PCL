@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard JPEG File Format Module Version 01.00.04.0346
+// Standard JPEG File Format Module Version 01.00.04.0352
 // ----------------------------------------------------------------------------
-// JPEGInstance.cpp - Released 2017-08-01T14:26:50Z
+// JPEGInstance.cpp - Released 2018-11-01T11:07:09Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -203,7 +203,7 @@ static void ReadJPEGImage( GenericImage<P>& image, JPEGReader* reader, int& read
    /*
     * The readCount thing is a trick to allow reading the same JPEG image
     * multiple times from the same format instance. That does not work with
-    * jpeglib. An ugly trick, but hey, works.
+    * jpeglib. An ugly trick, but, heck, it works.
     */
    if ( readCount++ )
    {
@@ -436,4 +436,4 @@ bool JPEGInstance::WasLossyWrite() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF JPEGInstance.cpp - Released 2017-08-01T14:26:50Z
+// EOF JPEGInstance.cpp - Released 2018-11-01T11:07:09Z

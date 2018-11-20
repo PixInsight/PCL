@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Process.h - Released 2017-08-01T14:23:31Z
+// pcl/Process.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -145,7 +145,7 @@ public:
 
    /*!
     */
-   virtual IsoString Id() const;
+   IsoString Id() const override;
 
    /*!
     * Returns a list of alias identifiers for this process.
@@ -186,71 +186,71 @@ public:
 
    /*!
     */
-   virtual uint32 Version() const;
+   uint32 Version() const override;
 
    /*!
     */
-   virtual String Description() const;
+   String Description() const override;
 
    /*!
     */
-   virtual String ScriptComment() const;
+   String ScriptComment() const override;
 
    /*!
     */
-   virtual Bitmap Icon() const;
+   Bitmap Icon() const override;
 
    /*!
     */
-   virtual Bitmap SmallIcon() const;
+   Bitmap SmallIcon() const override;
 
    /*!
     */
-   virtual bool CanProcessViews() const;
+   bool CanProcessViews() const override;
 
    /*!
     */
-   virtual bool CanProcessGlobal() const;
+   bool CanProcessGlobal() const override;
 
    /*!
     */
-   virtual bool CanProcessImages() const;
+   bool CanProcessImages() const override;
 
    /*!
     */
-   virtual bool CanProcessCommandLines() const;
+   bool CanProcessCommandLines() const override;
 
    /*!
     */
-   virtual bool CanEditPreferences() const;
+   bool CanEditPreferences() const override;
 
    /*!
     */
-   virtual bool CanBrowseDocumentation() const;
+   bool CanBrowseDocumentation() const override;
 
    /*!
     */
-   virtual bool IsAssignable() const;
+   bool IsAssignable() const override;
 
    /*!
     */
-   virtual bool NeedsInitialization() const;
+   bool NeedsInitialization() const override;
 
    /*!
     */
-   virtual bool NeedsValidation() const;
+   bool NeedsValidation() const override;
 
    /*!
     */
-   virtual bool PrefersGlobalExecution() const;
+   bool PrefersGlobalExecution() const override;
 
    /*!
    */
-   virtual bool EditPreferences() const;
+   bool EditPreferences() const override;
 
    /*!
     */
-   virtual bool BrowseDocumentation() const;
+   bool BrowseDocumentation() const override;
 
    /*!
     * Invokes the command line execution routine for this process.
@@ -361,4 +361,4 @@ private:
 #endif   // __PCL_Process_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Process.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Process.h - Released 2018-11-01T11:06:36Z

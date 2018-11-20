@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.01.0332
+// Standard ImageCalibration Process Module Version 01.04.01.0345
 // ----------------------------------------------------------------------------
-// ImageCalibrationInstance.cpp - Released 2017-08-01T14:26:58Z
+// ImageCalibrationInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -118,16 +118,8 @@ static const char* cspin[ 4 ] = { "&mdash;", "\\", "|", "/" };
 
 ImageCalibrationInstance::ImageCalibrationInstance( const MetaProcess* m ) :
    ProcessImplementation( m ),
-   targetFrames(),
-   inputHints(),
-   outputHints(),
    pedestal( TheICPedestalParameter->DefaultValue() ),
    pedestalMode( ICPedestalMode::Default ),
-   pedestalKeyword(),
-   overscan(),
-   masterBias(),
-   masterDark(),
-   masterFlat(),
    calibrateBias( TheICCalibrateBiasParameter->DefaultValue() ),
    calibrateDark( TheICCalibrateDarkParameter->DefaultValue() ),
    calibrateFlat( TheICCalibrateFlatParameter->DefaultValue() ),
@@ -146,21 +138,24 @@ ImageCalibrationInstance::ImageCalibrationInstance( const MetaProcess* m ) :
    outputPedestal( TheICOutputPedestalParameter->DefaultValue() ),
    overwriteExistingFiles( TheICOverwriteExistingFilesParameter->DefaultValue() ),
    onError( ICOnError::Default ),
-   noGUIMessages( TheICNoGUIMessagesParameter->DefaultValue() ),
-   output()
+   noGUIMessages( TheICNoGUIMessagesParameter->DefaultValue() )
 {
 }
 
+// ----------------------------------------------------------------------------
+
 ImageCalibrationInstance::ImageCalibrationInstance( const ImageCalibrationInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
 
+// ----------------------------------------------------------------------------
+
 void ImageCalibrationInstance::Assign( const ProcessImplementation& p )
 {
    const ImageCalibrationInstance* x = dynamic_cast<const ImageCalibrationInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       targetFrames              = x->targetFrames;
       inputHints                = x->inputHints;
@@ -195,16 +190,22 @@ void ImageCalibrationInstance::Assign( const ProcessImplementation& p )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool ImageCalibrationInstance::CanExecuteOn( const View& view, String& whyNot ) const
 {
    whyNot = "ImageCalibration can only be executed in the global context.";
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool ImageCalibrationInstance::IsHistoryUpdater( const View& view ) const
 {
    return false;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ImageCalibrationInstance::CanExecuteGlobal( String& whyNot ) const
 {
@@ -2768,4 +2769,4 @@ size_type ImageCalibrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF ImageCalibrationInstance.cpp - Released 2018-11-01T11:07:21Z

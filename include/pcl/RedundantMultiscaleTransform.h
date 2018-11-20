@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/RedundantMultiscaleTransform.h - Released 2017-08-01T14:23:31Z
+// pcl/RedundantMultiscaleTransform.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,6 +58,7 @@
 #include <pcl/Diagnostics.h>
 
 #include <pcl/ImageTransformation.h>
+#include <pcl/ParallelProcess.h>
 #include <pcl/Vector.h>
 
 namespace pcl
@@ -98,7 +99,8 @@ namespace pcl
  * \sa ATrousWaveletTransform, StarletTransform, MultiscaleMedianTransform,
  * MultiscaleLinearTransform
  */
-class PCL_CLASS RedundantMultiscaleTransform : public BidirectionalImageTransformation
+class PCL_CLASS RedundantMultiscaleTransform : public BidirectionalImageTransformation,
+                                               public ParallelProcess
 {
 public:
 
@@ -124,7 +126,7 @@ public:
     *             detail layers plus a residual layer, that is n+1 total
     *             layers. The default value is 4.
     *
-    * \param d    Scaling sequence. If \a d <= 0, the transform will use the
+    * \param d    Scaling sequence. If \a d &le; 0, the transform will use the
     *             dyadic sequence: 1, 2, 4, ... 2^i. If \a d > 0, its value is
     *             the distance in pixels between two successive scales.
     *
@@ -136,19 +138,14 @@ public:
     * interpreted as follows:
     *
     * - If the specified sequence parameter \a d is zero 0, then the transform
-    *   uses the dyadic sequence: s = 1, 2, 4, ..., 2^j for 0 <= j < n.
+    *   uses the dyadic sequence: s = 1, 2, 4, ..., 2^j for 0 &le; j < n.
     *
     * - If \a d > 0, then \a d is the constant increment in pixels between two
-    *   successive scales (linear scaling sequence): s = d*j for 1 <= j < n.
+    *   successive scales (linear scaling sequence): s = d*j for 1 &le; j < n.
     */
    RedundantMultiscaleTransform( int n = 4, int d = 0 ) :
-      BidirectionalImageTransformation(),
       m_delta( Max( 0, d ) ),
-      m_numberOfLayers( Max( 1, n ) ),
-      m_parallel( true ),
-      m_maxProcessors( PCL_MAX_PROCESSORS ),
-      m_transform(),
-      m_layerEnabled()
+      m_numberOfLayers( Max( 1, n ) )
    {
       PCL_PRECONDITION( n >= 1 )
       PCL_PRECONDITION( d >= 0 )
@@ -160,10 +157,9 @@ public:
     */
    RedundantMultiscaleTransform( const RedundantMultiscaleTransform& x ) :
       BidirectionalImageTransformation( x ),
+      ParallelProcess( x ),
       m_delta( x.m_delta ),
       m_numberOfLayers( x.m_numberOfLayers ),
-      m_parallel( x.m_parallel ),
-      m_maxProcessors( x.m_maxProcessors ),
       m_transform( x.m_transform ),
       m_layerEnabled( x.m_layerEnabled )
    {
@@ -173,16 +169,7 @@ public:
    /*!
     * Move constructor.
     */
-   RedundantMultiscaleTransform( RedundantMultiscaleTransform&& x ) :
-      BidirectionalImageTransformation( x ),
-      m_delta( x.m_delta ),
-      m_numberOfLayers( x.m_numberOfLayers ),
-      m_parallel( x.m_parallel ),
-      m_maxProcessors( x.m_maxProcessors ),
-      m_transform( std::move( x.m_transform ) ),
-      m_layerEnabled( std::move( x.m_layerEnabled ) )
-   {
-   }
+   RedundantMultiscaleTransform( RedundantMultiscaleTransform&& ) = default;
 
    /*!
     * Destroys this %RedundantMultiscaleTransform object. All existing layers
@@ -198,10 +185,9 @@ public:
    RedundantMultiscaleTransform& operator =( const RedundantMultiscaleTransform& x )
    {
       (void)BidirectionalImageTransformation::operator =( x );
+      (void)ParallelProcess::operator =( x );
       m_delta          = x.m_delta;
       m_numberOfLayers = x.m_numberOfLayers;
-      m_parallel       = x.m_parallel;
-      m_maxProcessors  = x.m_maxProcessors;
       m_transform      = x.m_transform;
       m_transform.EnsureUnique();
       m_layerEnabled   = x.m_layerEnabled;
@@ -211,17 +197,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-   RedundantMultiscaleTransform& operator =( RedundantMultiscaleTransform&& x )
-   {
-      (void)BidirectionalImageTransformation::operator =( x );
-      m_delta          = x.m_delta;
-      m_numberOfLayers = x.m_numberOfLayers;
-      m_parallel       = x.m_parallel;
-      m_maxProcessors  = x.m_maxProcessors;
-      m_transform      = std::move( x.m_transform );
-      m_layerEnabled   = std::move( x.m_layerEnabled );
-      return *this;
-   }
+   RedundantMultiscaleTransform& operator =( RedundantMultiscaleTransform&& ) = default;
 
    /*!
     * Returns the scaling sequence used by this multiscale transform.
@@ -533,77 +509,6 @@ public:
       InitializeLayersAndStates();
    }
 
-   /*!
-    * Returns true iff this object is allowed to use multiple parallel execution
-    * threads (when multiple threads are permitted and available).
-    */
-   bool IsParallelProcessingEnabled() const
-   {
-      return m_parallel;
-   }
-
-   /*!
-    * Enables parallel processing for this multiscale transform.
-    *
-    * \param enable  Whether to enable or disable parallel processing. True by
-    *                default.
-    *
-    * \param maxProcessors    The maximum number of processors allowed for this
-    *                instance. If \a enable is false this parameter is ignored.
-    *                A value <= 0 is ignored. The default value is zero.
-    */
-   void EnableParallelProcessing( bool enable = true, int maxProcessors = 0 )
-   {
-      m_parallel = enable;
-      if ( enable && maxProcessors > 0 )
-         SetMaxProcessors( maxProcessors );
-   }
-
-   /*!
-    * Disables parallel processing for this multiscale transform.
-    *
-    * This is a convenience function, equivalent to:
-    * EnableParallelProcessing( !disable )
-    */
-   void DisableParallelProcessing( bool disable = true )
-   {
-      EnableParallelProcessing( !disable );
-   }
-
-   /*!
-    * Returns the maximum number of processors allowed for this multiscale
-    * transform.
-    *
-    * Irrespective of the value returned by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   int MaxProcessors() const
-   {
-      return m_maxProcessors;
-   }
-
-   /*!
-    * Sets the maximum number of processors allowed for this multiscale
-    * transform.
-    *
-    * In the current version of PCL, a module can use a maximum of 1023
-    * processors. The term \e processor actually refers to the number of
-    * threads a module can execute concurrently.
-    *
-    * Irrespective of the value specified by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   void SetMaxProcessors( int maxProcessors )
-   {
-      m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
-   }
-
 protected:
 
    /*
@@ -614,23 +519,13 @@ protected:
     * delta  < 1 :
     *    Dyadic scaling sequence (1, 2, 4, 8, 16, ...).
     */
-   int m_delta;
+   int m_delta = 0;
 
    /*
     * Number of detail layers, *not including* the residual smoothed layer,
     * which is always generated in a multiscale transform.
     */
-   int m_numberOfLayers;
-
-   /*
-    * Use multiple threads
-    */
-   bool m_parallel : 1;
-
-   /*
-    * Maximum number of processors allowed
-    */
-   unsigned m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT;
+   int m_numberOfLayers = 4;
 
    /*
     * Array of transform layers, including the residual layer, so the length
@@ -646,13 +541,13 @@ protected:
    /*
     * Inverse transform (reconstruction)
     */
-   virtual void Apply( pcl::Image& ) const;
-   virtual void Apply( pcl::DImage& ) const;
-   virtual void Apply( pcl::ComplexImage& ) const;
-   virtual void Apply( pcl::DComplexImage& ) const;
-   virtual void Apply( pcl::UInt8Image& ) const;
-   virtual void Apply( pcl::UInt16Image& ) const;
-   virtual void Apply( pcl::UInt32Image& ) const;
+   void Apply( pcl::Image& ) const override;
+   void Apply( pcl::DImage& ) const override;
+   void Apply( pcl::ComplexImage& ) const override;
+   void Apply( pcl::DComplexImage& ) const override;
+   void Apply( pcl::UInt8Image& ) const override;
+   void Apply( pcl::UInt16Image& ) const override;
+   void Apply( pcl::UInt32Image& ) const override;
 
    void InitializeLayersAndStates()
    {
@@ -678,4 +573,4 @@ protected:
 #endif   // __PCL_RedundantMultiscaleTransform_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/RedundantMultiscaleTransform.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/RedundantMultiscaleTransform.h - Released 2018-11-01T11:06:36Z

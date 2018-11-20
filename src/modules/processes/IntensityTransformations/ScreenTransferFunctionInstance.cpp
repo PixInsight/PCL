@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// ScreenTransferFunctionInstance.cpp - Released 2017-08-01T14:26:58Z
+// ScreenTransferFunctionInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,41 +60,57 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 ScreenTransferFunctionInstance::ScreenTransferFunctionInstance( const MetaProcess* m ) :
-ProcessImplementation( m ), stf( 4 ), interaction( STFInteraction::Default )
+   ProcessImplementation( m ),
+   stf( 4 ),
+   interaction( STFInteraction::Default )
 {
 }
 
+// ----------------------------------------------------------------------------
+
 ScreenTransferFunctionInstance::ScreenTransferFunctionInstance( const ScreenTransferFunctionInstance& x ) :
-ProcessImplementation( x ), stf( 4 ), interaction( STFInteraction::Default )
+   ProcessImplementation( x ),
+   stf( 4 ),
+   interaction( STFInteraction::Default )
 {
    Assign( x );
 }
 
+// ----------------------------------------------------------------------------
+
 void ScreenTransferFunctionInstance::Assign( const ProcessImplementation& p )
 {
    const ScreenTransferFunctionInstance* x = dynamic_cast<const ScreenTransferFunctionInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       stf.Assign( x->stf );
       interaction = x->interaction;
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool ScreenTransferFunctionInstance::IsHistoryUpdater( const View& ) const
 {
    return false;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ScreenTransferFunctionInstance::IsMaskable( const View&, const ImageWindow& ) const
 {
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool ScreenTransferFunctionInstance::ExecuteOn( View& view )
 {
    ApplyTo( view );
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void* ScreenTransferFunctionInstance::LockParameter( const MetaParameter* p, size_type tableRow )
 {
@@ -111,8 +127,10 @@ void* ScreenTransferFunctionInstance::LockParameter( const MetaParameter* p, siz
          return &stf[tableRow].r0;
       else if ( p == TheSTFHighRangeParameter )
          return &stf[tableRow].r1;
-   return 0;
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ScreenTransferFunctionInstance::AllocateParameter( size_type length, const MetaParameter* p, size_type /*tableRow*/ )
 {
@@ -126,6 +144,8 @@ bool ScreenTransferFunctionInstance::AllocateParameter( size_type length, const 
 
    return false;
 }
+
+// ----------------------------------------------------------------------------
 
 size_type ScreenTransferFunctionInstance::ParameterLength( const MetaParameter* p, size_type /*tableRow*/ ) const
 {
@@ -157,6 +177,8 @@ void ScreenTransferFunctionInstance::GetViewSTF( const View& view )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void ScreenTransferFunctionInstance::ApplyTo( View& view ) const
 {
    View::stf_list F;
@@ -176,4 +198,4 @@ void ScreenTransferFunctionInstance::ApplyTo( View& view ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ScreenTransferFunctionInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF ScreenTransferFunctionInstance.cpp - Released 2018-11-01T11:07:21Z

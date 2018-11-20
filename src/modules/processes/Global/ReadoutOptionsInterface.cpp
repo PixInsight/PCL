@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0378
+// Standard Global Process Module Version 01.02.07.0386
 // ----------------------------------------------------------------------------
-// ReadoutOptionsInterface.cpp - Released 2017-08-01T14:26:58Z
+// ReadoutOptionsInterface.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -183,21 +183,19 @@ void ReadoutOptionsInterface::UpdateControls()
 
    GUI->ProbeSize_ComboBox.SetCurrentItem( o.ProbeSize() >> 1 );
 
-   GUI->ShowAlphaChannel_CheckBox.SetChecked( o.IsAlphaChannelEnabled() );
-   GUI->ShowMaskChannel_CheckBox.SetChecked( o.IsMaskChannelEnabled() );
+   GUI->ShowAlphaChannel_CheckBox.SetChecked( o.ShowAlphaChannel() );
+   GUI->ShowMaskChannel_CheckBox.SetChecked( o.ShowMaskChannel() );
 
-   GUI->ShowPreview_CheckBox.SetChecked( o.IsPreviewEnabled() );
-   GUI->PreviewCenter_CheckBox.SetChecked( o.IsPreviewCenterEnabled() );
+   GUI->ShowPreview_CheckBox.SetChecked( o.ShowPreview() );
+   GUI->PreviewCenter_CheckBox.SetChecked( o.ShowPreviewCenter() );
 
-   GUI->PreviewSize_Label.Enable( o.IsPreviewEnabled() );
-   GUI->PreviewSize_SpinBox.Enable( o.IsPreviewEnabled() );
+   GUI->PreviewSize_Label.Enable( o.ShowPreview() );
+   GUI->PreviewSize_SpinBox.Enable( o.ShowPreview() );
    GUI->PreviewSize_SpinBox.SetValue( o.PreviewSize() );
 
-   GUI->PreviewZoom_Label.Enable( o.IsPreviewEnabled() );
-   GUI->PreviewZoom_ComboBox.Enable( o.IsPreviewEnabled() );
+   GUI->PreviewZoom_Label.Enable( o.ShowPreview() );
+   GUI->PreviewZoom_ComboBox.Enable( o.ShowPreview() );
    GUI->PreviewZoom_ComboBox.SetCurrentItem( o.PreviewZoomFactor()-1 );
-
-   GUI->Broadcast_CheckBox.SetChecked( o.IsBroadcastEnabled() );
 
    GUI->Precision_ComboBox.SetCurrentItem( o.Precision() );
 
@@ -278,6 +276,14 @@ void ReadoutOptionsInterface::UpdateControls()
          GUI->ArbitraryInteger_SpinBox.Enable();
       }
    }
+
+   GUI->ShowEquatorial_CheckBox.SetChecked( o.ShowEquatorialCoordinates() );
+   GUI->ShowEcliptic_CheckBox.SetChecked( o.ShowEclipticCoordinates() );
+   GUI->ShowGalactic_CheckBox.SetChecked( o.ShowGalacticCoordinates() );
+   GUI->CoordinateItems_ComboBox.SetCurrentItem( o.CoordinateItems()-1 ); // [1,3]
+   GUI->CoordinatePrecision_SpinBox.SetValue( o.CoordinatePrecision() );
+
+   GUI->Broadcast_CheckBox.SetChecked( o.IsBroadcastEnabled() );
 }
 
 // ----------------------------------------------------------------------------
@@ -314,6 +320,10 @@ void ReadoutOptionsInterface::__ItemSelected( ComboBox& sender, int itemIndex )
       }
       o.SetIntegerRange( n );
    }
+   else if ( sender == GUI->CoordinateItems_ComboBox )
+   {
+      o.SetCoordinateItems( itemIndex+1 ); // [1,3]
+   }
 
    instance.SetOptions( o );
    UpdateControls();
@@ -333,8 +343,6 @@ void ReadoutOptionsInterface::__ButtonClick( Button& sender, bool checked )
       o.EnablePreview( checked );
    else if ( sender == GUI->PreviewCenter_CheckBox )
       o.EnablePreviewCenter( checked );
-   else if ( sender == GUI->Broadcast_CheckBox )
-      o.EnableBroadcast( checked );
    else if ( sender == GUI->Real_CheckBox )
    {
       if ( checked )
@@ -391,6 +399,14 @@ void ReadoutOptionsInterface::__ButtonClick( Button& sender, bool checked )
          GUI->ArbitraryInteger_SpinBox.Enable();
       }
    }
+   else if ( sender == GUI->ShowEquatorial_CheckBox )
+      o.EnableEquatorialCoordinates( checked );
+   else if ( sender == GUI->ShowEcliptic_CheckBox )
+      o.EnableEclipticCoordinates( checked );
+   else if ( sender == GUI->ShowGalactic_CheckBox )
+      o.EnableGalacticCoordinates( checked );
+   else if ( sender == GUI->Broadcast_CheckBox )
+      o.EnableBroadcast( checked );
    else if ( sender == GUI->LoadCurrentOptions_PushButton )
       o = ReadoutOptions::GetCurrentOptions();
 
@@ -412,6 +428,8 @@ void ReadoutOptionsInterface::__ValueUpdated( SpinBox& sender, int value )
    }
    else if ( sender == GUI->ArbitraryInteger_SpinBox )
       o.SetIntegerRange( value );
+   else if ( sender == GUI->CoordinatePrecision_SpinBox )
+      o.SetCoordinatePrecision( value );
 
    instance.SetOptions( o );
    UpdateControls();
@@ -573,7 +591,7 @@ ReadoutOptionsInterface::GUIData::GUIData( ReadoutOptionsInterface& w )
 
    //
 
-   Precision_Label.SetText( "Normalized real range. Resolution:" );
+   Precision_Label.SetText( "Normalized real range - resolution:" );
    Precision_Label.SetFixedWidth( labelWidth2 );
    Precision_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
@@ -604,7 +622,7 @@ ReadoutOptionsInterface::GUIData::GUIData( ReadoutOptionsInterface& w )
 
    //
 
-   BinaryInteger_Label.SetText( "Binary integer range. Bit Count:" );
+   BinaryInteger_Label.SetText( "Binary integer range - bit count:" );
    BinaryInteger_Label.SetFixedWidth( labelWidth2 );
    BinaryInteger_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
@@ -627,7 +645,7 @@ ReadoutOptionsInterface::GUIData::GUIData( ReadoutOptionsInterface& w )
 
    //
 
-   ArbitraryInteger_Label.SetText( "Arbitrary integer range. Max. Value:" );
+   ArbitraryInteger_Label.SetText( "Arbitrary integer range - max. value:" );
    ArbitraryInteger_Label.SetFixedWidth( labelWidth2 );
    ArbitraryInteger_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
@@ -641,6 +659,59 @@ ReadoutOptionsInterface::GUIData::GUIData( ReadoutOptionsInterface& w )
    ArbitraryInteger_Sizer.Add( ArbitraryInteger_Label );
    ArbitraryInteger_Sizer.Add( ArbitraryInteger_SpinBox, 100 );
    ArbitraryInteger_Sizer.Add( ArbitraryInteger_CheckBox );
+
+   //
+
+   ShowEquatorial_CheckBox.SetText( "Equatorial coordinates" );
+   ShowEquatorial_CheckBox.OnClick( (Button::click_event_handler)&ReadoutOptionsInterface::__ButtonClick, w );
+
+   ShowEquatorial_Sizer.AddUnscaledSpacing( labelWidth2 + ui4 );
+   ShowEquatorial_Sizer.Add( ShowEquatorial_CheckBox );
+
+   //
+
+   ShowEcliptic_CheckBox.SetText( "Ecliptic coordinates" );
+   ShowEcliptic_CheckBox.OnClick( (Button::click_event_handler)&ReadoutOptionsInterface::__ButtonClick, w );
+
+   ShowEcliptic_Sizer.AddUnscaledSpacing( labelWidth2 + ui4 );
+   ShowEcliptic_Sizer.Add( ShowEcliptic_CheckBox );
+
+   //
+
+   ShowGalactic_CheckBox.SetText( "Galactic coordinates" );
+   ShowGalactic_CheckBox.OnClick( (Button::click_event_handler)&ReadoutOptionsInterface::__ButtonClick, w );
+
+   ShowGalactic_Sizer.AddUnscaledSpacing( labelWidth2 + ui4 );
+   ShowGalactic_Sizer.Add( ShowGalactic_CheckBox );
+
+   //
+
+   CoordinateItems_Label.SetText( "Coordinate items:" );
+   CoordinateItems_Label.SetFixedWidth( labelWidth2 );
+   CoordinateItems_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   CoordinateItems_ComboBox.AddItem( "1 - degrees/hours" );
+   CoordinateItems_ComboBox.AddItem( "2 - degrees/hours and minutes" );
+   CoordinateItems_ComboBox.AddItem( "3 - degrees/hours, minutes and seconds" );
+   CoordinateItems_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&ReadoutOptionsInterface::__ItemSelected, w );
+
+   CoordinateItems_Sizer.SetSpacing( 4 );
+   CoordinateItems_Sizer.Add( CoordinateItems_Label );
+   CoordinateItems_Sizer.Add( CoordinateItems_ComboBox, 100 );
+
+   //
+
+   CoordinatePrecision_Label.SetText( "Coordinate precision:" );
+   CoordinatePrecision_Label.SetFixedWidth( labelWidth2 );
+   CoordinatePrecision_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   CoordinatePrecision_SpinBox.SetRange( 0, 8 );
+   CoordinatePrecision_SpinBox.SetVariableWidth();
+   CoordinatePrecision_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&ReadoutOptionsInterface::__ValueUpdated, w );
+
+   CoordinatePrecision_Sizer.SetSpacing( 4 );
+   CoordinatePrecision_Sizer.Add( CoordinatePrecision_Label );
+   CoordinatePrecision_Sizer.Add( CoordinatePrecision_SpinBox, 100 );
 
    //
 
@@ -664,6 +735,11 @@ ReadoutOptionsInterface::GUIData::GUIData( ReadoutOptionsInterface& w )
    Right_Sizer.Add( Real_Sizer );
    Right_Sizer.Add( BinaryInteger_Sizer );
    Right_Sizer.Add( ArbitraryInteger_Sizer );
+   Right_Sizer.Add( ShowEquatorial_Sizer );
+   Right_Sizer.Add( ShowEcliptic_Sizer );
+   Right_Sizer.Add( ShowGalactic_Sizer );
+   Right_Sizer.Add( CoordinateItems_Sizer );
+   Right_Sizer.Add( CoordinatePrecision_Sizer );
    Right_Sizer.AddStretch();
    Right_Sizer.Add( Broadcast_Sizer );
    Right_Sizer.AddSpacing( 12 );
@@ -686,4 +762,4 @@ ReadoutOptionsInterface::GUIData::GUIData( ReadoutOptionsInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ReadoutOptionsInterface.cpp - Released 2017-08-01T14:26:58Z
+// EOF ReadoutOptionsInterface.cpp - Released 2018-11-01T11:07:20Z

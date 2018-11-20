@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.02.0275
+// Standard Blink Process Module Version 01.02.02.0283
 // ----------------------------------------------------------------------------
-// BlinkProcess.cpp - Released 2017-08-01T14:26:58Z
+// BlinkProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
-// Copyright (c) 2011-2017 Nikolay Volkov
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2018 Nikolay Volkov
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,7 +59,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-BlinkProcess* TheBlinkProcess = 0;
+BlinkProcess* TheBlinkProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -72,15 +72,21 @@ BlinkProcess::BlinkProcess() : MetaProcess()
    TheBlinkProcess = this;
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString BlinkProcess::Id() const
 {
    return "Blink";
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString BlinkProcess::Category() const
 {
    return "ImageInspection";
 }
+
+// ----------------------------------------------------------------------------
 
 String BlinkProcess::Description() const
 {
@@ -94,25 +100,35 @@ String BlinkProcess::Description() const
    "</html>";
 }
 
+// ----------------------------------------------------------------------------
+
 const char** BlinkProcess::IconImageXPM() const
 {
    return BlinkIcon_XPM;
 }
+
+// ----------------------------------------------------------------------------
 
 ProcessInterface* BlinkProcess::DefaultInterface() const
 {
    return TheBlinkInterface;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* BlinkProcess::Create() const
 {
-   return 0;
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 ProcessImplementation* BlinkProcess::Clone( const ProcessImplementation& ) const
 {
-   return 0;
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool BlinkProcess::IsAssignable() const
 {
@@ -124,4 +140,4 @@ bool BlinkProcess::IsAssignable() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BlinkProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF BlinkProcess.cpp - Released 2018-11-01T11:07:21Z

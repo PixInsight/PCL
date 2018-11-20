@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ShepardInterpolation.h - Released 2017-08-01T14:23:31Z
+// pcl/ShepardInterpolation.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,6 +58,7 @@
 #include <pcl/Diagnostics.h>
 
 #include <pcl/BicubicInterpolation.h>
+#include <pcl/ParallelProcess.h>
 #include <pcl/QuadTree.h>
 #include <pcl/Vector.h>
 
@@ -105,7 +106,7 @@ public:
    typedef typename vector_type::scalar   scalar;
 
    /*!
-    *
+    * The class used to implement fast coordinate search operations.
     */
    typedef QuadTree<vector_type>          search_tree;
 
@@ -123,19 +124,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    ShepardInterpolation( ShepardInterpolation&& ) = default;
-#else
-   ShepardInterpolation( ShepardInterpolation&& x ) :
-      m_r0( x.m_r0 ),
-      m_x0( x.m_x0 ),
-      m_y0( x.m_y0 ),
-      m_mu( x.m_mu ),
-      m_R( x.m_R ),
-      m_T( std::move( x.m_T ) )
-   {
-   }
-#endif
 
    /*!
     * Virtual destructor.
@@ -153,20 +142,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-#ifndef _MSC_VER
    ShepardInterpolation& operator =( ShepardInterpolation&& ) = default;
-#else
-   ShepardInterpolation& operator =( ShepardInterpolation&& x )
-   {
-      m_r0 = x.m_r0;
-      m_x0 = x.m_x0;
-      m_y0 = x.m_y0;
-      m_mu = x.m_mu;
-      m_R = x.m_R;
-      m_T = std::move( x.m_T );
-      return *this;
-   }
-#endif
 
    /*!
     * Returns true iff this object is valid. A valid %ShepardInterpolation
@@ -185,12 +161,12 @@ public:
     * The power parameter is a positive real > 0 that defines the behavior of
     * the interpolation/approximation function. For large values of \a m, the
     * interpolating surface tends to be uniform within boundaries defined
-    * around input nodes, and hence is more local. For values of \a m <= 2, the
-    * surface is more global, that is, interpolated values are more influenced
-    * by nodes far away from the interpolation coordinates. The default power
-    * parameter value is 2.
+    * around input nodes, and hence is more local. For values of \a m &le; 2,
+    * the surface is more global, that is, interpolated values are more
+    * influenced by nodes far away from the interpolation coordinates. The
+    * default power parameter value is 2.
     *
-    * If the specified value of \a m is invalid (<= 0), the default value
+    * If the specified value of \a m is invalid (&le; 0), the default value
     * \a m = 2 will be set.
     *
     * Calling this member function does not reset this %ShepardInterpolation
@@ -232,7 +208,7 @@ public:
     * input nodes, that is, the size of the entire interpolation region. The
     * default search radius is 0.2.
     *
-    * If the specified value of \a R is invalid (<= 0), the default value
+    * If the specified value of \a R is invalid (&le; 0), the default value
     * \a R = 0.2 will be set.
     *
     * Calling this member function does not reset this %ShepardInterpolation
@@ -395,7 +371,7 @@ protected:
  * interpolation vector lengths) with negligible accuracy loss in most
  * practical applications.
  */
-class GridShepardInterpolation
+class GridShepardInterpolation : public ParallelProcess
 {
 public:
 
@@ -403,9 +379,7 @@ public:
     * Default constructor. Yields an empty instance that cannot be used without
     * initialization.
     */
-   GridShepardInterpolation() : m_parallel( true )
-   {
-   }
+   GridShepardInterpolation() = default;
 
    /*!
     * Copy constructor.
@@ -415,9 +389,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    GridShepardInterpolation( GridShepardInterpolation&& ) = default;
-#endif
 
    /*!
     * Copy assignment operator. Returns a reference to this object.
@@ -427,9 +399,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-#ifndef _MSC_VER
    GridShepardInterpolation& operator =( GridShepardInterpolation&& ) = default;
-#endif
 
    /*!
     * Initializes this %GridShepardInterpolation object for the specified input
@@ -460,10 +430,10 @@ public:
    void Initialize( const Rect& rect, int delta, const ShepardInterpolation<T>& S, bool verbose = true )
    {
       m_rect = rect;
-      m_delta = delta;
+      m_delta = Max( 1, delta );
 
-      int w = rect.Width();
-      int h = rect.Height();
+      int w = m_rect.Width();
+      int h = m_rect.Height();
       int rows = 1 + h/m_delta + ((h%m_delta) ? 1 : 0);
       int cols = 1 + w/m_delta + ((w%m_delta) ? 1 : 0);
 
@@ -472,7 +442,7 @@ public:
       if ( verbose )
          Console().WriteLn( "<end><cbr>Building 2D Shepard interpolation grid...<flush>" );
 
-      int numberOfThreads = m_parallel ? Thread::NumberOfThreads( rows, 1 ) : 1;
+      int numberOfThreads = m_parallel ? Min( m_maxProcessors, Thread::NumberOfThreads( rows, 1 ) ) : 1;
       int rowsPerThread = rows/numberOfThreads;
       ReferenceArray<GridInitializationThread<T> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
@@ -480,10 +450,16 @@ public:
                                  i*rowsPerThread,
                                  (j < numberOfThreads) ? j*rowsPerThread : rows ) );
       int n = 0;
-      for ( GridInitializationThread<T>& thread : threads )
-         thread.Start( ThreadPriority::DefaultMax, n++ );
-      for ( GridInitializationThread<T>& thread : threads )
-         thread.Wait();
+      if ( numberOfThreads > 1 )
+      {
+         for ( GridInitializationThread<T>& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, n++ );
+         for ( GridInitializationThread<T>& thread : threads )
+            thread.Wait();
+      }
+      else
+         threads[0].Run();
+
       threads.Destroy();
 
       m_I.Initialize( m_G.Begin(), cols, rows );
@@ -536,40 +512,6 @@ public:
       return operator ()( p.x, p.y );
    }
 
-   /*!
-    * Returns true iff this object is allowed to use multiple parallel
-    * execution threads (when multiple threads are permitted and available).
-    */
-   bool IsParallelProcessingEnabled() const
-   {
-      return m_parallel;
-   }
-
-   /*!
-    * Enables parallel processing for this instance.
-    *
-    * \param enable  Whether to enable or disable parallel processing. True by
-    *                default.
-    *
-    * Parallel processing is applied during the interpolation initialization
-    * process (see the Initialize() member function).
-    */
-   void EnableParallelProcessing( bool enable ) // ### TODO: Add a maxProcessors parameter
-   {
-      m_parallel = enable;
-   }
-
-   /*!
-    * Disables parallel processing for this instance.
-    *
-    * This is a convenience function, equivalent to:
-    * EnableParallelProcessing( !disable )
-    */
-   void DisableParallelProcessing( bool disable )
-   {
-      EnableParallelProcessing( !disable );
-   }
-
 private:
 
    /*!
@@ -579,11 +521,10 @@ private:
     */
    typedef BicubicBSplineInterpolation<double> grid_interpolation;
 
-   Rect               m_rect;
-   int                m_delta;
+   Rect               m_rect = Rect( 0 );
+   int                m_delta = 0;
    DMatrix            m_G;
    grid_interpolation m_I;
-   bool               m_parallel : 1;
 
    template <typename T>
    class GridInitializationThread : public Thread
@@ -597,7 +538,7 @@ private:
       {
       }
 
-      virtual PCL_HOT_FUNCTION void Run()
+      PCL_HOT_FUNCTION void Run() override
       {
          for ( int i = m_startRow; i < m_endRow; ++i )
             for ( int j = 0, dx = 0, y = m_grid.m_rect.y0 + i*m_grid.m_delta; j < m_grid.m_G.Cols(); ++j, dx += m_grid.m_delta )
@@ -606,9 +547,9 @@ private:
 
    private:
 
-      GridShepardInterpolation&   m_grid;
-      const scalar_interpolation& m_sephard;
-      int                         m_startRow, m_endRow;
+            GridShepardInterpolation& m_grid;
+      const scalar_interpolation&     m_sephard;
+            int                       m_startRow, m_endRow;
    };
 };
 
@@ -619,4 +560,4 @@ private:
 #endif   // __PCL_ShepardInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ShepardInterpolation.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/ShepardInterpolation.h - Released 2018-11-01T11:06:36Z

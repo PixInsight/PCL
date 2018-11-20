@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.16.01.0447
+// Standard ImageIntegration Process Module Version 01.16.01.0455
 // ----------------------------------------------------------------------------
-// ImageIntegrationInstance.cpp - Released 2017-11-24T09:58:41Z
+// ImageIntegrationInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -85,8 +85,6 @@ namespace pcl
 
 ImageIntegrationInstance::ImageIntegrationInstance( const MetaProcess* m ) :
    ProcessImplementation( m ),
-   p_images(),
-   p_inputHints(),
    p_combination( IICombination::Default ),
    p_normalization( IINormalization::Default ),
    p_weightMode( IIWeightMode::Default ),
@@ -134,8 +132,7 @@ ImageIntegrationInstance::ImageIntegrationInstance( const MetaProcess* m ) :
    p_mrsMinDataFraction( TheIIMRSMinDataFractionParameter->DefaultValue() ),
    p_noGUIMessages( TheIINoGUIMessagesParameter->DefaultValue() ),
    p_useFileThreads( TheIIUseFileThreadsParameter->DefaultValue() ),
-   p_fileThreadOverload( TheIIFileThreadOverloadParameter->DefaultValue() ),
-   o_output()
+   p_fileThreadOverload( TheIIFileThreadOverloadParameter->DefaultValue() )
 {
 }
 
@@ -5351,4 +5348,4 @@ size_type ImageIntegrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInstance.cpp - Released 2017-11-24T09:58:41Z
+// EOF ImageIntegrationInstance.cpp - Released 2018-11-01T11:07:21Z

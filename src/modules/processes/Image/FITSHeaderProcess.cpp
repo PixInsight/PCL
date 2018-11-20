@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard Image Process Module Version 01.02.09.0410
 // ----------------------------------------------------------------------------
-// FITSHeaderProcess.cpp - Released 2017-08-01T14:26:58Z
+// FITSHeaderProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -65,7 +65,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-FITSHeaderProcess* TheFITSHeaderProcess = 0;
+FITSHeaderProcess* TheFITSHeaderProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -112,7 +112,7 @@ String FITSHeaderProcess::Description() const
    return
 
    "<html>"
-   "<p>The FITSHeader process allows you to view and edit FITS header keywords.</p>"
+   "<p>The FITSHeader process allows you to browse and edit FITS header keywords.</p>"
    "</html>";
 }
 
@@ -142,7 +142,7 @@ ProcessImplementation* FITSHeaderProcess::Create() const
 ProcessImplementation* FITSHeaderProcess::Clone( const ProcessImplementation& p ) const
 {
    const FITSHeaderInstance* instPtr = dynamic_cast<const FITSHeaderInstance*>( &p );
-   return (instPtr != 0) ? new FITSHeaderInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new FITSHeaderInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -230,4 +230,4 @@ int FITSHeaderProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITSHeaderProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF FITSHeaderProcess.cpp - Released 2018-11-01T11:07:21Z

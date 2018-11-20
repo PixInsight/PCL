@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// AdaptiveStretchInterface.h - Released 2017-08-01T14:26:58Z
+// AdaptiveStretchInterface.h - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -122,7 +122,7 @@ private:
       const View&             m_view;
    };
 
-   mutable RealTimeThread* m_realTimeThread;
+   mutable RealTimeThread* m_realTimeThread = nullptr;
 
    struct GUIData
    {
@@ -152,7 +152,7 @@ private:
       Timer UpdateRealTimePreview_Timer;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
    void UpdateRealTimePreview();
@@ -180,4 +180,4 @@ extern AdaptiveStretchInterface* TheAdaptiveStretchInterface;
 #endif   // __AdaptiveStretchInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF AdaptiveStretchInterface.h - Released 2017-08-01T14:26:58Z
+// EOF AdaptiveStretchInterface.h - Released 2018-11-01T11:07:21Z

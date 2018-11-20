@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ReferenceArray.h - Released 2017-08-01T14:23:31Z
+// pcl/ReferenceArray.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -80,10 +80,12 @@ namespace pcl
  * Unlike IndirectArray, %ReferenceArray provides direct access to the objects
  * pointed to by its contained pointers, including direct iteration through
  * references instead of pointers. This makes %ReferenceArray a perfect
- * replacement for Array in cases where storing copies of objects is
- * impractical or inviable; for example, when the objects to be stored are
- * unique by nature. As a prerequisite for this functionality, %ReferenceArray,
- * unlike IndirectArray, cannot contain null pointers.
+ * replacement for Array in cases where storing copies of objects is inviable
+ * or impractical; for example, when the objects to be stored are unique by
+ * nature, when the cost of a copy operation is excessive, or as the underlying
+ * implementation of an heterogeneous container. As a prerequisite for this
+ * functionality, %ReferenceArray, unlike IndirectArray, cannot contain null
+ * pointers.
  *
  * \sa ReferenceSortedArray, IndirectArray, IndirectSortedArray, Array,
  * SortedArray, ReferenceCounter
@@ -2244,4 +2246,4 @@ ReferenceArray<T,A>& operator <<( ReferenceArray<T,A>&& x1, const ReferenceArray
 #endif   // __PCL_ReferenceArray_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ReferenceArray.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/ReferenceArray.h - Released 2018-11-01T11:06:36Z

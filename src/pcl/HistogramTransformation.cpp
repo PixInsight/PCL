@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/HistogramTransformation.cpp - Released 2017-08-01T14:23:38Z
+// pcl/HistogramTransformation.cpp - Released 2018-11-01T11:06:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -68,27 +68,12 @@ bool HistogramTransformation::IsIdentityTransformationSet() const
    return true;
 }
 
-void HistogramTransformation::UpdateFlags()
-{
-   m_flags.hasClipping = m_clipLow != 0 || m_clipHigh != 1;
-   m_flags.hasMTF = m_midtonesBalance != 0.5;
-   m_flags.hasRange = m_expandLow != 0 || m_expandHigh != 1;
-   m_flags.hasDelta = false;
-   if ( m_flags.hasClipping )
-   {
-      m_flags.d = m_clipHigh - m_clipLow;
-      m_flags.hasDelta = 1 + m_flags.d != 1;
-   }
-   if ( m_flags.hasRange )
-      m_flags.dr = m_expandHigh - m_expandLow;
-}
-
 // ----------------------------------------------------------------------------
 
 template <class T> static PCL_HOT_FUNCTION
 void ApplyHistogramTransformation( T* a, size_type n, T x0, T x1, const HistogramTransformation& H )
 {
-   if ( a == 0 || n == 0 )
+   if ( a == nullptr || n == 0 )
       return;
 
    if ( x1 < x0 )
@@ -241,15 +226,11 @@ class LUT2408Thread : public Thread
 public:
 
    LUT2408Thread( uint8* lut, const HistogramTransformation& transform, int start, int end ) :
-      Thread(),
-      m_lut( lut ),
-      m_T( transform ),
-      m_start( start ),
-      m_end( end )
+      m_lut( lut ), m_T( transform ), m_start( start ), m_end( end )
    {
    }
 
-   virtual PCL_HOT_FUNCTION void Run()
+   PCL_HOT_FUNCTION void Run() override
    {
       if ( m_T.m_transformChain.IsEmpty() )
          for ( int i = m_start; i < m_end; ++i )
@@ -309,15 +290,11 @@ class LUT2416Thread : public Thread
 public:
 
    LUT2416Thread( uint16* lut, const HistogramTransformation& transform, int start, int end ) :
-      Thread(),
-      m_lut( lut ),
-      m_T( transform ),
-      m_start( start ),
-      m_end( end )
+      m_lut( lut ), m_T( transform ), m_start( start ), m_end( end )
    {
    }
 
-   virtual PCL_HOT_FUNCTION void Run()
+   PCL_HOT_FUNCTION void Run() override
    {
       if ( m_T.m_transformChain.IsEmpty() )
          for ( int i = m_start; i < m_end; ++i )
@@ -448,14 +425,12 @@ private:
    public:
 
       Thread( ThreadData<P>& d, int startRow, int endRow ) :
-         pcl::Thread(),
          m_data( d ),
-         m_firstRow( startRow ), // m_firstRow, m_endRow are relative to the current image selection
-         m_endRow( endRow )
+         m_firstRow( startRow ), m_endRow( endRow ) // m_firstRow, m_endRow are relative to the current image selection
       {
       }
 
-      virtual PCL_HOT_FUNCTION void Run()
+      PCL_HOT_FUNCTION void Run() override
       {
          INIT_THREAD_MONITOR()
 
@@ -519,4 +494,4 @@ void HistogramTransformation::Apply( pcl::UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/HistogramTransformation.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/HistogramTransformation.cpp - Released 2018-11-01T11:06:52Z

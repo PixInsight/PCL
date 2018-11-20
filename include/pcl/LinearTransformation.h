@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/LinearTransformation.h - Released 2017-08-01T14:23:31Z
+// pcl/LinearTransformation.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -79,7 +79,7 @@ namespace pcl
  * coefficients are stored directly as \c double scalars. Since the third row
  * of the transformation matrix is (0, 0, 1) implicitly, this class can only
  * represent translations, rotations and scale changes. This class is primarily
- * used to support WCS coordinate transformations.
+ * intended to support WCS coordinate transformations.
  *
  * \ingroup astrometry_support
  */
@@ -234,15 +234,14 @@ public:
    }
 
    /*!
-    * Returns a 2x3 matrix initialized with the transformation coefficients in
+    * Returns a 3x3 matrix initialized with the transformation coefficients in
     * this object.
     */
    Matrix ToMatrix() const
    {
-      Matrix M( 2, 3 );
-      M[0][0] = m_a00; M[0][1] = m_a01; M[0][2] = m_a02;
-      M[1][0] = m_a10; M[1][1] = m_a11; M[1][2] = m_a12;
-      return M;
+      return Matrix( m_a00, m_a01, m_a02,
+                     m_a10, m_a11, m_a12,
+                     0.0,   0.0,   1.0 );
    }
 
    /*!
@@ -251,10 +250,7 @@ public:
     */
    Vector ToVector() const
    {
-      Vector v( 6 );
-      v[0] = m_a00; v[1] = m_a01; v[2] = m_a02;
-      v[3] = m_a10; v[4] = m_a11; v[5] = m_a12;
-      return v;
+      return Vector( { m_a00, m_a01, m_a02, m_a10, m_a11, m_a12 } );
    }
 
    /*!
@@ -267,10 +263,10 @@ public:
       String text;
       if ( indent > 0 )
          text << String( ' ', indent );
-      text.AppendFormat( "%+12g %+12g %+12g\n", m_a00, m_a01, m_a02 );
+      text.AppendFormat( "%+16.8e %+16.8e %+16.8e\n", m_a00, m_a01, m_a02 );
       if ( indent > 0 )
          text << String( ' ', indent );
-      text.AppendFormat( "%+12g %+12g %+12g", m_a10, m_a11, m_a12 );
+      text.AppendFormat( "%+16.8e %+16.8e %+16.8e", m_a10, m_a11, m_a12 );
       return text;
    }
 
@@ -288,4 +284,4 @@ private:
 #endif   // __PCL_LinearTransformation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/LinearTransformation.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/LinearTransformation.h - Released 2018-11-01T11:06:36Z

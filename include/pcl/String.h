@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/String.h - Released 2017-08-01T14:23:31Z
+// pcl/String.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -141,18 +141,25 @@ typedef Flags<RandomizationOption::mask_type>  RandomizationOptions;
 // ----------------------------------------------------------------------------
 
 /*!
- * \class SexagesimalConversionOptions
- * \brief Formatting options for string sexagesimal representations
+ * \defgroup sexagesimal_conversion Sexagesimal String Representation and Parsing
+ */
+
+/*!
+ * \struct SexagesimalConversionOptions
+ * \brief Formatting options for string sexagesimal representations.
  *
- * \sa IsoString::ToSexagesimal(), String::ToSexagesimal()
+ * \ingroup sexagesimal_conversion
+ * \sa IsoString::ToSexagesimal(), String::ToSexagesimal(),
+ * AngleConversionOptions, LongitudeConversionOptions, RAConversionOptions,
+ * LatitudeConversionOptions, DecConversionOptions
  */
 struct PCL_CLASS SexagesimalConversionOptions
 {
    /*!
     * Number of represented items. Can be 1, 2 or 3. All items but the last one
     * are represented as integer values. The last item is represented as a
-    * floating point value with the specified precision. The default value is 3
-    * items.
+    * floating point value with the specified precision. The default value is
+    * three items.
     */
    unsigned items     : 2;
 
@@ -193,12 +200,12 @@ struct PCL_CLASS SexagesimalConversionOptions
    /*!
     * Default constructor.
     */
-   SexagesimalConversionOptions( unsigned items_     = 3,
-                                 unsigned precision_ = 2,
-                                 bool     sign_      = false,
-                                 unsigned width_     = 0,
-                                 char     separator_ = ':',
-                                 char     padding_   = ' ' ) :
+   constexpr SexagesimalConversionOptions( unsigned items_     = 3,
+                                           unsigned precision_ = 2,
+                                           bool     sign_      = false,
+                                           unsigned width_     = 0,
+                                           char     separator_ = ':',
+                                           char     padding_   = ' ' ) :
       items( items_ ),
       precision( precision_ ),
       sign( sign_ ),
@@ -222,19 +229,161 @@ struct PCL_CLASS SexagesimalConversionOptions
 // ----------------------------------------------------------------------------
 
 /*!
- * \class ISO8601ConversionOptions
+ * \struct AngleConversionOptions
+ * \brief A set of options specific for string representations of angles.
+ *
+ * This is a convenience structure to ease string representations of angles in
+ * the range [0&deg;,360&deg;) as degrees, minutes and seconds of arc.
+ *
+ * \ingroup sexagesimal_conversion
+ * \sa IsoString::ToSexagesimal(), String::ToSexagesimal(),
+ * SexagesimalConversionOptions, LongitudeConversionOptions,
+ * RAConversionOptions, LatitudeConversionOptions, DecConversionOptions
+ */
+struct PCL_CLASS AngleConversionOptions : public SexagesimalConversionOptions
+{
+   /*!
+    * Constructs an %AngleConversionOptions structure initialized for the
+    * specified \a precision and first item \a padding character. The string
+    * representation will consist of three items separated by spaces. The first
+    * item will be represented left-padded with a length of three characters.
+    */
+   constexpr AngleConversionOptions( unsigned precision = 2, char padding = ' ' ) :
+      SexagesimalConversionOptions( 3/*items*/, precision, false/*sign*/, 3/*width*/, ' '/*separator*/, padding )
+   {}
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \struct LongitudeConversionOptions
+ * \brief A set of options specific for string representations of longitude
+ * angles.
+ *
+ * This is a convenience structure to ease string representations of angles in
+ * the range [-180&deg;,+180&deg;] as degrees, minutes and seconds of arc.
+ *
+ * \ingroup sexagesimal_conversion
+ * \sa IsoString::ToSexagesimal(), String::ToSexagesimal(),
+ * SexagesimalConversionOptions, AngleConversionOptions, RAConversionOptions,
+ * LatitudeConversionOptions, DecConversionOptions
+ */
+struct PCL_CLASS LongitudeConversionOptions : public SexagesimalConversionOptions
+{
+   /*!
+    * Constructs a %LongitudeConversionOptions structure initialized for the
+    * specified \a precision and first item \a padding character. The string
+    * representation will consist of three items separated by spaces. The first
+    * item will be represented left-padded with a length of four characters,
+    * including a leading sign character.
+    */
+   constexpr LongitudeConversionOptions( unsigned precision = 2, char padding = ' ' ) :
+      SexagesimalConversionOptions( 3/*items*/, precision, true/*sign*/, 4/*width*/, ' '/*separator*/, padding )
+   {}
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \struct RAConversionOptions
+ * \brief A set of options specific for string representations of right
+ * ascensions.
+ *
+ * This is a convenience structure to ease string representations of hour
+ * angles in the range [0<sup>h</sup>,24<sup>h</sup>) as hours, minutes and
+ * seconds.
+ *
+ * \ingroup sexagesimal_conversion
+ * \sa IsoString::ToSexagesimal(), String::ToSexagesimal(),
+ * SexagesimalConversionOptions, AngleConversionOptions,
+ * LongitudeConversionOptions, LatitudeConversionOptions, DecConversionOptions
+ */
+struct PCL_CLASS RAConversionOptions : public SexagesimalConversionOptions
+{
+   /*!
+    * Constructs a %RAConversionOptions structure initialized for the specified
+    * \a precision and first item \a padding character. The string
+    * representation will consist of three items separated by spaces. The first
+    * item will be represented left-padded with a length of two characters.
+    */
+   constexpr RAConversionOptions( unsigned precision = 3, char padding = ' ' ) :
+      SexagesimalConversionOptions( 3/*items*/, precision, false/*sign*/, 2/*width*/, ' '/*separator*/, padding )
+   {}
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \struct LatitudeConversionOptions
+ * \brief A set of options specific for string representations of latitude
+ * angles.
+ *
+ * This is a convenience structure to ease string representations of angles in
+ * the range [-90&deg;,+90&deg;] as degrees, minutes and seconds of arc.
+ *
+ * \ingroup sexagesimal_conversion
+ * \sa IsoString::ToSexagesimal(), String::ToSexagesimal(),
+ * SexagesimalConversionOptions, AngleConversionOptions,
+ * LongitudeConversionOptions, RAConversionOptions, DecConversionOptions
+ */
+struct PCL_CLASS LatitudeConversionOptions : public SexagesimalConversionOptions
+{
+   /*!
+    * Constructs a %LatitudeConversionOptions structure initialized for the
+    * specified \a precision and first item \a padding character. The string
+    * representation will consist of three items separated by spaces. The first
+    * item will be represented left-padded with a length of three characters,
+    * including a leading sign character.
+    */
+   constexpr LatitudeConversionOptions( unsigned precision = 2, char padding = ' ' ) :
+      SexagesimalConversionOptions( 3/*items*/, precision, true/*sign*/, 3/*width*/, ' '/*separator*/, padding )
+   {}
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \struct DecConversionOptions
+ * \brief A set of options specific for string representations of declination
+ * angles.
+ *
+ * This structure is a convenience alias of LatitudeConversionOptions.
+ *
+ * \ingroup sexagesimal_conversion
+ * \sa IsoString::ToSexagesimal(), String::ToSexagesimal(),
+ * SexagesimalConversionOptions, AngleConversionOptions,
+ * LongitudeConversionOptions, RAConversionOptions, LatitudeConversionOptions
+ */
+struct PCL_CLASS DecConversionOptions : public LatitudeConversionOptions
+{
+   /*!
+    * Constructs a %DecConversionOptions structure initialized for the
+    * specified \a precision and first item \a padding character. The string
+    * representation will consist of three items separated by spaces. The first
+    * item will be represented left-padded with a length of three characters,
+    * including a leading sign character.
+    */
+   constexpr DecConversionOptions( unsigned precision = 2, char padding = ' ' ) :
+      LatitudeConversionOptions( precision, padding )
+   {}
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \struct ISO8601ConversionOptions
  * \brief Formatting options for string representations of dates and times in
  * ISO 8601 format.
  *
  * \sa IsoString::ToISO8601DateTime(), String::ToISO8601DateTime()
  */
-struct ISO8601ConversionOptions
+struct PCL_CLASS ISO8601ConversionOptions
 {
    /*!
     * Number of represented time items. Can be 0, 1, 2 or 3. All items but the
     * last one are represented as integer values. The last item is represented
     * as a floating point value with the specified precision. The default value
-    * is 3 time items.
+    * is three time items.
     */
    unsigned timeItems : 2;
 
@@ -259,10 +408,10 @@ struct ISO8601ConversionOptions
    /*!
     * Default constructor.
     */
-   ISO8601ConversionOptions( unsigned timeItems_ = 3,
-                             unsigned precision_ = 3,
-                             bool     timeZone_  = true,
-                             bool     zuluTime_  = true ) :
+   constexpr ISO8601ConversionOptions( unsigned timeItems_ = 3,
+                                       unsigned precision_ = 3,
+                                       bool     timeZone_  = true,
+                                       bool     zuluTime_  = true ) :
       timeItems( timeItems_ ),
       precision( precision_ ),
       timeZone( timeZone_ ),
@@ -285,14 +434,15 @@ struct ISO8601ConversionOptions
 
 /*!
  * \class GenericString
- * \brief Generic string.
+ * \brief Generic character string.
  *
- * %GenericString is a finite ordered sequence of characters implemented as a
- * reference-counted, dynamic array of T objects, whose fundamental behavior is
- * specified by an instantiation R of GenericCharTraits for the character type
- * T (typically GenericCharTraits, or a derived class such as CharTraits or
- * IsoCharTraits), and where A provides dynamic allocation for contiguous
- * sequences of elements of type T (StandardAllocator is used by default).
+ * %GenericString is a finite, ordered sequence of characters implemented as a
+ * reference-counted, dynamic array of objects of type T, whose fundamental
+ * behavior is specified by an instantiation type R of GenericCharTraits for
+ * the character type T (typically GenericCharTraits, or a derived class such
+ * as CharTraits or IsoCharTraits), and where the type A provides dynamic
+ * allocation for contiguous sequences of elements of type T (StandardAllocator
+ * is used by default).
  *
  * On the PixInsight platform, all dynamically allocated strings have been
  * implemented as two instantiations of the %GenericString template class,
@@ -439,6 +589,18 @@ public:
       }
       else
          m_data = Data::New();
+   }
+
+   /*!
+    * Constructs a string and initializes it with characters taken from the
+    * specified initializer list \a l.
+    *
+    * This constructor is equivalent to:
+    *
+    * \code GenericString( l.begin(), l.end() ) \endcode
+    */
+   GenericString( std::initializer_list<char_type> l ) : GenericString( l.begin(), l.end() )
+   {
    }
 
    /*!
@@ -1106,6 +1268,17 @@ public:
       }
       else
          Clear();
+   }
+
+   /*!
+    * Assigns a sequence of characters defined by the specified initializer
+    * list \a l to this string. This function is equivalent to:
+    *
+    * \code Assign( l.begin(), l.end() ) \endcode
+    */
+   void Assign( std::initializer_list<char_type> l )
+   {
+      Assign( l.begin(), l.end() );
    }
 
    /*!
@@ -5387,6 +5560,18 @@ public:
    }
 
    /*!
+    * Constructs an %IsoString with a copy of the character sequence stored in
+    * the specified initializer list \a l.
+    *
+    * This constructor is equivalent to:
+    *
+    * \code IsoString( l.begin(), l.end() ) \endcode
+    */
+   IsoString( std::initializer_list<char_type> l ) : IsoString( l.begin(), l.end() )
+   {
+   }
+
+   /*!
     * Constructs an %IsoString as a copy of the null-terminated Unicode
     * (UTF-16) string \a t, transformed to ISO/IEC-8859-1.
     *
@@ -6922,6 +7107,7 @@ public:
     * the range of \c double is exceeded, this member function throws a
     * ParseError exception.
     *
+    * \ingroup sexagesimal_conversion
     * \sa TrySexagesimalToDouble(), ParseSexagesimal(), TryParseSexagesimal()
     */
    double SexagesimalToDouble( const IsoString& separator = ':' ) const
@@ -6951,6 +7137,7 @@ public:
     * occurrence of a character contained by \a separators will be valid as a
     * token separator.
     *
+    * \ingroup sexagesimal_conversion
     * \sa TrySexagesimalToDouble( double&, const Array<>& )
     */
    double SexagesimalToDouble( const Array<char_type>& separators ) const
@@ -6974,6 +7161,7 @@ public:
     * function returns \c false and does not change the \a value variable. This
     * function does not throw any exception.
     *
+    * \ingroup sexagesimal_conversion
     * \sa SexagesimalToDouble(), ParseSexagesimal(), TryParseSexagesimal()
     */
    bool TrySexagesimalToDouble( double& value, const IsoString& separator = ':' ) const
@@ -7006,6 +7194,7 @@ public:
     * separator characters is specified as a dynamic array. Any occurrence of a
     * character contained by \a separators will be valid as a token separator.
     *
+    * \ingroup sexagesimal_conversion
     * \sa SexagesimalToDouble( const Array<>& )
     */
    bool TrySexagesimalToDouble( double& value, const Array<char_type>& separators ) const
@@ -7042,6 +7231,7 @@ public:
     * the range of \c double is exceeded, this member function throws a
     * ParseError exception.
     *
+    * \ingroup sexagesimal_conversion
     * \sa TryParseSexagesimal(), SexagesimalToDouble(), TrySexagesimalToDouble()
     */
    void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator = ':' ) const;
@@ -7067,6 +7257,7 @@ public:
     * occurrence of a character contained by \a separators will be valid as a
     * token separator.
     *
+    * \ingroup sexagesimal_conversion
     * \sa TryParseSexagesimal( int&, int&, int&, double&, const Array<>& )
     */
    void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
@@ -7082,6 +7273,7 @@ public:
     * function returns \c false and does not change any of the \a sign, \a s1,
     * \a s2 and \a s3 variables. This function does not throw any exception.
     *
+    * \ingroup sexagesimal_conversion
     * \sa ParseSexagesimal(), SexagesimalToDouble(), TrySexagesimalToDouble()
     */
    bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator = ':' ) const;
@@ -7106,6 +7298,7 @@ public:
     * occurrence of a character contained by \a separators will be valid as a
     * token separator.
     *
+    * \ingroup sexagesimal_conversion
     * \sa ParseSexagesimal( int&, int&, int&, double&, const Array<>& )
     */
    bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
@@ -7129,7 +7322,10 @@ public:
     *
     * irrespective of the original \a s2 and \a s3 argument values.
     *
-    * \sa SexagesimalToDouble(), SexagesimalConversionOptions
+    * \ingroup sexagesimal_conversion
+    * \sa SexagesimalToDouble(), SexagesimalConversionOptions,
+    * AngleConversionOptions, LongitudeConversionOptions, RAConversionOptions,
+    * LatitudeConversionOptions, DecConversionOptions
     */
    static IsoString ToSexagesimal( int sign, double s1, double s2, double s3,
                                    const SexagesimalConversionOptions& options = SexagesimalConversionOptions() );
@@ -7141,6 +7337,8 @@ public:
     * Calling this member function is equivalent to:
     *
     * \code ToSexagesimal( (d < 0) ? -1 : +1, Abs( d ), 0, 0, options ); \endcode
+    *
+    * \ingroup sexagesimal_conversion
     */
    static IsoString ToSexagesimal( double d, const SexagesimalConversionOptions& options = SexagesimalConversionOptions() )
    {
@@ -7720,6 +7918,16 @@ public:
     */
    typedef string_base::const_c_string          const_c_string;
 
+   /*
+    * Null-terminated UTF-16 string - C++11 compatibility.
+    */
+   typedef char16_t*                            c16_string;
+
+   /*
+    * Immutable null-terminated UTF-16 string - C++11 compatibility.
+    */
+   typedef const char16_t*                      const_c16_string;
+
    /*!
     * %String iterator.
     */
@@ -7859,6 +8067,42 @@ public:
    }
 
    /*!
+    * Constructs a %String with a copy of the character sequence stored in the
+    * specified initializer list \a l.
+    *
+    * This constructor is equivalent to:
+    *
+    * \code String( l.begin(), l.end() ) \endcode
+    */
+   String( std::initializer_list<char_type> l ) : String( l.begin(), l.end() )
+   {
+   }
+
+   /*!
+    * Constructs a %String as a copy of a null-terminated string \a t of
+    * \c char16_t characters.
+    */
+   String( const char16_t* t ) : string_base( reinterpret_cast<const_iterator>( t ) )
+   {
+   }
+
+   /*!
+    * Constructs a %String with the \a n first characters of the
+    * null-terminated string \a t of \c char16_t characters, starting from its
+    * \a i-th character.
+    */
+   String( const char16_t* t, size_type i, size_type n ) : string_base( reinterpret_cast<const_iterator>( t ), i, n )
+   {
+   }
+
+   /*!
+    * Constructs a %String with \a n copies of a \c char16_t character \a c.
+    */
+   String( char16_t c, size_type n ) : string_base( char_type( c ), n )
+   {
+   }
+
+   /*!
     * Constructs a %String as a copy of a null-terminated string \a t of
     * \c wchar_t characters.
     */
@@ -7910,6 +8154,18 @@ public:
    String( const_char8_iterator i, const_char8_iterator j ) : string_base()
    {
       Assign( i, j );
+   }
+
+   /*!
+    * Constructs a %String with a copy of the 8-bit ISO/IEC-8859-1 character
+    * sequence stored in the specified initializer list \a l.
+    *
+    * This constructor is equivalent to:
+    *
+    * \code String( l.begin(), l.end() ) \endcode
+    */
+   String( std::initializer_list<char8_type> l ) : String( l.begin(), l.end() )
+   {
    }
 
    /*!
@@ -8171,6 +8427,26 @@ public:
    }
 
    /*!
+    * Assigns a copy of the null-terminated string \a t of \c char16_t to this
+    * string. Returns a reference to this object.
+    */
+   String& operator =( const char16_t* t )
+   {
+      string_base::Assign( reinterpret_cast<const_iterator>( t ) );
+      return *this;
+   }
+
+   /*!
+    * Assigns a single copy of a \c char16_t character \a c to this string.
+    * Returns a reference to this object.
+    */
+   String& operator =( char16_t c )
+   {
+      string_base::Assign( char_type( c ) );
+      return *this;
+   }
+
+   /*!
     * Assigns a copy of the null-terminated string \a t of \c wchar_t to this
     * string. Returns a reference to this object.
     */
@@ -8272,6 +8548,17 @@ public:
    }
 
    /*!
+    * Assigns a sequence of characters defined by the specified initializer
+    * list \a l to this string. This function is equivalent to:
+    *
+    * \code Assign( l.begin(), l.end() ) \endcode
+    */
+   void Assign( std::initializer_list<char_type> l )
+   {
+      Assign( l.begin(), l.end() );
+   }
+
+   /*!
     * Assigns a contiguous segment of at most \a n characters of a
     * null-terminated sequence \a t, starting from its \a i-th character, to
     * this string.
@@ -8287,6 +8574,32 @@ public:
    void Assign( char_type c, size_type n = 1 )
    {
       string_base::Assign( c, n );
+   }
+
+   /*!
+    * Assigns a null-terminated string \a t of \c char16_t to this string.
+    */
+   void Assign( const char16_t* t )
+   {
+      string_base::Assign( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   /*!
+    * Assigns a contiguous segment of \a n characters of a null-terminated
+    * string \a t of \c char16_t, starting from its \a i-th character, to this
+    * string.
+    */
+   void Assign( const char16_t* t, size_type i, size_type n )
+   {
+      string_base::Assign( reinterpret_cast<const_iterator>( t ), i, n );
+   }
+
+   /*!
+    * Assigns \a n copies of a \c char16_t character \a c to this string.
+    */
+   void Assign( char16_t c, size_type n = 1 )
+   {
+      string_base::Assign( char_type( c ), n );
    }
 
    /*!
@@ -8380,6 +8693,18 @@ public:
    }
 
    /*!
+    * Assigns a sequence of 8-bit ISO/IEC-8859-1 characters defined by the
+    * specified initializer list \a l to this string. This function is
+    * equivalent to:
+    *
+    * \code Assign( l.begin(), l.end() ) \endcode
+    */
+   void Assign( std::initializer_list<char8_type> l )
+   {
+      Assign( l.begin(), l.end() );
+   }
+
+   /*!
     * Assigns \a n copies of an ISO/IEC-8859-1 character \a c to this string.
     */
    void Assign( char8_type c, size_type n = 1 )
@@ -8412,6 +8737,16 @@ public:
    void Insert( size_type i, char_type c, size_type n = 1 )
    {
       string_base::Insert( i, c, n );
+   }
+
+   void Insert( size_type i, const char16_t* t )
+   {
+      string_base::Insert( i, reinterpret_cast<const_iterator>( t ) );
+   }
+
+   void Insert( size_type i, char16_t c, size_type n = 1 )
+   {
+      string_base::Insert( i, String( c, n ) );
    }
 
    void Insert( size_type i, const wchar_t* t )
@@ -8535,6 +8870,28 @@ public:
       return *this;
    }
 
+   void Append( const char16_t* t )
+   {
+      string_base::Append( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   String& operator +=( const char16_t* t )
+   {
+      Append( t );
+      return *this;
+   }
+
+   void Append( char16_t c, size_type n = 1 )
+   {
+      string_base::Append( char_type( c ), n );
+   }
+
+   String& operator +=( char16_t c )
+   {
+      Append( c );
+      return *this;
+   }
+
    void Append( const wchar_t* t )
    {
 #ifdef __PCL_WINDOWS
@@ -8634,6 +8991,16 @@ public:
       Append( c, n );
    }
 
+   void Add( const char16_t* t )
+   {
+      Append( t );
+   }
+
+   void Add( char16_t c, size_type n = 1 )
+   {
+      Append( c, n );
+   }
+
    void Add( const wchar_t* t )
    {
       Append( t );
@@ -8714,6 +9081,28 @@ public:
    }
 
    String& operator -=( char_type c )
+   {
+      Prepend( c );
+      return *this;
+   }
+
+   void Prepend( const char16_t* t )
+   {
+      string_base::Prepend( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   String& operator -=( const char16_t* t )
+   {
+      Prepend( t );
+      return *this;
+   }
+
+   void Prepend( char16_t c, size_type n = 1 )
+   {
+      string_base::Prepend( char_type( c ), n );
+   }
+
+   String& operator -=( char16_t c )
    {
       Prepend( c );
       return *this;
@@ -8810,6 +9199,16 @@ public:
       string_base::Replace( i, n, c, nc );
    }
 
+   void Replace( size_type i, size_type n, const char16_t* t )
+   {
+      string_base::Replace( i, n, reinterpret_cast<const_iterator>( t ) );
+   }
+
+   void Replace( size_type i, size_type n, char16_t c, size_type nc = 1 )
+   {
+      string_base::Replace( i, n, char_type( c ), nc );
+   }
+
    void Replace( size_type i, size_type n, const wchar_t* t )
    {
 #ifdef __PCL_WINDOWS
@@ -8873,6 +9272,16 @@ public:
       string_base::ReplaceCharIC( c1, c2, i, n );
    }
 
+   void ReplaceChar( char16_t c1, char16_t c2, size_type i = 0, size_type n = maxPos )
+   {
+      string_base::ReplaceChar( char_type( c1 ), char_type( c2 ), i, n );
+   }
+
+   void ReplaceCharIC( char16_t c1, char16_t c2, size_type i = 0, size_type n = maxPos )
+   {
+      string_base::ReplaceCharIC( char_type( c1 ), char_type( c2 ), i, n );
+   }
+
    void ReplaceChar( wchar_t c1, wchar_t c2, size_type i = 0, size_type n = maxPos )
    {
       string_base::ReplaceChar( char_type( c1 ), char_type( c2 ), i, n );
@@ -8913,6 +9322,18 @@ public:
    void ReplaceStringIC( const_iterator t1, const_iterator t2, size_type i = 0 )
    {
       string_base::ReplaceStringIC( t1, t2, i );
+   }
+
+   void ReplaceString( const char16_t* t1, const char16_t* t2, size_type i = 0 )
+   {
+      string_base::ReplaceString( reinterpret_cast<const_iterator>( t1 ),
+                                  reinterpret_cast<const_iterator>( t2 ), i );
+   }
+
+   void ReplaceStringIC( const char16_t* t1, const char16_t* t2, size_type i = 0 )
+   {
+      string_base::ReplaceStringIC( reinterpret_cast<const_iterator>( t1 ),
+                                    reinterpret_cast<const_iterator>( t2 ), i );
    }
 
    void ReplaceString( const wchar_t* t1, const wchar_t* t2, size_type i = 0 )
@@ -8957,6 +9378,16 @@ public:
       string_base::DeleteCharIC( c, i );
    }
 
+   void DeleteChar( char16_t c, size_type i = 0 )
+   {
+      string_base::DeleteChar( char_type( c ), i );
+   }
+
+   void DeleteCharIC( char16_t c, size_type i = 0 )
+   {
+      string_base::DeleteCharIC( char_type( c ), i );
+   }
+
    void DeleteChar( wchar_t c, size_type i = 0 )
    {
       string_base::DeleteChar( char_type( c ), i );
@@ -8997,6 +9428,16 @@ public:
    void DeleteStringIC( const_iterator t, size_type i = 0 )
    {
       string_base::DeleteStringIC( t, i );
+   }
+
+   void DeleteString( const char16_t* t, size_type i = 0 )
+   {
+      string_base::DeleteString( reinterpret_cast<const_iterator>( t ), i );
+   }
+
+   void DeleteStringIC( const char16_t* t, size_type i = 0 )
+   {
+      string_base::DeleteStringIC( reinterpret_cast<const_iterator>( t ), i );
    }
 
    void DeleteString( const wchar_t* t, size_type i = 0 )
@@ -9057,6 +9498,26 @@ public:
    bool StartsWithIC( char_type c ) const
    {
       return string_base::StartsWithIC( c );
+   }
+
+   bool StartsWith( const char16_t* t ) const
+   {
+      return string_base::StartsWith( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   bool StartsWith( char16_t c ) const
+   {
+      return string_base::StartsWith( char_type( c ) );
+   }
+
+   bool StartsWithIC( const char16_t* t ) const
+   {
+      return string_base::StartsWithIC( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   bool StartsWithIC( char16_t c ) const
+   {
+      return string_base::StartsWithIC( char_type( c ) );
    }
 
    bool StartsWith( const wchar_t* t ) const
@@ -9151,7 +9612,27 @@ public:
       return string_base::EndsWithIC( c );
    }
 
-    bool EndsWith( const wchar_t* t ) const
+   bool EndsWith( const char16_t* t ) const
+   {
+      return string_base::EndsWith( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   bool EndsWith( char16_t c ) const
+   {
+      return string_base::EndsWith( char_type( c ) );
+   }
+
+   bool EndsWithIC( const char16_t* t ) const
+   {
+      return string_base::EndsWithIC( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   bool EndsWithIC( char16_t c ) const
+   {
+      return string_base::EndsWithIC( char_type( c ) );
+   }
+
+   bool EndsWith( const wchar_t* t ) const
    {
 #ifdef __PCL_WINDOWS
       return string_base::EndsWith( reinterpret_cast<const_iterator>( t ) );
@@ -9243,6 +9724,26 @@ public:
       return string_base::FindFirstIC( c, i );
    }
 
+   size_type FindFirst( const char16_t* t, size_type i = 0 ) const
+   {
+      return string_base::FindFirst( reinterpret_cast<const_iterator>( t ), i );
+   }
+
+   size_type FindFirst( char16_t c, size_type i = 0 ) const
+   {
+      return string_base::FindFirst( char_type( c ), i );
+   }
+
+   size_type FindFirstIC( const char16_t* t, size_type i = 0 ) const
+   {
+      return string_base::FindFirstIC( reinterpret_cast<const_iterator>( t ), i );
+   }
+
+   size_type FindFirstIC( char16_t c, size_type i = 0 ) const
+   {
+      return string_base::FindFirstIC( char_type( c ), i );
+   }
+
    size_type FindFirst( const wchar_t* t, size_type i = 0 ) const
    {
 #ifdef __PCL_WINDOWS
@@ -9308,6 +9809,16 @@ public:
       return FindFirst( c, i );
    }
 
+   size_type Find( const char16_t* t, size_type i = 0 ) const
+   {
+      return FindFirst( t, i );
+   }
+
+   size_type Find( char16_t c, size_type i = 0 ) const
+   {
+      return FindFirst( c, i );
+   }
+
    size_type Find( const wchar_t* t, size_type i = 0 ) const
    {
       return FindFirst( t, i );
@@ -9339,6 +9850,16 @@ public:
    }
 
    size_type FindIC( char_type c, size_type i = 0 ) const
+   {
+      return FindFirstIC( c, i );
+   }
+
+   size_type FindIC( const char16_t* t, size_type i = 0 ) const
+   {
+      return FindFirstIC( t, i );
+   }
+
+   size_type FindIC( char16_t c, size_type i = 0 ) const
    {
       return FindFirstIC( c, i );
    }
@@ -9393,6 +9914,26 @@ public:
    size_type FindLastIC( char_type c, size_type r = maxPos ) const
    {
       return string_base::FindLastIC( c, r );
+   }
+
+   size_type FindLast( const char16_t* t, size_type r = maxPos ) const
+   {
+      return string_base::FindLast( reinterpret_cast<const_iterator>( t ), r );
+   }
+
+   size_type FindLast( char16_t c, size_type r = maxPos ) const
+   {
+      return string_base::FindLast( char_type( c ), r );
+   }
+
+   size_type FindLastIC( const char16_t* t, size_type r = maxPos ) const
+   {
+      return string_base::FindLastIC( reinterpret_cast<const_iterator>( t ), r );
+   }
+
+   size_type FindLastIC( char16_t c, size_type r = maxPos ) const
+   {
+      return string_base::FindLastIC( char_type( c ), r );
    }
 
    size_type FindLast( const wchar_t* t, size_type r = maxPos ) const
@@ -9475,6 +10016,26 @@ public:
       return string_base::ContainsIC( c );
    }
 
+   bool Contains( const char16_t* t ) const
+   {
+      return string_base::Contains( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   bool Contains( char16_t c ) const
+   {
+      return string_base::Contains( char_type( c ) );
+   }
+
+   bool ContainsIC( const char16_t* t ) const
+   {
+      return string_base::ContainsIC( reinterpret_cast<const_iterator>( t ) );
+   }
+
+   bool ContainsIC( char16_t c ) const
+   {
+      return string_base::ContainsIC( char_type( c ) );
+   }
+
    bool Contains( const wchar_t* t ) const
    {
 #ifdef __PCL_WINDOWS
@@ -9540,6 +10101,16 @@ public:
       return string_base::CompareCodePoints( c, caseSensitive );
    }
 
+   int CompareCodePoints( const char16_t* t, bool caseSensitive = true ) const
+   {
+      return string_base::CompareCodePoints( reinterpret_cast<const_iterator>( t ), caseSensitive );
+   }
+
+   int CompareCodePoints( char16_t c, bool caseSensitive = true ) const
+   {
+      return string_base::CompareCodePoints( char_type( c ), caseSensitive );
+   }
+
    int CompareCodePoints( const wchar_t* t, bool caseSensitive = true ) const
    {
 #ifdef __PCL_WINDOWS
@@ -9594,6 +10165,26 @@ public:
    int CompareIC( char_type c, bool localeAware = true ) const
    {
       return string_base::CompareIC( c, localeAware );
+   }
+
+   int Compare( const char16_t* t, bool caseSensitive = true, bool localeAware = true ) const
+   {
+      return string_base::Compare( reinterpret_cast<const_iterator>( t ), caseSensitive, localeAware );
+   }
+
+   int Compare( char16_t c, bool caseSensitive = true, bool localeAware = true ) const
+   {
+      return string_base::Compare( char_type( c ), caseSensitive, localeAware );
+   }
+
+   int CompareIC( const char16_t* t, bool localeAware = true ) const
+   {
+      return string_base::CompareIC( reinterpret_cast<const_iterator>( t ), localeAware );
+   }
+
+   int CompareIC( char16_t c, bool localeAware = true ) const
+   {
+      return string_base::CompareIC( char_type( c ), localeAware );
    }
 
    int Compare( const wchar_t* t, bool caseSensitive = true, bool localeAware = true ) const
@@ -11054,6 +11645,7 @@ public:
     * the range of \c double is exceeded, this member function throws a
     * ParseError exception.
     *
+    * \ingroup sexagesimal_conversion
     * \sa TrySexagesimalToDouble(), ParseSexagesimal(), TryParseSexagesimal()
     */
    double SexagesimalToDouble( const String& separator = ':' ) const
@@ -11073,6 +11665,7 @@ public:
     * occurrence of a character contained by \a separators will be valid as a
     * token separator.
     *
+    * \ingroup sexagesimal_conversion
     * \sa TrySexagesimalToDouble( double&, const Array<>& )
     */
    double SexagesimalToDouble( const Array<char_type>& separators ) const
@@ -11096,6 +11689,7 @@ public:
     * function returns \c false and does not change the \a value variable. This
     * function does not throw any exception.
     *
+    * \ingroup sexagesimal_conversion
     * \sa SexagesimalToDouble(), ParseSexagesimal(), TryParseSexagesimal()
     */
    bool TrySexagesimalToDouble( double& value, const String& separator = ':' ) const
@@ -11118,6 +11712,7 @@ public:
     * characters is specified as a dynamic array. Any occurrence of a character
     * contained by \a separators will be valid as a token separator.
     *
+    * \ingroup sexagesimal_conversion
     * \sa SexagesimalToDouble( const Array<>& )
     */
    bool TrySexagesimalToDouble( double& value, const Array<char_type>& separators ) const
@@ -11154,6 +11749,7 @@ public:
     * the range of \c double is exceeded, this member function throws a
     * ParseError exception.
     *
+    * \ingroup sexagesimal_conversion
     * \sa TryParseSexagesimal(), SexagesimalToDouble(), TrySexagesimalToDouble()
     */
    void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const String& separator = ':' ) const;
@@ -11169,6 +11765,7 @@ public:
     * of a character contained by \a separators will be valid as a token
     * separator.
     *
+    * \ingroup sexagesimal_conversion
     * \sa TryParseSexagesimal( int&, int&, int&, double&, const Array<>& )
     */
    void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
@@ -11184,6 +11781,7 @@ public:
     * function returns \c false and does not change any of the \a sign, \a s1,
     * \a s2 and \a s3 variables. This function does not throw any exception.
     *
+    * \ingroup sexagesimal_conversion
     * \sa ParseSexagesimal(), SexagesimalToDouble(), TrySexagesimalToDouble()
     */
    bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const String& separator = ':' ) const;
@@ -11198,6 +11796,7 @@ public:
     * occurrence of a character contained by \a separators will be valid as a
     * token separator.
     *
+    * \ingroup sexagesimal_conversion
     * \sa ParseSexagesimal( int&, int&, int&, double&, const Array<>& )
     */
    bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const Array<char_type>& separators ) const;
@@ -11221,7 +11820,10 @@ public:
     *
     * irrespective of the original \a s2 and \a s3 argument values.
     *
-    * \sa SexagesimalToDouble(), SexagesimalConversionOptions
+    * \ingroup sexagesimal_conversion
+    * \sa SexagesimalToDouble(), SexagesimalConversionOptions,
+    * AngleConversionOptions, LongitudeConversionOptions, RAConversionOptions,
+    * LatitudeConversionOptions, DecConversionOptions
     */
    static String ToSexagesimal( int sign, double s1, double s2, double s3,
                                 const SexagesimalConversionOptions& options = SexagesimalConversionOptions() );
@@ -11233,6 +11835,8 @@ public:
     * Calling this member function is equivalent to:
     *
     * \code ToSexagesimal( (d < 0) ? -1 : +1, Abs( d ), 0, 0, options ); \endcode
+    *
+    * \ingroup sexagesimal_conversion
     */
    static String ToSexagesimal( double d, const SexagesimalConversionOptions& options = SexagesimalConversionOptions() )
    {
@@ -11627,6 +12231,150 @@ inline String operator +( String::char_type c1, String::string_base&& s2 )
  * \ingroup string_concatenation_ops
  */
 inline String operator +( String::char_type c1, String&& s2 )
+{
+   s2.Prepend( c1 );
+   return s2;
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a UTF-16 string \a s1 and
+ * a null-terminated string of \c char16_t \a t2.
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( const String::string_base& s1, const char16_t* t2 )
+{
+   String s = s1;
+   s.Append( t2 );
+   return s;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a UTF-16 string \a s1
+ * (rvalue reference) and a null-terminated string of \c char16_t \a t2.
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( String::string_base&& s1, const char16_t* t2 )
+{
+   String s = std::move( s1 );
+   s.Append( t2 );
+   return s;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a UTF-16 string \a s1
+ * (rvalue reference) and a null-terminated string of \c char16_t \a t2.
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( String&& s1, const char16_t* t2 )
+{
+   s1.Append( t2 );
+   return s1;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a null-terminated string
+ * of \c char16_t \a t1 and a UTF-16 string \a s2.
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( const char16_t* t1, const String::string_base& s2 )
+{
+   String s = s2;
+   s.Prepend( t1 );
+   return s;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a null-terminated string
+ * of \c char16_t \a t1 and a UTF-16 string \a s2 (rvalue reference).
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( const char16_t* t1, String::string_base&& s2 )
+{
+   String s = std::move( s2 );
+   s.Prepend( t1 );
+   return s;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a null-terminated string
+ * of \c char16_t \a t1 and a UTF-16 string \a s2 (rvalue reference).
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( const char16_t* t1, String&& s2 )
+{
+   s2.Prepend( t1 );
+   return s2;
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a UTF-16 string \a s1 and
+ * a single \c char16_t character \a c2.
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( const String::string_base& s1, char16_t c2 )
+{
+   String s = s1;
+   s.Append( c2 );
+   return s;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a UTF-16 string \a s1
+ * (rvalue reference) and a single \c char16_t character \a c2.
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( String::string_base&& s1, char16_t c2 )
+{
+   String s = std::move( s1 );
+   s.Append( c2 );
+   return s;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a UTF-16 string \a s1
+ * (rvalue reference) and a single \c char16_t character \a c2.
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( String&& s1, char16_t c2 )
+{
+   s1.Append( c2 );
+   return s1;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a single \c char16_t
+ * character \a c1 and a UTF-16 string \a s2.
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( char16_t c1, const String::string_base& s2 )
+{
+   String s = s2;
+   s.Prepend( c1 );
+   return s;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a single \c char16_t
+ * character \a c1 and a UTF-16 string \a s2 (rvalue reference).
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( char16_t c1, String::string_base&& s2 )
+{
+   String s = std::move( s2 );
+   s.Prepend( c1 );
+   return s;
+}
+
+/*!
+ * Returns a UTF-16 string with the concatenation of a single \c char16_t
+ * character \a c1 and a UTF-16 string \a s2 (rvalue reference).
+ * \ingroup string_concatenation_ops
+ */
+inline String operator +( char16_t c1, String&& s2 )
 {
    s2.Prepend( c1 );
    return s2;
@@ -12059,6 +12807,50 @@ inline String& operator <<( String&& s1, String::char_type c2 )
 }
 
 /*!
+ * Appends a null-terminated string \a t2 of \c char16_t to a UTF-16 string
+ * \a s1. Returns a reference to the left-hand operand string \a s1.
+ * \ingroup string_concatenation_ops
+ */
+inline String& operator <<( String& s1, const char16_t* t2 )
+{
+   s1.Append( t2 );
+   return s1;
+}
+
+/*!
+ * Appends a null-terminated string \a t2 of \c char16_t to a UTF-16 string
+ * \a s1. Returns a reference to the left-hand operand string \a s1.
+ * \ingroup string_concatenation_ops
+ */
+inline String& operator <<( String&& s1, const char16_t* t2 )
+{
+   s1.Append( t2 );
+   return s1;
+}
+
+/*!
+ * Appends a single \c char16_t character \a c2 to a UTF-16 string \a s1.
+ * Returns a reference to the left-hand operand string \a s1.
+ * \ingroup string_concatenation_ops
+ */
+inline String& operator <<( String& s1, char16_t c2 )
+{
+   s1.Append( c2 );
+   return s1;
+}
+
+/*!
+ * Appends a single \c char16_t character \a c2 to a UTF-16 string \a s1.
+ * Returns a reference to the left-hand operand string \a s1.
+ * \ingroup string_concatenation_ops
+ */
+inline String& operator <<( String&& s1, char16_t c2 )
+{
+   s1.Append( c2 );
+   return s1;
+}
+
+/*!
  * Appends a null-terminated string \a t2 of \c wchar_t to a UTF-16 string
  * \a s1. Returns a reference to the left-hand operand string \a s1.
  * \ingroup string_concatenation_ops
@@ -12173,6 +12965,226 @@ inline String& operator <<( String&& s1, String::char8_type c2 )
 /*!
  * \defgroup string_relational_ops String Relational Operators
  */
+
+/*!
+ * Equality operator.
+ * \ingroup string_relational_ops
+ */
+inline bool operator ==( const String& s1, const char16_t* t2 )
+{
+   return s1.CompareCodePoints( t2 ) == 0;
+}
+
+/*!
+ * <em>Less than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator  <( const String& s1, const char16_t* t2 )
+{
+   return s1.CompareCodePoints( t2 ) < 0;
+}
+
+/*!
+ * <em>Less than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator <=( const String& s1, const char16_t* t2 )
+{
+   return s1.CompareCodePoints( t2 ) <= 0;
+}
+
+/*!
+ * <em>Greater than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator  >( const String& s1, const char16_t* t2 )
+{
+   return s1.CompareCodePoints( t2 ) > 0;
+}
+
+/*!
+ * <em>Greater than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator >=( const String& s1, const char16_t* t2 )
+{
+   return s1.CompareCodePoints( t2 ) >= 0;
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * Equality operator.
+ * \ingroup string_relational_ops
+ */
+inline bool operator ==( const char16_t* t1, const String& s2 )
+{
+   return s2.CompareCodePoints( t1 ) == 0;
+}
+
+/*!
+ * <em>Less than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator  <( const char16_t* t1, const String& s2 )
+{
+   return s2.CompareCodePoints( t1 ) > 0;
+}
+
+/*!
+ * <em>Less than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator <=( const char16_t* t1, const String& s2 )
+{
+   return s2.CompareCodePoints( t1 ) >= 0;
+}
+
+/*!
+ * <em>Greater than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator  >( const char16_t* t1, const String& s2 )
+{
+   return s2.CompareCodePoints( t1 ) < 0;
+}
+
+/*!
+ * <em>Greater than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator >=( const char16_t* t1, const String& s2 )
+{
+   return s2.CompareCodePoints( t1 ) <= 0;
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * Equality operator.
+ * \ingroup string_relational_ops
+ */
+inline bool operator ==( const String& s1, char16_t c2 )
+{
+   return s1.CompareCodePoints( c2 ) == 0;
+}
+
+/*!
+ * <em>Less than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator  <( const String& s1, char16_t c2 )
+{
+   return s1.CompareCodePoints( c2 ) < 0;
+}
+
+/*!
+ * <em>Less than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator <=( const String& s1, char16_t c2 )
+{
+   return s1.CompareCodePoints( c2 ) <= 0;
+}
+
+/*!
+ * <em>Greater than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator  >( const String& s1, char16_t c2 )
+{
+   return s1.CompareCodePoints( c2 ) > 0;
+}
+
+/*!
+ * <em>Greater than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator >=( const String& s1, char16_t c2 )
+{
+   return s1.CompareCodePoints( c2 ) >= 0;
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * Equality operator.
+ * \ingroup string_relational_ops
+ */
+inline bool operator ==( char16_t c1, const String& s2 )
+{
+   return s2.CompareCodePoints( c1 ) == 0;
+}
+
+/*!
+ * <em>Less than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator  <( char16_t c1, const String& s2 )
+{
+   return s2.CompareCodePoints( c1 ) > 0;
+}
+
+/*!
+ * <em>Less than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator <=( char16_t c1, const String& s2 )
+{
+   return s2.CompareCodePoints( c1 ) >= 0;
+}
+
+/*!
+ * <em>Greater than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator  >( char16_t c1, const String& s2 )
+{
+   return s2.CompareCodePoints( c1 ) < 0;
+}
+
+/*!
+ * <em>Greater than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
+ * \ingroup string_relational_ops
+ */
+inline bool operator >=( char16_t c1, const String& s2 )
+{
+   return s2.CompareCodePoints( c1 ) <= 0;
+}
+
+// ----------------------------------------------------------------------------
 
 /*!
  * Equality operator.
@@ -12628,7 +13640,7 @@ inline std::wostream& operator <<( std::wostream& o, const String& s )
 
 inline std::ostream& operator <<( std::ostream& o, const String& s )
 {
-   return o << IsoString( s );
+   return o << s.ToUTF8();
 }
 
 #endif   // __PCL_NO_STRING_OSTREAM
@@ -12640,4 +13652,4 @@ inline std::ostream& operator <<( std::ostream& o, const String& s )
 #endif   // __PCL_String_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/String.h - Released 2018-11-01T11:06:36Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/APIDefs.h - Released 2017-08-01T14:23:31Z
+// pcl/APIDefs.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -291,13 +291,18 @@ struct api_readout_options
    int32  previewZoom;
    int32  precision;
    uint32 range;
-   bool   showAlpha     :  1;
-   bool   showMask      :  1;
-   bool   showPreview   :  1;
-   bool   previewCenter :  1;
-   bool   broadcast     :  1;
-   bool   real          :  1;
-   uint32 __r__         : 26;
+   int32  coordinateItems;
+   int32  coordinatePrecision;
+   bool   showAlpha      :  1;
+   bool   showMask       :  1;
+   bool   showPreview    :  1;
+   bool   previewCenter  :  1;
+   bool   showEquatorial :  1;
+   bool   showEcliptic   :  1;
+   bool   showGalactic   :  1;
+   bool   broadcast      :  1;
+   bool   real           :  1;
+   uint32 __r__          : 23;
 };
 
 /*
@@ -937,4 +942,4 @@ void PCL_FUNC PCLImageOptionsToAPI( api_image_options&, const ImageOptions& );
 #endif   // __PCL_API_APIDefs_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/APIDefs.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/APIDefs.h - Released 2018-11-01T11:06:36Z

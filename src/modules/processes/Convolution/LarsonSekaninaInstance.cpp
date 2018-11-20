@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Convolution Process Module Version 01.01.03.0257
+// Standard Convolution Process Module Version 01.01.03.0265
 // ----------------------------------------------------------------------------
-// LarsonSekaninaInstance.cpp - Released 2017-08-01T14:26:58Z
+// LarsonSekaninaInstance.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,26 +66,26 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 LarsonSekaninaInstance::LarsonSekaninaInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-interpolation( LSInterpolation::Default ),
-radiusDiff( TheLSRadiusDiffParameter->DefaultValue() ),
-angleDiff( TheLSAngleDiffParameter->DefaultValue() ),
-center( TheLSCenterXParameter->DefaultValue(), TheLSCenterYParameter->DefaultValue() ),
-amount( TheLSAmountParameter->DefaultValue() ),
-threshold( TheLSThresholdParameter->DefaultValue() ),
-deringing( TheLSDeringingParameter->DefaultValue() ),
-useLuminance( TheLSUseLuminanceParameter->DefaultValue() ),
-highPass( TheLSHighPassParameter->DefaultValue() ),
-rangeLow( TheLSRangeLowParameter->DefaultValue() ),
-rangeHigh( TheLSRangeHighParameter->DefaultValue() ),
-disableExtension( TheLSDisableExtensionParameter->DefaultValue() )
+   ProcessImplementation( m ),
+   interpolation( LSInterpolation::Default ),
+   radiusDiff( TheLSRadiusDiffParameter->DefaultValue() ),
+   angleDiff( TheLSAngleDiffParameter->DefaultValue() ),
+   center( TheLSCenterXParameter->DefaultValue(), TheLSCenterYParameter->DefaultValue() ),
+   amount( TheLSAmountParameter->DefaultValue() ),
+   threshold( TheLSThresholdParameter->DefaultValue() ),
+   deringing( TheLSDeringingParameter->DefaultValue() ),
+   useLuminance( TheLSUseLuminanceParameter->DefaultValue() ),
+   highPass( TheLSHighPassParameter->DefaultValue() ),
+   rangeLow( TheLSRangeLowParameter->DefaultValue() ),
+   rangeHigh( TheLSRangeHighParameter->DefaultValue() ),
+   disableExtension( TheLSDisableExtensionParameter->DefaultValue() )
 {
 }
 
 // ----------------------------------------------------------------------------
 
 LarsonSekaninaInstance::LarsonSekaninaInstance( const LarsonSekaninaInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -95,7 +95,7 @@ ProcessImplementation( x )
 void LarsonSekaninaInstance::Assign( const ProcessImplementation& p )
 {
    const LarsonSekaninaInstance* x = dynamic_cast<const LarsonSekaninaInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       interpolation = x->interpolation;
       radiusDiff = x->radiusDiff;
@@ -110,6 +110,13 @@ void LarsonSekaninaInstance::Assign( const ProcessImplementation& p )
       rangeHigh = x->rangeHigh;
       disableExtension = x ->disableExtension;
    }
+}
+
+// ----------------------------------------------------------------------------
+
+UndoFlags LarsonSekaninaInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
 }
 
 // ----------------------------------------------------------------------------
@@ -439,4 +446,4 @@ void* LarsonSekaninaInstance::LockParameter( const MetaParameter* p, size_type /
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LarsonSekaninaInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF LarsonSekaninaInstance.cpp - Released 2018-11-01T11:07:20Z

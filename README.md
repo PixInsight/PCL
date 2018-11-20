@@ -1,11 +1,11 @@
 PCL - PixInsight Class Library
 ------------------------------
 
-[PixInsight](http://pixinsight.com/) is an advanced image processing software platform designed specifically for astrophotography and other technical imaging fields. PixInsight is a modular, open-architecture system where the entire processing and file handling capabilities are implemented as external installable modules.
+[PixInsight](http://pixinsight.com/) is an advanced image processing software platform designed specifically for astronomy and other technical imaging applications. PixInsight is a modular, open-architecture system where the entire processing and file handling capabilities are implemented as external installable modules.
 
 The PixInsight core application provides the infrastructure on top of which external modules can implement processes, image file formats, and their associated user interfaces. The [PixInsight Class Library](http://pixinsight.com/developer/pcl/) (PCL) is a C++ development framework to build PixInsight modules.
 
-PixInsight modules are special shared libraries (.so files on FreeBSD and Linux; .dylib under macOS; .dll files on Windows) that communicate with the PixInsight core application through a high-level API provided by PCL. Along with a core communication API, PCL includes a comprehensive set of image processing algorithms, ranging from geometrical transformations to multiscale analysis algorithms, most of them available as multithreaded parallel implementations.
+PixInsight modules are special shared libraries (.so files on FreeBSD and Linux; .dylib under macOS; .dll files on Windows) that communicate with the PixInsight core application through a high-level API provided by PCL. Along with a core communication API, PCL includes a comprehensive set of image processing algorithms, ranging from geometrical transformations to multiscale analysis algorithms, most of them available as multithreaded parallel implementations. PCL provides also rigorous and efficient implementations of essential astronomical algorithms, including state-of-the-art solar system ephemerides, vector astrometry, and reduction of positions of solar system and stellar objects.
 
 PCL is highly portable code. As of writing this document, it is available on the same platforms supported by the PixInsight core application: 64-bit FreeBSD, Linux, macOS, and Windows. PixInsight modules written around PCL are directly portable to all supported platforms *without changing a single line of source code*. This is possible because PCL is a high-level framework. PCL isolates your module from platform-specific implementation details: all platform-dependent complexities are handled behind the scenes by the PixInsight core application and internal PCL routines.
 
@@ -19,7 +19,7 @@ The official reference documentation for PCL has been generated automatically fr
 
 [PCL Reference Documentation - HTML Format](http://pixinsight.com/developer/pcl/doc/html/index.html)
 
-Currently the PCL documentation is rather complete, although there are still some classes and functions lacking detailed descriptions. If you find errors or inaccuracies in our documentation, we'd like to hear you to get them fixed. If you want to collaborate with us to enhance the existing PCL documentation, you are also welcome.
+Currently the PCL documentation is fairly complete, although there are still some classes and functions lacking detailed descriptions. If you find errors or inaccuracies in our documentation, we'd like to hear you to get them fixed. If you want to collaborate with us to enhance the existing PCL documentation, you are also welcome.
 
 
 ## PCL Repository
@@ -82,11 +82,11 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
    Makefiles for macOS >= 10.9 with clang C++ compiler/Xcode version >= 5.0
 </dd></dl>
 
-**[PCL]/src/modules/file-formats/[module_name]/windows/vc14**<br/>
-**[PCL]/src/modules/processes/[module_name]/windows/vc14**
+**[PCL]/src/modules/file-formats/[module_name]/windows/vc15**<br/>
+**[PCL]/src/modules/processes/[module_name]/windows/vc15**
 
 <dl><dd>
-   Project files (.vcxproj) for Microsoft Visual C++ 2015
+   Project files (.vcxproj) for Microsoft Visual C++ 2017
 </dd></dl>
 
 **[PCL]/src/pcl**
@@ -95,26 +95,22 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
    The complete source code of PixInsight Class Library (PCL). Along with the PCL headers distributed on the [PCL]/include/pcl directory, you can use these source files with the provided makefiles and project files to rebuild PCL on your system.
 </dd></dl>
 
-**[PCL]/devTools**
-
-<dl><dd>
-   Some small helpers for development on Linux. See the README.md in this directory
-</dd></dl>
-
-
 
 ## Supported Compilers
 
-The current version 2.1.3 of PCL has been built and tested with:
+The current version of PCL has been built and tested with:
 
-   * FreeBSD 10.3: System clang compiler
-   * Red Hat Enterprise Linux 7.2: GCC C++ compiler 4.9.1
-   * macOS 10.11: Clang C++ compiler with Xcode 8.2.1
-   * Windows 10: Microsoft Visual C++ 2015 Community Edition
+   * Red Hat Enterprise Linux 7.4: GCC C++ compiler 7.3.0.
+   * macOS 10.11: Clang C++ compiler with Xcode 8.2.1, as provided by Apple.
+   * Windows 10: Microsoft Visual C++ 2017 Community Edition.
+
+We are currently working on the port to FreeBSD:
+
+   * FreeBSD 10.4: System clang compiler.
 
 The GCC and clang C++ compilers provide higher conformance to ISO C++ standards and are high quality development tools. On FreeBSD and macOS we rely on the Clang/LLVM compiler included with the latest versions of Xcode and FreeBSD.
 
-On Windows, we provide project files for the Microsoft Visual Studio integrated development environment (.vcxproj files). As of PCL version 2.1.3, we support Visual C++ 2015 exclusively.
+On Windows, we provide project files for the Microsoft Visual Studio integrated development environment (.vcxproj files). As of PCL version 2.1.10, we support Visual C++ 2017 exclusively.
 
 
 ## Environment Variables
@@ -200,4 +196,4 @@ With the following environment variables correctly defined, you can generate mak
 
 
 ******
-###### Copyright (C) 2003-2017 Pleiades Astrophoto
+###### Copyright (C) 2003-2018 Pleiades Astrophoto

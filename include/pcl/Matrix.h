@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Matrix.h - Released 2017-08-01T14:23:31Z
+// pcl/Matrix.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -1793,6 +1793,26 @@ public:
    }
 
    /*!
+    * Sorts the elements of this matrix in reverse (descending) order.
+    */
+   void ReverseSort()
+   {
+      EnsureUnique();
+      pcl::Sort( m_data->Begin(), m_data->End(),
+                 []( const element& a, const element& b ){ return b < a; } );
+   }
+
+   /*!
+    * Returns a reverse sorted copy of this matrix.
+    */
+   GenericMatrix ReverseSorted() const
+   {
+      GenericMatrix R( *this );
+      R.ReverseSort();
+      return R;
+   }
+
+   /*!
     * Sorts the elements of this matrix in ascending order. Ordering of matrix
     * elements is defined such that for any pair a, b of matrix elements, the
     * specified binary predicate p( a, b ) is true if a precedes b.
@@ -3423,4 +3443,4 @@ typedef F80Matrix                   LDMatrix;
 #endif   // __PCL_Matrix_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Matrix.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Matrix.h - Released 2018-11-01T11:06:36Z

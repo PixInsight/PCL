@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Crop.h - Released 2017-08-01T14:23:31Z
+// pcl/Crop.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -113,8 +113,7 @@ public:
     * the \a left, \a top, \a right and \a bottom sides.
     */
    Crop( double left = 0, double top = 0, double right = 0, double bottom = 0 ) :
-      GeometricTransformation(), ImageResolution(),
-      m_margins( left, top, right, bottom ), m_mode( CropMode::RelativeMargins ), m_fillValues()
+      m_margins( left, top, right, bottom ), m_mode( CropMode::RelativeMargins )
    {
    }
 
@@ -124,32 +123,19 @@ public:
     */
    template <typename T>
    Crop( const GenericRectangle<T>& r ) :
-      GeometricTransformation(), ImageResolution(),
-      m_margins( r ), m_mode( CropMode::RelativeMargins ), m_fillValues()
+      m_margins( r ), m_mode( CropMode::RelativeMargins )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   Crop( const Crop& x ) :
-      GeometricTransformation( x ), ImageResolution( x ),
-      m_margins( x.m_margins ), m_mode( x.m_mode ), m_fillValues( x.m_fillValues )
-   {
-   }
+   Crop( const Crop& ) = default;
 
    /*!
     * Copy assignment operator. Returns a reference to this object.
     */
-   Crop& operator =( const Crop& x )
-   {
-      (void)GeometricTransformation::operator =( x );
-      (void)ImageResolution::operator =( x );
-      m_margins = x.m_margins;
-      m_mode = x.m_mode;
-      m_fillValues = x.m_fillValues;
-      return *this;
-   }
+   Crop& operator =( const Crop& ) = default;
 
    /*!
     * Returns a rectangle whose components correspond to the current cropping
@@ -245,7 +231,7 @@ public:
 
    /*!
     */
-   virtual void GetNewSizes( int& width, int& height ) const;
+   void GetNewSizes( int& width, int& height ) const override;
 
 protected:
 
@@ -254,13 +240,13 @@ protected:
    DVector   m_fillValues;
 
    // Inherited from ImageTransformation.
-   virtual void Apply( pcl::Image& ) const;
-   virtual void Apply( pcl::DImage& ) const;
-   virtual void Apply( pcl::ComplexImage& ) const;
-   virtual void Apply( pcl::DComplexImage& ) const;
-   virtual void Apply( pcl::UInt8Image& ) const;
-   virtual void Apply( pcl::UInt16Image& ) const;
-   virtual void Apply( pcl::UInt32Image& ) const;
+   void Apply( pcl::Image& ) const override;
+   void Apply( pcl::DImage& ) const override;
+   void Apply( pcl::ComplexImage& ) const override;
+   void Apply( pcl::DComplexImage& ) const override;
+   void Apply( pcl::UInt8Image& ) const override;
+   void Apply( pcl::UInt16Image& ) const override;
+   void Apply( pcl::UInt32Image& ) const override;
 };
 
 // ----------------------------------------------------------------------------
@@ -270,4 +256,4 @@ protected:
 #endif   // __PCL_Crop_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Crop.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Crop.h - Released 2018-11-01T11:06:36Z

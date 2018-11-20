@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/RealTimeProgressStatus.h - Released 2017-08-01T14:23:31Z
+// pcl/RealTimeProgressStatus.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -112,7 +112,7 @@ public:
     * Real-Time Preview progress dialog window and initializes it with the
     * monitor's total count and information text.
     */
-   virtual int Initialized( const StatusMonitor& monitor ) const
+   int Initialized( const StatusMonitor& monitor ) const override
    {
       if ( MuteStatus::Initialized( monitor ) == 0 )
       {
@@ -129,7 +129,7 @@ public:
     * As reimplemented in %RealTimeProgressStatus, this function updates the
     * Real-Time Preview progress dialog with the current monitor's count.
     */
-   virtual int Updated( const StatusMonitor& monitor ) const
+   int Updated( const StatusMonitor& monitor ) const override
    {
       if ( MuteStatus::Updated( monitor ) == 0 )
       {
@@ -146,7 +146,7 @@ public:
     * As reimplemented in %RealTimeProgressStatus, this function closes the
     * Real-Time Preview progress dialog window.
     */
-   virtual int Completed( const StatusMonitor& monitor ) const
+   int Completed( const StatusMonitor& monitor ) const override
    {
       if ( MuteStatus::Completed( monitor ) == 0 )
       {
@@ -163,7 +163,7 @@ public:
     * As reimplemented in %RealTimeProgressStatus, this function updates the
     * single-line label text on the Real-Time Preview progress dialog.
     */
-   virtual void InfoUpdated( const StatusMonitor& monitor ) const
+   void InfoUpdated( const StatusMonitor& monitor ) const override
    {
       RealTimePreview::SetProgressText( monitor.Info() );
    }
@@ -182,4 +182,4 @@ private:
 #endif   // __PCL_RealTimeProgressStatus_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/RealTimeProgressStatus.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/RealTimeProgressStatus.h - Released 2018-11-01T11:06:36Z

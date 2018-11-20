@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// ScreenTransferFunctionProcess.cpp - Released 2017-08-01T14:26:58Z
+// ScreenTransferFunctionProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -65,7 +65,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ScreenTransferFunctionProcess* TheScreenTransferFunctionProcess = 0;
+ScreenTransferFunctionProcess* TheScreenTransferFunctionProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -73,7 +73,7 @@ ScreenTransferFunctionProcess* TheScreenTransferFunctionProcess = 0;
 
 // ----------------------------------------------------------------------------
 
-ScreenTransferFunctionProcess::ScreenTransferFunctionProcess() : MetaProcess()
+ScreenTransferFunctionProcess::ScreenTransferFunctionProcess()
 {
    TheScreenTransferFunctionProcess = this;
 
@@ -163,7 +163,7 @@ ProcessImplementation* ScreenTransferFunctionProcess::Create() const
 ProcessImplementation* ScreenTransferFunctionProcess::Clone( const ProcessImplementation& p ) const
 {
    const ScreenTransferFunctionInstance* instPtr = dynamic_cast<const ScreenTransferFunctionInstance*>( &p );
-   return (instPtr != 0) ? new ScreenTransferFunctionInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new ScreenTransferFunctionInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -251,12 +251,16 @@ static void ShowHelp()
 "</raw>" );
 }
 
+// ----------------------------------------------------------------------------
+
 static double ArgumentClippingPointValue( const Argument& arg )
 {
    if ( arg.NumericValue() < 0 || arg.NumericValue() > 1 )
       throw ParseError( "Clipping point out of range: " + arg.Token() );
    return arg.NumericValue();
 }
+
+// ----------------------------------------------------------------------------
 
 static double ArgumentMidtonesBalanceValue( const Argument& arg )
 {
@@ -265,6 +269,8 @@ static double ArgumentMidtonesBalanceValue( const Argument& arg )
    return arg.NumericValue();
 }
 
+// ----------------------------------------------------------------------------
+
 static double ArgumentShadowsRangeExpansionValue( const Argument& arg )
 {
    if ( arg.NumericValue() > 0 )
@@ -272,12 +278,16 @@ static double ArgumentShadowsRangeExpansionValue( const Argument& arg )
    return arg.NumericValue();
 }
 
+// ----------------------------------------------------------------------------
+
 static double ArgumentHighlightsRangeExpansionValue( const Argument& arg )
 {
    if ( arg.NumericValue() < 1 )
       throw ParseError( "Highlights range expansion out of range: " + arg.Token() );
    return arg.NumericValue();
 }
+
+// ----------------------------------------------------------------------------
 
 int ScreenTransferFunctionProcess::ProcessCommandLine( const StringList& argv ) const
 {
@@ -436,4 +446,4 @@ int ScreenTransferFunctionProcess::ProcessCommandLine( const StringList& argv ) 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ScreenTransferFunctionProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF ScreenTransferFunctionProcess.cpp - Released 2018-11-01T11:07:21Z

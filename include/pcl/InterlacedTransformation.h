@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/InterlacedTransformation.h - Released 2017-08-01T14:23:31Z
+// pcl/InterlacedTransformation.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -91,23 +91,18 @@ public:
 
    /*!
     * Constructs an %InterlacedTransformation object with the specified
-    * <em>interlacing distance</em> \a n >= 1 in pixels.
+    * <em>interlacing distance</em> \a n > 0 in pixels.
     */
    InterlacedTransformation( int n = 1 ) :
-      ImageTransformation(),
       m_distance( pcl::Max( 1, n ) )
    {
-      PCL_PRECONDITION( n >= 1 )
+      PCL_PRECONDITION( n > 0 )
    }
 
    /*!
     * Copy constructor.
     */
-   InterlacedTransformation( const InterlacedTransformation& x ) :
-      ImageTransformation( x ),
-      m_distance( x.m_distance )
-   {
-   }
+   InterlacedTransformation( const InterlacedTransformation& ) = default;
 
    /*!
     * Destroys an %InterlacedTransformation object.
@@ -152,7 +147,7 @@ public:
     */
    void SetInterlacingDistance( int n )
    {
-      PCL_PRECONDITION( n >= 1 )
+      PCL_PRECONDITION( n > 0 )
       m_distance = pcl::Max( 1, n );
    }
 
@@ -173,7 +168,7 @@ private:
    /*
     * Interlacing distance in pixels
     */
-   int m_distance;
+   int m_distance = 1;
 };
 
 // ----------------------------------------------------------------------------
@@ -183,4 +178,4 @@ private:
 #endif   // __PCL_InterlacedTransformation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/InterlacedTransformation.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/InterlacedTransformation.h - Released 2018-11-01T11:06:36Z

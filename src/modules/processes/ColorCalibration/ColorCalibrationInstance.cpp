@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.03.02.0309
+// Standard ColorCalibration Process Module Version 01.03.03.0319
 // ----------------------------------------------------------------------------
-// ColorCalibrationInstance.cpp - Released 2017-08-01T14:26:57Z
+// ColorCalibrationInstance.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -65,33 +65,32 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 ColorCalibrationInstance::ColorCalibrationInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-whiteReferenceViewId(),
-whiteLow( TheCCWhiteLowParameter->DefaultValue() ),
-whiteHigh( TheCCWhiteHighParameter->DefaultValue() ),
-whiteUseROI( TheCCWhiteUseROIParameter->DefaultValue() ),
-whiteROI( 0 ),
-structureDetection( TheCCStructureDetectionParameter->DefaultValue() ),
-structureLayers( TheCCStructureLayersParameter->DefaultValue() ),
-noiseLayers( TheCCNoiseLayersParameter->DefaultValue() ),
-manualWhiteBalance( TheCCManualWhiteBalanceParameter->DefaultValue() ),
-manualRedFactor( TheCCManualRedFactorParameter->DefaultValue() ),
-manualGreenFactor( TheCCManualGreenFactorParameter->DefaultValue() ),
-manualBlueFactor( TheCCManualBlueFactorParameter->DefaultValue() ),
-backgroundReferenceViewId(),
-backgroundLow( TheCCBackgroundLowParameter->DefaultValue() ),
-backgroundHigh( TheCCBackgroundHighParameter->DefaultValue() ),
-backgroundUseROI( TheCCBackgroundUseROIParameter->DefaultValue() ),
-backgroundROI( 0 ),
-outputWhiteReferenceMask( TheCCOutputWhiteReferenceMaskParameter->DefaultValue() ),
-outputBackgroundReferenceMask( TheCCOutputBackgroundReferenceMaskParameter->DefaultValue() )
+   ProcessImplementation( m ),
+   whiteLow( TheCCWhiteLowParameter->DefaultValue() ),
+   whiteHigh( TheCCWhiteHighParameter->DefaultValue() ),
+   whiteUseROI( TheCCWhiteUseROIParameter->DefaultValue() ),
+   whiteROI( 0 ),
+   structureDetection( TheCCStructureDetectionParameter->DefaultValue() ),
+   structureLayers( TheCCStructureLayersParameter->DefaultValue() ),
+   noiseLayers( TheCCNoiseLayersParameter->DefaultValue() ),
+   manualWhiteBalance( TheCCManualWhiteBalanceParameter->DefaultValue() ),
+   manualRedFactor( TheCCManualRedFactorParameter->DefaultValue() ),
+   manualGreenFactor( TheCCManualGreenFactorParameter->DefaultValue() ),
+   manualBlueFactor( TheCCManualBlueFactorParameter->DefaultValue() ),
+   backgroundReferenceViewId(),
+   backgroundLow( TheCCBackgroundLowParameter->DefaultValue() ),
+   backgroundHigh( TheCCBackgroundHighParameter->DefaultValue() ),
+   backgroundUseROI( TheCCBackgroundUseROIParameter->DefaultValue() ),
+   backgroundROI( 0 ),
+   outputWhiteReferenceMask( TheCCOutputWhiteReferenceMaskParameter->DefaultValue() ),
+   outputBackgroundReferenceMask( TheCCOutputBackgroundReferenceMaskParameter->DefaultValue() )
 {
 }
 
 // ----------------------------------------------------------------------------
 
 ColorCalibrationInstance::ColorCalibrationInstance( const ColorCalibrationInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -101,7 +100,7 @@ ProcessImplementation( x )
 void ColorCalibrationInstance::Assign( const ProcessImplementation& p )
 {
    const ColorCalibrationInstance* x = dynamic_cast<const ColorCalibrationInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       whiteReferenceViewId = x->whiteReferenceViewId;
       whiteLow = x->whiteLow;
@@ -123,6 +122,13 @@ void ColorCalibrationInstance::Assign( const ProcessImplementation& p )
       outputWhiteReferenceMask = x->outputWhiteReferenceMask;
       outputBackgroundReferenceMask = x->outputBackgroundReferenceMask;
    }
+}
+
+// ----------------------------------------------------------------------------
+
+UndoFlags ColorCalibrationInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
 }
 
 // ----------------------------------------------------------------------------
@@ -706,4 +712,4 @@ size_type ColorCalibrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ColorCalibrationInstance.cpp - Released 2017-08-01T14:26:57Z
+// EOF ColorCalibrationInstance.cpp - Released 2018-11-01T11:07:20Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/SeparableFilter.h - Released 2017-08-01T14:23:31Z
+// pcl/SeparableFilter.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -109,7 +109,7 @@ public:
     * Constructs an empty %SeparableFilter object with optional \a name.
     */
    SeparableFilter( const String& name = String() ) :
-      rowFilter(), colFilter(), filterName( name )
+      filterName( name )
    {
    }
 
@@ -176,19 +176,12 @@ public:
    /*!
     * Copy constructor.
     */
-   SeparableFilter( const SeparableFilter& x ) :
-      rowFilter( x.rowFilter ), colFilter( x.colFilter ), filterName( x.filterName )
-   {
-   }
+   SeparableFilter( const SeparableFilter& ) = default;
 
    /*!
     * Move constructor.
     */
-   SeparableFilter( SeparableFilter&& x ) :
-      rowFilter( std::move( x.rowFilter ) ),
-      colFilter( std::move( x.colFilter ) ), filterName( std::move( x.filterName ) )
-   {
-   }
+   SeparableFilter( SeparableFilter&& ) = default;
 
    /*!
     * Destroys a %SeparableFilter object.
@@ -212,24 +205,12 @@ public:
    /*!
     * Copy assignment operator. Returns a reference to this object.
     */
-   SeparableFilter& operator =( const SeparableFilter& x )
-   {
-      rowFilter = x.rowFilter;
-      colFilter = x.colFilter;
-      filterName = x.filterName;
-      return *this;
-   }
+   SeparableFilter& operator =( const SeparableFilter& ) = default;
 
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-   SeparableFilter& operator =( SeparableFilter&& x )
-   {
-      rowFilter = std::move( x.rowFilter );
-      colFilter = std::move( x.colFilter );
-      filterName = std::move( x.filterName );
-      return *this;
-   }
+   SeparableFilter& operator =( SeparableFilter&& ) = default;
 
    /*!
     * Assigns the specified scalar \a x to all filter coefficients. Returns a
@@ -388,16 +369,6 @@ public:
       colFilter = rowFilter = coefficient_vector();
    }
 
-   /*!
-    * Exchanges two separable filters \a x1 and \a x2.
-    */
-   friend void Swap( SeparableFilter& x1, SeparableFilter& x2 )
-   {
-      pcl::Swap( x1.rowFilter,  x2.rowFilter );
-      pcl::Swap( x1.colFilter,  x2.colFilter );
-      pcl::Swap( x1.filterName, x2.filterName );
-   }
-
 protected:
 
    /*
@@ -420,4 +391,4 @@ protected:
 #endif   // __PCL_SeparableFilter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SeparableFilter.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/SeparableFilter.h - Released 2018-11-01T11:06:36Z

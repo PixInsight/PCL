@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ICCProfile.cpp - Released 2017-08-01T14:23:38Z
+// pcl/ICCProfile.cpp - Released 2018-11-01T11:06:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -682,19 +682,19 @@ bool ICCProfile::SupportsRenderingIntent( ICCProfile::handle h,
    uint32 cmsIntent;
    switch ( intent )
    {
-   case ICCRenderingIntent::Perceptual:           cmsIntent = INTENT_PERCEPTUAL;
-   case ICCRenderingIntent::RelativeColorimetric: cmsIntent = INTENT_RELATIVE_COLORIMETRIC;
-   case ICCRenderingIntent::Saturation:           cmsIntent = INTENT_SATURATION;
-   case ICCRenderingIntent::AbsoluteColorimetric: cmsIntent = INTENT_ABSOLUTE_COLORIMETRIC;
+   case ICCRenderingIntent::Perceptual:           cmsIntent = INTENT_PERCEPTUAL; break;
+   case ICCRenderingIntent::RelativeColorimetric: cmsIntent = INTENT_RELATIVE_COLORIMETRIC; break;
+   case ICCRenderingIntent::Saturation:           cmsIntent = INTENT_SATURATION; break;
+   case ICCRenderingIntent::AbsoluteColorimetric: cmsIntent = INTENT_ABSOLUTE_COLORIMETRIC; break;
    default: return false; // ?!
    }
 
    uint32 cmsDirection;
    switch ( direction )
    {
-   case ICCRenderingDirection::Input:    cmsDirection = LCMS_USED_AS_INPUT;
-   case ICCRenderingDirection::Output:   cmsDirection = LCMS_USED_AS_OUTPUT;
-   case ICCRenderingDirection::Proofing: cmsDirection = LCMS_USED_AS_PROOF;
+   case ICCRenderingDirection::Input:    cmsDirection = LCMS_USED_AS_INPUT; break;
+   case ICCRenderingDirection::Output:   cmsDirection = LCMS_USED_AS_OUTPUT; break;
+   case ICCRenderingDirection::Proofing: cmsDirection = LCMS_USED_AS_PROOF; break;
    default: return false; // ?!
    }
 
@@ -947,4 +947,4 @@ ICCProfile::profile_list ICCProfile::FindProfilesByColorSpace( ICCColorSpaces co
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ICCProfile.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/ICCProfile.cpp - Released 2018-11-01T11:06:52Z

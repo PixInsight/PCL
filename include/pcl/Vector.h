@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/Vector.h - Released 2017-08-01T14:23:31Z
+// pcl/Vector.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -178,6 +178,19 @@ public:
       if ( a != nullptr )
          for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i )
             *i = component( *a++ );
+   }
+
+   /*!
+    * Constructs a vector and initializes it with component values taken from
+    * the specified initializer list \a c.
+    *
+    * This constructor is equivalent to:
+    *
+    * \code GenericVector( c.begin(), int( c.size() ) ) \endcode
+    */
+   template <typename T1>
+   GenericVector( std::initializer_list<T1> c ) : GenericVector( c.begin(), int( c.size() ) )
+   {
    }
 
    /*!
@@ -757,6 +770,26 @@ public:
    {
       GenericVector R( *this );
       R.Sort();
+      return R;
+   }
+
+   /*!
+    * Sorts the components of this vector in reverse (descending) order.
+    */
+   void ReverseSort()
+   {
+      EnsureUnique();
+      pcl::Sort( m_data->Begin(), m_data->End(),
+                 []( const scalar& a, const scalar& b ){ return b < a; } );
+   }
+
+   /*!
+    * Returns a reverse sorted copy of this vector.
+    */
+   GenericVector ReverseSorted() const
+   {
+      GenericVector R( *this );
+      R.ReverseSort();
       return R;
    }
 
@@ -1735,7 +1768,7 @@ public:
     * the direction of the input vector is taken into account, never its
     * magnitude.
     *
-    * \sa FromSpherical()
+    * \sa ToSpherical2Pi(), FromSpherical()
     */
    template <typename T1, typename T2>
    void ToSpherical( T1& lon, T2& lat ) const
@@ -1747,6 +1780,22 @@ public:
       double m2 = x*x + y*y;
       lon = T1( (m2 == 0) ? 0.0 : ArcTan( y, x ) );
       lat = T2( (z == 0)  ? 0.0 : ArcTan( z, pcl::Sqrt( m2 ) ) );
+   }
+
+   /*!
+    * Computes spherical coordinates from this three-component vector.
+    *
+    * This function is identical to ToSpherical(), but the output longitude
+    * component is normalized to the range [0,2pi) in radians.
+    *
+    * \sa ToSpherical(), FromSpherical()
+    */
+   template <typename T1, typename T2>
+   void ToSpherical2Pi( T1& lon, T2& lat ) const
+   {
+      ToSpherical( lon, lat );
+      if ( lon < 0 )
+         lon += TwoPi();
    }
 
    /*!
@@ -1762,7 +1811,7 @@ public:
     * specified position on the sphere. It is a unit vector (unit magnitude)
     * pointing from the center of the sphere to the specified location.
     *
-    * \sa ToSpherical()
+    * \sa ToSpherical(), ToSpherical2Pi()
     */
    static GenericVector FromSpherical( double slon, double clon, double slat, double clat )
    {
@@ -2417,7 +2466,8 @@ GenericVector<T> operator /( const GenericVector<T>& A, const T& x )
 template <typename T> inline
 GenericVector<T> operator /( GenericVector<T>&& A, const T& x )
 {
-   return A /= x;
+   A /= x;
+   return A;
 }
 
 /*!
@@ -2505,7 +2555,8 @@ GenericVector<T> operator ^( const GenericVector<T>& A, const T& x )
 template <typename T> inline
 GenericVector<T> operator ^( GenericVector<T>&& A, const T& x )
 {
-   return A ^= x;
+   A ^= x;
+   return A;
 }
 
 /*!
@@ -2766,4 +2817,4 @@ typedef F80Vector                   LDVector;
 #endif   // __PCL_Vector_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Vector.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/Vector.h - Released 2018-11-01T11:06:36Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.01.0332
+// Standard ImageCalibration Process Module Version 01.04.01.0345
 // ----------------------------------------------------------------------------
-// LocalNormalizationInterface.cpp - Released 2017-08-01T14:26:58Z
+// LocalNormalizationInterface.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -219,6 +219,8 @@ void LocalNormalizationInterface::UpdateGeneralParameterControls()
    GUI->TargetRejectionThreshold_NumericControl.Enable( m_instance.p_rejection );
 
    GUI->GenerateNormalizedImages_ComboBox.SetCurrentItem( m_instance.p_generateNormalizedImages );
+
+   GUI->NoScale_CheckBox.SetChecked( m_instance.p_noScale );
 
    GUI->GenerateNormalizationData_CheckBox.SetChecked( m_instance.p_generateNormalizationData );
 
@@ -432,6 +434,10 @@ void LocalNormalizationInterface::e_Click( Button& sender, bool checked )
    {
       m_instance.p_rejection = checked;
       UpdateGeneralParameterControls();
+   }
+   else if ( sender == GUI->NoScale_CheckBox )
+   {
+      m_instance.p_noScale = checked;
    }
    else if ( sender == GUI->GenerateNormalizationData_CheckBox )
    {
@@ -910,6 +916,19 @@ LocalNormalizationInterface::GUIData::GUIData( LocalNormalizationInterface& w )
 
    //
 
+   NoScale_CheckBox.SetText( "No scale component" );
+   NoScale_CheckBox.SetToolTip( "<p>Compute only the offset component of the local normalization function, and set the scale "
+      "component constant equal to one.</p>"
+      "<p>This option should be disabled under normal working conditions. It can be useful to limit local normalization to correction "
+      "of additive gradients exclusively.</p>" );
+   NoScale_CheckBox.OnClick( (Button::click_event_handler)&LocalNormalizationInterface::e_Click, w );
+
+   NoScale_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
+   NoScale_Sizer.Add( NoScale_CheckBox );
+   NoScale_Sizer.AddStretch();
+
+   //
+
    GenerateNormalizationData_CheckBox.SetText( "Generate normalization data" );
    GenerateNormalizationData_CheckBox.SetToolTip( "<p>Generate XML normalization data files (XNML format, .xnml files) that can be "
       "used with the ImageIntegration and DrizzleIntegration processes. XNML files store normalization parameters, image references "
@@ -991,6 +1010,7 @@ LocalNormalizationInterface::GUIData::GUIData( LocalNormalizationInterface& w )
    GeneralParameters_Sizer.Add( ReferenceRejectionThreshold_NumericControl );
    GeneralParameters_Sizer.Add( TargetRejectionThreshold_NumericControl );
    GeneralParameters_Sizer.Add( GenerateNormalizedImages_Sizer );
+   GeneralParameters_Sizer.Add( NoScale_Sizer );
    GeneralParameters_Sizer.Add( GenerateNormalizationData_Sizer );
    GeneralParameters_Sizer.Add( ShowBackgroundModels_Sizer );
    GeneralParameters_Sizer.Add( ShowRejectionMaps_Sizer );
@@ -1228,4 +1248,4 @@ LocalNormalizationInterface::GUIData::GUIData( LocalNormalizationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LocalNormalizationInterface.cpp - Released 2017-08-01T14:26:58Z
+// EOF LocalNormalizationInterface.cpp - Released 2018-11-01T11:07:21Z

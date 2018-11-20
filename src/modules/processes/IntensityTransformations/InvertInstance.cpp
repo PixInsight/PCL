@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// InvertInstance.cpp - Released 2017-08-01T14:26:58Z
+// InvertInstance.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -61,13 +61,15 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-InvertInstance::InvertInstance( const MetaProcess* m ) : ProcessImplementation( m )
+InvertInstance::InvertInstance( const MetaProcess* m ) :
+   ProcessImplementation( m )
 {
 }
 
 // ----------------------------------------------------------------------------
 
-InvertInstance::InvertInstance( const InvertInstance& x ) : ProcessImplementation( x )
+InvertInstance::InvertInstance( const InvertInstance& x ) :
+   ProcessImplementation( x )
 {
 }
 
@@ -76,6 +78,13 @@ InvertInstance::InvertInstance( const InvertInstance& x ) : ProcessImplementatio
 void InvertInstance::Assign( const ProcessImplementation& )
 {
    // Nothing to assign (Invert has no parameters)
+}
+
+// ----------------------------------------------------------------------------
+
+UndoFlags InvertInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
 }
 
 // ----------------------------------------------------------------------------
@@ -120,4 +129,4 @@ bool InvertInstance::ExecuteOn( View& view )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF InvertInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF InvertInstance.cpp - Released 2018-11-01T11:07:21Z

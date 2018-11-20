@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/ImageStatistics.h - Released 2017-08-01T14:23:31Z
+// pcl/ImageStatistics.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,6 +57,7 @@
 #include <pcl/Defs.h>
 
 #include <pcl/ImageVariant.h>
+#include <pcl/ParallelProcess.h>
 
 namespace pcl
 {
@@ -67,7 +68,7 @@ namespace pcl
  * \class ImageStatistics
  * \brief Descriptive image statistics.
  *
- * %ImageStatistics provides basic descriptive statistics of image sample
+ * %ImageStatistics provides basic descriptive statistics of pixel sample
  * values:
  *
  * \li Pixel sample count.
@@ -112,7 +113,7 @@ namespace pcl
  * %ImageStatistics calculates statistical values for the currently selected
  * region and channel of its source image.
  */
-class PCL_CLASS ImageStatistics
+class PCL_CLASS ImageStatistics : public ParallelProcess
 {
 public:
 
@@ -122,112 +123,64 @@ public:
     */
    struct PCL_CLASS Data
    {
-      size_type   count;               //!< Total number of evaluated samples.
-      double      mean;                //!< Arithmetic mean.
-      double      sumOfSquares;        //!< Sum of squared samples.
-      double      median;              //!< Median sample value.
-      double      variance;            //!< Variance from the mean.
-      double      stdDev;              //!< Standard deviation (=Sqrt(variance)).
-      double      avgDev;              //!< Average deviation from the median.
-      double      MAD;                 //!< Median absolute deviation from the median.
-      double      bwmv;                //!< Biweight midvariance.
-      double      pbmv;                //!< Percentage bend midvariance.
-      double      Sn;                  //!< Sn scale estimator of Rousseeuw and Croux.
-      double      Qn;                  //!< Qn scale estimator of Rousseeuw and Croux.
-      double      minimum;             //!< Minimum sample value.
-      Point       minPos;              //!< Position of the minimum sample value.
-      double      maximum;             //!< Maximum sample value.
-      Point       maxPos;              //!< Position of the maximum sample value.
-
-      double      low;                 //!< If rejectLow, ignore samples less than or equal to this value.
-      double      high;                //!< If rejectHigh, ignore samples greater than or equal to this value.
-
-      bool        rejectLow      :  1; //!< Ignore samples with values less than or equal to low.
-      bool        rejectHigh     :  1; //!< Ignore samples with values greater than or equal to high.
-      bool        noExtremes     :  1; //!< Do not compute minimum and maximum sample values.
-      bool        noMean         :  1; //!< Do not compute the mean, variance, and standard deviation.
-      bool        noSumOfSquares :  1; //!< Do not compute the sum of squared samples.
-      bool        noVariance     :  1; //!< Do not compute variance and standard deviation.
-      bool        noMedian       :  1; //!< Do not compute median, average deviation, MAD, biweight and bend midvariances.
-      bool        noAvgDev       :  1; //!< Do not compute average deviation.
-      bool        noMAD          :  1; //!< Do not compute MAD.
-      bool        noBWMV         :  1; //!< Do not compute biweight midvariance.
-      bool        noPBMV         :  1; //!< Do not compute percentage bend midvariance.
-      bool        noSn           :  1; //!< Do not compute Sn estimator of scale.
-      bool        noQn           :  1; //!< Do not compute Qn estimator of scale.
+      size_type count = 0;              //!< Total number of evaluated samples.
+      double    mean = 0;               //!< Arithmetic mean.
+      double    sumOfSquares = 0;       //!< Sum of squared samples.
+      double    median = 0;             //!< Median sample value.
+      double    variance = 0;           //!< Variance from the mean.
+      double    stdDev = 0;             //!< Standard deviation (=Sqrt(variance)).
+      double    avgDev = 0;             //!< Average deviation from the median.
+      double    MAD = 0;                //!< Median absolute deviation from the median.
+      double    bwmv = 0;               //!< Biweight midvariance.
+      double    pbmv = 0;               //!< Percentage bend midvariance.
+      double    Sn = 0;                 //!< Sn scale estimator of Rousseeuw and Croux.
+      double    Qn = 0;                 //!< Qn scale estimator of Rousseeuw and Croux.
+      double    minimum = 0;            //!< Minimum sample value.
+      Point     minPos = Point( 0 );    //!< Position of the minimum sample value.
+      double    maximum = 0;            //!< Maximum sample value.
+      Point     maxPos = Point( 0 );    //!< Position of the maximum sample value.
+      double    low = 0;                //!< If rejectLow, ignore samples less than or equal to this value.
+      double    high = 0;               //!< If rejectHigh, ignore samples greater than or equal to this value.
+      bool      rejectLow = false;      //!< Ignore samples with values less than or equal to low.
+      bool      rejectHigh = false;     //!< Ignore samples with values greater than or equal to high.
+      bool      noExtremes = false;     //!< Do not compute minimum and maximum sample values.
+      bool      noMean = false;         //!< Do not compute the mean, variance, and standard deviation.
+      bool      noSumOfSquares = false; //!< Do not compute the sum of squared samples.
+      bool      noVariance = false;     //!< Do not compute variance and standard deviation.
+      bool      noMedian = false;       //!< Do not compute median, average deviation, MAD, biweight and bend midvariances.
+      bool      noAvgDev = false;       //!< Do not compute average deviation.
+      bool      noMAD = false;          //!< Do not compute MAD.
+      bool      noBWMV = false;         //!< Do not compute biweight midvariance.
+      bool      noPBMV = false;         //!< Do not compute percentage bend midvariance.
+      bool      noSn = true;            //!< Do not compute Sn estimator of scale.
+      bool      noQn = true;            //!< Do not compute Qn estimator of scale.
 
       /*!
-       * Constructs an %ImageStatistics::Data structure.
+       * Constructs a default %ImageStatistics::Data structure.
        */
-      Data() :
-         count( 0 ),
-         mean( 0 ),
-         sumOfSquares( 0 ),
-         median( 0 ),
-         variance( 0 ),
-         stdDev( 0 ),
-         avgDev( 0 ),
-         MAD( 0 ),
-         bwmv( 0 ),
-         pbmv( 0 ),
-         Sn( 0 ),
-         Qn( 0 ),
-         minimum( 0 ),
-         minPos( 0 ),
-         maximum( 0 ),
-         maxPos( 0 ),
-         low( 0 ),
-         high( 0 ),
-         rejectLow( false ),
-         rejectHigh( false ),
-         noExtremes( false ),
-         noMean( false ),
-         noSumOfSquares( false ),
-         noVariance( false ),
-         noMedian( false ),
-         noAvgDev( false ),
-         noMAD( false ),
-         noBWMV( false ),
-         noPBMV( false ),
-         noSn( true ),
-         noQn( true )
-      {
-      }
+      Data() = default;
 
       /*!
-       * Copy constructor. Copies all data items from another instance \a x.
+       * Copy constructor.
        */
-      Data( const Data& x )
-      {
-         Assign( x );
-      }
+      Data( const Data& ) = default;
 
       /*!
-       * Assignment. Copies all data items from another instance \a x.
+       * Copy assignment operator. Returns a reference to this object.
+       */
+      Data& operator =( const Data& ) = default;
+
+      /*!
+       * Copies all data items from another instance \a x.
        */
       void Assign( const Data& x )
       {
-         AssignStatisticalData( x );
-         low            = x.low;
-         high           = x.high;
-         rejectLow      = x.rejectLow;
-         rejectHigh     = x.rejectHigh;
-         noExtremes     = x.noExtremes;
-         noMean         = x.noMean;
-         noSumOfSquares = x.noSumOfSquares;
-         noVariance     = x.noVariance;
-         noMedian       = x.noMedian;
-         noAvgDev       = x.noAvgDev;
-         noMAD          = x.noMAD;
-         noBWMV         = x.noBWMV;
-         noPBMV         = x.noPBMV;
-         noSn           = x.noSn;
-         noQn           = x.noQn;
+         (void)operator =( x );
       }
 
       /*!
-       * Copies statistical data items from another instance \a x. Does not
-       * copy operating parameters (such as low, high, noVariance, etc.).
+       * Copies only statistical data items from another instance \a x. Does
+       * not copy operating parameters (such as low, high, noVariance, etc.).
        */
       void AssignStatisticalData( const Data& x )
       {
@@ -248,12 +201,6 @@ public:
          maximum      = x.maximum;
          maxPos       = x.maxPos;
       }
-
-      Data& operator =( const Data& x )
-      {
-         Assign( x );
-         return *this;
-      }
    };
 
    // -------------------------------------------------------------------------
@@ -261,18 +208,12 @@ public:
    /*!
     * Constructs an %ImageStatistics object.
     */
-   ImageStatistics() :
-   m_data(), m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
-   {
-   }
+   ImageStatistics() = default;
 
    /*!
     * Copy constructor.
     */
-   ImageStatistics( const ImageStatistics& x ) :
-   m_data( x.m_data ), m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
-   {
-   }
+   ImageStatistics( const ImageStatistics& ) = default;
 
    /*!
     * Destroys an %ImageStatistics object.
@@ -282,22 +223,16 @@ public:
    }
 
    /*!
+    * Assignment operator. Returns a reference to this object.
+    */
+   ImageStatistics& operator =( const ImageStatistics& ) = default;
+
+   /*!
     * Copies other %ImageStatistics object \a x to this object.
     */
    void Assign( const ImageStatistics& x )
    {
-      m_data = x.m_data;
-      m_parallel = x.m_parallel;
-      m_maxProcessors = x.m_maxProcessors;
-   }
-
-   /*!
-    * Assignment operator. Returns a reference to this object.
-    */
-   ImageStatistics& operator =( const ImageStatistics& x )
-   {
-      Assign( x );
-      return *this;
+      (void)operator =( x );
    }
 
    /*!
@@ -1048,83 +983,9 @@ public:
       return image;
    }
 
-   /*!
-    * Returns true iff this object is allowed to use multiple parallel execution
-    * threads (when multiple threads are permitted and available).
-    */
-   bool IsParallelProcessingEnabled() const
-   {
-      return m_parallel;
-   }
-
-   /*!
-    * Enables parallel processing for this instance of %ImageStatistics.
-    *
-    * \param enable  Whether to enable or disable parallel processing. True by
-    *                default.
-    *
-    * \param maxProcessors    The maximum number of processors allowed for this
-    *                instance of %ImageStatistics. If \a enable is false this
-    *                parameter is ignored. A value <= 0 is ignored. The default
-    *                value is zero.
-    */
-   void EnableParallelProcessing( bool enable = true, int maxProcessors = 0 )
-   {
-      m_parallel = enable;
-      if ( enable && maxProcessors > 0 )
-         SetMaxProcessors( maxProcessors );
-   }
-
-   /*!
-    * Disables parallel processing for this instance of %ImageStatistics.
-    *
-    * This is a convenience function, equivalent to:
-    * EnableParallelProcessing( !disable )
-    */
-   void DisableParallelProcessing( bool disable = true )
-   {
-      EnableParallelProcessing( !disable );
-   }
-
-   /*!
-    * Returns the maximum number of processors allowed for this instance of
-    * %ImageStatistics.
-    *
-    * Irrespective of the value returned by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   int MaxProcessors() const
-   {
-      return m_maxProcessors;
-   }
-
-   /*!
-    * Sets the maximum number of processors allowed for this instance of
-    * %ImageStatistics.
-    *
-    * In the current version of PCL, a module can use a maximum of 1023
-    * processors. The term \e processor actually refers to the number of
-    * threads a module can execute concurrently.
-    *
-    * Irrespective of the value specified by this function, a module should not
-    * use more processors than the maximum number of parallel threads allowed
-    * for external modules on the PixInsight platform. This number is given by
-    * the "Process/MaxProcessors" global variable (refer to the GlobalSettings
-    * class for information on global variables).
-    */
-   void SetMaxProcessors( int maxProcessors )
-   {
-      m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
-   }
-
 protected:
 
-   Data     m_data;              // statistical data
-   bool     m_parallel      : 1; // use multiple execution threads
-   unsigned m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT; // Maximum number of processors allowed
+   Data m_data; // statistical data
 
    friend class View;
 };
@@ -1136,4 +997,4 @@ protected:
 #endif   // __PCL_ImageStatistics_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageStatistics.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/ImageStatistics.h - Released 2018-11-01T11:06:36Z

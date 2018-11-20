@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Convolution Process Module Version 01.01.03.0257
+// Standard Convolution Process Module Version 01.01.03.0265
 // ----------------------------------------------------------------------------
-// ConvolutionInstance.cpp - Released 2017-08-01T14:26:58Z
+// ConvolutionInstance.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -73,20 +73,20 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 ConvolutionInstance::ConvolutionInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-mode( ConMode::Default ),
-sigma( TheConSigmaParameter->DefaultValue() ),
-shape( TheConShapeParameter->DefaultValue() ),
-aspectRatio( TheConAspectRatioParameter->DefaultValue() ),
-rotationAngle( TheConRotationAngleParameter->DefaultValue() ),
-sourceCode(),
-rescaleHighPass( TheConRescaleHighPassParameter->DefaultValue() ),
-viewId()
+   ProcessImplementation( m ),
+   mode( ConMode::Default ),
+   sigma( TheConSigmaParameter->DefaultValue() ),
+   shape( TheConShapeParameter->DefaultValue() ),
+   aspectRatio( TheConAspectRatioParameter->DefaultValue() ),
+   rotationAngle( TheConRotationAngleParameter->DefaultValue() ),
+   rescaleHighPass( TheConRescaleHighPassParameter->DefaultValue() )
 {
 }
 
+// ----------------------------------------------------------------------------
+
 ConvolutionInstance::ConvolutionInstance( const ConvolutionInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -96,7 +96,7 @@ ProcessImplementation( x )
 void ConvolutionInstance::Assign( const ProcessImplementation& p )
 {
    const ConvolutionInstance* x = dynamic_cast<const ConvolutionInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       mode = x->mode;
       sigma = x->sigma;
@@ -107,6 +107,13 @@ void ConvolutionInstance::Assign( const ProcessImplementation& p )
       rescaleHighPass = x->rescaleHighPass;
       viewId = x->viewId;
    }
+}
+
+// ----------------------------------------------------------------------------
+
+UndoFlags ConvolutionInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData;
 }
 
 // ----------------------------------------------------------------------------
@@ -486,4 +493,4 @@ bool ConvolutionInstance::CreateFilterImage( Image& filter ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ConvolutionInstance.cpp - Released 2017-08-01T14:26:58Z
+// EOF ConvolutionInstance.cpp - Released 2018-11-01T11:07:20Z

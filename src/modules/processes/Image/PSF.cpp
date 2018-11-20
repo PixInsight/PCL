@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard Image Process Module Version 01.02.09.0412
 // ----------------------------------------------------------------------------
-// PSF.cpp - Released 2017-08-01T14:26:58Z
+// PSF.cpp - Released 2018-11-13T16:55:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,7 +59,8 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-PSFFit::PSFFit( const ImageVariant& image, const DPoint& pos, const DRect& rect, Function function, bool circular )
+PSFFit::PSFFit( const ImageVariant& image,
+                const DPoint& pos, const DRect& rect, Function function, bool circular )
 {
    psf.status = NotFitted;
 
@@ -105,7 +106,7 @@ PSFFit::PSFFit( const ImageVariant& image, const DPoint& pos, const DRect& rect,
    }
 
    /*
-    * CMINPACK L-M - Finite differences
+    * CMINPACK - Levenberg-Marquadt / finite differences.
     */
 
    // Number of data points
@@ -271,7 +272,7 @@ PSFFit::PSFFit( const ImageVariant& image, const DPoint& pos, const DRect& rect,
           */
          psf.sx = psf.sy = P[4];
          psf.theta = 0;
-         psf.mad = AbsoluteDeviation( function, true )/m;
+         psf.mad = GoodnessOfFit( function, true/*circular*/ );
       }
       else
       {
@@ -284,14 +285,14 @@ PSFFit::PSFFit( const ImageVariant& image, const DPoint& pos, const DRect& rect,
              * Circular PSF (incidental)
              */
             psf.theta = 0;
-            psf.mad = AbsoluteDeviation( function, false )/m;
+            psf.mad = GoodnessOfFit( function, false/*circular*/ );
          }
          else
          {
             /*
              * Elliptical PSF
              *
-             * After LM minimization the rotation angle cannot be determined
+             * After L-M minimization the rotation angle cannot be determined
              * without uncertainty from the fitted parameters. We check the
              * four possibilities and select the angle that causes the minimum
              * absolute difference with the sampled matrix.
@@ -314,21 +315,20 @@ PSFFit::PSFFit( const ImageVariant& image, const DPoint& pos, const DRect& rect,
 
             // Generate the four models and compute absolute differences
             P[6] = a[0];
-            double d = AbsoluteDeviation( function, false );
+            psf.mad = GoodnessOfFit( function, false/*circular*/ );
             int imin = 0;
             for ( int i = 1; i < 4; ++i )
             {
                P[6] = a[i];
-               double di = AbsoluteDeviation( function, false, d );
-               if ( di < d )
+               double di = GoodnessOfFit( function, false/*circular*/ );
+               if ( di < psf.mad )
                {
                   imin = i;
-                  d = di;
+                  psf.mad = di;
                }
             }
             // Select the orientation angle that minimizes absolute deviation
             psf.theta = Deg( a[imin] );
-            psf.mad = d/m;
          }
       }
 
@@ -351,7 +351,9 @@ PSFFit::PSFFit( const ImageVariant& image, const DPoint& pos, const DRect& rect,
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Elliptical PSF Functions
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 #define F      reinterpret_cast<const PSFFit*>( p )
@@ -363,6 +365,8 @@ PSFFit::PSFFit( const ImageVariant& image, const DPoint& pos, const DRect& rect,
 #define sy     a[5]
 #define theta  a[6]
 #define beta   a[7]
+
+// ----------------------------------------------------------------------------
 
 /*
  * Elliptical Gaussian PSF.
@@ -409,6 +413,8 @@ int PSFFit::FitGaussian( void* p, int m, int n, const double* a, double* fvec, i
    return 0;
 }
 
+// ----------------------------------------------------------------------------
+
 /*
  * Elliptical Moffat PSF, variable beta exponent.
  */
@@ -417,8 +423,6 @@ int PSFFit::FitMoffat( void* p, int m, int n, const double* a, double* fvec, int
    /*
     *   f(x,y) : B + A/(1 + a*(x - x0)^2 + 2*b*(x - x0)*(y - y0) + c*(y - y0)^2)^beta
     */
-
-//std::cout << String().Format( "b = %.2f\n", beta ) << std::flush;
 
    if ( B < 0 || A < 0 || beta < 0 || beta > 10 || Abs( beta - F->beta0 )/F->beta0 > 0.05 )
    {
@@ -457,6 +461,8 @@ int PSFFit::FitMoffat( void* p, int m, int n, const double* a, double* fvec, int
    }
    return 0;
 }
+
+// ----------------------------------------------------------------------------
 
 /*
  * Elliptical Moffat PSF, fixed beta exponent.
@@ -505,6 +511,8 @@ int PSFFit::FitMoffatWithFixedBeta( void* p, int m, int n, const double* a, doub
    return 0;
 }
 
+// ----------------------------------------------------------------------------
+
 #undef F
 #undef B
 #undef A
@@ -516,7 +524,9 @@ int PSFFit::FitMoffatWithFixedBeta( void* p, int m, int n, const double* a, doub
 #undef beta
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Circular PSF Functions
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 #define F      reinterpret_cast<const PSFFit*>( p )
@@ -526,6 +536,8 @@ int PSFFit::FitMoffatWithFixedBeta( void* p, int m, int n, const double* a, doub
 #define y0     a[3]
 #define sx     a[4]
 #define beta   a[5]
+
+// ----------------------------------------------------------------------------
 
 /*
  * Circular Gaussian PSF.
@@ -561,6 +573,8 @@ int PSFFit::FitCircularGaussian( void* p, int m, int n, const double* a, double*
    }
    return 0;
 }
+
+// ----------------------------------------------------------------------------
 
 /*
  * Circular Moffat PSF, variable beta exponent.
@@ -599,6 +613,8 @@ int PSFFit::FitCircularMoffat( void* p, int m, int n, const double* a, double* f
    return 0;
 }
 
+// ----------------------------------------------------------------------------
+
 /*
  * Circular Moffat PSF, fixed beta exponent.
  */
@@ -636,6 +652,8 @@ int PSFFit::FitCircularMoffatWithFixedBeta( void* p, int m, int n, const double*
    return 0;
 }
 
+// ----------------------------------------------------------------------------
+
 #undef F
 #undef B
 #undef A
@@ -644,25 +662,28 @@ int PSFFit::FitCircularMoffatWithFixedBeta( void* p, int m, int n, const double*
 #undef sx
 #undef beta
 
-/*
- * Mean absolute deviation
- */
-double PSFFit::AbsoluteDeviation( Function function, bool circular, double bestSoFar ) const
-{
-   double adev = 0;
-   bool haveBest = bestSoFar > 0;
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
+/*
+ * Robust estimate of the difference between sampled pixel data and
+ * the fitted PSF model.
+ */
+double PSFFit::GoodnessOfFit( Function function, bool circular ) const
+{
 #define B      P[0]
 #define A      P[1]
 #define x0     P[2]
 #define y0     P[3]
 #define sx     P[4]
 
-   int h = S.Rows();
    int w = S.Cols();
-   double w2x0 = (w >> 1) + x0;
-   double h2y0 = (h >> 1) + y0;
+   int h = S.Rows();
+   double w2x0 = 0.5*w + x0;
+   double h2y0 = 0.5*h + y0;
    const double* s = S.Begin();
+
+   Vector adev( w*h );
 
    if ( circular )
    {
@@ -672,16 +693,14 @@ double PSFFit::AbsoluteDeviation( Function function, bool circular, double bestS
       case Gaussian:
          {
             double twosx2 = 2*sx*sx;
-            for ( int y = 0; y < h; ++y )
+            for ( int y = 0, i = 0; y < h; ++y )
             {
                double dy = y - h2y0;
                double dy2 = dy*dy;
-               for ( int x = 0; x < w; ++x )
+               for ( int x = 0; x < w; ++x, ++i, ++s )
                {
                   double dx = x - w2x0;
-                  adev += Abs( *s++ - B - A*Exp( -(dx*dx + dy2)/twosx2 ) );
-                  if ( haveBest && adev >= bestSoFar )
-                     return adev;
+                  adev[i] = Abs( *s - B - A*Exp( -(dx*dx + dy2)/twosx2 ) );
                }
             }
          }
@@ -697,14 +716,14 @@ double PSFFit::AbsoluteDeviation( Function function, bool circular, double bestS
       case Lorentzian:
          {
             double sx2 = sx*sx;
-            for ( int y = 0; y < h; ++y )
+            for ( int y = 0, i = 0; y < h; ++y )
             {
                double dy = y - h2y0;
                double dy2 = dy*dy;
-               for ( int x = 0; x < w; ++x )
+               for ( int x = 0; x < w; ++x, ++i, ++s )
                {
                   double dx = x - w2x0;
-                  adev += Abs( *s++ - B - A/Pow( 1 + (dx*dx + dy2)/sx2, beta ) );
+                  adev[i] = Abs( *s - B - A/Pow( 1 + (dx*dx + dy2)/sx2, beta ) );
                }
             }
          }
@@ -731,17 +750,15 @@ double PSFFit::AbsoluteDeviation( Function function, bool circular, double bestS
             double p1     = ct2/twosx2 + st2/twosy2;
             double p2     = sct/twosy2 - sct/twosx2;
             double p3     = st2/twosx2 + ct2/twosy2;
-            for ( int y = 0; y < h; ++y )
+            for ( int y = 0, i = 0; y < h; ++y )
             {
                double dy      = y - h2y0;
                double twop2dy = 2*p2*dy;
                double p3dy2   = p3*dy*dy;
-               for ( int x = 0; x < w; ++x )
+               for ( int x = 0; x < w; ++x, ++i, ++s )
                {
                   double dx = x - w2x0;
-                  adev += Abs( *s++ - B - A*Exp( -(p1*dx*dx + twop2dy*dx + p3dy2) ) );
-                  if ( haveBest && adev >= bestSoFar )
-                     return adev;
+                  adev[i] = Abs( *s - B - A*Exp( -(p1*dx*dx + twop2dy*dx + p3dy2) ) );
                }
             }
          }
@@ -766,17 +783,15 @@ double PSFFit::AbsoluteDeviation( Function function, bool circular, double bestS
             double p1  = ct2/sx2 + st2/sy2;
             double p2  = sct/sy2 - sct/sx2;
             double p3  = st2/sx2 + ct2/sy2;
-            for ( int y = 0; y < h; ++y )
+            for ( int y = 0, i = 0; y < h; ++y )
             {
                double dy      = y - h2y0;
                double twop2dy = 2*p2*dy;
                double p3dy2   = p3*dy*dy;
-               for ( int x = 0; x < w; ++x )
+               for ( int x = 0; x < w; ++x, ++i, ++s )
                {
                   double dx = x - w2x0;
-                  adev += Abs( *s++ - B - A/Pow( 1 + p1*dx*dx + twop2dy*dx + p3dy2, beta ) );
-                  if ( haveBest && adev >= bestSoFar )
-                     return adev;
+                  adev[i] = Abs( *s - B - A/Pow( 1 + p1*dx*dx + twop2dy*dx + p3dy2, beta ) );
                }
             }
          }
@@ -793,8 +808,23 @@ double PSFFit::AbsoluteDeviation( Function function, bool circular, double bestS
 #undef y0
 #undef sx
 
-   return adev;
+   /*
+    * Here we need an estimator of location with a good balance between
+    * robustness and efficiency/sufficiency for the vector of absolute
+    * differences. We use a Winsorized mean with gamma = 0.2.
+    */
+   adev.ReverseSort();
+   int n = adev.Length();
+   int i0 = TruncInt( 0.2*n );
+   int i1 = n - i0;
+   for ( int i = 0; i < i0; ++i ) // Prob( x > x[i0] ) = 0
+      adev[i] = adev[i0];
+   for ( int i = i1; i < n; ++i ) // Prob( x < x[i1] ) = 0
+      adev[i] = adev[i1-1];
+   return adev.Mean();
 }
+
+// ----------------------------------------------------------------------------
 
 /*
  * Translate CMINPACK information codes into PSF error codes.
@@ -823,11 +853,9 @@ PSFFit::Status PSFFit::CminpackInfoToStatus( int info )
 
 // ----------------------------------------------------------------------------
 
-void PSFData::ToImage( Image& img ) const
+void PSFData::ToImage( Image& image ) const
 {
-
-
-
+   // ### TODO
 }
 
 // ----------------------------------------------------------------------------
@@ -835,4 +863,4 @@ void PSFData::ToImage( Image& img ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PSF.cpp - Released 2017-08-01T14:26:58Z
+// EOF PSF.cpp - Released 2018-11-13T16:55:32Z

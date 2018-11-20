@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/MorphologicalOperator.h - Released 2017-08-01T14:23:31Z
+// pcl/MorphologicalOperator.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -202,14 +202,14 @@ public:
 
    /*!
     */
-   virtual MorphologicalOperator* Clone() const
+   MorphologicalOperator* Clone() const override
    {
       return new ErosionFilter( *this );
    }
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       return "Erosion";
    }
@@ -218,7 +218,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 32-bit
     * floating point pixel samples.
     */
-   virtual FloatPixelTraits::sample operator ()( FloatPixelTraits::sample* f, size_type n ) const
+   FloatPixelTraits::sample operator ()( FloatPixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n );
    }
@@ -227,7 +227,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 64-bit
     * floating point pixel samples.
     */
-   virtual DoublePixelTraits::sample operator ()( DoublePixelTraits::sample* f, size_type n ) const
+   DoublePixelTraits::sample operator ()( DoublePixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n );
    }
@@ -236,7 +236,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 8-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt8PixelTraits::sample operator ()( UInt8PixelTraits::sample* f, size_type n ) const
+   UInt8PixelTraits::sample operator ()( UInt8PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n );
    }
@@ -245,7 +245,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 16-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt16PixelTraits::sample operator ()( UInt16PixelTraits::sample* f, size_type n ) const
+   UInt16PixelTraits::sample operator ()( UInt16PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n );
    }
@@ -254,7 +254,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 32-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt32PixelTraits::sample operator ()( UInt32PixelTraits::sample* f, size_type n ) const
+   UInt32PixelTraits::sample operator ()( UInt32PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n );
    }
@@ -283,21 +283,21 @@ public:
 
    /*!
     */
-   virtual MorphologicalOperator* Clone() const
+   MorphologicalOperator* Clone() const override
    {
       return new DilationFilter( *this );
    }
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       return "Dilation";
    }
 
    /*!
     */
-   virtual bool IsDilation() const
+   bool IsDilation() const override
    {
       return true;
    }
@@ -306,7 +306,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 32-bit
     * floating point pixel samples.
     */
-   virtual FloatPixelTraits::sample operator ()( FloatPixelTraits::sample* f, size_type n ) const
+   FloatPixelTraits::sample operator ()( FloatPixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n );
    }
@@ -315,7 +315,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 64-bit
     * floating point pixel samples.
     */
-   virtual DoublePixelTraits::sample operator ()( DoublePixelTraits::sample* f, size_type n ) const
+   DoublePixelTraits::sample operator ()( DoublePixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n );
    }
@@ -324,7 +324,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 8-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt8PixelTraits::sample operator ()( UInt8PixelTraits::sample* f, size_type n ) const
+   UInt8PixelTraits::sample operator ()( UInt8PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n );
    }
@@ -333,7 +333,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 16-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt16PixelTraits::sample operator ()( UInt16PixelTraits::sample* f, size_type n ) const
+   UInt16PixelTraits::sample operator ()( UInt16PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n );
    }
@@ -342,7 +342,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 32-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt32PixelTraits::sample operator ()( UInt32PixelTraits::sample* f, size_type n ) const
+   UInt32PixelTraits::sample operator ()( UInt32PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n );
    }
@@ -371,14 +371,14 @@ public:
 
    /*!
     */
-   virtual MorphologicalOperator* Clone() const
+   MorphologicalOperator* Clone() const override
    {
       return new MedianFilter( *this );
    }
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       return "Median";
    }
@@ -387,7 +387,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 32-bit
     * floating point pixel samples.
     */
-   virtual FloatPixelTraits::sample operator ()( FloatPixelTraits::sample* f, size_type n ) const
+   FloatPixelTraits::sample operator ()( FloatPixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n, (FloatPixelTraits*)0 );
    }
@@ -396,7 +396,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 64-bit
     * floating point pixel samples.
     */
-   virtual DoublePixelTraits::sample operator ()( DoublePixelTraits::sample* f, size_type n ) const
+   DoublePixelTraits::sample operator ()( DoublePixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n, (DoublePixelTraits*)0 );
    }
@@ -405,7 +405,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 8-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt8PixelTraits::sample operator ()( UInt8PixelTraits::sample* f, size_type n ) const
+   UInt8PixelTraits::sample operator ()( UInt8PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n, (UInt8PixelTraits*)0 );
    }
@@ -414,7 +414,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 16-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt16PixelTraits::sample operator ()( UInt16PixelTraits::sample* f, size_type n ) const
+   UInt16PixelTraits::sample operator ()( UInt16PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n, (UInt16PixelTraits*)0 );
    }
@@ -423,7 +423,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 32-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt32PixelTraits::sample operator ()( UInt32PixelTraits::sample* f, size_type n ) const
+   UInt32PixelTraits::sample operator ()( UInt32PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n, (UInt32PixelTraits*)0 );
    }
@@ -1268,10 +1268,16 @@ class PCL_CLASS SelectionFilter : public MorphologicalOperator
 public:
 
    /*!
+    * Default constructor. The default selection point is 0.5, equivalent to a
+    * median operator.
+    */
+   SelectionFilter() = default;
+
+   /*!
     * Constructs a %SelectionFilter with selection point \a p.
     */
    SelectionFilter( float p ) :
-      MorphologicalOperator(), k( pcl::Range( p, float( 0 ), float( 1 ) ) )
+      k( pcl::Range( p, float( 0 ), float( 1 ) ) )
    {
       PCL_PRECONDITION( 0 <= p && p <= 1 )
       PCL_CHECK( 0 <= k && k <= 1 )
@@ -1280,14 +1286,11 @@ public:
    /*!
     * Copy constructor.
     */
-   SelectionFilter( const SelectionFilter& x ) :
-      MorphologicalOperator( x ), k( x.k )
-   {
-   }
+   SelectionFilter( const SelectionFilter& ) = default;
 
    /*!
     */
-   virtual MorphologicalOperator* Clone() const
+   MorphologicalOperator* Clone() const override
    {
       return new SelectionFilter( *this );
    }
@@ -1311,7 +1314,7 @@ public:
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       return String().Format( "Selection, k=%.5f", k );
    }
@@ -1320,7 +1323,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 32-bit
     * floating point pixel samples.
     */
-   virtual FloatPixelTraits::sample operator ()( FloatPixelTraits::sample* f, size_type n ) const
+   FloatPixelTraits::sample operator ()( FloatPixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n );
    }
@@ -1329,7 +1332,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 64-bit
     * floating point pixel samples.
     */
-   virtual DoublePixelTraits::sample operator ()( DoublePixelTraits::sample* f, size_type n ) const
+   DoublePixelTraits::sample operator ()( DoublePixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n );
    }
@@ -1338,7 +1341,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 8-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt8PixelTraits::sample operator ()( UInt8PixelTraits::sample* f, size_type n ) const
+   UInt8PixelTraits::sample operator ()( UInt8PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n );
    }
@@ -1347,7 +1350,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 16-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt16PixelTraits::sample operator ()( UInt16PixelTraits::sample* f, size_type n ) const
+   UInt16PixelTraits::sample operator ()( UInt16PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n );
    }
@@ -1356,14 +1359,14 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 32-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt32PixelTraits::sample operator ()( UInt32PixelTraits::sample* f, size_type n ) const
+   UInt32PixelTraits::sample operator ()( UInt32PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n );
    }
 
 private:
 
-   float k;
+   float k = 0.5F;
 
    template <typename T>
    T Operate( T* f, size_type n ) const
@@ -1387,14 +1390,14 @@ public:
 
    /*!
     */
-   virtual MorphologicalOperator* Clone() const
+   MorphologicalOperator* Clone() const override
    {
       return new MidpointFilter( *this );
    }
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       return "Midpoint";
    }
@@ -1403,7 +1406,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 32-bit
     * floating point pixel samples.
     */
-   virtual FloatPixelTraits::sample operator ()( FloatPixelTraits::sample* f, size_type n ) const
+   FloatPixelTraits::sample operator ()( FloatPixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n, (FloatPixelTraits*)0 );
    }
@@ -1412,7 +1415,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 64-bit
     * floating point pixel samples.
     */
-   virtual DoublePixelTraits::sample operator ()( DoublePixelTraits::sample* f, size_type n ) const
+   DoublePixelTraits::sample operator ()( DoublePixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n, (DoublePixelTraits*)0 );
    }
@@ -1421,7 +1424,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 8-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt8PixelTraits::sample operator ()( UInt8PixelTraits::sample* f, size_type n ) const
+   UInt8PixelTraits::sample operator ()( UInt8PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n, (UInt8PixelTraits*)0 );
    }
@@ -1430,7 +1433,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 16-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt16PixelTraits::sample operator ()( UInt16PixelTraits::sample* f, size_type n ) const
+   UInt16PixelTraits::sample operator ()( UInt16PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n, (UInt16PixelTraits*)0 );
    }
@@ -1439,7 +1442,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 32-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt32PixelTraits::sample operator ()( UInt32PixelTraits::sample* f, size_type n ) const
+   UInt32PixelTraits::sample operator ()( UInt32PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n, (UInt32PixelTraits*)0 );
    }
@@ -1466,17 +1469,30 @@ private:
  * highest values. The point \a d defines the <em>trimming factor</em> of the
  * operator. When d=0, we have an arithmetic mean filter. If d=1, the filter is
  * the median operator.
+ *
+ * The alpha-trimmed operator is not a morphological operator in the strict
+ * sense, although it allows for the implementation of robust filters that
+ * share some important properties with morphological filters in practical
+ * applications.
  */
 class PCL_CLASS AlphaTrimmedMeanFilter : public MorphologicalOperator
 {
 public:
 
    /*!
+    * Default constructor. The default trimming factor is 0.2, which leads to
+    * the suppression of a 10% of the lowest and highest neighbor pixels. The
+    * resulting object is a robust mean filter resilient to outliers in most
+    * practical cases.
+    */
+   AlphaTrimmedMeanFilter() = default;
+
+   /*!
     * Constructs a %AlphaTrimmedMeanFilter object with the specified trimming
-    * factor \a t.
+    * factor \a t in the [0,1] range.
     */
    AlphaTrimmedMeanFilter( float t ) :
-      MorphologicalOperator(), d( pcl::Range( t, float( 0 ), float( 1 ) ) )
+      d( pcl::Range( t, float( 0 ), float( 1 ) ) )
    {
       PCL_PRECONDITION( 0 <= t && t <= 1 )
       PCL_CHECK( 0 <= d && d <= 1 )
@@ -1485,14 +1501,11 @@ public:
    /*!
     * Copy constructor.
     */
-   AlphaTrimmedMeanFilter( const AlphaTrimmedMeanFilter& x ) :
-      MorphologicalOperator( x ), d( x.d )
-   {
-   }
+   AlphaTrimmedMeanFilter( const AlphaTrimmedMeanFilter& ) = default;
 
    /*!
     */
-   virtual MorphologicalOperator* Clone() const
+   MorphologicalOperator* Clone() const override
    {
       return new AlphaTrimmedMeanFilter( *this );
    }
@@ -1516,7 +1529,7 @@ public:
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       return String().Format( "Alpha-trimmed mean, d=%.5f", d );
    }
@@ -1525,7 +1538,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 32-bit
     * floating point pixel samples.
     */
-   virtual FloatPixelTraits::sample operator ()( FloatPixelTraits::sample* f, size_type n ) const
+   FloatPixelTraits::sample operator ()( FloatPixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n, (FloatPixelTraits*)0 );
    }
@@ -1534,7 +1547,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 64-bit
     * floating point pixel samples.
     */
-   virtual DoublePixelTraits::sample operator ()( DoublePixelTraits::sample* f, size_type n ) const
+   DoublePixelTraits::sample operator ()( DoublePixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n, (DoublePixelTraits*)0 );
    }
@@ -1543,7 +1556,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 8-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt8PixelTraits::sample operator ()( UInt8PixelTraits::sample* f, size_type n ) const
+   UInt8PixelTraits::sample operator ()( UInt8PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n, (UInt8PixelTraits*)0 );
    }
@@ -1552,7 +1565,7 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 16-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt16PixelTraits::sample operator ()( UInt16PixelTraits::sample* f, size_type n ) const
+   UInt16PixelTraits::sample operator ()( UInt16PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n, (UInt16PixelTraits*)0 );
    }
@@ -1561,14 +1574,14 @@ public:
     * Applies this morphological operator to a vector \a f of \a n 32-bit
     * unsigned integer pixel samples.
     */
-   virtual UInt32PixelTraits::sample operator ()( UInt32PixelTraits::sample* f, size_type n ) const
+   UInt32PixelTraits::sample operator ()( UInt32PixelTraits::sample* f, size_type n ) const override
    {
       return Operate( f, n, (UInt32PixelTraits*)0 );
    }
 
 private:
 
-   float d;
+   float d = 0.2F;
 
    template <typename T, class P>
    T Operate( T* f, size_type n, P* ) const
@@ -1590,4 +1603,4 @@ private:
 #endif   // __PCL_MorphologicalOperator_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MorphologicalOperator.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/MorphologicalOperator.h - Released 2018-11-01T11:06:36Z

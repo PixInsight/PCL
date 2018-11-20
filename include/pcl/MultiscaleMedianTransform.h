@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/MultiscaleMedianTransform.h - Released 2017-08-01T14:23:31Z
+// pcl/MultiscaleMedianTransform.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -165,10 +165,7 @@ public:
     *   successive scales (linear scaling sequence): s = d*j for 1 <= j < n.
     */
    MultiscaleMedianTransform( int n = 4, int d = 0 ) :
-      RedundantMultiscaleTransform( n, d ),
-      m_multiwayStructures( true ),
-      m_medianWaveletTransform( false ),
-      m_medianWaveletThreshold( 5.0F )
+      RedundantMultiscaleTransform( n, d )
    {
    }
 
@@ -180,9 +177,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    MultiscaleMedianTransform( MultiscaleMedianTransform&& ) = default;
-#endif
 
    /*!
     * Destroys this %MultiscaleMedianTransform object. All existing transform
@@ -195,26 +190,12 @@ public:
    /*!
     * Copy assignment operator. Returns a reference to this object.
     */
-   MultiscaleMedianTransform& operator =( const MultiscaleMedianTransform& x )
-   {
-      (void)RedundantMultiscaleTransform::operator =( x );
-      m_multiwayStructures = x.m_multiwayStructures;
-      m_medianWaveletTransform = x.m_medianWaveletTransform;
-      m_medianWaveletThreshold = x.m_medianWaveletThreshold;
-      return *this;
-   }
+   MultiscaleMedianTransform& operator =( const MultiscaleMedianTransform& ) = default;
 
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-   MultiscaleMedianTransform& operator =( MultiscaleMedianTransform&& x )
-   {
-      (void)RedundantMultiscaleTransform::operator =( std::move( x ) );
-      m_multiwayStructures = x.m_multiwayStructures;
-      m_medianWaveletTransform = x.m_medianWaveletTransform;
-      m_medianWaveletThreshold = x.m_medianWaveletThreshold;
-      return *this;
-   }
+   MultiscaleMedianTransform& operator =( MultiscaleMedianTransform&& ) = default;
 
    /*!
     * Returns true if this transform applies special multiway structuring
@@ -327,28 +308,28 @@ private:
    /*
     * Use multiway structural elements for improved isotropy.
     */
-   bool m_multiwayStructures     : 1;
+   bool m_multiwayStructures = true;
 
    /*
     * Compute a wavelet-median transform.
     */
-   bool m_medianWaveletTransform : 1;
+   bool m_medianWaveletTransform = false;
 
    /*
     * Median-wavelet threshold in sigma units.
     */
-   float m_medianWaveletThreshold;
+   float m_medianWaveletThreshold = 5.0F;
 
    /*
     * Transform (decomposition)
     */
-   virtual void Transform( const pcl::Image& );
-   virtual void Transform( const pcl::DImage& );
-   virtual void Transform( const pcl::ComplexImage& );
-   virtual void Transform( const pcl::DComplexImage& );
-   virtual void Transform( const pcl::UInt8Image& );
-   virtual void Transform( const pcl::UInt16Image& );
-   virtual void Transform( const pcl::UInt32Image& );
+   void Transform( const pcl::Image& ) override;
+   void Transform( const pcl::DImage& ) override;
+   void Transform( const pcl::ComplexImage& ) override;
+   void Transform( const pcl::DComplexImage& ) override;
+   void Transform( const pcl::UInt8Image& ) override;
+   void Transform( const pcl::UInt16Image& ) override;
+   void Transform( const pcl::UInt32Image& ) override;
 
    friend class MMTDecomposition;
 };
@@ -360,4 +341,4 @@ private:
 #endif   // __PCL_MultiscaleMedianTransform_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MultiscaleMedianTransform.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/MultiscaleMedianTransform.h - Released 2018-11-01T11:06:36Z

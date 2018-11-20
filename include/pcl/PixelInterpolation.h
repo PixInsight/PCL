@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/PixelInterpolation.h - Released 2017-08-01T14:23:31Z
+// pcl/PixelInterpolation.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -364,39 +364,39 @@ public:
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       return "Nearest neighbor interpolation";
    }
 
 private:
 
-   virtual BidimensionalInterpolation<FloatPixelTraits::sample>*
-                  NewInterpolation( const FloatPixelTraits::sample* ) const
+   BidimensionalInterpolation<FloatPixelTraits::sample>*
+                  NewInterpolation( const FloatPixelTraits::sample* ) const override
    {
       return new NearestNeighborInterpolation<FloatPixelTraits::sample>;
    }
 
-   virtual BidimensionalInterpolation<DoublePixelTraits::sample>*
-                  NewInterpolation( const DoublePixelTraits::sample* ) const
+   BidimensionalInterpolation<DoublePixelTraits::sample>*
+                  NewInterpolation( const DoublePixelTraits::sample* ) const override
    {
       return new NearestNeighborInterpolation<DoublePixelTraits::sample>;
    }
 
-   virtual BidimensionalInterpolation<UInt8PixelTraits::sample>*
-                  NewInterpolation( const UInt8PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt8PixelTraits::sample>*
+                  NewInterpolation( const UInt8PixelTraits::sample* ) const override
    {
       return new NearestNeighborInterpolation<UInt8PixelTraits::sample>;
    }
 
-   virtual BidimensionalInterpolation<UInt16PixelTraits::sample>*
-                  NewInterpolation( const UInt16PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt16PixelTraits::sample>*
+                  NewInterpolation( const UInt16PixelTraits::sample* ) const override
    {
       return new NearestNeighborInterpolation<UInt16PixelTraits::sample>;
    }
 
-   virtual BidimensionalInterpolation<UInt32PixelTraits::sample>*
-                  NewInterpolation( const UInt32PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt32PixelTraits::sample>*
+                  NewInterpolation( const UInt32PixelTraits::sample* ) const override
    {
       return new NearestNeighborInterpolation<UInt32PixelTraits::sample>;
    }
@@ -432,39 +432,39 @@ public:
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       return "Bilinear interpolation";
    }
 
 private:
 
-   virtual BidimensionalInterpolation<FloatPixelTraits::sample>*
-                  NewInterpolation( const FloatPixelTraits::sample* ) const
+   BidimensionalInterpolation<FloatPixelTraits::sample>*
+                  NewInterpolation( const FloatPixelTraits::sample* ) const override
    {
       return new BilinearInterpolation<FloatPixelTraits::sample>;
    }
 
-   virtual BidimensionalInterpolation<DoublePixelTraits::sample>*
-                  NewInterpolation( const DoublePixelTraits::sample* ) const
+   BidimensionalInterpolation<DoublePixelTraits::sample>*
+                  NewInterpolation( const DoublePixelTraits::sample* ) const override
    {
       return new BilinearInterpolation<DoublePixelTraits::sample>;
    }
 
-   virtual BidimensionalInterpolation<UInt8PixelTraits::sample>*
-                  NewInterpolation( const UInt8PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt8PixelTraits::sample>*
+                  NewInterpolation( const UInt8PixelTraits::sample* ) const override
    {
       return new BilinearInterpolation<UInt8PixelTraits::sample>;
    }
 
-   virtual BidimensionalInterpolation<UInt16PixelTraits::sample>*
-                  NewInterpolation( const UInt16PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt16PixelTraits::sample>*
+                  NewInterpolation( const UInt16PixelTraits::sample* ) const override
    {
       return new BilinearInterpolation<UInt16PixelTraits::sample>;
    }
 
-   virtual BidimensionalInterpolation<UInt32PixelTraits::sample>*
-                  NewInterpolation( const UInt32PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt32PixelTraits::sample>*
+                  NewInterpolation( const UInt32PixelTraits::sample* ) const override
    {
       return new BilinearInterpolation<UInt32PixelTraits::sample>;
    }
@@ -508,7 +508,7 @@ public:
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       return String().Format( "Bicubic spline interpolation, c=%.2f", m_clamp );
    }
@@ -517,32 +517,32 @@ private:
 
    float m_clamp;
 
-   virtual BidimensionalInterpolation<FloatPixelTraits::sample>*
-                  NewInterpolation( const FloatPixelTraits::sample* ) const
+   BidimensionalInterpolation<FloatPixelTraits::sample>*
+                  NewInterpolation( const FloatPixelTraits::sample* ) const override
    {
       return new BicubicSplineInterpolation<FloatPixelTraits::sample>( m_clamp );
    }
 
-   virtual BidimensionalInterpolation<DoublePixelTraits::sample>*
-                  NewInterpolation( const DoublePixelTraits::sample* ) const
+   BidimensionalInterpolation<DoublePixelTraits::sample>*
+                  NewInterpolation( const DoublePixelTraits::sample* ) const override
    {
       return new BicubicSplineInterpolation<DoublePixelTraits::sample>( m_clamp );
    }
 
-   virtual BidimensionalInterpolation<UInt8PixelTraits::sample>*
-                  NewInterpolation( const UInt8PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt8PixelTraits::sample>*
+                  NewInterpolation( const UInt8PixelTraits::sample* ) const override
    {
       return new BicubicSplineInterpolation<UInt8PixelTraits::sample>( m_clamp );
    }
 
-   virtual BidimensionalInterpolation<UInt16PixelTraits::sample>*
-                  NewInterpolation( const UInt16PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt16PixelTraits::sample>*
+                  NewInterpolation( const UInt16PixelTraits::sample* ) const override
    {
       return new BicubicSplineInterpolation<UInt16PixelTraits::sample>( m_clamp );
    }
 
-   virtual BidimensionalInterpolation<UInt32PixelTraits::sample>*
-                  NewInterpolation( const UInt32PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt32PixelTraits::sample>*
+                  NewInterpolation( const UInt32PixelTraits::sample* ) const override
    {
       return new BicubicSplineInterpolation<UInt32PixelTraits::sample>( m_clamp );
    }
@@ -610,39 +610,39 @@ public:
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       return "Bicubic B-spline interpolation";
    }
 
 private:
 
-   virtual BidimensionalInterpolation<FloatPixelTraits::sample>*
-                  NewInterpolation( const FloatPixelTraits::sample* ) const
+   BidimensionalInterpolation<FloatPixelTraits::sample>*
+                  NewInterpolation( const FloatPixelTraits::sample* ) const override
    {
       return new BicubicBSplineInterpolation<FloatPixelTraits::sample>;
    }
 
-   virtual BidimensionalInterpolation<DoublePixelTraits::sample>*
-                  NewInterpolation( const DoublePixelTraits::sample* ) const
+   BidimensionalInterpolation<DoublePixelTraits::sample>*
+                  NewInterpolation( const DoublePixelTraits::sample* ) const override
    {
       return new BicubicBSplineInterpolation<DoublePixelTraits::sample>;
    }
 
-   virtual BidimensionalInterpolation<UInt8PixelTraits::sample>*
-                  NewInterpolation( const UInt8PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt8PixelTraits::sample>*
+                  NewInterpolation( const UInt8PixelTraits::sample* ) const override
    {
       return new BicubicBSplineInterpolation<UInt8PixelTraits::sample>;
    }
 
-   virtual BidimensionalInterpolation<UInt16PixelTraits::sample>*
-                  NewInterpolation( const UInt16PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt16PixelTraits::sample>*
+                  NewInterpolation( const UInt16PixelTraits::sample* ) const override
    {
       return new BicubicBSplineInterpolation<UInt16PixelTraits::sample>;
    }
 
-   virtual BidimensionalInterpolation<UInt32PixelTraits::sample>*
-                  NewInterpolation( const UInt32PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt32PixelTraits::sample>*
+                  NewInterpolation( const UInt32PixelTraits::sample* ) const override
    {
       return new BicubicBSplineInterpolation<UInt32PixelTraits::sample>;
    }
@@ -712,9 +712,9 @@ public:
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
-      return "Bicubic interpolation, " + m_filter->Description() + String().Format( " (%dx%d)", 2*m_rh + 1, 2*m_rv + 1 );
+      return "Bicubic interpolation, " + m_filter->Description().AppendFormat( " (%dx%d)", 2*m_rh + 1, 2*m_rv + 1 );
    }
 
    /*!
@@ -731,32 +731,32 @@ private:
    int                      m_rh, m_rv;
    AutoPointer<CubicFilter> m_filter;
 
-   virtual BidimensionalInterpolation<FloatPixelTraits::sample>*
-                  NewInterpolation( const FloatPixelTraits::sample* ) const
+   BidimensionalInterpolation<FloatPixelTraits::sample>*
+                  NewInterpolation( const FloatPixelTraits::sample* ) const override
    {
       return new BicubicFilterInterpolation<FloatPixelTraits::sample>( m_rh, m_rv, *m_filter );
    }
 
-   virtual BidimensionalInterpolation<DoublePixelTraits::sample>*
-                  NewInterpolation( const DoublePixelTraits::sample* ) const
+   BidimensionalInterpolation<DoublePixelTraits::sample>*
+                  NewInterpolation( const DoublePixelTraits::sample* ) const override
    {
       return new BicubicFilterInterpolation<DoublePixelTraits::sample>( m_rh, m_rv, *m_filter );
    }
 
-   virtual BidimensionalInterpolation<UInt8PixelTraits::sample>*
-                  NewInterpolation( const UInt8PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt8PixelTraits::sample>*
+                  NewInterpolation( const UInt8PixelTraits::sample* ) const override
    {
       return new BicubicFilterInterpolation<UInt8PixelTraits::sample>( m_rh, m_rv, *m_filter );
    }
 
-   virtual BidimensionalInterpolation<UInt16PixelTraits::sample>*
-                  NewInterpolation( const UInt16PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt16PixelTraits::sample>*
+                  NewInterpolation( const UInt16PixelTraits::sample* ) const override
    {
       return new BicubicFilterInterpolation<UInt16PixelTraits::sample>( m_rh, m_rv, *m_filter );
    }
 
-   virtual BidimensionalInterpolation<UInt32PixelTraits::sample>*
-                  NewInterpolation( const UInt32PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt32PixelTraits::sample>*
+                  NewInterpolation( const UInt32PixelTraits::sample* ) const override
    {
       return new BicubicFilterInterpolation<UInt32PixelTraits::sample>( m_rh, m_rv, *m_filter );
    }
@@ -813,7 +813,7 @@ public:
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       String desc = String().Format( "Lanczos-%d interpolation", m_n );
       if ( m_clamp >= 0 )
@@ -826,32 +826,32 @@ private:
    int   m_n;     // filter order
    float m_clamp; // clamping threshold (enabled if >= 0)
 
-   virtual BidimensionalInterpolation<FloatPixelTraits::sample>*
-                  NewInterpolation( const FloatPixelTraits::sample* ) const
+   BidimensionalInterpolation<FloatPixelTraits::sample>*
+                  NewInterpolation( const FloatPixelTraits::sample* ) const override
    {
       return new LanczosInterpolation<FloatPixelTraits::sample>( m_n, m_clamp );
    }
 
-   virtual BidimensionalInterpolation<DoublePixelTraits::sample>*
-                  NewInterpolation( const DoublePixelTraits::sample* ) const
+   BidimensionalInterpolation<DoublePixelTraits::sample>*
+                  NewInterpolation( const DoublePixelTraits::sample* ) const override
    {
       return new LanczosInterpolation<DoublePixelTraits::sample>( m_n, m_clamp );
    }
 
-   virtual BidimensionalInterpolation<UInt8PixelTraits::sample>*
-                  NewInterpolation( const UInt8PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt8PixelTraits::sample>*
+                  NewInterpolation( const UInt8PixelTraits::sample* ) const override
    {
       return new LanczosInterpolation<UInt8PixelTraits::sample>( m_n, m_clamp );
    }
 
-   virtual BidimensionalInterpolation<UInt16PixelTraits::sample>*
-                  NewInterpolation( const UInt16PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt16PixelTraits::sample>*
+                  NewInterpolation( const UInt16PixelTraits::sample* ) const override
    {
       return new LanczosInterpolation<UInt16PixelTraits::sample>( m_n, m_clamp );
    }
 
-   virtual BidimensionalInterpolation<UInt32PixelTraits::sample>*
-                  NewInterpolation( const UInt32PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt32PixelTraits::sample>*
+                  NewInterpolation( const UInt32PixelTraits::sample* ) const override
    {
       return new LanczosInterpolation<UInt32PixelTraits::sample>( m_n, m_clamp );
    }
@@ -888,7 +888,7 @@ public:
     *                achieved. A negative threshold value disables the
     *                interpolation clamping feature. The default value is 0.3.
     */
-   Lanczos3LUTPixelInterpolation( float clamp = 0.3 ) :
+   Lanczos3LUTPixelInterpolation( float clamp = 0.3F ) :
       m_clamp( clamp )
    {
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
@@ -901,7 +901,7 @@ public:
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       String desc( "Lanczos-3 LUT interpolation" );
       if ( m_clamp >= 0 )
@@ -913,32 +913,32 @@ private:
 
    float m_clamp; // clamping threshold (enabled if >= 0)
 
-   virtual BidimensionalInterpolation<FloatPixelTraits::sample>*
-                  NewInterpolation( const FloatPixelTraits::sample* ) const
+   BidimensionalInterpolation<FloatPixelTraits::sample>*
+                  NewInterpolation( const FloatPixelTraits::sample* ) const override
    {
       return new Lanczos3LUTInterpolation<FloatPixelTraits::sample>( m_clamp );
    }
 
-   virtual BidimensionalInterpolation<DoublePixelTraits::sample>*
-                  NewInterpolation( const DoublePixelTraits::sample* ) const
+   BidimensionalInterpolation<DoublePixelTraits::sample>*
+                  NewInterpolation( const DoublePixelTraits::sample* ) const override
    {
       return new Lanczos3LUTInterpolation<DoublePixelTraits::sample>( m_clamp );
    }
 
-   virtual BidimensionalInterpolation<UInt8PixelTraits::sample>*
-                  NewInterpolation( const UInt8PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt8PixelTraits::sample>*
+                  NewInterpolation( const UInt8PixelTraits::sample* ) const override
    {
       return new Lanczos3LUTInterpolation<UInt8PixelTraits::sample>( m_clamp );
    }
 
-   virtual BidimensionalInterpolation<UInt16PixelTraits::sample>*
-                  NewInterpolation( const UInt16PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt16PixelTraits::sample>*
+                  NewInterpolation( const UInt16PixelTraits::sample* ) const override
    {
       return new Lanczos3LUTInterpolation<UInt16PixelTraits::sample>( m_clamp );
    }
 
-   virtual BidimensionalInterpolation<UInt32PixelTraits::sample>*
-                  NewInterpolation( const UInt32PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt32PixelTraits::sample>*
+                  NewInterpolation( const UInt32PixelTraits::sample* ) const override
    {
       return new Lanczos3LUTInterpolation<UInt32PixelTraits::sample>( m_clamp );
    }
@@ -975,7 +975,7 @@ public:
     *                achieved. A negative threshold value disables the
     *                interpolation clamping feature. The default value is 0.3.
     */
-   Lanczos4LUTPixelInterpolation( float clamp = 0.3 ) :
+   Lanczos4LUTPixelInterpolation( float clamp = 0.3F ) :
       m_clamp( Range( clamp, 0.0F, 1.0F ) )
    {
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
@@ -988,7 +988,7 @@ public:
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       String desc( "Lanczos-4 LUT interpolation" );
       if ( m_clamp >= 0 )
@@ -1000,32 +1000,32 @@ private:
 
    float m_clamp; // clamping threshold (enabled if >= 0)
 
-   virtual BidimensionalInterpolation<FloatPixelTraits::sample>*
-                  NewInterpolation( const FloatPixelTraits::sample* ) const
+   BidimensionalInterpolation<FloatPixelTraits::sample>*
+                  NewInterpolation( const FloatPixelTraits::sample* ) const override
    {
       return new Lanczos4LUTInterpolation<FloatPixelTraits::sample>( m_clamp );
    }
 
-   virtual BidimensionalInterpolation<DoublePixelTraits::sample>*
-                  NewInterpolation( const DoublePixelTraits::sample* ) const
+   BidimensionalInterpolation<DoublePixelTraits::sample>*
+                  NewInterpolation( const DoublePixelTraits::sample* ) const override
    {
       return new Lanczos4LUTInterpolation<DoublePixelTraits::sample>( m_clamp );
    }
 
-   virtual BidimensionalInterpolation<UInt8PixelTraits::sample>*
-                  NewInterpolation( const UInt8PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt8PixelTraits::sample>*
+                  NewInterpolation( const UInt8PixelTraits::sample* ) const override
    {
       return new Lanczos4LUTInterpolation<UInt8PixelTraits::sample>( m_clamp );
    }
 
-   virtual BidimensionalInterpolation<UInt16PixelTraits::sample>*
-                  NewInterpolation( const UInt16PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt16PixelTraits::sample>*
+                  NewInterpolation( const UInt16PixelTraits::sample* ) const override
    {
       return new Lanczos4LUTInterpolation<UInt16PixelTraits::sample>( m_clamp );
    }
 
-   virtual BidimensionalInterpolation<UInt32PixelTraits::sample>*
-                  NewInterpolation( const UInt32PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt32PixelTraits::sample>*
+                  NewInterpolation( const UInt32PixelTraits::sample* ) const override
    {
       return new Lanczos4LUTInterpolation<UInt32PixelTraits::sample>( m_clamp );
    }
@@ -1062,7 +1062,7 @@ public:
     *                achieved. A negative threshold value disables the
     *                interpolation clamping feature. The default value is 0.3.
     */
-   Lanczos5LUTPixelInterpolation( float clamp = 0.3 ) :
+   Lanczos5LUTPixelInterpolation( float clamp = 0.3F ) :
       m_clamp( Range( clamp, 0.0F, 1.0F ) )
    {
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
@@ -1075,7 +1075,7 @@ public:
 
    /*!
     */
-   virtual String Description() const
+   String Description() const override
    {
       String desc( "Lanczos-5 LUT interpolation" );
       if ( m_clamp >= 0 )
@@ -1087,32 +1087,32 @@ private:
 
    float m_clamp; // clamping threshold (enabled if >= 0)
 
-   virtual BidimensionalInterpolation<FloatPixelTraits::sample>*
-                  NewInterpolation( const FloatPixelTraits::sample* ) const
+   BidimensionalInterpolation<FloatPixelTraits::sample>*
+                  NewInterpolation( const FloatPixelTraits::sample* ) const override
    {
       return new Lanczos5LUTInterpolation<FloatPixelTraits::sample>( m_clamp );
    }
 
-   virtual BidimensionalInterpolation<DoublePixelTraits::sample>*
-                  NewInterpolation( const DoublePixelTraits::sample* ) const
+   BidimensionalInterpolation<DoublePixelTraits::sample>*
+                  NewInterpolation( const DoublePixelTraits::sample* ) const override
    {
       return new Lanczos5LUTInterpolation<DoublePixelTraits::sample>( m_clamp );
    }
 
-   virtual BidimensionalInterpolation<UInt8PixelTraits::sample>*
-                  NewInterpolation( const UInt8PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt8PixelTraits::sample>*
+                  NewInterpolation( const UInt8PixelTraits::sample* ) const override
    {
       return new Lanczos5LUTInterpolation<UInt8PixelTraits::sample>( m_clamp );
    }
 
-   virtual BidimensionalInterpolation<UInt16PixelTraits::sample>*
-                  NewInterpolation( const UInt16PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt16PixelTraits::sample>*
+                  NewInterpolation( const UInt16PixelTraits::sample* ) const override
    {
       return new Lanczos5LUTInterpolation<UInt16PixelTraits::sample>( m_clamp );
    }
 
-   virtual BidimensionalInterpolation<UInt32PixelTraits::sample>*
-                  NewInterpolation( const UInt32PixelTraits::sample* ) const
+   BidimensionalInterpolation<UInt32PixelTraits::sample>*
+                  NewInterpolation( const UInt32PixelTraits::sample* ) const override
    {
       return new Lanczos5LUTInterpolation<UInt32PixelTraits::sample>( m_clamp );
    }
@@ -1129,4 +1129,4 @@ private:
 #endif   // __PCL_PixelInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/PixelInterpolation.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/PixelInterpolation.h - Released 2018-11-01T11:06:36Z

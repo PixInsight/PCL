@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/SurfaceSplines.h - Released 2017-08-01T14:23:31Z
+// pcl/SurfaceSplines.h - Released 2018-11-01T11:06:36Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,14 +56,18 @@
 
 #include <pcl/Array.h>
 #include <pcl/BicubicInterpolation.h>
-#include <pcl/Console.h>
 #include <pcl/File.h>
 #include <pcl/Matrix.h>
+#include <pcl/ParallelProcess.h>
 #include <pcl/Point.h>
 #include <pcl/Rectangle.h>
 #include <pcl/ReferenceArray.h>
 #include <pcl/SurfaceSpline.h>
 #include <pcl/Thread.h>
+
+#ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
+#  include <pcl/Console.h>
+#endif
 
 namespace pcl
 {
@@ -115,9 +119,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    PointSurfaceSpline( PointSurfaceSpline&& ) = default;
-#endif
 
    /*!
     * Constructs a %PointSurfaceSpline object initialized for the specified
@@ -139,9 +141,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-#ifndef _MSC_VER
    PointSurfaceSpline& operator =( PointSurfaceSpline&& ) = default;
-#endif
 
    /*!
     * Initializes this %PointSurfaceSpline object for the specified input data
@@ -322,7 +322,7 @@ private:
  * on interpolation vector lengths) with negligible accuracy loss in most
  * practical applications.
  */
-class PointGridInterpolation
+class PointGridInterpolation : public ParallelProcess
 {
 public:
 
@@ -330,9 +330,7 @@ public:
     * Default constructor. Yields an empty instance that cannot be used without
     * initialization.
     */
-   PointGridInterpolation() : m_parallel( true )
-   {
-   }
+   PointGridInterpolation() = default;
 
    /*!
     * Copy constructor.
@@ -342,9 +340,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    PointGridInterpolation( PointGridInterpolation&& ) = default;
-#endif
 
    /*!
     * Copy assignment operator. Returns a reference to this object.
@@ -354,9 +350,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-#ifndef _MSC_VER
    PointGridInterpolation& operator =( PointGridInterpolation&& ) = default;
-#endif
 
    /*!
     * Initializes this %PointGridInterpolation object for the specified input data
@@ -397,10 +391,12 @@ public:
       m_Gx = DMatrix( rows, cols );
       m_Gy = DMatrix( rows, cols );
 
+#ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
       if ( verbose )
          Console().WriteLn( "<end><cbr>Building 2D surface interpolation grid...<flush>" );
+#endif
 
-      int numberOfThreads = m_parallel ? Thread::NumberOfThreads( rows, 1 ) : 1;
+      int numberOfThreads = m_parallel ? Min( m_maxProcessors, Thread::NumberOfThreads( rows, 1 ) ) : 1;
       int rowsPerThread = rows/numberOfThreads;
       ReferenceArray<GridInitializationThread<P> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
@@ -408,10 +404,16 @@ public:
                                  i*rowsPerThread,
                                  (j < numberOfThreads) ? j*rowsPerThread : rows ) );
       int n = 0;
-      for ( GridInitializationThread<P>& thread : threads )
-         thread.Start( ThreadPriority::DefaultMax, n++ );
-      for ( GridInitializationThread<P>& thread : threads )
-         thread.Wait();
+      if ( numberOfThreads > 1 )
+      {
+         for ( GridInitializationThread<P>& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, n++ );
+         for ( GridInitializationThread<P>& thread : threads )
+            thread.Wait();
+      }
+      else
+         threads[0].Run();
+
       threads.Destroy();
 
       m_Ix.Initialize( m_Gx.Begin(), cols, rows );
@@ -465,40 +467,6 @@ public:
       return operator ()( p.x, p.y );
    }
 
-   /*!
-    * Returns true iff this object is allowed to use multiple parallel
-    * execution threads (when multiple threads are permitted and available).
-    */
-   bool IsParallelProcessingEnabled() const
-   {
-      return m_parallel;
-   }
-
-   /*!
-    * Enables parallel processing for this instance.
-    *
-    * \param enable  Whether to enable or disable parallel processing. True by
-    *                default.
-    *
-    * Parallel processing is applied during the interpolation initialization
-    * process (see the Initialize() member function).
-    */
-   void EnableParallelProcessing( bool enable ) // ### TODO: Add a maxProcessors parameter
-   {
-      m_parallel = enable;
-   }
-
-   /*!
-    * Disables parallel processing for this instance.
-    *
-    * This is a convenience function, equivalent to:
-    * EnableParallelProcessing( !disable )
-    */
-   void DisableParallelProcessing( bool disable )
-   {
-      EnableParallelProcessing( !disable );
-   }
-
 private:
 
    /*!
@@ -512,7 +480,6 @@ private:
    int                m_delta;
    DMatrix            m_Gx, m_Gy;
    grid_interpolation m_Ix, m_Iy;
-   bool               m_parallel : 1;
 
    template <class P>
    class GridInitializationThread : public Thread
@@ -526,7 +493,7 @@ private:
       {
       }
 
-      virtual PCL_HOT_FUNCTION void Run()
+      PCL_HOT_FUNCTION void Run() override
       {
          for ( int i = m_startRow; i < m_endRow; ++i )
             for ( int j = 0, dx = 0, y = m_grid.m_rect.y0 + i*m_grid.m_delta; j < m_grid.m_Gx.Cols(); ++j, dx += m_grid.m_delta )
@@ -539,9 +506,9 @@ private:
 
    private:
 
-      PointGridInterpolation&    m_grid;
-      const point_interpolation& m_splines;
-      int                        m_startRow, m_endRow;
+            PointGridInterpolation& m_grid;
+      const point_interpolation&    m_splines;
+            int                     m_startRow, m_endRow;
    };
 };
 
@@ -565,9 +532,7 @@ public:
     * Default constructor. Yields an empty instance that cannot be used without
     * initialization.
     */
-   GridInterpolation() : m_parallel( true )
-   {
-   }
+   GridInterpolation() = default;
 
    /*!
     * Copy constructor.
@@ -577,9 +542,7 @@ public:
    /*!
     * Move constructor.
     */
-#ifndef _MSC_VER
    GridInterpolation( GridInterpolation&& ) = default;
-#endif
 
    /*!
     * Copy assignment operator. Returns a reference to this object.
@@ -589,9 +552,7 @@ public:
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-#ifndef _MSC_VER
    GridInterpolation& operator =( GridInterpolation&& ) = default;
-#endif
 
    /*!
     * Initializes this %GridInterpolation object for the specified input data
@@ -631,8 +592,10 @@ public:
 
       m_G = DMatrix( rows, cols );
 
+#ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
       if ( verbose )
          Console().WriteLn( "<end><cbr>Building 2D surface interpolation grid...<flush>" );
+#endif
 
       int numberOfThreads = m_parallel ? Thread::NumberOfThreads( rows, 1 ) : 1;
       int rowsPerThread = rows/numberOfThreads;
@@ -745,7 +708,7 @@ private:
    int                m_delta;
    DMatrix            m_G;
    grid_interpolation m_I;
-   bool               m_parallel : 1;
+   bool               m_parallel = true;
 
    template <typename T>
    class GridInitializationThread : public Thread
@@ -759,7 +722,7 @@ private:
       {
       }
 
-      virtual PCL_HOT_FUNCTION void Run()
+      PCL_HOT_FUNCTION void Run() override
       {
          for ( int i = m_startRow; i < m_endRow; ++i )
             for ( int j = 0, dx = 0, y = m_grid.m_rect.y0 + i*m_grid.m_delta; j < m_grid.m_G.Cols(); ++j, dx += m_grid.m_delta )
@@ -768,9 +731,9 @@ private:
 
    private:
 
-      GridInterpolation&          m_grid;
+            GridInterpolation&    m_grid;
       const scalar_interpolation& m_splines;
-      int                         m_startRow, m_endRow;
+            int                   m_startRow, m_endRow;
    };
 };
 
@@ -781,4 +744,4 @@ private:
 #endif   // __PCL_SurfaceSplines_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SurfaceSplines.h - Released 2017-08-01T14:23:31Z
+// EOF pcl/SurfaceSplines.h - Released 2018-11-01T11:06:36Z

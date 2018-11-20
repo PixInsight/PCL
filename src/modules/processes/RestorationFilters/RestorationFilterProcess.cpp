@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard RestorationFilters Process Module Version 01.00.05.0321
+// Standard RestorationFilters Process Module Version 01.00.05.0329
 // ----------------------------------------------------------------------------
-// RestorationFilterProcess.cpp - Released 2017-08-01T14:26:58Z
+// RestorationFilterProcess.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RestorationFilters PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,7 +60,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-RestorationFilterProcess* TheRestorationFilterProcess = 0;
+RestorationFilterProcess* TheRestorationFilterProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -95,20 +95,28 @@ RestorationFilterProcess::RestorationFilterProcess() : MetaProcess()
    new RFRangeHigh( this );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString RestorationFilterProcess::Id() const
 {
    return "RestorationFilter";
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString RestorationFilterProcess::Category() const
 {
    return "Deconvolution";
 }
 
+// ----------------------------------------------------------------------------
+
 uint32 RestorationFilterProcess::Version() const
 {
    return 0x100;
 }
+
+// ----------------------------------------------------------------------------
 
 String RestorationFilterProcess::Description() const
 {
@@ -122,25 +130,33 @@ String RestorationFilterProcess::Description() const
    "</html>";
 }
 
+// ----------------------------------------------------------------------------
+
 const char** RestorationFilterProcess::IconImageXPM() const
 {
    return RestorationFilterIcon_XPM;
 }
+
+// ----------------------------------------------------------------------------
 
 ProcessInterface* RestorationFilterProcess::DefaultInterface() const
 {
    return TheRestorationFilterInterface;
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* RestorationFilterProcess::Create() const
 {
    return new RestorationFilterInstance( this );
 }
 
+// ----------------------------------------------------------------------------
+
 ProcessImplementation* RestorationFilterProcess::Clone( const ProcessImplementation& p ) const
 {
    const RestorationFilterInstance* instPtr = dynamic_cast<const RestorationFilterInstance*>( &p );
-   return (instPtr != 0) ? new RestorationFilterInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new RestorationFilterInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -148,4 +164,4 @@ ProcessImplementation* RestorationFilterProcess::Clone( const ProcessImplementat
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RestorationFilterProcess.cpp - Released 2017-08-01T14:26:58Z
+// EOF RestorationFilterProcess.cpp - Released 2018-11-01T11:07:21Z

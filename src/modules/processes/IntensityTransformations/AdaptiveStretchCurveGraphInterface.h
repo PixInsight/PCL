@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// AdaptiveStretchCurveGraphInterface.h - Released 2017-08-01T14:26:58Z
+// AdaptiveStretchCurveGraphInterface.h - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -106,27 +106,27 @@ private:
             ToolButton        Edit_ToolButton;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    /*
     * Parameters
     */
-   int    m_width;
-   int    m_height;
-   RGBA   m_backgroundColor;
-   RGBA   m_curveColor;
-   RGBA   m_gridColor;
-   RGBA   m_axisColor;
-   String m_fontFace;
-   int    m_fontSize;
-   int    m_tickSize;
-   int    m_margin;
+   int    m_width = 400;
+   int    m_height = 400;
+   RGBA   m_backgroundColor = 0xFFFFFFFF; // white
+   RGBA   m_curveColor = 0xFFFF0000;      // red
+   RGBA   m_gridColor = 0xFFD0D0D0;       // light gray
+   RGBA   m_axisColor = 0xFF000000;       // black
+   String m_fontFace = "Helvetica";
+   int    m_fontSize = 12;
+   int    m_tickSize = 5;
+   int    m_margin = 15;
 
    /*
     * Working data
     */
    StretchCurve m_curve;
-   Rect         m_curveRect;
+   Rect         m_curveRect = Rect( 0 );
    Bitmap       m_gridBitmap;
    Bitmap       m_curveBitmap;
 
@@ -152,4 +152,4 @@ extern AdaptiveStretchCurveGraphInterface* TheAdaptiveStretchCurveGraphInterface
 #endif   // __AdaptiveStretchCurveGraphInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF AdaptiveStretchCurveGraphInterface.h - Released 2017-08-01T14:26:58Z
+// EOF AdaptiveStretchCurveGraphInterface.h - Released 2018-11-01T11:07:21Z

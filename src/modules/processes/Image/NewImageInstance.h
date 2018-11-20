@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0402
+// Standard Image Process Module Version 01.02.09.0410
 // ----------------------------------------------------------------------------
-// NewImageInstance.h - Released 2017-08-01T14:26:58Z
+// NewImageInstance.h - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -61,8 +61,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// NewImageInstance
-// ----------------------------------------------------------------------------
 
 class NewImageInstance : public ProcessImplementation
 {
@@ -72,20 +70,14 @@ public:
    NewImageInstance( const NewImageInstance& );
 
    virtual bool Validate( String& info );
-
    virtual void Assign( const ProcessImplementation& );
-
    virtual bool CanExecuteOn( const View&, String& whyNot ) const;
-
    virtual bool CanExecuteGlobal( pcl::String& whyNot ) const;
    virtual bool ExecuteGlobal();
-
    virtual void* LockParameter( const MetaParameter*, size_type tableRow );
    virtual bool ValidateParameter( void* value, const MetaParameter*, size_type tableRow ) const;
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter*, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
-
-   // -------------------------------------------------------------------------
 
 private:
 
@@ -111,4 +103,4 @@ private:
 #endif   // __NewImageInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF NewImageInstance.h - Released 2017-08-01T14:26:58Z
+// EOF NewImageInstance.h - Released 2018-11-01T11:07:21Z

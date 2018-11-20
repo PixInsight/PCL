@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0405
+// Standard IntensityTransformations Process Module Version 01.07.01.0413
 // ----------------------------------------------------------------------------
-// AdaptiveStretchCurveGraphInterface.cpp - Released 2017-08-01T14:26:58Z
+// AdaptiveStretchCurveGraphInterface.cpp - Released 2018-11-01T11:07:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -75,30 +75,18 @@ static int s_sizeItems[] = { 400, 500, 600, 800, 1000 };
 // ----------------------------------------------------------------------------
 
 AdaptiveStretchCurveGraphInterface::AdaptiveStretchCurveGraphInterface() :
-   ProcessInterface(),
-   GUI( 0 ),
-   m_width( 400 ),
-   m_height( 400 ),
-   m_backgroundColor( 0xFFFFFFFF ), // white
-   m_curveColor( 0xFFFF0000 ),      // red
-   m_gridColor( 0xFFD0D0D0 ),       // light gray
-   m_axisColor( 0xFF000000 ),       // black
-   m_fontFace( "Helvetica" ),
-   m_fontSize( 12 ),
-   m_tickSize( 5 ),
-   m_margin( 15 ),
-   m_curve(),
-   m_curveRect( 0 ),
    m_gridBitmap( Bitmap::Null() ),
    m_curveBitmap( Bitmap::Null() )
 {
    TheAdaptiveStretchCurveGraphInterface = this;
 }
 
+// ----------------------------------------------------------------------------
+
 AdaptiveStretchCurveGraphInterface::~AdaptiveStretchCurveGraphInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -147,7 +135,7 @@ bool AdaptiveStretchCurveGraphInterface::CanImportInstances() const
 
 bool AdaptiveStretchCurveGraphInterface::Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "AdaptiveStretch Curve Graph" );
@@ -158,6 +146,7 @@ bool AdaptiveStretchCurveGraphInterface::Launch( const MetaProcess&, const Proce
    return true;
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void AdaptiveStretchCurveGraphInterface::SaveSettings() const
@@ -179,10 +168,11 @@ void AdaptiveStretchCurveGraphInterface::LoadSettings()
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 void AdaptiveStretchCurveGraphInterface::UpdateGraph( const StretchCurve& curve )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
    {
       m_curve = curve;
       if ( m_gridBitmap.IsNull() )
@@ -191,6 +181,8 @@ void AdaptiveStretchCurveGraphInterface::UpdateGraph( const StretchCurve& curve 
       GUI->CurveGraph_Control.Update();
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void AdaptiveStretchCurveGraphInterface::UpdateControls()
 {
@@ -205,6 +197,8 @@ void AdaptiveStretchCurveGraphInterface::UpdateControls()
    GUI->CurveGraph_Control.Update();
 }
 
+// ----------------------------------------------------------------------------
+
 void AdaptiveStretchCurveGraphInterface::Resize( int width, int height )
 {
    m_gridBitmap = Bitmap::Null();
@@ -217,6 +211,8 @@ void AdaptiveStretchCurveGraphInterface::Resize( int width, int height )
 
    UpdateControls();
 }
+
+// ----------------------------------------------------------------------------
 
 void AdaptiveStretchCurveGraphInterface::GenerateGraphGrid()
 {
@@ -280,6 +276,8 @@ void AdaptiveStretchCurveGraphInterface::GenerateGraphGrid()
    G.EndPaint();
 }
 
+// ----------------------------------------------------------------------------
+
 void AdaptiveStretchCurveGraphInterface::GenerateGraphCurve()
 {
    if ( m_curveBitmap.IsNull() )
@@ -304,6 +302,7 @@ void AdaptiveStretchCurveGraphInterface::GenerateGraphCurve()
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 void AdaptiveStretchCurveGraphInterface::__Paint( Control& sender, const Rect& updateRect )
 {
@@ -316,11 +315,15 @@ void AdaptiveStretchCurveGraphInterface::__Paint( Control& sender, const Rect& u
    G.EndPaint();
 }
 
+// ----------------------------------------------------------------------------
+
 void AdaptiveStretchCurveGraphInterface::__ItemSelected( ComboBox& sender, int itemIndex )
 {
    if ( sender == GUI->Size_ComboBox )
       Resize( LogicalPixelsToPhysical( s_sizeItems[itemIndex] ), LogicalPixelsToPhysical( s_sizeItems[itemIndex] ) );
 }
+
+// ----------------------------------------------------------------------------
 
 void AdaptiveStretchCurveGraphInterface::__Click( Button& sender, bool checked )
 {
@@ -382,6 +385,8 @@ void AdaptiveStretchCurveGraphInterface::__Click( Button& sender, bool checked )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void AdaptiveStretchCurveGraphInterface::__Hide( Control& sender )
 {
    // Release memory when the window is hidden.
@@ -437,4 +442,4 @@ AdaptiveStretchCurveGraphInterface::GUIData::GUIData( AdaptiveStretchCurveGraphI
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AdaptiveStretchCurveGraphInterface.cpp - Released 2017-08-01T14:26:58Z
+// EOF AdaptiveStretchCurveGraphInterface.cpp - Released 2018-11-01T11:07:21Z

@@ -1,0 +1,93 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.107
+# Copyright (C) 2009-2018 Pleiades Astrophoto
+######################################################################
+# Generated on .... 2018-11-01T11:09:05.219Z
+# Project id ...... SubframeSelector
+# Project type .... Module
+# Platform ........ MacOSX/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/contrib/cleger/SubframeSelector/macosx/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/SubframeSelector-pxm.dylib
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../FileDataCache.cpp \
+../../GraphWebView.cpp \
+../../PSF.cpp \
+../../SubframeSelectorCache.cpp \
+../../SubframeSelectorExpressionsInterface.cpp \
+../../SubframeSelectorInstance.cpp \
+../../SubframeSelectorInterface.cpp \
+../../SubframeSelectorMeasurementsInterface.cpp \
+../../SubframeSelectorModule.cpp \
+../../SubframeSelectorParameters.cpp \
+../../SubframeSelectorProcess.cpp \
+../../SubframeSelectorStarDetector.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/FileDataCache.o \
+./x64/Release/GraphWebView.o \
+./x64/Release/PSF.o \
+./x64/Release/SubframeSelectorCache.o \
+./x64/Release/SubframeSelectorExpressionsInterface.o \
+./x64/Release/SubframeSelectorInstance.o \
+./x64/Release/SubframeSelectorInterface.o \
+./x64/Release/SubframeSelectorMeasurementsInterface.o \
+./x64/Release/SubframeSelectorModule.o \
+./x64/Release/SubframeSelectorParameters.o \
+./x64/Release/SubframeSelectorProcess.o \
+./x64/Release/SubframeSelectorStarDetector.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/FileDataCache.d \
+./x64/Release/GraphWebView.d \
+./x64/Release/PSF.d \
+./x64/Release/SubframeSelectorCache.d \
+./x64/Release/SubframeSelectorExpressionsInterface.d \
+./x64/Release/SubframeSelectorInstance.d \
+./x64/Release/SubframeSelectorInterface.d \
+./x64/Release/SubframeSelectorMeasurementsInterface.d \
+./x64/Release/SubframeSelectorModule.d \
+./x64/Release/SubframeSelectorParameters.d \
+./x64/Release/SubframeSelectorProcess.d \
+./x64/Release/SubframeSelectorStarDetector.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/SubframeSelector-pxm.dylib: $(OBJ_FILES)
+	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.10 -stdlib=libc++ -Wl,-dead_strip -dynamiclib -install_name @executable_path/SubframeSelector-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/SubframeSelector-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi -llz4-pxi -lzlib-pxi -lRFC6234-pxi -llcms-pxi -lcminpack-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/SubframeSelector-pxm.dylib
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/SubframeSelector-pxm.dylib $(PCLBINDIR64)
+	codesign --deep -s pleiades -f -v --timestamp $(PCLBINDIR64)/SubframeSelector-pxm.dylib
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.10 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

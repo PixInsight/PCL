@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// pcl/WorldTransformation.cpp - Released 2017-08-01T14:23:38Z
+// pcl/WorldTransformation.cpp - Released 2018-11-01T11:06:52Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -95,13 +95,13 @@ void SplineWorldTransformation::Deserialize( const ByteArray& data )
       IsoString( reinterpret_cast<const char*>( data.Begin() ),
                reinterpret_cast<const char*>( data.End() ) ).Break( lines, '\n' );
       if ( lines.IsEmpty() )
-         throw Error( "Invalid raw serialization" );
+         throw Error( "Invalid spline raw serialization." );
 
       {
          IsoStringList tokens;
          lines[0].Break( tokens, ':' );
          if ( tokens.Length() != 2 || tokens[0] != "VERSION" || tokens[1] != "1" )
-            throw Error( "Invalid raw serialization version" );
+            throw Error( "Invalid/unsupported spline raw serialization version." );
       }
 
       Array<float> weights;
@@ -122,14 +122,14 @@ void SplineWorldTransformation::Deserialize( const ByteArray& data )
             for ( ;; )
             {
                if ( ++i == lines.End() )
-                  throw Error( "Unexpected end of data" );
+                  throw Error( "Parsing spline control points: Unexpected end of data." );
                if ( i->StartsWith( ']' ) )
                   break;
 
                tokens.Clear();
                i->Break( tokens, ';' );
                if ( tokens.Length() != 4 && tokens.Length() != 5 )
-                  throw Error( "Invalid raw control point serialization" );
+                  throw Error( "Parsing spline control points: Invalid raw control point serialization." );
 
                double pIx = tokens[0].ToDouble();
                double pIy = tokens[1].ToDouble();
@@ -168,19 +168,19 @@ void SplineWorldTransformation::InitializeSplines()
    try
    {
       if ( m_controlPointsW.Length() != m_controlPointsI.Length() )
-         throw Error( "The specified control point arrays have different lengths" );
+         throw Error( "The specified control point arrays have different lengths." );
       if ( m_controlPointsW.Length() < 5 )
-         throw Error( "At least five control points are required" );
+         throw Error( "At least five control points are required." );
       if ( m_smoothness > 0 )
          if ( !m_weights.IsEmpty() )
             if ( size_type( m_weights.Length() ) != m_controlPointsW.Length() )
-               throw Error( "Invalid length of point weights vector" );
+               throw Error( "Invalid length of point weights vector." );
 
       m_splineWI.Initialize( m_controlPointsW, m_controlPointsI, m_smoothness, m_weights, m_order );
       m_splineIW.Initialize( m_controlPointsI, m_controlPointsW, m_smoothness, m_weights, m_order );
 
       if ( !m_splineWI.IsValid() || !m_splineIW.IsValid() )
-         throw Error( "Invalid surface spline initialization" );
+         throw Error( "Invalid surface spline initialization." );
    }
    catch ( const Exception& x )
    {
@@ -242,4 +242,4 @@ void SplineWorldTransformation::CalculateLinearApproximation()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/WorldTransformation.cpp - Released 2017-08-01T14:23:38Z
+// EOF pcl/WorldTransformation.cpp - Released 2018-11-01T11:06:52Z

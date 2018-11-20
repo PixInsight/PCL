@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.07.0873
+// /_/     \____//_____/   PCL 02.01.10.0915
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0378
+// Standard Global Process Module Version 01.02.07.0386
 // ----------------------------------------------------------------------------
-// PreferencesInterface.cpp - Released 2017-08-01T14:26:58Z
+// PreferencesInterface.cpp - Released 2018-11-01T11:07:20Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -272,9 +272,11 @@ void GlobalStringControl::__EditCompleted( Edit& sender )
 
 GlobalDirectoryControl::GlobalDirectoryControl()
 {
-   selectDirButton.SetText( "Select directory..." );
+   selectDirButton.SetText( "Select" );
    selectDirButton.OnClick( (Button::click_event_handler)&GlobalDirectoryControl::__SelectDir, *this );
-   sizer.Add( selectDirButton );
+   buttonSizer.Add( selectDirButton );
+   buttonSizer.AddStretch();
+   sizer.Add( buttonSizer );
 
    edit.OnFileDrag( (Control::file_drag_event_handler)&GlobalDirectoryControl::__FileDrag, *this );
    edit.OnFileDrop( (Control::file_drop_event_handler)&GlobalDirectoryControl::__FileDrop, *this );
@@ -328,9 +330,11 @@ void GlobalDirectoryControl::__FileDrop( Control& sender, const Point& pos, cons
 
 GlobalFileControl::GlobalFileControl()
 {
-   selectFileButton.SetText( "Select file..." );
+   selectFileButton.SetText( "Select" );
    selectFileButton.OnClick( (Button::click_event_handler)&GlobalFileControl::__SelectFile, *this );
-   sizer.Add( selectFileButton );
+   buttonSizer.Add( selectFileButton );
+   buttonSizer.AddStretch();
+   sizer.Add( buttonSizer );
 
    edit.OnFileDrag( (Control::file_drag_event_handler)&GlobalFileControl::__FileDrag, *this );
    edit.OnFileDrop( (Control::file_drop_event_handler)&GlobalFileControl::__FileDrop, *this );
@@ -1436,6 +1440,134 @@ void WallpapersPreferencesPage::TransferSettings( PreferencesInstance& to, const
 
 // ----------------------------------------------------------------------------
 
+EphemeridesPreferencesPage::EphemeridesPreferencesPage( PreferencesInstance& instance )
+{
+   FundamentalEphemerides_File.label.SetText( "Fundamental Ephemerides" );
+   FundamentalEphemerides_File.item = &instance.application.fundamentalEphemeridesFile;
+   FundamentalEphemerides_File.dialogTitle = "<p>Select the core fundamental ephemerides file (XEPH format).</p>";
+   FundamentalEphemerides_File.fileExtensions << ".xeph";
+   FundamentalEphemerides_File.SetToolTip(
+      "<p>Path to the global fundamental ephemerides file (XEPH format).</p>"
+      "<p>As of writing this documentation, the standard fundamental ephemerides file provides the "
+      "complete JPL DE438/LE438 ephemerides. Nutations, librations and time differences are not included "
+      "in the standard .xeph file.</p>" );
+
+   ShortTermFundamentalEphemerides_File.label.SetText( "Short-Term Fundamental Ephemerides" );
+   ShortTermFundamentalEphemerides_File.item = &instance.application.shortTermFundamentalEphemeridesFile;
+   ShortTermFundamentalEphemerides_File.dialogTitle = "<p>Select the core short-term fundamental ephemerides file (XEPH format).</p>";
+   ShortTermFundamentalEphemerides_File.fileExtensions << ".xeph";
+   ShortTermFundamentalEphemerides_File.SetToolTip(
+      "<p>Path to the global short-term fundamental ephemerides file (XEPH format).</p>"
+      "<p>The standard short-term fundamental ephemeris file provides DE438/LE438 ephemerides for the "
+      "period from 1850 January 1.0 to 2150 December 32.0.</p>" );
+
+   AsteroidEphemerides_File.label.SetText( "Asteroid Ephemerides" );
+   AsteroidEphemerides_File.item = &instance.application.asteroidEphemeridesFile;
+   AsteroidEphemerides_File.dialogTitle = "<p>Select the core asteroid ephemerides file (XEPH format).</p>";
+   AsteroidEphemerides_File.fileExtensions << ".xeph";
+   AsteroidEphemerides_File.SetToolTip(
+      "<p>Path to the global asteroid ephemerides file (XEPH format).</p>"
+      "<p>As of writing this documentation, the standard asteroid ephemerides file provides the complete "
+      "set of 343 asteroids used for the numerical integration of DE430 ephemerides, with barycentric "
+      "coordinates coherent with DE438.</p>" );
+
+   ShortTermAsteroidEphemerides_File.label.SetText( "Short-Term Asteroid Ephemerides" );
+   ShortTermAsteroidEphemerides_File.item = &instance.application.shortTermAsteroidEphemeridesFile;
+   ShortTermAsteroidEphemerides_File.dialogTitle = "<p>Select the core short-term asteroid ephemerides file (XEPH format).</p>";
+   ShortTermAsteroidEphemerides_File.fileExtensions << ".xeph";
+   ShortTermAsteroidEphemerides_File.SetToolTip(
+      "<p>Path to the global short-term asteroid ephemerides file (XEPH format).</p>"
+      "<p>The standard short-term asteroid ephemerides file provides the complete set of 343 asteroids "
+      "used for the numerical integration of DE430 ephemerides, with barycentric coordinates coherent "
+      "with DE438, covering the period from 1950 January 1.0 to 2100 January 32.0.</p>" );
+
+   NutationModel_File.label.SetText( "Nutation Model" );
+   NutationModel_File.item = &instance.application.nutationModelFile;
+   NutationModel_File.dialogTitle = "<p>Select the core nutation model file (XEPH format).</p>";
+   NutationModel_File.fileExtensions << ".xeph";
+   NutationModel_File.SetToolTip(
+      "<p>Path to the global nutation model ephemerides file (XEPH format).</p>"
+      "<p>As of writing this documentation, the standard nutation model file provides the IAU "
+      "2006/2000A_R nutation model (MHB2000 luni-solar and planetary nutation with adjustments "
+      "to match the IAU 2006 precession).</p>" );
+
+   ShortTermNutationModel_File.label.SetText( "Short-Term Nutation Model" );
+   ShortTermNutationModel_File.item = &instance.application.shortTermNutationModelFile;
+   ShortTermNutationModel_File.dialogTitle = "<p>Select the core short-term nutation model file (XEPH format).</p>";
+   ShortTermNutationModel_File.fileExtensions << ".xeph";
+   ShortTermNutationModel_File.SetToolTip(
+      "<p>Path to the global short-term nutation model ephemerides file (XEPH format).</p>"
+      "<p>The standard short-term nutation model file provides the IAU 2006/2000A_R nutation model "
+      "(MHB2000 luni-solar and planetary nutation with adjustments to match the IAU 2006 precession) "
+      "covering the period from 1850 January 1.0 to 2150 December 32.0.</p>" );
+
+   DeltaTData_File.label.SetText( "DeltaT Database" );
+   DeltaTData_File.item = &instance.application.deltaTDataFile;
+   DeltaTData_File.dialogTitle = "<p>Select the core DeltaT database file (plain text format).</p>";
+   DeltaTData_File.fileExtensions << ".txt" << ".dat";
+   DeltaTData_File.SetToolTip(
+      "<p>Path to the global database file of observed Delta T values (plain text).</p>"
+      "<p>Delta T is the difference TT-UT1 in seconds. In current versions of PixInsight the Delta T "
+      "database is a plain text file generated with values taken from reference data provided by the "
+      "IERS Rapid Service/Prediction Center for the period from 1657 to the current year (plus a few "
+      "extrapolated values).</p>"
+      "<p>Outside of the period from 1657 to the current year, the PixInsight/PCL implementation uses "
+      "polynomial expressions taken from <em>Five Millennium Canon of Solar Eclipses</em>, by Fred "
+      "Espenak and Jean Meeus (NASA/TP-2006-214141, Revision 1.0, 2007).</p>" );
+
+   DeltaATData_File.label.SetText( "DeltaAT Database" );
+   DeltaATData_File.item = &instance.application.deltaATDataFile;
+   DeltaATData_File.dialogTitle = "<p>Select the core DeltaAT database file (plain text format).</p>";
+   DeltaATData_File.fileExtensions << ".txt" << ".dat";
+   DeltaATData_File.SetToolTip(
+      "<p>Path to the global database file of Delta AT values (plain text).</p>"
+      "<p>Delta AT is the difference TAI-UTC in seconds. In current versions of PixInsight the Delta AT "
+      "database is a plain text file generated with values taken from reference data provided by the "
+      "IERS Rapid Service/Prediction Center.</p>" );
+
+   CIPITRSData_File.label.SetText( "CIP-ITRS Database" );
+   CIPITRSData_File.item = &instance.application.cipITRSDataFile;
+   CIPITRSData_File.dialogTitle = "<p>Select the core CIP-ITRS database file (plain text format).</p>";
+   CIPITRSData_File.fileExtensions << ".txt" << ".dat";
+   CIPITRSData_File.SetToolTip(
+      "<p>Path to the global database file of CIP positions referred to the ITRS (plain text).</p>"
+      "<p>The position of the Celestial Intermediate Pole (CIP) in the International Terrestrial "
+      "Reference System (ITRS) is necessary to compute polar motion corrections applied to topocentric "
+      "coordinates of solar system bodies. These corrections are relevant for the topocentric position of "
+      "the Moon at the milliarcsecond level.</p>"
+      "<p>In current versions of PixInsight the CIP_ITRS database is a plain text file generated with values "
+      "provided by the IERS Rapid Service/Prediction Center.</p>" );
+
+   Page_Sizer.SetSpacing( 4 );
+   Page_Sizer.Add( FundamentalEphemerides_File );
+   Page_Sizer.Add( ShortTermFundamentalEphemerides_File );
+   Page_Sizer.Add( AsteroidEphemerides_File );
+   Page_Sizer.Add( ShortTermAsteroidEphemerides_File );
+   Page_Sizer.Add( NutationModel_File );
+   Page_Sizer.Add( ShortTermNutationModel_File );
+   Page_Sizer.Add( DeltaTData_File );
+   Page_Sizer.Add( DeltaATData_File );
+   Page_Sizer.Add( CIPITRSData_File );
+   Page_Sizer.AddStretch();
+
+   SetSizer( Page_Sizer );
+}
+
+void EphemeridesPreferencesPage::TransferSettings( PreferencesInstance& to, const PreferencesInstance& from )
+{
+   to.application.fundamentalEphemeridesFile          = from.application.fundamentalEphemeridesFile;
+   to.application.shortTermFundamentalEphemeridesFile = from.application.shortTermFundamentalEphemeridesFile;
+   to.application.asteroidEphemeridesFile             = from.application.asteroidEphemeridesFile;
+   to.application.shortTermAsteroidEphemeridesFile    = from.application.shortTermAsteroidEphemeridesFile;
+   to.application.nutationModelFile                   = from.application.nutationModelFile;
+   to.application.shortTermNutationModelFile          = from.application.shortTermNutationModelFile;
+   to.application.deltaTDataFile                      = from.application.deltaTDataFile;
+   to.application.deltaATDataFile                     = from.application.deltaATDataFile;
+   to.application.cipITRSDataFile                     = from.application.cipITRSDataFile;
+}
+
+// ----------------------------------------------------------------------------
+
 GUIEffectsPreferencesPage::GUIEffectsPreferencesPage( PreferencesInstance& instance )
 {
    HoverableAutoHideWindows_Flag.checkBox.SetText( "Hoverable AutoHide window selectors" );
@@ -1986,6 +2118,12 @@ MiscImageWindowSettingsPreferencesPage::MiscImageWindowSettingsPreferencesPage( 
    CreatePreviewsFromCoreProperties_Flag.SetToolTip(
       "<p>Create previews automatically from core properties stored in image files (XISF format feature).</p>" );
 
+   LoadAstrometricSolutions_Flag.checkBox.SetText( "Load astrometric solutions" );
+   LoadAstrometricSolutions_Flag.item = &instance.imageWindow.loadAstrometricSolutions;
+   LoadAstrometricSolutions_Flag.SetToolTip(
+      "<p>When opening image files, load astrometric solutions automatically from existing image properties "
+      "and WCS FITS header keywords (XISF and FITS formats only).</p>" );
+
    Page_Sizer.SetSpacing( 4 );
    Page_Sizer.Add( ShowCaptionCurrentChannels_Flag );
    Page_Sizer.Add( ShowCaptionZoomRatios_Flag );
@@ -2002,6 +2140,7 @@ MiscImageWindowSettingsPreferencesPage::MiscImageWindowSettingsPreferencesPage( 
    Page_Sizer.Add( HighDPIRenditions_Flag );
    Page_Sizer.Add( Default24BitScreenLUT_Flag );
    Page_Sizer.Add( CreatePreviewsFromCoreProperties_Flag );
+   Page_Sizer.Add( LoadAstrometricSolutions_Flag );
    Page_Sizer.AddStretch();
 
    SetSizer( Page_Sizer );
@@ -2024,6 +2163,7 @@ void MiscImageWindowSettingsPreferencesPage::TransferSettings( PreferencesInstan
    to.imageWindow.highDPIRenditions                = from.imageWindow.highDPIRenditions;
    to.imageWindow.default24BitScreenLUT            = from.imageWindow.default24BitScreenLUT;
    to.imageWindow.createPreviewsFromCoreProperties = from.imageWindow.createPreviewsFromCoreProperties;
+   to.imageWindow.loadAstrometricSolutions         = from.imageWindow.loadAstrometricSolutions;
 }
 
 // ----------------------------------------------------------------------------
@@ -2440,7 +2580,7 @@ PreferencesInterface::GUIData::GUIData( PreferencesInterface& w ) : window( w )
    CategoryStack_Sizer.AddStretch();
 
    CategoryStack_Control.SetSizer( CategoryStack_Sizer );
-   CategoryStack_Control.SetScaledMinHeight( 600 );
+   CategoryStack_Control.SetScaledMinHeight( 650 );
 
    TopRow_Sizer.SetSpacing( 12 );
    TopRow_Sizer.Add( CategorySelection_TreeBox );
@@ -2486,7 +2626,7 @@ PreferencesCategoryPage* PreferencesInterface::GUIData::PageByIndex( int index )
       return 0;
 
    PreferencesCategoryPage* page = categories[index].page;
-   if ( page == 0 )
+   if ( page == nullptr )
    {
       page = categories[index].CreatePage( window.instance );
 
@@ -2526,6 +2666,7 @@ void PreferencesInterface::GUIData::InitializeCategories()
    categories.Add( new MainWindowPreferencesCategory );
    categories.Add( new ResourcesPreferencesCategory );
    categories.Add( new WallpapersPreferencesCategory );
+   categories.Add( new EphemeridesPreferencesCategory );
    categories.Add( new GUIEffectsPreferencesCategory );
    categories.Add( new FileIOPreferencesCategory );
    categories.Add( new DirectoriesAndNetworkPreferencesCategory );
@@ -2545,4 +2686,4 @@ void PreferencesInterface::GUIData::InitializeCategories()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInterface.cpp - Released 2017-08-01T14:26:58Z
+// EOF PreferencesInterface.cpp - Released 2018-11-01T11:07:20Z

@@ -729,7 +729,7 @@ void AbstractINDIMountExecution::Perform()
 
           	  switch (m_instance.p_alignmentMethod){
           	  case IMCAlignmentMethod::AnalyticalModel:
-                 aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 31));
+                 aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 0));
               	  aModel->readObject(m_instance.p_alignmentFile);
           		  break;
           	  default:
@@ -867,7 +867,7 @@ void AbstractINDIMountExecution::Perform()
 
     	  switch (m_instance.p_alignmentMethod){
     	  case IMCAlignmentMethod::AnalyticalModel:
-    		  aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 31));
+           aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 0));
     		  break;
     	  default:
     		  throw Error( "Internal error: AbstractINDIMountExecution::Perform(): Unknown Pointing Model." );
@@ -994,7 +994,7 @@ void AbstractINDIMountExecution::Perform()
     	 AutoPointer<AlignmentModel> aModel = nullptr;
     	 switch (m_instance.p_alignmentMethod){
     	 case IMCAlignmentMethod::AnalyticalModel:
-    		 aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 31));
+          aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 0));
     		 break;
     	 default:
     		 throw Error( "Internal error: AbstractINDIMountExecution::Perform(): Unknown Pointing Model." );

@@ -464,7 +464,7 @@ public:
 
       int  m_alignmentModelIndex              = 0;
 
-      void getAlignmentConfigParamter(int32& configParam);
+      void getAlignmentConfigParamter(uint32 &configParam);
    };
 
    GUIData* GUI = nullptr;

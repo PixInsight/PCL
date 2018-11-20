@@ -925,9 +925,12 @@ bool INDIMountInterface::Launch( const MetaProcess& P, const ProcessImplementati
    return &P == TheINDIMountProcess;
 }
 
-void INDIMountInterface::GUIData::getAlignmentConfigParamter(int32& configParam){
+void INDIMountInterface::GUIData::getAlignmentConfigParamter(uint32& configParam){
 
    configParam = 0;
+   if (m_modelBothPierSides) {
+      configParam |= 1 << 0; // set if modeling for each pier side is requested
+   }
 	if (m_alignmentConfigOffset) {
 		configParam |= 1 << 1; // offset
 	}
@@ -956,9 +959,7 @@ void INDIMountInterface::GUIData::getAlignmentConfigParamter(int32& configParam)
 	if (m_alignmentQuadratic){
 		configParam |= 1 << 10; // quadratic terms
 	}
-	if (m_modelBothPierSides) {
-		configParam |= 1 << 31; // set if modeling for each pier side is requested
-	}
+
 
 }
 
@@ -1873,7 +1874,7 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
 
 	   if (GUI->MountAlignmentPlotResiduals_CheckBox.IsChecked()){
 		   AutoPointer<AlignmentModel> aModel = nullptr;
-		   int32 alignmentConfig = 0;
+         uint32 alignmentConfig = 0;
 		   GUI->getAlignmentConfigParamter(alignmentConfig);
 		   switch (GUI->m_alignmentModelIndex){
 		   case IMCAlignmentMethod::AnalyticalModel:

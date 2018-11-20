@@ -112,7 +112,7 @@ private:
            pcl_bool p_computeApparentPosition;
            pcl_bool p_enableAlignmentCorrection;
            String   p_alignmentFile;
-           int32    p_alignmentConfig;
+           uint32    p_alignmentConfig;
 
            double   o_currentLST;
            double   o_currentRA;

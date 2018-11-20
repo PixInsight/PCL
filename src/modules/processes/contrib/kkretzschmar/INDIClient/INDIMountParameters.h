@@ -146,7 +146,7 @@ DECLARE_BOOLEAN_PARAMETER_CLASS(IMCEnableAlignmentCorrection);
 #define ALIGNMENT_ENUM ENUM_ITEM(None) ENUM_ITEM(AnalyticalModel) ENUM_ITEM(ServerModel)
 DECLARE_ENUM_PARAMETER(IMCAlignmentMethod,ALIGNMENT_ENUM, None);
 
-DECLARE_INT32_PARAMETER_CLASS(IMCAlignmentConfig);
+DECLARE_UINT32_PARAMETER_CLASS(IMCAlignmentConfig);
 
 // ----------------------------------------------------------------------------
 

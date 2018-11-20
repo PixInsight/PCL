@@ -6,1628 +6,1628 @@ Created with PixInsight software - http://pixinsight.com/
 <xtpm version="1.0">
    <ModelName>GeneralAnalytical</ModelName>
    <CreationTime>2017-06-23T20:46:41.561Z</CreationTime>
-   <GeographicLatitude>0.8552113334772214</GeographicLatitude>
-   <Configuration>1918</Configuration>
+   <GeographicLatitude>0.8597818727599659</GeographicLatitude>
+   <Configuration>1919</Configuration>
    <ModelParameters PierSide="West">0.303318,0.145588,-0.1613,0.125386,-0.144077,0.06553299999999999,0.018505,0,-0.31047,0.004833,6.3e-05</ModelParameters>
    <ModelParameters PierSide="East">-0.382163,0.138095,0.259225,0.131419,0.207197,-0.057098,0.089279,-0,0.084133,0.002292,-5e-06</ModelParameters>
    <SyncDataList>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:47.462Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:17.037Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.2</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>0.1876040161937954</TelescopeRA>
-         <TelescopeDEC>-9.982419728552351</TelescopeDEC>
+         <TelescopeRA>0.1876151575154155</TelescopeRA>
+         <TelescopeDEC>-9.982376318356556</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:47.576Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:17.146Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.2</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>0.1883450863290058</TelescopeRA>
-         <TelescopeDEC>10.01336974268683</TelescopeDEC>
+         <TelescopeRA>0.1883343982014603</TelescopeRA>
+         <TelescopeDEC>10.01343533491902</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:47.690Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:17.257Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.2</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>0.1901394294952599</TelescopeRA>
-         <TelescopeDEC>30.00775423737671</TelescopeDEC>
+         <TelescopeRA>0.1901039489136363</TelescopeRA>
+         <TelescopeDEC>30.00783410025406</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:47.815Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:17.370Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.2</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>0.1917154617111026</TelescopeRA>
-         <TelescopeDEC>50.00141106833372</TelescopeDEC>
+         <TelescopeRA>0.1916420387595635</TelescopeRA>
+         <TelescopeDEC>50.00149556921457</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:47.935Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:17.483Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.2</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>0.1864320506037493</TelescopeRA>
-         <TelescopeDEC>69.99510531535965</TelescopeDEC>
+         <TelescopeRA>0.1862626328953546</TelescopeRA>
+         <TelescopeDEC>69.99518426219068</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:48.054Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:17.597Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.866666666667</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>0.8522473751408861</TelescopeRA>
-         <TelescopeDEC>-9.974654117670562</TelescopeDEC>
+         <TelescopeRA>0.8522592638276568</TelescopeRA>
+         <TelescopeDEC>-9.974610438043298</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:48.176Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:17.718Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.866666666667</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>0.8526403236967759</TelescopeRA>
-         <TelescopeDEC>10.0212376389432</TelescopeDEC>
+         <TelescopeRA>0.8526303829343812</TelescopeRA>
+         <TelescopeDEC>10.02130296174392</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:48.299Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:17.839Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.866666666667</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>0.8539596967146653</TelescopeRA>
-         <TelescopeDEC>30.01571825044478</TelescopeDEC>
+         <TelescopeRA>0.8539250660053337</TelescopeRA>
+         <TelescopeDEC>30.01579733752514</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:48.423Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:17.960Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.866666666667</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>0.854761103389126</TelescopeRA>
-         <TelescopeDEC>50.0094534365446</TelescopeDEC>
+         <TelescopeRA>0.8546888254674282</TelescopeRA>
+         <TelescopeDEC>50.00953674883549</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:48.547Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:18.080Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>0.866666666667</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>0.8475998097952542</TelescopeRA>
-         <TelescopeDEC>70.00319882625783</TelescopeDEC>
+         <TelescopeRA>0.8474325440390446</TelescopeRA>
+         <TelescopeDEC>70.00327631506742</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:48.677Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:18.203Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>1.533333333334</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>1.51838469778191</TelescopeRA>
-         <TelescopeDEC>-9.971664346260289</TelescopeDEC>
+         <TelescopeRA>1.518397304240483</TelescopeRA>
+         <TelescopeDEC>-9.971620068393117</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:48.804Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:18.324Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>1.533333333334</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>1.51833977228523</TelescopeRA>
-         <TelescopeDEC>10.02445452262447</TelescopeDEC>
+         <TelescopeRA>1.518330549294637</TelescopeRA>
+         <TelescopeDEC>10.02451924718529</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:48.929Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:18.450Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>1.533333333334</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>1.519010095464289</TelescopeRA>
-         <TelescopeDEC>30.0191485498512</TelescopeDEC>
+         <TelescopeRA>1.518976280974935</TelescopeRA>
+         <TelescopeDEC>30.0192259143684</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:49.072Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:18.572Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>1.533333333334</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>1.518745930277136</TelescopeRA>
-         <TelescopeDEC>50.01305771404419</TelescopeDEC>
+         <TelescopeRA>1.518674752045639</TelescopeRA>
+         <TelescopeDEC>50.01313838721521</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:49.215Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:18.697Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>1.533333333334</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>1.509134077502546</TelescopeRA>
-         <TelescopeDEC>70.00691665989291</TelescopeDEC>
+         <TelescopeRA>1.508968878487871</TelescopeRA>
+         <TelescopeDEC>70.00699091134273</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:49.350Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:18.820Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.200000000001</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>2.185980110482537</TelescopeRA>
-         <TelescopeDEC>-9.973541257012931</TelescopeDEC>
+         <TelescopeRA>2.185993383310432</TelescopeRA>
+         <TelescopeDEC>-9.973496070274633</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:49.498Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:18.944Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.200000000001</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>2.185420863041549</TelescopeRA>
-         <TelescopeDEC>10.02292265034781</TelescopeDEC>
+         <TelescopeRA>2.185412306420278</TelescopeRA>
+         <TelescopeDEC>10.02298646603751</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:49.623Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:19.070Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.200000000001</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>2.185287777742231</TelescopeRA>
-         <TelescopeDEC>30.01794090768432</TelescopeDEC>
+         <TelescopeRA>2.18525472102011</TelescopeRA>
+         <TelescopeDEC>30.01801565521141</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:49.750Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:19.194Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.200000000001</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>2.183699471235041</TelescopeRA>
-         <TelescopeDEC>50.01211438668449</TelescopeDEC>
+         <TelescopeRA>2.183629313940576</TelescopeRA>
+         <TelescopeDEC>50.01219105039407</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:49.877Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:19.317Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.200000000001</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>2.171138841586198</TelescopeRA>
-         <TelescopeDEC>70.00614585177121</TelescopeDEC>
+         <TelescopeRA>2.170975561305512</TelescopeRA>
+         <TelescopeDEC>70.00621518488845</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:50.006Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:19.444Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.866666666668</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>2.854978959254745</TelescopeRA>
-         <TelescopeDEC>-9.980227820945036</TelescopeDEC>
+         <TelescopeRA>2.854992826802185</TelescopeRA>
+         <TelescopeDEC>-9.980181442319981</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:50.132Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:19.568Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.866666666668</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>2.853844569389731</TelescopeRA>
-         <TelescopeDEC>10.01668856727719</TelescopeDEC>
+         <TelescopeRA>2.853836607488005</TelescopeRA>
+         <TelescopeDEC>10.01675119108013</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:50.262Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:19.693Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.866666666668</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>2.852778128132558</TelescopeRA>
-         <TelescopeDEC>30.01213201754028</TelescopeDEC>
+         <TelescopeRA>2.852745747700551</TelescopeRA>
+         <TelescopeDEC>30.01220333316624</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:50.390Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:19.816Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.866666666668</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>2.849647344210872</TelescopeRA>
-         <TelescopeDEC>50.00665211699001</TelescopeDEC>
+         <TelescopeRA>2.849578098079613</TelescopeRA>
+         <TelescopeDEC>50.00672352272199</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:50.517Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:19.942Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>2.866666666668</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>2.83372931708741</TelescopeRA>
-         <TelescopeDEC>70.00090982250747</TelescopeDEC>
+         <TelescopeRA>2.833567749233406</TelescopeRA>
+         <TelescopeDEC>70.00097270576036</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:50.645Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:20.065Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>3.533333333335</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>3.525309470390589</TelescopeRA>
-         <TelescopeDEC>-9.991520870195089</TelescopeDEC>
+         <TelescopeRA>3.525323842937545</TelescopeRA>
+         <TelescopeDEC>-9.991473052882522</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:50.775Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:20.189Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>3.533333333335</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>3.523556593033347</TelescopeRA>
-         <TelescopeDEC>10.00594169287211</TelescopeDEC>
+         <TelescopeRA>3.523549136131138</TelescopeRA>
+         <TelescopeDEC>10.00600287798753</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:50.901Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:20.314Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>3.533333333335</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>3.521455207887322</TelescopeRA>
-         <TelescopeDEC>30.00189837960667</TelescopeDEC>
+         <TelescopeRA>3.521423401719578</TelescopeRA>
+         <TelescopeDEC>30.00196555269704</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:51.029Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:20.441Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>3.533333333335</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>3.516610477852387</TelescopeRA>
-         <TelescopeDEC>49.99683687326137</TelescopeDEC>
+         <TelescopeRA>3.516542005425276</TelescopeRA>
+         <TelescopeDEC>49.99690193226061</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:51.159Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:20.566Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>3.533333333335</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>3.497028445477284</TelescopeRA>
-         <TelescopeDEC>69.9913676662013</TelescopeDEC>
+         <TelescopeRA>3.496868331711436</TelescopeRA>
+         <TelescopeDEC>69.99142276403394</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:51.285Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:20.695Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.200000000002</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>4.196884931269997</TelescopeRA>
-         <TelescopeDEC>-10.00707727117619</TelescopeDEC>
+         <TelescopeRA>4.196899703752288</TelescopeRA>
+         <TelescopeDEC>-10.00702781208915</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:51.417Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:20.821Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.200000000002</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>4.194489013781808</TelescopeRA>
-         <TelescopeDEC>9.991008565473175</TelescopeDEC>
+         <TelescopeRA>4.194481956814934</TelescopeRA>
+         <TelescopeDEC>9.991068108814126</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:51.549Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:20.950Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.200000000002</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>4.19128254306229</TelescopeRA>
-         <TelescopeDEC>29.98755093779363</TelescopeDEC>
+         <TelescopeRA>4.191251191684227</TelescopeRA>
+         <TelescopeDEC>29.98761338358281</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:51.680Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:21.081Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.200000000002</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>4.184604475600707</TelescopeRA>
-         <TelescopeDEC>49.98296688671249</TelescopeDEC>
+         <TelescopeRA>4.184536615910075</TelescopeRA>
+         <TelescopeDEC>49.98302470306611</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:51.807Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:21.213Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.200000000002</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>4.161163159142433</TelescopeRA>
-         <TelescopeDEC>69.97780931644351</TelescopeDEC>
+         <TelescopeRA>4.161004196944483</TelescopeRA>
+         <TelescopeDEC>69.97785552985606</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:51.935Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:21.342Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.866666666669</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>4.869606325079856</TelescopeRA>
-         <TelescopeDEC>-10.02642435051644</TelescopeDEC>
+         <TelescopeRA>4.869621380281465</TelescopeRA>
+         <TelescopeDEC>-10.02637309645245</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:52.067Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:21.470Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.866666666669</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>4.866562353270986</TelescopeRA>
-         <TelescopeDEC>9.972342920599889</TelescopeDEC>
+         <TelescopeRA>4.866555579023429</TelescopeRA>
+         <TelescopeDEC>9.972400668963887</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:52.198Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:21.599Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.866666666669</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>4.862214232759282</TelescopeRA>
-         <TelescopeDEC>29.9695256318605</TelescopeDEC>
+         <TelescopeRA>4.862183202877765</TelescopeRA>
+         <TelescopeDEC>29.96958290921953</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:52.328Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:21.728Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.866666666669</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>4.853639141587646</TelescopeRA>
-         <TelescopeDEC>49.96546358986612</TelescopeDEC>
+         <TelescopeRA>4.853571715048139</TelescopeRA>
+         <TelescopeDEC>49.96551348772537</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:52.460Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:21.855Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>4.866666666669</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>4.826260524608649</TelescopeRA>
-         <TelescopeDEC>69.96064673683063</TelescopeDEC>
+         <TelescopeRA>4.826102376468531</TelescopeRA>
+         <TelescopeDEC>69.96068323677184</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:52.591Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:21.983Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>5.533333333336</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>5.543365339389768</TelescopeRA>
-         <TelescopeDEC>-10.04897425700018</TelescopeDEC>
+         <TelescopeRA>5.543380551504396</TelescopeRA>
+         <TelescopeDEC>-10.04892110929623</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:52.719Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:22.111Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>5.533333333336</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>5.539687989873085</TelescopeRA>
-         <TelescopeDEC>9.950511904426449</TelescopeDEC>
+         <TelescopeRA>5.539681372538547</TelescopeRA>
+         <TelescopeDEC>9.950567759150488</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:52.851Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:22.239Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>5.533333333336</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>5.534196343801737</TelescopeRA>
-         <TelescopeDEC>29.9483701516068</TelescopeDEC>
+         <TelescopeRA>5.534165492355122</TelescopeRA>
+         <TelescopeDEC>29.94842197644688</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:52.983Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:22.369Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>5.533333333336</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>5.523718182742133</TelescopeRA>
-         <TelescopeDEC>49.94485881153985</TelescopeDEC>
+         <TelescopeRA>5.523650996607319</TelescopeRA>
+         <TelescopeDEC>49.9449003556554</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:53.115Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:22.500Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>5.533333333336</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>5.492443881688811</TelescopeRA>
-         <TelescopeDEC>69.94040140365949</TelescopeDEC>
+         <TelescopeRA>5.492286185361724</TelescopeRA>
+         <TelescopeDEC>69.94042765621707</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:53.248Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:22.631Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.200000000003</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>6.218047657170445</TelescopeRA>
-         <TelescopeDEC>-10.07404182312971</TelescopeDEC>
+         <TelescopeRA>6.218062895624069</TelescopeRA>
+         <TelescopeDEC>-10.07398674066008</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:53.379Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:22.764Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.200000000003</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>6.213770851419963</TelescopeRA>
-         <TelescopeDEC>9.926178841332259</TelescopeDEC>
+         <TelescopeRA>6.213764260424422</TelescopeRA>
+         <TelescopeDEC>9.92623276129062</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:53.513Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:22.898Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.200000000003</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>6.207168549466989</TelescopeRA>
-         <TelescopeDEC>29.92472729559487</TelescopeDEC>
+         <TelescopeRA>6.207137727971976</TelescopeRA>
+         <TelescopeDEC>29.92477354949921</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:53.645Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:23.032Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.200000000003</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>6.194839096157049</TelescopeRA>
-         <TelescopeDEC>49.92177861749658</TelescopeDEC>
+         <TelescopeRA>6.19477195037592</TelescopeRA>
+         <TelescopeDEC>49.9218116264434</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:53.778Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:23.164Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.200000000003</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>6.159829095865089</TelescopeRA>
-         <TelescopeDEC>69.91768846113391</TelescopeDEC>
+         <TelescopeRA>6.159671475378121</TelescopeRA>
+         <TelescopeDEC>69.91770424375706</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:53.913Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:23.297Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.86666666667</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>6.893536430258788</TelescopeRA>
-         <TelescopeDEC>-10.10086538359297</TelescopeDEC>
+         <TelescopeRA>6.89355156367709</TelescopeRA>
+         <TelescopeDEC>-10.10080838401883</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:54.045Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:23.428Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.86666666667</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>6.888712303922849</TelescopeRA>
-         <TelescopeDEC>9.900083079126313</TelescopeDEC>
+         <TelescopeRA>6.888705607891985</TelescopeRA>
+         <TelescopeDEC>9.900135081980155</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:54.183Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:23.562Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.86666666667</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>6.881065962483214</TelescopeRA>
-         <TelescopeDEC>29.89931544004075</TelescopeDEC>
+         <TelescopeRA>6.88103502154644</TelescopeRA>
+         <TelescopeDEC>29.89935617386263</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:54.320Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:23.702Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.86666666667</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>6.866993245138796</TelescopeRA>
-         <TelescopeDEC>49.89692428775319</TelescopeDEC>
+         <TelescopeRA>6.866925938434217</TelescopeRA>
+         <TelescopeDEC>49.89694883944303</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:54.453Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:23.832Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>6.86666666667</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>6.828521037774895</TelescopeRA>
-         <TelescopeDEC>69.89319803051919</TelescopeDEC>
+         <TelescopeRA>6.828363114850771</TelescopeRA>
+         <TelescopeDEC>69.89320343878083</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:54.589Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:23.965Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>7.533333333337001</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>7.569715829730207</TelescopeRA>
-         <TelescopeDEC>-10.12862991807868</TelescopeDEC>
+         <TelescopeRA>7.569730729930312</TelescopeRA>
+         <TelescopeDEC>-10.12857107731142</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:54.725Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:24.101Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>7.533333333337001</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>7.56441314851618</TelescopeRA>
-         <TelescopeDEC>9.873017524338149</TelescopeDEC>
+         <TelescopeRA>7.564406219267121</TelescopeRA>
+         <TelescopeDEC>9.87306768599888</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:54.862Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:24.232Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>7.533333333337001</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>7.555821106596341</TelescopeRA>
-         <TelescopeDEC>29.87290671131645</TelescopeDEC>
+         <TelescopeRA>7.555789900453619</TelescopeRA>
+         <TelescopeDEC>29.87294214363406</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:55.000Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:24.365Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>7.533333333337001</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>7.540166121628857</TelescopeRA>
-         <TelescopeDEC>49.87105100854205</TelescopeDEC>
+         <TelescopeRA>7.540098457613272</TelescopeRA>
+         <TelescopeDEC>49.87106743785611</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:55.136Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:24.500Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>7.533333333337001</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>7.498610396769633</TelescopeRA>
-         <TelescopeDEC>69.86767424115681</TelescopeDEC>
+         <TelescopeRA>7.498451802320477</TelescopeRA>
+         <TelescopeDEC>69.86766968584958</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:55.274Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:24.633Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.200000000004</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>8.246474565301869</TelescopeRA>
-         <TelescopeDEC>-10.15649181525601</TelescopeDEC>
+         <TelescopeRA>8.246489111187122</TelescopeRA>
+         <TelescopeDEC>-10.15643126515077</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:55.411Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:24.769Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.200000000004</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>8.240776635564936</TelescopeRA>
-         <TelescopeDEC>9.84580455015417</TelescopeDEC>
+         <TelescopeRA>8.240769352001024</TelescopeRA>
+         <TelescopeDEC>9.845853002476922</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:55.546Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:24.903Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.200000000004</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>8.231365966801892</TelescopeRA>
-         <TelescopeDEC>29.84630352528078</TelescopeDEC>
+         <TelescopeRA>8.231334357747185</TelescopeRA>
+         <TelescopeDEC>29.84633403575584</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:55.682Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:25.038Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.200000000004</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>8.214337787023817</TelescopeRA>
-         <TelescopeDEC>49.84494492635945</TelescopeDEC>
+         <TelescopeRA>8.214269580166382</TelescopeRA>
+         <TelescopeDEC>49.84495381497324</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:55.819Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:25.176Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.200000000004</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>8.170170925364646</TelescopeRA>
-         <TelescopeDEC>69.84189262047089</TelescopeDEC>
+         <TelescopeRA>8.170011310706531</TelescopeRA>
+         <TelescopeDEC>69.8418788151254</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:55.959Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:25.314Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.866666666671</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>8.923709266831636</TelescopeRA>
-         <TelescopeDEC>-10.18360450547804</TelescopeDEC>
+         <TelescopeRA>8.923723348071057</TelescopeRA>
+         <TelescopeDEC>-10.18354242982731</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:56.094Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:25.450Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.866666666671</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>8.917711404353346</TelescopeRA>
-         <TelescopeDEC>9.819271009024533</TelescopeDEC>
+         <TelescopeRA>8.917703656143601</TelescopeRA>
+         <TelescopeDEC>9.819317935801802</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:56.233Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:25.587Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.866666666671</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>8.907634055946481</TelescopeRA>
-         <TelescopeDEC>29.82031420627959</TelescopeDEC>
+         <TelescopeRA>8.907601918516029</TelescopeRA>
+         <TelescopeDEC>29.8203403241215</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:56.369Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:25.728Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.866666666671</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>8.889483477999736</TelescopeRA>
-         <TelescopeDEC>49.81939926130222</TelescopeDEC>
+         <TelescopeRA>8.889414559263587</TelescopeRA>
+         <TelescopeDEC>49.81940142001159</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:56.507Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:25.866Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>8.866666666671</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>8.843257198306365</TelescopeRA>
-         <TelescopeDEC>69.81663652995985</TelescopeDEC>
+         <TelescopeRA>8.843096245753896</TelescopeRA>
+         <TelescopeDEC>69.81661446916445</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:56.647Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:26.004Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>9.533333333338</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>9.601327625167526</TelescopeRA>
-         <TelescopeDEC>-10.20914418337203</TelescopeDEC>
+         <TelescopeRA>9.601341145548163</TelescopeRA>
+         <TelescopeDEC>-10.20908081232126</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:56.783Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:26.143Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>9.533333333338</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>9.595134259033992</TelescopeRA>
-         <TelescopeDEC>9.79422310916984</TelescopeDEC>
+         <TelescopeRA>9.595125949965464</TelescopeRA>
+         <TelescopeDEC>9.794268740547055</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:56.923Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:26.282Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>9.533333333338</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>9.584562434906315</TelescopeRA>
-         <TelescopeDEC>29.79572842661949</TelescopeDEC>
+         <TelescopeRA>9.584529659690787</TelescopeRA>
+         <TelescopeDEC>29.79575081450561</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:57.064Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:26.418Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>9.533333333338</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>9.565574358933219</TelescopeRA>
-         <TelescopeDEC>49.79519020547638</TelescopeDEC>
+         <TelescopeRA>9.56550458091156</TelescopeRA>
+         <TelescopeDEC>49.79518664956192</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:57.205Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:26.558Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>9.533333333338</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>9.517902954346244</TelescopeRA>
-         <TelescopeDEC>69.79267336315365</TelescopeDEC>
+         <TelescopeRA>9.517740386865272</TelescopeRA>
+         <TelescopeDEC>69.79264429233439</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:57.344Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:26.695Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.200000000005</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>10.27925119691458</TelescopeRA>
-         <TelescopeDEC>-10.23233483874889</TelescopeDEC>
+         <TelescopeRA>10.27926407726489</TelescopeRA>
+         <TelescopeDEC>-10.23227044180357</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:57.483Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:26.836Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.200000000005</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>10.27297269649155</TelescopeRA>
-         <TelescopeDEC>9.771421918352328</TelescopeDEC>
+         <TelescopeRA>10.2729637473927</TelescopeRA>
+         <TelescopeDEC>9.771466523834992</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:57.622Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:26.979Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.200000000005</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>10.26209362496063</TelescopeRA>
-         <TelescopeDEC>29.77329321277446</TelescopeDEC>
+         <TelescopeRA>10.26206012192947</TelescopeRA>
+         <TelescopeDEC>29.77331264671494</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:57.771Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:27.119Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.200000000005</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>10.24257839805724</TelescopeRA>
-         <TelescopeDEC>49.77305333879283</TelescopeDEC>
+         <TelescopeRA>10.24250763945223</TelescopeRA>
+         <TelescopeDEC>49.77304525717109</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:57.915Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:27.259Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.200000000005</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>10.19412007110588</TelescopeRA>
-         <TelescopeDEC>69.77073122874978</TelescopeDEC>
+         <TelescopeRA>10.19395566073104</TelescopeRA>
+         <TelescopeDEC>69.77069660632868</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:58.054Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:27.399Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.866666666672</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>10.95741778789772</TelescopeRA>
-         <TelescopeDEC>-10.25247183528003</TelescopeDEC>
+         <TelescopeRA>10.95742996849316</TelescopeRA>
+         <TelescopeDEC>-10.25240671311694</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:58.195Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:27.539Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.866666666672</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>10.95116710931326</TelescopeRA>
-         <TelescopeDEC>9.751560239217028</TelescopeDEC>
+         <TelescopeRA>10.95115746045954</TelescopeRA>
+         <TelescopeDEC>9.751604119481929</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:58.335Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:27.682Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.866666666672</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>10.94017735425353</TelescopeRA>
-         <TelescopeDEC>29.7536902473644</TelescopeDEC>
+         <TelescopeRA>10.9401430554905</TelescopeRA>
+         <TelescopeDEC>29.75370759312356</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:58.475Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:27.825Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.866666666672</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>10.92046134073016</TelescopeRA>
-         <TelescopeDEC>49.75366127874395</TelescopeDEC>
+         <TelescopeRA>10.9203895100385</TelescopeRA>
+         <TelescopeDEC>49.75364999784282</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:58.617Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:27.963Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>10.866666666672</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>10.87189820418148</TelescopeRA>
-         <TelescopeDEC>69.75147682739882</TelescopeDEC>
+         <TelescopeRA>10.8717317789428</TelescopeRA>
+         <TelescopeDEC>69.75143828048057</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:58.759Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:28.108Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>11.533333333339</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>11.6357833429003</TelescopeRA>
-         <TelescopeDEC>-10.26894332051566</TelescopeDEC>
+         <TelescopeRA>11.63579478527803</TelescopeRA>
+         <TelescopeDEC>-10.26887779584697</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:58.899Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:28.248Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>11.533333333339</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>11.62967259692998</TelescopeRA>
-         <TelescopeDEC>9.735241558833971</TelescopeDEC>
+         <TelescopeRA>11.62966220985855</TelescopeRA>
+         <TelescopeDEC>9.735285036593273</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:59.041Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:28.391Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>11.533333333339</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>11.6187720852789</TelescopeRA>
-         <TelescopeDEC>29.73751515657373</TelescopeDEC>
+         <TelescopeRA>11.61873694704565</TelescopeRA>
+         <TelescopeDEC>29.73753134336421</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:59.184Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:28.534Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>11.533333333339</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>11.59918775024571</TelescopeRA>
-         <TelescopeDEC>49.73760324326147</TelescopeDEC>
+         <TelescopeRA>11.59911478853889</TelescopeRA>
+         <TelescopeDEC>49.73759018671731</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:59.328Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:28.683Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>11.533333333339</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>11.55120510145336</TelescopeRA>
-         <TelescopeDEC>69.73549519434263</TelescopeDEC>
+         <TelescopeRA>11.55103655060149</TelescopeRA>
+         <TelescopeDEC>69.73545446927575</TelescopeDEC>
          <Pierside>0</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:59.472Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:28.829Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.799999999994</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-11.80132365329368</TelescopeRA>
-         <TelescopeDEC>-9.871994643701477</TelescopeDEC>
+         <TelescopeRA>-11.80132770426774</TelescopeRA>
+         <TelescopeDEC>-9.871678188208469</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:59.616Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:28.975Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.799999999994</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-11.79194682552454</TelescopeRA>
-         <TelescopeDEC>10.14831942261775</TelescopeDEC>
+         <TelescopeRA>-11.79194496102514</TelescopeRA>
+         <TelescopeDEC>10.14852885892526</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:59.760Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:29.123Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.799999999994</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-11.77818322116828</TelescopeRA>
-         <TelescopeDEC>30.15940487980653</TelescopeDEC>
+         <TelescopeRA>-11.77817477978695</TelescopeRA>
+         <TelescopeDEC>30.1594820358189</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:25:59.904Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:29.269Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.799999999994</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-11.75358395683542</TelescopeRA>
-         <TelescopeDEC>50.15992465812396</TelescopeDEC>
+         <TelescopeRA>-11.75356564110846</TelescopeRA>
+         <TelescopeDEC>50.1598602276874</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:00.053Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:29.412Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.799999999994</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-11.68661137427764</TelescopeRA>
-         <TelescopeDEC>70.14981606463385</TelescopeDEC>
+         <TelescopeRA>-11.68656843550722</TelescopeRA>
+         <TelescopeDEC>70.1496178190099</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:00.196Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:29.557Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.133333333327</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-11.13404494482129</TelescopeRA>
-         <TelescopeDEC>-9.866918413836617</TelescopeDEC>
+         <TelescopeRA>-11.13405260152426</TelescopeRA>
+         <TelescopeDEC>-9.866603258239428</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:00.340Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:29.703Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.133333333327</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-11.12501800776456</TelescopeRA>
-         <TelescopeDEC>10.15290216769703</TelescopeDEC>
+         <TelescopeRA>-11.12501974899406</TelescopeRA>
+         <TelescopeDEC>10.15311290390036</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:00.485Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:29.852Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.133333333327</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-11.11157457201964</TelescopeRA>
-         <TelescopeDEC>30.16352390087433</TelescopeDEC>
+         <TelescopeRA>-11.11157023092193</TelescopeRA>
+         <TelescopeDEC>30.16360479978754</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:00.632Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:29.997Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.133333333327</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-11.0873449702968</TelescopeRA>
-         <TelescopeDEC>50.163665647914</TelescopeDEC>
+         <TelescopeRA>-11.08733217886702</TelescopeRA>
+         <TelescopeDEC>50.16360695193423</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:00.776Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:30.141Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-11.133333333327</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-11.02103471796266</TelescopeRA>
-         <TelescopeDEC>70.15331031203111</TelescopeDEC>
+         <TelescopeRA>-11.02100216147482</TelescopeRA>
+         <TelescopeDEC>70.15311910075977</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:00.922Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:30.288Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-10.46666666666</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-10.46662895142294</TelescopeRA>
-         <TelescopeDEC>-9.868065551792755</TelescopeDEC>
+         <TelescopeRA>-10.46664007107909</TelescopeRA>
+         <TelescopeDEC>-9.86775328245661</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:01.066Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:30.434Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-10.46666666666</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-10.45808694696809</TelescopeRA>
-         <TelescopeDEC>10.15065930661511</TelescopeDEC>
+         <TelescopeRA>-10.45809215115078</TelescopeRA>
+         <TelescopeDEC>10.15087292907948</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:01.213Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:30.577Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-10.46666666666</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-10.44514068532377</TelescopeRA>
-         <TelescopeDEC>30.16025139685668</TelescopeDEC>
+         <TelescopeRA>-10.44514028215112</TelescopeRA>
+         <TelescopeDEC>30.16034060642735</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:01.359Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:30.725Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-10.46666666666</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-10.42156379266419</TelescopeRA>
-         <TelescopeDEC>50.15955377128466</TelescopeDEC>
+         <TelescopeRA>-10.42155630678651</TelescopeRA>
+         <TelescopeDEC>50.1595078079708</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:01.506Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:30.870Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-10.46666666666</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-10.35659806162853</TelescopeRA>
-         <TelescopeDEC>70.14865057383888</TelescopeDEC>
+         <TelescopeRA>-10.356575476317</TelescopeRA>
+         <TelescopeDEC>70.14847498149449</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:01.654Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:31.013Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.799999999993</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-9.799112053265471</TelescopeRA>
-         <TelescopeDEC>-9.87540120236358</TelescopeDEC>
+         <TelescopeRA>-9.799126387879024</TelescopeRA>
+         <TelescopeDEC>-9.875093317956116</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:01.802Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:31.158Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.799999999993</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-9.791175288870276</TelescopeRA>
-         <TelescopeDEC>10.14165898757102</TelescopeDEC>
+         <TelescopeRA>-9.791183708010365</TelescopeRA>
+         <TelescopeDEC>10.14187699496407</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:01.953Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:31.308Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.799999999993</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-9.778888100432336</TelescopeRA>
-         <TelescopeDEC>30.1496868011322</TelescopeDEC>
+         <TelescopeRA>-9.778891353174354</TelescopeRA>
+         <TelescopeDEC>30.1497886366018</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:02.102Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:31.456Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.799999999993</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-9.756227131054674</TelescopeRA>
-         <TelescopeDEC>50.14771396552659</TelescopeDEC>
+         <TelescopeRA>-9.756224570777485</TelescopeRA>
+         <TelescopeDEC>50.14768734621217</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:02.250Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:31.603Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.799999999993</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-9.693247259793031</TelescopeRA>
-         <TelescopeDEC>70.13597843384417</TelescopeDEC>
+         <TelescopeRA>-9.693233931582375</TelescopeRA>
+         <TelescopeDEC>70.13582657042789</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:02.401Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:31.752Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.133333333326</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-9.131535722088723</TelescopeRA>
-         <TelescopeDEC>-9.888702475518512</TelescopeDEC>
+         <TelescopeRA>-9.131552925979028</TelescopeRA>
+         <TelescopeDEC>-9.888400341473533</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:02.549Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:31.897Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.133333333326</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-9.124306115297999</TelescopeRA>
-         <TelescopeDEC>10.12617468070452</TelescopeDEC>
+         <TelescopeRA>-9.124317403714839</TelescopeRA>
+         <TelescopeDEC>10.12639843846006</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:02.699Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:32.043Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.133333333326</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-9.112819873566361</TelescopeRA>
-         <TelescopeDEC>30.13215111359603</TelescopeDEC>
+         <TelescopeRA>-9.112826389129513</TelescopeRA>
+         <TelescopeDEC>30.1322695065745</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:02.852Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:32.191Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.133333333326</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-9.091310211823817</TelescopeRA>
-         <TelescopeDEC>50.12850597714653</TelescopeDEC>
+         <TelescopeRA>-9.091312047533652</TelescopeRA>
+         <TelescopeDEC>50.12850472540743</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:03.015Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:32.339Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-9.133333333326</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-9.03089719946739</TelescopeRA>
-         <TelescopeDEC>70.11567892860833</TelescopeDEC>
+         <TelescopeRA>-9.030892133009866</TelescopeRA>
+         <TelescopeDEC>70.11555818312988</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:03.338Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:32.487Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-8.466666666659</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-8.463945261107673</TelescopeRA>
-         <TelescopeDEC>-9.907565218803507</TelescopeDEC>
+         <TelescopeRA>-8.463964901412563</TelescopeRA>
+         <TelescopeDEC>-9.907270025832959</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:03.486Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:32.639Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-8.466666666659</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-8.457503242840268</TelescopeRA>
-         <TelescopeDEC>10.10467686884433</TelescopeDEC>
+         <TelescopeRA>-8.457516967671692</TelescopeRA>
+         <TelescopeDEC>10.1049075676743</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:03.642Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:32.787Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-8.466666666659</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-8.446935484954478</TelescopeRA>
-         <TelescopeDEC>30.10817714724046</TelescopeDEC>
+         <TelescopeRA>-8.44694477110607</TelescopeRA>
+         <TelescopeDEC>30.10831552624621</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:03.792Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:32.935Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-8.466666666659</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-8.426777533300355</TelescopeRA>
-         <TelescopeDEC>50.10251343115171</TelescopeDEC>
+         <TelescopeRA>-8.426783101813896</TelescopeRA>
+         <TelescopeDEC>50.10254279978288</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:03.940Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:33.083Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-8.466666666659</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-8.369434386271401</TelescopeRA>
-         <TelescopeDEC>70.08836884832591</TelescopeDEC>
+         <TelescopeRA>-8.369436335190075</TelescopeRA>
+         <TelescopeDEC>70.08828566429216</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:04.101Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:33.235Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.799999999992</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-7.79638842849719</TelescopeRA>
-         <TelescopeDEC>-9.931416297308859</TelescopeDEC>
+         <TelescopeRA>-7.796409998325272</TelescopeRA>
+         <TelescopeDEC>-9.931129025223656</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:04.253Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:33.384Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.799999999992</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-7.790790499193208</TelescopeRA>
-         <TelescopeDEC>10.0778187521254</TelescopeDEC>
+         <TelescopeRA>-7.790806153547824</TelescopeRA>
+         <TelescopeDEC>10.07805737184072</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:04.402Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:33.531Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.799999999992</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-7.781230854625933</TelescopeRA>
-         <TelescopeDEC>30.07849333890181</TelescopeDEC>
+         <TelescopeRA>-7.781242334950341</TelescopeRA>
+         <TelescopeDEC>30.07865452518792</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:04.554Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:33.685Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.799999999992</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-7.76258394448649</TelescopeRA>
-         <TelescopeDEC>50.0705260978993</TelescopeDEC>
+         <TelescopeRA>-7.762592469201071</TelescopeRA>
+         <TelescopeDEC>50.07059040931123</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:04.702Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:33.836Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.799999999992</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-7.708720392902721</TelescopeRA>
-         <TelescopeDEC>70.05487799596671</TelescopeDEC>
+         <TelescopeRA>-7.708727897661999</TelescopeRA>
+         <TelescopeDEC>70.05483767559906</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:04.850Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:33.988Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.133333333324998</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-7.128913986284046</TelescopeRA>
-         <TelescopeDEC>-9.959531008083411</TelescopeDEC>
+         <TelescopeRA>-7.128936920116343</TelescopeRA>
+         <TelescopeDEC>-9.959252396022373</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:05.011Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:34.139Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.133333333324998</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-7.124190999167566</TelescopeRA>
-         <TelescopeDEC>10.04641640083337</TelescopeDEC>
+         <TelescopeRA>-7.124208017526398</TelescopeRA>
+         <TelescopeDEC>10.04666368057285</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:05.158Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:34.291Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.133333333324998</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-7.115698466378419</TelescopeRA>
-         <TelescopeDEC>30.04400161607571</TelescopeDEC>
+         <TelescopeRA>-7.11571149779119</TelescopeRA>
+         <TelescopeDEC>30.04418773790758</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:05.306Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:34.448Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.133333333324998</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-7.098676016948121</TelescopeRA>
-         <TelescopeDEC>50.03351589632381</TelescopeDEC>
+         <TelescopeRA>-7.098686631438402</TelescopeRA>
+         <TelescopeDEC>50.03361841120829</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:05.469Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:34.600Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-7.133333333324998</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-7.048596065180404</TelescopeRA>
-         <TelescopeDEC>70.01622397413247</TelescopeDEC>
+         <TelescopeRA>-7.048607497433288</TelescopeRA>
+         <TelescopeDEC>70.01623051726155</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:05.618Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:34.752Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-6.466666666658</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-6.461570218737421</TelescopeRA>
-         <TelescopeDEC>-9.991055099867008</TelescopeDEC>
+         <TelescopeRA>-6.461593909610378</TelescopeRA>
+         <TelescopeDEC>-9.9907856238385</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:05.766Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:34.904Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-6.466666666658</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-6.457726442356899</TelescopeRA>
-         <TelescopeDEC>10.01142395952189</TelescopeDEC>
+         <TelescopeRA>-6.457744217756391</TelescopeRA>
+         <TelescopeDEC>10.0116803752939</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:05.924Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:35.056Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-6.466666666658</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-6.450327596154097</TelescopeRA>
-         <TelescopeDEC>30.00574999230658</TelescopeDEC>
+         <TelescopeRA>-6.450341488441744</TelescopeRA>
+         <TelescopeDEC>30.00596242029569</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:06.073Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:35.209Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-6.466666666658</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-6.434993668210779</TelescopeRA>
-         <TelescopeDEC>49.99260736267204</TelescopeDEC>
+         <TelescopeRA>-6.43500544255464</TelescopeRA>
+         <TelescopeDEC>49.99275018092767</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:06.223Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:35.361Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-6.466666666658</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-6.388886357864164</TelescopeRA>
-         <TelescopeDEC>69.97358126571677</TelescopeDEC>
+         <TelescopeRA>-6.388899969928751</TelescopeRA>
+         <TelescopeDEC>69.97363724824952</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:06.374Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:35.513Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.799999999991002</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-5.794403465275801</TelescopeRA>
-         <TelescopeDEC>-10.02503072908276</TelescopeDEC>
+         <TelescopeRA>-5.794427283223565</TelescopeRA>
+         <TelescopeDEC>-10.02477058750143</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:06.535Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:35.665Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.799999999991002</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-5.791416453806382</TelescopeRA>
-         <TelescopeDEC>9.97390465581319</TelescopeDEC>
+         <TelescopeRA>-5.79143435628068</TelescopeRA>
+         <TelescopeDEC>9.974170406032377</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:06.686Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:35.821Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.799999999991002</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-5.785104637884651</TelescopeRA>
-         <TelescopeDEC>29.96490072382638</TelescopeDEC>
+         <TelescopeRA>-5.785118674676437</TelescopeRA>
+         <TelescopeDEC>29.96514002928493</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:06.862Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:35.973Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.799999999991002</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-5.771471987335194</TelescopeRA>
-         <TelescopeDEC>49.94904348203831</TelescopeDEC>
+         <TelescopeRA>-5.771483956368956</TelescopeRA>
+         <TelescopeDEC>49.94922747896614</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:07.049Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:36.125Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.799999999991002</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-5.729405653315408</TelescopeRA>
-         <TelescopeDEC>69.92824554783657</TelescopeDEC>
+         <TelescopeRA>-5.729419631277318</TelescopeRA>
+         <TelescopeDEC>69.92835204348869</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:07.200Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:36.284Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.133333333324003</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-5.127456712467208</TelescopeRA>
-         <TelescopeDEC>-10.06042556342945</TelescopeDEC>
+         <TelescopeRA>-5.127480023662822</TelescopeRA>
+         <TelescopeDEC>-10.06017467108748</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:07.351Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:36.437Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.133333333324003</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-5.125277987715757</TelescopeRA>
-         <TelescopeDEC>9.934998494764768</TelescopeDEC>
+         <TelescopeRA>-5.125295383437906</TelescopeRA>
+         <TelescopeDEC>9.935273494223317</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:07.510Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:36.597Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.133333333324003</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-5.120013516904795</TelescopeRA>
-         <TelescopeDEC>29.92269499498717</TelescopeDEC>
+         <TelescopeRA>-5.120026977439299</TelescopeRA>
+         <TelescopeDEC>29.92296093256904</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:07.661Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:36.749Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.133333333324003</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-5.10804320720336</TelescopeRA>
-         <TelescopeDEC>49.90414792089125</TelescopeDEC>
+         <TelescopeRA>-5.108054399847784</TelescopeRA>
+         <TelescopeDEC>49.90437272059925</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:07.814Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:36.905Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-5.133333333324003</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-5.069963401395266</TelescopeRA>
-         <TelescopeDEC>69.88159432333865</TelescopeDEC>
+         <TelescopeRA>-5.069975920222517</TelescopeRA>
+         <TelescopeDEC>69.88175087101028</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:07.974Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:37.058Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-4.466666666657005</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-4.460768287904078</TelescopeRA>
-         <TelescopeDEC>-10.0961641487761</TelescopeDEC>
+         <TelescopeRA>-4.460790473917994</TelescopeRA>
+         <TelescopeDEC>-10.09592213943223</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:08.127Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:37.216Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-4.466666666657005</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-4.459324812294548</TelescopeRA>
-         <TelescopeDEC>9.895887620392616</TelescopeDEC>
+         <TelescopeRA>-4.459341082834999</TelescopeRA>
+         <TelescopeDEC>9.896171502849258</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:08.280Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:37.370Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-4.466666666657005</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-4.455036178372844</TelescopeRA>
-         <TelescopeDEC>29.8804152055026</TelescopeDEC>
+         <TelescopeRA>-4.455048359397931</TelescopeRA>
+         <TelescopeDEC>29.88070672065808</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:08.448Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:37.527Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-4.466666666657005</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-4.444638763588107</TelescopeRA>
-         <TelescopeDEC>49.85928480813811</TelescopeDEC>
+         <TelescopeRA>-4.444648232354157</TelescopeRA>
+         <TelescopeDEC>49.85954879496236</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:08.600Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:37.682Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-4.466666666657005</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-4.410369909234142</TelescopeRA>
-         <TelescopeDEC>69.83504506607274</TelescopeDEC>
+         <TelescopeRA>-4.410379188229817</TelescopeRA>
+         <TelescopeDEC>69.83524968385875</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:08.752Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:37.838Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.799999999990007</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-3.794370695638762</TelescopeRA>
-         <TelescopeDEC>-10.13116058629155</TelescopeDEC>
+         <TelescopeRA>-3.794391172229508</TelescopeRA>
+         <TelescopeDEC>-10.13092682379909</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:08.915Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:37.994Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.799999999990007</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-3.793567091421981</TelescopeRA>
-         <TelescopeDEC>9.857760396823476</TelescopeDEC>
+         <TelescopeRA>-3.793581652539262</TelescopeRA>
+         <TelescopeDEC>9.858052526131541</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:09.075Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:38.152Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.799999999990007</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-3.790153135857944</TelescopeRA>
-         <TelescopeDEC>29.83934600538154</TelescopeDEC>
+         <TelescopeRA>-3.790163372998724</TelescopeRA>
+         <TelescopeDEC>29.8396612663993</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:09.228Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:38.310Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.799999999990007</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-3.781191378442461</TelescopeRA>
-         <TelescopeDEC>49.81581728675803</TelescopeDEC>
+         <TelescopeRA>-3.78119822822027</TelescopeRA>
+         <TelescopeDEC>49.81611765435397</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:09.384Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:38.466Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.799999999990007</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-3.750442104953558</TelescopeRA>
-         <TelescopeDEC>69.79001215166582</TelescopeDEC>
+         <TelescopeRA>-3.750446461861386</TelescopeRA>
+         <TelescopeDEC>69.79026139707493</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:09.544Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:38.622Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.133333333323009</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-3.12828962856434</TelescopeRA>
-         <TelescopeDEC>-10.16435152693094</TelescopeDEC>
+         <TelescopeRA>-3.128307863430401</TelescopeRA>
+         <TelescopeDEC>-10.16412512456683</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:09.696Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:38.783Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.133333333323009</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-3.128011075822661</TelescopeRA>
-         <TelescopeDEC>9.821775300452192</TelescopeDEC>
+         <TelescopeRA>-3.128023395215258</TelescopeRA>
+         <TelescopeDEC>9.822074789888601</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:09.853Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:38.939Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.133333333323009</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-3.125344063425407</TelescopeRA>
-         <TelescopeDEC>29.80073526148767</TelescopeDEC>
+         <TelescopeRA>-3.125351751370932</TelescopeRA>
+         <TelescopeDEC>29.80107171515035</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:10.015Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:39.096Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.133333333323009</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-3.117637104109047</TelescopeRA>
-         <TelescopeDEC>49.77506609539252</TelescopeDEC>
+         <TelescopeRA>-3.117640519365382</TelescopeRA>
+         <TelescopeDEC>49.77539893200424</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:10.170Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:39.255Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-3.133333333323009</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-3.090009100212552</TelescopeRA>
-         <TelescopeDEC>69.74786388243437</TelescopeDEC>
+         <TelescopeRA>-3.090007002331407</TelescopeRA>
+         <TelescopeDEC>69.7481529569876</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:10.327Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:39.415Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-2.46666666665601</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-2.462543187749071</TelescopeRA>
-         <TelescopeDEC>-10.19472848075836</TelescopeDEC>
+         <TelescopeRA>-2.462558716702604</TelescopeRA>
+         <TelescopeDEC>-10.19450832816574</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:10.497Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:39.575Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-2.46666666665601</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-2.462658913141463</TelescopeRA>
-         <TelescopeDEC>9.78902572022267</TelescopeDEC>
+         <TelescopeRA>-2.462668526621531</TelescopeRA>
+         <TelescopeDEC>9.789331459430567</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:10.654Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:39.737Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-2.46666666665601</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-2.460588413229958</TelescopeRA>
-         <TelescopeDEC>29.76575614173622</TelescopeDEC>
+         <TelescopeRA>-2.460593024125289</TelescopeRA>
+         <TelescopeDEC>29.76611059089869</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:10.810Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:39.896Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-2.46666666665601</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-2.453917266337307</TelescopeRA>
-         <TelescopeDEC>49.73826943837015</TelescopeDEC>
+         <TelescopeRA>-2.45391653589513</TelescopeRA>
+         <TelescopeDEC>49.73862984568709</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:10.977Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:40.056Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-2.46666666665601</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-2.428917382563437</TelescopeRA>
-         <TelescopeDEC>69.70988091221095</TelescopeDEC>
+         <TelescopeRA>-2.428907493317692</TelescopeRA>
+         <TelescopeDEC>69.71020380724089</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:11.134Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:40.219Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.799999999989012</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-1.797141332444588</TelescopeRA>
-         <TelescopeDEC>-10.22136845940326</TelescopeDEC>
+         <TelescopeRA>-1.797153773515531</TelescopeRA>
+         <TelescopeDEC>-10.22115325632913</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:11.291Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:40.380Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.799999999989012</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-1.797508582688429</TelescopeRA>
-         <TelescopeDEC>9.760506735558094</TelescopeDEC>
+         <TelescopeRA>-1.797515108285908</TelescopeRA>
+         <TelescopeDEC>9.760817424284484</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:11.467Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:40.539Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.799999999989012</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-1.795866039851611</TelescopeRA>
-         <TelescopeDEC>29.73547146898054</TelescopeDEC>
+         <TelescopeRA>-1.795867139336421</TelescopeRA>
+         <TelescopeDEC>29.73584016971351</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:11.627Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:40.700Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.799999999989012</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-1.789980247070908</TelescopeRA>
-         <TelescopeDEC>49.70654536349451</TelescopeDEC>
+         <TelescopeRA>-1.789974785718132</TelescopeRA>
+         <TelescopeDEC>49.70692760548422</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:11.786Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:40.860Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.799999999989012</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-1.767035479849845</TelescopeRA>
-         <TelescopeDEC>69.67721733432548</TelescopeDEC>
+         <TelescopeRA>-1.767016699400544</TelescopeRA>
+         <TelescopeDEC>69.67756701354668</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:11.969Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:41.020Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.133333333322014</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-1.132085577479078</TelescopeRA>
-         <TelescopeDEC>-10.24346202059499</TelescopeDEC>
+         <TelescopeRA>-1.13209464252112</TelescopeRA>
+         <TelescopeDEC>-10.24325031639774</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:12.127Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:41.181Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.133333333322014</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-1.132553956836416</TelescopeRA>
-         <TelescopeDEC>9.7370848813762</TelescopeDEC>
+         <TelescopeRA>-1.132557106404994</TelescopeRA>
+         <TelescopeDEC>9.737399068979469</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:12.287Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:41.341Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.133333333322014</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-1.131157812404064</TelescopeRA>
-         <TelescopeDEC>29.71080142767754</TelescopeDEC>
+         <TelescopeRA>-1.131155072810457</TelescopeRA>
+         <TelescopeDEC>29.71118020302496</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:12.467Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:41.505Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.133333333322014</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-1.125783052836262</TelescopeRA>
-         <TelescopeDEC>49.68085779072756</TelescopeDEC>
+         <TelescopeRA>-1.125772419107127</TelescopeRA>
+         <TelescopeDEC>49.6812554679221</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:12.627Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:41.669Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-1.133333333322014</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-1.104257954921674</TelescopeRA>
-         <TelescopeDEC>69.65086561506344</TelescopeDEC>
+         <TelescopeRA>-1.10422945358458</TelescopeRA>
+         <TelescopeDEC>69.65123422836635</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:12.788Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:41.835Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-0.4666666666550157</CelestialRA>
          <CelestialDEC>-10</CelestialDEC>
-         <TelescopeRA>-0.4673689472299996</TelescopeRA>
-         <TelescopeDEC>-10.26033786265661</TelescopeDEC>
+         <TelescopeRA>-0.4673744506757594</TelescopeRA>
+         <TelescopeDEC>-10.26012810038302</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:12.970Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:42.005Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-0.4666666666550157</CelestialRA>
          <CelestialDEC>10</CelestialDEC>
-         <TelescopeRA>-0.4677849872059402</TelescopeRA>
-         <TelescopeDEC>9.719471818864273</TelescopeDEC>
+         <TelescopeRA>-0.4677845751782351</TelescopeRA>
+         <TelescopeDEC>9.719787948391204</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:13.133Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:42.170Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-0.4666666666550157</CelestialRA>
          <CelestialDEC>30</CelestialDEC>
-         <TelescopeRA>-0.4664461958169965</TelescopeRA>
-         <TelescopeDEC>29.69249560454857</TelescopeDEC>
+         <TelescopeRA>-0.4664394061255322</TelescopeRA>
+         <TelescopeDEC>29.69287997144232</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:13.296Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:42.340Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-0.4666666666550157</CelestialRA>
          <CelestialDEC>50</CelestialDEC>
-         <TelescopeRA>-0.4612926210774715</TelescopeRA>
-         <TelescopeDEC>49.66198722396928</TelescopeDEC>
+         <TelescopeRA>-0.4612765306662558</TelescopeRA>
+         <TelescopeDEC>49.66239346790982</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>
-      <SyncDataPoint CreationTime="2018-05-20T13:26:13.474Z">
+      <SyncDataPoint CreationTime="2018-11-20T23:17:42.504Z">
          <LocalSiderialTime>0</LocalSiderialTime>
          <CelestialRA>-0.4666666666550157</CelestialRA>
          <CelestialDEC>70</CelestialDEC>
-         <TelescopeRA>-0.4405086092895339</TelescopeRA>
-         <TelescopeDEC>69.63162643808</TelescopeDEC>
+         <TelescopeRA>-0.4404698527446683</TelescopeRA>
+         <TelescopeDEC>69.63200556005258</TelescopeDEC>
          <Pierside>1</Pierside>
          <Enabled>true</Enabled>
       </SyncDataPoint>

@@ -215,7 +215,7 @@ function INDIMountControllerTests( parent )
             File.copyFile(pointingModelFileCreated, pointingModelFile);
          }
          mountController.alignmentModelFile=pointingModelFileCreated;
-         mountController.alignmentConfig = 1918;
+         mountController.alignmentConfig = 1919;
          mountController.geographicLatitude = 49.261872611;
          mountController.Command = 13; // FitPointingModel
          assertTrue( mountController.executeGlobal());

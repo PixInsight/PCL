@@ -531,6 +531,14 @@ DECLARE_STRING_PARAMETER_CLASS(ICFExternalFilterWheelDeviceName);
 // ----------------------------------------------------------------------------
 
 
+// ----------------------------------------------------------------------------
+
+DECLARE_BOOLEAN_PARAMETER_CLASS(ICFEnableAlignmentCorrection);
+DECLARE_STRING_PARAMETER_CLASS(ICFAlignmentFile);
+
+// ----------------------------------------------------------------------------
+
+
 PCL_END_LOCAL
 
 } // pcl

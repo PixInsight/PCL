@@ -49,6 +49,7 @@
 
 #include "Asserts.jsh"
 #include "INDI-helper.jsh"
+#include "CoordUtils.jsh"
 
 #define MOUNT_DEVICE_NAME "Telescope Simulator"
 
@@ -200,6 +201,8 @@ function INDIMountControllerTests( parent )
                // set target coordinates
                mountController.targetRA = ra;
                mountController.targetDec = dec;
+               // set pier side - only necessary in testing
+               mountController.PierSide = hourAngleRangeShift(-ra) <= 0 ? 0 : 1; // west:0, east:1
                // set synch command
                mountController.Command = 14; // TestSync
                assertTrue( mountController.executeGlobal() );
@@ -212,7 +215,7 @@ function INDIMountControllerTests( parent )
             File.copyFile(pointingModelFileCreated, pointingModelFile);
          }
          mountController.alignmentModelFile=pointingModelFileCreated;
-         mountController.alignmentConfig = 1918;
+         mountController.alignmentConfig = 1919;
          mountController.geographicLatitude = 49.261872611;
          mountController.Command = 13; // FitPointingModel
          assertTrue( mountController.executeGlobal());
@@ -231,14 +234,14 @@ function INDIMountControllerTests( parent )
          // model parameters (west)
          expectEquals(modelValuesExpected.ModelParamWest.length, modelValues.ModelParamWest.length, "model (west) paramaters not equal" )
          for (var i=0; i < modelValuesExpected.ModelParamWest.length; ++i){
-        	let paramExpected = modelValuesExpected.ModelParamWest[i];
-        	let param = modelValues.ModelParamWest[i];
+        	   let paramExpected = modelValuesExpected.ModelParamWest[i];
+        	   let param = modelValues.ModelParamWest[i];
             expectEqualsWithPrecision( paramExpected, param, 0.01 );
          }
          // model parameters (east)
          expectEquals(modelValuesExpected.ModelParamEast.length, modelValues.ModelParamEast.length, "model (east) paramaters not equal" )
          for (var i=0; i < modelValuesExpected.ModelParamEast.length; ++i){
-        	let paramExpected = modelValuesExpected.ModelParamEast[i];
+        	   let paramExpected = modelValuesExpected.ModelParamEast[i];
          	let param = modelValues.ModelParamEast[i];
             expectEqualsWithPrecision( paramExpected, param, 0.01 );
          }

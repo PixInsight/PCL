@@ -160,9 +160,11 @@ void AlignmentModel::getPseudoInverse( Matrix& pseudoInverse, const Matrix& matr
 
 // ----------------------------------------------------------------------------
 
-pcl_enum AlignmentModel::getPierSide( double hourAngle )
+pcl_enum AlignmentModel::getPierSideFromHourAngle( double hourAngle, bool counterWeightUpEnforced)
 {
-   return (!m_modelEachPierSide || hourAngle >= 0) ? IMCPierSide::West : IMCPierSide::East;
+   pcl_enum pierSideWest = counterWeightUpEnforced ? IMCPierSide::East : IMCPierSide::West;
+   pcl_enum pierSideEast = counterWeightUpEnforced ? IMCPierSide::West : IMCPierSide::East;
+   return (!m_modelEachPierSide || hourAngle <= 0) ? pierSideWest : pierSideEast;
 }
 
 // ----------------------------------------------------------------------------
@@ -363,12 +365,57 @@ void AlignmentModel::readObject( const String& fileName )
    Parse( xml );
 }
 
+void AlignmentModel::readSyncData( const String& fileName )
+{
+   IsoString text = File::ReadTextFile( fileName );
+   XMLDocument xml;
+   xml.SetParserOption( XMLParserOption::IgnoreComments );
+   xml.SetParserOption( XMLParserOption::IgnoreUnknownElements );
+   xml.Parse( text.UTF8ToUTF16() );
+   if ( xml.RootElement() == nullptr )
+      throw Error( "The XML document has no root element." );
+   if ( xml.RootElement()->Name() != "xtpm" || xml.RootElement()->AttributeValue( "version" ) != "1.0" )
+      throw Error( "Not an XTPM version 1.0 document." );
+
+   const XMLElement& root = *xml.RootElement();
+   for ( const XMLNode& node : root )
+   {
+      const XMLElement& element = static_cast<const XMLElement&>( node );
+      try
+      {
+         if ( element.Name() == "SyncDataList" )
+            ParseSyncData( element );
+      }
+      catch ( Exception& x )
+      {
+         try
+         {
+            throw XMLParseError( element, "Parsing " + element.Name() + " element", x.Message() );
+         }
+         catch ( Exception& x )
+         {
+            x.Show();
+         }
+      }
+      catch ( ... )
+      {
+         throw;
+      }
+   }
+   if ( m_syncData.IsEmpty() )
+      throw Error( "Missing required sync data list." );
+}
+
+
 // ----------------------------------------------------------------------------
 
 AlignmentModel* AlignmentModel::create( const String& fileName )
 {
+   if (fileName.IsEmpty()) {
+      throw Error("Pointing model: file name is empty.");
+   }
    if ( !File::Exists( fileName ) )
-      throw Error( "AlignmentModel::create: xtpm file does not exist." );
+      throw Error( "PointingModel: xtpm file does not exist." );
 
    IsoString text = File::ReadTextFile( fileName );
    XMLDocument xml;
@@ -571,7 +618,7 @@ void GeneralAnalyticalPointingModel::evaluateBasis( Matrix& basisVectors, double
 
 // ----------------------------------------------------------------------------
 
-void GeneralAnalyticalPointingModel::Apply( double& hourAngleCor, double& decCor, double hourAngle, double dec )
+void GeneralAnalyticalPointingModel::Apply( double& hourAngleCor, double& decCor, double hourAngle, double dec, pcl_enum pierSide )
 {
    Matrix basisVectors( 2, m_numOfModelParameters );
 
@@ -579,7 +626,7 @@ void GeneralAnalyticalPointingModel::Apply( double& hourAngleCor, double& decCor
 
    // compute correction vector
    Vector alignCorrection( 2 );
-   Vector* modelParameters = (!m_modelEachPierSide || hourAngle >= 0 ) ? m_pointingModelWest : m_pointingModelEast;
+   Vector* modelParameters = (!m_modelEachPierSide || pierSide == IMCPierSide::West) ? m_pointingModelWest : m_pointingModelEast;
 
    alignCorrection = (*modelParameters)[0] * basisVectors.ColumnVector( 0 );
    for ( size_t modelIndex = 1; modelIndex < m_numOfModelParameters; modelIndex++ )
@@ -591,7 +638,7 @@ void GeneralAnalyticalPointingModel::Apply( double& hourAngleCor, double& decCor
 
 // ----------------------------------------------------------------------------
 
-void GeneralAnalyticalPointingModel::ApplyInverse( double& hourAngleCor, double& decCor, const double hourAngle, const double dec )
+void GeneralAnalyticalPointingModel::ApplyInverse( double& hourAngleCor, double& decCor, const double hourAngle, const double dec, pcl_enum pierSide )
 {
    Matrix basisVectors( 2, m_numOfModelParameters );
 
@@ -599,7 +646,7 @@ void GeneralAnalyticalPointingModel::ApplyInverse( double& hourAngleCor, double&
 
    // compute correction vector
    Vector alignCorrection( 2 );
-   Vector* modelParameters = (!m_modelEachPierSide || hourAngle >= 0) ? m_pointingModelWest : m_pointingModelEast;
+   Vector* modelParameters = (!m_modelEachPierSide ||  pierSide == IMCPierSide::West) ? m_pointingModelWest : m_pointingModelEast;
 
    alignCorrection = (*modelParameters)[0] * basisVectors.ColumnVector( 0 );
    for ( size_t modelIndex = 1; modelIndex < m_numOfModelParameters; modelIndex++ )
@@ -794,6 +841,9 @@ void GeneralAnalyticalPointingModel::Parse( const XMLDocument& xml )
       }
    }
 }
+
+
+
 
 // ----------------------------------------------------------------------------
 

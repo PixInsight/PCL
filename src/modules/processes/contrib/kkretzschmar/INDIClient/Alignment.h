@@ -118,12 +118,12 @@ public:
    // factory method
    static AlignmentModel* create( const String& fileName );
 
-   virtual void Apply( double& hourAngleCor, double& decCor, const double hourAngle, const double dec )
+   virtual void Apply( double& hourAngleCor, double& decCor, const double hourAngle, const double dec, pcl_enum pierSide)
    {
       throw Error( "Internal Error: AlignmentModel::Apply: No implementation provided." );
    }
 
-   virtual void ApplyInverse( double& hourAngleCor, double& decCor, const double hourAngle, const double dec )
+   virtual void ApplyInverse( double& hourAngleCor, double& decCor, const double hourAngle, const double dec, pcl_enum pierSide)
    {
       throw Error( "Internal Error: AlignmentModel::Apply: No implementation provided." );
    }
@@ -148,8 +148,10 @@ public:
 
    virtual void writeObject( const String& fileName ) final;
    virtual void readObject( const String& fileName ) final;
+   virtual void readSyncData( const String& fileName ) final;
 
-   pcl_enum getPierSide( double hourAngle );
+
+   pcl_enum getPierSideFromHourAngle( double hourAngle , bool counterWeightUpEnforced);
 
    Array<SyncDataPoint>& getSyncDataPoints()
    {
@@ -243,9 +245,9 @@ public:
       delete m_pointingModelEast;
    }
 
-   virtual void Apply(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) ;
+   virtual void Apply(double& hourAngleCor, double& decCor, const double hourAngle, const double dec, pcl_enum pierSide) ;
 
-   virtual void ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec);
+   virtual void ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec, pcl_enum pierSide);
 
    virtual void fitModel( const Array<SyncDataPoint>& syncPointArray );
    virtual void fitModel();

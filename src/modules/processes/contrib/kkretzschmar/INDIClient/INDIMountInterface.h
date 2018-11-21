@@ -71,6 +71,7 @@
 #include <pcl/TreeBox.h>
 #include <pcl/TabBox.h>
 
+#include "INDIMountParameters.h"
 #include "INDIClient.h"
 #include "INDIMountInstance.h"
 #include "DeviceConfigBase.h"
@@ -332,6 +333,20 @@ public:
    int getTelescopeFocalLength() const {
 	   return m_telescopeFocalLength;
    }
+   bool applyAlignmentCorrection() const {
+      if (GUI == nullptr) {
+         return false;
+      }
+      return GUI->MountAlignmentCorrection_CheckBox.IsChecked();
+   }
+   const String getAlignmentFile() const {
+      if (GUI == nullptr) {
+         return String();
+      }
+      return GUI->AlignmentFile_Edit.Text();
+   }
+   int getAlignmentMethod() const;
+
  private:
 
    String                       m_device;
@@ -449,15 +464,16 @@ public:
 
       int  m_alignmentModelIndex              = 0;
 
-      void getAlignmentConfigParamter(int32& configParam);
+      void getAlignmentConfigParamter(uint32 &configParam);
    };
 
    GUIData* GUI = nullptr;
 
-   double m_geoLatitude  = 0;
-   double m_geoLongitude = 0;
-   int    m_telescopeAperture    = 0;
-   int    m_telescopeFocalLength = 0;
+   double   m_geoLatitude  = 0;
+   double   m_geoLongitude = 0;
+   int      m_telescopeAperture    = 0;
+   int      m_telescopeFocalLength = 0;
+   pcl_enum m_pierSide = IMCPierSide::Default;
 
    void UpdateControls();
 

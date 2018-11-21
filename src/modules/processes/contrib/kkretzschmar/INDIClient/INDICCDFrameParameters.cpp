@@ -88,6 +88,9 @@ ICFClientFilePath*          TheICFClientFilePathParameter = nullptr;
 ICFServerFrames*            TheICFServerFramesParameter = nullptr;
 ICFServerFrame*             TheICFServerFrameParameter = nullptr;
 REGISTER_MODULE_PARAMETER(ICFExternalFilterWheelDeviceName);
+REGISTER_MODULE_PARAMETER(ICFEnableAlignmentCorrection);
+REGISTER_MODULE_PARAMETER(ICFAlignmentFile);
+
 
 // ----------------------------------------------------------------------------
 
@@ -726,6 +729,13 @@ bool ICFServerFrame::IsReadOnly() const
 DEFINE_STRING_PARAMETER_CLASS(ICFExternalFilterWheelDeviceName,"externalFilterWheelDeviceName");
 
 // ----------------------------------------------------------------------------
+
+DEFINE_BOOLEAN_PARAMETER_CLASS(ICFEnableAlignmentCorrection,"enableAlignmentCorrection",false);
+DEFINE_STRING_PARAMETER_CLASS(ICFAlignmentFile,"alignmentModelFile");
+
+
+// ----------------------------------------------------------------------------
+
 
 
 } // pcl

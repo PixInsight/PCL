@@ -103,6 +103,8 @@ INDICCDFrameProcess::INDICCDFrameProcess() : MetaProcess()
    new ICFRequireSelectedTelescope( this );
    new ICFTelescopeDeviceName( this );
    new ICFExternalFilterWheelDeviceName( this );
+   new ICFEnableAlignmentCorrection (this);
+   new ICFAlignmentFile(this);
 
    new ICFClientFrames( this );
    new ICFClientViewId( TheICFClientFramesParameter );

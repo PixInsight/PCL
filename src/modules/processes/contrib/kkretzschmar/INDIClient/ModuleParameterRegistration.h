@@ -78,6 +78,28 @@ double PARAMETER::MaximumValue() const\
    return MAX;\
 }
 
+#define DEFINE_UINT32_PARAMETER_CLASS(PARAMETER,PARAMETER_NAME,DEFAULT,MIN,MAX)\
+PARAMETER::PARAMETER( MetaProcess* P ) : MetaUInt32( P )\
+{\
+   The##PARAMETER##Parameter  = this;\
+}\
+IsoString PARAMETER::Id() const\
+{\
+   return PARAMETER_NAME;\
+}\
+double PARAMETER::DefaultValue() const\
+{\
+   return DEFAULT;\
+}\
+double PARAMETER::MinimumValue() const\
+{\
+   return MIN;\
+}\
+double PARAMETER::MaximumValue() const\
+{\
+   return MAX;\
+}
+
 #define DEFINE_STRING_PARAMETER_CLASS(PARAMETER,PARAMETER_NAME)\
 PARAMETER::PARAMETER (MetaProcess* P) : MetaString( P )\
 {\
@@ -193,6 +215,18 @@ size_type PARAMETER::DefaultValueIndex() const\
 
 #define DECLARE_INT32_PARAMETER_CLASS(PARAMETER)\
 class PARAMETER : public MetaInt32\
+{\
+public:\
+   PARAMETER( MetaProcess* );\
+   virtual IsoString Id() const;\
+   virtual double DefaultValue() const;\
+   virtual double MinimumValue() const;\
+   virtual double MaximumValue() const;\
+};\
+extern PARAMETER* The##PARAMETER##Parameter
+
+#define DECLARE_UINT32_PARAMETER_CLASS(PARAMETER)\
+class PARAMETER : public MetaUInt32\
 {\
 public:\
    PARAMETER( MetaProcess* );\

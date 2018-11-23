@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.02.0283
+// Standard Blink Process Module Version 01.02.02.0290
 // ----------------------------------------------------------------------------
-// BlinkVideoDialog.h - Released 2018-11-01T11:07:21Z
+// BlinkVideoDialog.h - Released 2018-11-23T18:45:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
@@ -140,4 +140,4 @@ private:
 #endif   // __BlinkVideoDialog_h
 
 // ----------------------------------------------------------------------------
-// EOF BlinkVideoDialog.h - Released 2018-11-01T11:07:21Z
+// EOF BlinkVideoDialog.h - Released 2018-11-23T18:45:59Z

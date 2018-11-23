@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// pcl/Optional.h - Released 2018-11-01T11:06:36Z
+// pcl/Optional.h - Released 2018-11-23T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -173,6 +173,17 @@ public:
    }
 
    /*!
+    * Undefines this %Optional object. Assigns a default-constructed object of
+    * type T to the value of this object, and sets the internal defined flag to
+    * false.
+    */
+   void Undefine()
+   {
+      m_value = T();
+      m_defined = false;
+   }
+
+   /*!
     * Returns the value stored in this object if it has been defined. Otherwise
     * returns the specified \a value.
     */
@@ -259,4 +270,4 @@ private:
 #endif   // __PCL_Optional_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Optional.h - Released 2018-11-01T11:06:36Z
+// EOF pcl/Optional.h - Released 2018-11-23T16:14:19Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.03.03.0319
+// Standard ColorCalibration Process Module Version 01.03.03.0326
 // ----------------------------------------------------------------------------
-// BackgroundNeutralizationParameters.cpp - Released 2018-11-01T11:07:20Z
+// BackgroundNeutralizationParameters.cpp - Released 2018-11-23T18:45:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
@@ -345,4 +345,4 @@ double BNTargetBackground::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BackgroundNeutralizationParameters.cpp - Released 2018-11-01T11:07:20Z
+// EOF BackgroundNeutralizationParameters.cpp - Released 2018-11-23T18:45:58Z

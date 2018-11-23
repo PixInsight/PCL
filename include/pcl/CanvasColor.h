@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// pcl/CanvasColor.h - Released 2018-11-01T11:06:36Z
+// pcl/CanvasColor.h - Released 2018-11-23T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -200,4 +200,4 @@ protected:
 #endif   // __PCL_CanvasColor_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/CanvasColor.h - Released 2018-11-01T11:06:36Z
+// EOF pcl/CanvasColor.h - Released 2018-11-23T16:14:19Z

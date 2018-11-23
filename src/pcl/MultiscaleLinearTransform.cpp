@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// pcl/MultiscaleLinearTransform.cpp - Released 2018-11-01T11:06:51Z
+// pcl/MultiscaleLinearTransform.cpp - Released 2018-11-23T16:14:31Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -209,4 +209,4 @@ void MultiscaleLinearTransform::Transform( const UInt32Image& image )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MultiscaleLinearTransform.cpp - Released 2018-11-01T11:06:51Z
+// EOF pcl/MultiscaleLinearTransform.cpp - Released 2018-11-23T16:14:31Z

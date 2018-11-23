@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0225
+// Standard INDIClient Process Module Version 01.01.00.0228
 // ----------------------------------------------------------------------------
-// INDIClientModule.cpp - Released 2018-11-01T11:07:21Z
+// INDIClientModule.cpp - Released 2018-11-23T18:45:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -51,14 +51,14 @@
 // ----------------------------------------------------------------------------
 
 #define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     00
-#define MODULE_VERSION_REVISION  15
-#define MODULE_VERSION_BUILD     0225
+#define MODULE_VERSION_MINOR     01
+#define MODULE_VERSION_REVISION  00
+#define MODULE_VERSION_BUILD     0228
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2018
 #define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       1
+#define MODULE_RELEASE_DAY       23
 
 #include "INDICCDFrameInterface.h"
 #include "INDICCDFrameProcess.h"
@@ -73,9 +73,11 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-INDIClientModule::INDIClientModule() : MetaModule()
+INDIClientModule::INDIClientModule()
 {
 }
+
+// ----------------------------------------------------------------------------
 
 const char* INDIClientModule::Version() const
 {
@@ -86,35 +88,49 @@ const char* INDIClientModule::Version() const
                               MODULE_VERSION_LANGUAGE );
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString INDIClientModule::Name() const
 {
    return "INDIClient";
 }
+
+// ----------------------------------------------------------------------------
 
 String INDIClientModule::Description() const
 {
    return "PixInsight INDIClient Process Module";
 }
 
+// ----------------------------------------------------------------------------
+
 String INDIClientModule::Company() const
 {
-   return String(); // ### TODO ?
+   return String();
 }
+
+// ----------------------------------------------------------------------------
 
 String INDIClientModule::Author() const
 {
    return "Klaus Kretzschmar, Juan Conejero (PTeam)";
 }
 
+// ----------------------------------------------------------------------------
+
 String INDIClientModule::Copyright() const
 {
    return "Copyright (c) 2014-2018 Klaus Kretzschmar";
 }
 
+// ----------------------------------------------------------------------------
+
 String INDIClientModule::TradeMarks() const
 {
-   return String(); // ### TODO ?
+   return String();
 }
+
+// ----------------------------------------------------------------------------
 
 String INDIClientModule::OriginalFileName() const
 {
@@ -131,6 +147,8 @@ String INDIClientModule::OriginalFileName() const
    return "INDIClient-pxm.dll";
 #endif
 }
+
+// ----------------------------------------------------------------------------
 
 void INDIClientModule::GetReleaseDate( int& year, int& month, int& day ) const
 {
@@ -161,4 +179,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF INDIClientModule.cpp - Released 2018-11-01T11:07:21Z
+// EOF INDIClientModule.cpp - Released 2018-11-23T18:45:58Z

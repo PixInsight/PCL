@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0225
+// Standard INDIClient Process Module Version 01.01.00.0228
 // ----------------------------------------------------------------------------
-// Alignment.h - Released 2018-11-01T11:07:21Z
+// Alignment.h - Released 2018-11-23T18:45:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -101,9 +101,7 @@ class AlignmentModel
 {
 public:
 
-   AlignmentModel()
-   {
-   }
+   AlignmentModel() = default;
 
    AlignmentModel( bool modelEachPierSide, const char* modelName ) :
       m_modelEachPierSide( modelEachPierSide ),
@@ -116,57 +114,57 @@ public:
    }
 
    // factory method
-   static AlignmentModel* create( const String& fileName );
+   static AlignmentModel* Create( const String& fileName );
 
    virtual void Apply( double& hourAngleCor, double& decCor, const double hourAngle, const double dec, pcl_enum pierSide)
    {
-      throw Error( "Internal Error: AlignmentModel::Apply: No implementation provided." );
+      throw Error( "Internal Error: AlignmentModel::Apply(): No implementation provided." );
    }
 
    virtual void ApplyInverse( double& hourAngleCor, double& decCor, const double hourAngle, const double dec, pcl_enum pierSide)
    {
-      throw Error( "Internal Error: AlignmentModel::Apply: No implementation provided." );
+      throw Error( "Internal Error: AlignmentModel::ApplyInverse(): No implementation provided." );
    }
 
-   virtual void fitModel( const Array<SyncDataPoint>& syncPointArray )
+   virtual void FitModel( const Array<SyncDataPoint>& syncPointArray )
    {
-      throw Error( "Internal Error: AlignmentModel::Apply: No implementation provided." );
+      throw Error( "Internal Error: AlignmentModel::FitModel(): No implementation provided." );
    }
 
-   virtual void fitModel()
+   virtual void FitModel()
    {
-      throw Error( "Internal Error: AlignmentModel::Apply: No implementation provided." );
+      throw Error( "Internal Error: AlignmentModel::FitModel(): No implementation provided." );
    }
 
-   virtual void printParameters()
+   virtual void PrintParameters()
    {
-      throw Error( "Internal Error: AlignmentModel::Apply: No implementation provided." );
+      throw Error( "Internal Error: AlignmentModel::PrintParameters(): No implementation provided." );
    }
 
    virtual XMLDocument* Serialize() const;
    virtual void Parse( const XMLDocument& xml );
 
-   virtual void writeObject( const String& fileName ) final;
-   virtual void readObject( const String& fileName ) final;
-   virtual void readSyncData( const String& fileName ) final;
+   virtual void WriteObject( const String& fileName ) final;
+   virtual void ReadObject( const String& fileName ) final;
+   virtual void ReadSyncData( const String& fileName ) final;
 
 
-   pcl_enum getPierSideFromHourAngle( double hourAngle , bool counterWeightUpEnforced);
+   pcl_enum PierSideFromHourAngle( double hourAngle , bool counterWeightUpEnforced);
 
-   Array<SyncDataPoint>& getSyncDataPoints()
+   Array<SyncDataPoint>& SyncDataPoints()
    {
       return m_syncData;
    }
 
-   void addSyncDataPoint( const SyncDataPoint& point )
+   void AddSyncDataPoint( const SyncDataPoint& point )
    {
       m_syncData << point;
    }
 
    // static methods
-   static void getPseudoInverse( Matrix& pseudoInverse, const Matrix& matrix );
+   static Matrix PseudoInverse( const Matrix& );
 
-   static double rangeShiftHourAngle( double hourAngle )
+   static double RangeShiftHourAngle( double hourAngle )
    {
       double shiftedHA = hourAngle;
       while ( shiftedHA < -12 )
@@ -176,7 +174,7 @@ public:
       return shiftedHA;
    }
 
-   static double rangeShiftRighascension( double rightAscension )
+   static double RangeShiftRightAscension( double rightAscension )
    {
       double shiftedRA = rightAscension;
       while ( shiftedRA < 0 )
@@ -197,7 +195,7 @@ protected:
    TimePoint            m_syncDataMaxCreationTime = TimePoint::Now();
 
    void Serialize( XMLElement* root ) const;
-   AutoPointer<XMLDocument> createXTPMDocument() const;
+   AutoPointer<XMLDocument> CreateXTPMDocument() const;
    void ParseSyncData( const XMLElement& element );
    void ParseSyncDataPoint( SyncDataPoint& syncPoint, const XMLElement& element );
 };
@@ -249,11 +247,11 @@ public:
 
    virtual void ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec, pcl_enum pierSide);
 
-   virtual void fitModel( const Array<SyncDataPoint>& syncPointArray );
-   virtual void fitModel();
+   virtual void FitModel( const Array<SyncDataPoint>& syncPointArray );
+   virtual void FitModel();
 
    // siteLatidude given in degrees
-   static AlignmentModel* create( double siteLatitude, uint32_t modelConfig, bool modelEachPierSide )
+   static AlignmentModel* Create( double siteLatitude, uint32_t modelConfig, bool modelEachPierSide )
    {
       return new GeneralAnalyticalPointingModel( siteLatitude, modelConfig, modelEachPierSide );
    }
@@ -261,13 +259,13 @@ public:
    virtual XMLDocument* Serialize() const;
    virtual void Parse( const XMLDocument& xml );
 
-   virtual void printParameters();
+   virtual void PrintParameters();
 
 private:
 
-   void evaluateBasis( Matrix& basisMatrix, double hourAngle, double dec );
-   void printParameterVector( Vector* parameters, double residual );
-   void fitModelForPierSide( const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide, double& residual );
+   void EvaluateBasis( Matrix& basisMatrix, double hourAngle, double dec );
+   void PrintParameterVector( Vector* parameters, double residual );
+   void FitModelForPierSide( const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide, double& residual );
 
    size_t    m_numOfModelParameters = modelParameters;
    double    m_siteLatitude = 0; // in radians
@@ -283,4 +281,4 @@ private:
 #endif   // __Alignment_h
 
 // ----------------------------------------------------------------------------
-// EOF Alignment.h - Released 2018-11-01T11:07:21Z
+// EOF Alignment.h - Released 2018-11-23T18:45:59Z

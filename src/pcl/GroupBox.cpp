@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// pcl/GroupBox.cpp - Released 2018-11-01T11:06:51Z
+// pcl/GroupBox.cpp - Released 2018-11-23T16:14:31Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -163,4 +163,4 @@ void GroupBox::OnCheck( check_event_handler f, Control& receiver )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/GroupBox.cpp - Released 2018-11-01T11:06:51Z
+// EOF pcl/GroupBox.cpp - Released 2018-11-23T16:14:31Z

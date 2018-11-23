@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0412
+// Standard Image Process Module Version 01.03.00.0427
 // ----------------------------------------------------------------------------
-// PSF.cpp - Released 2018-11-13T16:55:32Z
+// PSF.cpp - Released 2018-11-23T18:45:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -272,7 +272,7 @@ PSFFit::PSFFit( const ImageVariant& image,
           */
          psf.sx = psf.sy = P[4];
          psf.theta = 0;
-         psf.mad = GoodnessOfFit( function, true/*circular*/ );
+         psf.mad = GoodnessOfFit( function, true/*circular*/ )[0];
       }
       else
       {
@@ -285,7 +285,7 @@ PSFFit::PSFFit( const ImageVariant& image,
              * Circular PSF (incidental)
              */
             psf.theta = 0;
-            psf.mad = GoodnessOfFit( function, false/*circular*/ );
+            psf.mad = GoodnessOfFit( function, false/*circular*/ )[0];
          }
          else
          {
@@ -298,7 +298,7 @@ PSFFit::PSFFit( const ImageVariant& image,
              * absolute difference with the sampled matrix.
              */
 
-            // Constrain theta to the first quadrant
+            // Constrain theta to the first quadrant.
             psf.theta = P[6];
             psf.theta = ArcTan( Sin( psf.theta ), Cos( psf.theta ) );
             if ( psf.theta < 0 )
@@ -306,36 +306,37 @@ PSFFit::PSFFit( const ImageVariant& image,
             if ( psf.theta > Pi()/2 )
                psf.theta -= Pi()/2;
 
-            // There are four choices that we must check
+            // There are four choices that we must check.
             Vector a( 4 );
             a[0] = psf.theta;
             a[1] = Pi()/2 - psf.theta;
             a[2] = Pi()/2 + psf.theta;
             a[3] = Pi() - psf.theta;
 
-            // Generate the four models and compute absolute differences
+            // Generate the four models and compute absolute differences.
             P[6] = a[0];
-            psf.mad = GoodnessOfFit( function, false/*circular*/ );
+            Vector r0 = GoodnessOfFit( function, false/*circular*/ );
             int imin = 0;
             for ( int i = 1; i < 4; ++i )
             {
                P[6] = a[i];
-               double di = GoodnessOfFit( function, false/*circular*/ );
-               if ( di < psf.mad )
+               Vector ri = GoodnessOfFit( function, false/*circular*/ );
+               if ( ri[1] < r0[1] )
                {
                   imin = i;
-                  psf.mad = di;
+                  r0 = ri;
                }
             }
-            // Select the orientation angle that minimizes absolute deviation
+            // Select the orientation angle that minimizes absolute deviation.
             psf.theta = Deg( a[imin] );
+            psf.mad = r0[0];
          }
       }
 
       // Moffat beta parameter
       psf.beta = (function == Gaussian) ? 0.0 : P[ibeta];
 
-      // Normalize mean absolute deviation with respect to amplitude
+      // Normalize mean absolute deviation with respect to amplitude.
       psf.mad /= psf.A;
    }
    else
@@ -669,7 +670,7 @@ int PSFFit::FitCircularMoffatWithFixedBeta( void* p, int m, int n, const double*
  * Robust estimate of the difference between sampled pixel data and
  * the fitted PSF model.
  */
-double PSFFit::GoodnessOfFit( Function function, bool circular ) const
+Vector PSFFit::GoodnessOfFit( Function function, bool circular ) const
 {
 #define B      P[0]
 #define A      P[1]
@@ -808,12 +809,22 @@ double PSFFit::GoodnessOfFit( Function function, bool circular ) const
 #undef y0
 #undef sx
 
+   Vector R( 2 );
+
    /*
+    * The second component of the returned vector is the average absolute
+    * deviation for internal use, e.g. to solve ambiguity in the quadrant of
+    * the fitted rotation angle.
+    */
+   adev.ReverseSort(); // to minimize roundoff error
+   R[1] = adev.Mean();
+
+   /*
+    * The first returned component is a robust estimate of fitting quality.
     * Here we need an estimator of location with a good balance between
     * robustness and efficiency/sufficiency for the vector of absolute
     * differences. We use a Winsorized mean with gamma = 0.2.
     */
-   adev.ReverseSort();
    int n = adev.Length();
    int i0 = TruncInt( 0.2*n );
    int i1 = n - i0;
@@ -821,7 +832,9 @@ double PSFFit::GoodnessOfFit( Function function, bool circular ) const
       adev[i] = adev[i0];
    for ( int i = i1; i < n; ++i ) // Prob( x < x[i1] ) = 0
       adev[i] = adev[i1-1];
-   return adev.Mean();
+   R[0] = adev.Mean();
+
+   return R;
 }
 
 // ----------------------------------------------------------------------------
@@ -863,4 +876,4 @@ void PSFData::ToImage( Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PSF.cpp - Released 2018-11-13T16:55:32Z
+// EOF PSF.cpp - Released 2018-11-23T18:45:58Z

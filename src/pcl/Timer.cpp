@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// pcl/Timer.cpp - Released 2018-11-01T11:06:52Z
+// pcl/Timer.cpp - Released 2018-11-23T16:14:32Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -182,4 +182,4 @@ void* Timer::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Timer.cpp - Released 2018-11-01T11:06:52Z
+// EOF pcl/Timer.cpp - Released 2018-11-23T16:14:32Z

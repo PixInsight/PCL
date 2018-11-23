@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0386
+// Standard Global Process Module Version 01.02.07.0393
 // ----------------------------------------------------------------------------
-// PreferencesParameters.h - Released 2018-11-01T11:07:20Z
+// PreferencesParameters.h - Released 2018-11-23T18:45:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -319,7 +319,11 @@ DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, defaultMetricResolution,          f
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, defaultEmbedThumbnails,           true )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, defaultEmbedProperties,           true )
 DECLARE_STRING_METAPARAMETER  ( ImageWindow, defaultFileExtension,             ".xisf" )
+#ifdef __PCL_X11
+DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, nativeFileDialogs,                false )
+#else
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, nativeFileDialogs,                true )
+#endif
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, rememberFileOpenType,             false )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, rememberFileSaveType,             true )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, strictFileSaveMode,               true )
@@ -394,4 +398,4 @@ PCL_END_LOCAL
 #endif   // __PreferencesParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesParameters.h - Released 2018-11-01T11:07:20Z
+// EOF PreferencesParameters.h - Released 2018-11-23T18:45:58Z

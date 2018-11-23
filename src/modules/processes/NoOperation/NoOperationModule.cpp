@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard NoOperation Process Module Version 01.00.00.0327
+// Standard NoOperation Process Module Version 01.00.00.0334
 // ----------------------------------------------------------------------------
-// NoOperationModule.cpp - Released 2018-11-01T11:07:21Z
+// NoOperationModule.cpp - Released 2018-11-23T18:45:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard NoOperation PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0327
+#define MODULE_VERSION_BUILD     0334
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2018
 #define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       1
+#define MODULE_RELEASE_DAY       23
 
 #include "NoOperationModule.h"
 #include "NoOperationProcess.h"
@@ -167,4 +167,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF NoOperationModule.cpp - Released 2018-11-01T11:07:21Z
+// EOF NoOperationModule.cpp - Released 2018-11-23T18:45:58Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0225
+// Standard INDIClient Process Module Version 01.01.00.0228
 // ----------------------------------------------------------------------------
-// INDIMountInstance.cpp - Released 2018-11-01T11:07:21Z
+// INDIMountInstance.cpp - Released 2018-11-23T18:45:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -50,11 +50,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include "ApparentPosition.h"
 #include "Alignment.h"
 #include "INDIClient.h"
 #include "INDIMountInstance.h"
 #include "INDIMountParameters.h"
+
+#undef J2000 // #defined in INDI/indicom.h
 
 #include <pcl/AutoViewLock.h>
 #include <pcl/Console.h>
@@ -63,10 +64,9 @@
 #include <pcl/Math.h>
 #include <pcl/MessageBox.h>
 #include <pcl/MetaModule.h>
+#include <pcl/Position.h>
 #include <pcl/StdStatus.h>
 #include <pcl/File.h>
-
-#include <time.h>
 
 namespace pcl
 {
@@ -387,7 +387,7 @@ bool INDIMountInstance::ExecuteOn( View& view )
 
    if ( o_currentLST >= 0 ) // ### N.B.: o_currentLST < 0 if LST property could not be retrieved
    {
-      double currentHourAngle = AlignmentModel::rangeShiftHourAngle(o_currentLST - o_currentRA);
+      double currentHourAngle = AlignmentModel::RangeShiftHourAngle(o_currentLST - o_currentRA);
       double newHourAngle = currentHourAngle - deltaRA;
       if ( (currentHourAngle < 0) != (newHourAngle < 0) )
          if ( MessageBox( "<p>New center right ascension coordinate crosses the meridian, and will possibly trigger a meridian flip.</p>"
@@ -411,7 +411,7 @@ bool INDIMountInstance::ExecuteOn( View& view )
    try
    {
       p_command = IMCCommand::GoTo;
-      p_targetRA = AlignmentModel::rangeShiftRighascension(o_currentRA + deltaRA);
+      p_targetRA = AlignmentModel::RangeShiftRightAscension(o_currentRA + deltaRA);
       p_targetDec = o_currentDec + deltaDec;
       p_computeApparentPosition = false;
       p_enableAlignmentCorrection = false;
@@ -601,14 +601,13 @@ void INDIMountInstance::GetTargetCoordinates( double& targetRA, double& targetDe
 {
    if ( p_computeApparentPosition )
    {
-      time_t t0 = ::time( 0 );
-      const tm* t = ::gmtime( &t0 );
-      double jd = ComplexTimeToJD( t->tm_year+1900, t->tm_mon+1, t->tm_mday, (t->tm_hour + (t->tm_min + t->tm_sec/60.0)/60.0)/24.0 );
-      double ra = Rad( p_targetRA*15 );
-      double dec = Rad( p_targetDec );
-      ApparentPosition( jd ).Apply( ra, dec );
-      targetRA = o_apparentTargetRA = Deg( ra )/15;
-      targetDec = o_apparentTargetDec = Deg( dec );
+      Position P( TimePoint::Now(), "UTC" );
+      P.InitEquinoxBasedParameters();
+      Vector u2 = Vector::FromSpherical( Rad( p_targetRA*15 ), Rad( p_targetDec ) );
+      Vector u3 = P.EquinoxBiasPrecessionNutationMatrix() * u2;
+      u3.ToSpherical2Pi( targetRA, targetDec );
+      targetRA = o_apparentTargetRA = Deg( targetRA )/15;
+      targetDec = o_apparentTargetDec = Deg( targetDec );
    }
    else
    {
@@ -634,7 +633,7 @@ void INDIMountInstance::GetPierSide() {
          {
             // pier side fallback
             // If the INDI mount device does not support the TELESCOPE_PIER_SIDE property, compute the pierside from hour angle
-            double hourAngle = AlignmentModel::rangeShiftHourAngle(o_currentLST - o_currentRA);
+            double hourAngle = AlignmentModel::RangeShiftHourAngle(o_currentLST - o_currentRA);
             p_pierSide = hourAngle <= 0 ? IMCPierSide::West : IMCPierSide::East;
          }
 
@@ -680,11 +679,11 @@ void INDIMountInstance::loadSyncData( Array<SyncDataPoint>& syncDataList, String
 
 void AbstractINDIMountExecution::ApplyPointingModelCorrection(AlignmentModel* aModel, double& targetRA, double& targetDec) {
 	double localSiderialTime = m_instance.o_currentLST;
-	aModel->readObject(m_instance.p_alignmentFile);
+	aModel->ReadObject(m_instance.p_alignmentFile);
 	double newHourAngle=-1;
 	double newDec=-1;
 
-   aModel->Apply(newHourAngle, newDec, AlignmentModel::rangeShiftHourAngle(localSiderialTime - targetRA), targetDec, m_instance.p_pierSide);
+   aModel->Apply(newHourAngle, newDec, AlignmentModel::RangeShiftHourAngle(localSiderialTime - targetRA), targetDec, m_instance.p_pierSide);
 	targetRA=localSiderialTime-newHourAngle;
 	targetDec=newDec;
 }
@@ -729,19 +728,19 @@ void AbstractINDIMountExecution::Perform()
 
           	  switch (m_instance.p_alignmentMethod){
           	  case IMCAlignmentMethod::AnalyticalModel:
-                 aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 0));
-              	  aModel->readObject(m_instance.p_alignmentFile);
+                 aModel = GeneralAnalyticalPointingModel::Create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 0));
+              	  aModel->ReadObject(m_instance.p_alignmentFile);
           		  break;
           	  default:
-          		  aModel = AlignmentModel::create(m_instance.p_alignmentFile);
+          		  aModel = AlignmentModel::Create(m_instance.p_alignmentFile);
           	  }
               if (aModel == nullptr){
           		throw Error( "Alignment model could not be loaded" );
           	  }
               bool isForceCounterWeightUp = m_instance.isForceCounterWeightUp();
-              pcl_enum pierside = aModel->getPierSideFromHourAngle(AlignmentModel::rangeShiftHourAngle(m_instance.o_currentLST - targetRARaw), isForceCounterWeightUp);
-              aModel->Apply(hourAngle, targetDec, AlignmentModel::rangeShiftHourAngle(m_instance.o_currentLST - targetRARaw), targetDecRaw, pierside);
-          	  targetRA=AlignmentModel::rangeShiftRighascension(m_instance.o_currentLST-hourAngle);
+              pcl_enum pierside = aModel->PierSideFromHourAngle(AlignmentModel::RangeShiftHourAngle(m_instance.o_currentLST - targetRARaw), isForceCounterWeightUp);
+              aModel->Apply(hourAngle, targetDec, AlignmentModel::RangeShiftHourAngle(m_instance.o_currentLST - targetRARaw), targetDecRaw, pierside);
+          	  targetRA=AlignmentModel::RangeShiftRightAscension(m_instance.o_currentLST-hourAngle);
 
           	  double deltaRA  = targetRA  - targetRARaw;
           	  double deltaDec = targetDec - targetDecRaw;
@@ -863,11 +862,11 @@ void AbstractINDIMountExecution::Perform()
     	  m_instance.GetTargetCoordinates( targetRA, targetDec );
     	  m_instance.GetCurrentCoordinates();
 
-    	  AutoPointer<AlignmentModel> aModel = nullptr;
+    	  AutoPointer<AlignmentModel> aModel;
 
     	  switch (m_instance.p_alignmentMethod){
     	  case IMCAlignmentMethod::AnalyticalModel:
-           aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 0));
+           aModel = GeneralAnalyticalPointingModel::Create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 0));
     		  break;
     	  default:
     		  throw Error( "Internal error: AbstractINDIMountExecution::Perform(): Unknown Pointing Model." );
@@ -885,14 +884,14 @@ void AbstractINDIMountExecution::Perform()
         	   SyncDataPoint syncPoint;
         	   syncPoint.creationTime      = TimePoint::Now();
         	   syncPoint.localSiderialTime = m_instance.o_currentLST;
-        	   syncPoint.celestialRA       = AlignmentModel::rangeShiftHourAngle(targetRA);
+        	   syncPoint.celestialRA       = AlignmentModel::RangeShiftHourAngle(targetRA);
         	   syncPoint.celestialDEC      = targetDec;
         	   syncPoint.telecopeRA        = trueTargetRa;
         	   syncPoint.telecopeDEC       = trueTargetDec;
             syncPoint.pierSide          = m_instance.p_pierSide;
 
-        	   aModel->addSyncDataPoint(syncPoint);
-        	   aModel->writeObject(m_instance.p_alignmentFile);
+        	   aModel->AddSyncDataPoint(syncPoint);
+        	   aModel->WriteObject(m_instance.p_alignmentFile);
         	   break;
            }
 
@@ -927,7 +926,7 @@ void AbstractINDIMountExecution::Perform()
             case IMCAlignmentMethod::None:
             {
                try {
-                  AutoPointer<AlignmentModel> aModel = AlignmentModel::create(m_instance.p_alignmentFile);
+                  AutoPointer<AlignmentModel> aModel = AlignmentModel::Create(m_instance.p_alignmentFile);
                   SyncDataPoint syncPoint;
                   syncPoint.creationTime      = TimePoint::Now();
                   syncPoint.localSiderialTime = m_instance.o_currentLST;
@@ -936,8 +935,8 @@ void AbstractINDIMountExecution::Perform()
                   syncPoint.telecopeRA        = m_instance.o_currentRA;
                   syncPoint.telecopeDEC       = m_instance.o_currentDec;
                   syncPoint.pierSide          = m_instance.p_pierSide;
-                  aModel->addSyncDataPoint(syncPoint);
-                  aModel->writeObject(m_instance.p_alignmentFile);
+                  aModel->AddSyncDataPoint(syncPoint);
+                  aModel->WriteObject(m_instance.p_alignmentFile);
                } catch (...) {
                   EndMountEvent();
                   throw;
@@ -994,17 +993,17 @@ void AbstractINDIMountExecution::Perform()
     	 AutoPointer<AlignmentModel> aModel = nullptr;
     	 switch (m_instance.p_alignmentMethod){
     	 case IMCAlignmentMethod::AnalyticalModel:
-          aModel = GeneralAnalyticalPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 0));
+          aModel = GeneralAnalyticalPointingModel::Create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig, CHECK_BIT(m_instance.p_alignmentConfig, 0));
     		 break;
     	 default:
     		 throw Error( "Internal error: AbstractINDIMountExecution::Perform(): Unknown Pointing Model." );
     	 }
 
-       aModel->readSyncData(m_instance.p_alignmentFile);
+       aModel->ReadSyncData(m_instance.p_alignmentFile);
     	 // fit model
-    	 aModel->fitModel();
-    	 aModel->writeObject(m_instance.p_alignmentFile);
-    	 aModel->printParameters();
+    	 aModel->FitModel();
+    	 aModel->WriteObject(m_instance.p_alignmentFile);
+    	 aModel->PrintParameters();
     	 break;
       }
       default:
@@ -1044,4 +1043,4 @@ void AbstractINDIMountExecution::Abort()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInstance.cpp - Released 2018-11-01T11:07:21Z
+// EOF INDIMountInstance.cpp - Released 2018-11-23T18:45:59Z

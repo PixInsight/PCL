@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard Morphology Process Module Version 01.00.00.0339
+// Standard Morphology Process Module Version 01.00.00.0346
 // ----------------------------------------------------------------------------
-// MorphologicalTransformationInterface.cpp - Released 2018-11-01T11:07:21Z
+// MorphologicalTransformationInterface.cpp - Released 2018-11-23T18:45:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Morphology PixInsight module.
 //
@@ -1031,4 +1031,4 @@ MorphologicalTransformationInterface::GUIData::GUIData( MorphologicalTransformat
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF MorphologicalTransformationInterface.cpp - Released 2018-11-01T11:07:21Z
+// EOF MorphologicalTransformationInterface.cpp - Released 2018-11-23T18:45:58Z

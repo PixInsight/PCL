@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0225
+// Standard INDIClient Process Module Version 01.01.00.0228
 // ----------------------------------------------------------------------------
-// INDIMountInterface.h - Released 2018-11-01T11:07:21Z
+// INDIMountInterface.h - Released 2018-11-23T18:45:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -57,9 +57,11 @@
 #include <pcl/ComboBox.h>
 #include <pcl/Dialog.h>
 #include <pcl/Edit.h>
+#include <pcl/EphemerisFile.h>
 #include <pcl/Label.h>
 #include <pcl/NetworkTransfer.h>
 #include <pcl/NumericControl.h>
+#include <pcl/Optional.h>
 #include <pcl/ProcessInterface.h>
 #include <pcl/PushButton.h>
 #include <pcl/SectionBar.h>
@@ -76,14 +78,12 @@
 #include "INDIMountInstance.h"
 #include "DeviceConfigBase.h"
 
-namespace pcl {
-	class INDIMountInterface;
-}
-
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
+
+class INDIMountInterface;
 
 class CoordinateSearchDialog : public Dialog
 {
@@ -106,45 +106,45 @@ public:
       return m_spectralType;
    }
 
-   double VMagnitude() const
+   double Magnitude() const
    {
-      return m_vmag;
+      return m_vmag.OrElse( -101 );
    }
 
-   // degrees
+   // hours
    double RA() const
    {
-      return m_RA;
+      return m_RA.OrElse( 0 );
    }
 
    // degrees
    double Dec() const
    {
-      return m_Dec;
+      return m_Dec.OrElse( 0 );
    }
 
-   // mas/year
+   // mas/year * cos( delta )
    double MuRA() const
    {
-      return m_muRA;
+      return m_muRA.OrElse( 0 );
    }
 
    // mas/year
    double MuDec() const
    {
-      return m_muDec;
+      return m_muDec.OrElse( 0 );
    }
 
-   // mas
+   // arcsec
    double Parallax() const
    {
-      return m_parallax;
+      return m_parallax.OrElse( 0 );
    }
 
-   // AU/year
+   // km/s
    double RadialVelocity() const
    {
-      return m_radVel;
+      return m_radVel.OrElse( 0 );
    }
 
    bool HasValidCoordinates() const
@@ -170,128 +170,226 @@ private:
          PushButton           GoTo_Button;
          PushButton           Cancel_Button;
 
-   String    m_objectName;
-   String    m_objectType;
-   String    m_spectralType;
-   double    m_vmag;     // flux in the V filter
-   double    m_RA;       // in degrees
-   double    m_Dec;      // in degrees
-   double    m_muRA;     // in mas/year
-   double    m_muDec;    // in mas/year
-   double    m_parallax; // in mas
-   double    m_radVel;   // in AU/year
-   bool      m_valid;
-   bool      m_goto;
-   bool      m_downloading;
-   bool      m_abort;
-   bool      m_firstTimeShown;
-   IsoString m_downloadData;
+   String           m_objectName;
+   String           m_objectType;
+   String           m_spectralType;
+   Optional<double> m_vmag;     // flux in the V filter
+   Optional<double> m_RA;       // hours
+   Optional<double> m_Dec;      // degrees
+   Optional<double> m_muRA;     // mas/year * cos( delta )
+   Optional<double> m_muDec;    // mas/year
+   Optional<double> m_parallax; // arcsec
+   Optional<double> m_radVel;   // km/s
+   bool             m_valid = false;
+   bool             m_goto = false;
+   bool             m_downloading = false;
+   bool             m_abort = false;
+   bool             m_firstTimeShown = true;
+   IsoString        m_downloadData;
 
    void e_Show( Control& sender );
    void e_GetFocus( Control& sender );
    void e_LoseFocus( Control& sender );
    bool e_Download( NetworkTransfer& sender, const void* buffer, fsize_type size );
    bool e_Progress( NetworkTransfer& sender,
-                    fsize_type downloadTotal, fsize_type downloadCurrent,
-                    fsize_type uploadTotal, fsize_type uploadCurrent );
+                  fsize_type downloadTotal, fsize_type downloadCurrent,
+                  fsize_type uploadTotal, fsize_type uploadCurrent );
    void e_Click( Button& sender, bool checked );
 };
 
-class SyncDataListDialog : public Dialog {
+// ----------------------------------------------------------------------------
+
+class EphemerisSearchDialog : public Dialog
+{
 public:
-	SyncDataListDialog(Array<SyncDataPoint>& syncDataArray);
+
+   EphemerisSearchDialog();
+
+   virtual EphemerisObjectList Objects() const = 0;
+   virtual const EphemerisFile& Ephemerides() const = 0;
+
+   virtual String ObjectName() const
+   {
+      return m_objectName;
+   }
+
+   // hours
+   double RA() const
+   {
+      return m_RA;
+   }
+
+   // degrees
+   double Dec() const
+   {
+      return m_Dec;
+   }
+
+   bool GoToTarget() const
+   {
+      return m_goto;
+   }
+
+protected:
+
+   VerticalSizer     Global_Sizer;
+      HorizontalSizer   Objects_Sizer;
+         Label             Object_Label;
+         ComboBox          Objects_ComboBox;
+         PushButton        Calculate_Button;
+      TextBox           ObjectInfo_TextBox;
+      HorizontalSizer   Buttons_Sizer;
+         PushButton        Clear_Button;
+         PushButton        Get_Button;
+         PushButton        GoTo_Button;
+         PushButton        Cancel_Button;
+
+   IsoString m_objectName;
+   double    m_RA = 0;  // hours
+   double    m_Dec = 0; // degrees
+   bool      m_valid = false;
+   bool      m_goto = false;
+   bool      m_firstTimeShown = true;
+
+   virtual String ObjectName( const EphemerisObject& ) const;
+
+   void e_Show( Control& sender );
+   void e_Click( Button& sender, bool checked );
+   virtual void e_ItemSelected( ComboBox& sender, int itemIndex );
+};
+
+// ----------------------------------------------------------------------------
+
+class PlanetSearchDialog : public EphemerisSearchDialog
+{
+public:
+
+   PlanetSearchDialog();
+
+   EphemerisObjectList Objects() const override;
+   const EphemerisFile& Ephemerides() const override;
+};
+
+// ----------------------------------------------------------------------------
+
+class AsteroidSearchDialog : public EphemerisSearchDialog
+{
+public:
+
+   AsteroidSearchDialog();
+
+   EphemerisObjectList Objects() const override;
+   const EphemerisFile& Ephemerides() const override;
+
+   String ObjectName() const override
+   {
+      return m_objectId + ' ' + m_objectName; // e.g. '1 Ceres'
+   }
 
 private:
-	VerticalSizer       Global_Sizer;
+
+   IsoString m_objectId;
+
+   String ObjectName( const EphemerisObject& ) const override;
+
+   void e_ItemSelected( ComboBox& sender, int itemIndex ) override;
+};
+
+// ----------------------------------------------------------------------------
+
+class SyncDataListDialog : public Dialog
+{
+public:
+
+   SyncDataListDialog(Array<SyncDataPoint>& syncDataArray);
+
+private:
+
+   VerticalSizer     Global_Sizer;
       HorizontalSizer      SyncDataList_Sizer;
-		TreeBox             SnycData_TreeBox;
-	  HorizontalSizer      SyncDataListButton_Sizer;
-	    PushButton           Enable_Button;
-	    PushButton           Disable_Button;
-	    PushButton           Delete_Button;
-	    PushButton           Ok_Button;
-	    PushButton           Cancel_Button;
+         TreeBox              SnycData_TreeBox;
+      HorizontalSizer      SyncDataListButton_Sizer;
+         PushButton           Enable_Button;
+         PushButton           Disable_Button;
+         PushButton           Delete_Button;
+         PushButton           Ok_Button;
+         PushButton           Cancel_Button;
 
+   void e_Click( Button& sender, bool checked );
+   void e_Show( Control& sender );
+   void e_Close( Control& sender, bool& allowClose );
 
-	  void e_Click( Button& sender, bool checked );
-	  void e_Show( Control& sender );
-	  void e_Close( Control& sender , bool& allowClose);
-
-	  Array<SyncDataPoint>&  m_syncDataList;
-	  bool                   m_firstTimeShown;
+   Array<SyncDataPoint>& m_syncDataList;
+   bool                  m_firstTimeShown = true;
 };
 
-#define LABELED_CHECKBOX(NAME)        \
-	HorizontalSizer  NAME##_Sizer;    \
-	Label            NAME##_Label;    \
-    CheckBox         NAME##_CheckBox
+// ----------------------------------------------------------------------------
 
-class AlignmentConfigDialog : public Dialog {
+class AlignmentConfigDialog : public Dialog
+{
 public:
-	AlignmentConfigDialog(INDIMountInterface& w);
+
+   AlignmentConfigDialog( INDIMountInterface& );
+
 private:
 
-	bool m_firstTimeShown = true;
+   bool m_firstTimeShown = true;
 
-	INDIMountInterface& m_interface;
+   INDIMountInterface& m_interface;
 
-	VerticalSizer      Global_Sizer;
-	  TabBox				AlignmentConfig_TabBox;
-		Control             AnalyticalAlignment_ConfigControl;
-          VerticalSizer       MountAlignmentConfig_Sizer;
+   VerticalSizer        Global_Sizer;
+      TabBox               AlignmentConfig_TabBox;
+         Control              AnalyticalAlignment_ConfigControl;
+            VerticalSizer     MountAlignmentConfig_Sizer;
+               CheckBox          ModelPierSide_CheckBox;
+               CheckBox          Offset_CheckBox;
+               CheckBox          Collimation_CheckBox;
+               CheckBox          NonPerpendicular_CheckBox;
+               CheckBox          PolarAxisDisplacement_CheckBox;
+               CheckBox          TubeFlexure_CheckBox;
+               CheckBox          ForkFlexure_CheckBox;
+               CheckBox          DeltaAxisFlexure_CheckBox;
+               CheckBox          Linear_CheckBox;
+               CheckBox          Quadratic_CheckBox;
+         //Control             SurfaceSplineAlignment_ConfigControl;
+            HorizontalSizer      AlignmentConfigButton_Sizer;
+               PushButton           Ok_Button;
+               PushButton           Cancel_Button;
 
-            LABELED_CHECKBOX(ModelPierSide);
-            LABELED_CHECKBOX(Offset);
-            LABELED_CHECKBOX(Collimation);
-            LABELED_CHECKBOX(NonPerpendicular);
-            LABELED_CHECKBOX(PolarAxisDisplacement);
-            LABELED_CHECKBOX(TubeFlexure);
-            LABELED_CHECKBOX(ForkFlexure);
-            LABELED_CHECKBOX(DeltaAxisFlexure);
-            LABELED_CHECKBOX(Linear);
-            LABELED_CHECKBOX(Quadratic);
-        //Control             SurfaceSplineAlignment_ConfigControl;
-      	  HorizontalSizer      AlignmentConfigButton_Sizer;
-      	    PushButton           Ok_Button;
-      	    PushButton           Cancel_Button;
-
-     void e_Show( Control& sender );
-     void e_Click( Button& sender, bool checked );
-     void e_PageSelected(TabBox& sender, int tabIndex);
+   void e_Show( Control& sender );
+   void e_Click( Button& sender, bool checked );
+   void e_PageSelected( TabBox& sender, int tabIndex );
 };
 
+// ----------------------------------------------------------------------------
 
-class MountConfigDialog : public ConfigDialogBase {
+class MountConfigDialog : public ConfigDialogBase
+{
 public:
-	MountConfigDialog(const String& deviceName, double geoLat, double geoLong, double telescopeAperture, double teslescopeFocalLenght );
+
+   MountConfigDialog( const String& deviceName,
+                      double geoLat, double geoLong,
+                      double telescopeAperture, double teslescopeFocalLenght );
 private:
 
-	String m_device;
+   String m_device;
 
-	HorizontalSizer   Latitude_Sizer;
-	   Label             Latitude_Label;
-	   SpinBox           Latitude_H_SpinBox;
-	   SpinBox           Latitude_M_SpinBox;
-	   NumericEdit       Latitude_S_NumericEdit;
-	   CheckBox          LatitudeIsSouth_CheckBox;
+   HorizontalSizer   Latitude_Sizer;
+      Label             Latitude_Label;
+      SpinBox           Latitude_H_SpinBox;
+      SpinBox           Latitude_M_SpinBox;
+      NumericEdit       Latitude_S_NumericEdit;
+      CheckBox          LatitudeIsSouth_CheckBox;
+   HorizontalSizer   Longitude_Sizer;
+      Label             Longitude_Label;
+      SpinBox           Longitude_H_SpinBox;
+      SpinBox           Longitude_M_SpinBox;
+      NumericEdit       Longitude_S_NumericEdit;
+      CheckBox          LongitudeIsWest_CheckBox;
+   NumericEdit       TelescopeAperture_NumericEdit;
+   NumericEdit       TelescopeFocalLength_NumericEdit;
 
-	HorizontalSizer   Longitude_Sizer;
-	   Label             Longitude_Label;
-	   SpinBox           Longitude_H_SpinBox;
-	   SpinBox           Longitude_M_SpinBox;
-	   NumericEdit       Longitude_S_NumericEdit;
-	   CheckBox          LongitudeIsWest_CheckBox;
-
-	HorizontalSizer   TelescopeAperture_Sizer;
-	   NumericEdit		TelescopeAperture_NumericEdit;
-
-	HorizontalSizer   TelescopeFocalLength_Sizer;
-	  NumericEdit		TelescopeFocalLength_NumericEdit;
-
-
-	void sendUpdatedProperties();
-
-
+   void SendUpdatedProperties();
 };
 
 // ----------------------------------------------------------------------------
@@ -305,65 +403,75 @@ public:
    INDIMountInterface();
    virtual ~INDIMountInterface();
 
-   virtual IsoString Id() const;
-   virtual MetaProcess* Process() const;
-   virtual const char** IconImageXPM() const;
-   virtual InterfaceFeatures Features() const;
-   virtual void ResetInstance();
-   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
-   virtual ProcessImplementation* NewProcess() const;
-   virtual bool ValidateProcess( const ProcessImplementation&, String& whyNot ) const;
-   virtual bool RequiresInstanceValidation() const;
-   virtual bool ImportProcess( const ProcessImplementation& );
+   IsoString Id() const override;
+   MetaProcess* Process() const override;
+   const char** IconImageXPM() const override;
+   InterfaceFeatures Features() const override;
+   void ResetInstance() override;
+   bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ ) override;
+   ProcessImplementation* NewProcess() const override;
+   bool ValidateProcess( const ProcessImplementation&, String& whyNot ) const override;
+   bool RequiresInstanceValidation() const override;
+   bool ImportProcess( const ProcessImplementation& ) override;
 
    const String& CurrentDeviceName() const
    {
       return m_device;
    }
 
-   double getGeographicLatitude() const {
-	   return m_geoLatitude;
+   double GeographicLatitude() const
+   {
+      return m_geoLatitude;
    }
-   double getGeographicLongitude() const {
-	   return m_geoLongitude;
+
+   double GeographicLongitude() const
+   {
+      return m_geoLongitude;
    }
-   int getTelescopeAperture() const {
-	   return m_telescopeAperture;
+
+   int TelescopeAperture() const
+   {
+      return m_telescopeAperture;
    }
-   int getTelescopeFocalLength() const {
-	   return m_telescopeFocalLength;
+
+   int TelescopeFocalLength() const
+   {
+      return m_telescopeFocalLength;
    }
-   bool applyAlignmentCorrection() const {
-      if (GUI == nullptr) {
+
+   bool ShouldApplyAlignmentCorrection() const
+   {
+      if ( GUI == nullptr )
          return false;
-      }
       return GUI->MountAlignmentCorrection_CheckBox.IsChecked();
    }
-   const String getAlignmentFile() const {
-      if (GUI == nullptr) {
+
+   String AlignmentFilePath() const
+   {
+      if ( GUI == nullptr )
          return String();
-      }
       return GUI->AlignmentFile_Edit.Text();
    }
-   int getAlignmentMethod() const;
 
- private:
+   int AlignmentMethod() const;
 
-   String                       m_device;
+private:
 
-   INDIMountInterfaceExecution* m_execution              = nullptr;
-   CoordinateSearchDialog*      m_searchDialog           = nullptr;
-   AlignmentConfigDialog*       m_alignmentConfigDialog  = nullptr;
-
+   String                              m_device;
+   INDIMountInterfaceExecution*        m_execution = nullptr;
+   AutoPointer<CoordinateSearchDialog> m_searchDialog;
+   AutoPointer<PlanetSearchDialog>     m_planetDialog;
+   AutoPointer<AsteroidSearchDialog>   m_asteroidDialog;
+   AutoPointer<AlignmentConfigDialog>  m_alignmentConfigDialog;
 
    struct GUIData
    {
-      GUIData(INDIMountInterface& w);
+      GUIData( INDIMountInterface& );
 
       Timer UpdateDeviceList_Timer;
       Timer UpdateDeviceProperties_Timer;
 
-      VerticalSizer        Global_Sizer;
+      VerticalSizer     Global_Sizer;
 
       SectionBar        ServerParameters_SectionBar;
       Control           ServerParameters_Control;
@@ -392,15 +500,17 @@ public:
       SectionBar        MountAlignment_SectionBar;
       Control           MountAlignment_Control;
       VerticalSizer     MountAlignment_Sizer;
-      	  HorizontalSizer   MountAlignmentFile_Sizer;
-              Label             AlignmentFile_Label;
-              Edit              AlignmentFile_Edit;
-              ToolButton        AlignmentFile_ToolButton;
-          HorizontalSizer   MountAlignmentConfig_Sizer;
-          	  PushButton       MountAligmentModelConfig_Button;
-          	  PushButton       MountAligmentModelFit_Button;
-          	  CheckBox         MountAlignmentPlotResiduals_CheckBox;
-          	  PushButton       SyncDataList_Button;
+         HorizontalSizer   MountAlignmentFile_Sizer;
+            Label             AlignmentFile_Label;
+            Edit              AlignmentFile_Edit;
+            ToolButton        AlignmentFile_ToolButton;
+         HorizontalSizer   MountAlignmentConfig_Sizer;
+            PushButton        MountAligmentModelConfig_Button;
+            PushButton        MountAligmentModelFit_Button;
+            PushButton        SyncDataList_Button;
+         HorizontalSizer   MountAlignmentCorrection_Sizer;
+            CheckBox          MountAlignmentCorrection_CheckBox;
+            CheckBox          MountAlignmentPlotResiduals_CheckBox;
       SectionBar        MountGoTo_SectionBar;
       Control           MountGoTo_Control;
       VerticalSizer     MountGoTo_Sizer;
@@ -419,8 +529,8 @@ public:
             CheckBox         MountComputeApparentPosition_CheckBox;
          HorizontalSizer   MountSearch_Sizer;
             PushButton        MountSearch_Button;
-         HorizontalSizer   MountAlignmentCorrection_Sizer;
-         	 CheckBox         MountAlignmentCorrection_CheckBox;
+            PushButton        MountPlanets_Button;
+            PushButton        MountAsteroids_Button;
          HorizontalSizer   MountGoToStart_Sizer;
             PushButton        MountGoToStart_Button;
             PushButton        MountSync_Button;
@@ -450,35 +560,32 @@ public:
             Label             SlewSpeed_Label;
             ComboBox          SlewSpeed_ComboBox;
 
+      bool m_modelBothPierSides              = true;
+      bool m_alignmentConfigOffset           = true;
+      bool m_alignmentConfigCollimation      = true;
+      bool m_alignmentConfigNonPerpendicular = true;
+      bool m_alignmentConfigPolarAxisDisp    = true;
+      bool m_alignmentConfigTubeFlexure      = true;
+      bool m_alignmentConfigForkFlexure      = false;
+      bool m_alignmentConfigDecAxisFlexure   = true;
+      bool m_alignmentLinear                 = true;
+      bool m_alignmentQuadratic              = true;
+      int  m_alignmentModelIndex             = 0;
 
-      bool m_modelBothPierSides               = true;
-      bool m_alignmentConfigOffset            = true;
-      bool m_alignmentConfigCollimation       = true;
-      bool m_alignmentConfigNonPerpendicular  = true;
-      bool m_alignmentConfigPolarAxisDisp     = true;
-      bool m_alignmentConfigTubeFlexure       = true;
-      bool m_alignmentConfigForkFlexure       = false;
-      bool m_alignmentConfigDecAxisFlexure    = true;
-      bool m_alignmentLinear                  = true;
-      bool m_alignmentQuadratic               = true;
-
-      int  m_alignmentModelIndex              = 0;
-
-      void getAlignmentConfigParamter(uint32 &configParam);
+      uint32 AlignmentConfigParameter() const;
    };
 
    GUIData* GUI = nullptr;
 
-   double   m_geoLatitude  = 0;
-   double   m_geoLongitude = 0;
+   double   m_geoLatitude          = 0;
+   double   m_geoLongitude         = 0;
    int      m_telescopeAperture    = 0;
    int      m_telescopeFocalLength = 0;
-   pcl_enum m_pierSide = IMCPierSide::Default;
+   pcl_enum m_pierSide             = IMCPierSide::Default;
 
    void UpdateControls();
 
    void plotAlignemtResiduals(AlignmentModel* model);
-
 
    void e_Timer( Timer& sender );
    void e_Edit( Edit& sender );
@@ -504,4 +611,4 @@ PCL_END_LOCAL
 #endif   // __INDIMountInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInterface.h - Released 2018-11-01T11:07:21Z
+// EOF INDIMountInterface.h - Released 2018-11-23T18:45:59Z

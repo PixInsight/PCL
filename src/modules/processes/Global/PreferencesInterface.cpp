@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0386
+// Standard Global Process Module Version 01.02.07.0393
 // ----------------------------------------------------------------------------
-// PreferencesInterface.cpp - Released 2018-11-01T11:07:20Z
+// PreferencesInterface.cpp - Released 2018-11-23T18:45:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -1260,7 +1260,7 @@ ResourcesPreferencesPage::ResourcesPreferencesPage( PreferencesInstance& instanc
    AutoUIScaling_Flag.item = &instance.application.autoUIScaling;
    AutoUIScaling_Flag.disableControl = &UIScalingFactor_Real;
    AutoUIScaling_Flag.SetToolTip(
-      "<p>When enabled, the PixInsight Core application will try to detect high-dpi monitors automatically, and will "
+      "<p>When enabled, the PixInsight core application will try to detect high-dpi monitors automatically, and will "
       "compute appropriate scaling factors for all GUI elements and resources. For automatic DPI-based scaling, the "
       "reference is a 27-inch monitor at QHD resolution (2560x1440 physical display pixels, or 109 dpi). This "
       "pixel density corresponds to a scaling factor of 1.0.</p>"
@@ -1721,15 +1721,15 @@ FileIOPreferencesPage::FileIOPreferencesPage( PreferencesInstance& instance )
    NativeFileDialogs_Flag.checkBox.SetText( "Use native file dialogs" );
    NativeFileDialogs_Flag.item = &instance.imageWindow.nativeFileDialogs;
    NativeFileDialogs_Flag.SetToolTip(
-      "<p>Use native file dialogs on FreeBSD, Linux, macOS and Windows platforms.</p>"
+      "<p>Use native file dialogs on macOS and Windows platforms.</p>"
       "<p>When this option is disabled, PixInsight uses its own, platform-independent file dialogs for "
       "all <i>file open</i> and <i>file save</i> operations. Platform-independent file dialogs are "
       "extremely reliable and behave consistently on all supported operating systems.</p>"
       "<p>If this option is enabled, PixInsight uses the native dialogs provided by the host operating "
       "system. On Windows and macOS, PixInsight will use the <i>common dialogs</i> provided by these "
-      "operating systems. On FreeBSD/X11 and Linux/X11 platforms, PixInsight supports native file dialogs "
-      "on KDE4 and GNOME/GTK+. However, this option is currently disabled by default on X11 due to some "
-      "problematic interactions between KDE file dialogs and the PixInsight Core application.</p>" );
+      "operating systems. On FreeBSD/X11 and Linux/X11 platforms, this option does not work at present and "
+      "hence is disabled by default. We plan on implementing support for native file dialogs on KDE and "
+      "GNOME/GTK+ in a future version of the PixInsight core application.</p>" );
 
    RememberFileOpenType_Flag.checkBox.SetText( "Remember File Open file type" );
    RememberFileOpenType_Flag.item = &instance.imageWindow.rememberFileOpenType;
@@ -1752,8 +1752,9 @@ FileIOPreferencesPage::FileIOPreferencesPage( PreferencesInstance& instance )
    FileFormatWarnings_Flag.checkBox.SetText( "File format warnings" );
    FileFormatWarnings_Flag.item = &instance.imageWindow.fileFormatWarnings;
    FileFormatWarnings_Flag.SetToolTip(
-      "<p>Emit warning messages on using deprecated file formats and insufficient format capabilities "
-      "during file write operations.</p>" );
+      "<p>Emit console warning messages on format specific issues, including the use of deprecated file "
+      "formats, inaccurate data reading, lost metadata, and insufficient format capabilities during file "
+      "write operations, among other potential problems.</p>" );
 
    DefaultEmbedThumbnails_Flag.checkBox.SetText( "Enable thumbnail embedding by default" );
    DefaultEmbedThumbnails_Flag.item = &instance.imageWindow.defaultEmbedThumbnails;
@@ -2304,14 +2305,14 @@ ParallelProcessingPreferencesPage::ParallelProcessingPreferencesPage( Preference
    EnableParallelCoreRendering_Flag.checkBox.SetText( "Enable parallel core image rendering" );
    EnableParallelCoreRendering_Flag.item = &instance.process.enableParallelCoreRendering;
    EnableParallelCoreRendering_Flag.SetToolTip(
-      "<p>Enable multiple threads for image renditions performed by the core PixInsight application.</p>"
+      "<p>Enable multiple threads for image renditions performed by the PixInsight core application.</p>"
       "<p><b>* Warning *</b> If you disable this option, you may experience a significant performance "
       "degradation in PixInsight's graphical user interface.</p>" );
 
    EnableParallelCoreColorManagement_Flag.checkBox.SetText( "Enable parallel core color management" );
    EnableParallelCoreColorManagement_Flag.item = &instance.process.enableParallelCoreColorManagement;
    EnableParallelCoreColorManagement_Flag.SetToolTip(
-      "<p>Enable multiple threads for color management transformations performed by the core PixInsight "
+      "<p>Enable multiple threads for color management transformations performed by the PixInsight core "
       "application.</p>"
       "<p><b>* Warning *</b> If you disable this option, you may experience a significant performance "
       "degradation in PixInsight's graphical user interface.</p>" );
@@ -2686,4 +2687,4 @@ void PreferencesInterface::GUIData::InitializeCategories()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInterface.cpp - Released 2018-11-01T11:07:20Z
+// EOF PreferencesInterface.cpp - Released 2018-11-23T18:45:58Z

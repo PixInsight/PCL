@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard Convolution Process Module Version 01.01.03.0265
+// Standard Convolution Process Module Version 01.01.03.0272
 // ----------------------------------------------------------------------------
-// LarsonSekaninaInterface.cpp - Released 2018-11-01T11:07:20Z
+// LarsonSekaninaInterface.cpp - Released 2018-11-23T18:45:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
@@ -570,4 +570,4 @@ LarsonSekaninaInterface::GUIData::GUIData( LarsonSekaninaInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LarsonSekaninaInterface.cpp - Released 2018-11-01T11:07:20Z
+// EOF LarsonSekaninaInterface.cpp - Released 2018-11-23T18:45:58Z

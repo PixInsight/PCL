@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.07.00.0301
+// Standard Debayer Process Module Version 01.07.00.0308
 // ----------------------------------------------------------------------------
-// DebayerInstance.cpp - Released 2018-11-01T11:07:21Z
+// DebayerInstance.cpp - Released 2018-11-23T18:45:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
@@ -1953,10 +1953,8 @@ private:
       if ( images.Length() > 1 )
          console.NoteLn( String().Format( "* Ignoring %u additional image(s) in target file.", images.Length()-1 ) );
 
-      IsoString patternName = DebayerInstance::CFAPatternNameFromTarget( file ).CaseFolded();
-      m_xtrans = patternName == "x-trans" || patternName == "xtrans";
-
-      m_patternId = DebayerInstance::CFAPatternIdFromTarget( file );
+      m_xtrans = DebayerInstance::IsXTransCFAFromTarget( file );
+      m_patternId = m_instance.CFAPatternIdFromTarget( file, m_xtrans );
 
       if ( m_xtrans )
       {
@@ -2161,7 +2159,7 @@ bool DebayerInstance::CanExecuteOn( const View& view, String& whyNot ) const
    if ( view.Image().IsComplexSample() )
       whyNot = "Debayer cannot be executed on complex images.";
    else if ( view.Image().Width() < 6 || view.Image().Height() < 6 )
-      whyNot = "Debayer needs an image of at least 6 by 6 pixels";
+      whyNot = "Debayer needs an image of at least 6 by 6 pixels.";
    else
       return true;
 
@@ -2186,13 +2184,8 @@ bool DebayerInstance::ExecuteOn( View& view )
    AutoViewLock lock( view, false/*lock*/ );
    lock.LockForWrite();
 
-   bool xtrans;
-   {
-      IsoString patternName = CFAPatternNameFromTarget( view ).CaseFolded();
-      xtrans = patternName == "x-trans" || patternName == "xtrans";
-   }
-
-   IsoString patternId = CFAPatternIdFromTarget( view );
+   bool xtrans = IsXTransCFAFromTarget( view );
+   IsoString patternId = CFAPatternIdFromTarget( view, xtrans );
    IsoString methodId = xtrans ? "X-Trans" : DebayerEngine::MethodId( p_debayerMethod );
 
    ImageVariant source = view.Image();
@@ -2585,42 +2578,49 @@ pcl_enum DebayerInstance::BayerPatternFromTargetProperty( const Variant& cfaSour
 
 // ----------------------------------------------------------------------------
 
-IsoString DebayerInstance::CFAPatternIdFromTarget( const View& view )
+IsoString DebayerInstance::CFAPatternIdFromTarget( const View& view, bool xtrans ) const
 {
-   return CFAPatternIdFromTargetProperty( view.PropertyValue( "PCL:CFASourcePattern" ) );
+   if ( xtrans || p_bayerPattern == DebayerBayerPatternParameter::Auto )
+      return CFAPatternIdFromTargetProperty( view.PropertyValue( "PCL:CFASourcePattern" ) );
+   return TheDebayerBayerPatternParameter->ElementId( p_bayerPattern );
 }
 
-IsoString DebayerInstance::CFAPatternIdFromTarget( FileFormatInstance& file )
+IsoString DebayerInstance::CFAPatternIdFromTarget( FileFormatInstance& file, bool xtrans ) const
 {
-   return CFAPatternIdFromTargetProperty( file.ReadImageProperty( "PCL:CFASourcePattern" ) );
+   if ( xtrans || p_bayerPattern == DebayerBayerPatternParameter::Auto )
+      return CFAPatternIdFromTargetProperty( file.ReadImageProperty( "PCL:CFASourcePattern" ) );
+   return TheDebayerBayerPatternParameter->ElementId( p_bayerPattern );
 }
 
 IsoString DebayerInstance::CFAPatternIdFromTargetProperty( const Variant& cfaSourcePattern )
 {
    if ( cfaSourcePattern.IsValid() )
       if ( cfaSourcePattern.IsString() )
-         return cfaSourcePattern.ToIsoString();
-   throw Error( "Missing or invalid CFA pattern description property" );
+         return cfaSourcePattern.ToIsoString().Trimmed();
+   throw Error( "Missing or invalid CFA pattern description property." );
 }
 
 // ----------------------------------------------------------------------------
 
-IsoString DebayerInstance::CFAPatternNameFromTarget( const View& view )
+bool DebayerInstance::IsXTransCFAFromTarget( const View& view )
 {
-   return CFAPatternNameFromTargetProperty( view.PropertyValue( "PCL:CFASourcePatternName" ) );
+   return IsXTransCFAFromTargetProperty( view.PropertyValue( "PCL:CFASourcePatternName" ) );
 }
 
-IsoString DebayerInstance::CFAPatternNameFromTarget( FileFormatInstance& file )
+bool DebayerInstance::IsXTransCFAFromTarget( FileFormatInstance& file )
 {
-   return CFAPatternNameFromTargetProperty( file.ReadImageProperty( "PCL:CFASourcePatternName" ) );
+   return IsXTransCFAFromTargetProperty( file.ReadImageProperty( "PCL:CFASourcePatternName" ) );
 }
 
-IsoString DebayerInstance::CFAPatternNameFromTargetProperty( const Variant& cfaSourcePatternName )
+bool DebayerInstance::IsXTransCFAFromTargetProperty( const Variant& cfaSourcePatternName )
 {
    if ( cfaSourcePatternName.IsValid() )
       if ( cfaSourcePatternName.IsString() )
-         return cfaSourcePatternName.ToIsoString();
-   return IsoString();
+      {
+         IsoString name = cfaSourcePatternName.ToIsoString().Trimmed().CaseFolded();
+         return name == "x-trans" || name == "xtrans";
+      }
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -2640,9 +2640,9 @@ IMatrix DebayerInstance::XTransPatternFiltersFromTargetProperty( const Variant& 
    if ( cfaSourcePattern.IsValid() )
       if ( cfaSourcePattern.IsString() )
       {
-         IsoString pattern = cfaSourcePattern.ToIsoString();
+         IsoString pattern = cfaSourcePattern.ToIsoString().Trimmed();
          if ( pattern.Length() != 36 )
-            throw Error( String().Format( "Invalid X-Trans CFA pattern length (expected 36 elements, got %u)", pattern.Length() ) );
+            throw Error( String().Format( "Invalid X-Trans CFA pattern length (expected 36 elements, got %u).", pattern.Length() ) );
 
          IMatrix F( 6, 6 );
          IsoString::const_iterator s = pattern.Begin();
@@ -2658,7 +2658,7 @@ IMatrix DebayerInstance::XTransPatternFiltersFromTargetProperty( const Variant& 
                }
          return F;
       }
-   throw Error( "Missing or invalid X-Trans CFA pattern description property" );
+   throw Error( "Missing or invalid X-Trans CFA pattern description property." );
 }
 
 // ----------------------------------------------------------------------------
@@ -2996,4 +2996,4 @@ size_type DebayerInstance::ParameterLength( const MetaParameter* p, size_type ta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DebayerInstance.cpp - Released 2018-11-01T11:07:21Z
+// EOF DebayerInstance.cpp - Released 2018-11-23T18:45:59Z

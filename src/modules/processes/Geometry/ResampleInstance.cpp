@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.02.0387
+// Standard Geometry Process Module Version 01.02.02.0394
 // ----------------------------------------------------------------------------
-// ResampleInstance.cpp - Released 2018-11-01T11:07:20Z
+// ResampleInstance.cpp - Released 2018-11-23T18:45:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -273,4 +273,4 @@ void* ResampleInstance::LockParameter( const MetaParameter* p, size_type /*table
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ResampleInstance.cpp - Released 2018-11-01T11:07:20Z
+// EOF ResampleInstance.cpp - Released 2018-11-23T18:45:58Z

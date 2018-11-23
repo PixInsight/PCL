@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard GradientDomain Process Module Version 00.06.04.0223
+// Standard GradientDomain Process Module Version 00.06.04.0230
 // ----------------------------------------------------------------------------
-// solver_dct3.h - Released 2018-11-01T11:07:21Z
+// solver_dct3.h - Released 2018-11-23T18:45:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -236,4 +236,4 @@ void SolvePoisson( ImageVariant& L )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF solver_dct3.h - Released 2018-11-01T11:07:21Z
+// EOF solver_dct3.h - Released 2018-11-23T18:45:58Z

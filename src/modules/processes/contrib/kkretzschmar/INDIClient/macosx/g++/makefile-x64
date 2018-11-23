@@ -2,7 +2,7 @@
 # PixInsight Makefile Generator Script v1.107
 # Copyright (C) 2009-2018 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2018-11-01T11:09:06.040Z
+# Generated on .... 2018-11-23T18:58:00.922Z
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ MacOSX/g++
@@ -20,7 +20,6 @@ all: $(OBJ_DIR)/INDIClient-pxm.dylib
 
 SRC_FILES= \
 ../../Alignment.cpp \
-../../ApparentPosition.cpp \
 ../../IINDIProperty.cpp \
 ../../INDI/base64.c \
 ../../INDI/baseclient.cpp \
@@ -50,7 +49,6 @@ SRC_FILES= \
 
 OBJ_FILES= \
 ./x64/Release/Alignment.o \
-./x64/Release/ApparentPosition.o \
 ./x64/Release/IINDIProperty.o \
 ./x64/Release/INDI/base64.o \
 ./x64/Release/INDI/baseclient.o \
@@ -80,7 +78,6 @@ OBJ_FILES= \
 
 DEP_FILES= \
 ./x64/Release/Alignment.d \
-./x64/Release/ApparentPosition.d \
 ./x64/Release/IINDIProperty.d \
 ./x64/Release/INDI/base64.d \
 ./x64/Release/INDI/baseclient.d \
@@ -111,7 +108,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/INDIClient-pxm.dylib: $(OBJ_FILES)
-	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.10 -stdlib=libc++ -Wl,-dead_strip -dynamiclib -install_name @executable_path/INDIClient-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/INDIClient-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi -llz4-pxi -lzlib-pxi -lRFC6234-pxi -llcms-pxi -lcminpack-pxi
+	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.11 -stdlib=libc++ -Wl,-dead_strip -dynamiclib -install_name @executable_path/INDIClient-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/INDIClient-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi -llz4-pxi -lzlib-pxi -lRFC6234-pxi -llcms-pxi -lcminpack-pxi
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
@@ -124,15 +121,15 @@ post-build:
 	codesign --deep -s pleiades -f -v --timestamp $(PCLBINDIR64)/INDIClient-pxm.dylib
 
 ./x64/Release/%.o: ../../%.cpp
-	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.10 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.11 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x64/Release/INDI/%.o: ../../INDI/%.cpp
-	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.10 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.11 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x64/Release/%.o: ../../%.cpp
-	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.10 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.11 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x64/Release/INDI/%.o: ../../INDI/%.c
-	clang -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.10 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -std=c99 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.11 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -std=c99 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

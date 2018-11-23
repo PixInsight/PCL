@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard Annotation Process Module Version 01.00.00.0222
+// Standard Annotation Process Module Version 01.00.00.0229
 // ----------------------------------------------------------------------------
-// AnnotationProcess.cpp - Released 2018-11-01T11:07:21Z
+// AnnotationProcess.cpp - Released 2018-11-23T18:45:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Annotation PixInsight module.
 //
@@ -181,4 +181,4 @@ bool AnnotationProcess::CanProcessCommandLines() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AnnotationProcess.cpp - Released 2018-11-01T11:07:21Z
+// EOF AnnotationProcess.cpp - Released 2018-11-23T18:45:59Z

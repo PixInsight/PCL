@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0357
+// Standard ColorSpaces Process Module Version 01.01.00.0364
 // ----------------------------------------------------------------------------
-// SplitRGBChannelsAction.cpp - Released 2018-11-01T11:07:20Z
+// SplitRGBChannelsAction.cpp - Released 2018-11-23T18:45:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
@@ -173,4 +173,4 @@ bool ExtractBlueChannelAction::IsEnabled( ActionInfo info ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SplitRGBChannelsAction.cpp - Released 2018-11-01T11:07:20Z
+// EOF SplitRGBChannelsAction.cpp - Released 2018-11-23T18:45:58Z

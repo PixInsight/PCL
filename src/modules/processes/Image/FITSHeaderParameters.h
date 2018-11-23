@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0410
+// Standard Image Process Module Version 01.03.00.0427
 // ----------------------------------------------------------------------------
-// FITSHeaderParameters.h - Released 2018-11-01T11:07:21Z
+// FITSHeaderParameters.h - Released 2018-11-23T18:45:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -117,4 +117,4 @@ PCL_END_LOCAL
 #endif   // __FITSHeaderParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF FITSHeaderParameters.h - Released 2018-11-01T11:07:21Z
+// EOF FITSHeaderParameters.h - Released 2018-11-23T18:45:58Z

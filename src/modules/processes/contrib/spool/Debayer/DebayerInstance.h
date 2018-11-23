@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.07.00.0301
+// Standard Debayer Process Module Version 01.07.00.0308
 // ----------------------------------------------------------------------------
-// DebayerInstance.h - Released 2018-11-01T11:07:21Z
+// DebayerInstance.h - Released 2018-11-23T18:45:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
@@ -153,13 +153,13 @@ private:
    pcl_enum BayerPatternFromTarget( FileFormatInstance& ) const;
    static pcl_enum BayerPatternFromTargetProperty( const Variant& );
 
-   static IsoString CFAPatternIdFromTarget( const View& );
-   static IsoString CFAPatternIdFromTarget( FileFormatInstance& );
+   IsoString CFAPatternIdFromTarget( const View&, bool xtrans ) const;
+   IsoString CFAPatternIdFromTarget( FileFormatInstance&, bool xtrans ) const;
    static IsoString CFAPatternIdFromTargetProperty( const Variant& );
 
-   static IsoString CFAPatternNameFromTarget( const View& );
-   static IsoString CFAPatternNameFromTarget( FileFormatInstance& );
-   static IsoString CFAPatternNameFromTargetProperty( const Variant& );
+   static bool IsXTransCFAFromTarget( const View& );
+   static bool IsXTransCFAFromTarget( FileFormatInstance& );
+   static bool IsXTransCFAFromTargetProperty( const Variant& );
 
    static IMatrix XTransPatternFiltersFromTarget( const View& );
    static IMatrix XTransPatternFiltersFromTarget( FileFormatInstance& );
@@ -187,4 +187,4 @@ private:
 #endif   // __DebayerInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF DebayerInstance.h - Released 2018-11-01T11:07:21Z
+// EOF DebayerInstance.h - Released 2018-11-23T18:45:59Z

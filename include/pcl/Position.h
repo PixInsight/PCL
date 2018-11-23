@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// pcl/Position.h - Released 2018-11-01T11:06:36Z
+// pcl/Position.h - Released 2018-11-23T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -958,6 +958,19 @@ public:
    }
 
    /*!
+    * Returns the inverse of the equinox-based combined
+    * bias-precession-nutation matrix.
+    *
+    * This member function calls InitEquinoxBasedParameters() to ensure that
+    * all data required for equinox-based reduction of positions is available.
+    */
+   Matrix EquinoxBiasPrecessionNutationInverseMatrix()
+   {
+      InitEquinoxBasedParameters();
+      return m_Minv;
+   }
+
+   /*!
     * Returns the CIO-based combined bias-precession-nutation matrix.
     *
     * This member function calls InitCIOBasedParameters() to ensure that
@@ -968,6 +981,20 @@ public:
    {
       InitCIOBasedParameters();
       return m_C;
+   }
+
+   /*!
+    * Returns the inverse of the CIO-based combined bias-precession-nutation
+    * matrix.
+    *
+    * This member function calls InitCIOBasedParameters() to ensure that
+    * all data required for equinox-based and CIO-based reduction of positions
+    * is available.
+    */
+   Matrix CIOBiasPrecessionNutationInverseMatrix()
+   {
+      InitCIOBasedParameters();
+      return m_Cinv;
    }
 
    /*!
@@ -1312,4 +1339,4 @@ private:
 #endif  // __PCL_Position_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Position.h - Released 2018-11-01T11:06:36Z
+// EOF pcl/Position.h - Released 2018-11-23T16:14:19Z

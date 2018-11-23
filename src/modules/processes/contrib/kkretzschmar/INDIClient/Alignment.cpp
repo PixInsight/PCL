@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0225
+// Standard INDIClient Process Module Version 01.01.00.0228
 // ----------------------------------------------------------------------------
-// Alignment.cpp - Released 2018-11-01T11:07:21Z
+// Alignment.cpp - Released 2018-11-23T18:45:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -120,47 +120,44 @@ static void WarnOnUnknownChildElement( const XMLElement& element, const String& 
 
 // ----------------------------------------------------------------------------
 
-static void dumpMatrix( const Matrix& matrix )
-{
-   Console console;
-   console.WriteLn( "Matrix:" );
-   for ( int i = 0; i < matrix.Rows(); ++i )
-   {
-      for ( int j = 0; j < matrix.Columns(); ++j )
-         console.Write( String().Format( "m[%d,%d]=%6.6f, ", i, j, matrix[i][j] ) );
-      console.WriteLn();
-   }
-}
+// static void DumpMatrix( const Matrix& matrix )
+// {
+//    Console console;
+//    console.WriteLn( "Matrix:" );
+//    for ( int i = 0; i < matrix.Rows(); ++i )
+//    {
+//       for ( int j = 0; j < matrix.Columns(); ++j )
+//          console.Write( String().Format( "m[%d,%d]=%6.6f, ", i, j, matrix[i][j] ) );
+//       console.WriteLn();
+//    }
+// }
 
 // ----------------------------------------------------------------------------
 
-static void dumpVector( const Vector& vector )
-{
-   Console console;
-   console.WriteLn( "Vector:" );
-   for ( int j = 0; j < vector.Length(); ++j )
-      console.Write( String().Format( "v[%d]=%6.6f, ", j, vector[j] ) );
-   console.WriteLn();
-}
+// static void DumpVector( const Vector& vector )
+// {
+//    Console console;
+//    console.WriteLn( "Vector:" );
+//    for ( int j = 0; j < vector.Length(); ++j )
+//       console.Write( String().Format( "v[%d]=%6.6f, ", j, vector[j] ) );
+//    console.WriteLn();
+// }
 
 // ----------------------------------------------------------------------------
 
-void AlignmentModel::getPseudoInverse( Matrix& pseudoInverse, const Matrix& matrix )
+Matrix AlignmentModel::PseudoInverse( const Matrix& matrix )
 {
-   if ( pseudoInverse.Rows() != matrix.Columns() || pseudoInverse.Columns() != matrix.Rows() )
-      throw Error( "Internal error: AlignmentModel::getPseudoInverse: Matrix dimensions do not match" );
-
    SVD svd( matrix );
    Matrix WInverse( matrix.Columns(), matrix.Columns() );
    for ( int j = 0; j < matrix.Columns(); ++j )
       for ( int i = 0; i < matrix.Columns(); ++i )
          WInverse[i][j] = (i == j && Abs( svd.W[i] ) > 1e-15) ? 1/svd.W[i] : 0.0;
-   pseudoInverse = svd.V * WInverse * svd.U.Transpose();
+   return svd.V * WInverse * svd.U.Transpose();
 }
 
 // ----------------------------------------------------------------------------
 
-pcl_enum AlignmentModel::getPierSideFromHourAngle( double hourAngle, bool counterWeightUpEnforced)
+pcl_enum AlignmentModel::PierSideFromHourAngle( double hourAngle, bool counterWeightUpEnforced)
 {
    pcl_enum pierSideWest = counterWeightUpEnforced ? IMCPierSide::East : IMCPierSide::West;
    pcl_enum pierSideEast = counterWeightUpEnforced ? IMCPierSide::West : IMCPierSide::East;
@@ -169,7 +166,7 @@ pcl_enum AlignmentModel::getPierSideFromHourAngle( double hourAngle, bool counte
 
 // ----------------------------------------------------------------------------
 
-AutoPointer<XMLDocument> AlignmentModel::createXTPMDocument() const
+AutoPointer<XMLDocument> AlignmentModel::CreateXTPMDocument() const
 {
    AutoPointer<XMLDocument> xml = new XMLDocument;
    xml->SetXML( "1.0", "UTF-8" );
@@ -185,7 +182,7 @@ AutoPointer<XMLDocument> AlignmentModel::createXTPMDocument() const
 void AlignmentModel::Serialize(XMLElement* root) const
 {
    if ( root == nullptr )
-      throw Error("Internal Error: AlignmentModel::Serialize: Invalid root pointer");
+      throw Error( "Internal Error: AlignmentModel::Serialize(): Invalid root pointer" );
 
    if ( !m_syncData.IsEmpty() )
    {
@@ -209,7 +206,7 @@ void AlignmentModel::Serialize(XMLElement* root) const
 
 XMLDocument* AlignmentModel::Serialize() const
 {
-   AutoPointer<XMLDocument> xml = createXTPMDocument();
+   AutoPointer<XMLDocument> xml = CreateXTPMDocument();
    XMLElement* mutableRoot = const_cast<XMLElement*>( xml->RootElement() );
    Serialize( mutableRoot );
    return xml.Release();
@@ -306,7 +303,7 @@ void AlignmentModel::ParseSyncData( const XMLElement& syncDataList )
 
 void AlignmentModel::Parse( const XMLDocument& xml )
 {
-   if ( xml.RootElement() == nullptr )
+   if ( xml.RootElement() == nullptr ) // ?! cannot happen
       throw Error( "The XML document has no root element." );
    if ( xml.RootElement()->Name() != "xtpm" || xml.RootElement()->AttributeValue( "version" ) != "1.0" )
       throw Error( "Not an XTPM version 1.0 document." );
@@ -346,7 +343,7 @@ void AlignmentModel::Parse( const XMLDocument& xml )
 
 // ----------------------------------------------------------------------------
 
-void AlignmentModel::writeObject( const String& fileName )
+void AlignmentModel::WriteObject( const String& fileName )
 {
    AutoPointer<XMLDocument> xml = Serialize();
    xml->EnableAutoFormatting();
@@ -355,7 +352,7 @@ void AlignmentModel::writeObject( const String& fileName )
 
 // ----------------------------------------------------------------------------
 
-void AlignmentModel::readObject( const String& fileName )
+void AlignmentModel::ReadObject( const String& fileName )
 {
    IsoString text = File::ReadTextFile( fileName );
    XMLDocument xml;
@@ -365,15 +362,15 @@ void AlignmentModel::readObject( const String& fileName )
    Parse( xml );
 }
 
-void AlignmentModel::readSyncData( const String& fileName )
+// ----------------------------------------------------------------------------
+
+void AlignmentModel::ReadSyncData( const String& fileName )
 {
    IsoString text = File::ReadTextFile( fileName );
    XMLDocument xml;
    xml.SetParserOption( XMLParserOption::IgnoreComments );
    xml.SetParserOption( XMLParserOption::IgnoreUnknownElements );
    xml.Parse( text.UTF8ToUTF16() );
-   if ( xml.RootElement() == nullptr )
-      throw Error( "The XML document has no root element." );
    if ( xml.RootElement()->Name() != "xtpm" || xml.RootElement()->AttributeValue( "version" ) != "1.0" )
       throw Error( "Not an XTPM version 1.0 document." );
 
@@ -406,14 +403,12 @@ void AlignmentModel::readSyncData( const String& fileName )
       throw Error( "Missing required sync data list." );
 }
 
-
 // ----------------------------------------------------------------------------
 
-AlignmentModel* AlignmentModel::create( const String& fileName )
+AlignmentModel* AlignmentModel::Create( const String& fileName )
 {
-   if (fileName.IsEmpty()) {
-      throw Error("Pointing model: file name is empty.");
-   }
+   if ( fileName.IsEmpty() )
+      throw Error( "Pointing model: file name is empty." );
    if ( !File::Exists( fileName ) )
       throw Error( "PointingModel: xtpm file does not exist." );
 
@@ -423,8 +418,6 @@ AlignmentModel* AlignmentModel::create( const String& fileName )
    xml.SetParserOption( XMLParserOption::IgnoreUnknownElements );
    xml.Parse( text.UTF8ToUTF16() );
 
-   if ( xml.RootElement() == nullptr )
-      throw Error( "The XML document has no root element." );
    if ( xml.RootElement()->Name() != "xtpm" || xml.RootElement()->AttributeValue( "version" ) != "1.0" )
       throw Error( "Not an XTPM version 1.0 document." );
 
@@ -468,17 +461,17 @@ AlignmentModel* AlignmentModel::create( const String& fileName )
 static const double scaleArcmin = 60.0;
 static const double factorHaToDeg = 15.0;
 
-void GeneralAnalyticalPointingModel::evaluateBasis( Matrix& basisVectors, double hourAngle, double dec )
+void GeneralAnalyticalPointingModel::EvaluateBasis( Matrix& basisVectors, double hourAngle, double dec )
 {
    // rescale hour angle to degrees
    hourAngle *= factorHaToDeg;
    if ( basisVectors.Rows() != 2 || basisVectors.Columns() != static_cast<int>( m_numOfModelParameters ) )
-      throw Error( "Internal error: PointingModel::evaluateBasis: Matrix dimensions do not match" );
+      throw Error( "Internal error: PointingModel::EvaluateBasis: Matrix dimensions do not match" );
 
-   double ctc  = Cos( Rad( hourAngle ) );
-   double cdc  = Cos( Rad( dec ) );
-   double stc  = Sin( Rad( hourAngle ) );
-   double sdc  = Sin( Rad( dec ) );
+   double ctc   = Cos( Rad( hourAngle ) );
+   double cdc   = Cos( Rad( dec ) );
+   double stc   = Sin( Rad( hourAngle ) );
+   double sdc   = Sin( Rad( dec ) );
 
    double secdc = 1/Cos( Rad( dec ) );
    double tandc = Tan( Rad( dec ) );
@@ -622,7 +615,7 @@ void GeneralAnalyticalPointingModel::Apply( double& hourAngleCor, double& decCor
 {
    Matrix basisVectors( 2, m_numOfModelParameters );
 
-   evaluateBasis( basisVectors, hourAngle, dec );
+   EvaluateBasis( basisVectors, hourAngle, dec );
 
    // compute correction vector
    Vector alignCorrection( 2 );
@@ -642,7 +635,7 @@ void GeneralAnalyticalPointingModel::ApplyInverse( double& hourAngleCor, double&
 {
    Matrix basisVectors( 2, m_numOfModelParameters );
 
-   evaluateBasis( basisVectors, hourAngle, dec );
+   EvaluateBasis( basisVectors, hourAngle, dec );
 
    // compute correction vector
    Vector alignCorrection( 2 );
@@ -658,34 +651,34 @@ void GeneralAnalyticalPointingModel::ApplyInverse( double& hourAngleCor, double&
 
 // ----------------------------------------------------------------------------
 
-void GeneralAnalyticalPointingModel::fitModel()
+void GeneralAnalyticalPointingModel::FitModel()
 {
-   fitModel( m_syncData );
+   FitModel( m_syncData );
 }
 
 // ----------------------------------------------------------------------------
 
-void GeneralAnalyticalPointingModel::fitModel( const Array<SyncDataPoint>& syncPointArray )
+void GeneralAnalyticalPointingModel::FitModel( const Array<SyncDataPoint>& syncPointArray )
 {
    m_modelCreationTime = TimePoint::Now();
    double residual = 0;
    if ( !m_modelEachPierSide )
    {
-      fitModelForPierSide( syncPointArray, IMCPierSide::None, residual );
+      FitModelForPierSide( syncPointArray, IMCPierSide::None, residual );
       m_residuals.Add( residual );
    }
    else
    {
-      fitModelForPierSide( syncPointArray, IMCPierSide::West, residual );
+      FitModelForPierSide( syncPointArray, IMCPierSide::West, residual );
       m_residuals.Add( residual );
-      fitModelForPierSide( syncPointArray, IMCPierSide::East, residual );
+      FitModelForPierSide( syncPointArray, IMCPierSide::East, residual );
       m_residuals.Add( residual );
    }
 }
 
 // ----------------------------------------------------------------------------
 
-void GeneralAnalyticalPointingModel::fitModelForPierSide( const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide, double& residual )
+void GeneralAnalyticalPointingModel::FitModelForPierSide( const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide, double& residual )
 {
    // Count data points for each pier side
    size_t numOfPoints  = 0;
@@ -697,7 +690,7 @@ void GeneralAnalyticalPointingModel::fitModelForPierSide( const Array<SyncDataPo
    }
 
    if ( numOfPoints == 0 )
-      throw Error( "GeneralAnalyticalPointingModel::fitModelForPierSide: Missing required sync data." );
+      throw Error( "GeneralAnalyticalPointingModel::FitModelForPierSide: Missing required sync data." );
 
    // fill a design matrix and an displacement vector
    Matrix* designMatrices = nullptr;
@@ -715,13 +708,13 @@ void GeneralAnalyticalPointingModel::fitModelForPierSide( const Array<SyncDataPo
       if ( !syncPoint.enabled || pierSide != IMCPierSide::None && syncPoint.pierSide != pierSide )
          continue;
 
-      double celestialHourAngle = AlignmentModel::rangeShiftHourAngle( syncPoint.localSiderialTime - syncPoint.celestialRA );
-      double telescopeHourAngle = AlignmentModel::rangeShiftHourAngle( syncPoint.localSiderialTime - syncPoint.telecopeRA );
+      double celestialHourAngle = AlignmentModel::RangeShiftHourAngle( syncPoint.localSiderialTime - syncPoint.celestialRA );
+      double telescopeHourAngle = AlignmentModel::RangeShiftHourAngle( syncPoint.localSiderialTime - syncPoint.telecopeRA );
 
       // calculate design matrix
       Matrix basisVectors( 2, m_numOfModelParameters );
 
-      evaluateBasis( basisVectors, celestialHourAngle, syncPoint.celestialDEC );
+      EvaluateBasis( basisVectors, celestialHourAngle, syncPoint.celestialDEC );
 
       for ( size_t modelIndex = 0; modelIndex < m_numOfModelParameters; modelIndex++ )
       {
@@ -737,8 +730,7 @@ void GeneralAnalyticalPointingModel::fitModelForPierSide( const Array<SyncDataPo
    }
 
    // compute pseudo inverse
-   Matrix pseudoInverse( designMatrices->Columns(), designMatrices->Rows() );
-   getPseudoInverse( pseudoInverse, *designMatrices );
+   Matrix pseudoInverse = PseudoInverse( *designMatrices );
 
    // fit parameters
    if ( pierSide == IMCPierSide::None || pierSide == IMCPierSide::West )
@@ -764,7 +756,7 @@ void GeneralAnalyticalPointingModel::fitModelForPierSide( const Array<SyncDataPo
 
 XMLDocument* GeneralAnalyticalPointingModel::Serialize() const
 {
-   AutoPointer<XMLDocument> xml = createXTPMDocument();
+   AutoPointer<XMLDocument> xml = CreateXTPMDocument();
 
    XMLElement* root = const_cast<XMLElement*>( xml->RootElement() );
 
@@ -788,8 +780,8 @@ XMLDocument* GeneralAnalyticalPointingModel::Serialize() const
 
 void GeneralAnalyticalPointingModel::Parse( const XMLDocument& xml )
 {
-   if ( xml.RootElement() == nullptr )
-      throw Error( "The XML document has no root element." );
+   if ( xml.RootElement() == nullptr ) // ?! cannot happen
+      throw Error( "Internal error: The XML document has no root element." );
    if ( xml.RootElement()->Name() != "xtpm" || xml.RootElement()->AttributeValue( "version" ) != "1.0" )
       throw Error( "Not an XTPM version 1.0 document." );
 
@@ -842,12 +834,9 @@ void GeneralAnalyticalPointingModel::Parse( const XMLDocument& xml )
    }
 }
 
-
-
-
 // ----------------------------------------------------------------------------
 
-void GeneralAnalyticalPointingModel::printParameterVector( Vector* parameters, double residual )
+void GeneralAnalyticalPointingModel::PrintParameterVector( Vector* parameters, double residual )
 {
    m_console.WriteLn( String().Format( "<end><cbr>"
                                        "* Fitting residual ................................................ %+.2f ", residual ) );
@@ -867,18 +856,18 @@ void GeneralAnalyticalPointingModel::printParameterVector( Vector* parameters, d
 
 // ----------------------------------------------------------------------------
 
-void GeneralAnalyticalPointingModel::printParameters()
+void GeneralAnalyticalPointingModel::PrintParameters()
 {
    m_console.NoteLn( "<end><cbr><br> Analytical Pointing Model Parameters" );
    m_console.WriteLn( "The parameters refer to the general analytical telescope pointing model as described by Marc W. Buie (2013)" );
    m_console.WriteLn( "in his paper http://www.boulder.swri.edu/~buie/idl/downloads/pointing/pointing.pdf." );
    if ( m_modelEachPierSide )
       m_console.WriteLn( "<br>* Pierside: West" );
-   printParameterVector( m_pointingModelWest, m_residuals[0] );
+   PrintParameterVector( m_pointingModelWest, m_residuals[0] );
    if ( m_modelEachPierSide )
    {
       m_console.WriteLn( "<br>* Pierside: East" );
-      printParameterVector( m_pointingModelEast, m_residuals[1] );
+      PrintParameterVector( m_pointingModelEast, m_residuals[1] );
    }
 }
 
@@ -887,4 +876,4 @@ void GeneralAnalyticalPointingModel::printParameters()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF Alignment.cpp - Released 2018-11-01T11:07:21Z
+// EOF Alignment.cpp - Released 2018-11-23T18:45:59Z

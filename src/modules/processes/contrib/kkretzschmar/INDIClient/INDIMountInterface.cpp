@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0225
+// Standard INDIClient Process Module Version 01.01.00.0228
 // ----------------------------------------------------------------------------
-// INDIMountInterface.cpp - Released 2018-11-01T11:07:21Z
+// INDIMountInterface.cpp - Released 2018-11-23T18:45:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -58,10 +58,9 @@
 #include <pcl/Math.h>
 #include <pcl/MessageBox.h>
 #include <pcl/MetaModule.h>
+#include <pcl/Position.h>
 
-#include "ApparentPosition.h"
 #include "Alignment.h"
-
 #include "INDIDeviceControllerInterface.h"
 #include "INDIMountInterface.h"
 #include "INDIMountProcess.h"
@@ -69,8 +68,6 @@
 #include "INDI/basedevice.h"
 #include "INDI/indiapi.h"
 #include "INDI/indibase.h"
-
-#include <time.h>
 
 namespace pcl
 {
@@ -90,17 +87,7 @@ INDIMountInterface* TheINDIMountInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
-CoordinateSearchDialog::CoordinateSearchDialog() :
-   m_RA( 0 ),
-   m_Dec( 0 ),
-   m_muRA( 0 ),
-   m_muDec( 0 ),
-   m_parallax( 0 ),
-   m_valid( false ),
-   m_goto( false ),
-   m_downloading( false ),
-   m_abort( false ),
-   m_firstTimeShown( true )
+CoordinateSearchDialog::CoordinateSearchDialog()
 {
    const char* objectNameToolTip =
       "<p>Name or identifier of the object to search for. Examples: M31, Pleiades, NGC 253, Orion Nebula, Antares.</p>";
@@ -170,6 +157,8 @@ CoordinateSearchDialog::CoordinateSearchDialog() :
    OnShow( (Control::event_handler)&CoordinateSearchDialog::e_Show, *this );
 }
 
+// ----------------------------------------------------------------------------
+
 void CoordinateSearchDialog::e_Show( Control& )
 {
    if ( m_firstTimeShown )
@@ -180,17 +169,23 @@ void CoordinateSearchDialog::e_Show( Control& )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void CoordinateSearchDialog::e_GetFocus( Control& sender )
 {
    if ( sender == ObjectName_Edit )
       Search_Button.SetDefault();
 }
 
+// ----------------------------------------------------------------------------
+
 void CoordinateSearchDialog::e_LoseFocus( Control& sender )
 {
    if ( sender == ObjectName_Edit )
       Get_Button.SetDefault();
 }
+
+// ----------------------------------------------------------------------------
 
 bool CoordinateSearchDialog::e_Download( NetworkTransfer& sender, const void* buffer, fsize_type size )
 {
@@ -201,24 +196,28 @@ bool CoordinateSearchDialog::e_Download( NetworkTransfer& sender, const void* bu
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool CoordinateSearchDialog::e_Progress( NetworkTransfer& sender,
-                                         fsize_type downloadTotal, fsize_type downloadCurrent,
-                                         fsize_type uploadTotal, fsize_type uploadCurrent )
+                                       fsize_type downloadTotal, fsize_type downloadCurrent,
+                                       fsize_type uploadTotal, fsize_type uploadCurrent )
 {
    if ( m_abort )
       return false;
 
    if ( downloadTotal > 0 )
       SearchInfo_TextBox.Insert( String().Format( "<end><clrbol>%u of %u bytes transferred (%d%%)<flush>",
-                                                  downloadCurrent, downloadTotal,
-                                                  RoundInt( 100.0*downloadCurrent/downloadTotal ) ) );
+                                                downloadCurrent, downloadTotal,
+                                                RoundInt( 100.0*downloadCurrent/downloadTotal ) ) );
    else
       SearchInfo_TextBox.Insert( String().Format( "<end><clrbol>%u bytes transferred (unknown size)<flush>",
-                                                  downloadCurrent ) );
+                                                downloadCurrent ) );
    SearchInfo_TextBox.Focus();
    Module->ProcessEvents();
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
 {
@@ -264,8 +263,16 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
       if ( ok )
       {
          SearchInfo_TextBox.Insert( String().Format( "<end><clrbol>%d bytes downloaded @ %.3g KiB/s<br>",
-                                                     transfer.BytesTransferred(), transfer.TotalSpeed() ) );
+                                                   transfer.BytesTransferred(), transfer.TotalSpeed() ) );
          //SearchInfo_TextBox.Insert( "<end><cbr><br><raw>" + m_downloadData + "</raw>" );
+
+         m_vmag.Undefine();
+         m_RA.Undefine();
+         m_Dec.Undefine();
+         m_muRA.Undefine();
+         m_muDec.Undefine();
+         m_parallax.Undefine();
+         m_radVel.Undefine();
 
          StringList lines;
          m_downloadData.Break( lines, '\n' );
@@ -276,63 +283,65 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
             lines[1].Break( tokens, '\t', true/*trim*/ );
             if ( tokens.Length() == 11 )
             {
-               m_RA = tokens[1].ToDouble();                                         // degrees
-               m_Dec = tokens[2].ToDouble();                                        // degrees
-               m_muRA = tokens[3].IsEmpty() ? 0.0 : tokens[3].ToDouble();           // mas/yr
-               m_muDec = tokens[4].IsEmpty() ? 0.0 : tokens[4].ToDouble();          // mas/yr
-               m_parallax = tokens[5].IsEmpty() ? 0.0 : tokens[5].ToDouble();       // mas
-               m_radVel = tokens[6].IsEmpty() ? 0.0 : tokens[6].ToDouble()*KMS2AUY; // km/s -> AU/year
+               if ( !tokens[1].IsEmpty() )
+                  m_RA = tokens[1].ToDouble()/15;  // degrees -> hours
+               if ( !tokens[2].IsEmpty() )
+                  m_Dec = tokens[2].ToDouble();    // degrees
+               if ( !tokens[3].IsEmpty() )
+                  m_muRA = tokens[3].ToDouble();   // mas/yr * cos(delta)
+               if ( !tokens[4].IsEmpty() )
+                  m_muDec = tokens[4].ToDouble();  // mas/yr
+               if ( !tokens[5].IsEmpty() )
+                  m_parallax = tokens[5].ToDouble()/1000; // mas -> arcsec
+               if ( !tokens[6].IsEmpty() )
+                  m_radVel = tokens[6].ToDouble(); // km/s
                m_objectName = tokens[7].Unquoted().Trimmed();
                m_objectType = tokens[8].Unquoted().Trimmed();
                m_spectralType = tokens[9].Unquoted().Trimmed();
-               m_vmag = tokens[10].IsEmpty() ? 101.0 : tokens[10].ToDouble();
+               if ( !tokens[10].IsEmpty() )
+                  m_vmag = tokens[10].ToDouble();
 
-               try
+               if ( m_RA.IsDefined() && m_Dec.IsDefined() )
                {
-                  String info =
-                           "<end><cbr><br><b>Object            :</b> "
-                        + m_objectName
-                        +            "<br><b>Object type       :</b> "
-                        + m_objectType
-                        +            "<br><b>Right Ascension   :</b> "
-                        + String::ToSexagesimal( m_RA/15,
-                                       SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 3/*width*/ ) )
-                        +            "<br><b>Declination       :</b> "
-                        + String::ToSexagesimal( m_Dec,
-                                       SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 3/*width*/ ) );
-                  if ( m_muRA != 0 )
-                     info
-                        +=           "<br><b>Proper motion RA  :</b> "
-                        + String().Format( "%+8.2lf mas/year", m_muRA );
-                  if ( m_muDec != 0 )
-                     info
-                        +=           "<br><b>Proper motion Dec :</b> "
-                        + String().Format( "%+8.2lf mas/year", m_muDec );
-                  if ( m_parallax != 0 )
-                     info
-                        +=           "<br><b>Parallax          :</b> "
-                        + String().Format( "%8.2lf mas", m_parallax );
-                  if ( m_radVel != 0 )
-                     info
-                        +=           "<br><b>Radial velocity   :</b> "
-                        + String().Format( "%+.4lg AU/year", m_radVel );
-                  if ( !m_spectralType.IsEmpty() )
-                     info
-                        +=           "<br><b>Spectral type     :</b> "
-                        + m_spectralType;
-                  if ( m_vmag < 100 )
-                     info
-                        +=           "<br><b>V Magnitude       :</b> "
-                        + String().Format( "%.4lg", m_vmag );
-                  info += "<br>";
+                  try
+                  {
+                     String info = String()
+                             << "<end><cbr><br><b>Object            :</b> "
+                             << m_objectName
+                             <<           "<br><b>Object type       :</b> "
+                             << m_objectType
+                             <<           "<br><b>Right Ascension   :</b> "
+                             << ' ' << String::ToSexagesimal( m_RA(), RAConversionOptions( 3/*precision*/ ) )
+                             <<           "<br><b>Declination       :</b> "
+                             << String::ToSexagesimal( m_Dec(), DecConversionOptions( 2/*precision*/ ) );
+                     if ( m_muRA.IsDefined() )
+                        info <<           "<br><b>Proper motion RA* :</b> "
+                             << String().Format( "%+8.2f mas/year * cos(delta)", m_muRA() );
+                     if ( m_muDec.IsDefined() )
+                        info <<           "<br><b>Proper motion Dec :</b> "
+                             << String().Format( "%+8.2f mas/year", m_muDec() );
+                     if ( m_parallax.IsDefined() )
+                        info <<           "<br><b>Parallax          :</b> "
+                             << String().Format( "%8.2f arcsec", m_parallax() );
+                     if ( m_radVel.IsDefined() )
+                        info <<           "<br><b>Radial velocity   :</b> "
+                             << String().Format( "%+7.1f km/s", m_radVel() );
+                     if ( !m_spectralType.IsEmpty() )
+                        info <<           "<br><b>Spectral type     :</b> "
+                             << m_spectralType;
+                     if ( m_vmag.IsDefined() )
+                        info <<           "<br><b>V Magnitude       :</b> "
+                             << String().Format( "%.4g", m_vmag() );
+                     info << "<br>";
 
-                  SearchInfo_TextBox.Insert( info );
-                  m_valid = true;
-                  Get_Button.Enable();
-                  GoTo_Button.Enable();
-               }
-               catch ( ... )
-               {
+                     SearchInfo_TextBox.Insert( info );
+                     m_valid = true;
+                     Get_Button.Enable();
+                     GoTo_Button.Enable();
+                  }
+                  catch ( ... )
+                  {
+                  }
                }
             }
          }
@@ -374,85 +383,327 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
    }
 }
 
-SyncDataListDialog::SyncDataListDialog(Array<SyncDataPoint>& syncDataArray) :
-   Dialog(), m_syncDataList(syncDataArray), m_firstTimeShown(true)
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+EphemerisSearchDialog::EphemerisSearchDialog()
 {
+   const char* objectToolTip =
+      "<p>Select one of the solar system bodies available to calculate ephemerides.</p>";
 
-	SnycData_TreeBox.SetMinHeight( Font().Width( 'm' )*60 );
-	SnycData_TreeBox.SetScaledMinWidth(  Font().Height()  * 50 );
-	SnycData_TreeBox.SetNumberOfColumns( 8 );
-	SnycData_TreeBox.SetHeaderText( 2, "HA" );
-	SnycData_TreeBox.SetHeaderText( 3, "Dec" );
-	SnycData_TreeBox.SetHeaderText( 4, "Delta HA" );
-	SnycData_TreeBox.SetHeaderText( 5, "Delta Dec" );
-	SnycData_TreeBox.SetHeaderText( 6, "Pier side");
-	SnycData_TreeBox.SetHeaderText( 7, "Created on");
-	SnycData_TreeBox.EnableAlternateRowColor();
-	SnycData_TreeBox.EnableMultipleSelections(true);
+   Object_Label.SetText( "Object: " );
+   Object_Label.SetToolTip( objectToolTip );
+   Object_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
 
+   Objects_ComboBox.SetToolTip( objectToolTip );
+   Objects_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&EphemerisSearchDialog::e_ItemSelected, *this );
 
-	for (size_t index = 0;  index < syncDataArray.Length(); ++index) {
-		TreeBox::Node* node =  new TreeBox::Node();
-		auto syncDataPoint = syncDataArray[index];
+   Calculate_Button.SetText( "Calculate" );
+   Calculate_Button.SetIcon( ScaledResource( ":/icons/function.png" ) );
+   Calculate_Button.SetToolTip( "<p>Compute apparent position.</p>" );
+   Calculate_Button.OnClick( (Button::click_event_handler)&EphemerisSearchDialog::e_Click, *this );
 
-		node->SetText(0,String().Format("%i",index));
-		node->SetIcon(1, syncDataPoint.enabled ? ScaledResource(":/browser/enabled.png") : ScaledResource(":/browser/disabled.png") );
-		node->SetText(2,String().Format("%2.3f",AlignmentModel::rangeShiftHourAngle(syncDataPoint.localSiderialTime-syncDataPoint.celestialRA)));
-		node->SetText(3,String().Format("%2.3f",syncDataPoint.celestialDEC));
-		node->SetText(4,String().Format("%2.5f",syncDataPoint.telecopeRA-syncDataPoint.celestialRA));
-		node->SetText(5,String().Format("%2.5f",syncDataPoint.celestialDEC-syncDataPoint.telecopeDEC));
-		node->SetText(6,String(syncDataPoint.pierSide == IMCPierSide::West ? "West" :  syncDataPoint.pierSide == IMCPierSide::East ? "East" : "" ));
-		node->SetText(7,syncDataPoint.creationTime.ToString());
-		SnycData_TreeBox.Add(node);
-	}
+   Objects_Sizer.SetSpacing( 4 );
+   Objects_Sizer.Add( Object_Label );
+   Objects_Sizer.Add( Objects_ComboBox, 100 );
+   Objects_Sizer.Add( Calculate_Button );
+   Objects_Sizer.AddStretch();
 
-	for (int i = 0 ; i < SnycData_TreeBox.NumberOfColumns(); ++i){
-		SnycData_TreeBox.AdjustColumnWidthToContents( i );
-	}
+   ObjectInfo_TextBox.SetReadOnly();
+   ObjectInfo_TextBox.SetStyleSheet( ScaledStyleSheet(
+         "QTextEdit {"
+            "font-family: DejaVu Sans Mono, Monospace;"
+            "font-size: 8pt;"
+            "background: #141414;" // borrowed from /rsc/qss/core-standard.qss
+            "color: #E8E8E8;"
+         "}"
+      ) );
+   ObjectInfo_TextBox.Restyle();
+   ObjectInfo_TextBox.SetMinSize( ObjectInfo_TextBox.Font().Width( 'm' )*81, ObjectInfo_TextBox.Font().Height()*22 );
 
-	SyncDataList_Sizer.SetSpacing( 8 );
-	SyncDataList_Sizer.Add(SnycData_TreeBox, 100);
+   Clear_Button.SetText( "Clear" );
+   Clear_Button.SetIcon( ScaledResource( ":/icons/clear.png" ) );
+   Clear_Button.SetToolTip( "<p>Clear coordinates.</p>" );
+   Clear_Button.OnClick( (Button::click_event_handler)&EphemerisSearchDialog::e_Click, *this );
 
-	Delete_Button.SetText( "Delete" );
-	//Delete_Button.SetIcon( ScaledResource( ":/icons/window-import.png" ) );
-	Delete_Button.OnClick( (Button::click_event_handler)&SyncDataListDialog::e_Click, *this );
+   Get_Button.SetText( "Get" );
+   Get_Button.SetIcon( ScaledResource( ":/icons/window-import.png" ) );
+   Get_Button.SetToolTip( "<p>Acquire apparent coordinates.</p>" );
+   Get_Button.OnClick( (Button::click_event_handler)&EphemerisSearchDialog::e_Click, *this );
+   Get_Button.Disable();
 
-	Enable_Button.SetText( "Enable" );
-	//Delete_Button.SetIcon( ScaledResource( ":/icons/window-import.png" ) );
-	Enable_Button.OnClick( (Button::click_event_handler)&SyncDataListDialog::e_Click, *this );
+   GoTo_Button.SetText( "GoTo" );
+   GoTo_Button.SetIcon( ScaledResource( ":/icons/play.png" ) );
+   GoTo_Button.SetToolTip( "<p>Slew to apparent coordinates.</p>" );
+   GoTo_Button.OnClick( (Button::click_event_handler)&EphemerisSearchDialog::e_Click, *this );
+   GoTo_Button.Disable();
 
-	Disable_Button.SetText( "Disable" );
-	//Delete_Button.SetIcon( ScaledResource( ":/icons/window-import.png" ) );
-	Disable_Button.OnClick( (Button::click_event_handler)&SyncDataListDialog::e_Click, *this );
+   Cancel_Button.SetText( "Cancel" );
+   Cancel_Button.SetIcon( ScaledResource( ":/icons/cancel.png" ) );
+   Cancel_Button.OnClick( (Button::click_event_handler)&EphemerisSearchDialog::e_Click, *this );
 
-	Ok_Button.SetText( "Ok" );
-	Ok_Button.SetIcon( ScaledResource( ":/icons/ok.png" ) );
-	Ok_Button.OnClick( (Button::click_event_handler)&SyncDataListDialog::e_Click, *this );
+   Buttons_Sizer.SetSpacing( 8 );
+   Buttons_Sizer.Add( Clear_Button );
+   Buttons_Sizer.AddStretch();
+   Buttons_Sizer.Add( Get_Button );
+   Buttons_Sizer.Add( GoTo_Button );
+   Buttons_Sizer.Add( Cancel_Button );
 
-	Cancel_Button.SetText( "Cancel" );
-	Cancel_Button.SetIcon( ScaledResource( ":/icons/cancel.png" ) );
-	Cancel_Button.OnClick( (Button::click_event_handler)&SyncDataListDialog::e_Click, *this );
+   Global_Sizer.SetSpacing( 8 );
+   Global_Sizer.SetMargin( 8 );
+   Global_Sizer.Add( Objects_Sizer );
+   Global_Sizer.Add( ObjectInfo_TextBox, 100 );
+   Global_Sizer.Add( Buttons_Sizer );
 
-	SyncDataListButton_Sizer.SetSpacing(8);
-	SyncDataListButton_Sizer.Add(Enable_Button);
-	SyncDataListButton_Sizer.Add(Disable_Button);
-	SyncDataListButton_Sizer.Add(Delete_Button);
-	SyncDataListButton_Sizer.AddStretch();
-	SyncDataListButton_Sizer.Add(Ok_Button);
-	SyncDataListButton_Sizer.Add(Cancel_Button);
+   SetSizer( Global_Sizer );
 
-	Global_Sizer.SetSpacing( 8 );
-	Global_Sizer.SetMargin( 8 );
-	Global_Sizer.Add(SyncDataList_Sizer);
-	Global_Sizer.Add(SyncDataListButton_Sizer);
-	SetSizer( Global_Sizer );
-
-	SetWindowTitle( "List of Sync Data Points" );
-
-	OnShow( (Control::event_handler)&SyncDataListDialog::e_Show, *this );
-	OnClose( (Control::close_event_handler)&SyncDataListDialog::e_Close, *this );
-
+   OnShow( (Control::event_handler)&EphemerisSearchDialog::e_Show, *this );
 }
+
+// ----------------------------------------------------------------------------
+
+String EphemerisSearchDialog::ObjectName( const EphemerisObject& object ) const
+{
+   return object.objectName;
+}
+
+// ----------------------------------------------------------------------------
+
+void EphemerisSearchDialog::e_Show( Control& )
+{
+   if ( m_firstTimeShown )
+   {
+      m_firstTimeShown = false;
+
+      EphemerisObjectList objects = Objects();
+      for ( auto object : objects )
+         Objects_ComboBox.AddItem( ObjectName( object ) );
+
+      AdjustToContents();
+      SetMinSize();
+      e_ItemSelected( Objects_ComboBox, Objects_ComboBox.CurrentItem() );
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+void EphemerisSearchDialog::e_ItemSelected( ComboBox& sender, int itemIndex )
+{
+   if ( sender == Objects_ComboBox )
+      m_objectName = sender.ItemText( itemIndex ).Trimmed();
+}
+
+// ----------------------------------------------------------------------------
+
+void EphemerisSearchDialog::e_Click( Button& sender, bool checked )
+{
+   if ( sender == Calculate_Button )
+   {
+      bool isMoon = m_objectName.CompareIC( "Moon" ) == 0;
+      TimePoint t = TimePoint::Now();
+      EphemerisFile::Handle H( Ephemerides(), m_objectName, isMoon ? "Ea" : "SSB" );
+      pcl::Position P( t, "UTC" );
+      Vector u3 = P.Apparent( H );
+      u3.ToSpherical2Pi( m_RA, m_Dec );
+      m_RA = Deg( m_RA )/15;
+      m_Dec = Deg( m_Dec );
+
+      String info = String()
+               << "<end><cbr><br><b>" << ObjectName() << "</b> "
+               << "<br>" << t.ToString( "%Y-%M-%D %h:%m:%s2" ) << " UTC"
+               << "<br><b>Apparent right ascension :</b> "
+               << String::ToSexagesimal( m_RA, RAConversionOptions( 3/*precision*/, 3/*width*/ ) )
+               << "<br><b>Apparent declination     :</b> "
+               << String::ToSexagesimal( m_Dec, DecConversionOptions( 2/*precision*/, 3/*width*/ ) )
+               << "<br><b>True distance            :</b> "
+               << String().Format( "%10.*f %s", P.TrueDistance( H ), isMoon ? 3 : 7, isMoon ? "km" : "au" );
+      /*
+       * ### TODO: Include visual magnitude and apparent diameter for planets.
+       */
+      info << "<br>";
+
+      ObjectInfo_TextBox.Insert( info );
+      m_valid = true;
+      Get_Button.Enable();
+      GoTo_Button.Enable();
+      ObjectInfo_TextBox.Focus();
+   }
+   else if ( sender == Clear_Button )
+   {
+      ObjectInfo_TextBox.Clear();
+      Get_Button.Disable();
+      GoTo_Button.Disable();
+   }
+   else if ( sender == Get_Button || sender == GoTo_Button )
+   {
+      if ( m_objectName == "Sun" )
+         if ( MessageBox( "<p>You are about to point your telescope at the Sun.</p>"
+               "<p><b>THIS IS EXTREMELY DANGEROUS - BY DOING THIS YOU CAN CAUSE "
+               "IRREVERSIBLE DAMAGE TO YOUR EYES AND/OR TO YOUR EQUIPMENT.</b></p>"
+               "<p>Do you really want to do this?</p>",
+               WindowTitle(),
+               StdIcon::Warning, StdButton::Cancel, StdButton::Ok ).Execute() != StdButton::Ok )
+            return;
+
+      m_goto = sender == GoTo_Button;
+      Ok();
+   }
+   else if ( sender == Cancel_Button )
+   {
+      Cancel();
+   }
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+PlanetSearchDialog::PlanetSearchDialog()
+{
+   SetWindowTitle( "Planet Coordinates" );
+}
+
+EphemerisObjectList PlanetSearchDialog::Objects() const
+{
+   return EphemerisObjectList() << EphemerisObject( "Me", "SSB", "Mercury" )
+                                << EphemerisObject( "Ve", "SSB", "Venus" )
+                                << EphemerisObject( "Ma", "SSB", "Mars" )
+                                << EphemerisObject( "Ju", "SSB", "Jupiter" )
+                                << EphemerisObject( "Sa", "SSB", "Saturn" )
+                                << EphemerisObject( "Ur", "SSB", "Uranus" )
+                                << EphemerisObject( "Ne", "SSB", "Neptune" )
+                                << EphemerisObject( "Pl", "SSB", "Pluto" )
+                                << EphemerisObject( "Mn", "Ea",  "Moon" )
+                                << EphemerisObject( "Sn", "SSB", "Sun" );
+}
+
+const EphemerisFile& PlanetSearchDialog::Ephemerides() const
+{
+   return EphemerisFile::FundamentalEphemerides();
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+AsteroidSearchDialog::AsteroidSearchDialog()
+{
+   SetWindowTitle( "Asteroid Coordinates" );
+}
+
+EphemerisObjectList AsteroidSearchDialog::Objects() const
+{
+   EphemerisObjectList objects = EphemerisFile::AsteroidEphemerides().Objects();
+   objects.Sort( []( const EphemerisObject& a, const EphemerisObject& b )
+                  {
+                     return a.objectId.ToInt() < b.objectId.ToInt();
+                  } );
+   return objects;
+}
+
+const EphemerisFile& AsteroidSearchDialog::Ephemerides() const
+{
+   return EphemerisFile::AsteroidEphemerides();
+}
+
+String AsteroidSearchDialog::ObjectName( const EphemerisObject& object ) const
+{
+   return object.objectId + ' ' + object.objectName;
+}
+
+void AsteroidSearchDialog::e_ItemSelected( ComboBox& sender, int itemIndex )
+{
+   if ( sender == Objects_ComboBox )
+   {
+      StringList tokens;
+      sender.ItemText( itemIndex ).Break( tokens, ' ' );
+      if ( tokens.Length() > 1 ) // !! always true
+      {
+         m_objectId = tokens[0].ToIsoString();
+         m_objectName = tokens[1].ToIsoString();
+      }
+   }
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+SyncDataListDialog::SyncDataListDialog( Array<SyncDataPoint>& syncDataArray ) :
+   m_syncDataList( syncDataArray )
+{
+   SnycData_TreeBox.SetMinHeight( Font().Width( 'm' )*60 );
+   SnycData_TreeBox.SetScaledMinWidth(  Font().Height()  * 50 );
+   SnycData_TreeBox.SetNumberOfColumns( 8 );
+   SnycData_TreeBox.SetHeaderText( 2, "HA" );
+   SnycData_TreeBox.SetHeaderText( 3, "Dec" );
+   SnycData_TreeBox.SetHeaderText( 4, "Delta HA" );
+   SnycData_TreeBox.SetHeaderText( 5, "Delta Dec" );
+   SnycData_TreeBox.SetHeaderText( 6, "Pier side");
+   SnycData_TreeBox.SetHeaderText( 7, "Created on");
+   SnycData_TreeBox.EnableAlternateRowColor();
+   SnycData_TreeBox.EnableMultipleSelections( true );
+
+   for ( size_t index = 0;  index < syncDataArray.Length(); ++index )
+   {
+      TreeBox::Node* node =  new TreeBox::Node();
+      auto syncDataPoint = syncDataArray[index];
+      node->SetText( 0, String().Format( "%i", index ) );
+      node->SetIcon( 1, ScaledResource( syncDataPoint.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) );
+      node->SetText( 2, String().Format( "%2.3f", AlignmentModel::RangeShiftHourAngle( syncDataPoint.localSiderialTime-syncDataPoint.celestialRA ) ) );
+      node->SetText( 3, String().Format( "%2.3f", syncDataPoint.celestialDEC ) );
+      node->SetText( 4, String().Format( "%2.5f", syncDataPoint.telecopeRA - syncDataPoint.celestialRA ) );
+      node->SetText( 5, String().Format( "%2.5f", syncDataPoint.celestialDEC-syncDataPoint.telecopeDEC ) );
+      node->SetText( 6, String( (syncDataPoint.pierSide == IMCPierSide::West) ?
+                                       "West" :  ((syncDataPoint.pierSide == IMCPierSide::East) ? "East" : "") ) );
+      node->SetText( 7, syncDataPoint.creationTime.ToString() );
+      SnycData_TreeBox.Add( node );
+   }
+
+   for ( int i = 0 ; i < SnycData_TreeBox.NumberOfColumns(); ++i )
+      SnycData_TreeBox.AdjustColumnWidthToContents( i );
+
+   SyncDataList_Sizer.SetSpacing( 8 );
+   SyncDataList_Sizer.Add( SnycData_TreeBox, 100 );
+
+   Delete_Button.SetText( "Delete" );
+   //Delete_Button.SetIcon( ScaledResource( ":/icons/window-import.png" ) );
+   Delete_Button.OnClick( (Button::click_event_handler)&SyncDataListDialog::e_Click, *this );
+
+   Enable_Button.SetText( "Enable" );
+   //Delete_Button.SetIcon( ScaledResource( ":/icons/window-import.png" ) );
+   Enable_Button.OnClick( (Button::click_event_handler)&SyncDataListDialog::e_Click, *this );
+
+   Disable_Button.SetText( "Disable" );
+   //Delete_Button.SetIcon( ScaledResource( ":/icons/window-import.png" ) );
+   Disable_Button.OnClick( (Button::click_event_handler)&SyncDataListDialog::e_Click, *this );
+
+   Ok_Button.SetText( "Ok" );
+   Ok_Button.SetIcon( ScaledResource( ":/icons/ok.png" ) );
+   Ok_Button.OnClick( (Button::click_event_handler)&SyncDataListDialog::e_Click, *this );
+
+   Cancel_Button.SetText( "Cancel" );
+   Cancel_Button.SetIcon( ScaledResource( ":/icons/cancel.png" ) );
+   Cancel_Button.OnClick( (Button::click_event_handler)&SyncDataListDialog::e_Click, *this );
+
+   SyncDataListButton_Sizer.SetSpacing( 8 );
+   SyncDataListButton_Sizer.Add( Enable_Button );
+   SyncDataListButton_Sizer.Add( Disable_Button );
+   SyncDataListButton_Sizer.Add( Delete_Button );
+   SyncDataListButton_Sizer.AddStretch();
+   SyncDataListButton_Sizer.Add( Ok_Button );
+   SyncDataListButton_Sizer.Add( Cancel_Button );
+
+   Global_Sizer.SetSpacing( 8 );
+   Global_Sizer.SetMargin( 8 );
+   Global_Sizer.Add( SyncDataList_Sizer );
+   Global_Sizer.Add( SyncDataListButton_Sizer );
+   SetSizer( Global_Sizer );
+
+   SetWindowTitle( "List of Sync Data Points" );
+
+   OnShow( (Control::event_handler)&SyncDataListDialog::e_Show, *this );
+   OnClose( (Control::close_event_handler)&SyncDataListDialog::e_Close, *this );
+}
+
+// ----------------------------------------------------------------------------
 
 void SyncDataListDialog::e_Show( Control& )
 {
@@ -464,9 +715,14 @@ void SyncDataListDialog::e_Show( Control& )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void SyncDataListDialog::e_Close( Control& sender, bool& allowClose )
 {
+   // ### Placeholder
 }
+
+// ----------------------------------------------------------------------------
 
 void SyncDataListDialog::e_Click( Button& sender, bool checked )
 {
@@ -485,7 +741,7 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked )
       {
          int index = SnycData_TreeBox.ChildIndex( node );
          m_syncDataList[index].enabled = true;
-         node->SetIcon(1, ScaledResource( ":/browser/enabled.png" ) );
+         node->SetIcon( 1, ScaledResource( ":/browser/enabled.png" ) );
       }
    }
    else if ( sender == Delete_Button )
@@ -507,157 +763,101 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked )
    }
 }
 
-#define ADD_LABLED_CHECKBOXES_TO_SIZER( NAME )  \
-   NAME##_Sizer.Add( NAME##_Label );            \
-   NAME##_Sizer.Add( NAME##_CheckBox );         \
-   NAME##_Sizer.AddStretch();                   \
-   MountAlignmentConfig_Sizer.Add( NAME##_Sizer )
+// ----------------------------------------------------------------------------
 
 AlignmentConfigDialog::AlignmentConfigDialog( INDIMountInterface& w ) :
    m_interface( w )
 {
-   int labelWidth1 = w.Font().Width("Polar axis displacment :");
+   const char* pierSideToolTipText =
+      "<p>Create a model for each side of the pier. This is useful for mounts that perform a meridian "
+      "flip when objects cross the meridian.</p>"
+      "<p>Creating models for each pier side can dramatically improve the accuracy of pointing model, "
+      "since some pointing error sources depend on the position and balance of the mounted devices.</p>"
+      "<p>Note that two pointing model need twice as many sync points.</p>";
+
+   ModelPierSide_CheckBox.SetText( "Model each pier side" );
+   ModelPierSide_CheckBox.SetToolTip( pierSideToolTipText );
+   ModelPierSide_CheckBox.Check();
+
+   const char* offsetToolTipText =
+      "<p>Zero-point offset in the right ascension and declination axes.</p>";
+
+   Offset_CheckBox.SetText( "Offset" );
+   Offset_CheckBox.SetToolTip( offsetToolTipText );
+   Offset_CheckBox.Check();
+
+   const char* collimationToolTipText =
+      "<p>Misalignment between optical and mechanical axes</p>";
+
+   Collimation_CheckBox.SetText( "Collimation" );
+   Collimation_CheckBox.SetToolTip( collimationToolTipText );
+   Collimation_CheckBox.Check();
+
+   const char* nonPerpendicularToolTipText =
+      "<p>Polar/declination axis non-orthogonality error.</p>";
+
+   NonPerpendicular_CheckBox.SetText( "Perpendicularity" );
+   NonPerpendicular_CheckBox.SetToolTip( nonPerpendicularToolTipText );
+   NonPerpendicular_CheckBox.Check();
+
+   const char* polarAxisDisplacementToolTipText =
+      "<p>Polar axis displacement between instrumental and true poles.</p>";
+
+   PolarAxisDisplacement_CheckBox.SetText( "Polar axis displacement" );
+   PolarAxisDisplacement_CheckBox.SetToolTip( polarAxisDisplacementToolTipText );
+   PolarAxisDisplacement_CheckBox.Check();
+
+   const char* tubeFlexureToolTipText =
+      "<p>Tube flexure away from zenith.</p>";
+
+   TubeFlexure_CheckBox.SetText( "Tube flexure" );
+   TubeFlexure_CheckBox.SetToolTip( tubeFlexureToolTipText );
+   TubeFlexure_CheckBox.Check();
+
+   const char* forkFlexureToolTipText =
+      "<p>Fork flexure away from zenith (only for non-German equatorial mounts).</p>";
+
+   ForkFlexure_CheckBox.SetText( "Fork flexure" );
+   ForkFlexure_CheckBox.SetToolTip( forkFlexureToolTipText );
+
+   const char* deltaAxisToolTipText =
+      "<p>Bending of the declination axis (only for German equatorial mounts).</p>";
+
+   DeltaAxisFlexure_CheckBox.SetText( "Declination axis bending" );
+   DeltaAxisFlexure_CheckBox.SetToolTip( deltaAxisToolTipText );
+   DeltaAxisFlexure_CheckBox.Check();
+
+   const char* linearTermToolTipText =
+      "<p>Linear scale error in hour angle.</p>";
+
+   Linear_CheckBox.SetText( "Linear" );
+   Linear_CheckBox.SetToolTip( linearTermToolTipText );
+   Linear_CheckBox.Check();
+
+   const char* quadraticTermToolTipText =
+      "<p>Quadratic scale error in hour angle.</p>";
+
+   Quadratic_CheckBox.SetText( "Quadratic" );
+   Quadratic_CheckBox.SetToolTip( quadraticTermToolTipText );
+   Quadratic_CheckBox.Check();
 
    MountAlignmentConfig_Sizer.SetSpacing( 8 );
    MountAlignmentConfig_Sizer.SetMargin( 8 );
+   MountAlignmentConfig_Sizer.Add( ModelPierSide_CheckBox );
+   MountAlignmentConfig_Sizer.Add( Offset_CheckBox );
+   MountAlignmentConfig_Sizer.Add( Collimation_CheckBox );
+   MountAlignmentConfig_Sizer.Add( NonPerpendicular_CheckBox );
+   MountAlignmentConfig_Sizer.Add( PolarAxisDisplacement_CheckBox );
+   MountAlignmentConfig_Sizer.Add( TubeFlexure_CheckBox );
+   MountAlignmentConfig_Sizer.Add( ForkFlexure_CheckBox );
+   MountAlignmentConfig_Sizer.Add( DeltaAxisFlexure_CheckBox );
+   MountAlignmentConfig_Sizer.Add( Linear_CheckBox );
+   MountAlignmentConfig_Sizer.Add( Quadratic_CheckBox );
 
-   const char* pierSideToolTipText =
-            "<p>Create a model for each side of the pier. This is useful for mounts"
-            "which perform a meridian flip when objects pass the meridian.</p>"
-            "<p>Creating models for each pier side can dramatically improve the accuracy of pointing model,"
-            "since some pointing error sources depend on the position and balance of the mounted devices.</p>"
-            "<p>Note that two pointing model need twice as many sync points.</p>";
-
-   ModelPierSide_Label.SetText("Model each pier side :");
-   ModelPierSide_Label.SetToolTip(pierSideToolTipText);
-   ModelPierSide_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-   ModelPierSide_Label.SetFixedWidth(labelWidth1);
-
-   ModelPierSide_CheckBox.SetToolTip(pierSideToolTipText);
-   ModelPierSide_CheckBox.Check();
-
-   ADD_LABLED_CHECKBOXES_TO_SIZER(ModelPierSide);
-
-   const char* offsetToolTipText =
-         "<p>Zero-point offset in rightascension (RA) and declination (DEC) axes.</p>";
-
-   Offset_Label.SetText("Offset:");
-   Offset_Label.SetToolTip(offsetToolTipText);
-   Offset_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-   Offset_Label.SetFixedWidth(labelWidth1);
-
-   Offset_CheckBox.SetToolTip(offsetToolTipText);
-   Offset_CheckBox.Check();
-
-   ADD_LABLED_CHECKBOXES_TO_SIZER(Offset);
-
-   const char* collimationToolTipText =
-         "<p>Misalignment between optical and mechanical axes</p>";
-
-   Collimation_Label.SetText("Collimation:");
-   Collimation_Label.SetToolTip(collimationToolTipText);
-   Collimation_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-   Collimation_Label.SetFixedWidth(labelWidth1);
-
-   Collimation_CheckBox.SetToolTip(collimationToolTipText);
-   Collimation_CheckBox.Check();
-
-   ADD_LABLED_CHECKBOXES_TO_SIZER(Collimation);
-
-   const char* nonPerpendicularToolTipText =
-            "<p>Polar/declination axis non-orthogonality error.</p>";
-
-   NonPerpendicular_Label.SetText("Perpendicularity:");
-   NonPerpendicular_Label.SetToolTip(nonPerpendicularToolTipText);
-   NonPerpendicular_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-   NonPerpendicular_Label.SetFixedWidth(labelWidth1);
-
-   NonPerpendicular_CheckBox.SetToolTip(nonPerpendicularToolTipText);
-   NonPerpendicular_CheckBox.Check();
-
-   ADD_LABLED_CHECKBOXES_TO_SIZER(NonPerpendicular);
-
-   const char* polarAxisDisplacementToolTipText =
-               "<p>Polar axis displacement between instrumental and true poles.</p>";
-
-   PolarAxisDisplacement_Label.SetText("Polar axis displacment:");
-   PolarAxisDisplacement_Label.SetToolTip(polarAxisDisplacementToolTipText);
-   PolarAxisDisplacement_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-   PolarAxisDisplacement_Label.SetFixedWidth(labelWidth1);
-
-   PolarAxisDisplacement_CheckBox.SetToolTip(polarAxisDisplacementToolTipText);
-   PolarAxisDisplacement_CheckBox.Check();
-
-   ADD_LABLED_CHECKBOXES_TO_SIZER(PolarAxisDisplacement);
-
-   const char* tubeFlexureToolTipText =
-               "<p>Tube flexure away from zenith.</p>";
-
-   TubeFlexure_Label.SetText("Tube flexure:");
-   TubeFlexure_Label.SetToolTip(tubeFlexureToolTipText);
-   TubeFlexure_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-   TubeFlexure_Label.SetFixedWidth(labelWidth1);
-
-   TubeFlexure_CheckBox.SetToolTip(tubeFlexureToolTipText);
-   TubeFlexure_CheckBox.Check();
-
-   ADD_LABLED_CHECKBOXES_TO_SIZER(TubeFlexure);
-
-   const char* forkFlexureToolTipText =
-               "<p>Fork flexure away from zenith (only for non German Equatorial Mounts).</p>";
-
-   ForkFlexure_Label.SetText("Fork flexure:");
-   ForkFlexure_Label.SetToolTip(forkFlexureToolTipText);
-   ForkFlexure_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-   ForkFlexure_Label.SetFixedWidth(labelWidth1);
-
-   ForkFlexure_CheckBox.SetToolTip(forkFlexureToolTipText);
-
-   ADD_LABLED_CHECKBOXES_TO_SIZER(ForkFlexure);
-
-   const char* deltaAxisToolTipText =
-               "<p>Bending of declination axle (only for German Equatorial Mounts).</p>";
-
-   DeltaAxisFlexure_Label.SetText("Dec axis bending:");
-   DeltaAxisFlexure_Label.SetToolTip(deltaAxisToolTipText);
-   DeltaAxisFlexure_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-   DeltaAxisFlexure_Label.SetFixedWidth(labelWidth1);
-
-   DeltaAxisFlexure_CheckBox.SetToolTip(deltaAxisToolTipText);
-   DeltaAxisFlexure_CheckBox.Check();
-
-   ADD_LABLED_CHECKBOXES_TO_SIZER(DeltaAxisFlexure);
-
-   const char* linearTermToolTipText =
-               "<p>Linear scale error in hour angle.</p>";
-
-   Linear_Label.SetText("Linear:");
-   Linear_Label.SetToolTip(linearTermToolTipText);
-   Linear_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-   Linear_Label.SetFixedWidth(labelWidth1);
-
-   Linear_CheckBox.SetToolTip(linearTermToolTipText);
-   Linear_CheckBox.Check();
-
-   ADD_LABLED_CHECKBOXES_TO_SIZER(Linear);
-
-   const char* quadraticTermToolTipText =
-                  "<p>Quadratic scale error in hour angle.</p>";
-
-   Quadratic_Label.SetText("Quadratic:");
-   Quadratic_Label.SetToolTip(quadraticTermToolTipText);
-   Quadratic_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-   Quadratic_Label.SetFixedWidth(labelWidth1);
-
-   Quadratic_CheckBox.SetToolTip(quadraticTermToolTipText);
-   Quadratic_CheckBox.Check();
-
-   ADD_LABLED_CHECKBOXES_TO_SIZER(Quadratic);
-
-   AnalyticalAlignment_ConfigControl.SetSizer(MountAlignmentConfig_Sizer);
+   AnalyticalAlignment_ConfigControl.SetSizer( MountAlignmentConfig_Sizer );
 
    AlignmentConfig_TabBox.AddPage( AnalyticalAlignment_ConfigControl, "Analytical Pointing Model" );
-   AlignmentConfig_TabBox.OnPageSelected((TabBox::page_event_handler)&AlignmentConfigDialog::e_PageSelected, *this );
+   AlignmentConfig_TabBox.OnPageSelected( (TabBox::page_event_handler)&AlignmentConfigDialog::e_PageSelected, *this );
    //AlignmentConfig_TabBox.AddPage( SurfaceSplineAlignment_ConfigControl, "Surface Splines Pointing Model" );
 
    Ok_Button.SetText( "Ok" );
@@ -668,15 +868,15 @@ AlignmentConfigDialog::AlignmentConfigDialog( INDIMountInterface& w ) :
    Cancel_Button.SetIcon( ScaledResource( ":/icons/cancel.png" ) );
    Cancel_Button.OnClick( (Button::click_event_handler)&AlignmentConfigDialog::e_Click, *this );
 
-   AlignmentConfigButton_Sizer.SetSpacing(8);
-   AlignmentConfigButton_Sizer.Add(Ok_Button);
-   AlignmentConfigButton_Sizer.Add(Cancel_Button);
+   AlignmentConfigButton_Sizer.SetSpacing( 8 );
    AlignmentConfigButton_Sizer.AddStretch();
+   AlignmentConfigButton_Sizer.Add( Ok_Button );
+   AlignmentConfigButton_Sizer.Add( Cancel_Button );
 
    Global_Sizer.SetSpacing( 8 );
    Global_Sizer.SetMargin( 8 );
-   Global_Sizer.Add(AlignmentConfig_TabBox);
-   Global_Sizer.Add(AlignmentConfigButton_Sizer);
+   Global_Sizer.Add( AlignmentConfig_TabBox );
+   Global_Sizer.Add( AlignmentConfigButton_Sizer );
 
    SetSizer( Global_Sizer );
 
@@ -685,231 +885,246 @@ AlignmentConfigDialog::AlignmentConfigDialog( INDIMountInterface& w ) :
    OnShow( (Control::event_handler)&AlignmentConfigDialog::e_Show, *this );
 }
 
- void AlignmentConfigDialog::e_Show( Control& )
- {
-    if ( m_firstTimeShown )
-    {
-       m_firstTimeShown = false;
-       AdjustToContents();
-       SetMinSize();
-    }
- }
+// ----------------------------------------------------------------------------
 
- void AlignmentConfigDialog::e_Click( Button& sender, bool checked ){
-
- 	if (sender == Ok_Button){
- 		m_interface.GUI->m_modelBothPierSides = ModelPierSide_CheckBox.IsChecked();
- 		m_interface.GUI->m_alignmentConfigOffset = Offset_CheckBox.IsChecked();
- 		m_interface.GUI->m_alignmentConfigCollimation = Collimation_CheckBox.IsChecked();
- 		m_interface.GUI->m_alignmentConfigNonPerpendicular = NonPerpendicular_CheckBox.IsChecked();
- 		m_interface.GUI->m_alignmentConfigPolarAxisDisp = PolarAxisDisplacement_CheckBox.IsChecked();
- 		m_interface.GUI->m_alignmentConfigDecAxisFlexure = DeltaAxisFlexure_CheckBox.IsChecked();
- 		m_interface.GUI->m_alignmentConfigTubeFlexure = TubeFlexure_CheckBox.IsChecked();
- 		m_interface.GUI->m_alignmentConfigForkFlexure = ForkFlexure_CheckBox.IsChecked();
- 		m_interface.GUI->m_alignmentLinear = Linear_CheckBox.IsChecked();
- 		m_interface.GUI->m_alignmentQuadratic = Quadratic_CheckBox.IsChecked();
- 		m_interface.GUI->m_alignmentModelIndex = AlignmentConfig_TabBox.CurrentPageIndex() + 1;
- 		Ok();
- 	}
- 	if (sender == Cancel_Button){
- 		Cancel();
- 	}
- }
-
- void AlignmentConfigDialog::e_PageSelected(TabBox& sender, int tabIndex) {
-
-	 if (sender == AlignmentConfig_TabBox) {
-
-	 }
-
- }
-
- MountConfigDialog::MountConfigDialog(const String& deviceName, double geoLat, double geoLong, double telescopeAperture, double telescopeFocalLength):ConfigDialogBase(deviceName),m_device(deviceName){
-
-	 int emWidth = Font().Width( 'm' );
-	 int editWidth1 = RoundInt( 4.25*emWidth );
-	 int editWidth2 = RoundInt( 5.25*emWidth );
-
-	 int sign,s1,s2;
-	 double s3;
-
-	 int labelWidth1 = Font().Width("Geographic Longitude:");
-
-	 Latitude_Label.SetText( "Geographic Latitude:" );
-	 Latitude_Label.SetToolTip( "<p>Position of observatory: Geographic latitude (g:m:s)</p>" );
-	 Latitude_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-	 Latitude_Label.SetFixedWidth( labelWidth1 );
-
-	 DecimalToSexagesimal(sign,s1,s2,s3,geoLat);
-	 Latitude_H_SpinBox.SetRange( 0, 90 );
-	 Latitude_H_SpinBox.SetFixedWidth( editWidth1 );
-	 Latitude_H_SpinBox.SetValue(Abs(s1));
-
-	 Latitude_M_SpinBox.SetRange( 0, 59 );
-	 Latitude_M_SpinBox.SetFixedWidth( editWidth1 );
-	 Latitude_M_SpinBox.SetValue(s2);
-
-	 Latitude_S_NumericEdit.SetReal();
-	 Latitude_S_NumericEdit.SetPrecision( 3 );
-	 Latitude_S_NumericEdit.EnableFixedPrecision();
-	 Latitude_S_NumericEdit.SetRange( 0, 59.999 );
-	 Latitude_S_NumericEdit.label.Hide();
-	 Latitude_S_NumericEdit.edit.SetFixedWidth( editWidth2 );
-	 Latitude_S_NumericEdit.SetValue(s3);
-
-	 LatitudeIsSouth_CheckBox.SetText( "South" );
-	 LatitudeIsSouth_CheckBox.SetToolTip( "<p>When checked, latitude is negative (Southern hemisphere).</p>" );
-	 LatitudeIsSouth_CheckBox.SetChecked(sign<0);
-
-
-	 Latitude_Sizer.SetSpacing( 4 );
-	 Latitude_Sizer.Add( Latitude_Label );
-	 Latitude_Sizer.Add( Latitude_H_SpinBox );
-	 Latitude_Sizer.Add( Latitude_M_SpinBox );
-	 Latitude_Sizer.Add( Latitude_S_NumericEdit );
-	 Latitude_Sizer.Add( LatitudeIsSouth_CheckBox );
-	 Latitude_Sizer.AddStretch();
-
-	 DecimalToSexagesimal(sign,s1,s2,s3,geoLong);
-	 Longitude_Label.SetText( "Geographic Longitude:" );
-	 Longitude_Label.SetToolTip( "<p>Position of observatory: Geographic longitude (g:m:s)</p></p>" );
-	 Longitude_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-	 Longitude_Label.SetFixedWidth( labelWidth1 );
-
-	 Longitude_H_SpinBox.SetRange( 0, 180 );
-	 Longitude_H_SpinBox.SetFixedWidth( editWidth1 );
-	 Longitude_H_SpinBox.SetValue(Abs(s1));
-
-	 Longitude_M_SpinBox.SetRange( 0, 59 );
-	 Longitude_M_SpinBox.SetFixedWidth( editWidth1 );
-	 Longitude_M_SpinBox.SetValue(s2);
-
-	 Longitude_S_NumericEdit.SetReal();
-	 Longitude_S_NumericEdit.SetPrecision( 2 );
-	 Longitude_S_NumericEdit.EnableFixedPrecision();
-	 Longitude_S_NumericEdit.SetRange( 0, 59.99 );
-	 Longitude_S_NumericEdit.label.Hide();
-	 Longitude_S_NumericEdit.edit.SetFixedWidth( editWidth2 );
-	 Longitude_S_NumericEdit.SetValue(s3);
-
-	 LongitudeIsWest_CheckBox.SetText( "West" );
-	 LongitudeIsWest_CheckBox.SetToolTip( "<p>When checked, numeric value refers to westward longitude (negative longitude).</p>" );
-	 LongitudeIsWest_CheckBox.SetChecked(sign<0);
-
-	 Longitude_Sizer.SetSpacing( 4 );
-	 Longitude_Sizer.Add( Longitude_Label );
-	 Longitude_Sizer.Add( Longitude_H_SpinBox );
-	 Longitude_Sizer.Add( Longitude_M_SpinBox );
-	 Longitude_Sizer.Add( Longitude_S_NumericEdit );
-	 Longitude_Sizer.Add( LongitudeIsWest_CheckBox );
-	 Longitude_Sizer.AddStretch();
-
-	 TelescopeAperture_NumericEdit.label.SetText("Telescope aperture");
-	 TelescopeAperture_NumericEdit.label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-	 TelescopeAperture_NumericEdit.label.SetToolTip("<p>Set telescope aperture (mm)</p>");
-	 TelescopeAperture_NumericEdit.label.SetFixedWidth( labelWidth1 );
-	 TelescopeAperture_NumericEdit.SetInteger();
-	 TelescopeAperture_NumericEdit.SetRange(10,10000);
-	 TelescopeAperture_NumericEdit.edit.SetFixedWidth( editWidth2 );
-	 TelescopeAperture_NumericEdit.SetValue(telescopeAperture);
-
-	 TelescopeAperture_Sizer.SetSpacing( 8 );
-	 TelescopeAperture_Sizer.SetMargin( 8 );
-	 TelescopeAperture_Sizer.Add(TelescopeAperture_NumericEdit);
-	 TelescopeAperture_Sizer.AddStretch();
-
-	 TelescopeFocalLength_NumericEdit.label.SetText("Telescope focal length");
-	 TelescopeFocalLength_NumericEdit.label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-	 TelescopeFocalLength_NumericEdit.label.SetToolTip("<p>Set telescope focal length (mm)</p>");
-	 TelescopeFocalLength_NumericEdit.label.SetFixedWidth( labelWidth1 );
-	 TelescopeFocalLength_NumericEdit.SetInteger();
-	 TelescopeFocalLength_NumericEdit.SetRange(100,10000);
-	 TelescopeFocalLength_NumericEdit.edit.SetFixedWidth( editWidth2 );
-	 TelescopeFocalLength_NumericEdit.SetValue(telescopeFocalLength);
-
-	 TelescopeFocalLength_Sizer.SetSpacing( 8 );
-	 TelescopeFocalLength_Sizer.SetMargin( 8 );
-	 TelescopeFocalLength_Sizer.Add(TelescopeFocalLength_NumericEdit);
-	 TelescopeFocalLength_Sizer.AddStretch();
-
-
-	 Global_Sizer.SetSpacing( 8 );
-	 Global_Sizer.SetMargin( 8 );
-	 Global_Sizer.Add(Latitude_Sizer);
-	 Global_Sizer.Add(Longitude_Sizer);
-	 Global_Sizer.Add( TelescopeAperture_Sizer );
-	 Global_Sizer.Add( TelescopeFocalLength_Sizer );
-
-	 addBaseControls();
- }
-
- void MountConfigDialog::sendUpdatedProperties() {
-	 double lat = SexagesimalToDecimal( LatitudeIsSouth_CheckBox.IsChecked() ? -1 : +1,
-			 Latitude_H_SpinBox.Value(), Latitude_M_SpinBox.Value(), Latitude_S_NumericEdit.Value() );
-
-	 INDIClient::TheClient()->SendNewPropertyItem( m_device, "GEOGRAPHIC_COORD", "INDI_NUMBER", "LAT", lat);
-
-	 double longitude = SexagesimalToDecimal( LongitudeIsWest_CheckBox.IsChecked() ? -1 : +1,
-			 Longitude_H_SpinBox.Value(), Longitude_M_SpinBox.Value(), Longitude_S_NumericEdit.Value() );
-
-	 INDIClient::TheClient()->SendNewPropertyItem( m_device, "GEOGRAPHIC_COORD", "INDI_NUMBER", "LONG", longitude);
-
-	 // sending telescope info in bulk request
-	 INDINewPropertyItem newPropertyItem(m_device, "TELESCOPE_INFO", "INDI_NUMBER");
-	 newPropertyItem.ElementValues << ElementValue("TELESCOPE_APERTURE",TelescopeAperture_NumericEdit.Value());
-	 newPropertyItem.ElementValues << ElementValue("TELESCOPE_FOCAL_LENGTH",TelescopeFocalLength_NumericEdit.Value());
-	 newPropertyItem.ElementValues << ElementValue("GUIDER_APERTURE",10);
-	 newPropertyItem.ElementValues << ElementValue("GUIDER_FOCAL_LENGTH",100);
-
-	 INDIClient::TheClient()->SendNewPropertyItem(newPropertyItem );
-
- }
-
-
-
+void AlignmentConfigDialog::e_Show( Control& )
+{
+   if ( m_firstTimeShown )
+   {
+      m_firstTimeShown = false;
+      SetMinWidth( RoundInt( 2.5*Font().Width( WindowTitle() ) ) );
+      AdjustToContents();
+      SetFixedSize();
+   }
+}
 
 // ----------------------------------------------------------------------------
 
-INDIMountInterface::INDIMountInterface() :
-   ProcessInterface(),
-   m_device()
+void AlignmentConfigDialog::e_Click( Button& sender, bool checked )
+{
+   if ( sender == Ok_Button )
+   {
+      m_interface.GUI->m_modelBothPierSides = ModelPierSide_CheckBox.IsChecked();
+      m_interface.GUI->m_alignmentConfigOffset = Offset_CheckBox.IsChecked();
+      m_interface.GUI->m_alignmentConfigCollimation = Collimation_CheckBox.IsChecked();
+      m_interface.GUI->m_alignmentConfigNonPerpendicular = NonPerpendicular_CheckBox.IsChecked();
+      m_interface.GUI->m_alignmentConfigPolarAxisDisp = PolarAxisDisplacement_CheckBox.IsChecked();
+      m_interface.GUI->m_alignmentConfigDecAxisFlexure = DeltaAxisFlexure_CheckBox.IsChecked();
+      m_interface.GUI->m_alignmentConfigTubeFlexure = TubeFlexure_CheckBox.IsChecked();
+      m_interface.GUI->m_alignmentConfigForkFlexure = ForkFlexure_CheckBox.IsChecked();
+      m_interface.GUI->m_alignmentLinear = Linear_CheckBox.IsChecked();
+      m_interface.GUI->m_alignmentQuadratic = Quadratic_CheckBox.IsChecked();
+      m_interface.GUI->m_alignmentModelIndex = AlignmentConfig_TabBox.CurrentPageIndex() + 1;
+      Ok();
+   }
+   else if ( sender == Cancel_Button )
+   {
+      Cancel();
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+void AlignmentConfigDialog::e_PageSelected( TabBox& sender, int tabIndex )
+{
+   if ( sender == AlignmentConfig_TabBox )
+   {
+      // ### Placeholder
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+MountConfigDialog::MountConfigDialog( const String& deviceName,
+                                      double geoLat, double geoLong,
+                                      double telescopeAperture, double telescopeFocalLength ) :
+   ConfigDialogBase( deviceName ),
+   m_device( deviceName )
+{
+   int emWidth = Font().Width( 'm' );
+   int editWidth1 = RoundInt( 4.25*emWidth );
+   int editWidth2 = RoundInt( 5.25*emWidth );
+
+   int sign, s1, s2;
+   double s3;
+
+   int labelWidth1 = Font().Width( "Geographic Longitude:" ) + emWidth;
+
+   Latitude_Label.SetText( "Geographic Latitude:" );
+   Latitude_Label.SetToolTip( "<p>Position of observatory: Geographic latitude (g:m:s)</p>" );
+   Latitude_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   Latitude_Label.SetFixedWidth( labelWidth1 );
+
+   DecimalToSexagesimal( sign, s1, s2, s3, geoLat );
+   Latitude_H_SpinBox.SetRange( 0, 90 );
+   Latitude_H_SpinBox.SetFixedWidth( editWidth1 );
+   Latitude_H_SpinBox.SetValue( Abs( s1 ) );
+
+   Latitude_M_SpinBox.SetRange( 0, 59 );
+   Latitude_M_SpinBox.SetFixedWidth( editWidth1 );
+   Latitude_M_SpinBox.SetValue( s2 );
+
+   Latitude_S_NumericEdit.SetReal();
+   Latitude_S_NumericEdit.SetPrecision( 3 );
+   Latitude_S_NumericEdit.EnableFixedPrecision();
+   Latitude_S_NumericEdit.SetRange( 0, 59.999 );
+   Latitude_S_NumericEdit.label.Hide();
+   Latitude_S_NumericEdit.edit.SetFixedWidth( editWidth2 );
+   Latitude_S_NumericEdit.SetValue( s3 );
+
+   LatitudeIsSouth_CheckBox.SetText( "South" );
+   LatitudeIsSouth_CheckBox.SetToolTip( "<p>When checked, latitude is negative (Southern hemisphere).</p>" );
+   LatitudeIsSouth_CheckBox.SetChecked( sign < 0 );
+
+   Latitude_Sizer.SetSpacing( 4 );
+   Latitude_Sizer.Add( Latitude_Label );
+   Latitude_Sizer.Add( Latitude_H_SpinBox );
+   Latitude_Sizer.Add( Latitude_M_SpinBox );
+   Latitude_Sizer.Add( Latitude_S_NumericEdit );
+   Latitude_Sizer.Add( LatitudeIsSouth_CheckBox );
+   Latitude_Sizer.AddStretch();
+
+   DecimalToSexagesimal( sign, s1, s2, s3, geoLong );
+   Longitude_Label.SetText( "Geographic Longitude:" );
+   Longitude_Label.SetToolTip( "<p>Position of observatory: Geographic longitude (g:m:s)</p></p>" );
+   Longitude_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   Longitude_Label.SetFixedWidth( labelWidth1 );
+
+   Longitude_H_SpinBox.SetRange( 0, 180 );
+   Longitude_H_SpinBox.SetFixedWidth( editWidth1 );
+   Longitude_H_SpinBox.SetValue( Abs( s1 ) );
+
+   Longitude_M_SpinBox.SetRange( 0, 59 );
+   Longitude_M_SpinBox.SetFixedWidth( editWidth1 );
+   Longitude_M_SpinBox.SetValue( s2 );
+
+   Longitude_S_NumericEdit.SetReal();
+   Longitude_S_NumericEdit.SetPrecision( 2 );
+   Longitude_S_NumericEdit.EnableFixedPrecision();
+   Longitude_S_NumericEdit.SetRange( 0, 59.99 );
+   Longitude_S_NumericEdit.label.Hide();
+   Longitude_S_NumericEdit.edit.SetFixedWidth( editWidth2 );
+   Longitude_S_NumericEdit.SetValue( s3 );
+
+   LongitudeIsWest_CheckBox.SetText( "West" );
+   LongitudeIsWest_CheckBox.SetToolTip( "<p>When checked, numeric value refers to western (negative) longitude.</p>" );
+   LongitudeIsWest_CheckBox.SetChecked(sign<0);
+
+   Longitude_Sizer.SetSpacing( 4 );
+   Longitude_Sizer.Add( Longitude_Label );
+   Longitude_Sizer.Add( Longitude_H_SpinBox );
+   Longitude_Sizer.Add( Longitude_M_SpinBox );
+   Longitude_Sizer.Add( Longitude_S_NumericEdit );
+   Longitude_Sizer.Add( LongitudeIsWest_CheckBox );
+   Longitude_Sizer.AddStretch();
+
+   TelescopeAperture_NumericEdit.label.SetText( "Telescope aperture:" );
+   TelescopeAperture_NumericEdit.label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   TelescopeAperture_NumericEdit.label.SetToolTip( "<p>Telescope's aperture in millimeters.</p>" );
+   TelescopeAperture_NumericEdit.label.SetFixedWidth( labelWidth1 );
+   TelescopeAperture_NumericEdit.SetInteger();
+   TelescopeAperture_NumericEdit.SetRange( 10, 10000 );
+   TelescopeAperture_NumericEdit.edit.SetFixedWidth( editWidth2 );
+   TelescopeAperture_NumericEdit.sizer.AddStretch();
+   TelescopeAperture_NumericEdit.SetValue( telescopeAperture );
+
+   TelescopeFocalLength_NumericEdit.label.SetText( "Telescope focal length:" );
+   TelescopeFocalLength_NumericEdit.label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   TelescopeFocalLength_NumericEdit.label.SetToolTip( "<p>Telescope's focal length in millimeters.</p> ");
+   TelescopeFocalLength_NumericEdit.label.SetFixedWidth( labelWidth1 );
+   TelescopeFocalLength_NumericEdit.SetInteger();
+   TelescopeFocalLength_NumericEdit.SetRange( 100, 10000 );
+   TelescopeFocalLength_NumericEdit.edit.SetFixedWidth( editWidth2 );
+   TelescopeFocalLength_NumericEdit.sizer.AddStretch();
+   TelescopeFocalLength_NumericEdit.SetValue( telescopeFocalLength );
+
+   Global_Sizer.SetSpacing( 8 );
+   Global_Sizer.SetMargin( 8 );
+   Global_Sizer.Add( Latitude_Sizer );
+   Global_Sizer.Add( Longitude_Sizer );
+   Global_Sizer.Add( TelescopeAperture_NumericEdit );
+   Global_Sizer.Add( TelescopeFocalLength_NumericEdit );
+
+   AddBaseControls();
+}
+
+// ----------------------------------------------------------------------------
+
+void MountConfigDialog::SendUpdatedProperties()
+{
+   double lat = SexagesimalToDecimal( LatitudeIsSouth_CheckBox.IsChecked() ? -1 : +1,
+         Latitude_H_SpinBox.Value(), Latitude_M_SpinBox.Value(), Latitude_S_NumericEdit.Value() );
+
+   INDIClient::TheClient()->SendNewPropertyItem( m_device, "GEOGRAPHIC_COORD", "INDI_NUMBER", "LAT", lat );
+
+   double longitude = SexagesimalToDecimal( LongitudeIsWest_CheckBox.IsChecked() ? -1 : +1,
+         Longitude_H_SpinBox.Value(), Longitude_M_SpinBox.Value(), Longitude_S_NumericEdit.Value() );
+
+   INDIClient::TheClient()->SendNewPropertyItem( m_device, "GEOGRAPHIC_COORD", "INDI_NUMBER", "LONG", longitude );
+
+   // sending telescope info in bulk request
+   INDINewPropertyItem newPropertyItem( m_device, "TELESCOPE_INFO", "INDI_NUMBER" );
+   newPropertyItem.ElementValues << ElementValue( "TELESCOPE_APERTURE", TelescopeAperture_NumericEdit.Value() );
+   newPropertyItem.ElementValues << ElementValue( "TELESCOPE_FOCAL_LENGTH", TelescopeFocalLength_NumericEdit.Value() );
+   newPropertyItem.ElementValues << ElementValue( "GUIDER_APERTURE", 10 );
+   newPropertyItem.ElementValues << ElementValue( "GUIDER_FOCAL_LENGTH", 100 );
+
+   INDIClient::TheClient()->SendNewPropertyItem( newPropertyItem );
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+INDIMountInterface::INDIMountInterface()
 {
    TheINDIMountInterface = this;
 }
 
+// ----------------------------------------------------------------------------
+
 INDIMountInterface::~INDIMountInterface()
 {
-   if ( m_searchDialog != nullptr )
-      delete m_searchDialog, m_searchDialog = nullptr;
    if ( GUI != nullptr )
       delete GUI, GUI = nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 IsoString INDIMountInterface::Id() const
 {
    return "INDIMount";
 }
 
+// ----------------------------------------------------------------------------
+
 MetaProcess* INDIMountInterface::Process() const
 {
    return TheINDIMountProcess;
 }
+
+// ----------------------------------------------------------------------------
 
 const char** INDIMountInterface::IconImageXPM() const
 {
    return nullptr; // ### TODO
 }
 
+// ----------------------------------------------------------------------------
+
 InterfaceFeatures INDIMountInterface::Features() const
 {
    return InterfaceFeature::DefaultGlobal;
 }
+
+// ----------------------------------------------------------------------------
 
 void INDIMountInterface::ResetInstance()
 {
    INDIMountInstance defaultInstance( TheINDIMountProcess );
    ImportProcess( defaultInstance );
 }
+
+// ----------------------------------------------------------------------------
 
 bool INDIMountInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
@@ -925,50 +1140,58 @@ bool INDIMountInterface::Launch( const MetaProcess& P, const ProcessImplementati
    return &P == TheINDIMountProcess;
 }
 
-void INDIMountInterface::GUIData::getAlignmentConfigParamter(uint32& configParam){
+// ----------------------------------------------------------------------------
 
-   configParam = 0;
-   if (m_modelBothPierSides) {
+uint32 INDIMountInterface::GUIData::AlignmentConfigParameter() const
+{
+   uint32 configParam = 0;
+
+   if ( m_modelBothPierSides )
       configParam |= 1 << 0; // set if modeling for each pier side is requested
+
+   if ( m_alignmentConfigOffset )
+      configParam |= 1 << 1; // offset
+
+   if ( m_alignmentConfigCollimation )
+      configParam |= 1 << 2; // collimation error
+
+   if ( m_alignmentConfigNonPerpendicular )
+      configParam |= 1 << 3; // non-perpendicular dec-ra axis error
+
+   if ( m_alignmentConfigPolarAxisDisp )
+   {
+      configParam |= 1 << 4; // polar-axis horizontal displacement
+      configParam |= 1 << 5; // polar-axis vertical displacement
    }
-	if (m_alignmentConfigOffset) {
-		configParam |= 1 << 1; // offset
-	}
-	if (m_alignmentConfigCollimation) {
-		configParam |= 1 << 2; // collimation error
-	}
-	if (m_alignmentConfigNonPerpendicular) {
-		configParam |= 1 << 3; // non-perpendicular dec-ra axis error
-	}
-	if (m_alignmentConfigPolarAxisDisp) {
-		configParam |= 1 << 4; // polar-axis horizontal displacement
-		configParam |= 1 << 5; // polar-axis vertical displacement
-	}
-	if (m_alignmentConfigTubeFlexure) {
-		configParam |= 1 << 6; // tube flexure
-	}
-	if (m_alignmentConfigForkFlexure) {
-		configParam |= 1 << 7; // fork flexure
-	}
-	if (m_alignmentConfigDecAxisFlexure){
-		configParam |= 1 << 8; // delta-axis flexure
-	}
-	if (m_alignmentLinear){
-		configParam |= 1 << 9; // linear terms
-	}
-	if (m_alignmentQuadratic){
-		configParam |= 1 << 10; // quadratic terms
-	}
 
+   if ( m_alignmentConfigTubeFlexure )
+      configParam |= 1 << 6; // tube flexure
 
+   if ( m_alignmentConfigForkFlexure )
+      configParam |= 1 << 7; // fork flexure
+
+   if ( m_alignmentConfigDecAxisFlexure )
+      configParam |= 1 << 8; // delta-axis flexure
+
+   if ( m_alignmentLinear )
+      configParam |= 1 << 9; // linear terms
+
+   if ( m_alignmentQuadratic )
+      configParam |= 1 << 10; // quadratic terms
+
+   return configParam;
 }
 
-int INDIMountInterface::getAlignmentMethod() const  {
-   if (GUI == nullptr) {
+// ----------------------------------------------------------------------------
+
+int INDIMountInterface::AlignmentMethod() const
+{
+   if ( GUI == nullptr )
       return IMCAlignmentMethod::Default;
-   }
    return GUI->m_alignmentModelIndex;
 }
+
+// ----------------------------------------------------------------------------
 
 ProcessImplementation* INDIMountInterface::NewProcess() const
 {
@@ -977,10 +1200,10 @@ ProcessImplementation* INDIMountInterface::NewProcess() const
    instance->p_slewRate = GUI->SlewSpeed_ComboBox.CurrentItem();
 
    instance->p_targetRA = SexagesimalToDecimal( 0,
-                              GUI->TargetRA_H_SpinBox.Value(), GUI->TargetRA_M_SpinBox.Value(), GUI->TargetRA_S_NumericEdit.Value() );
+         GUI->TargetRA_H_SpinBox.Value(), GUI->TargetRA_M_SpinBox.Value(), GUI->TargetRA_S_NumericEdit.Value() );
 
    instance->p_targetDec = SexagesimalToDecimal( GUI->MountTargetDECIsSouth_CheckBox.IsChecked() ? -1 : +1,
-                              GUI->TargetDec_H_SpinBox.Value(), GUI->TargetDec_M_SpinBox.Value(), GUI->TargetDec_S_NumericEdit.Value() );
+         GUI->TargetDec_H_SpinBox.Value(), GUI->TargetDec_M_SpinBox.Value(), GUI->TargetDec_S_NumericEdit.Value() );
 
    instance->p_computeApparentPosition = GUI->MountComputeApparentPosition_CheckBox.IsChecked();
 
@@ -988,26 +1211,25 @@ ProcessImplementation* INDIMountInterface::NewProcess() const
 
    instance->p_enableAlignmentCorrection =  GUI->MountAlignmentCorrection_CheckBox.IsChecked();
 
-
-
-   switch(instance->p_alignmentMethod){
-   	case IMCAlignmentMethod::AnalyticalModel:
-   	{
-   		GUI->getAlignmentConfigParamter(instance->p_alignmentConfig);
-   	}
+   switch( instance->p_alignmentMethod )
+   {
+   case IMCAlignmentMethod::AnalyticalModel:
+      instance->p_alignmentConfig = GUI->AlignmentConfigParameter();
+      break;
+      // ### More alignment methods must be inserted here.
+   default:
+      break;
    }
 
    instance->p_alignmentFile = GUI->AlignmentFile_Edit.Text();
-
-
    instance->GetCurrentCoordinates();
-
    instance->p_pierSide = m_pierSide;
-
    instance->o_geographicLatitude = m_geoLatitude;
 
    return instance;
 }
+
+// ----------------------------------------------------------------------------
 
 bool INDIMountInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
@@ -1017,10 +1239,14 @@ bool INDIMountInterface::ValidateProcess( const ProcessImplementation& p, String
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool INDIMountInterface::RequiresInstanceValidation() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool INDIMountInterface::ImportProcess( const ProcessImplementation& p )
 {
@@ -1080,15 +1306,30 @@ void INDIMountInterface::UpdateControls()
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
 {
-   String infoLabelStyleSheet =
+   const String infoLabelStyleSheet =
       "QLabel {"
          "font-family: DejaVu Sans Mono, Monospace;"
       "}";
 
-   String moveButtonStyleSheet = w.ScaledStyleSheet(
+   const String buttonStyleSheet1 =
+      "QPushButton {"
+         "text-align: left;"
+         "min-width: 6em;"
+         "max-width: 6em;"
+      "}";
+
+   const String buttonStyleSheet2 =
+      "QPushButton {"
+         "text-align: left;"
+         "min-width: 8em;"
+         "max-width: 8em;"
+      "}";
+
+   const String moveButtonStyleSheet = w.ScaledStyleSheet(
       "QToolButton, QToolButton:hover, QToolButton:pressed {"
          "border-image: none;"
          "border: 1px solid gray;"
@@ -1099,6 +1340,7 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    int labelWidth1 = w.Font().Width( "Local Sidereal Time:" ) + emWidth;
    int editWidth1 = RoundInt( 4.25*emWidth );
    int editWidth2 = RoundInt( 5.25*emWidth );
+   int ui4 = w.LogicalPixelsToPhysical( 4 );
 
    ServerParameters_SectionBar.SetTitle( "Device Properties" );
    ServerParameters_SectionBar.SetSection( ServerParameters_Control );
@@ -1113,13 +1355,12 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    MountDeviceConfig_ToolButton.SetToolTip("<p>Configure INDI mount device</p>");
    MountDeviceConfig_ToolButton.OnClick((Button::click_event_handler) &INDIMountInterface::e_Click, w);
 
-   MountDevice_Combo.OnItemSelected( (ComboBox::item_event_handler)& INDIMountInterface::e_ItemSelected, w );
-
+   MountDevice_Combo.OnItemSelected( (ComboBox::item_event_handler)&INDIMountInterface::e_ItemSelected, w );
 
    MountDevice_Sizer.SetSpacing( 4 );
    MountDevice_Sizer.Add( MountDevice_Label );
    MountDevice_Sizer.Add( MountDevice_Combo, 100 );
-   MountDevice_Sizer.Add( MountDeviceConfig_ToolButton);
+   MountDevice_Sizer.Add( MountDeviceConfig_ToolButton );
 
    LST_Label.SetText( "Local Sidereal Time:" );
    LST_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
@@ -1196,77 +1437,75 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    MountAlignment_SectionBar.SetSection(MountAlignment_Control);
 
    const char* alignmentfileToolTipText =
-      		   "<p>File with metadata of a telescope pointing model. </p>";
+      "<p>Path to a file with metadata for a telescope pointing model.</p>";
 
-   AlignmentFile_Label.SetText("Pointing model:");
-   AlignmentFile_Label.SetToolTip(alignmentfileToolTipText);
-   AlignmentFile_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
-   AlignmentFile_Label.SetFixedWidth(labelWidth1);
+   AlignmentFile_Label.SetText( "Pointing model:" );
+   AlignmentFile_Label.SetToolTip( alignmentfileToolTipText );
+   AlignmentFile_Label.SetTextAlignment( TextAlign::Right | TextAlign::VertCenter );
+   AlignmentFile_Label.SetFixedWidth( labelWidth1 );
 
-   AlignmentFile_Edit.SetToolTip(alignmentfileToolTipText);
+   AlignmentFile_Edit.SetToolTip( alignmentfileToolTipText );
    AlignmentFile_Edit.SetReadOnly();
 
-   AlignmentFile_ToolButton.SetIcon(w.ScaledResource(":/icons/select-file.png"));
-   AlignmentFile_ToolButton.SetScaledFixedSize(22, 22);
-   AlignmentFile_ToolButton.SetToolTip("<p>Select the ponting model file:</p>");
-   AlignmentFile_ToolButton.OnClick((Button::click_event_handler) &INDIMountInterface::e_Click, w);
+   AlignmentFile_ToolButton.SetIcon( w.ScaledResource( ":/icons/select-file.png" ) );
+   AlignmentFile_ToolButton.SetScaledFixedSize( 22, 22 );
+   AlignmentFile_ToolButton.SetToolTip( "<p>Select the ponting model file:</p>" );
+   AlignmentFile_ToolButton.OnClick( (Button::click_event_handler) &INDIMountInterface::e_Click, w );
 
-   MountAlignmentFile_Sizer.SetSpacing(8);
-   MountAlignmentFile_Sizer.Add(AlignmentFile_Label);
-   MountAlignmentFile_Sizer.Add(AlignmentFile_Edit, 100);
-   MountAlignmentFile_Sizer.AddSpacing(4);
-   MountAlignmentFile_Sizer.Add(AlignmentFile_ToolButton);
-
-   const char* syncdatafileToolTipText =
-         		   "<p>Shows the table of sync data points.</p>";
-
-
-   SyncDataList_Button.SetText("Syncdata List");
-   SyncDataList_Button.SetIcon( w.ScaledResource( ":/icons/list.png" ) );
-   SyncDataList_Button.SetToolTip(syncdatafileToolTipText);
-   SyncDataList_Button.SetStyleSheet("QPushButton { text-align: left; }");
-   SyncDataList_Button.OnClick((Button::click_event_handler) &INDIMountInterface::e_Click, w);
+   MountAlignmentFile_Sizer.SetSpacing( 4 );
+   MountAlignmentFile_Sizer.Add( AlignmentFile_Label );
+   MountAlignmentFile_Sizer.Add( AlignmentFile_Edit, 100 );
+   MountAlignmentFile_Sizer.AddSpacing( 4 );
+   MountAlignmentFile_Sizer.Add( AlignmentFile_ToolButton );
 
    const char* alignmentConfigToolTipText = "<p>Configure and create a new pointing model.</p>";
 
-   MountAligmentModelConfig_Button.SetText("Configure");
-   MountAligmentModelConfig_Button.SetIcon(w.ScaledResource(":/icons/wrench.png"));
-   MountAligmentModelConfig_Button.SetToolTip(alignmentConfigToolTipText);
-   MountAligmentModelConfig_Button.SetStyleSheet("QPushButton { text-align: left; }");
-   MountAligmentModelConfig_Button.OnClick((Button::click_event_handler) &INDIMountInterface::e_Click, w);
+   MountAligmentModelConfig_Button.SetText( "Configure" );
+   MountAligmentModelConfig_Button.SetIcon( w.ScaledResource(":/icons/wrench.png" ) );
+   MountAligmentModelConfig_Button.SetToolTip( alignmentConfigToolTipText );
+   MountAligmentModelConfig_Button.SetStyleSheet( buttonStyleSheet1 );
+   MountAligmentModelConfig_Button.OnClick( (Button::click_event_handler) &INDIMountInterface::e_Click, w );
 
-   MountAligmentModelFit_Button.SetText("Create Model");
+   MountAligmentModelFit_Button.SetText( "Create Model" );
    MountAligmentModelFit_Button.SetIcon( w.ScaledResource( ":/icons/gear.png" ) );
-   MountAligmentModelFit_Button.SetToolTip(alignmentConfigToolTipText);
-   MountAligmentModelFit_Button.SetStyleSheet("QPushButton { text-align: left; }");
+   MountAligmentModelFit_Button.SetToolTip( alignmentConfigToolTipText );
+   MountAligmentModelFit_Button.SetStyleSheet( buttonStyleSheet2 );
    MountAligmentModelFit_Button.Disable();
-   MountAligmentModelFit_Button.OnClick((Button::click_event_handler) &INDIMountInterface::e_Click, w);
+   MountAligmentModelFit_Button.OnClick( (Button::click_event_handler) &INDIMountInterface::e_Click, w );
 
-   MountAlignmentPlotResiduals_CheckBox.SetText("plot residuals");
-   MountAlignmentPlotResiduals_CheckBox.SetToolTip("<p>plot residuals</p>");
+   const char* syncdatafileToolTipText = "<p>Shows the table of sync data points.</p>";
 
-   MountAlignmentCorrection_CheckBox.SetText( "Apply Pointing correction" );
-   MountAlignmentCorrection_CheckBox.SetToolTip( "<p>Compute and apply telescope pointing correction to target coordinates.</p>" );
-   MountAlignmentCorrection_Sizer.SetSpacing(8);
-   MountAlignmentCorrection_Sizer.AddSpacing( labelWidth1 + 4 );
+   SyncDataList_Button.SetText( "Data List" );
+   SyncDataList_Button.SetIcon( w.ScaledResource( ":/icons/list.png" ) );
+   SyncDataList_Button.SetToolTip( syncdatafileToolTipText );
+   SyncDataList_Button.SetStyleSheet( buttonStyleSheet1 );
+   SyncDataList_Button.OnClick( (Button::click_event_handler) &INDIMountInterface::e_Click, w );
+
+   MountAlignmentConfig_Sizer.SetSpacing( 8 );
+   MountAlignmentConfig_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
+   MountAlignmentConfig_Sizer.Add( MountAligmentModelConfig_Button );
+   MountAlignmentConfig_Sizer.Add( MountAligmentModelFit_Button );
+   MountAlignmentConfig_Sizer.Add( SyncDataList_Button );
+   MountAlignmentConfig_Sizer.AddStretch();
+
+   MountAlignmentCorrection_CheckBox.SetText( "Apply pointing corrections" );
+   MountAlignmentCorrection_CheckBox.SetToolTip( "<p>Compute and apply telescope pointing corrections to target coordinates.</p>" );
+
+   MountAlignmentPlotResiduals_CheckBox.SetText( "Plot residuals" );
+   //MountAlignmentPlotResiduals_CheckBox.SetToolTip("<p>Plot residuals.</p>");
+
+   MountAlignmentCorrection_Sizer.SetSpacing( 8 );
+   MountAlignmentCorrection_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    MountAlignmentCorrection_Sizer.Add( MountAlignmentCorrection_CheckBox );
    MountAlignmentCorrection_Sizer.Add( MountAlignmentPlotResiduals_CheckBox );
    MountAlignmentCorrection_Sizer.AddStretch();
-
-
-   MountAlignmentConfig_Sizer.SetSpacing(8);
-   MountAlignmentConfig_Sizer.AddSpacing( labelWidth1 + 4 );
-   MountAlignmentConfig_Sizer.Add(MountAligmentModelConfig_Button);
-   MountAlignmentConfig_Sizer.Add(MountAligmentModelFit_Button);
-   MountAlignmentConfig_Sizer.Add(SyncDataList_Button);
-   MountAlignmentConfig_Sizer.AddStretch();
 
    MountAlignment_Sizer.SetSpacing( 8 );
    MountAlignment_Sizer.Add( MountAlignmentFile_Sizer );
    MountAlignment_Sizer.Add( MountAlignmentConfig_Sizer );
    MountAlignment_Sizer.Add( MountAlignmentCorrection_Sizer );
 
-   MountAlignment_Control.SetSizer(MountAlignment_Sizer);
+   MountAlignment_Control.SetSizer( MountAlignment_Sizer );
 
    //
 
@@ -1274,7 +1513,7 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    MountGoTo_SectionBar.SetSection( MountGoTo_Control );
 
    TargetRA_Label.SetText( "Right Ascension:" );
-   TargetRA_Label.SetToolTip( "<p>Target object position in equatorial coordinates: Right Ascension (h:m:s)</p>" );
+   TargetRA_Label.SetToolTip( "<p>Target object position in equatorial coordinates: Right Ascension coordinate (h:m:s)</p>" );
    TargetRA_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    TargetRA_Label.SetFixedWidth( labelWidth1 );
 
@@ -1299,7 +1538,7 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    MountTargetRA_Sizer.AddStretch();
 
    TargetDec_Label.SetText( "Declination:" );
-   TargetDec_Label.SetToolTip( "<p>Target object position in equatorial coordinates: Declination (d:m:s)</p>" );
+   TargetDec_Label.SetToolTip( "<p>Target object position in equatorial coordinates: Declination coordinate (d:m:s)</p>" );
    TargetDec_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    TargetDec_Label.SetFixedWidth( labelWidth1 );
 
@@ -1327,38 +1566,54 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    MountTargetDec_Sizer.Add( MountTargetDECIsSouth_CheckBox );
    MountTargetDec_Sizer.AddStretch();
 
-   MountSearch_Button.SetText( "Search" );
-   MountSearch_Button.SetIcon( w.ScaledResource( ":/icons/find.png" ) );
-   MountSearch_Button.SetStyleSheet( "QPushButton { text-align: left; }" );
-   MountSearch_Button.SetToolTip( "<p>Open the Online Coordinate Search dialog.</p>" );
-   MountSearch_Button.OnClick( (Button::click_event_handler)&INDIMountInterface::e_Click, w );
-
    MountComputeApparentPosition_CheckBox.SetText( "Equinox J2000.0" );
-   MountComputeApparentPosition_CheckBox.SetToolTip( "<p>Check if manually entered coordinates refer to J2000.0 equinox.</p>" );
+   MountComputeApparentPosition_CheckBox.SetToolTip( "<p>Check this option if manually entered coordinates are "
+      "referred to the mean equator and equinox of J2000.0; for example, if you have entered ICRS reference data "
+      "taken from a star catalog.</p>"
+      "<p>If this option is disabled coordinates are assumed to be apparent, that is, referred to the true equator "
+      "and equinox of date.</p>" );
    MountComputeApparentPosition_Sizer.AddSpacing( labelWidth1 + 4 );
    MountComputeApparentPosition_Sizer.Add( MountComputeApparentPosition_CheckBox );
    MountComputeApparentPosition_Sizer.AddStretch();
 
+   MountSearch_Button.SetText( "Search" );
+   MountSearch_Button.SetIcon( w.ScaledResource( ":/icons/find.png" ) );
+   MountSearch_Button.SetStyleSheet( buttonStyleSheet1 );
+   MountSearch_Button.SetToolTip( "<p>Open the Online Coordinate Search dialog.</p>" );
+   MountSearch_Button.OnClick( (Button::click_event_handler)&INDIMountInterface::e_Click, w );
+
+   MountPlanets_Button.SetText( "Planets" );
+   MountPlanets_Button.SetIcon( w.ScaledResource( ":/planets/saturn.png" ) );
+   MountPlanets_Button.SetStyleSheet( buttonStyleSheet1 );
+   MountPlanets_Button.SetToolTip( "<p>Open the Planet Coordinates dialog.</p>" );
+   MountPlanets_Button.OnClick( (Button::click_event_handler)&INDIMountInterface::e_Click, w );
+
+   MountAsteroids_Button.SetText( "Asteroids" );
+   MountAsteroids_Button.SetIcon( w.ScaledResource( ":/planets/asteroid.png" ) );
+   MountAsteroids_Button.SetStyleSheet( buttonStyleSheet1 );
+   MountAsteroids_Button.SetToolTip( "<p>Open the Asteroid Coordinates dialog.</p>" );
+   MountAsteroids_Button.OnClick( (Button::click_event_handler)&INDIMountInterface::e_Click, w );
+
    MountSearch_Sizer.SetSpacing( 8 );
    MountSearch_Sizer.AddSpacing( labelWidth1 + 4 );
    MountSearch_Sizer.Add( MountSearch_Button );
+   MountSearch_Sizer.Add( MountPlanets_Button );
+   MountSearch_Sizer.Add( MountAsteroids_Button );
    MountSearch_Sizer.AddStretch();
-
-
 
    MountGoToStart_Button.SetText( "GoTo" );
    MountGoToStart_Button.SetIcon( w.ScaledResource( ":/icons/play.png" ) );
-   MountGoToStart_Button.SetStyleSheet( "QPushButton { text-align: left; }" );
+   MountGoToStart_Button.SetStyleSheet( buttonStyleSheet1 );
    MountGoToStart_Button.OnClick( (Button::click_event_handler)&INDIMountInterface::e_Click, w );
 
    MountSync_Button.SetText( "Sync" );
    MountSync_Button.SetIcon( w.ScaledResource( ":/icons/track.png" ) );
-   MountSync_Button.SetStyleSheet( "QPushButton { text-align: left; }" );
+   MountSync_Button.SetStyleSheet( buttonStyleSheet1 );
    MountSync_Button.OnClick( (Button::click_event_handler)&INDIMountInterface::e_Click, w );
 
    MountPark_Button.SetText( "Park" );
    MountPark_Button.SetIcon( w.ScaledResource( ":/icons/move-center.png" ) );
-   MountPark_Button.SetStyleSheet( "QPushButton { text-align: left; }" );
+   MountPark_Button.SetStyleSheet( buttonStyleSheet1 );
    MountPark_Button.OnClick( (Button::click_event_handler)&INDIMountInterface::e_Click, w );
 
    MountGoToStart_Sizer.SetSpacing( 8 );
@@ -1370,7 +1625,7 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
 
    MountGoToCancel_Button.SetText( "Cancel" );
    MountGoToCancel_Button.SetIcon( w.ScaledResource( ":/icons/cancel.png" ) );
-   MountGoToCancel_Button.SetStyleSheet( "QPushButton { text-align: left; }" );
+   MountGoToCancel_Button.SetStyleSheet( buttonStyleSheet1 );
    MountGoToCancel_Button.OnClick( (Button::click_event_handler)&INDIMountInterface::e_Click, w );
    MountGoToCancel_Button.Disable();
 
@@ -1390,7 +1645,7 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    MountGoTo_Sizer.Add( MountGoToInfo_Label );
 
    MountGoTo_Control.SetSizer( MountGoTo_Sizer );
-	//
+   //
 
    Slew_SectionBar.SetTitle( "Slew" );
    Slew_SectionBar.SetSection( Slew_Control );
@@ -1538,6 +1793,8 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    UpdateDeviceProperties_Timer.OnTimer( (Timer::timer_event_handler)&INDIMountInterface::e_Timer, w );
 }
 
+// ----------------------------------------------------------------------------
+
 void INDIMountInterface::e_Timer( Timer& sender )
 {
    if ( sender == GUI->UpdateDeviceList_Timer )
@@ -1598,7 +1855,7 @@ __device_found:
       if ( indi->GetPropertyItem( m_device, "EQUATORIAL_EOD_COORD", "RA", mountProp, false/*formatted*/ ) )
       {
          GUI->RA_Value_Label.SetText( String::ToSexagesimal( mountProp.PropertyValue.ToDouble(),
-                                 SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 3/*width*/ ) ) );
+                  SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 3/*width*/, ' '/*separator*/ ) ) );
          coord_ra = mountProp.PropertyValue.ToDouble();
       }
       else
@@ -1606,7 +1863,7 @@ __device_found:
 
       if ( indi->GetPropertyItem( m_device, "EQUATORIAL_EOD_COORD", "DEC", mountProp, false/*formatted*/ ) )
          GUI->Dec_Value_Label.SetText( String::ToSexagesimal( mountProp.PropertyValue.ToDouble(),
-                                 SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 3/*width*/ ) ) );
+                  SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 3/*width*/, ' '/*separator*/ ) ) );
       else
          GUI->Dec_Value_Label.Clear();
 
@@ -1618,11 +1875,11 @@ __device_found:
                m_pierSide = i;
                break;
             }
-         else
+            else
             {
                // pier side fallback
                // If the INDI mount device does not support the TELESCOPE_PIER_SIDE property, compute the pierside from hour angle
-               double hourAngle = AlignmentModel::rangeShiftHourAngle(time_lst - coord_ra);
+               double hourAngle = AlignmentModel::RangeShiftHourAngle(time_lst - coord_ra);
                m_pierSide = hourAngle <= 0 ? IMCPierSide::West : IMCPierSide::East;
             }
 
@@ -1653,27 +1910,30 @@ __device_found:
       GUI->SlewSpeed_ComboBox.Enable( foundSlewRate );
 
       if ( indi->GetPropertyItem( m_device, "GEOGRAPHIC_COORD", "LAT", mountProp, false/*formatted*/ ) )
-    	  m_geoLatitude =  mountProp.PropertyValue.ToDouble();
+         m_geoLatitude = mountProp.PropertyValue.ToDouble();
       else
-    	  m_geoLatitude = 0;
+         m_geoLatitude = 0;
 
       if ( indi->GetPropertyItem( m_device, "GEOGRAPHIC_COORD", "LONG", mountProp, false/*formatted*/ ) )
-    	  m_geoLongitude = mountProp.PropertyValue.ToDouble();
+         m_geoLongitude = mountProp.PropertyValue.ToDouble();
       else
-    	  m_geoLongitude = 0;
+         m_geoLongitude = 0;
 
       if ( indi->GetPropertyItem( m_device, "TELESCOPE_INFO", "TELESCOPE_APERTURE", mountProp, false/*formatted*/ ) )
-    	  m_telescopeAperture =  mountProp.PropertyValue.ToDouble();
+         m_telescopeAperture = mountProp.PropertyValue.ToDouble();
       else
-    	  m_telescopeAperture = 0;
+         m_telescopeAperture = 0;
 
       if ( indi->GetPropertyItem( m_device, "TELESCOPE_INFO", "TELESCOPE_FOCAL_LENGTH", mountProp, false/*formatted*/ ) )
-    	  m_telescopeFocalLength = mountProp.PropertyValue.ToDouble();
+         m_telescopeFocalLength = mountProp.PropertyValue.ToDouble();
       else
-    	  m_telescopeFocalLength = 0;
+         m_telescopeFocalLength = 0;
 
    }
 }
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 class INDIMountInterfaceExecution : public AbstractINDIMountExecution
 {
@@ -1682,9 +1942,7 @@ public:
    INDIMountInterfaceExecution( INDIMountInterface* iface ) :
       AbstractINDIMountExecution( *dynamic_cast<INDIMountInstance*>( iface->NewProcess() ) ),
       m_iface( iface ),
-      m_instanceAuto( &m_instance ),
-      m_abortRequested( false ),
-      m_command( IMCCommand::Default )
+      m_instanceAuto( &m_instance )
    {
    }
 
@@ -1695,10 +1953,10 @@ public:
 
 private:
 
-   INDIMountInterface*            m_iface;
+   INDIMountInterface*            m_iface = nullptr;
    AutoPointer<INDIMountInstance> m_instanceAuto;
-   bool                           m_abortRequested;
-   pcl_enum                       m_command;
+   bool                           m_abortRequested = false;
+   pcl_enum                       m_command = IMCCommand::Default;
 
    virtual void StartMountEvent( double targetRA, double currentRA, double targetDec, double currentDec, pcl_enum command )
    {
@@ -1712,6 +1970,8 @@ private:
       m_iface->GUI->TargetDec_S_NumericEdit.Disable();
       m_iface->GUI->MountTargetDECIsSouth_CheckBox.Disable();
       m_iface->GUI->MountSearch_Button.Disable();
+      m_iface->GUI->MountPlanets_Button.Disable();
+      m_iface->GUI->MountAsteroids_Button.Disable();
       m_iface->GUI->SlewLeft_Control.Disable();
       m_iface->GUI->MountGoToStart_Button.Disable();
       m_iface->GUI->MountSync_Button.Disable();
@@ -1737,7 +1997,7 @@ private:
       {
       case IMCCommand::GoTo:
          m_iface->GUI->MountGoToInfo_Label.SetText(
-              "Slewing: dRA = "
+            "Slewing: dRA = "
             + String::ToSexagesimal( targetRA - currentRA,
                            SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, true/*sign*/ ) )
             + ", dDec = "
@@ -1771,6 +2031,8 @@ private:
       m_iface->GUI->TargetDec_S_NumericEdit.Enable();
       m_iface->GUI->MountTargetDECIsSouth_CheckBox.Enable();
       m_iface->GUI->MountSearch_Button.Enable();
+      m_iface->GUI->MountPlanets_Button.Enable();
+      m_iface->GUI->MountAsteroids_Button.Enable();
       m_iface->GUI->SlewLeft_Control.Enable();
       m_iface->GUI->MountGoToStart_Button.Enable();
       m_iface->GUI->MountSync_Button.Enable();
@@ -1799,6 +2061,8 @@ private:
    }
 };
 
+// ----------------------------------------------------------------------------
+
 void INDIMountInterface::e_Click( Button& sender, bool checked )
 {
    if ( !INDIClient::HasClient() )
@@ -1823,26 +2087,28 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
    }
    else if ( sender == GUI->MountSearch_Button )
    {
-	   // FIXME - memory leak?
-      if ( m_searchDialog == nullptr )
+      if ( m_searchDialog.IsNull() )
          m_searchDialog = new CoordinateSearchDialog;
       if ( m_searchDialog->Execute() )
          if ( m_searchDialog->HasValidCoordinates() )
          {
-            time_t t0 = ::time( 0 );
-            const tm* t = ::gmtime( &t0 );
-            double jd = ComplexTimeToJD( t->tm_year+1900, t->tm_mon+1, t->tm_mday, (t->tm_hour + (t->tm_min + t->tm_sec/60.0)/60.0)/24.0 );
-            double ra = Rad( m_searchDialog->RA() );
-            double dec = Rad( m_searchDialog->Dec() );
-            ApparentPosition( jd ).Apply( ra, dec, m_searchDialog->MuRA(), m_searchDialog->MuDec() );
+            StarPosition S( m_searchDialog->RA(), m_searchDialog->Dec(),
+                            m_searchDialog->MuRA(), m_searchDialog->MuDec(),
+                            m_searchDialog->Parallax(), m_searchDialog->RadialVelocity() );
+            pcl::Position P( TimePoint::Now(), "UTC" );
+            Vector u3 = P.Apparent( S );
+            double alpha, delta;
+            u3.ToSpherical2Pi( alpha, delta );
+            alpha = Deg( alpha )/15;
+            delta = Deg( delta );
 
             int sign, s1, s2; double s3;
-            DecimalToSexagesimal( sign, s1, s2, s3, Deg( ra )/15 );
+            DecimalToSexagesimal( sign, s1, s2, s3, alpha );
             GUI->TargetRA_H_SpinBox.SetValue( s1 );
             GUI->TargetRA_M_SpinBox.SetValue( s2 );
             GUI->TargetRA_S_NumericEdit.SetValue( s3 );
 
-            DecimalToSexagesimal( sign, s1, s2, s3, Deg( dec ) );
+            DecimalToSexagesimal( sign, s1, s2, s3, delta );
             GUI->TargetDec_H_SpinBox.SetValue( s1 );
             GUI->TargetDec_M_SpinBox.SetValue( s2 );
             GUI->TargetDec_S_NumericEdit.SetValue( s3 );
@@ -1854,68 +2120,120 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
             GUI->MountComputeApparentPosition_CheckBox.SetChecked( false );
          }
    }
+   else if ( sender == GUI->MountPlanets_Button )
+   {
+      if ( m_planetDialog.IsNull() )
+         m_planetDialog = new PlanetSearchDialog;
+      if ( m_planetDialog->Execute() )
+      {
+            int sign, s1, s2; double s3;
+            DecimalToSexagesimal( sign, s1, s2, s3, m_planetDialog->RA() );
+            GUI->TargetRA_H_SpinBox.SetValue( s1 );
+            GUI->TargetRA_M_SpinBox.SetValue( s2 );
+            GUI->TargetRA_S_NumericEdit.SetValue( s3 );
+
+            DecimalToSexagesimal( sign, s1, s2, s3, m_planetDialog->Dec() );
+            GUI->TargetDec_H_SpinBox.SetValue( s1 );
+            GUI->TargetDec_M_SpinBox.SetValue( s2 );
+            GUI->TargetDec_S_NumericEdit.SetValue( s3 );
+            GUI->MountTargetDECIsSouth_CheckBox.SetChecked( sign < 0 );
+
+            if ( m_planetDialog->GoToTarget() )
+               INDIMountInterfaceExecution( this ).Perform( IMCCommand::GoTo );
+
+            GUI->MountComputeApparentPosition_CheckBox.SetChecked( false );
+      }
+   }
+   else if ( sender == GUI->MountAsteroids_Button )
+   {
+      if ( m_asteroidDialog.IsNull() )
+         m_asteroidDialog = new AsteroidSearchDialog;
+      if ( m_asteroidDialog->Execute() )
+      {
+            int sign, s1, s2; double s3;
+            DecimalToSexagesimal( sign, s1, s2, s3, m_asteroidDialog->RA() );
+            GUI->TargetRA_H_SpinBox.SetValue( s1 );
+            GUI->TargetRA_M_SpinBox.SetValue( s2 );
+            GUI->TargetRA_S_NumericEdit.SetValue( s3 );
+
+            DecimalToSexagesimal( sign, s1, s2, s3, m_asteroidDialog->Dec() );
+            GUI->TargetDec_H_SpinBox.SetValue( s1 );
+            GUI->TargetDec_M_SpinBox.SetValue( s2 );
+            GUI->TargetDec_S_NumericEdit.SetValue( s3 );
+            GUI->MountTargetDECIsSouth_CheckBox.SetChecked( sign < 0 );
+
+            if ( m_asteroidDialog->GoToTarget() )
+               INDIMountInterfaceExecution( this ).Perform( IMCCommand::GoTo );
+
+            GUI->MountComputeApparentPosition_CheckBox.SetChecked( false );
+      }
+   }
    else if ( sender == GUI->SlewStop_Button )
    {
       INDIClient::TheClient()->MaybeSendNewPropertyItem( m_device, "TELESCOPE_ABORT_MOTION", "INDI_SWITCH", "ABORT", "ON", true/*async*/ );
    }
    else if ( sender == GUI->AlignmentFile_ToolButton)
    {
-	   SaveFileDialog f;
-	   FileFilter filter;
-	   filter.AddExtension("xtpm");
-	   f.SetFilter(filter);
-	   f.SetCaption( "INDIMount: Select Alignment File" );
-	   if ( f.Execute() )
-		   GUI->AlignmentFile_Edit.SetText( f.FileName() );
+      SaveFileDialog f;
+      FileFilter filter;
+      filter.AddExtension( "xtpm" );
+      f.SetFilter( filter );
+      f.SetCaption( "INDIMount: Select Alignment File" );
+      if ( f.Execute() )
+         GUI->AlignmentFile_Edit.SetText( f.FileName() );
 
-   } else if ( sender == GUI->MountAligmentModelFit_Button)
+   }
+   else if ( sender == GUI->MountAligmentModelFit_Button )
    {
-	   INDIMountInterfaceExecution( this ).Perform( IMCCommand::FitPointingModel );
+      INDIMountInterfaceExecution( this ).Perform( IMCCommand::FitPointingModel );
 
-	   if (GUI->MountAlignmentPlotResiduals_CheckBox.IsChecked()){
-		   AutoPointer<AlignmentModel> aModel = nullptr;
-         uint32 alignmentConfig = 0;
-		   GUI->getAlignmentConfigParamter(alignmentConfig);
-		   switch (GUI->m_alignmentModelIndex){
-		   case IMCAlignmentMethod::AnalyticalModel:
-			   aModel = GeneralAnalyticalPointingModel::create(m_geoLatitude, alignmentConfig, GUI->m_modelBothPierSides);
-			   break;
-		   default:
-			   throw Error( "Internal error: AbstractINDIMountInterface: Unknown Pointing Model.");
-		   }
+      if ( GUI->MountAlignmentPlotResiduals_CheckBox.IsChecked() )
+      {
+         AutoPointer<AlignmentModel> aModel;
+         uint32 alignmentConfig = GUI->AlignmentConfigParameter();
+         switch ( GUI->m_alignmentModelIndex )
+         {
+         case IMCAlignmentMethod::AnalyticalModel:
+            aModel = GeneralAnalyticalPointingModel::Create( m_geoLatitude, alignmentConfig, GUI->m_modelBothPierSides );
+            break;
+         default:
+            throw Error( "Internal error: AbstractINDIMountInterface: Unknown Pointing Model.");
+         }
 
-		   aModel->readObject(GUI->AlignmentFile_Edit.Text());
-		   plotAlignemtResiduals(aModel.Ptr());
-	   }
+         aModel->ReadObject( GUI->AlignmentFile_Edit.Text().Trimmed() );
+         plotAlignemtResiduals( aModel.Ptr() );
+      }
    }
-   else if ( sender == GUI->SyncDataList_Button)
+   else if ( sender == GUI->SyncDataList_Button )
    {
-	   AutoPointer<AlignmentModel> aModel =  AlignmentModel::create(GUI->AlignmentFile_Edit.Text());
-
-	   Array<SyncDataPoint>& syncDataList = aModel->getSyncDataPoints();
-	   AutoPointer<SyncDataListDialog> syncDataListDialog = new SyncDataListDialog(syncDataList);
-
-	   if ( syncDataListDialog->Execute() ){
-		   aModel->writeObject(GUI->AlignmentFile_Edit.Text());
-	   }
+      AutoPointer<AlignmentModel> aModel = AlignmentModel::Create( GUI->AlignmentFile_Edit.Text() );
+      Array<SyncDataPoint>& syncDataList = aModel->SyncDataPoints();
+      AutoPointer<SyncDataListDialog> syncDataListDialog = new SyncDataListDialog( syncDataList );
+      if ( syncDataListDialog->Execute() )
+         aModel->WriteObject( GUI->AlignmentFile_Edit.Text().Trimmed() );
    }
-   else if ( sender == GUI->MountAligmentModelConfig_Button){
-	   // FIXME - memory leak?
-	   if ( m_alignmentConfigDialog == nullptr )
-		   m_alignmentConfigDialog = new AlignmentConfigDialog(*this);
-
-	   if (m_alignmentConfigDialog->Execute()){
-		   GUI->MountAligmentModelFit_Button.Enable();
-	   }
+   else if ( sender == GUI->MountAligmentModelConfig_Button )
+   {
+      if ( m_alignmentConfigDialog.IsNull() )
+         m_alignmentConfigDialog = new AlignmentConfigDialog( *this );
+      if ( m_alignmentConfigDialog->Execute() )
+         GUI->MountAligmentModelFit_Button.Enable();
    }
-   else if (sender == GUI->MountDeviceConfig_ToolButton) {
-
-	   MountConfigDialog mountConfig(m_device, getGeographicLatitude(), getGeographicLongitude(), getTelescopeAperture(), getTelescopeFocalLength());
-	   if (mountConfig.Execute() && INDIClient::HasClient()) {
-
-	   }
+   else if ( sender == GUI->MountDeviceConfig_ToolButton )
+   {
+      MountConfigDialog mountConfig( m_device,
+                                     GeographicLatitude(),
+                                     GeographicLongitude(),
+                                     TelescopeAperture(),
+                                     TelescopeFocalLength() );
+      if ( mountConfig.Execute() && INDIClient::HasClient() )
+      {
+         // ### TODO?
+      }
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void INDIMountInterface::e_Press( Button& sender )
 {
@@ -1960,6 +2278,8 @@ void INDIMountInterface::e_Press( Button& sender )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void INDIMountInterface::e_Release( Button& sender )
 {
    if ( !INDIClient::HasClient() )
@@ -2002,6 +2322,8 @@ void INDIMountInterface::e_Release( Button& sender )
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_EAST", "OFF", true/*async*/ );
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
 {
@@ -2049,8 +2371,9 @@ void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
       INDIClient::TheClient()->MaybeSendNewPropertyItem( m_device, "TELESCOPE_SLEW_RATE", "INDI_SWITCH",
                      INDIMountInstance::MountSlewRatePropertyString( itemIndex ), "ON", true/*async*/ );
    }
-
 }
+
+// ----------------------------------------------------------------------------
 
 //set multiplot layout 2,2 title "Hourangle residuals in [arcmin]"
 //set multiplot layout 2,2 title "Declination residuals in [arcmin]"
@@ -2103,7 +2426,7 @@ plot '%s' index 0 using 3:4 title "west" with points pointtype 5, '%s' index 1 u
 
 void INDIMountInterface::plotAlignemtResiduals( AlignmentModel* model )
 {
-   const Array<SyncDataPoint>& syncDatapointList = model->getSyncDataPoints();
+   const Array<SyncDataPoint>& syncDatapointList = model->SyncDataPoints();
    Array<double> delHAs;
    Array<double> delDecs;
 
@@ -2123,8 +2446,8 @@ void INDIMountInterface::plotAlignemtResiduals( AlignmentModel* model )
       if ( !syncPoint.enabled || syncPoint.pierSide == IMCPierSide::East )
          continue;
 
-      double cel_ha = AlignmentModel::rangeShiftHourAngle( syncPoint.localSiderialTime - syncPoint.celestialRA );
-      double tel_ha = AlignmentModel::rangeShiftHourAngle( syncPoint.localSiderialTime - syncPoint.telecopeRA );
+      double cel_ha = AlignmentModel::RangeShiftHourAngle( syncPoint.localSiderialTime - syncPoint.celestialRA );
+      double tel_ha = AlignmentModel::RangeShiftHourAngle( syncPoint.localSiderialTime - syncPoint.telecopeRA );
       double cel_dec = syncPoint.celestialDEC;
       double del_ha = cel_ha - tel_ha;
       double del_dec = syncPoint.celestialDEC - syncPoint.telecopeDEC;
@@ -2132,7 +2455,7 @@ void INDIMountInterface::plotAlignemtResiduals( AlignmentModel* model )
       // compute alignment correction
       double haCor = 0;
       double decCor = 0;
-      model->Apply( haCor, decCor, cel_ha, cel_dec,IMCPierSide::West);
+      model->Apply( haCor, decCor, cel_ha, cel_dec,IMCPierSide::West );
       double del_haCor = cel_ha - haCor;
       double del_decCor = cel_dec - decCor;
       double haResidual = (del_ha - del_haCor) * ra_factor;
@@ -2149,8 +2472,8 @@ void INDIMountInterface::plotAlignemtResiduals( AlignmentModel* model )
       if ( !syncPoint.enabled || syncPoint.pierSide != IMCPierSide::East )
          continue;
 
-      double cel_ha = AlignmentModel::rangeShiftHourAngle( syncPoint.localSiderialTime - syncPoint.celestialRA );
-      double tel_ha = AlignmentModel::rangeShiftHourAngle( syncPoint.localSiderialTime - syncPoint.telecopeRA );
+      double cel_ha = AlignmentModel::RangeShiftHourAngle( syncPoint.localSiderialTime - syncPoint.celestialRA );
+      double tel_ha = AlignmentModel::RangeShiftHourAngle( syncPoint.localSiderialTime - syncPoint.telecopeRA );
       double cel_dec = syncPoint.celestialDEC;
       double del_ha = cel_ha - tel_ha;
       double del_dec = syncPoint.celestialDEC - syncPoint.telecopeDEC;
@@ -2177,7 +2500,7 @@ void INDIMountInterface::plotAlignemtResiduals( AlignmentModel* model )
    String gnuFilePath = tmpFilePath + "AlignmentResiduals.gnu";
 
    // output file names
-   Array<String> outputFiles;
+   StringList outputFiles;
    outputFiles << tmpFilePath + "residuals_ha_ha.svg"
                << tmpFilePath + "residuals_dec_ha.svg"
                << tmpFilePath + "residuals_ha_3d.svg"
@@ -2235,4 +2558,4 @@ void INDIMountInterface::plotAlignemtResiduals( AlignmentModel* model )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInterface.cpp - Released 2018-11-01T11:07:21Z
+// EOF INDIMountInterface.cpp - Released 2018-11-23T18:45:59Z

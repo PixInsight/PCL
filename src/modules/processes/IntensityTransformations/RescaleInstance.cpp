@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0413
+// Standard IntensityTransformations Process Module Version 01.07.01.0420
 // ----------------------------------------------------------------------------
-// RescaleInstance.cpp - Released 2018-11-01T11:07:21Z
+// RescaleInstance.cpp - Released 2018-11-23T18:45:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -171,4 +171,4 @@ void* RescaleInstance::LockParameter( const MetaParameter* p, size_type /*tableR
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RescaleInstance.cpp - Released 2018-11-01T11:07:21Z
+// EOF RescaleInstance.cpp - Released 2018-11-23T18:45:58Z

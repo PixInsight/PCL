@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.15.0225
+// Standard INDIClient Process Module Version 01.01.00.0228
 // ----------------------------------------------------------------------------
-// INDIMountInstance.h - Released 2018-11-01T11:07:21Z
+// INDIMountInstance.h - Released 2018-11-23T18:45:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -62,8 +62,6 @@
 namespace pcl
 {
 
-
-
 // ----------------------------------------------------------------------------
 
 class INDIMountInstance : public ProcessImplementation
@@ -112,7 +110,7 @@ private:
            pcl_bool p_computeApparentPosition;
            pcl_bool p_enableAlignmentCorrection;
            String   p_alignmentFile;
-           uint32    p_alignmentConfig;
+           uint32   p_alignmentConfig;
 
            double   o_currentLST;
            double   o_currentRA;
@@ -130,7 +128,6 @@ private:
 
    friend class INDIMountInterface;
    friend class AbstractINDIMountExecution;
-
 };
 
 // ----------------------------------------------------------------------------
@@ -140,9 +137,7 @@ class AbstractINDIMountExecution
 public:
 
    AbstractINDIMountExecution( INDIMountInstance& instance ) :
-      m_instance( instance ),
-      m_running( false ),
-      m_aborted( false )
+      m_instance( instance )
    {
    }
 
@@ -187,9 +182,10 @@ protected:
 
 private:
 
-   bool m_running, m_aborted;
+   bool m_running = false;
+   bool m_aborted = false;
 
-   void ApplyPointingModelCorrection(AlignmentModel* aModel, double& targetRA, double& targetDec);
+   void ApplyPointingModelCorrection( AlignmentModel* aModel, double& targetRA, double& targetDec );
 };
 
 // ----------------------------------------------------------------------------
@@ -199,4 +195,4 @@ private:
 #endif   // __INDIMountInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInstance.h - Released 2018-11-01T11:07:21Z
+// EOF INDIMountInstance.h - Released 2018-11-23T18:45:59Z

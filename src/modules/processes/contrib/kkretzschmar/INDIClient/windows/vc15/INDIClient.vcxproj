@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.107
 # Copyright (C) 2009-2018 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2018-11-01T11:09:06.124Z
+# Generated on .... 2018-11-23T18:58:01.015Z
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ Windows/vc15
@@ -33,7 +33,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{ABF11372-1F6B-4105-9774-8E6E2C66FFD2}</ProjectGuid>
+    <ProjectGuid>{1711EC44-AF76-4FBC-BEBC-B4E05ADC768B}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -117,7 +117,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PCL-pxi.lib;lz4-pxi.lib;zlib-pxi.lib;RFC6234-pxi.lib;lcms-pxi.lib;cminpack-pxi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;userenv.lib;imm32.lib;shlwapi.lib;ws2_32.lib;wldap32.lib;mscms.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PCL-pxi.lib;lz4-pxi.lib;zlib-pxi.lib;RFC6234-pxi.lib;lcms-pxi.lib;cminpack-pxi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;userenv.lib;imm32.lib;shlwapi.lib;ws2_32.lib;wldap32.lib;mscms.lib;winmm.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\INDIClient-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile></ModuleDefinitionFile>
@@ -158,7 +158,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PCL-pxi.lib;lz4-pxi.lib;zlib-pxi.lib;RFC6234-pxi.lib;lcms-pxi.lib;cminpack-pxi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;userenv.lib;imm32.lib;shlwapi.lib;ws2_32.lib;wldap32.lib;mscms.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PCL-pxi.lib;lz4-pxi.lib;zlib-pxi.lib;RFC6234-pxi.lib;lcms-pxi.lib;cminpack-pxi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;userenv.lib;imm32.lib;shlwapi.lib;ws2_32.lib;wldap32.lib;mscms.lib;winmm.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\INDIClient-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile></ModuleDefinitionFile>
@@ -194,7 +194,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PCL-pxi.lib;lz4-pxi.lib;zlib-pxi.lib;RFC6234-pxi.lib;lcms-pxi.lib;cminpack-pxi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;userenv.lib;imm32.lib;shlwapi.lib;ws2_32.lib;wldap32.lib;mscms.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PCL-pxi.lib;lz4-pxi.lib;zlib-pxi.lib;RFC6234-pxi.lib;lcms-pxi.lib;cminpack-pxi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;userenv.lib;imm32.lib;shlwapi.lib;ws2_32.lib;wldap32.lib;mscms.lib;winmm.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\INDIClient-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile></ModuleDefinitionFile>
@@ -224,7 +224,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PCL-pxi.lib;lz4-pxi.lib;zlib-pxi.lib;RFC6234-pxi.lib;lcms-pxi.lib;cminpack-pxi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;userenv.lib;imm32.lib;shlwapi.lib;ws2_32.lib;wldap32.lib;mscms.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PCL-pxi.lib;lz4-pxi.lib;zlib-pxi.lib;RFC6234-pxi.lib;lcms-pxi.lib;cminpack-pxi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;userenv.lib;imm32.lib;shlwapi.lib;ws2_32.lib;wldap32.lib;mscms.lib;winmm.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\INDIClient-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile></ModuleDefinitionFile>
@@ -240,7 +240,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Alignment.cpp"/>
-    <ClCompile Include="..\..\ApparentPosition.cpp"/>
     <ClCompile Include="..\..\IINDIProperty.cpp"/>
     <ClCompile Include="..\..\INDI\base64.c"/>
     <ClCompile Include="..\..\INDI\baseclient.cpp"/>
@@ -266,10 +265,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Alignment.h"/>
-    <ClInclude Include="..\..\ApparentPosition.h"/>
     <ClInclude Include="..\..\DeviceConfigBase.h"/>
     <ClInclude Include="..\..\IINDIProperty.h"/>
-    <ClInclude Include="..\..\INDI\BaseClient.h"/>
     <ClInclude Include="..\..\INDI\ClientListener.h"/>
     <ClInclude Include="..\..\INDI\IClientListener.h"/>
     <ClInclude Include="..\..\INDI\PCLClientListener.h"/>

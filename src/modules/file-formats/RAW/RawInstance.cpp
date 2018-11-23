@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard RAW File Format Module Version 01.05.00.0405
+// Standard RAW File Format Module Version 01.05.00.0411
 // ----------------------------------------------------------------------------
-// RawInstance.cpp - Released 2018-11-01T11:07:09Z
+// RawInstance.cpp - Released 2018-11-23T16:14:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RAW PixInsight module.
 //
@@ -532,20 +532,34 @@ ImageDescriptionArray RawInstance::Open( const String& filePath, const IsoString
 
                   if ( dy )
                   {
+#ifdef _MSC_VER
+                     char* t = new char[ 6*dy ];
+#else
                      char t[ 6*dy ];
+#endif
                      memcpy( t, p, 6*dy );
                      memcpy( p, p + 6*dy, 36 - 6*dy );
                      memcpy( p + 36 - 6*dy, t, 6*dy );
+#ifdef _MSC_VER
+                     delete [] t;
+#endif
                   }
                   if ( dx )
                   {
+#ifdef _MSC_VER
+                     char* t = new char[ dx ];
+#else
                      char t[ dx ];
+#endif
                      for ( int i = 0; i < 6; ++i, p += 6 )
                      {
                         memcpy( t, p, dx );
                         memcpy( p, p + dx, 6-dx );
                         memcpy( p + 6-dx, t, dx );
                      }
+#ifdef _MSC_VER
+                     delete [] t;
+#endif
                   }
                }
                else
@@ -1374,4 +1388,4 @@ UInt8Image RawInstance::ReadThumbnail()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RawInstance.cpp - Released 2018-11-01T11:07:09Z
+// EOF RawInstance.cpp - Released 2018-11-23T16:14:51Z

@@ -2,7 +2,7 @@
 # PixInsight Makefile Generator Script v1.107
 # Copyright (C) 2009-2018 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2018-11-01T11:09:05.874Z
+# Generated on .... 2018-11-23T18:58:00.791Z
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ FreeBSD/g++
@@ -20,7 +20,6 @@ all: $(OBJ_DIR)/INDIClient-pxm.so
 
 SRC_FILES= \
 ../../Alignment.cpp \
-../../ApparentPosition.cpp \
 ../../IINDIProperty.cpp \
 ../../INDI/base64.c \
 ../../INDI/baseclient.cpp \
@@ -50,7 +49,6 @@ SRC_FILES= \
 
 OBJ_FILES= \
 ./x64/Release/Alignment.o \
-./x64/Release/ApparentPosition.o \
 ./x64/Release/IINDIProperty.o \
 ./x64/Release/INDI/base64.o \
 ./x64/Release/INDI/baseclient.o \
@@ -80,7 +78,6 @@ OBJ_FILES= \
 
 DEP_FILES= \
 ./x64/Release/Alignment.d \
-./x64/Release/ApparentPosition.d \
 ./x64/Release/IINDIProperty.d \
 ./x64/Release/INDI/base64.d \
 ./x64/Release/INDI/baseclient.d \

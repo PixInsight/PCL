@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard Flux Process Module Version 01.00.01.0193
+// Standard Flux Process Module Version 01.00.01.0200
 // ----------------------------------------------------------------------------
-// FluxModule.cpp - Released 2018-11-01T11:07:20Z
+// FluxModule.cpp - Released 2018-11-23T18:45:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0193
+#define MODULE_VERSION_BUILD     0200
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2018
 #define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       1
+#define MODULE_RELEASE_DAY       23
 
 #include "FluxModule.h"
 #include "B3EProcess.h"
@@ -157,4 +157,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF FluxModule.cpp - Released 2018-11-01T11:07:20Z
+// EOF FluxModule.cpp - Released 2018-11-23T18:45:58Z

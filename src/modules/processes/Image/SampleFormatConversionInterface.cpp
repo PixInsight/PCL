@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0410
+// Standard Image Process Module Version 01.03.00.0427
 // ----------------------------------------------------------------------------
-// SampleFormatConversionInterface.cpp - Released 2018-11-01T11:07:21Z
+// SampleFormatConversionInterface.cpp - Released 2018-11-23T18:45:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -319,7 +319,7 @@ void SampleFormatConversionInterface::UpdateCurrentViewInfoControls()
       View v = w.MainView();
       size_type N = v.Image()->NumberOfSamples();
       GUI->CurrentViewInfo_Label.SetText( v.Id().AppendFormat(
-                        ":\n%d-bit %s, %.3f MB, new size: %.3f MB",
+                        ":\n%d-bit %s, %.3f MiB, new size: %.3f MiB",
                         bitsPerSample,
                         isFloatSample ? "floating-point" : "integer",
                         (N*(bitsPerSample >> 3))/1048576.0,
@@ -404,14 +404,14 @@ SampleFormatConversionInterface::GUIData::GUIData( SampleFormatConversionInterfa
    FloatingPoint64Bit_RadioButton.OnClick( (pcl::Button::click_event_handler)&SampleFormatConversionInterface::__ButtonClick, w );
 
    Conversion_Sizer.SetMargin( 6 );
-   Conversion_Sizer.SetSpacing( 0 );
+   Conversion_Sizer.SetSpacing( 6 );
    Conversion_Sizer.Add( Integer8Bit_RadioButton );
    Conversion_Sizer.Add( Integer16Bit_RadioButton );
    Conversion_Sizer.Add( Integer32Bit_RadioButton );
    Conversion_Sizer.Add( FloatingPoint32Bit_RadioButton );
    Conversion_Sizer.Add( FloatingPoint64Bit_RadioButton );
 
-   Conversion_GroupBox.SetTitle( "Sample Format" );
+   Conversion_GroupBox.SetTitle( "Pixel Sample Format" );
    Conversion_GroupBox.SetSizer( Conversion_Sizer );
    Conversion_GroupBox.AdjustToContents();
    Conversion_GroupBox.SetMinSize();
@@ -465,4 +465,4 @@ void SampleFormatConversionInterface::GUIData::SetupTrackViewControls( SampleFor
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SampleFormatConversionInterface.cpp - Released 2018-11-01T11:07:21Z
+// EOF SampleFormatConversionInterface.cpp - Released 2018-11-23T18:45:58Z

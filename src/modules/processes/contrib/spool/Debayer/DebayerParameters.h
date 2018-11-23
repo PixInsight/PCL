@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.07.00.0301
+// Standard Debayer Process Module Version 01.07.00.0308
 // ----------------------------------------------------------------------------
-// DebayerParameters.h - Released 2018-11-01T11:07:21Z
+// DebayerParameters.h - Released 2018-11-23T18:45:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
@@ -80,13 +80,12 @@ public:
 
    DebayerBayerPatternParameter( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual IsoString Aliases() const;
-
-   virtual size_type NumberOfElements() const;
-   virtual IsoString ElementId( size_type ) const;
-   virtual int ElementValue( size_type ) const;
-   virtual size_type DefaultValueIndex() const;
+   IsoString Id() const override;
+   IsoString Aliases() const override;
+   size_type NumberOfElements() const override;
+   IsoString ElementId( size_type ) const override;
+   int ElementValue( size_type ) const override;
+   size_type DefaultValueIndex() const override;
 };
 
 extern DebayerBayerPatternParameter* TheDebayerBayerPatternParameter;
@@ -106,13 +105,12 @@ public:
 
    DebayerMethodParameter( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual IsoString Aliases() const;
-
-   virtual size_type NumberOfElements() const;
-   virtual IsoString ElementId( size_type ) const;
-   virtual int ElementValue( size_type ) const;
-   virtual size_type DefaultValueIndex() const;
+   IsoString Id() const override;
+   IsoString Aliases() const override;
+   size_type NumberOfElements() const override;
+   IsoString ElementId( size_type ) const override;
+   int ElementValue( size_type ) const override;
+   size_type DefaultValueIndex() const override;
 };
 
 extern DebayerMethodParameter* TheDebayerMethodParameter;
@@ -125,8 +123,8 @@ public:
 
    DebayerEvaluateNoise( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DebayerEvaluateNoise* TheDebayerEvaluateNoiseParameter;
@@ -144,11 +142,11 @@ public:
 
    DebayerNoiseEvaluationAlgorithm( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual size_type NumberOfElements() const;
-   virtual IsoString ElementId( size_type ) const;
-   virtual int ElementValue( size_type ) const;
-   virtual size_type DefaultValueIndex() const;
+   IsoString Id() const override;
+   size_type NumberOfElements() const override;
+   IsoString ElementId( size_type ) const override;
+   int ElementValue( size_type ) const override;
+   size_type DefaultValueIndex() const override;
 };
 
 extern DebayerNoiseEvaluationAlgorithm* TheDebayerNoiseEvaluationAlgorithmParameter;
@@ -161,8 +159,8 @@ public:
 
    DebayerShowImages( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DebayerShowImages* TheDebayerShowImagesParameter;
@@ -175,7 +173,7 @@ public:
 
    DebayerCFASourceFilePath( MetaProcess* );
 
-   virtual IsoString Id() const;
+   IsoString Id() const override;
 };
 
 extern DebayerCFASourceFilePath* TheDebayerCFASourceFilePathParameter;
@@ -188,7 +186,7 @@ public:
 
    DebayerTargetItems( MetaProcess* );
 
-   virtual IsoString Id() const;
+   IsoString Id() const override;
 };
 
 extern DebayerTargetItems* TheDebayerTargetItemsParameter;
@@ -201,8 +199,8 @@ public:
 
    DebayerTargetEnabled( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DebayerTargetEnabled* TheDebayerTargetEnabledParameter;
@@ -215,7 +213,7 @@ public:
 
    DebayerTargetImage( MetaTable* );
 
-   virtual IsoString Id() const;
+   IsoString Id() const override;
 };
 
 extern DebayerTargetImage* TheDebayerTargetImageParameter;
@@ -228,8 +226,8 @@ public:
 
    DebayerNoGUIMessages( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DebayerNoGUIMessages* TheDebayerNoGUIMessagesParameter;
@@ -242,7 +240,7 @@ public:
 
    DebayerInputHints( MetaProcess* );
 
-   virtual IsoString Id() const;
+   IsoString Id() const override;
 };
 
 extern DebayerInputHints* TheDebayerInputHintsParameter;
@@ -255,7 +253,7 @@ public:
 
    DebayerOutputHints( MetaProcess* );
 
-   virtual IsoString Id() const;
+   IsoString Id() const override;
 };
 
 extern DebayerOutputHints* TheDebayerOutputHintsParameter;
@@ -268,7 +266,7 @@ public:
 
    DebayerOutputDirectory( MetaProcess* );
 
-   virtual IsoString Id() const;
+   IsoString Id() const override;
 };
 
 extern DebayerOutputDirectory* TheDebayerOutputDirectoryParameter;
@@ -281,8 +279,8 @@ public:
 
    DebayerOutputExtension( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual String DefaultValue() const;
+   IsoString Id() const override;
+   String DefaultValue() const override;
 };
 
 extern DebayerOutputExtension* TheDebayerOutputExtensionParameter;
@@ -295,8 +293,8 @@ public:
 
    DebayerOutputPrefix( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual String DefaultValue() const;
+   IsoString Id() const override;
+   String DefaultValue() const override;
 };
 
 extern DebayerOutputPrefix* TheDebayerOutputPrefixParameter;
@@ -309,8 +307,8 @@ public:
 
    DebayerOutputPostfix( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual String DefaultValue() const;
+   IsoString Id() const override;
+   String DefaultValue() const override;
 };
 
 extern DebayerOutputPostfix* TheDebayerOutputPostfixParameter;
@@ -323,8 +321,8 @@ public:
 
    DebayerOverwriteExistingFiles( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DebayerOverwriteExistingFiles* TheDebayerOverwriteExistingFilesParameter;
@@ -343,11 +341,11 @@ public:
 
    DebayerOnError( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual size_type NumberOfElements() const;
-   virtual IsoString ElementId( size_type ) const;
-   virtual int ElementValue( size_type ) const;
-   virtual size_type DefaultValueIndex() const;
+   IsoString Id() const override;
+   size_type NumberOfElements() const override;
+   IsoString ElementId( size_type ) const override;
+   int ElementValue( size_type ) const override;
+   size_type DefaultValueIndex() const override;
 };
 
 extern DebayerOnError* TheDebayerOnErrorParameter;
@@ -360,8 +358,8 @@ public:
 
    DebayerUseFileThreads( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
+   IsoString Id() const override;
+   bool DefaultValue() const override;
 };
 
 extern DebayerUseFileThreads* TheDebayerUseFileThreadsParameter;
@@ -374,11 +372,11 @@ public:
 
    DebayerFileThreadOverload( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   double DefaultValue() const override;
+   double MinimumValue() const override;
+   double MaximumValue() const override;
 };
 
 extern DebayerFileThreadOverload* TheDebayerFileThreadOverloadParameter;
@@ -391,10 +389,10 @@ public:
 
    DebayerMaxFileReadThreads( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
+   IsoString Id() const override;
+   double DefaultValue() const override;
+   double MinimumValue() const override;
+   double MaximumValue() const override;
 };
 
 extern DebayerMaxFileReadThreads* TheDebayerMaxFileReadThreadsParameter;
@@ -407,10 +405,10 @@ public:
 
    DebayerMaxFileWriteThreads( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
+   IsoString Id() const override;
+   double DefaultValue() const override;
+   double MinimumValue() const override;
+   double MaximumValue() const override;
 };
 
 extern DebayerMaxFileWriteThreads* TheDebayerMaxFileWriteThreadsParameter;
@@ -424,8 +422,8 @@ public:
 
    DebayerOutputImage( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerOutputImage* TheDebayerOutputImageParameter;
@@ -438,10 +436,10 @@ public:
 
    DebayerNoiseEstimateR( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual bool ScientificNotation() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   bool ScientificNotation() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerNoiseEstimateR* TheDebayerNoiseEstimateRParameter;
@@ -454,10 +452,10 @@ public:
 
    DebayerNoiseEstimateG( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual bool ScientificNotation() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   bool ScientificNotation() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerNoiseEstimateG* TheDebayerNoiseEstimateGParameter;
@@ -470,10 +468,10 @@ public:
 
    DebayerNoiseEstimateB( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual bool ScientificNotation() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   bool ScientificNotation() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerNoiseEstimateB* TheDebayerNoiseEstimateBParameter;
@@ -486,9 +484,9 @@ public:
 
    DebayerNoiseFractionR( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerNoiseFractionR* TheDebayerNoiseFractionRParameter;
@@ -501,9 +499,9 @@ public:
 
    DebayerNoiseFractionG( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerNoiseFractionG* TheDebayerNoiseFractionGParameter;
@@ -516,9 +514,9 @@ public:
 
    DebayerNoiseFractionB( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerNoiseFractionB* TheDebayerNoiseFractionBParameter;
@@ -531,8 +529,8 @@ public:
 
    DebayerNoiseAlgorithmR( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerNoiseAlgorithmR* TheDebayerNoiseAlgorithmRParameter;
@@ -545,8 +543,8 @@ public:
 
    DebayerNoiseAlgorithmG( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerNoiseAlgorithmG* TheDebayerNoiseAlgorithmGParameter;
@@ -559,8 +557,8 @@ public:
 
    DebayerNoiseAlgorithmB( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerNoiseAlgorithmB* TheDebayerNoiseAlgorithmBParameter;
@@ -574,8 +572,8 @@ public:
 
    DebayerOutputFileData( MetaProcess* );
 
-   virtual IsoString Id() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerOutputFileData* TheDebayerOutputFileDataParameter;
@@ -588,8 +586,8 @@ public:
 
    DebayerOutputFilePath( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerOutputFilePath* TheDebayerOutputFilePathParameter;
@@ -602,10 +600,10 @@ public:
 
    DebayerOutputFileNoiseEstimateR( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual bool ScientificNotation() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   bool ScientificNotation() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerOutputFileNoiseEstimateR* TheDebayerOutputFileNoiseEstimateRParameter;
@@ -618,10 +616,10 @@ public:
 
    DebayerOutputFileNoiseEstimateG( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual bool ScientificNotation() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   bool ScientificNotation() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerOutputFileNoiseEstimateG* TheDebayerOutputFileNoiseEstimateGParameter;
@@ -634,10 +632,10 @@ public:
 
    DebayerOutputFileNoiseEstimateB( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual bool ScientificNotation() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   bool ScientificNotation() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerOutputFileNoiseEstimateB* TheDebayerOutputFileNoiseEstimateBParameter;
@@ -650,9 +648,9 @@ public:
 
    DebayerOutputFileNoiseFractionR( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerOutputFileNoiseFractionR* TheDebayerOutputFileNoiseFractionRParameter;
@@ -665,9 +663,9 @@ public:
 
    DebayerOutputFileNoiseFractionG( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerOutputFileNoiseFractionG* TheDebayerOutputFileNoiseFractionGParameter;
@@ -680,9 +678,9 @@ public:
 
    DebayerOutputFileNoiseFractionB( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   int Precision() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerOutputFileNoiseFractionB* TheDebayerOutputFileNoiseFractionBParameter;
@@ -695,8 +693,8 @@ public:
 
    DebayerOutputFileNoiseAlgorithmR( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerOutputFileNoiseAlgorithmR* TheDebayerOutputFileNoiseAlgorithmRParameter;
@@ -709,8 +707,8 @@ public:
 
    DebayerOutputFileNoiseAlgorithmG( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerOutputFileNoiseAlgorithmG* TheDebayerOutputFileNoiseAlgorithmGParameter;
@@ -723,8 +721,8 @@ public:
 
    DebayerOutputFileNoiseAlgorithmB( MetaTable* );
 
-   virtual IsoString Id() const;
-   virtual bool IsReadOnly() const;
+   IsoString Id() const override;
+   bool IsReadOnly() const override;
 };
 
 extern DebayerOutputFileNoiseAlgorithmB* TheDebayerOutputFileNoiseAlgorithmBParameter;
@@ -738,4 +736,4 @@ PCL_END_LOCAL
 #endif   // __DebayerParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF DebayerParameters.h - Released 2018-11-01T11:07:21Z
+// EOF DebayerParameters.h - Released 2018-11-23T18:45:59Z

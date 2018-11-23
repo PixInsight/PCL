@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// pcl/EphemerisFile.h - Released 2018-11-01T11:06:36Z
+// pcl/EphemerisFile.h - Released 2018-11-23T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -490,7 +490,7 @@ struct PCL_CLASS EphemerisObject
     */
    String                        objectDescription;
 
-   /*
+   /*!
     * Absolute magnitude. H is the visual magnitude of the object as seen at 1
     * au of the Earth, 1 au from the Sun, and with a phase angle of 0 degrees.
     *
@@ -504,17 +504,17 @@ struct PCL_CLASS EphemerisObject
     */
    Optional<double>              H;
 
-   /*
+   /*!
     * Slope parameter. See the H data member for references.
     */
    Optional<double>              G;
 
-   /*
+   /*!
     * Color index B-V in magnitudes.
     */
    Optional<double>              B_V;
 
-   /*
+   /*!
     * Diameter of the object in km.
     */
    Optional<double>              D;
@@ -731,7 +731,9 @@ public:
    }
 
    /*!
-    * Starting point of the time span covered by this ephemeris.
+    * Starting point of the time span covered by this ephemeris, or the
+    * earliest time point for which ephemerides can be calculated using this
+    * object.
     */
    TimePoint StartTime() const
    {
@@ -739,7 +741,8 @@ public:
    }
 
    /*!
-    * Starting point of the time span covered by this ephemeris.
+    * Ending point of the time span covered by this ephemeris, or the latest
+    * time point for which ephemerides can be calculated using this object.
     */
    TimePoint EndTime() const
    {
@@ -1994,4 +1997,4 @@ private:
 #endif  // __PCL_EphemerisFile_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/EphemerisFile.h - Released 2018-11-01T11:06:36Z
+// EOF pcl/EphemerisFile.h - Released 2018-11-23T16:14:19Z

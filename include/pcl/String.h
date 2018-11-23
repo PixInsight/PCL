@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// pcl/String.h - Released 2018-11-01T11:06:36Z
+// pcl/String.h - Released 2018-11-23T16:14:19Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -244,12 +244,13 @@ struct PCL_CLASS AngleConversionOptions : public SexagesimalConversionOptions
 {
    /*!
     * Constructs an %AngleConversionOptions structure initialized for the
-    * specified \a precision and first item \a padding character. The string
-    * representation will consist of three items separated by spaces. The first
-    * item will be represented left-padded with a length of three characters.
+    * specified \a precision and first item \a width and \a padding character.
+    * The string representation will consist of three items separated by
+    * spaces. If \a width is nonzero, the first item will be represented
+    * right-justified within a field of \a width \a padding characters.
     */
-   constexpr AngleConversionOptions( unsigned precision = 2, char padding = ' ' ) :
-      SexagesimalConversionOptions( 3/*items*/, precision, false/*sign*/, 3/*width*/, ' '/*separator*/, padding )
+   constexpr AngleConversionOptions( unsigned precision = 2, unsigned width = 3, char padding = ' ' ) :
+      SexagesimalConversionOptions( 3/*items*/, precision, false/*sign*/, width, ' '/*separator*/, padding )
    {}
 };
 
@@ -272,13 +273,14 @@ struct PCL_CLASS LongitudeConversionOptions : public SexagesimalConversionOption
 {
    /*!
     * Constructs a %LongitudeConversionOptions structure initialized for the
-    * specified \a precision and first item \a padding character. The string
-    * representation will consist of three items separated by spaces. The first
-    * item will be represented left-padded with a length of four characters,
+    * specified \a precision and first item \a width and \a padding character.
+    * The string representation will consist of three items separated by
+    * spaces. If \a width is nonzero, the first item will be represented
+    * right-justified within a field of \a width \a padding characters,
     * including a leading sign character.
     */
-   constexpr LongitudeConversionOptions( unsigned precision = 2, char padding = ' ' ) :
-      SexagesimalConversionOptions( 3/*items*/, precision, true/*sign*/, 4/*width*/, ' '/*separator*/, padding )
+   constexpr LongitudeConversionOptions( unsigned precision = 2, unsigned width = 4, char padding = ' ' ) :
+      SexagesimalConversionOptions( 3/*items*/, precision, true/*sign*/, width, ' '/*separator*/, padding )
    {}
 };
 
@@ -302,12 +304,13 @@ struct PCL_CLASS RAConversionOptions : public SexagesimalConversionOptions
 {
    /*!
     * Constructs a %RAConversionOptions structure initialized for the specified
-    * \a precision and first item \a padding character. The string
-    * representation will consist of three items separated by spaces. The first
-    * item will be represented left-padded with a length of two characters.
+    * \a precision and first item \a width and \a padding character. The string
+    * representation will consist of three items separated by spaces. If
+    * \a width is nonzero, the first item will be represented right-justified
+    * within a field of \a width \a padding characters.
     */
-   constexpr RAConversionOptions( unsigned precision = 3, char padding = ' ' ) :
-      SexagesimalConversionOptions( 3/*items*/, precision, false/*sign*/, 2/*width*/, ' '/*separator*/, padding )
+   constexpr RAConversionOptions( unsigned precision = 3, unsigned width = 2, char padding = ' ' ) :
+      SexagesimalConversionOptions( 3/*items*/, precision, false/*sign*/, width, ' '/*separator*/, padding )
    {}
 };
 
@@ -330,13 +333,14 @@ struct PCL_CLASS LatitudeConversionOptions : public SexagesimalConversionOptions
 {
    /*!
     * Constructs a %LatitudeConversionOptions structure initialized for the
-    * specified \a precision and first item \a padding character. The string
-    * representation will consist of three items separated by spaces. The first
-    * item will be represented left-padded with a length of three characters,
+    * specified \a precision and first item \a width and \a padding character.
+    * The string representation will consist of three items separated by
+    * spaces. If \a width is nonzero, the first item will be represented
+    * right-justified within a field of \a width \a padding characters,
     * including a leading sign character.
     */
-   constexpr LatitudeConversionOptions( unsigned precision = 2, char padding = ' ' ) :
-      SexagesimalConversionOptions( 3/*items*/, precision, true/*sign*/, 3/*width*/, ' '/*separator*/, padding )
+   constexpr LatitudeConversionOptions( unsigned precision = 2, unsigned width = 3, char padding = ' ' ) :
+      SexagesimalConversionOptions( 3/*items*/, precision, true/*sign*/, width, ' '/*separator*/, padding )
    {}
 };
 
@@ -358,13 +362,14 @@ struct PCL_CLASS DecConversionOptions : public LatitudeConversionOptions
 {
    /*!
     * Constructs a %DecConversionOptions structure initialized for the
-    * specified \a precision and first item \a padding character. The string
-    * representation will consist of three items separated by spaces. The first
-    * item will be represented left-padded with a length of three characters,
+    * specified \a precision and first item \a width and \a padding character.
+    * The string representation will consist of three items separated by
+    * spaces. If \a width is nonzero, the first item will be represented
+    * right-justified within a field of \a width \a padding characters,
     * including a leading sign character.
     */
-   constexpr DecConversionOptions( unsigned precision = 2, char padding = ' ' ) :
-      LatitudeConversionOptions( precision, padding )
+   constexpr DecConversionOptions( unsigned precision = 2, unsigned width = 3, char padding = ' ' ) :
+      LatitudeConversionOptions( precision, width, padding )
    {}
 };
 
@@ -13652,4 +13657,4 @@ inline std::ostream& operator <<( std::ostream& o, const String& s )
 #endif   // __PCL_String_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.h - Released 2018-11-01T11:06:36Z
+// EOF pcl/String.h - Released 2018-11-23T16:14:19Z

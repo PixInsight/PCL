@@ -7,10 +7,10 @@
 // ----------------------------------------------------------------------------
 // This file is part of PixInsight X11 UNIX/Linux Installer
 // ----------------------------------------------------------------------------
-// 2018/11/01 11:08:26 UTC
+// 2018/11/23 16:11:53 UTC
 // installer.cpp
 // ----------------------------------------------------------------------------
-// Copyright (c) 2013-2017 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2018 Pleiades Astrophoto S.L.
 // ----------------------------------------------------------------------------
 
 #if !defined( __PCL_FREEBSD ) && !defined( __PCL_LINUX )
@@ -480,13 +480,13 @@ bool PixInsightX11Installer::DoInstall()
       f.OutTextLn( "args=\"\"" );
       f.OutTextLn( "for arg in \"$@\"" );
       f.OutTextLn( "   do" );
-      f.OutTextLn( "      if echo $arg | grep -q \" \"; then" );
+      f.OutTextLn( "      if printf '%s' \"$arg\" | grep -q \" \"; then" );
       f.OutTextLn( "         args=\"$args \\\"$arg\\\"\"" );
       f.OutTextLn( "      else" );
       f.OutTextLn( "         args=\"$args $arg\"" );
       f.OutTextLn( "      fi" );
       f.OutTextLn( "   done" );
-      f.OutTextLn( "args=$(echo $args | sed 's/^ *//')" );
+      f.OutTextLn( "args=$(printf '%s' \"$args\" | sed 's/^ *//')" );
       f.OutTextLn( "eval \"" + m_installDir.ToUTF8() + "/bin/PixInsight.sh $args\"" );
       f.Close();
 
@@ -1051,30 +1051,34 @@ int main( int argc, const char** argv )
    }
    catch ( ... )
    {
+      IsoString message;
+
       try
       {
          throw;
       }
       catch ( Exception& x )
       {
-         std::cerr << "*** Error: " << x.Message() << "\n\n";
+         message = x.Message().ToUTF8();
       }
       catch ( String& s )
       {
-         std::cerr << "*** Error: " << s << "\n\n";
+         message = s.ToUTF8();
       }
       catch ( std::bad_alloc& )
       {
-         std::cerr << "*** Error: Out of memory.\n\n";
+         message = "Out of memory.";
       }
       catch ( ... )
       {
-         std::cerr << "*** Error: Unknown exception.\n\n";
+         message = "Unknown exception.";
       }
+
+      std::cerr << "*** Error: " << message << "\n\n";
    }
    return EXIT_ERROR;
 }
 
 // ----------------------------------------------------------------------------
-// 2018/11/01 11:08:26 UTC
+// 2018/11/23 16:11:53 UTC
 // installer.cpp

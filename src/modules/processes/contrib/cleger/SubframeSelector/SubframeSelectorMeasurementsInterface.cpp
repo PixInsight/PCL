@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.10.0915
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.04.01.0005
+// Standard SubframeSelector Process Module Version 01.04.01.0012
 // ----------------------------------------------------------------------------
-// SubframeSelectorMeasurementsInterface.cpp - Released 2018-11-01T11:07:21Z
+// SubframeSelectorMeasurementsInterface.cpp - Released 2018-11-23T18:45:58Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SubframeSelector PixInsight module.
 //
@@ -918,4 +918,4 @@ SubframeSelectorMeasurementsInterface::GUIData::GUIData( SubframeSelectorMeasure
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SubframeSelectorMeasurementsInterface.cpp - Released 2018-11-01T11:07:21Z
+// EOF SubframeSelectorMeasurementsInterface.cpp - Released 2018-11-23T18:45:58Z

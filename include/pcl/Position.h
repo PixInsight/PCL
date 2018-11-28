@@ -696,7 +696,7 @@ public:
     * topocentric, that is, will be referred to the location of the observer
     * with respect to the center of the Earth.
     *
-    * By calling this member funcion, all previously computed positional data
+    * By calling this member function, all previously computed positional data
     * will be erased with the exception of fundamental ephemerides and existing
     * bias-precession-nutation matrices, which can always be preserved.
     *
@@ -1101,6 +1101,67 @@ public:
       InitEquinoxBasedParameters();
       return DPoint( m_dpsi, m_deps );
    }
+
+   /*!
+    * Returns true iff the apparent visual magnitude of the object represented
+    * by the specified handle \a H can be calculated with the current
+    * implementation, at the calculation time defined by this instance.
+    *
+    * Currently apparent visual magnitudes can be calculated for the following
+    * solar system bodies:
+    *
+    * \li Objects providing valid H and G parameters (absolute magnitude and
+    * slope coefficient). This happens for most asteroids included in standard
+    * XEPH files.
+    *
+    * \li Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune and Pluto.
+    *
+    * \li The four Galilean satellites of Jupiter: Io, Europa, Ganymede and
+    * Callisto.
+    *
+    * \sa ApparentVisualMagnitude()
+    */
+   bool CanComputeApparentVisualMagnitude( const EphemerisFile::Handle& H ) const;
+
+   /*!
+    * Returns the observed visual magnitude of a solar system body.
+    *
+    * For objects with known H and G values (absolute magnitude and slope
+    * parameters, respectively; see EphemerisFile::Handle::H() and
+    * EphemerisFile::Handle::G()), the apparent visual magnitude is calculated
+    * applying the algorithm for minor planets described in Bowell et al.
+    * (1989). See also The Explanatory Supplement, Section 10.4.3.
+    *
+    * For Mercury, Venus, Mars, Jupiter, Saturn and Neptune, we apply the
+    * equations described in the following paper:
+    *
+    * Anthony Mallama, James L. Hilton, <em>Computing Apparent Planetary
+    * Magnitudes for The Astronomical Almanac</em>, revised 2018 June 21.
+    *
+    * As of writing this documentation, the above paper is available online at:
+    * https://arxiv.org/pdf/1808.01973.pdf
+    *
+    * For Saturn, we compute the apparent visual magnitude taking into account
+    * the planet's rings.
+    *
+    * For Uranus, Pluto and the Galilean satellites of Jupiter, data from
+    * various sources are taken from Table 10.6 of the Explanatory Supplement.
+    *
+    * If the required data are not available, or if no algorithm is known for
+    * the calculation of the apparent visual magnitude of the specified object,
+    * this member function returns an undefined Optional object.
+    *
+    * An undefined object is also returned when the phase angle of the object
+    * at the time of calculation is beyond the limits of the set of
+    * observations used to generate the underlying models. For Mercury,
+    * apparent magnitudes are only calculated for phase angles
+    * 2&deg; &le; \e i &le; 170&deg;. For Venus, the magnitude is only
+    * calculated for 0&deg; < \e i &le; 163&deg;.7. The valid range for Mars is
+    * \e i &le; 50&deg;.
+    *
+    * \sa CanComputeApparentVisualMagnitude()
+    */
+   Optional<double> ApparentVisualMagnitude( EphemerisFile::Handle& H );
 
    /*!
     * Conversion from rectangular equatorial to rectangular ecliptic

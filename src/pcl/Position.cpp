@@ -963,6 +963,233 @@ double Position::CIOLocator( double T, double X, double Y )
 
 // ----------------------------------------------------------------------------
 
+bool Position::CanComputeApparentVisualMagnitude( const EphemerisFile::Handle& H ) const
+{
+   // Minor planets with known absolute magnitudes and phase coefficients.
+   if ( H.H().IsDefined() )
+      if ( H.G().IsDefined() )
+         return true;
+
+   if ( H.OriginId() == "SSB" )
+   {
+      // The main solar system bodies except Sun, Earth and Moon.
+      switch ( H.ObjectId().Hash32() )
+      {
+      case 0x77ee4333: // Me
+      case 0x15a0ab4d: // Me0
+      case 0x37880029: // Ve
+      case 0x8d916cbb: // Ve0
+      case 0xf2fd2887: // Ma
+      case 0xc26c7504: // Ma0
+      case 0x199a744d: // Ju
+      case 0xf6229e2d: // Ju0
+      case 0xdca2ceaf: // Sa
+      case 0xd207c79b: // Sa0
+      case 0x482a514e: // Ur
+      case 0x2b057643: // Ur0
+      case 0xe6b3dd6d: // Ne
+      case 0x21f8c294: // Ne0
+      case 0x909f2663: // Pl
+      case 0x9dc1f5e4: // Pl0
+         return true;
+      default:
+         break;
+      }
+
+      return false;
+   }
+
+   if ( H.OriginId() == "Ju0" || H.OriginId() == "Ju" )
+   {
+      // The four Galilean satellites of Jupiter.
+      int id;
+      if ( H.ObjectId().TryToInt( id ) )
+         return id >= 1 && id <= 4;
+   }
+
+   return false;
+}
+
+Optional<double> Position::ApparentVisualMagnitude( EphemerisFile::Handle& H )
+{
+   /*
+    * Phase angle, or the angle between the observer-body and Sun-body vectors.
+    */
+   Vector r = True( H ); // observer-body vector
+   Vector r0 = (m_Oh ? m_Oh : m_Eh) + r; // Sun-body vector
+   double d = r.L2Norm() * r0.L2Norm();
+   double i = ArcCos( (r * r0)/d );
+
+   Optional<double> V;
+
+   /*
+    * For objects with available H and G values in ephemeris data, apply the
+    * standard apparent magnitude algorithm for minor planets.
+    * See ESAsA Section 10.4.3.
+    */
+   if ( H.H().IsDefined() )
+   {
+      if ( H.G().IsDefined() )
+         if ( 0 <= i && Deg( i ) <= 120 )
+         {
+            // ESAsA Eq. 10.40
+            double t2 = ArcTan( i/2 );
+            double phi1 = Exp( -3.33*Pow( t2, 0.63 ) );
+            double phi2 = Exp( -1.87*Pow( t2, 1.22 ) );
+            // ESAsA Eq. 10.38
+            V = H.H()() -2.5*Log( (1 - H.G()())*phi1 + H.G()()*phi2 );
+         }
+   }
+   else
+   {
+      i = Deg( i );
+
+      /*
+       * For Mercury, Venus, Mars, Jupiter, Saturn and Neptune, apply equations
+       * from:
+       *
+       * https://arxiv.org/pdf/1808.01973.pdf
+       * Anthony Mallama, James L. Hilton, Computing Apparent Planetary
+       * Magnitudes for The Astronomical Almanac, revised 2018 June 21.
+       *
+       * For Saturn, we compute the apparent magnitude taking into account
+       * light reflected by the rings.
+       *
+       * For Uranus, Pluto and the Galilean satellites of Jupiter, apply
+       * coefficients taken from ESAsA Table 10.6. See also Errata in the ESAsA
+       * (3rd edition, 1st printing), last update of 24 April 2018.
+       */
+      if ( H.OriginId() == "SSB" )
+      {
+         switch ( H.ObjectId().Hash32() )
+         {
+         case 0x77ee4333: // Me
+         case 0x15a0ab4d: // Me0
+            if ( 2 <= i && i <= 170 )
+               V = Poly( i, {-0.613, +6.3280e-02, -1.6336e-03, +3.3644e-05, -3.4265e-07, +1.6893e-09, -3.0334e-12} );
+            break;
+         case 0x37880029: // Ve
+         case 0x8d916cbb: // Ve0
+            if ( 0 < i && i <= 163.7 )
+               V = Poly( i, {-4.384, -1.044e-03, +3.687e-04, -2.814e-06, +8.938e-09} );
+            else if ( 163.7 < i && i < 179 )
+               V = Poly( i, {236.05828, -2.81914, +8.39034e-03} );
+            break;
+         case 0xf2fd2887: // Ma
+         case 0xc26c7504: // Ma0
+            if ( i <= 50 )
+               V = -1.601 + 2.267e-02*i - 1.302e-04*i*i;
+            else
+               V = -0.367 - 0.02573*i + 0.0003445*i*i;
+            break;
+         case 0x199a744d: // Ju
+         case 0xf6229e2d: // Ju0
+            if ( i <= 12 )
+               V = -9.395 - 3.7e-04*i + 6.16e-04*i*i;
+            else
+               V = -9.428 - 2.5*Log( Poly( i/180, {1.0, -1.507, -0.363, -0.062, +2.809, -1.876} ) );
+            break;
+         case 0xdca2ceaf: // Sa
+         case 0xd207c79b: // Sa0
+            {
+               if ( i < 6.5 )
+               {
+                  // The following procedure to compute saturnicentric
+                  // latitudes of the Earth and the Sun has been adapted from:
+                  // Jean Meeus (1991), Astronomical Algorithms, Chapter 44.
+                  double ea = EpsA();
+                  Vector R0 = EquatorialToEcliptic( m_U + (m_Oh ? m_Oh : m_Eh), ea );
+                  double d0 = R0.L2Norm();
+                  double N  = Rad( 113.6655 + 0.8771*m_TT );
+                  // Heliocentric longitude and latitude of Saturn, corrected for
+                  // the Sun's aberration as seen from Saturn.
+                  double ls, bs; R0.ToSpherical( ls, bs );
+                  ls -= Rad( 0.01759 )/d0;
+                  bs -= Rad( 0.000764 )*Cos( ls - N )/d0;
+                  double ir = Rad(  28.075216 - 0.012998*m_TT + 0.000004*m_TT*m_TT );
+                  double si, ci; SinCos( ir, si, ci );
+                  double Or = Rad( 169.508470 + 1.394681*m_TT + 0.000412*m_TT*m_TT );
+                  // Geocentric longitude and latitude of Saturn.
+                  double le, be; EquatorialToEcliptic( m_U, ea ).ToSpherical( le, be );
+                  // Saturnicentric latitude of the Earth.
+                  double BE = ArcSin( si*Cos( be )*Sin( le - Or ) - ci*Sin( be ) );
+                  // Saturnicentric latitude of the Sun.
+                  double BS = ArcSin( si*Cos( bs )*Sin( ls - Or ) - ci*Sin( bs ) );
+                  // Effective inclination of the rings plane.
+                  double B  = ((BE < 0) == (BS < 0)) ? Sqrt( BE*BS ) : 0.0;
+                  if ( Deg( B ) < 27 )
+                  {
+                     double sB = Sin( B );
+                     V = -8.914 - 1.825*sB + 0.026*i - 0.378*sB*Exp( -2.25*i );
+                  }
+                  else
+                     V = -8.95 - 3.7e-4*i + 6.16e-4*i*i;
+               }
+               else
+                  V = Poly( i, {-8.94, 2.446e-4, +2.672e-4, -1.506e-6, +4.767e-9} );
+            }
+            break;
+         case 0x482a514e: // Ur
+         case 0x2b057643: // Ur0
+            V = -7.19 + 0.002*i;
+            break;
+         case 0xe6b3dd6d: // Ne
+         case 0x21f8c294: // Ne0
+            {
+               int y, m, d; double f;
+               m_tt.GetComplexTime( y, m, d, f );
+               double year = y + m/12.0 + (d + f)/365.25;
+               if ( year > 2000 )
+               {
+                  if ( i <= 1.9 )
+                     V = -7.00;
+                  else
+                     V = -7.00 + 7.944e-3*i + 9.617e-5*i*i;
+               }
+               else if ( year < 1980 )
+                  V = -6.89;
+               else
+                  V = -6.89 - 0.0054*(year - 1980);
+            }
+            break;
+         case 0x909f2663: // Pl
+         case 0x9dc1f5e4: // Pl0
+            V = -1.01; //+ 0.041*i;
+            break;
+         }
+      }
+      else if ( H.OriginId() == "Ju0" || H.OriginId() == "Ju" )
+      {
+         int id;
+         if ( H.ObjectId().TryToInt( id ) )
+            switch ( id )
+            {
+            case 1: // Io
+               V = -1.68 + 0.46*i -0.0010*i*i;
+               break;
+            case 2: // Europa
+               V = -1.41 + 0.0312*i - 0.00125*i*i;
+               break;
+            case 3: // Ganymede
+               V = -2.09 + 0.323*i - 0.00066*i*i;
+               break;
+            case 4: // Callisto
+               V = -1.05 +0.078*i - 0.00274*i*i;
+               break;
+            }
+      }
+   }
+
+   // Observed visual magnitude, ESAsA Eq. 10.4, Eq. 10.41.
+   if ( V.IsDefined() )
+      return V() + 5*Log( d );
+
+   // Unable to compute.
+   return Optional<double>();
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 // ----------------------------------------------------------------------------

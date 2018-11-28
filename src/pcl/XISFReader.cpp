@@ -429,7 +429,8 @@ struct XISFInputDataBlock
  */
 struct XISFInputImageBlock : public XISFInputDataBlock
 {
-   ImageInfo info; // geometry and color space parameters
+   ImageInfo info;           // geometry and color space parameters
+   bool      normal = false; // normal storage model?
 
    XISFInputImageBlock() = default;
    XISFInputImageBlock( const XISFInputImageBlock& ) = default;
@@ -680,9 +681,9 @@ public:
                   if ( !s.IsEmpty() )
                   {
                      if ( s == "normal" )
-                        HeaderError( element, "The normal pixel storage model is not supported by this XISF implementation." );
-                     if ( s != "planar" )
-                        HeaderError( element, "Unknown pixel storage model \'" + s + "\'" );
+                        data.image.normal = true;
+                     else if ( s != "planar" )
+                        HeaderError( element, "Unknown/unsupported pixel storage model \'" + s + "\'" );
                   }
 
                   // imageType="<type-spec>"
@@ -1608,10 +1609,24 @@ private:
    }
 
    template <class P>
-   void GetBlockData( XISFInputDataBlock& block, GenericImage<P>& image )
+   void GetBlockData( XISFInputImageBlock& block, GenericImage<P>& image )
    {
-      for ( int i = 0; i < image.NumberOfChannels(); ++i )
-         GetBlockData( block, image[i], image.ChannelSize(), size_type( i )*image.ChannelSize() );
+      if ( block.normal && image.NumberOfChannels() > 1 )
+      {
+         // Normal storage model.
+         AutoPointer<typename P::sample> data = new typename P::sample[ image.NumberOfSamples() ];
+         typename P::sample* p = data.Ptr();
+         GetBlockData( block, p, image.ImageSize() );
+         for ( typename GenericImage<P>::pixel_iterator i( image ); i; ++i )
+            for ( int j = 0; j < image.NumberOfChannels(); ++j )
+               i[j] = *p++;
+      }
+      else
+      {
+         // Planar storage model.
+         for ( int i = 0; i < image.NumberOfChannels(); ++i )
+            GetBlockData( block, image[i], image.ChannelSize(), size_type( i )*image.ChannelSize() );
+      }
    }
 
    /*
@@ -2137,6 +2152,15 @@ private:
             HeaderError( element, "Invalid/unknown thumbnail color space '" + value + "'" );
          if ( thumbnail.info.colorSpace != ColorSpace::RGB && thumbnail.info.colorSpace != ColorSpace::Gray )
             HeaderError( element, "Unsupported thumbnail color space '" + value + "'. Must be either RGB or grayscale." );
+      }
+
+      value = element.AttributeValue( "pixelStorage" ).CaseFolded();
+      if ( !value.IsEmpty() )
+      {
+         if ( value == "normal" )
+            thumbnail.normal = true;
+         else if ( value != "planar" )
+            HeaderError( element, "Unknown/unsupported pixel storage model \'" + value + "\'" );
       }
 
       GetBlock( thumbnail, element, true/*getEmbeddedData*/ );

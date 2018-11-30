@@ -129,7 +129,7 @@ private:
 
    int        m_exposureNumber;
 
-   void setTelescopeAlignmentModelParameter(bool throwErrors = false);
+   void SetTelescopeAlignmentModelParameter( bool throwErrors = false );
 
    friend class INDICCDFrameInterface;
    friend class AbstractINDICCDFrameExecution;

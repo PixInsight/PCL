@@ -104,22 +104,22 @@ INDICCDFrameInstance::INDICCDFrameInstance( const MetaProcess* m ) :
    p_requireSelectedTelescope( TheICFRequireSelectedTelescopeParameter->DefaultValue() ),
    p_telescopeDeviceName( TheICFTelescopeDeviceNameParameter->DefaultValue() ),
    p_extFilterWheelDeviceName( TheICFExternalFilterWheelDeviceNameParameter->DefaultValue() ),
-   p_enableAlignmentCorrection(TheICFEnableAlignmentCorrectionParameter->DefaultValue()),
-   p_alignmentFile(TheICFAlignmentFileParameter->DefaultValue()),
+   p_enableAlignmentCorrection( TheICFEnableAlignmentCorrectionParameter->DefaultValue() ),
+   p_alignmentFile( TheICFAlignmentFileParameter->DefaultValue() ),
 
-
-   o_clientViewIds(),
-   o_clientFilePaths(),
-   o_serverFrames(),
    m_exposureNumber( 0 )
 {
 }
+
+// ----------------------------------------------------------------------------
 
 INDICCDFrameInstance::INDICCDFrameInstance( const INDICCDFrameInstance& x ) :
    ProcessImplementation( x )
 {
    Assign( x );
 }
+
+// ----------------------------------------------------------------------------
 
 void INDICCDFrameInstance::Assign( const ProcessImplementation& p )
 {
@@ -169,6 +169,8 @@ bool INDICCDFrameInstance::CanExecuteOn( const View&, pcl::String& whyNot ) cons
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool INDICCDFrameInstance::CanExecuteGlobal( String& whyNot ) const
 {
    if ( p_deviceName.IsEmpty() )
@@ -179,6 +181,8 @@ bool INDICCDFrameInstance::CanExecuteGlobal( String& whyNot ) const
 
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 bool INDICCDFrameInstance::ValidateDevice( bool throwErrors ) const
 {
@@ -208,15 +212,17 @@ bool INDICCDFrameInstance::ValidateDevice( bool throwErrors ) const
    return false;
 }
 
-void  INDICCDFrameInstance::setTelescopeAlignmentModelParameter(bool throwErrors) {
+// ----------------------------------------------------------------------------
+
+void  INDICCDFrameInstance::SetTelescopeAlignmentModelParameter( bool throwErrors )
+{
    throwErrors &= bool( p_requireSelectedTelescope );
    switch ( p_telescopeSelection )
    {
    case ICFTelescopeSelection::NoTelescope:
    case ICFTelescopeSelection::ActiveTelescope:
-      if (throwErrors) {
-         throw Error("Cannot set telescope alignment parameters: specify a telescope selection method");
-      }
+      if ( throwErrors )
+         throw Error( "Cannot set telescope alignment parameters: specify a telescope selection method" );
       break;
    case ICFTelescopeSelection::MountControllerTelescope:
    case ICFTelescopeSelection::MountControllerOrActiveTelescope:
@@ -228,6 +234,7 @@ void  INDICCDFrameInstance::setTelescopeAlignmentModelParameter(bool throwErrors
    }
 }
 
+// ----------------------------------------------------------------------------
 
 String INDICCDFrameInstance::TelescopeDeviceName( bool throwErrors ) const
 {
@@ -305,6 +312,8 @@ String INDICCDFrameInstance::TelescopeDeviceName( bool throwErrors ) const
    return String();
 }
 
+// ----------------------------------------------------------------------------
+
 void INDICCDFrameInstance::SendDeviceProperties( bool async ) const
 {
    INDIClient* indi = INDIClient::TheClientOrDie();
@@ -325,6 +334,8 @@ void INDICCDFrameInstance::SendDeviceProperties( bool async ) const
    if ( p_filterSlot > 0 )
       indi->MaybeSendNewPropertyItem( p_extFilterWheelDeviceName != TheICFExternalFilterWheelDeviceNameParameter->DefaultValue()  ? p_extFilterWheelDeviceName : p_deviceName, "FILTER_SLOT", "INDI_NUMBER", "FILTER_SLOT_VALUE", p_filterSlot, async );
 }
+
+// ----------------------------------------------------------------------------
 
 String INDICCDFrameInstance::FileNameFromTemplate( const String& fileNameTemplate ) const
 {
@@ -386,6 +397,8 @@ String INDICCDFrameInstance::FileNameFromTemplate( const String& fileNameTemplat
    return fileName.Trimmed();
 }
 
+// ----------------------------------------------------------------------------
+
 String INDICCDFrameInstance::ServerFileName() const
 {
    String fileName = FileNameFromTemplate( p_serverFileNameTemplate );
@@ -395,6 +408,8 @@ String INDICCDFrameInstance::ServerFileName() const
 
 }
 
+// ----------------------------------------------------------------------------
+
 String INDICCDFrameInstance::ClientFileName() const
 {
    String fileName = FileNameFromTemplate( p_clientFileNameTemplate );
@@ -402,6 +417,9 @@ String INDICCDFrameInstance::ClientFileName() const
       return fileName;
    return FileNameFromTemplate( TheICFClientFileNameTemplateParameter->DefaultValue() );
 }
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 class INDICCDFrameInstanceExecution : public AbstractINDICCDFrameExecution
 {
@@ -521,11 +539,15 @@ private:
    }
 };
 
+// ----------------------------------------------------------------------------
+
 bool INDICCDFrameInstance::ExecuteGlobal()
 {
    INDICCDFrameInstanceExecution( *this ).Perform();
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void* INDICCDFrameInstance::LockParameter( const MetaParameter* p, size_type tableRow )
 {
@@ -593,10 +615,10 @@ void* INDICCDFrameInstance::LockParameter( const MetaParameter* p, size_type tab
    if ( p == TheICFServerFrameParameter )
       return o_serverFrames[tableRow].Begin();
 
-
-
    return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool INDICCDFrameInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {
@@ -701,6 +723,8 @@ bool INDICCDFrameInstance::AllocateParameter( size_type sizeOrLength, const Meta
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 size_type INDICCDFrameInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
    if ( p == TheICFDeviceNameParameter )
@@ -740,6 +764,8 @@ size_type INDICCDFrameInstance::ParameterLength( const MetaParameter* p, size_ty
    return 0;
 }
 
+// ----------------------------------------------------------------------------
+
 String INDICCDFrameInstance::UploadModePropertyString( int uploadModeIdx )
 {
    switch ( uploadModeIdx )
@@ -754,6 +780,8 @@ String INDICCDFrameInstance::UploadModePropertyString( int uploadModeIdx )
       throw Error( "Internal error: INDICCDFrameInstance: Invalid upload mode." );
    }
 }
+
+// ----------------------------------------------------------------------------
 
 String INDICCDFrameInstance::CCDFrameTypePropertyString( int frameTypeIdx )
 {
@@ -771,6 +799,8 @@ String INDICCDFrameInstance::CCDFrameTypePropertyString( int frameTypeIdx )
       throw Error( "Internal error: INDICCDFrameInstance: Invalid frame type." );
    }
 }
+
+// ----------------------------------------------------------------------------
 
 String INDICCDFrameInstance::CCDFrameTypePrefix( int frameTypeIdx )
 {
@@ -795,62 +825,41 @@ String INDICCDFrameInstance::CCDFrameTypePrefix( int frameTypeIdx )
 typedef KeyValue<IsoString,Variant> ImageProperty;
 typedef Array<ImageProperty>        ImagePropertyList;
 
-template <typename T>
-struct Definable
-{
-   T    value;
-   bool defined = false;
-
-   T& operator =( const T& x )
-   {
-      value = x;
-      defined = true;
-      return value;
-   }
-
-   Definable& operator =( const Definable& x )
-   {
-      if ( (defined = x.defined) != false )
-         value = x.value;
-      return *this;
-   }
-};
-
 struct ImageMetadata
 {
-   Definable<String>    cameraName;
-   Definable<String>    frameType;
-   Definable<String>    filterName;
-   Definable<double>    expTime;
-   Definable<double>    sensorTemp;
-   Definable<double>    xPixSize;
-   Definable<double>    yPixSize;
-   Definable<unsigned>  xBinning;
-   Definable<unsigned>  yBinning;
-   Definable<unsigned>  xOrigin;
-   Definable<unsigned>  yOrigin;
+   Optional<String>   cameraName;
+   Optional<String>   frameType;
+   Optional<String>   filterName;
+   Optional<double>   expTime;
+   Optional<double>   sensorTemp;
+   Optional<double>   xPixSize;
+   Optional<double>   yPixSize;
+   Optional<unsigned> xBinning;
+   Optional<unsigned> yBinning;
+   Optional<unsigned> xOrigin;
+   Optional<unsigned> yOrigin;
 
-   Definable<String>    telescopeName;
-   Definable<double>    focalLength;
-   Definable<double>    aperture;
-   Definable<double>    apertureArea;
-   Definable<String>    telescopePierSide;
+   Optional<String>   telescopeName;
+   Optional<double>   focalLength;
+   Optional<double>   aperture;
+   Optional<double>   apertureArea;
+   Optional<String>   telescopePierSide;
 
-   Definable<String>    objectName;
-   Definable<int>       year;
-   Definable<int>       month;
-   Definable<int>       day;
-   Definable<double>    dayf;
-   Definable<double>    tz;
-   Definable<double>    ra;
-   Definable<double>    dec;
-   Definable<double>    equinox;
-   Definable<double>    localSiderealTime;
-   Definable<double>    geographicLatitude;
-   Definable<double>    geographicLongitude;
-   Definable<double>    eodRa;
-   Definable<double>    eodDec;
-
+   Optional<String>   objectName;
+   Optional<int>      year;
+   Optional<int>      month;
+   Optional<int>      day;
+   Optional<double>   dayf;
+   Optional<double>   tz;
+   Optional<double>   ra;
+   Optional<double>   dec;
+   Optional<double>   equinox;
+   Optional<double>   localSiderealTime;
+   Optional<double>   geographicLongitude;
+   Optional<double>   geographicLatitude;
+   Optional<double>   geographicHeight;
+   Optional<double>   eodRa;
+   Optional<double>   eodDec;
 };
 
 static ImageMetadata
@@ -912,69 +921,73 @@ ImageMetadataFromFITSKeywords( const FITSKeywordArray& keywords )
       else if ( k.name == "LOCALLST" )
     	  data.localSiderealTime = value.SexagesimalToDouble( ' ' );;
    }
-   if ( !data.equinox.defined )
-      if ( data.ra.defined && data.dec.defined )
+   if ( !data.equinox.IsDefined() )
+      if ( data.ra.IsDefined() && data.dec.IsDefined() )
          data.equinox = 2000;
    return data;
 }
+
+// ----------------------------------------------------------------------------
 
 static ImagePropertyList
 ImagePropertiesFromImageMetadata( const ImageMetadata& data )
 {
    ImagePropertyList properties;
-   if ( data.expTime.defined )
-      properties << ImageProperty( "Instrument:ExposureTime", Round( data.expTime.value, 4 ) );
-   if ( data.cameraName.defined )
-      properties << ImageProperty( "Instrument:Camera:Name", data.cameraName.value );
-   if ( data.xBinning.defined )
-      properties << ImageProperty( "Instrument:Camera:XBinning", data.xBinning.value );
-   if ( data.yBinning.defined )
-      properties << ImageProperty( "Instrument:Camera:YBinning", data.yBinning.value );
-   if ( data.xOrigin.defined )
-      properties << ImageProperty( "Instrument:Camera:XOrigin", data.xOrigin.value );
-   if ( data.yOrigin.defined )
-      properties << ImageProperty( "Instrument:Camera:YOrigin", data.yOrigin.value );
-   if ( data.telescopeName.defined )
-      properties << ImageProperty( "Instrument:Telescope:Name", data.telescopeName.value );
-   if ( data.focalLength.defined )
-      properties << ImageProperty( "Instrument:Telescope:FocalLength", Round( data.focalLength.value, 3 ) );
-   if ( data.aperture.defined )
-      properties << ImageProperty( "Instrument:Telescope:Aperture", Round( data.aperture.value, 3 ) );
-   if ( data.apertureArea.defined )
-      properties << ImageProperty( "Instrument:Telescope:CollectingArea", Round( data.apertureArea.value, 3 ) );
-   if ( data.eodRa.defined )
-      properties << ImageProperty( "Instrument:Telescope:Pointing:RA", data.eodRa.value );
-   if ( data.eodDec.defined )
-      properties << ImageProperty( "Instrument:Telescope:Pointing:Dec", data.eodDec.value );
-   if ( data.filterName.defined )
-      properties << ImageProperty( "Instrument:Filter:Name", data.filterName.value );
-   if ( data.sensorTemp.defined )
-      properties << ImageProperty( "Instrument:Sensor:Temperature", data.sensorTemp.value );
-   if ( data.xPixSize.defined )
-      properties << ImageProperty( "Instrument:Sensor:XPixelSize", Round( data.xPixSize.value, 3 ) );
-   if ( data.yPixSize.defined )
-      properties << ImageProperty( "Instrument:Sensor:YPixelSize", Round( data.yPixSize.value, 3 ) );
-   if ( data.frameType.defined )
-      properties << ImageProperty( "Observation:Image:Type", data.frameType.value );
-   if ( data.geographicLatitude.defined )
-      properties << ImageProperty( "Observation:Location:Latitude", data.geographicLatitude.value );
-   if ( data.geographicLongitude.defined )
-      properties << ImageProperty( "Observation:Location:Longitude", data.geographicLongitude.value );
-   if ( data.objectName.defined )
-      properties << ImageProperty( "Observation:Object:Name", data.objectName.value );
-   if ( data.year.defined )
+   if ( data.expTime.IsDefined() )
+      properties << ImageProperty( "Instrument:ExposureTime", Round( data.expTime(), 4 ) );
+   if ( data.cameraName.IsDefined() )
+      properties << ImageProperty( "Instrument:Camera:Name", data.cameraName() );
+   if ( data.xBinning.IsDefined() )
+      properties << ImageProperty( "Instrument:Camera:XBinning", data.xBinning() );
+   if ( data.yBinning.IsDefined() )
+      properties << ImageProperty( "Instrument:Camera:YBinning", data.yBinning() );
+   if ( data.xOrigin.IsDefined() )
+      properties << ImageProperty( "Instrument:Camera:XOrigin", data.xOrigin() );
+   if ( data.yOrigin.IsDefined() )
+      properties << ImageProperty( "Instrument:Camera:YOrigin", data.yOrigin() );
+   if ( data.telescopeName.IsDefined() )
+      properties << ImageProperty( "Instrument:Telescope:Name", data.telescopeName() );
+   if ( data.focalLength.IsDefined() )
+      properties << ImageProperty( "Instrument:Telescope:FocalLength", Round( data.focalLength(), 3 ) );
+   if ( data.aperture.IsDefined() )
+      properties << ImageProperty( "Instrument:Telescope:Aperture", Round( data.aperture(), 3 ) );
+   if ( data.apertureArea.IsDefined() )
+      properties << ImageProperty( "Instrument:Telescope:CollectingArea", Round( data.apertureArea(), 3 ) );
+   if ( data.eodRa.IsDefined() )
+      properties << ImageProperty( "Instrument:Telescope:Pointing:RA", data.eodRa() );
+   if ( data.eodDec.IsDefined() )
+      properties << ImageProperty( "Instrument:Telescope:Pointing:Dec", data.eodDec() );
+   if ( data.filterName.IsDefined() )
+      properties << ImageProperty( "Instrument:Filter:Name", data.filterName() );
+   if ( data.sensorTemp.IsDefined() )
+      properties << ImageProperty( "Instrument:Sensor:Temperature", data.sensorTemp() );
+   if ( data.xPixSize.IsDefined() )
+      properties << ImageProperty( "Instrument:Sensor:XPixelSize", Round( data.xPixSize(), 3 ) );
+   if ( data.yPixSize.IsDefined() )
+      properties << ImageProperty( "Instrument:Sensor:YPixelSize", Round( data.yPixSize(), 3 ) );
+   if ( data.frameType.IsDefined() )
+      properties << ImageProperty( "Observation:Image:Type", data.frameType() );
+   if ( data.geographicLongitude.IsDefined() )
+      properties << ImageProperty( "Observation:Location:Longitude", data.geographicLongitude() );
+   if ( data.geographicLatitude.IsDefined() )
+      properties << ImageProperty( "Observation:Location:Latitude", data.geographicLatitude() );
+   if ( data.geographicHeight.IsDefined() )
+      properties << ImageProperty( "Observation:Location:Height", data.geographicHeight() );
+   if ( data.objectName.IsDefined() )
+      properties << ImageProperty( "Observation:Object:Name", data.objectName() );
+   if ( data.year.IsDefined() )
       properties << ImageProperty( "Observation:Time:Start",
-            IsoString::ToISO8601DateTime( data.year.value, data.month.value, data.day.value, data.dayf.value - data.tz.value/24, 0/*tz*/,
+            IsoString::ToISO8601DateTime( data.year(), data.month(), data.day(), data.dayf() - data.tz()/24, 0/*tz*/,
                                           ISO8601ConversionOptions( 3/*timeItems*/, 3/*precision*/, true/*timeZone(zulu)*/ ) ) );
-   if ( data.ra.defined )
-      properties << ImageProperty( "Observation:Center:RA", data.ra.value );
-   if ( data.dec.defined )
-      properties << ImageProperty( "Observation:Center:Dec", data.dec.value );
+   if ( data.ra.IsDefined() )
+      properties << ImageProperty( "Observation:Center:RA", data.ra() );
+   if ( data.dec.IsDefined() )
+      properties << ImageProperty( "Observation:Center:Dec", data.dec() );
 
-   if ( data.equinox.defined )
+   if ( data.equinox.IsDefined() )
    {
-      properties << ImageProperty( "Observation:Equinox", data.equinox.value );
-      if ( data.equinox.value == 2000.0 )
+      properties << ImageProperty( "Observation:Equinox", data.equinox() );
+      if ( data.equinox() == 2000.0 )
          properties << ImageProperty( "Observation:CelestialReferenceSystem", "GCRS" );
    }
    else
@@ -985,11 +998,13 @@ ImagePropertiesFromImageMetadata( const ImageMetadata& data )
     * location and time properties. In addition, LST (GAST) depends on a
     * particular theory of Earth's rotation.
     */
-//    if ( data.localSiderealTime.defined )
-//       properties << ImageProperty( "Observation:LocalSiderealTime", data.localSiderealTime.value );
+//    if ( data.localSiderealTime.IsDefined() )
+//       properties << ImageProperty( "Observation:LocalSiderealTime", data.localSiderealTime() );
 
    return properties;
 }
+
+// ----------------------------------------------------------------------------
 
 static String UniqueFilePath( const String& filePath )
 {
@@ -1002,6 +1017,8 @@ static String UniqueFilePath( const String& filePath )
          return tryFilePath;
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void AbstractINDICCDFrameExecution::Perform()
 {
@@ -1026,7 +1043,7 @@ void AbstractINDICCDFrameExecution::Perform()
 
       String telescopeName = m_instance.TelescopeDeviceName();
 
-      m_instance.setTelescopeAlignmentModelParameter();
+      m_instance.SetTelescopeAlignmentModelParameter();
 
       m_instance.SendDeviceProperties( false/*async*/ );
 
@@ -1166,7 +1183,7 @@ void AbstractINDICCDFrameExecution::Perform()
                         if ( !m_instance.p_objectName.IsEmpty() )
                         {
                            // Replace or add OBJNAME/OBJECT keywords.
-                           if ( data.objectName.defined )
+                           if ( data.objectName.IsDefined() )
                            {
                               for ( FITSHeaderKeyword& k : keywords )
                                  if ( k.name == "OBJNAME" || k.name == "OBJECT" )
@@ -1183,11 +1200,11 @@ void AbstractINDICCDFrameExecution::Perform()
 
                      // If not already available, try to get the local
                      // sidereal time.
-                     if ( !data.localSiderealTime.defined )
+                     if ( !data.localSiderealTime.IsDefined() )
                         if ( indi->GetPropertyItem( telescopeName, "TIME_LST", "LST", item, false/*formatted*/ ) )
                         {
                            data.localSiderealTime = item.PropertyValue.ToDouble();
-                           IsoString lstSexagesimal = IsoString::ToSexagesimal( data.localSiderealTime.value,
+                           IsoString lstSexagesimal = IsoString::ToSexagesimal( data.localSiderealTime(),
                                              SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, false/*sign*/, 0/*width*/, ':'/*separator*/ ) );
                            keywords << FITSHeaderKeyword( "LOCALLST", lstSexagesimal, "Local sidereal time (LST) - after exposure" );
                         }
@@ -1196,7 +1213,7 @@ void AbstractINDICCDFrameExecution::Perform()
                      {
                         // If not already available, try to get the telescope
                         // pier side from standard device properties.
-                        if ( !data.focalLength.defined )
+                        if ( !data.focalLength.IsDefined() )
                            if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_PIER_SIDE", "PIER_WEST", item) )
                            {
                               if (item.PropertyValue == "ON" )
@@ -1217,10 +1234,10 @@ void AbstractINDICCDFrameExecution::Perform()
                         {
                            Console().WriteLn( "<end><cbr>INDICCDFrame: Apply alignment correction" );
                            AutoPointer<AlignmentModel> aModel = AlignmentModel::Create( m_instance.p_alignmentFile );
-                           double localSiderialTime = data.localSiderealTime.value;
+                           double localSiderialTime = data.localSiderealTime();
                            double newHourAngle = -1;
                            double newDec = -1;
-                           pcl_enum pierSide = data.telescopePierSide.value == "EAST" ? IMCPierSide::East : IMCPierSide::West;
+                           pcl_enum pierSide = data.telescopePierSide() == "EAST" ? IMCPierSide::East : IMCPierSide::West;
                            aModel->ApplyInverse( newHourAngle, newDec,
                                     AlignmentModel::RangeShiftHourAngle( localSiderialTime - Deg( telescopeRA )/15 ),
                                     Deg( telescopeDec ),
@@ -1232,7 +1249,7 @@ void AbstractINDICCDFrameExecution::Perform()
                         data.telescopeName = telescopeName;
 
                         // Store the epoch-of-date coordinates
-                        if ( !data.eodRa.defined || !data.eodDec.defined )
+                        if ( !data.eodRa.IsDefined() || !data.eodDec.IsDefined() )
                         {
                            data.eodRa = Deg( telescopeRA );
                            data.eodDec = Deg( telescopeDec );
@@ -1240,9 +1257,9 @@ void AbstractINDICCDFrameExecution::Perform()
 
                         // Compute GCRS / J2000.0 coordinates from telescope
                         // true / EOD coordinates.
-                        if ( data.year.defined )
+                        if ( data.year.IsDefined() )
                         {
-                           TimePoint t( data.year.value, data.month.value, data.day.value, data.dayf.value - data.tz.value/24 );
+                           TimePoint t( data.year(), data.month(), data.day(), data.dayf() - data.tz()/24 );
                            Position P( t, "UTC" );
                            P.InitEquinoxBasedParameters();
                            Vector u3 = Vector::FromSpherical( telescopeRA, telescopeDec );
@@ -1257,7 +1274,7 @@ void AbstractINDICCDFrameExecution::Perform()
 
                         // If not already available, try to get the telescope
                         // focal length from standard device properties.
-                        if ( !data.focalLength.defined )
+                        if ( !data.focalLength.IsDefined() )
                            if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_INFO", "TELESCOPE_FOCAL_LENGTH", item, false/*formatted*/ ) )
                            {
                               double focalLengthMM = Round( item.PropertyValue.ToDouble(), 3 );
@@ -1268,17 +1285,17 @@ void AbstractINDICCDFrameExecution::Perform()
 
                      // Replace existing coordinate keywords with our
                      // (rigorously calculated) GCRS coordinates.
-                     if ( data.ra.defined && data.dec.defined )
+                     if ( data.ra.IsDefined() && data.dec.IsDefined() )
                         for ( FITSHeaderKeyword& k : keywords )
                            if ( k.name == "OBJCTRA" )
                            {
-                              k.value = '\'' + IsoString::ToSexagesimal( data.ra.value/15,
+                              k.value = '\'' + IsoString::ToSexagesimal( data.ra()/15,
                                                    RAConversionOptions( 3/*precision*/, 0/*width*/ ) ) + '\'';
                               k.comment = "Right ascension of the center of the image";
                            }
                            else if ( k.name == "OBJCTDEC" )
                            {
-                              k.value = '\'' + IsoString::ToSexagesimal( data.dec.value,
+                              k.value = '\'' + IsoString::ToSexagesimal( data.dec(),
                                                    DecConversionOptions( 2/*precision*/, 0/*width*/ ) ) + '\'';
                               k.comment = "Declination ascension of the center of the image";
                            }
@@ -1290,7 +1307,7 @@ void AbstractINDICCDFrameExecution::Perform()
 
                      // If not already available, try to get the telescope
                      // aperture from standard device properties.
-                     if ( !data.aperture.defined )
+                     if ( !data.aperture.IsDefined() )
                         if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_INFO", "TELESCOPE_APERTURE", item, false/*formatted*/ ) )
                         {
                            double apertureMM = Round( item.PropertyValue.ToDouble(), 3 );
@@ -1300,7 +1317,7 @@ void AbstractINDICCDFrameExecution::Perform()
 
                      // If not already available, try to get the telescope
                      // focal length from standard device properties.
-                     if ( !data.focalLength.defined )
+                     if ( !data.focalLength.IsDefined() )
                         if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_INFO", "TELESCOPE_FOCAL_LENGTH", item, false/*formatted*/ ) )
                         {
                            double focalLengthMM = Round( item.PropertyValue.ToDouble(), 3 );
@@ -1309,16 +1326,22 @@ void AbstractINDICCDFrameExecution::Perform()
                         }
 
                      // If not already available, try to get the local
+                     // geographic longitude of observatory.
+                     if (!data.geographicLongitude.IsDefined())
+                        if ( indi->GetPropertyItem( telescopeName, "GEOGRAPHIC_COORD", "LONG", item, false/*formatted*/ ))
+                           data.geographicLongitude = item.PropertyValue.ToDouble();
+
+                     // If not already available, try to get the local
                      // geographic latitude of observatory.
-                     if (!data.geographicLatitude.defined)
+                     if (!data.geographicLatitude.IsDefined())
                         if ( indi->GetPropertyItem( telescopeName, "GEOGRAPHIC_COORD", "LAT", item, false/*formatted*/ ))
                            data.geographicLatitude = item.PropertyValue.ToDouble();
 
                      // If not already available, try to get the local
-                     // geographic longitude of observatory.
-                     if (!data.geographicLongitude.defined)
-                        if ( indi->GetPropertyItem( telescopeName, "GEOGRAPHIC_COORD", "LONG", item, false/*formatted*/ ))
-                           data.geographicLongitude = item.PropertyValue.ToDouble();
+                     // geographic height of observatory.
+                     if (!data.geographicHeight.IsDefined())
+                        if ( indi->GetPropertyItem( telescopeName, "GEOGRAPHIC_COORD", "ELEV", item, false/*formatted*/ ))
+                           data.geographicHeight = item.PropertyValue.ToDouble();
 
                      properties << ImagePropertiesFromImageMetadata( data );
                }
@@ -1563,11 +1586,15 @@ void AbstractINDICCDFrameExecution::Perform()
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void AbstractINDICCDFrameExecution::Abort()
 {
    if ( IsRunning() )
       throw ProcessAborted();
 }
+
+// ----------------------------------------------------------------------------
 
 int AbstractINDICCDFrameExecution::s_width = 0;
 int AbstractINDICCDFrameExecution::s_height = 0;

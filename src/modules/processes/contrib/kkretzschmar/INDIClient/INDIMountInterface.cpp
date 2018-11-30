@@ -87,7 +87,9 @@ INDIMountInterface* TheINDIMountInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
-CoordinateSearchDialog::CoordinateSearchDialog()
+CoordinateSearchDialog::CoordinateSearchDialog( INDIMountInterface& parent ) :
+   Dialog( parent ),
+   m_parent( parent )
 {
    const char* objectNameToolTip =
       "<p>Name or identifier of the object to search for. Examples: M31, Pleiades, NGC 253, Orion Nebula, Antares.</p>";
@@ -112,7 +114,7 @@ CoordinateSearchDialog::CoordinateSearchDialog()
 
    SearchInfo_TextBox.SetReadOnly();
    SearchInfo_TextBox.SetStyleSheet( ScaledStyleSheet(
-         "QTextEdit {"
+         "* {"
             "font-family: DejaVu Sans Mono, Monospace;"
             "font-size: 8pt;"
             "background: #141414;" // borrowed from /rsc/qss/core-standard.qss
@@ -266,14 +268,6 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
                                                    transfer.BytesTransferred(), transfer.TotalSpeed() ) );
          //SearchInfo_TextBox.Insert( "<end><cbr><br><raw>" + m_downloadData + "</raw>" );
 
-         m_vmag.Undefine();
-         m_RA.Undefine();
-         m_Dec.Undefine();
-         m_muRA.Undefine();
-         m_muDec.Undefine();
-         m_parallax.Undefine();
-         m_radVel.Undefine();
-
          StringList lines;
          m_downloadData.Break( lines, '\n' );
          if ( lines.Length() >= 2 )
@@ -283,65 +277,93 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
             lines[1].Break( tokens, '\t', true/*trim*/ );
             if ( tokens.Length() == 11 )
             {
+               String           objectName;
+               String           objectType;
+               String           spectralType;
+               Optional<double> vmag;     // flux in the V filter
+               Optional<double> ra;       // hours
+               Optional<double> dec;      // degrees
+               Optional<double> muAlpha;  // mas/year * cos( delta )
+               Optional<double> muDelta;  // mas/year
+               Optional<double> parallax; // arcsec
+               Optional<double> radVel;   // km/s
+
                if ( !tokens[1].IsEmpty() )
-                  m_RA = tokens[1].ToDouble()/15;  // degrees -> hours
+                  ra = tokens[1].ToDouble()/15;   // degrees -> hours
                if ( !tokens[2].IsEmpty() )
-                  m_Dec = tokens[2].ToDouble();    // degrees
+                  dec = tokens[2].ToDouble();     // degrees
                if ( !tokens[3].IsEmpty() )
-                  m_muRA = tokens[3].ToDouble();   // mas/yr * cos(delta)
+                  muAlpha = tokens[3].ToDouble(); // mas/yr * cos(delta)
                if ( !tokens[4].IsEmpty() )
-                  m_muDec = tokens[4].ToDouble();  // mas/yr
+                  muDelta = tokens[4].ToDouble(); // mas/yr
                if ( !tokens[5].IsEmpty() )
-                  m_parallax = tokens[5].ToDouble()/1000; // mas -> arcsec
+                  parallax = tokens[5].ToDouble()/1000; // mas -> arcsec
                if ( !tokens[6].IsEmpty() )
-                  m_radVel = tokens[6].ToDouble(); // km/s
-               m_objectName = tokens[7].Unquoted().Trimmed();
-               m_objectType = tokens[8].Unquoted().Trimmed();
-               m_spectralType = tokens[9].Unquoted().Trimmed();
+                  radVel = tokens[6].ToDouble();  // km/s
+               objectName = tokens[7].Unquoted().Trimmed();
+               objectType = tokens[8].Unquoted().Trimmed();
+               spectralType = tokens[9].Unquoted().Trimmed();
                if ( !tokens[10].IsEmpty() )
-                  m_vmag = tokens[10].ToDouble();
+                  vmag = tokens[10].ToDouble();
 
-               if ( m_RA.IsDefined() && m_Dec.IsDefined() )
+               if ( ra.IsDefined() && dec.IsDefined() )
                {
-                  try
-                  {
-                     String info = String()
-                             << "<end><cbr><br><b>Object            :</b> "
-                             << m_objectName
-                             <<           "<br><b>Object type       :</b> "
-                             << m_objectType
-                             <<           "<br><b>Right Ascension   :</b> "
-                             << ' ' << String::ToSexagesimal( m_RA(), RAConversionOptions( 3/*precision*/ ) )
-                             <<           "<br><b>Declination       :</b> "
-                             << String::ToSexagesimal( m_Dec(), DecConversionOptions( 2/*precision*/ ) );
-                     if ( m_muRA.IsDefined() )
-                        info <<           "<br><b>Proper motion RA* :</b> "
-                             << String().Format( "%+8.2f mas/year * cos(delta)", m_muRA() );
-                     if ( m_muDec.IsDefined() )
-                        info <<           "<br><b>Proper motion Dec :</b> "
-                             << String().Format( "%+8.2f mas/year", m_muDec() );
-                     if ( m_parallax.IsDefined() )
-                        info <<           "<br><b>Parallax          :</b> "
-                             << String().Format( "%8.2f arcsec", m_parallax() );
-                     if ( m_radVel.IsDefined() )
-                        info <<           "<br><b>Radial velocity   :</b> "
-                             << String().Format( "%+7.1f km/s", m_radVel() );
-                     if ( !m_spectralType.IsEmpty() )
-                        info <<           "<br><b>Spectral type     :</b> "
-                             << m_spectralType;
-                     if ( m_vmag.IsDefined() )
-                        info <<           "<br><b>V Magnitude       :</b> "
-                             << String().Format( "%.4g", m_vmag() );
-                     info << "<br>";
+                  StarPosition S( ra(),
+                                  dec(),
+                                  muAlpha.OrElse( 0 ),
+                                  muDelta.OrElse( 0 ),
+                                  parallax.OrElse( 0 ),
+                                  radVel.OrElse( 0 ) );
+                  ObserverPosition O( m_parent.GeographicLongitude(),
+                                      m_parent.GeographicLatitude(),
+                                      m_parent.GeographicHeight() );
+                  TimePoint t = TimePoint::Now();
+                  pcl::Position P( t, "UTC" );
+                  P.SetObserver( O );
+                  P.Apparent( S ).ToSpherical2Pi( m_alpha, m_delta );
+                  m_alpha = Deg( m_alpha )/15;
+                  m_delta = Deg( m_delta );
 
-                     SearchInfo_TextBox.Insert( info );
-                     m_valid = true;
-                     Get_Button.Enable();
-                     GoTo_Button.Enable();
-                  }
-                  catch ( ... )
-                  {
-                  }
+                  String info = String()
+                          << "<end><cbr><br><b>Object            :</b> "
+                          << objectName
+                          <<           "<br><b>Object type       :</b> "
+                          << objectType
+                          <<           "<br><b>Right Ascension   :</b> "
+                          << String::ToSexagesimal( ra(), RAConversionOptions( 3/*precision*/, 3/*width*/ ) )
+                          <<           "<br><b>Declination       :</b> "
+                          << String::ToSexagesimal( dec(), DecConversionOptions( 2/*precision*/, 3/*width*/ ) );
+                  if ( muAlpha.IsDefined() )
+                     info <<           "<br><b>Proper motion RA* :</b> "
+                          << String().Format( "%+8.2f mas/year * cos(delta)", muAlpha() );
+                  if ( muDelta.IsDefined() )
+                     info <<           "<br><b>Proper motion Dec :</b> "
+                          << String().Format( "%+8.2f mas/year", muDelta() );
+                  if ( parallax.IsDefined() )
+                     info <<           "<br><b>Parallax          :</b> "
+                          << String().Format( "%8.2f arcsec", parallax() );
+                  if ( radVel.IsDefined() )
+                     info <<           "<br><b>Radial velocity   :</b> "
+                          << String().Format( "%+7.1f km/s", radVel() );
+                  if ( !spectralType.IsEmpty() )
+                     info <<           "<br><b>Spectral type     :</b> "
+                          << spectralType;
+                  if ( vmag.IsDefined() )
+                     info <<           "<br><b>Visual Magnitude  :</b> "
+                          << String().Format( "%.4g", vmag() );
+
+                  info    << "<br>" << t.ToString( "%Y-%M-%D %h:%m:%s2" ) << " UTC"
+                          <<       "<br><br><b>*** Topocentric Apparent Coordinates ***</b>"
+                          <<           "<br><b>Right Ascension   :</b> "
+                          << String::ToSexagesimal( m_alpha, RAConversionOptions( 3/*precision*/, 3/*width*/ ) )
+                          <<           "<br><b>Declination       :</b> "
+                          << String::ToSexagesimal( m_delta, DecConversionOptions( 2/*precision*/, 3/*width*/ ) )
+                          << "<br>";
+
+                  SearchInfo_TextBox.Insert( info );
+                  m_valid = true;
+                  Get_Button.Enable();
+                  GoTo_Button.Enable();
                }
             }
          }
@@ -386,7 +408,9 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-EphemerisSearchDialog::EphemerisSearchDialog()
+EphemerisSearchDialog::EphemerisSearchDialog( INDIMountInterface& parent ) :
+   Dialog( parent ),
+   m_parent( parent )
 {
    const char* objectToolTip =
       "<p>Select one of the solar system bodies available to calculate ephemerides.</p>";
@@ -411,7 +435,7 @@ EphemerisSearchDialog::EphemerisSearchDialog()
 
    ObjectInfo_TextBox.SetReadOnly();
    ObjectInfo_TextBox.SetStyleSheet( ScaledStyleSheet(
-         "QTextEdit {"
+         "* {"
             "font-family: DejaVu Sans Mono, Monospace;"
             "font-size: 8pt;"
             "background: #141414;" // borrowed from /rsc/qss/core-standard.qss
@@ -502,24 +526,32 @@ void EphemerisSearchDialog::e_Click( Button& sender, bool checked )
       bool isMoon = m_objectName.CompareIC( "Moon" ) == 0;
       TimePoint t = TimePoint::Now();
       EphemerisFile::Handle H( Ephemerides(), m_objectName, isMoon ? "Ea" : "SSB" );
+      ObserverPosition O( m_parent.GeographicLongitude(),
+                          m_parent.GeographicLatitude(),
+                          m_parent.GeographicHeight() );
       pcl::Position P( t, "UTC" );
-      Vector u3 = P.Apparent( H );
-      u3.ToSpherical2Pi( m_RA, m_Dec );
-      m_RA = Deg( m_RA )/15;
-      m_Dec = Deg( m_Dec );
+      P.SetObserver( O );
+      P.Apparent( H ).ToSpherical2Pi( m_alpha, m_delta );
+      m_alpha = Deg( m_alpha )/15;
+      m_delta = Deg( m_delta );
 
       String info = String()
                << "<end><cbr><br><b>" << ObjectName() << "</b> "
                << "<br>" << t.ToString( "%Y-%M-%D %h:%m:%s2" ) << " UTC"
-               << "<br><b>Apparent right ascension :</b> "
-               << String::ToSexagesimal( m_RA, RAConversionOptions( 3/*precision*/, 3/*width*/ ) )
-               << "<br><b>Apparent declination     :</b> "
-               << String::ToSexagesimal( m_Dec, DecConversionOptions( 2/*precision*/, 3/*width*/ ) )
-               << "<br><b>True distance            :</b> "
+               << "<br><b>*** Topocentric Apparent Coordinates ***</b>"
+               << "<br><b>Right ascension  :</b> "
+               << String::ToSexagesimal( m_alpha, RAConversionOptions( 3/*precision*/, 3/*width*/ ) )
+               << "<br><b>Declination      :</b> "
+               << String::ToSexagesimal( m_delta, DecConversionOptions( 2/*precision*/, 3/*width*/ ) )
+               << "<br><b>True distance    :</b> "
                << String().Format( "%10.*f %s", P.TrueDistance( H ), isMoon ? 3 : 7, isMoon ? "km" : "au" );
-      /*
-       * ### TODO: Include visual magnitude and apparent diameter for planets.
-       */
+      if ( P.CanComputeApparentVisualMagnitude( H ) )
+      {
+         Optional<double> V = P.ApparentVisualMagnitude( H )();
+         if ( V.IsDefined() )
+            info << "<br><b>Visual magnitude :</b> " << String().Format( "%.2f", V() );
+      }
+
       info << "<br>";
 
       ObjectInfo_TextBox.Insert( info );
@@ -557,7 +589,8 @@ void EphemerisSearchDialog::e_Click( Button& sender, bool checked )
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-PlanetSearchDialog::PlanetSearchDialog()
+PlanetSearchDialog::PlanetSearchDialog( INDIMountInterface& parent ) :
+   EphemerisSearchDialog( parent )
 {
    SetWindowTitle( "Planet Coordinates" );
 }
@@ -584,7 +617,8 @@ const EphemerisFile& PlanetSearchDialog::Ephemerides() const
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-AsteroidSearchDialog::AsteroidSearchDialog()
+AsteroidSearchDialog::AsteroidSearchDialog( INDIMountInterface& parent ) :
+   EphemerisSearchDialog( parent )
 {
    SetWindowTitle( "Asteroid Coordinates" );
 }
@@ -936,7 +970,7 @@ void AlignmentConfigDialog::e_PageSelected( TabBox& sender, int tabIndex )
 // ----------------------------------------------------------------------------
 
 MountConfigDialog::MountConfigDialog( const String& deviceName,
-                                      double geoLat, double geoLong,
+                                      double geoLat, double geoLong, double geoHeight,
                                       double telescopeAperture, double telescopeFocalLength ) :
    ConfigDialogBase( deviceName ),
    m_device( deviceName )
@@ -951,11 +985,12 @@ MountConfigDialog::MountConfigDialog( const String& deviceName,
    int labelWidth1 = Font().Width( "Geographic Longitude:" ) + emWidth;
 
    Latitude_Label.SetText( "Geographic Latitude:" );
-   Latitude_Label.SetToolTip( "<p>Position of observatory: Geographic latitude (g:m:s)</p>" );
+   Latitude_Label.SetToolTip( "<p>Position of observatory: Geographic latitude in degrees, arcminutes and arcseconds.</p>" );
    Latitude_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    Latitude_Label.SetFixedWidth( labelWidth1 );
 
    DecimalToSexagesimal( sign, s1, s2, s3, geoLat );
+
    Latitude_H_SpinBox.SetRange( 0, 90 );
    Latitude_H_SpinBox.SetFixedWidth( editWidth1 );
    Latitude_H_SpinBox.SetValue( Abs( s1 ) );
@@ -973,7 +1008,7 @@ MountConfigDialog::MountConfigDialog( const String& deviceName,
    Latitude_S_NumericEdit.SetValue( s3 );
 
    LatitudeIsSouth_CheckBox.SetText( "South" );
-   LatitudeIsSouth_CheckBox.SetToolTip( "<p>When checked, latitude is negative (Southern hemisphere).</p>" );
+   LatitudeIsSouth_CheckBox.SetToolTip( "<p>When checked, latitude is negative (southern hemisphere).</p>" );
    LatitudeIsSouth_CheckBox.SetChecked( sign < 0 );
 
    Latitude_Sizer.SetSpacing( 4 );
@@ -985,8 +1020,9 @@ MountConfigDialog::MountConfigDialog( const String& deviceName,
    Latitude_Sizer.AddStretch();
 
    DecimalToSexagesimal( sign, s1, s2, s3, geoLong );
+
    Longitude_Label.SetText( "Geographic Longitude:" );
-   Longitude_Label.SetToolTip( "<p>Position of observatory: Geographic longitude (g:m:s)</p></p>" );
+   Longitude_Label.SetToolTip( "<p>Position of observatory: Geographic longitude in degrees, arcminutes and arcseconds.</p>" );
    Longitude_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    Longitude_Label.SetFixedWidth( labelWidth1 );
 
@@ -1007,8 +1043,8 @@ MountConfigDialog::MountConfigDialog( const String& deviceName,
    Longitude_S_NumericEdit.SetValue( s3 );
 
    LongitudeIsWest_CheckBox.SetText( "West" );
-   LongitudeIsWest_CheckBox.SetToolTip( "<p>When checked, numeric value refers to western (negative) longitude.</p>" );
-   LongitudeIsWest_CheckBox.SetChecked(sign<0);
+   LongitudeIsWest_CheckBox.SetToolTip( "<p>When checked, longitude is negative (western longitude).</p>" );
+   LongitudeIsWest_CheckBox.SetChecked( sign < 0 );
 
    Longitude_Sizer.SetSpacing( 4 );
    Longitude_Sizer.Add( Longitude_Label );
@@ -1017,6 +1053,16 @@ MountConfigDialog::MountConfigDialog( const String& deviceName,
    Longitude_Sizer.Add( Longitude_S_NumericEdit );
    Longitude_Sizer.Add( LongitudeIsWest_CheckBox );
    Longitude_Sizer.AddStretch();
+
+   Height_NumericEdit.SetInteger();
+   Height_NumericEdit.SetRange( 0, 500000 );
+   Height_NumericEdit.label.SetText( "Geographic Height:" );
+   Height_NumericEdit.label.SetToolTip( "<p>Position of observatory: Geographic height in meters.</p></p>" );
+   Height_NumericEdit.label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   Height_NumericEdit.label.SetFixedWidth( labelWidth1 );
+   Height_NumericEdit.edit.SetFixedWidth( editWidth2 );
+   Height_NumericEdit.sizer.AddStretch();
+   Height_NumericEdit.SetValue( s3 );
 
    TelescopeAperture_NumericEdit.label.SetText( "Telescope aperture:" );
    TelescopeAperture_NumericEdit.label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
@@ -1033,7 +1079,7 @@ MountConfigDialog::MountConfigDialog( const String& deviceName,
    TelescopeFocalLength_NumericEdit.label.SetToolTip( "<p>Telescope's focal length in millimeters.</p> ");
    TelescopeFocalLength_NumericEdit.label.SetFixedWidth( labelWidth1 );
    TelescopeFocalLength_NumericEdit.SetInteger();
-   TelescopeFocalLength_NumericEdit.SetRange( 100, 10000 );
+   TelescopeFocalLength_NumericEdit.SetRange( 10, 100000 );
    TelescopeFocalLength_NumericEdit.edit.SetFixedWidth( editWidth2 );
    TelescopeFocalLength_NumericEdit.sizer.AddStretch();
    TelescopeFocalLength_NumericEdit.SetValue( telescopeFocalLength );
@@ -1042,6 +1088,7 @@ MountConfigDialog::MountConfigDialog( const String& deviceName,
    Global_Sizer.SetMargin( 8 );
    Global_Sizer.Add( Latitude_Sizer );
    Global_Sizer.Add( Longitude_Sizer );
+   Global_Sizer.Add( Height_NumericEdit );
    Global_Sizer.Add( TelescopeAperture_NumericEdit );
    Global_Sizer.Add( TelescopeFocalLength_NumericEdit );
 
@@ -1061,6 +1108,8 @@ void MountConfigDialog::SendUpdatedProperties()
          Longitude_H_SpinBox.Value(), Longitude_M_SpinBox.Value(), Longitude_S_NumericEdit.Value() );
 
    INDIClient::TheClient()->SendNewPropertyItem( m_device, "GEOGRAPHIC_COORD", "INDI_NUMBER", "LONG", longitude );
+
+   INDIClient::TheClient()->SendNewPropertyItem( m_device, "GEOGRAPHIC_COORD", "INDI_NUMBER", "ELEV", Height_NumericEdit.Value() );
 
    // sending telescope info in bulk request
    INDINewPropertyItem newPropertyItem( m_device, "TELESCOPE_INFO", "INDI_NUMBER" );
@@ -1350,10 +1399,10 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    MountDevice_Label.SetMinWidth( labelWidth1 );
    MountDevice_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
-   MountDeviceConfig_ToolButton.SetIcon(w.ScaledResource(":/icons/wrench.png"));
-   MountDeviceConfig_ToolButton.SetScaledFixedSize(22, 22);
-   MountDeviceConfig_ToolButton.SetToolTip("<p>Configure INDI mount device</p>");
-   MountDeviceConfig_ToolButton.OnClick((Button::click_event_handler) &INDIMountInterface::e_Click, w);
+   MountDeviceConfig_ToolButton.SetIcon( w.ScaledResource( ":/icons/wrench.png" ) );
+   MountDeviceConfig_ToolButton.SetScaledFixedSize( 22, 22 );
+   MountDeviceConfig_ToolButton.SetToolTip( "<p>Configure INDI mount device</p>" );
+   MountDeviceConfig_ToolButton.OnClick( (Button::click_event_handler)&INDIMountInterface::e_Click, w );
 
    MountDevice_Combo.OnItemSelected( (ComboBox::item_event_handler)&INDIMountInterface::e_ItemSelected, w );
 
@@ -1919,6 +1968,11 @@ __device_found:
       else
          m_geoLongitude = 0;
 
+      if ( indi->GetPropertyItem( m_device, "GEOGRAPHIC_COORD", "ELEV", mountProp, false/*formatted*/ ) )
+         m_geoHeight = mountProp.PropertyValue.ToDouble();
+      else
+         m_geoHeight = 0;
+
       if ( indi->GetPropertyItem( m_device, "TELESCOPE_INFO", "TELESCOPE_APERTURE", mountProp, false/*formatted*/ ) )
          m_telescopeAperture = mountProp.PropertyValue.ToDouble();
       else
@@ -2088,27 +2142,17 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
    else if ( sender == GUI->MountSearch_Button )
    {
       if ( m_searchDialog.IsNull() )
-         m_searchDialog = new CoordinateSearchDialog;
+         m_searchDialog = new CoordinateSearchDialog( *this );
       if ( m_searchDialog->Execute() )
          if ( m_searchDialog->HasValidCoordinates() )
          {
-            StarPosition S( m_searchDialog->RA(), m_searchDialog->Dec(),
-                            m_searchDialog->MuRA(), m_searchDialog->MuDec(),
-                            m_searchDialog->Parallax(), m_searchDialog->RadialVelocity() );
-            pcl::Position P( TimePoint::Now(), "UTC" );
-            Vector u3 = P.Apparent( S );
-            double alpha, delta;
-            u3.ToSpherical2Pi( alpha, delta );
-            alpha = Deg( alpha )/15;
-            delta = Deg( delta );
-
             int sign, s1, s2; double s3;
-            DecimalToSexagesimal( sign, s1, s2, s3, alpha );
+            DecimalToSexagesimal( sign, s1, s2, s3, m_searchDialog->RA() );
             GUI->TargetRA_H_SpinBox.SetValue( s1 );
             GUI->TargetRA_M_SpinBox.SetValue( s2 );
             GUI->TargetRA_S_NumericEdit.SetValue( s3 );
 
-            DecimalToSexagesimal( sign, s1, s2, s3, delta );
+            DecimalToSexagesimal( sign, s1, s2, s3, m_searchDialog->Dec() );
             GUI->TargetDec_H_SpinBox.SetValue( s1 );
             GUI->TargetDec_M_SpinBox.SetValue( s2 );
             GUI->TargetDec_S_NumericEdit.SetValue( s3 );
@@ -2123,49 +2167,49 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
    else if ( sender == GUI->MountPlanets_Button )
    {
       if ( m_planetDialog.IsNull() )
-         m_planetDialog = new PlanetSearchDialog;
+         m_planetDialog = new PlanetSearchDialog( *this );
       if ( m_planetDialog->Execute() )
       {
-            int sign, s1, s2; double s3;
-            DecimalToSexagesimal( sign, s1, s2, s3, m_planetDialog->RA() );
-            GUI->TargetRA_H_SpinBox.SetValue( s1 );
-            GUI->TargetRA_M_SpinBox.SetValue( s2 );
-            GUI->TargetRA_S_NumericEdit.SetValue( s3 );
+         int sign, s1, s2; double s3;
+         DecimalToSexagesimal( sign, s1, s2, s3, m_planetDialog->RA() );
+         GUI->TargetRA_H_SpinBox.SetValue( s1 );
+         GUI->TargetRA_M_SpinBox.SetValue( s2 );
+         GUI->TargetRA_S_NumericEdit.SetValue( s3 );
 
-            DecimalToSexagesimal( sign, s1, s2, s3, m_planetDialog->Dec() );
-            GUI->TargetDec_H_SpinBox.SetValue( s1 );
-            GUI->TargetDec_M_SpinBox.SetValue( s2 );
-            GUI->TargetDec_S_NumericEdit.SetValue( s3 );
-            GUI->MountTargetDECIsSouth_CheckBox.SetChecked( sign < 0 );
+         DecimalToSexagesimal( sign, s1, s2, s3, m_planetDialog->Dec() );
+         GUI->TargetDec_H_SpinBox.SetValue( s1 );
+         GUI->TargetDec_M_SpinBox.SetValue( s2 );
+         GUI->TargetDec_S_NumericEdit.SetValue( s3 );
+         GUI->MountTargetDECIsSouth_CheckBox.SetChecked( sign < 0 );
 
-            if ( m_planetDialog->GoToTarget() )
-               INDIMountInterfaceExecution( this ).Perform( IMCCommand::GoTo );
+         if ( m_planetDialog->GoToTarget() )
+            INDIMountInterfaceExecution( this ).Perform( IMCCommand::GoTo );
 
-            GUI->MountComputeApparentPosition_CheckBox.SetChecked( false );
+         GUI->MountComputeApparentPosition_CheckBox.SetChecked( false );
       }
    }
    else if ( sender == GUI->MountAsteroids_Button )
    {
       if ( m_asteroidDialog.IsNull() )
-         m_asteroidDialog = new AsteroidSearchDialog;
+         m_asteroidDialog = new AsteroidSearchDialog( *this );
       if ( m_asteroidDialog->Execute() )
       {
-            int sign, s1, s2; double s3;
-            DecimalToSexagesimal( sign, s1, s2, s3, m_asteroidDialog->RA() );
-            GUI->TargetRA_H_SpinBox.SetValue( s1 );
-            GUI->TargetRA_M_SpinBox.SetValue( s2 );
-            GUI->TargetRA_S_NumericEdit.SetValue( s3 );
+         int sign, s1, s2; double s3;
+         DecimalToSexagesimal( sign, s1, s2, s3, m_asteroidDialog->RA() );
+         GUI->TargetRA_H_SpinBox.SetValue( s1 );
+         GUI->TargetRA_M_SpinBox.SetValue( s2 );
+         GUI->TargetRA_S_NumericEdit.SetValue( s3 );
 
-            DecimalToSexagesimal( sign, s1, s2, s3, m_asteroidDialog->Dec() );
-            GUI->TargetDec_H_SpinBox.SetValue( s1 );
-            GUI->TargetDec_M_SpinBox.SetValue( s2 );
-            GUI->TargetDec_S_NumericEdit.SetValue( s3 );
-            GUI->MountTargetDECIsSouth_CheckBox.SetChecked( sign < 0 );
+         DecimalToSexagesimal( sign, s1, s2, s3, m_asteroidDialog->Dec() );
+         GUI->TargetDec_H_SpinBox.SetValue( s1 );
+         GUI->TargetDec_M_SpinBox.SetValue( s2 );
+         GUI->TargetDec_S_NumericEdit.SetValue( s3 );
+         GUI->MountTargetDECIsSouth_CheckBox.SetChecked( sign < 0 );
 
-            if ( m_asteroidDialog->GoToTarget() )
-               INDIMountInterfaceExecution( this ).Perform( IMCCommand::GoTo );
+         if ( m_asteroidDialog->GoToTarget() )
+            INDIMountInterfaceExecution( this ).Perform( IMCCommand::GoTo );
 
-            GUI->MountComputeApparentPosition_CheckBox.SetChecked( false );
+         GUI->MountComputeApparentPosition_CheckBox.SetChecked( false );
       }
    }
    else if ( sender == GUI->SlewStop_Button )
@@ -2224,6 +2268,7 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
       MountConfigDialog mountConfig( m_device,
                                      GeographicLatitude(),
                                      GeographicLongitude(),
+                                     GeographicHeight(),
                                      TelescopeAperture(),
                                      TelescopeFocalLength() );
       if ( mountConfig.Execute() && INDIClient::HasClient() )

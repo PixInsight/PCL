@@ -85,66 +85,24 @@ namespace pcl
 
 class INDIMountInterface;
 
+// ----------------------------------------------------------------------------
+
 class CoordinateSearchDialog : public Dialog
 {
 public:
 
-   CoordinateSearchDialog();
+   CoordinateSearchDialog( INDIMountInterface& );
 
-   const String& ObjectName() const
-   {
-      return m_objectName;
-   }
-
-   const String& ObjectType() const
-   {
-      return m_objectType;
-   }
-
-   const String& SpectralType() const
-   {
-      return m_spectralType;
-   }
-
-   double Magnitude() const
-   {
-      return m_vmag.OrElse( -101 );
-   }
-
-   // hours
+   // Topocentric apparent right ascension in hours.
    double RA() const
    {
-      return m_RA.OrElse( 0 );
+      return m_alpha;
    }
 
-   // degrees
+   // Topocentric apparent declination in degrees.
    double Dec() const
    {
-      return m_Dec.OrElse( 0 );
-   }
-
-   // mas/year * cos( delta )
-   double MuRA() const
-   {
-      return m_muRA.OrElse( 0 );
-   }
-
-   // mas/year
-   double MuDec() const
-   {
-      return m_muDec.OrElse( 0 );
-   }
-
-   // arcsec
-   double Parallax() const
-   {
-      return m_parallax.OrElse( 0 );
-   }
-
-   // km/s
-   double RadialVelocity() const
-   {
-      return m_radVel.OrElse( 0 );
+      return m_delta;
    }
 
    bool HasValidCoordinates() const
@@ -170,22 +128,16 @@ private:
          PushButton           GoTo_Button;
          PushButton           Cancel_Button;
 
-   String           m_objectName;
-   String           m_objectType;
-   String           m_spectralType;
-   Optional<double> m_vmag;     // flux in the V filter
-   Optional<double> m_RA;       // hours
-   Optional<double> m_Dec;      // degrees
-   Optional<double> m_muRA;     // mas/year * cos( delta )
-   Optional<double> m_muDec;    // mas/year
-   Optional<double> m_parallax; // arcsec
-   Optional<double> m_radVel;   // km/s
-   bool             m_valid = false;
-   bool             m_goto = false;
-   bool             m_downloading = false;
-   bool             m_abort = false;
-   bool             m_firstTimeShown = true;
-   IsoString        m_downloadData;
+   INDIMountInterface& m_parent;
+
+   double    m_alpha = 0;
+   double    m_delta = 0;
+   bool      m_valid = false;
+   bool      m_goto = false;
+   bool      m_downloading = false;
+   bool      m_abort = false;
+   bool      m_firstTimeShown = true;
+   IsoString m_downloadData;
 
    void e_Show( Control& sender );
    void e_GetFocus( Control& sender );
@@ -203,7 +155,7 @@ class EphemerisSearchDialog : public Dialog
 {
 public:
 
-   EphemerisSearchDialog();
+   EphemerisSearchDialog( INDIMountInterface& );
 
    virtual EphemerisObjectList Objects() const = 0;
    virtual const EphemerisFile& Ephemerides() const = 0;
@@ -213,16 +165,16 @@ public:
       return m_objectName;
    }
 
-   // hours
+   // Topocentric apparent right ascension in hours.
    double RA() const
    {
-      return m_RA;
+      return m_alpha;
    }
 
-   // degrees
+   // Topocentric apparent declination in degrees.
    double Dec() const
    {
-      return m_Dec;
+      return m_delta;
    }
 
    bool GoToTarget() const
@@ -244,9 +196,11 @@ protected:
          PushButton        GoTo_Button;
          PushButton        Cancel_Button;
 
+   INDIMountInterface& m_parent;
+
    IsoString m_objectName;
-   double    m_RA = 0;  // hours
-   double    m_Dec = 0; // degrees
+   double    m_alpha = 0;  // hours
+   double    m_delta = 0; // degrees
    bool      m_valid = false;
    bool      m_goto = false;
    bool      m_firstTimeShown = true;
@@ -264,7 +218,7 @@ class PlanetSearchDialog : public EphemerisSearchDialog
 {
 public:
 
-   PlanetSearchDialog();
+   PlanetSearchDialog( INDIMountInterface& );
 
    EphemerisObjectList Objects() const override;
    const EphemerisFile& Ephemerides() const override;
@@ -276,7 +230,7 @@ class AsteroidSearchDialog : public EphemerisSearchDialog
 {
 public:
 
-   AsteroidSearchDialog();
+   AsteroidSearchDialog( INDIMountInterface& );
 
    EphemerisObjectList Objects() const override;
    const EphemerisFile& Ephemerides() const override;
@@ -368,7 +322,7 @@ class MountConfigDialog : public ConfigDialogBase
 public:
 
    MountConfigDialog( const String& deviceName,
-                      double geoLat, double geoLong,
+                      double geoLat, double geoLong, double geoHeight,
                       double telescopeAperture, double teslescopeFocalLenght );
 private:
 
@@ -386,6 +340,7 @@ private:
       SpinBox           Longitude_M_SpinBox;
       NumericEdit       Longitude_S_NumericEdit;
       CheckBox          LongitudeIsWest_CheckBox;
+   NumericEdit       Height_NumericEdit;
    NumericEdit       TelescopeAperture_NumericEdit;
    NumericEdit       TelescopeFocalLength_NumericEdit;
 
@@ -427,6 +382,11 @@ public:
    double GeographicLongitude() const
    {
       return m_geoLongitude;
+   }
+
+   double GeographicHeight() const
+   {
+      return m_geoHeight;
    }
 
    int TelescopeAperture() const
@@ -579,6 +539,7 @@ private:
 
    double   m_geoLatitude          = 0;
    double   m_geoLongitude         = 0;
+   double   m_geoHeight            = 0;
    int      m_telescopeAperture    = 0;
    int      m_telescopeFocalLength = 0;
    pcl_enum m_pierSide             = IMCPierSide::Default;

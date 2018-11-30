@@ -84,11 +84,20 @@ public:
 
    /*!
     * Constructs an undefined %Optional object.
+    *
+    * The value instance will be default-constructed implicitly, which means
+    * that the type T must provide valid default construction semantics.
     */
-   Optional() = default;
+   Optional() : m_value() // N.B: this initialization prevents warnings like
+   {                      // 'Optional<>::m_value may be used uninitialized...'
+   }
 
    /*!
     * Copy constructor.
+    *
+    * The value instance will be copy-constructed implicitly, which means that
+    * the type T must provide valid copy construction semantics if this
+    * constructor is invoked.
     */
    Optional( const Optional& ) = default;
 

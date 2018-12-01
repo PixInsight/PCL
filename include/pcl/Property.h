@@ -172,6 +172,15 @@ public:
    }
 
    /*!
+    * Assigns the specified \a value to this property. The previous value will
+    * be replaced with the new one and hence will be lost.
+    */
+   void SetValue( const value_type& value )
+   {
+      m_value = value;
+   }
+
+   /*!
     * Returns the data type of this property, which is the data type of its
     * value.
     */

@@ -746,6 +746,27 @@ public:
    }
 
    /*!
+    * Sets the value of a storable property in this view.
+    *
+    * This member function is equivalent to:
+    *
+    * \code SetPropertyValue( property, value, notify, ViewPropertyAttribute::Storable ); \endcode
+    *
+    * This function simplifies defining view properties, where the Storable
+    * attribute is used very often to ensure that properties will be propagated
+    * to newly created and updated disk files.
+    */
+   void SetStorablePropertyValue( const IsoString& property, const Variant& value, bool notify = true )
+   {
+      SetPropertyValue( property, value, notify, ViewPropertyAttribute::Storable );
+   }
+
+   void SetStorablePropertyValue( const IsoString::ustring_base& property, const Variant& value, bool notify = true )
+   {
+      SetStorablePropertyValue( IsoString( property ), value, notify );
+   }
+
+   /*!
     * Returns the data type of an existing \a property in this view.
     *
     * If the requested \a property has not been defined for this view, this

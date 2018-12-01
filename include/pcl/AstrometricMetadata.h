@@ -60,6 +60,7 @@
 #include <pcl/Optional.h>
 #include <pcl/Point.h>
 #include <pcl/ProjectionBase.h>
+#include <pcl/Property.h>
 #include <pcl/SphericalRotation.h>
 #include <pcl/WCSKeywords.h>
 #include <pcl/WorldTransformation.h>
@@ -292,24 +293,36 @@ public:
    void Write( pi::ImageWindow* window, bool notify = true ) const;
 #else
    /*!
-    * Updates the keywords and properties of an image \a window to store the
-    * astrometric metadata represented by this object.
+    * Updates the keywords and properties of an image \a window to represent
+    * this astrometric solution.
     *
-    * The pixel dimensions of the image in th target \a window must be coherent
-    * with this astrometric solution. If that is not true, this member function
-    * will throw an Error exception.
+    * The pixel dimensions of the image in the target \a window must be
+    * coherent with this astrometric solution. If that is not true, this member
+    * function will throw an Error exception. An Error exception will also be
+    * thrown if this object does not define a valid astrometric solution.
+    *
+    * See the UpdateBasicKeywords(), UpdateWCSKeywords() and UpdateProperties()
+    * member functions for information on the metadata items modified by this
+    * function.
     */
    void Write( ImageWindow& window, bool notify = true ) const;
 #endif
 
    /*!
     * Updates the keywords and properties of the current image in an XISF
-    * \a writer to store the astrometric metadata represented by this object.
+    * \a writer to store the astrometric solution represented by this object.
     *
     * The caller must ensure that the pixel dimensions of the current image in
     * the target %XISF \a writer, that is, the width and height of the image
     * being generated, are coherent with this astrometric solution. Currently
-    * this condition cannot be verified by this member function.
+    * this condition cannot be verified or enforced by this member function.
+    *
+    * This function will throw an Error exception if this object does not
+    * define a valid astrometric solution.
+    *
+    * See the UpdateBasicKeywords(), UpdateWCSKeywords() and UpdateProperties()
+    * member functions for information on the metadata items modified by this
+    * function.
     */
    void Write( XISFWriter& writer ) const;
 
@@ -536,6 +549,35 @@ public:
     * signal the availability of a spline-based astrometric solution.
     */
    void UpdateWCSKeywords( FITSKeywordArray& keywords ) const;
+
+   /*!
+    * Updates the specified \a properties array with a restricted set of view
+    * properties to reflect the state of this astrometric solution.
+    *
+    * The following standard XISF properties will be created or redefined:
+    *
+    * \c Instrument:Telescope:FocalLength \n
+    * \c Instrument:Sensor:XPixelSize \n
+    * \c Instrument:Sensor:YPixelSize \n
+    * \c Observation:Center:RA \n
+    * \c Observation:Center:Dec \n
+    * \c Observation:CelestialReferenceSystem \n
+    * \c Observation:Equinox \n
+    *
+    * The following properties can be removed if the transformation is valid,
+    * since the default coordinate reference point is the geometric center of
+    * the image, which is used to calculate the values of the standard
+    * \c Observation:Center:RA and \c Observation:Center:Dec properties:
+    *
+    * \c Observation:Center:X \n
+    * \c Observation:Center:Y \n
+    *
+    * In addition, the following nonstandard property, used by platform image
+    * plate solving scripts, will be created, redefined or removed:
+    *
+    * \c Transformation_ImageToProjection
+    */
+   void UpdateProperties( PropertyArray& properties ) const;
 
    /*!
     * Returns a printable textual representation of the metadata properties and

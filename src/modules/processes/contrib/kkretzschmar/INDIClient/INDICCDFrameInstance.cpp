@@ -972,7 +972,7 @@ ImagePropertiesFromImageMetadata( const ImageMetadata& data )
    if ( data.geographicLatitude.IsDefined() )
       properties << ImageProperty( "Observation:Location:Latitude", data.geographicLatitude() );
    if ( data.geographicHeight.IsDefined() )
-      properties << ImageProperty( "Observation:Location:Height", data.geographicHeight() );
+      properties << ImageProperty( "Observation:Location:Elevation", data.geographicHeight() );
    if ( data.objectName.IsDefined() )
       properties << ImageProperty( "Observation:Object:Name", data.objectName() );
    if ( data.year.IsDefined() )

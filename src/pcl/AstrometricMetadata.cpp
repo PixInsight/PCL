@@ -430,7 +430,8 @@ void AstrometricMetadata::UpdateWCSKeywords( FITSKeywordArray& keywords ) const
    RemoveKeyword( keywords, "CD1_2" );
    RemoveKeyword( keywords, "CD2_1" );
    RemoveKeyword( keywords, "CD2_2" );
-   RemoveKeyword( keywords, "REFSPLINE" );
+   RemoveKeyword( keywords, "REFSPLIN" );
+   RemoveKeyword( keywords, "REFSPLINE" ); // N.B. 9-char keyword name written by old versions, not FITS-compliant.
    RemoveKeyword( keywords, "CDELT1" );
    RemoveKeyword( keywords, "CDELT2" );
    RemoveKeyword( keywords, "CROTA1" );
@@ -465,7 +466,7 @@ void AstrometricMetadata::UpdateWCSKeywords( FITSKeywordArray& keywords ) const
                << FITSHeaderKeyword( "CD2_2", IsoString().Format( "%.16g", wcs.cd2_2() ), "Scale matrix (2,2)" );
 
       if ( HasSplineWorldTransformation() )
-         keywords << FITSHeaderKeyword( "REFSPLINE", "T", "Spline-based astrometric solution available" );
+         keywords << FITSHeaderKeyword( "REFSPLIN", "T", "Spline-based astrometric solution available" );
 
       // AIPS keywords (CDELT1, CDELT2, CROTA1, CROTA2)
       keywords << FITSHeaderKeyword( "CDELT1", IsoString().Format( "%.16g", wcs.cdelt1() ), "Axis1 scale" )

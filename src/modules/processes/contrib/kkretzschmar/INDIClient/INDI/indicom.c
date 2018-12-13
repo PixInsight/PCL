@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.01.00.0228
+// Standard INDIClient Process Module Version 01.01.00.0232
 // ----------------------------------------------------------------------------
-// indicom.c - Released 2018-11-23T18:45:59Z
+// indicom.c - Released 2018-12-12T09:25:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -1440,4 +1440,4 @@ double get_local_hour_angle(double sideral_time, double ra)
 #endif
 
 // ----------------------------------------------------------------------------
-// EOF indicom.c - Released 2018-11-23T18:45:59Z
+// EOF indicom.c - Released 2018-12-12T09:25:25Z

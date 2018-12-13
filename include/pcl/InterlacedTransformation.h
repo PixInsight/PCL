@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// pcl/InterlacedTransformation.h - Released 2018-11-23T16:14:19Z
+// pcl/InterlacedTransformation.h - Released 2018-12-12T09:24:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -178,4 +178,4 @@ private:
 #endif   // __PCL_InterlacedTransformation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/InterlacedTransformation.h - Released 2018-11-23T16:14:19Z
+// EOF pcl/InterlacedTransformation.h - Released 2018-12-12T09:24:21Z

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// pcl/SphericalRotation.cpp - Released 2018-11-23T16:14:32Z
+// pcl/SphericalRotation.cpp - Released 2018-12-12T09:24:30Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -368,4 +368,4 @@ DPoint SphericalRotation::CelestialToNative( const DPoint& cp ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SphericalRotation.cpp - Released 2018-11-23T16:14:32Z
+// EOF pcl/SphericalRotation.cpp - Released 2018-12-12T09:24:30Z

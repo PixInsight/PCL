@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard RestorationFilters Process Module Version 01.00.05.0336
+// Standard RestorationFilters Process Module Version 01.00.05.0340
 // ----------------------------------------------------------------------------
-// RestorationFilterModule.cpp - Released 2018-11-23T18:45:58Z
+// RestorationFilterModule.cpp - Released 2018-12-12T09:25:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RestorationFilters PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  05
-#define MODULE_VERSION_BUILD     0336
+#define MODULE_VERSION_BUILD     0340
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2018
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       23
+#define MODULE_RELEASE_MONTH     12
+#define MODULE_RELEASE_DAY       12
 
 #include "RestorationFilterModule.h"
 #include "RestorationFilterProcess.h"
@@ -171,4 +171,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF RestorationFilterModule.cpp - Released 2018-11-23T18:45:58Z
+// EOF RestorationFilterModule.cpp - Released 2018-12-12T09:25:25Z

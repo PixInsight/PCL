@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.03.00.0427
+// Standard Image Process Module Version 01.03.00.0431
 // ----------------------------------------------------------------------------
-// ExtractAlphaChannelsParameters.h - Released 2018-11-23T18:45:58Z
+// ExtractAlphaChannelsParameters.h - Released 2018-12-12T09:25:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -139,4 +139,4 @@ PCL_END_LOCAL
 #endif   // __ExtractAlphaChannelsParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF ExtractAlphaChannelsParameters.h - Released 2018-11-23T18:45:58Z
+// EOF ExtractAlphaChannelsParameters.h - Released 2018-12-12T09:25:25Z

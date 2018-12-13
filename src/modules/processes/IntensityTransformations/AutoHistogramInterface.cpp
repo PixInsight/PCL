@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0420
+// Standard IntensityTransformations Process Module Version 01.07.01.0424
 // ----------------------------------------------------------------------------
-// AutoHistogramInterface.cpp - Released 2018-11-23T18:45:58Z
+// AutoHistogramInterface.cpp - Released 2018-12-12T09:25:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -577,4 +577,4 @@ AutoHistogramInterface::GUIData::GUIData( AutoHistogramInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AutoHistogramInterface.cpp - Released 2018-11-23T18:45:58Z
+// EOF AutoHistogramInterface.cpp - Released 2018-12-12T09:25:25Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0393
+// Standard Global Process Module Version 01.02.07.0397
 // ----------------------------------------------------------------------------
-// ReadoutOptionsInterface.cpp - Released 2018-11-23T18:45:58Z
+// ReadoutOptionsInterface.cpp - Released 2018-12-12T09:25:24Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -762,4 +762,4 @@ ReadoutOptionsInterface::GUIData::GUIData( ReadoutOptionsInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ReadoutOptionsInterface.cpp - Released 2018-11-23T18:45:58Z
+// EOF ReadoutOptionsInterface.cpp - Released 2018-12-12T09:25:24Z

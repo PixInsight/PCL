@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard ArcsinhStretch Process Module Version 01.00.00.0132
+// Standard ArcsinhStretch Process Module Version 01.00.00.0136
 // ----------------------------------------------------------------------------
-// ArcsinhStretchInstance.cpp - Released 2018-11-23T18:45:59Z
+// ArcsinhStretchInstance.cpp - Released 2018-12-12T09:25:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ArcsinhStretch PixInsight module.
 //
@@ -320,4 +320,4 @@ void* ArcsinhStretchInstance::LockParameter( const MetaParameter* p, size_type /
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ArcsinhStretchInstance.cpp - Released 2018-11-23T18:45:59Z
+// EOF ArcsinhStretchInstance.cpp - Released 2018-12-12T09:25:25Z

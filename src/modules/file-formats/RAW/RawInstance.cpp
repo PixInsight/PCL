@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard RAW File Format Module Version 01.05.00.0411
+// Standard RAW File Format Module Version 01.05.00.0415
 // ----------------------------------------------------------------------------
-// RawInstance.cpp - Released 2018-11-23T16:14:51Z
+// RawInstance.cpp - Released 2018-12-12T09:25:15Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RAW PixInsight module.
 //
@@ -268,7 +268,7 @@ public:
                break;
             int n;
             if ( token->TryToInt( n ) )
-               preferences.fbddNoiseReduction = Range( n, 0, 10 );
+               preferences.fbddNoiseReduction = Range( n, 0, 2 );
          }
          else if ( *token == "no-fbdd-noise-reduction" )
             preferences.fbddNoiseReduction = 0;
@@ -1388,4 +1388,4 @@ UInt8Image RawInstance::ReadThumbnail()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RawInstance.cpp - Released 2018-11-23T16:14:51Z
+// EOF RawInstance.cpp - Released 2018-12-12T09:25:15Z

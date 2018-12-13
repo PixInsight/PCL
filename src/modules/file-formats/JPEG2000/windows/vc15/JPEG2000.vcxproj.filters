@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.107
 # Copyright (C) 2009-2018 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2018-11-23T18:57:47.329Z
+# Generated on .... 2018-12-12T13:32:17.495Z
 # Project id ...... JPEG2000
 # Project type .... Module
 # Platform ........ Windows/vc15
@@ -19,10 +19,10 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>6c49319b-107c-4e5e-af3e-84e28449ee44</UniqueIdentifier>
+      <UniqueIdentifier>d825af18-377c-4e81-9e9f-6f05bd4fb739</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>89f0559b-ddf7-40f7-b8b8-cd2dd971768c</UniqueIdentifier>
+      <UniqueIdentifier>59430067-0a75-4f0d-b76f-47449eddef4a</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

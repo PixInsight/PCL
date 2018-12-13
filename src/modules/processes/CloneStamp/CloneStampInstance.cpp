@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard CloneStamp Process Module Version 01.00.02.0351
+// Standard CloneStamp Process Module Version 01.00.02.0355
 // ----------------------------------------------------------------------------
-// CloneStampInstance.cpp - Released 2018-11-23T18:45:58Z
+// CloneStampInstance.cpp - Released 2018-12-12T09:25:24Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CloneStamp PixInsight module.
 //
@@ -741,4 +741,4 @@ size_type CloneStampInstance::ParameterLength( const MetaParameter* p, size_type
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CloneStampInstance.cpp - Released 2018-11-23T18:45:58Z
+// EOF CloneStampInstance.cpp - Released 2018-12-12T09:25:24Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0312
+// Standard StarGenerator Process Module Version 01.01.00.0316
 // ----------------------------------------------------------------------------
-// LambertConformalConicProjection.h - Released 2018-11-23T18:45:58Z
+// LambertConformalConicProjection.h - Released 2018-12-12T09:25:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
@@ -149,4 +149,4 @@ private:
 #endif   // __LambertConformalConicProjection_h
 
 // ----------------------------------------------------------------------------
-// EOF LambertConformalConicProjection.h - Released 2018-11-23T18:45:58Z
+// EOF LambertConformalConicProjection.h - Released 2018-12-12T09:25:25Z

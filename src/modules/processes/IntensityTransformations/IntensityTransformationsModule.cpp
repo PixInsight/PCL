@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0420
+// Standard IntensityTransformations Process Module Version 01.07.01.0424
 // ----------------------------------------------------------------------------
-// IntensityTransformationsModule.cpp - Released 2018-11-23T18:45:58Z
+// IntensityTransformationsModule.cpp - Released 2018-12-12T09:25:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     07
 #define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0420
+#define MODULE_VERSION_BUILD     0424
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2018
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       23
+#define MODULE_RELEASE_MONTH     12
+#define MODULE_RELEASE_DAY       12
 
 #include "AdaptiveStretchCurveGraphInterface.h"
 #include "AdaptiveStretchInterface.h"
@@ -212,4 +212,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF IntensityTransformationsModule.cpp - Released 2018-11-23T18:45:58Z
+// EOF IntensityTransformationsModule.cpp - Released 2018-12-12T09:25:25Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard NoiseGeneration Process Module Version 01.00.02.0340
+// Standard NoiseGeneration Process Module Version 01.00.02.0344
 // ----------------------------------------------------------------------------
-// SimplexNoiseInstance.cpp - Released 2018-11-23T18:45:58Z
+// SimplexNoiseInstance.cpp - Released 2018-12-12T09:25:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard NoiseGeneration PixInsight module.
 //
@@ -389,4 +389,4 @@ void* SimplexNoiseInstance::LockParameter( const MetaParameter* p, size_type /*t
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SimplexNoiseInstance.cpp - Released 2018-11-23T18:45:58Z
+// EOF SimplexNoiseInstance.cpp - Released 2018-12-12T09:25:25Z

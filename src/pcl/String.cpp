@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// pcl/String.cpp - Released 2018-11-23T16:14:31Z
+// pcl/String.cpp - Released 2018-12-12T09:24:30Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -2491,13 +2491,13 @@ T ToISO8601DateTime( int year, int month, int day, double dayf, double tz, const
       {
       default:
       case 3:
-         time.Format( "T%02d:%02d:%0*.*lf", TruncInt( h ), TruncInt( m ), w, options.precision, s );
+         time.Format( "T%02d:%02d:%0*.*f", TruncInt( h ), TruncInt( m ), w, options.precision, s );
          break;
       case 2:
-         time.Format( "T%02d:%0*.*lf", TruncInt( h ), w, options.precision, m );
+         time.Format( "T%02d:%0*.*f", TruncInt( h ), w, options.precision, m );
          break;
       case 1:
-         time.Format( "T%0*.*lf", w, options.precision, h );
+         time.Format( "T%0*.*f", w, options.precision, h );
          break;
       }
 
@@ -2597,4 +2597,4 @@ IsoString IsoString::CurrentLocalISO8601DateTime( const ISO8601ConversionOptions
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.cpp - Released 2018-11-23T16:14:31Z
+// EOF pcl/String.cpp - Released 2018-12-12T09:24:30Z

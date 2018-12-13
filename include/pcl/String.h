@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// pcl/String.h - Released 2018-11-23T16:14:19Z
+// pcl/String.h - Released 2018-12-12T09:24:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -5604,6 +5604,19 @@ public:
    IsoString( const_c_ustring t, size_type i, size_type n );
 
    /*!
+    * Constructs an %IsoString with a copy of the bytes stored in the specified
+    * ByteArray object.
+    *
+    * Source unsigned 8-bit integers will be reinterpreted as signed 8-bit
+    * characters.
+    */
+   explicit
+   IsoString( const ByteArray& B ) :
+      IsoString( const_iterator( B.Begin() ), const_iterator( B.End() ) )
+   {
+   }
+
+   /*!
     * Constructs an %IsoString as a literal representation of a \c bool value.
     */
    explicit
@@ -7445,7 +7458,7 @@ public:
     * \a length in bytes. The hex-encoded string is composed of hexadecimal
     * digits: 0-9 and a-f, and its length is twice that of the input length.
     *
-    * \sa ToHex( const C& ), ToBase64()
+    * \sa ToHex( const C& ), ToBase64(), ToByteArray()
     */
    static IsoString ToHex( const void* data, size_type length );
 
@@ -7475,7 +7488,7 @@ public:
     * a base 64 representation composed of printable characters. See RFC 1421
     * (http://tools.ietf.org/html/rfc1421).
     *
-    * \sa ToBase64( const C& ), ToHex()
+    * \sa ToBase64( const C& ), ToHex(), ToByteArray()
     */
    static IsoString ToBase64( const void* data, size_type length );
 
@@ -7489,12 +7502,24 @@ public:
     * PCL container semantics: the Begin() and Length() standard container
     * functions are required.
     *
-    * \sa ToBase64( const void*, size_type )
+    * \sa ToBase64( const void*, size_type ), ToByteArray()
     */
    template <class C>
    static IsoString ToBase64( const C& c )
    {
       return ToBase64( c.Begin(), c.Length()*sizeof( *c.Begin() ) );
+   }
+
+   /*!
+    * Returns a ByteArray object that stores a copy of this string. In the
+    * returned array, source 8-bit characters have been reinterpreted as
+    * unsigned 8-bit integers.
+    *
+    * \sa ToBase64(), ToHex()
+    */
+   ByteArray ToByteArray() const
+   {
+      return ByteArray( Begin(), End() );
    }
 
    /*!
@@ -13657,4 +13682,4 @@ inline std::ostream& operator <<( std::ostream& o, const String& s )
 #endif   // __PCL_String_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.h - Released 2018-11-23T16:14:19Z
+// EOF pcl/String.h - Released 2018-12-12T09:24:21Z

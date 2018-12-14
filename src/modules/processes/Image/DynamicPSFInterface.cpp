@@ -497,12 +497,8 @@ public:
 
          if ( psf->HasCelestialCoordinates() )
          {
-            SetText( 6, String().ToSexagesimal( psf->q0.x/15,
-                           SexagesimalConversionOptions( 3/*items*/, 3/*precision*/,
-                                                         false/*sign*/, 2/*width*/, ' '/*separator*/, ' '/*padding*/ ) ) );
-            SetText( 7, String().ToSexagesimal( psf->q0.y,
-                           SexagesimalConversionOptions( 3/*items*/, 2/*precision*/,
-                                                         true/*sign*/, 3/*width*/, ' '/*separator*/, ' '/*padding*/ ) ) );
+            SetText( 6, String().ToSexagesimal( psf->q0.x/15, RAConversionOptions() ) );
+            SetText( 7, String().ToSexagesimal( psf->q0.y, DecConversionOptions() ) );
          }
 
          SetText( 8, String().Format( "%6.2f", psf->sx ) ); // sx
@@ -1755,7 +1751,7 @@ void DynamicPSFInterface::ExportCSV( const String& filePath )
 {
    File f = File::CreateFileForWriting( filePath );
 
-   f.OutTextLn( "ViewId,StarId,Channel,Function,B,A,cx,cy,sx,sy,FWHMx,FWHMy,unit,r,theta,beta,MAD" );
+   f.OutTextLn( "ViewId,StarId,Channel,Function,B,A,cx,cy,alpha,delta,sx,sy,FWHMx,FWHMy,unit,r,theta,beta,MAD" );
 
    for ( PSFCollection& collection : m_collections )
    {
@@ -1766,7 +1762,7 @@ void DynamicPSFInterface::ExportCSV( const String& filePath )
       if ( collection.xScale > 0 )
          if ( collection.yScale > 0 )
          {
-            scaleUnit = "\"";
+            scaleUnit = "as";
             xScale = collection.xScale;
             yScale = collection.yScale;
          }
@@ -1775,13 +1771,23 @@ void DynamicPSFInterface::ExportCSV( const String& filePath )
       {
          IsoString viewIdAndStarIdAndCh = viewId + ',' + IsoString( star.uniqueId ) + ',' + IsoString( star.channel ) + ',';
          for ( PSF& psf : star.psfs )
+         {
+            IsoString alpha, delta;
+            if ( psf.HasCelestialCoordinates() )
+            {
+               alpha = IsoString().ToSexagesimal( psf.q0.x/15, RAConversionOptions( 3/*precision*/, 0/*width*/ ) );
+               delta = IsoString().ToSexagesimal( psf.q0.y, DecConversionOptions( 2/*precision*/, 0/*width*/ ) );
+            }
+
             f.OutTextLn( viewIdAndStarIdAndCh +
                          IsoString( psf.FunctionToString() ) + ',' +
-                         IsoString().Format( "%.6f,%.6f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%s,%.3f,%.2f,%.2f,%.3e",
+                         IsoString().Format( "%.6f,%.6f,%.2f,%.2f,%s,%s,%.2f,%.2f,%.2f,%.2f,%s,%.3f,%.2f,%.2f,%.3e",
                                              psf.B,
                                              psf.A,
                                              psf.c0.x,
                                              psf.c0.y,
+                                             alpha.c_str(),
+                                             delta.c_str(),
                                              psf.sx,
                                              psf.sy,
                                              psf.FWHMx()*xScale,
@@ -1791,6 +1797,7 @@ void DynamicPSFInterface::ExportCSV( const String& filePath )
                                              (*signedAngles && psf.theta > 90) ? psf.theta - 180 : psf.theta,
                                              psf.beta,
                                              psf.mad ) );
+         }
       }
    }
 

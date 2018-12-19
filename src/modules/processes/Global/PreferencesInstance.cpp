@@ -729,7 +729,7 @@ void PreferencesInstance::LoadDefaultSettings()
    imageWindow.highDPIRenditions                =         METAPARAMETER_INSTANCE_ID( ImageWindow, highDPIRenditions                )->DefaultValue();
    imageWindow.default24BitScreenLUT            =         METAPARAMETER_INSTANCE_ID( ImageWindow, default24BitScreenLUT            )->DefaultValue();
    imageWindow.swapDirectories.Clear();
-   imageWindow.swapDirectories.Add(                File::SystemTempDirectory() );
+   imageWindow.swapDirectories.Add(                File::SystemCacheDirectory() );
    imageWindow.swapCompression                  =         METAPARAMETER_INSTANCE_ID( ImageWindow, swapCompression                  )->DefaultValue();
    imageWindow.downloadsDirectory               =  File::SystemTempDirectory();
    imageWindow.followDownloadLocations          =         METAPARAMETER_INSTANCE_ID( ImageWindow, followDownloadLocations          )->DefaultValue();

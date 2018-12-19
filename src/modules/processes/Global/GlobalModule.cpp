@@ -52,13 +52,13 @@
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     02
-#define MODULE_VERSION_REVISION  07
-#define MODULE_VERSION_BUILD     0397
+#define MODULE_VERSION_REVISION  08
+#define MODULE_VERSION_BUILD     0399
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2018
 #define MODULE_RELEASE_MONTH     12
-#define MODULE_RELEASE_DAY       12
+#define MODULE_RELEASE_DAY       19
 
 #include "ColorManagementSetupAction.h"
 #include "ColorManagementSetupInterface.h"

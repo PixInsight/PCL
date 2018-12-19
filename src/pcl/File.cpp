@@ -2132,6 +2132,23 @@ String File::SystemCacheDirectory()
 {
 #ifdef __PCL_MACOSX
 
+# ifdef _CS_DARWIN_USER_CACHE_DIR
+
+   size_t size = ::confstr( _CS_DARWIN_USER_CACHE_DIR, nullptr/*buf*/, 0/*len*/ );
+   if ( size > 0 )
+   {
+      IsoString cacheDir;
+      cacheDir.Reserve( size+16 );
+      size = ::confstr( _CS_DARWIN_USER_CACHE_DIR, cacheDir.Begin(), size+16 );
+      if ( size > 0 && size <= cacheDir.Capacity() )
+      {
+         cacheDir.SetLength( size );
+         return TrailingSlashStripped( cacheDir.UTF8ToUTF16() );
+      }
+   }
+
+# endif
+
    String dir = File::FullPath( String::UTF8ToUTF16( ::getenv( "HOME" ) ) );
    if ( !dir.IsEmpty() )
    {

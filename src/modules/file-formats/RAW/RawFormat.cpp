@@ -137,7 +137,7 @@ String RawFormat::Implementation() const
    "<html>"
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
-   "<p>This implementation of digital camera raw format decoding uses LibRaw version 0.19.1.</p>"
+   "<p>This implementation of digital camera raw format decoding uses LibRaw version 0.19.2.</p>"
 
    "<p>LibRaw library:<br/>"
    "Copyright (c) 2008-2018 LibRaw LLC (info@libraw.org)<br/>"

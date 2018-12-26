@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     05
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0415
+#define MODULE_VERSION_BUILD     0417
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2018
 #define MODULE_RELEASE_MONTH     12
-#define MODULE_RELEASE_DAY       12
+#define MODULE_RELEASE_DAY       26
 
 #include "RawModule.h"
 #include "RawFormat.h"

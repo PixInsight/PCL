@@ -148,6 +148,17 @@ bool SubframeSelectorMeasurementsInterface::Launch( const MetaProcess&,
 }
 
 // ----------------------------------------------------------------------------
+
+void SubframeSelectorMeasurementsInterface::Cleanup()
+{
+   if ( GUI != nullptr )
+   {
+      GUI->MeasurementGraph_Graph.Cleanup();
+      GUI->MeasurementDistribution_Graph.Cleanup();
+   }
+}
+
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 MeasureItem* SubframeSelectorMeasurementsInterface::GetMeasurementItem( size_type i )

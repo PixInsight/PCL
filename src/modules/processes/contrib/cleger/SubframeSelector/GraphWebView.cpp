@@ -61,10 +61,9 @@ namespace pcl
 GraphWebView::GraphWebView( Control& parent ) :
    WebView( parent )
 {
-   eventCheckTimer.SetInterval( 0.1 );
-   eventCheckTimer.SetPeriodic();
-
-   eventCheckTimer.OnTimer( (Timer::timer_event_handler)&GraphWebView::__Timer, *this );
+   m_eventCheckTimer.SetInterval( 0.1 );
+   m_eventCheckTimer.SetPeriodic();
+   m_eventCheckTimer.OnTimer( (Timer::timer_event_handler)&GraphWebView::__Timer, *this );
 
    OnEnter( (Control::event_handler)&GraphWebView::__MouseEnter, *this );
    OnLeave( (Control::event_handler)&GraphWebView::__MouseLeave, *this );
@@ -76,17 +75,18 @@ GraphWebView::GraphWebView( Control& parent ) :
 
 void GraphWebView::__MouseEnter( Control& sender )
 {
-   keepChecking = true;
-   if ( !eventCheckTimer.IsRunning() && !eventHandlers.IsNull() &&
-        (eventHandlers->onApprove != nullptr || eventHandlers->onUnlock != nullptr) )
-      eventCheckTimer.Start();
+   m_keepChecking = true;
+   if ( !m_eventCheckTimer.IsRunning() )
+      if ( !m_eventHandlers.IsNull() )
+         if ( m_eventHandlers->onApprove != nullptr || m_eventHandlers->onUnlock != nullptr )
+            m_eventCheckTimer.Start();
 }
 
 // ----------------------------------------------------------------------------
 
 void GraphWebView::__MouseLeave( Control& sender )
 {
-   keepChecking = false;
+   m_keepChecking = false;
 }
 
 // ----------------------------------------------------------------------------
@@ -115,15 +115,20 @@ void GraphWebView::__JSResult( WebView& sender, const Variant& result )
    int index = resultText.ToInt();
    if ( index <= 0 )
    {
-      if ( !keepChecking && eventCheckTimer.IsRunning() )
-         eventCheckTimer.Stop();
+      if ( !m_keepChecking )
+         m_eventCheckTimer.Stop();
    }
    else
    {
-      if ( approve && !eventHandlers.IsNull() && eventHandlers->onApprove != nullptr )
-         (eventHandlers->onApproveReceiver->*eventHandlers->onApprove)( *this, index );
-      if ( unlock && !eventHandlers.IsNull() && eventHandlers->onUnlock != nullptr )
-         (eventHandlers->onUnlockReceiver->*eventHandlers->onUnlock)( *this, index );
+      if ( !m_eventHandlers.IsNull() )
+      {
+         if ( approve )
+            if ( m_eventHandlers->onApprove != nullptr )
+               (m_eventHandlers->onApproveReceiver->*m_eventHandlers->onApprove)( *this, index );
+         if ( unlock )
+            if ( m_eventHandlers->onUnlock != nullptr )
+               (m_eventHandlers->onUnlockReceiver->*m_eventHandlers->onUnlock)( *this, index );
+      }
    }
 }
 
@@ -131,18 +136,18 @@ void GraphWebView::__JSResult( WebView& sender, const Variant& result )
 
 void GraphWebView::OnApprove( approve_event_handler handler, Control& receiver )
 {
-   if ( eventHandlers.IsNull() )
-      eventHandlers = new EventHandlers;
-   eventHandlers->onApprove = handler;
-   eventHandlers->onApproveReceiver = &receiver;
+   if ( m_eventHandlers.IsNull() )
+      m_eventHandlers = new EventHandlers;
+   m_eventHandlers->onApprove = handler;
+   m_eventHandlers->onApproveReceiver = &receiver;
 }
 
 void GraphWebView::OnUnlock( unlock_event_handler handler, Control& receiver )
 {
-   if ( eventHandlers.IsNull() )
-      eventHandlers = new EventHandlers;
-   eventHandlers->onUnlock = handler;
-   eventHandlers->onUnlockReceiver = &receiver;
+   if ( m_eventHandlers.IsNull() )
+      m_eventHandlers = new EventHandlers;
+   m_eventHandlers->onUnlock = handler;
+   m_eventHandlers->onUnlockReceiver = &receiver;
 }
 
 // ----------------------------------------------------------------------------
@@ -614,7 +619,22 @@ void GraphWebView::SetDataset( const String& dataname, const DataPointVector* da
 </script>
    )DELIM" + Footer();
 
-   SetHTML( html.ToUTF8() );
+   /*
+    * N.B. On Windows with relative frequency, and rarely on Linux and macOS,
+    * setting contents directly by calling SetHTML() fails, causing the graphs
+    * to be empty and leading to an 'invalid script execution' error after this
+    * function. This is probably a bug in QTWebEngine, which we have seen in
+    * other places with several Qt versions. As happens with most Qt bugs, we
+    * cannot rely on the hope of someone fixing this problem within a
+    * manageable amount of time (years, maybe), so here is a workaround: save
+    * the document to a local file and force loading it. This works reliably on
+    * all platforms, fortunately.
+    */
+   // SetHTML( html.ToUTF8() );
+   Cleanup();
+   m_htmlFilePath = File::UniqueFileName( File::SystemTempDirectory(), 12, "SFS_graphs_", ".html" );
+   File::WriteTextFile( m_htmlFilePath, html.ToUTF8() );
+   LoadContent( File::FileURI( m_htmlFilePath ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -711,6 +731,24 @@ String GraphWebView::Footer() const
 </body>
 </html>
    )DELIM";
+}
+
+// ----------------------------------------------------------------------------
+
+void GraphWebView::Cleanup()
+{
+   if ( !m_htmlFilePath.IsEmpty() )
+   {
+      try
+      {
+         if ( File::Exists( m_htmlFilePath ) )
+            File::Remove( m_htmlFilePath );
+      }
+      catch ( ... )
+      {
+      }
+      m_htmlFilePath.Clear();
+   }
 }
 
 // ----------------------------------------------------------------------------

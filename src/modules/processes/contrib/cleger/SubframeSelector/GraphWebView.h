@@ -109,6 +109,8 @@ public:
    void OnApprove( approve_event_handler handler, Control& receiver );
    void OnUnlock( unlock_event_handler handler, Control& receiver );
 
+   void Cleanup();
+
 private:
 
    String Header() const;
@@ -119,8 +121,9 @@ private:
    void __Timer( Timer& sender );
    void __JSResult( WebView& sender, const Variant& result );
 
-   Timer eventCheckTimer;
-   bool keepChecking = true;
+   Timer  m_eventCheckTimer;
+   bool   m_keepChecking = true;
+   String m_htmlFilePath;
 
    struct EventHandlers
    {
@@ -134,7 +137,7 @@ private:
       EventHandlers& operator =( const EventHandlers& ) = default;
    };
 
-   AutoPointer<EventHandlers> eventHandlers;
+   AutoPointer<EventHandlers> m_eventHandlers;
 };
 
 // ----------------------------------------------------------------------------

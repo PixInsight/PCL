@@ -68,7 +68,6 @@
 #include <pcl/ToolButton.h>
 #include <pcl/TreeBox.h>
 
-#include "GraphWebView.h"
 #include "SubframeSelectorInstance.h"
 
 namespace pcl

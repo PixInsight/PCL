@@ -89,6 +89,8 @@ public:
    bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ ) override;
    using ProcessInterface::Launch;
 
+   void Cleanup();
+
 private:
 
    SubframeSelectorInstance& m_instance;

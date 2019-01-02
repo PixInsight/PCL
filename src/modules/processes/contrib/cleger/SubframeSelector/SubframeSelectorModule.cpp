@@ -51,18 +51,19 @@
 // ----------------------------------------------------------------------------
 
 #include "SubframeSelectorInterface.h"
+#include "SubframeSelectorMeasurementsInterface.h"
 #include "SubframeSelectorModule.h"
 #include "SubframeSelectorProcess.h"
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     04
-#define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0016
+#define MODULE_VERSION_REVISION  02
+#define MODULE_VERSION_BUILD     0019
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2018
-#define MODULE_RELEASE_MONTH     12
-#define MODULE_RELEASE_DAY       12
+#define MODULE_RELEASE_YEAR      2019
+#define MODULE_RELEASE_MONTH     01
+#define MODULE_RELEASE_DAY       02
 
 namespace pcl
 {
@@ -116,7 +117,7 @@ String SubframeSelectorModule::Author() const
 
 String SubframeSelectorModule::Copyright() const
 {
-   return "Copyright (c) 2017-2018, Cameron Leger";
+   return "Copyright (c) 2017-2019, Cameron Leger";
 }
 
 // ----------------------------------------------------------------------------
@@ -159,6 +160,8 @@ void SubframeSelectorModule::OnUnload()
 {
    if ( TheSubframeSelectorCache != nullptr )
       TheSubframeSelectorCache->Save();
+   if ( TheSubframeSelectorMeasurementsInterface != nullptr )
+      TheSubframeSelectorMeasurementsInterface->Cleanup();
 }
 
 // ----------------------------------------------------------------------------

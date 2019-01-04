@@ -52,13 +52,13 @@
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     05
-#define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0417
+#define MODULE_VERSION_REVISION  02
+#define MODULE_VERSION_BUILD     0422
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2018
-#define MODULE_RELEASE_MONTH     12
-#define MODULE_RELEASE_DAY       26
+#define MODULE_RELEASE_YEAR      2019
+#define MODULE_RELEASE_MONTH     01
+#define MODULE_RELEASE_DAY       04
 
 #include "RawModule.h"
 #include "RawFormat.h"
@@ -115,7 +115,7 @@ String RawModule::Author() const
 
 String RawModule::Copyright() const
 {
-   return "Copyright (c) 2006-2018, Pleiades Astrophoto";
+   return "Copyright (c) 2006-2019, Pleiades Astrophoto";
 }
 
 // ----------------------------------------------------------------------------

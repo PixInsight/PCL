@@ -62,6 +62,9 @@
 #include <pcl/TimePoint.h>
 #include <pcl/Version.h>
 
+
+#include <iostream>
+
 namespace pcl
 {
 
@@ -479,6 +482,11 @@ ImageDescriptionArray RawInstance::Open( const String& filePath, const IsoString
       bool xtrans = idata.filters == 9;
       bool foveon = idata.is_foveon;
       bool raw = (m_preferences.outputCFA || m_preferences.outputRawRGB || m_preferences.createSuperPixels && !xtrans) && !foveon;
+      bool noAutoCrop = raw && m_preferences.noAutoCrop
+                            && m_preferences.noWhiteBalance
+                            && m_preferences.noBlackPointCorrection
+                            && m_preferences.noClipHighlights
+                            && m_preferences.noiseThreshold == 0;
 
       /*
        * Descriptive metadata.
@@ -499,8 +507,7 @@ ImageDescriptionArray RawInstance::Open( const String& filePath, const IsoString
           */
          if ( xtrans )
          {
-            const char* x = reinterpret_cast<const char*>( (raw && m_preferences.noAutoCrop) ?
-                                    idata.xtrans_abs : idata.xtrans );
+            const char* x = reinterpret_cast<const char*>( noAutoCrop ? idata.xtrans_abs : idata.xtrans );
             for ( int i = 0; i < 36; ++i )
                m_rawCFAPattern << idata.cdesc[int( x[i] )];
 
@@ -517,65 +524,64 @@ ImageDescriptionArray RawInstance::Open( const String& filePath, const IsoString
          }
 
          /*
-          * CFA patterns refer to the top-left corner of the visible image
+          * CFA patterns refer to the top-left corner of the *visible* image
           * region. If we are not cropping invisible areas, rotate CFA patterns
           * horizontally and/or vertically, as necessary.
           */
-         if ( m_preferences.noAutoCrop )
-            if ( raw )
-               if ( xtrans )
-               {
-                  // 6x6 X-Trans pattern
-                  int dy = sizes.top_margin % 6;
-                  int dx = sizes.left_margin % 6;
-                  char* p = m_rawCFAPattern.Begin();
+         if ( noAutoCrop )
+            if ( xtrans )
+            {
+               // 6x6 X-Trans pattern
+               int dy = sizes.top_margin % 6;
+               int dx = sizes.left_margin % 6;
+               char* p = m_rawCFAPattern.Begin();
 
-                  if ( dy )
-                  {
-#ifdef _MSC_VER
-                     char* t = new char[ 6*dy ];
-#else
-                     char t[ 6*dy ];
-#endif
-                     memcpy( t, p, 6*dy );
-                     memcpy( p, p + 6*dy, 36 - 6*dy );
-                     memcpy( p + 36 - 6*dy, t, 6*dy );
-#ifdef _MSC_VER
-                     delete [] t;
-#endif
-                  }
-                  if ( dx )
-                  {
-#ifdef _MSC_VER
-                     char* t = new char[ dx ];
-#else
-                     char t[ dx ];
-#endif
-                     for ( int i = 0; i < 6; ++i, p += 6 )
-                     {
-                        memcpy( t, p, dx );
-                        memcpy( p, p + dx, 6-dx );
-                        memcpy( p + 6-dx, t, dx );
-                     }
-#ifdef _MSC_VER
-                     delete [] t;
-#endif
-                  }
-               }
-               else
+               if ( dy )
                {
-                  // 2x2 Bayer pattern
-                  if ( sizes.top_margin & 1 )
-                  {
-                     Swap( m_rawCFAPattern[0], m_rawCFAPattern[2] );
-                     Swap( m_rawCFAPattern[1], m_rawCFAPattern[3] );
-                  }
-                  if ( sizes.left_margin & 1 )
-                  {
-                     Swap( m_rawCFAPattern[0], m_rawCFAPattern[1] );
-                     Swap( m_rawCFAPattern[2], m_rawCFAPattern[3] );
-                  }
+#ifdef _MSC_VER
+                  char* t = new char[ 6*dy ];
+#else
+                  char t[ 6*dy ];
+#endif
+                  memcpy( t, p, 6*dy );
+                  memcpy( p, p + 6*dy, 36 - 6*dy );
+                  memcpy( p + 36 - 6*dy, t, 6*dy );
+#ifdef _MSC_VER
+                  delete [] t;
+#endif
                }
+               if ( dx )
+               {
+#ifdef _MSC_VER
+                  char* t = new char[ dx ];
+#else
+                  char t[ dx ];
+#endif
+                  for ( int i = 0; i < 6; ++i, p += 6 )
+                  {
+                     memcpy( t, p, dx );
+                     memcpy( p, p + dx, 6-dx );
+                     memcpy( p + 6-dx, t, dx );
+                  }
+#ifdef _MSC_VER
+                  delete [] t;
+#endif
+               }
+            }
+            else
+            {
+               // 2x2 Bayer pattern
+               if ( sizes.top_margin & 1 )
+               {
+                  Swap( m_rawCFAPattern[0], m_rawCFAPattern[2] );
+                  Swap( m_rawCFAPattern[1], m_rawCFAPattern[3] );
+               }
+               if ( sizes.left_margin & 1 )
+               {
+                  Swap( m_rawCFAPattern[0], m_rawCFAPattern[1] );
+                  Swap( m_rawCFAPattern[2], m_rawCFAPattern[3] );
+               }
+            }
 
          /*
           * Get the CFA pattern of the output image. Rotate it if we are
@@ -675,29 +681,21 @@ ImageDescriptionArray RawInstance::Open( const String& filePath, const IsoString
       i.colorSpace       = m_preferences.outputCFA ? ColorSpace::Gray : ColorSpace::RGB;
       i.numberOfChannels = m_preferences.outputCFA ? 1 : 3;
 
-      if ( raw )
+      if ( noAutoCrop )
       {
-         if ( m_preferences.noAutoCrop )
-         {
-            i.width  = sizes.raw_width;
-            i.height = sizes.raw_height;
-         }
-         else
-         {
-            i.width  = sizes.width;
-            i.height = sizes.height;
-         }
+         i.width  = sizes.raw_width;
+         i.height = sizes.raw_height;
       }
       else
       {
          i.width  = sizes.width;
          i.height = sizes.height;
-
-         if ( m_preferences.interpolation == RawPreferences::HalfSize )
-         {
-            i.width  >>= 1;
-            i.height >>= 1;
-         }
+         if ( !raw )
+            if ( m_preferences.interpolation == RawPreferences::HalfSize )
+            {
+               i.width  >>= 1;
+               i.height >>= 1;
+            }
       }
 
       if ( !m_preferences.noAutoFlip )
@@ -766,7 +764,7 @@ ImageDescriptionArray RawInstance::Open( const String& filePath, const IsoString
          console.WriteLn(          "Output mode ............... " + m_preferences.OutputModeAsString() );
          if ( raw )
          {
-            console.WriteLn(       "Auto crop ................. " + EnabledOrDisabled( !m_preferences.noAutoCrop ) );
+            console.WriteLn(       "Auto crop ................. " + EnabledOrDisabled( !noAutoCrop ) );
          }
          else
          {
@@ -785,13 +783,13 @@ ImageDescriptionArray RawInstance::Open( const String& filePath, const IsoString
                }
                console.WriteLn(            "Interpolate as 4 colors ... " + EnabledOrDisabled( m_preferences.interpolateAs4Colors ) );
             }
-            console.WriteLn(               "Black point correction .... " + EnabledOrDisabled( !m_preferences.noBlackPointCorrection  ) );
-            console.WriteLn(               "Highlights clipping ....... " + EnabledOrDisabled( !m_preferences.noClipHighlights ) );
-            console.WriteLn(               "Wavelet noise threshold ... " + String( m_preferences.noiseThreshold ) );
             if ( !xtrans && !foveon )
                console.WriteLn(            "FBDD noise reduction ...... " + String( m_preferences.fbddNoiseReduction ) );
          }
+         console.WriteLn(                  "Wavelet noise threshold ... " + String( m_preferences.noiseThreshold ) );
          console.WriteLn(                  "White balancing ........... " + m_preferences.WhiteBalancingAsString() );
+         console.WriteLn(                  "Black point correction .... " + EnabledOrDisabled( !m_preferences.noBlackPointCorrection  ) );
+         console.WriteLn(                  "Highlights clipping ....... " + EnabledOrDisabled( !m_preferences.noClipHighlights ) );
          console.WriteLn(                  "Auto rotate ............... " + EnabledOrDisabled( !m_preferences.noAutoFlip ) );
          console.WriteLn( String().Format( "Output image .............. w=%d h=%d n=%d %s", i.width, i.height, i.numberOfChannels,
                                                                            (i.colorSpace == ColorSpace::RGB) ? "RGB" : "Gray" ) );
@@ -1042,6 +1040,7 @@ public:
 #define idata        instance.m_raw->imgdata.idata
 #define params       instance.m_raw->imgdata.params
 #define sizes        instance.m_raw->imgdata.sizes
+#define color        instance.m_raw->imgdata.color
 #define rawdata      instance.m_raw->imgdata.rawdata
 
    template <class P>
@@ -1071,23 +1070,29 @@ public:
       // Disable LibRaw's default gamma curve transformation
       params.gamm[0] = params.gamm[1] = 1.0;
 
-      // Do not apply an embedded color profile, enabled by LibRaw by default.
-      params.use_camera_matrix = 0;
-
-      if ( !preferences.noWhiteBalance )
+      if ( preferences.noWhiteBalance )
       {
-         // Automatic WB
+         // Disable white balancing
+         for ( size_type i = 0; i < ItemsInArray( params.user_mul ); ++i )
+            params.user_mul[i] = 1;
+         params.use_auto_wb = params.use_camera_wb = 0;
+         params.use_camera_matrix = 0;
+      }
+      else
+      {
+         // Automatic white balance
          if ( preferences.useAutoWhiteBalance )
             params.use_auto_wb = 1;
-
-         // Camera WB (if possible)
+         // Camera white balance
          if ( preferences.useCameraWhiteBalance )
             params.use_camera_wb = 1;
       }
 
       // Interpolation and related parameters
       if ( raw )
+      {
          params.no_interpolation = 1;
+      }
       else if ( !foveon && !xtrans )
       {
          if ( preferences.interpolation == RawPreferences::HalfSize )
@@ -1122,7 +1127,7 @@ public:
       }
 
       // No automatic camera flip
-      if ( preferences.noAutoFlip )
+      if ( raw || preferences.noAutoFlip )
          params.user_flip = 0;
 
       // No black point adjustment
@@ -1135,112 +1140,179 @@ public:
 
       // Wavelet noise reduction
       if ( preferences.noiseThreshold > 0 )
-         if ( !raw )
-            params.threshold = preferences.noiseThreshold;
-
-      /*
-       * Perform dcraw-style processing.
-       */
-      instance.CheckLibRawReturnCode( RAW->dcraw_process() );
+         params.threshold = preferences.noiseThreshold;
 
       /*
        * Generate the output image.
        */
       if ( raw )
       {
-         const uint16* u = rawdata.raw_image;
-         if ( u == nullptr )
-            throw Error( "LibRaw: Null raw image data" );
-
-         int width, height;
-         if ( preferences.noAutoCrop )
-         {
-            width = sizes.raw_width;
-            height = sizes.raw_height;
-         }
-         else
-         {
-            width  = sizes.width;
-            height = sizes.height;
-            u += sizes.top_margin * sizes.raw_width + sizes.left_margin;
-         }
-
-         if ( preferences.outputCFA )
+         if ( preferences.noWhiteBalance
+           && preferences.noBlackPointCorrection
+           && preferences.noClipHighlights
+           && preferences.noiseThreshold == 0 )
          {
             /*
-             * Output monochrome CFA raw image.
+             * Output pure raw data
              */
-            image.AllocateData( width, height, 1, ColorSpace::Gray );
-            typename GenericImage<P>::sample_iterator i( image );
-            for ( int y = 0; y < height; ++y )
+            const uint16* u = rawdata.raw_image;
+            if ( u == nullptr )
+               throw Error( "LibRaw: Null raw image data" );
+
+            int width, height;
+            if ( preferences.noAutoCrop )
             {
-               const uint16* U = u + y*sizes.raw_width;
-               for ( int x = 0; x < width; ++x, ++i, ++U )
-                  *i = P::ToSample( *U );
+               width = sizes.raw_width;
+               height = sizes.raw_height;
             }
-         }
-         else if ( preferences.outputRawRGB )
-         {
-            /*
-             * Output RGB raw image.
-             */
-            image.AllocateData( width, height, 3, ColorSpace::RGB );
-            image.Zero();
-            CFAIndex index( instance.m_rawCFAPattern );
-            typename GenericImage<P>::pixel_iterator i( image );
-            for ( int y = 0; y < height; ++y )
+            else
             {
-               const uint16* U = u + y*sizes.raw_width;
-               for ( int x = 0; x < width; ++x, ++i, ++U )
+               width = sizes.width;
+               height = sizes.height;
+               u += sizes.top_margin*sizes.raw_width + sizes.left_margin;
+            }
+
+            if ( preferences.outputCFA )
+            {
+               /*
+                * Output monochrome CFA pure raw image.
+                */
+               image.AllocateData( width, height, 1, ColorSpace::Gray );
+               typename GenericImage<P>::sample_iterator i( image );
+               for ( int y = 0; y < height; ++y )
                {
-                  typename P::sample v = P::ToSample( *U );
-                  if ( index( 1, y, x ) )
-                     i[1] = v;
-                  else if ( index( 0, y, x ) )
-                     i[0] = v;
-                  else if ( index( 2, y, x ) )
-                     i[2] = v;
+                  const uint16* U = u + y*sizes.raw_width;
+                  for ( int x = 0; x < width; ++x, ++i, ++U )
+                     *i = P::ToSample( *U );
                }
             }
-         }
-         else if ( preferences.createSuperPixels )
-         {
-            /*
-             * Output RGB superpixels image.
-             */
-            CFAIndex index( instance.m_rawCFAPattern );
-            int Rr, Rc, G1r = -1, G1c, G2r, G2c, Br, Bc;
-            for ( int i = 0; i < 2; ++i )
-               for ( int j = 0; j < 2; ++j )
-                  if ( index( 1, i, j ) )
+            else if ( preferences.outputRawRGB )
+            {
+               /*
+                * Output RGB pure raw image.
+                */
+               image.AllocateData( width, height, 3, ColorSpace::RGB );
+               image.Zero();
+               CFAIndex index( instance.m_rawCFAPattern );
+               typename GenericImage<P>::pixel_iterator i( image );
+               for ( int y = 0; y < height; ++y )
+               {
+                  const uint16* U = u + y*sizes.raw_width;
+                  for ( int x = 0; x < width; ++x, ++i, ++U )
                   {
-                     if ( G1r < 0 )
-                        G1r = i, G1c = j;
-                     else
-                        G2r = i, G2c = j;
+                     typename P::sample v = P::ToSample( *U );
+                     if ( index( 1, y, x ) )
+                        i[1] = v;
+                     else if ( index( 0, y, x ) )
+                        i[0] = v;
+                     else if ( index( 2, y, x ) )
+                        i[2] = v;
                   }
-                  else if ( index( 0, i, j ) )
-                     Rr = i, Rc = j;
-                  else if ( index( 2, i, j ) )
-                     Br = i, Bc = j;
-
-            image.AllocateData( width >> 1, height >> 1, 3, ColorSpace::RGB );
-            typename GenericImage<P>::pixel_iterator i( image );
-            for ( int y = 0; y < height-1; y += 2 )
-            {
-               const uint16* U[2];
-               U[0] = u + y*sizes.raw_width;
-               U[1] = U[0] + sizes.raw_width;
-               for ( int x = 0; x < width-1; x += 2, ++i, U[0] += 2, U[1] += 2 )
-               {
-                  i[0] = P::ToSample( U[Rr][Rc] );
-                  i[1] = P::ToSample( double( int( U[G1r][G1c] ) + int( U[G2r][G2c] ) )/2/uint16_max );
-                  i[2] = P::ToSample( U[Br][Bc] );
                }
             }
+            else if ( preferences.createSuperPixels )
+            {
+               /*
+                * Output RGB pure superpixels image.
+                */
+               CFAIndex index( instance.m_rawCFAPattern );
+               int Rr = 0, Rc = 0, G1r = -1, G1c = 0, G2r = 0, G2c = 0, Br = 0, Bc = 0;
+               for ( int i = 0; i < 2; ++i )
+                  for ( int j = 0; j < 2; ++j )
+                     if ( index( 1, i, j ) )
+                     {
+                        if ( G1r < 0 )
+                           G1r = i, G1c = j;
+                        else
+                           G2r = i, G2c = j;
+                     }
+                     else if ( index( 0, i, j ) )
+                        Rr = i, Rc = j;
+                     else if ( index( 2, i, j ) )
+                        Br = i, Bc = j;
+
+               image.AllocateData( width >> 1, height >> 1, 3, ColorSpace::RGB );
+               typename GenericImage<P>::pixel_iterator i( image );
+               for ( int y = 0; y < height-1; y += 2 )
+               {
+                  const uint16* U[2];
+                  U[0] = u + y*sizes.raw_width;
+                  U[1] = U[0] + sizes.raw_width;
+                  for ( int x = 0; x < width-1; x += 2, ++i, U[0] += 2, U[1] += 2 )
+                  {
+                     i[0] = P::ToSample( U[Rr][Rc] );
+                     i[1] = P::ToSample( double( int( U[G1r][G1c] ) + int( U[G2r][G2c] ) )/2/uint16_max );
+                     i[2] = P::ToSample( U[Br][Bc] );
+                  }
+               }
+            }
+            else
+               throw Error( "RawImageReader::Read(): Internal error: invalid raw output mode" );
          }
          else
-            throw Error( "RawImageReader::Read(): Internal error: invalid raw output mode" );
+         {
+            /*
+             * Output preprocessed raw data with one or more of white
+             * balancing, black level subtraction and highlights clipping
+             * applied.
+             */
+            instance.CheckLibRawReturnCode( RAW->dcraw_process() );
+            const uint16 (*u)[4] = RAW->imgdata.image;
+            if ( u == nullptr )
+               throw Error( "LibRaw: Null preprocessed raw image data" );
+
+            if ( preferences.outputCFA )
+            {
+               /*
+                * Output monochrome CFA preprocessed raw image.
+                */
+               image.AllocateData( sizes.width, sizes.height, 1, ColorSpace::Gray );
+               typename GenericImage<P>::sample_iterator i( image );
+               for ( int y = 0; y < sizes.height; ++y )
+               {
+                  const uint16 (*U)[4] = u + y*sizes.width;
+                  for ( int x = 0; x < sizes.width; ++x, ++i )
+                     *i = P::ToSample( U[x][RAW->COLOR( y, x )] );
+               }
+            }
+            else if ( preferences.outputRawRGB )
+            {
+               /*
+                * Output RGB preprocessed raw image.
+                */
+               image.AllocateData( sizes.width, sizes.height, 3, ColorSpace::RGB );
+               typename GenericImage<P>::pixel_iterator i( image );
+               for ( int y = 0; y < sizes.height; ++y )
+               {
+                  const uint16 (*U)[4] = u + y*sizes.width;
+                  for ( int x = 0; x < sizes.width; ++x, ++i )
+                     for ( int c = 0; c < 3; ++c )
+                        i[c] = P::ToSample( U[x][c] );
+               }
+            }
+            else if ( preferences.createSuperPixels )
+            {
+               /*
+                * Output RGB preprocessed superpixels image.
+                */
+               image.AllocateData( sizes.width >> 1, sizes.height >> 1, 3, ColorSpace::RGB );
+               typename GenericImage<P>::pixel_iterator i( image );
+               for ( int y = 0; y < sizes.height-1; y += 2 )
+               {
+                  const uint16 (*U0)[4] = u + y*sizes.width;
+                  const uint16 (*U1)[4] = U0 + sizes.width;
+                  for ( int x = 0; x < sizes.width-1; x += 2, ++i )
+                  {
+                     i[0] = P::ToSample( double( U0[x][0] + U0[x+1][0] + U1[x][0] + U1[x+1][0] )/uint16_max );
+                     i[1] = P::ToSample( double( int( U0[x][1] ) + int( U0[x+1][1] )
+                                               + int( U1[x][1] ) + int( U1[x+1][1] ) )/2/uint16_max );
+                     i[2] = P::ToSample( double( U0[x][2] + U0[x+1][2] + U1[x][2] + U1[x+1][2] )/uint16_max );
+                  }
+               }
+            }
+            else
+               throw Error( "RawImageReader::Read(): Internal error: invalid raw output mode" );
+         }
 
          /*
           * Apply camera rotation.
@@ -1266,6 +1338,7 @@ public:
          /*
           * Output demosaiced / postprocessed RGB image.
           */
+         instance.CheckLibRawReturnCode( RAW->dcraw_process() );
          int ret;
          libraw_processed_image_t* p = RAW->dcraw_make_mem_image( &ret );
          if ( p != nullptr )
@@ -1307,6 +1380,7 @@ public:
 #undef idata
 #undef params
 #undef sizes
+#undef color
 #undef rawdata
 };
 

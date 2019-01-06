@@ -54,10 +54,12 @@
 #define __INDIClient_h
 
 #include "INDIParamListTypes.h"
-#include "IINDIProperty.h"
-
+#include "IIndigoProperty.h"
+#include "IndigoClient.h"
 
 #include <pcl/AutoLock.h>
+
+#include<sstream>
 
 namespace pcl
 {
@@ -161,24 +163,36 @@ class INDIClient
 {
 public:
 
-   INDIClient( const IsoString& hostName = "localhost", uint32 port = 7624 ): m_serverHost(hostName), m_serverPort(port) {
-    }
+   INDIClient( const IsoString& hostName = "localhost", uint32 port = 7624 ): m_indigoClient("PixInsight", hostName.c_str(), port), m_serverHost(hostName), m_serverPort(port) {
+   }
 
    virtual ~INDIClient()
    {
    }
 
-   bool connectServer() {
-      return true;
+   bool connectServer(std::ostream& errorMessage) {
+      if (!m_indigoClient.connectServer(errorMessage)){
+         return false;
+      }
+
+
+
+      return m_indigoClient.connectServer(errorMessage);
    }
 
    bool disconnectServer() {
-      return true;
+      return m_indigoClient.disconnectServer();
    }
 
    bool IsServerConnected() const
    {
-      return m_serverIsConnected;
+      std::ostringstream errorMessage;
+      return m_indigoClient.serverIsConnected(errorMessage);
+   }
+
+   bool IsServerConnected(std::ostream& errorMessage) const
+   {
+      return m_indigoClient.serverIsConnected(errorMessage);
    }
 
    void setServer(const char *hostname, unsigned int port) {
@@ -187,12 +201,12 @@ public:
 
    IsoString HostName() const
    {
-      return IsoString("");
+      return m_serverHost;
    }
 
    uint32 Port() const
    {
-      return 0;
+      return m_serverPort;
    }
 
    ExclDeviceList DeviceList()
@@ -360,23 +374,24 @@ public:
    static INDIClient* NewClient( const IsoString& hostName = "localhost", uint32 port = 7624 );
    static void DestroyClient();
 
-protected:
 
-   // Reimplemented from base class
-   /*void newDevice( INDI::BaseDevice* );
-   void removeDevice( INDI::BaseDevice* );
-   void newProperty( INDI::Property* );
-   void removeProperty( INDI::Property* );
-   void newBLOB( IBLOB* );
-   void newSwitch( ISwitchVectorProperty* );
-   void newNumber( INumberVectorProperty* );
-   void newText( ITextVectorProperty* );
-   void newLight( ILightVectorProperty* );
-   void newMessage( INDI::BaseDevice*, int messageID );
+   void newDevice( const IsoString& deviceName );
+   void removeDevice( const IsoString& deviceName );
+   void newProperty( indigo_property* );
+   void removeProperty( indigo_property* );
+   //void newBLOB( IBLOB* );
+   void newSwitch( indigo_property* );
+   void newNumber( indigo_property* );
+   void newText( indigo_property* );
+   void newLight( indigo_property* );
+   //void newMessage( INDI::BaseDevice*, int messageID );
+
    void serverConnected();
-   void serverDisconnected( int exit_code );*/
+   void serverDisconnected( int exit_code );
 
 private:
+   IndigoClient              m_indigoClient;
+
    IsoString                 m_serverHost;
    uint32_t                  m_serverPort;
    bool                      m_serverIsConnected;
@@ -455,7 +470,7 @@ private:
       }
    };
 
-   void ApplyToPropertyList( INDI::Property*, const PropertyListMutator& );
+   void ApplyToPropertyList( indigo_property*, const PropertyListMutator& );
 };
 
 // ----------------------------------------------------------------------------

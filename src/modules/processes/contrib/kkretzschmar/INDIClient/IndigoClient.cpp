@@ -102,10 +102,9 @@ bool IndigoClient::disconnectServer() {
    return true;
 }
 
-bool IndigoClient::serverIsConnected(std::ostream& errMessage) {
+bool IndigoClient::serverIsConnected(std::ostream& errMessage) const {
    indigo_server_entry* server = getServerEntry(m_serverHost.c_str(), static_cast<uint32_t>(m_port));
    if (server == nullptr) {
-      errMessage <<"Internal error: Invalid server entry -- "<<__FILE__<<":"<<__LINE__;
       return false;
    } else if (server->socket <= 0){
       if (strlen(server->last_error) != 0){
@@ -179,7 +178,7 @@ indigo_result IndigoClient::updateProperty(indigo_client *client, indigo_device 
    return INDIGO_OK;
 }
 
-indigo_server_entry* IndigoClient::getServerEntry(const char* host, int32_t port) {
+indigo_server_entry* IndigoClient::getServerEntry(const char* host, int32_t port) const {
    for (int dc = 0; dc < INDIGO_MAX_SERVERS; dc++) {
       if (!strcmp(indigo_available_servers[dc].host, host) && indigo_available_servers[dc].port == port){
          return  &indigo_available_servers[dc];

@@ -308,6 +308,7 @@ class PropertyFactory
 public:
 
    static IProperty* Create( indigo_property* );
+   //static IProperty* Create( const char* device, const char* name, const char* value);
 };
 
 // ----------------------------------------------------------------------------

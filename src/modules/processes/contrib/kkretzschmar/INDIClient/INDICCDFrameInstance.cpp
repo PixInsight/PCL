@@ -1116,7 +1116,7 @@ void AbstractINDICCDFrameExecution::Perform()
 
          for ( bool inExposure = false; ; )
             if ( indi->GetPropertyItem( m_instance.p_deviceName, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", item, false/*formatted*/ ) )
-               if ( item.PropertyState == IPS_BUSY )
+               if ( item.PropertyState == INDIGO_BUSY_STATE )
                {
                   if ( inExposure )
                   {

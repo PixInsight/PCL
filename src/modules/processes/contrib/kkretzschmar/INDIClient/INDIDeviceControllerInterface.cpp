@@ -278,10 +278,10 @@ public:
       const char* typeTitleChunk;
       switch( m_item.PropertyType )
       {
-      case INDI_SWITCH: typeTitleChunk = "Switch "; break;
-      case INDI_NUMBER: typeTitleChunk = "Number "; break;
-      case INDI_LIGHT:  typeTitleChunk = "Light ";  break;
-      case INDI_TEXT:   typeTitleChunk = "Text ";   break;
+      case INDIGO_SWITCH_VECTOR: typeTitleChunk = "Switch "; break;
+      case INDIGO_NUMBER_VECTOR: typeTitleChunk = "Number "; break;
+      case INDIGO_LIGHT_VECTOR:  typeTitleChunk = "Light ";  break;
+      case INDIGO_TEXT_VECTOR:   typeTitleChunk = "Text ";   break;
       default:          typeTitleChunk = "";        break;
       }
       SetWindowTitle( "INDI " + String( typeTitleChunk ) + "Property" );
@@ -296,10 +296,10 @@ public:
       const char* typeName;
       switch( m_item.PropertyType )
       {
-      case INDI_SWITCH: typeName = "INDI_SWITCH";  break;
-      case INDI_NUMBER: typeName = "INDI_NUMBER";  break;
-      case INDI_LIGHT:  typeName = "INDI_LIGHT";   break;
-      case INDI_TEXT:   typeName = "INDI_TEXT";    break;
+      case INDIGO_SWITCH_VECTOR: typeName = "INDI_SWITCH";  break;
+      case INDIGO_NUMBER_VECTOR: typeName = "INDI_NUMBER";  break;
+      case INDIGO_LIGHT_VECTOR:  typeName = "INDI_LIGHT";   break;
+      case INDIGO_TEXT_VECTOR:   typeName = "INDI_TEXT";    break;
       default:          typeName = "INDI_UNKNOWN"; break;
       }
       INDINewPropertyItem newItem( m_item.Device, m_item.Property, typeName, m_item.Element, NewItemValue() );
@@ -472,17 +472,17 @@ bool PropertyEditDialog::EditProperty( INDINewPropertyItem& result, const INDIPr
    AutoPointer<PropertyEditDialog> dialog;
    switch ( item.PropertyType )
    {
-   case INDI_NUMBER:
+   case INDIGO_NUMBER_VECTOR:
       if ( item.PropertyNumberFormat.Find( 'm' ) != String::notFound )
          dialog = new CoordinatesPropertyEditDialog( item );
       else
          dialog = new NumberPropertyEditDialog( item );
       break;
-   case INDI_SWITCH:
+   case INDIGO_SWITCH_VECTOR:
       dialog = new SwitchPropertyEditDialog( item );
       break;
    default:
-   case INDI_TEXT:
+   case INDIGO_TEXT_VECTOR:
       dialog = new TextPropertyEditDialog( item );
       break;
    }
@@ -943,10 +943,12 @@ void INDIDeviceControllerInterface::e_Click( Button& sender, bool checked )
       else
          INDIClient::NewClient( hostName8, port );
 
-      if ( !INDIClient::TheClient()->connectServer() )
+      std::ostringstream errMesg;
+      bool success = INDIClient::TheClient()->connectServer(errMesg);
+      if ( ! success )
          MessageBox( "<p>Failure to connect to INDI server:</p>"
                      "<p>" + GUI->HostName_Edit.Text().Trimmed() + ":" + String( port ) + "</p>"
-                     "<p><b>Please check server host name and port.</b></p>",
+                     "<p><b>Possible reason: </b></p>" + IsoString(errMesg.str().c_str()),
                      WindowTitle(),
                      StdIcon::Error, StdButton::Ok ).Execute();
 

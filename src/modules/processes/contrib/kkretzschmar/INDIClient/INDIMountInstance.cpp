@@ -768,7 +768,7 @@ void AbstractINDIMountExecution::Perform()
                INDIPropertyListItem Dec_item;
                if (    indi->GetPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "RA", RA_item, false/*formatted*/ )
                   && indi->GetPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "DEC", Dec_item, false/*formatted*/ ) )
-                  if ( RA_item.PropertyState == IPS_BUSY || Dec_item.PropertyState == IPS_BUSY )
+                  if ( RA_item.PropertyState == INDIGO_BUSY_STATE || Dec_item.PropertyState == INDIGO_BUSY_STATE )
                   {
                      if ( T() > 0.1 )
                      {
@@ -801,7 +801,7 @@ void AbstractINDIMountExecution::Perform()
          {
             INDIPropertyListItem item;
             if ( indi->GetPropertyItem( m_instance.p_deviceName, "TELESCOPE_PARK", "PARK", item, false/*formatted*/ ) )
-               if ( item.PropertyState == IPS_BUSY )
+               if ( item.PropertyState == INDIGO_BUSY_STATE )
                {
                   if ( T() > 0.1 )
                   {
@@ -836,7 +836,7 @@ void AbstractINDIMountExecution::Perform()
             for ( ElapsedTime T; ; )
             {
                if ( indi->GetPropertyItem( m_instance.p_deviceName, "TELESCOPE_PARK", "PARK", item, false/*formatted*/ ) )
-                  if ( item.PropertyState == IPS_BUSY )
+                  if ( item.PropertyState == INDIGO_BUSY_STATE )
                   {
                      if ( T() > 0.1 )
                      {

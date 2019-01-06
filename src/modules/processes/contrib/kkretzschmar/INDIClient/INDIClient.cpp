@@ -57,6 +57,8 @@
 #include <pcl/GlobalSettings.h>
 #include <pcl/MetaModule.h>
 
+#include<sstream>
+
 #define CHECK_POINTER( p ) \
    if ( p == nullptr )     \
       throw Error( "Internal error: INDIClient: Null pointer argument in " + String( PCL_FUNCTION_NAME ) );
@@ -120,11 +122,17 @@ bool INDIClient::GetPropertyItem( const String& device, const String& property, 
 
 bool INDIClient::SendNewPropertyItem( const INDINewPropertyItem& newItem, bool async )
 {
-   if ( !IsServerConnected() )
-      return false;
 
    int verbosity = Verbosity();
    Console console;
+
+   std::ostringstream errMessage;
+   bool success = IsServerConnected(errMessage);
+   if ( !success ){
+      console.CriticalLn("<end><cbr><br>------------------------------------------------------------------------------" );
+      console.CriticalLn("Server is not connected. Possible reason:" + IsoString(errMessage.str().c_str()));
+      return false;
+   }
 
    try
    {
@@ -460,7 +468,7 @@ void INDIClient::newMessage( INDI::BaseDevice* d, int messageID )
       m_currentServerMessage = message.c_str();
    }
 }
-
+*/
 void INDIClient::serverConnected()
 {
    volatile AutoLock lock( m_mutex );
@@ -476,8 +484,8 @@ void INDIClient::serverDisconnected( int exitCode )
    INDIPropertyListItemArray( y ).Clear();
    m_serverConnectionChanged = true;
 }
-*/
-void INDIClient::ApplyToPropertyList( INDI::Property* p, const PropertyListMutator& mutate )
+
+void INDIClient::ApplyToPropertyList( indigo_property* p, const PropertyListMutator& mutate )
 {
    ExclPropertyList y = PropertyList();
    INDIPropertyListItemArray& properties( y );

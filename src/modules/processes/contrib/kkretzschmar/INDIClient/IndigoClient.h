@@ -87,7 +87,7 @@ public:
    ~IndigoClient();  // do not make it virtual, no vtable allowed
    bool connectServer(std::ostream& errMessage);
    bool disconnectServer();
-   bool serverIsConnected(std::ostream& errMessage);
+   bool serverIsConnected(std::ostream& errMessage) const;
    bool sendNewProperty(indigo_property *property);
    bool loadDeviceDriver(const std::string& driver);
    std::function<void(const std::string&)> newDevice = [] (const std::string& ){};
@@ -99,7 +99,7 @@ public:
    std::function<void(indigo_property*)> newText = [] (indigo_property*){};
    std::function<void(indigo_property*)> newLight = [] (indigo_property*){};
  private:
-   indigo_server_entry* getServerEntry(const char* host, int32_t port);
+   indigo_server_entry* getServerEntry(const char* host, int32_t port) const;
    static indigo_result clientAttach(indigo_client *client);
    static indigo_result defineProperty(indigo_client *client, indigo_device *device, indigo_property *property, const char *message);
    static indigo_result deleteProperty(indigo_client *client, indigo_device *device, indigo_property *property, const char *message);

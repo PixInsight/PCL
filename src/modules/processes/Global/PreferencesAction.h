@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0393
+// Standard Global Process Module Version 01.02.07.0397
 // ----------------------------------------------------------------------------
-// PreferencesAction.h - Released 2018-11-23T18:45:58Z
+// PreferencesAction.h - Released 2018-12-12T09:25:24Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -75,4 +75,4 @@ public:
 #endif   // __PreferencesActions_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesAction.h - Released 2018-11-23T18:45:58Z
+// EOF PreferencesAction.h - Released 2018-12-12T09:25:24Z

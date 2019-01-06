@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.07.00.0308
+// Standard Debayer Process Module Version 01.08.00.0321
 // ----------------------------------------------------------------------------
-// DebayerParameters.cpp - Released 2018-11-23T18:45:59Z
+// DebayerParameters.cpp - Released 2018-12-12T09:25:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
@@ -59,6 +59,7 @@ namespace pcl
 
 DebayerBayerPatternParameter*	    TheDebayerBayerPatternParameter = nullptr;
 DebayerMethodParameter*           TheDebayerMethodParameter = nullptr;
+DebayerFBDDNoiseReduction*        TheDebayerFBDDNoiseReductionParameter = nullptr;
 DebayerEvaluateNoise*             TheDebayerEvaluateNoiseParameter = nullptr;
 DebayerNoiseEvaluationAlgorithm*  TheDebayerNoiseEvaluationAlgorithmParameter = nullptr;
 DebayerShowImages*                TheDebayerShowImagesParameter = nullptr;
@@ -194,6 +195,33 @@ int DebayerMethodParameter::ElementValue( size_type i ) const
 size_type DebayerMethodParameter::DefaultValueIndex() const
 {
    return Default;
+}
+
+// ----------------------------------------------------------------------------
+
+DebayerFBDDNoiseReduction::DebayerFBDDNoiseReduction( MetaProcess* P ) : MetaInt32( P )
+{
+   TheDebayerFBDDNoiseReductionParameter = this;
+}
+
+IsoString DebayerFBDDNoiseReduction::Id() const
+{
+   return "fbddNoiseReduction";
+}
+
+double DebayerFBDDNoiseReduction::DefaultValue() const
+{
+   return 0;
+}
+
+double DebayerFBDDNoiseReduction::MinimumValue() const
+{
+   return 0;
+}
+
+double DebayerFBDDNoiseReduction::MaximumValue() const
+{
+   return 2;
 }
 
 // ----------------------------------------------------------------------------
@@ -1048,4 +1076,4 @@ bool DebayerOutputFileNoiseAlgorithmB::IsReadOnly() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DebayerParameters.cpp - Released 2018-11-23T18:45:59Z
+// EOF DebayerParameters.cpp - Released 2018-12-12T09:25:25Z

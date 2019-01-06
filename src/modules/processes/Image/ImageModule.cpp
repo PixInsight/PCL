@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.03.00.0427
+// Standard Image Process Module Version 01.03.00.0431
 // ----------------------------------------------------------------------------
-// ImageModule.cpp - Released 2018-11-23T18:45:58Z
+// ImageModule.cpp - Released 2018-12-12T09:25:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     03
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0427
+#define MODULE_VERSION_BUILD     0431
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2018
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       23
+#define MODULE_RELEASE_MONTH     12
+#define MODULE_RELEASE_DAY       12
 
 #include "ImageModule.h"
 #include "NewImageProcess.h"
@@ -203,4 +203,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF ImageModule.cpp - Released 2018-11-23T18:45:58Z
+// EOF ImageModule.cpp - Released 2018-12-12T09:25:25Z

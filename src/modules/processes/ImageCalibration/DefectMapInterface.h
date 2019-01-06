@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.01.0352
+// Standard ImageCalibration Process Module Version 01.04.01.0356
 // ----------------------------------------------------------------------------
-// DefectMapInterface.h - Released 2018-11-23T18:45:58Z
+// DefectMapInterface.h - Released 2018-12-12T09:25:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -143,4 +143,4 @@ PCL_END_LOCAL
 #endif   // __DefectMapInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF DefectMapInterface.h - Released 2018-11-23T18:45:58Z
+// EOF DefectMapInterface.h - Released 2018-12-12T09:25:25Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.04.01.0012
+// Standard SubframeSelector Process Module Version 01.04.01.0016
 // ----------------------------------------------------------------------------
-// SubframeSelectorInterface.h - Released 2018-11-23T18:45:58Z
+// SubframeSelectorInterface.h - Released 2018-12-12T09:25:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SubframeSelector PixInsight module.
 //
@@ -68,7 +68,6 @@
 #include <pcl/ToolButton.h>
 #include <pcl/TreeBox.h>
 
-#include "GraphWebView.h"
 #include "SubframeSelectorInstance.h"
 
 namespace pcl
@@ -286,4 +285,4 @@ PCL_END_LOCAL
 #endif   // e_SubframeSelectorInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF SubframeSelectorInterface.h - Released 2018-11-23T18:45:58Z
+// EOF SubframeSelectorInterface.h - Released 2018-12-12T09:25:25Z

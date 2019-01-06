@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.04.01.0012
+// Standard SubframeSelector Process Module Version 01.04.01.0016
 // ----------------------------------------------------------------------------
-// GraphWebView.h - Released 2018-11-23T18:45:58Z
+// GraphWebView.h - Released 2018-12-12T09:25:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SubframeSelector PixInsight module.
 //
@@ -109,6 +109,8 @@ public:
    void OnApprove( approve_event_handler handler, Control& receiver );
    void OnUnlock( unlock_event_handler handler, Control& receiver );
 
+   void Cleanup();
+
 private:
 
    String Header() const;
@@ -119,8 +121,9 @@ private:
    void __Timer( Timer& sender );
    void __JSResult( WebView& sender, const Variant& result );
 
-   Timer eventCheckTimer;
-   bool keepChecking = true;
+   Timer  m_eventCheckTimer;
+   bool   m_keepChecking = true;
+   String m_htmlFilePath;
 
    struct EventHandlers
    {
@@ -134,7 +137,7 @@ private:
       EventHandlers& operator =( const EventHandlers& ) = default;
    };
 
-   AutoPointer<EventHandlers> eventHandlers;
+   AutoPointer<EventHandlers> m_eventHandlers;
 };
 
 // ----------------------------------------------------------------------------
@@ -144,4 +147,4 @@ private:
 #endif   // __GRAPHWEBVIEW_h
 
 // ----------------------------------------------------------------------------
-// EOF GraphWebView.h - Released 2018-11-23T18:45:58Z
+// EOF GraphWebView.h - Released 2018-12-12T09:25:25Z

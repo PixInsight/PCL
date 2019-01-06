@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard JPEG File Format Module Version 01.00.04.0358
+// Standard JPEG File Format Module Version 01.00.04.0362
 // ----------------------------------------------------------------------------
-// JPEGPreferencesDialog.cpp - Released 2018-11-23T16:14:51Z
+// JPEGPreferencesDialog.cpp - Released 2018-12-12T09:25:15Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
@@ -92,4 +92,4 @@ void JPEGPreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF JPEGPreferencesDialog.cpp - Released 2018-11-23T16:14:51Z
+// EOF JPEGPreferencesDialog.cpp - Released 2018-12-12T09:25:15Z

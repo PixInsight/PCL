@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0364
+// Standard ColorSpaces Process Module Version 01.01.00.0368
 // ----------------------------------------------------------------------------
-// RGBWorkingSpaceInstance.cpp - Released 2018-11-23T18:45:58Z
+// RGBWorkingSpaceInstance.cpp - Released 2018-12-12T09:25:24Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
@@ -238,4 +238,4 @@ size_type RGBWorkingSpaceInstance::ParameterLength( const MetaParameter* p, size
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RGBWorkingSpaceInstance.cpp - Released 2018-11-23T18:45:58Z
+// EOF RGBWorkingSpaceInstance.cpp - Released 2018-12-12T09:25:24Z

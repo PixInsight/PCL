@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard CloneStamp Process Module Version 01.00.02.0351
+// Standard CloneStamp Process Module Version 01.00.02.0355
 // ----------------------------------------------------------------------------
-// CloneStampModule.cpp - Released 2018-11-23T18:45:58Z
+// CloneStampModule.cpp - Released 2018-12-12T09:25:24Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CloneStamp PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  02
-#define MODULE_VERSION_BUILD     0351
+#define MODULE_VERSION_BUILD     0355
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2018
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       23
+#define MODULE_RELEASE_MONTH     12
+#define MODULE_RELEASE_DAY       12
 
 #include "CloneStampModule.h"
 #include "CloneStampProcess.h"
@@ -153,4 +153,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF CloneStampModule.cpp - Released 2018-11-23T18:45:58Z
+// EOF CloneStampModule.cpp - Released 2018-12-12T09:25:24Z

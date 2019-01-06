@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard Flux Process Module Version 01.00.01.0200
+// Standard Flux Process Module Version 01.00.01.0204
 // ----------------------------------------------------------------------------
-// FluxModule.h - Released 2018-11-23T18:45:58Z
+// FluxModule.h - Released 2018-12-12T09:25:24Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
@@ -86,4 +86,4 @@ public:
 #endif   // __FluxModule_h
 
 // ----------------------------------------------------------------------------
-// EOF FluxModule.h - Released 2018-11-23T18:45:58Z
+// EOF FluxModule.h - Released 2018-12-12T09:25:24Z

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// pcl/AstrometricMetadata.cpp - Released 2018-11-23T16:14:31Z
+// pcl/AstrometricMetadata.cpp - Released 2018-12-12T09:24:30Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -179,15 +179,36 @@ void AstrometricMetadata::Write( ImageWindow& window, bool notify ) const
    UpdateWCSKeywords( keywords );
    window.SetKeywords( keywords );
 
+   if ( m_focal.IsDefined() && m_focal() > 0 )
+      view.SetStorablePropertyValue( "Instrument:Telescope:FocalLength", Round( m_focal()/1000, 6 ), notify );
+
+   if ( m_xpixsz.IsDefined() && m_xpixsz() > 0 )
+   {
+      view.SetStorablePropertyValue( "Instrument:Sensor:XPixelSize", Round( m_xpixsz(), 3 ), notify );
+      view.SetStorablePropertyValue( "Instrument:Sensor:YPixelSize", Round( m_xpixsz(), 3 ), notify );
+   }
+
+   DPoint pRD;
+   if ( ImageToCelestial( pRD, DPoint( m_width/2.0, m_height/2.0 ) ) )
+   {
+      view.SetStorablePropertyValue( "Observation:Center:RA", pRD.x, notify );
+      view.SetStorablePropertyValue( "Observation:Center:Dec", pRD.y, notify );
+      view.SetStorablePropertyValue( "Observation:CelestialReferenceSystem", "ICRS", notify );
+      view.SetStorablePropertyValue( "Observation:Equinox", 2000.0, notify );
+      // The default reference point is the geometric center of the image.
+      view.DeleteProperty( "Observation:Center:X", notify );
+      view.DeleteProperty( "Observation:Center:Y", notify );
+   }
+
    const SplineWorldTransformation* splineTransform = dynamic_cast<const SplineWorldTransformation*>( m_transformWI.Pointer() );
    if ( splineTransform != nullptr )
    {
       ByteArray data;
       splineTransform->Serialize( data );
-      view.SetPropertyValue( "Transformation_ImageToProjection", data, notify, ViewPropertyAttribute::Storable );
+      view.SetStorablePropertyValue( "Transformation_ImageToProjection", data, notify );
    }
    else
-      view.DeleteProperty( "Transformation_ImageToProjection" );
+      view.DeleteProperty( "Transformation_ImageToProjection", notify );
 }
 
 // ----------------------------------------------------------------------------
@@ -201,6 +222,27 @@ void AstrometricMetadata::Write( XISFWriter& writer ) const
    UpdateBasicKeywords( keywords );
    UpdateWCSKeywords( keywords );
    writer.WriteFITSKeywords( keywords );
+
+   if ( m_focal.IsDefined() && m_focal() > 0 )
+      writer.WriteImageProperty( "Instrument:Telescope:FocalLength", Round( m_focal()/1000, 6 ) );
+
+   if ( m_xpixsz.IsDefined() && m_xpixsz() > 0 )
+   {
+      writer.WriteImageProperty( "Instrument:Sensor:XPixelSize", Round( m_xpixsz(), 3 ) );
+      writer.WriteImageProperty( "Instrument:Sensor:YPixelSize", Round( m_xpixsz(), 3 ) );
+   }
+
+   DPoint pRD;
+   if ( ImageToCelestial( pRD, DPoint( m_width/2.0, m_height/2.0 ) ) )
+   {
+      writer.WriteImageProperty( "Observation:Center:RA", pRD.x );
+      writer.WriteImageProperty( "Observation:Center:Dec", pRD.y );
+      writer.WriteImageProperty( "Observation:CelestialReferenceSystem", "ICRS" );
+      writer.WriteImageProperty( "Observation:Equinox", 2000.0 );
+      // The default reference point is the geometric center of the image.
+      writer.RemoveImageProperty( "Observation:Center:X" );
+      writer.RemoveImageProperty( "Observation:Center:Y" );
+   }
 
    const SplineWorldTransformation* splineTransform = dynamic_cast<const SplineWorldTransformation*>( m_transformWI.Pointer() );
    if ( splineTransform != nullptr )
@@ -223,7 +265,7 @@ void AstrometricMetadata::Verify( double& ex, double& ey ) const
          throw Error( "Invalid or uninitialized metadata." );
 
       /*
-       * Does a full cycle transformation (image > celestial > image) and
+       * Performs a full cycle transformation (image > celestial > image) and
        * reports the resulting absolute differences in pixels.
        */
       DPoint pI0( m_width/2.0, m_height/2.0 );
@@ -357,19 +399,15 @@ void AstrometricMetadata::UpdateBasicKeywords( FITSKeywordArray& keywords ) cons
     * OBJCTRA/OBJCTDEC keywords is really a good idea. However, this is
     * customary practice...
     */
-   DPoint center;
-   if ( ImageToCelestial( center, DPoint( m_width/2.0, m_height/2.0 ) ) )
+   DPoint pRD;
+   if ( ImageToCelestial( pRD, DPoint( m_width/2.0, m_height/2.0 ) ) )
    {
-      if ( center.x < 0 )
-         center.x += 360;
       ModifyKeyword( keywords, "OBJCTRA",
-               '\'' + IsoString::ToSexagesimal( center.x/15,
-                           SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 0/*width*/, ' '/*separator*/ ) ) + '\'',
-               "Right ascension of the center of the image" );
+            '\'' + IsoString::ToSexagesimal( pRD.x/15, RAConversionOptions( 3/*precision*/, 0/*width*/ ) ) + '\'',
+            "Right ascension of the center of the image" );
       ModifyKeyword( keywords, "OBJCTDEC",
-               '\'' + IsoString::ToSexagesimal( center.y,
-                           SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 0/*width*/, ' '/*separator*/ ) ) + '\'',
-               "Declination of the center of the image" );
+            '\'' + IsoString::ToSexagesimal( pRD.y, DecConversionOptions( 2/*precision*/, 0/*width*/ ) ) + '\'',
+            "Declination of the center of the image" );
    }
 }
 
@@ -392,7 +430,8 @@ void AstrometricMetadata::UpdateWCSKeywords( FITSKeywordArray& keywords ) const
    RemoveKeyword( keywords, "CD1_2" );
    RemoveKeyword( keywords, "CD2_1" );
    RemoveKeyword( keywords, "CD2_2" );
-   RemoveKeyword( keywords, "REFSPLINE" );
+   RemoveKeyword( keywords, "REFSPLIN" );
+   RemoveKeyword( keywords, "REFSPLINE" ); // N.B. 9-char keyword name written by old versions, not FITS-compliant.
    RemoveKeyword( keywords, "CDELT1" );
    RemoveKeyword( keywords, "CDELT2" );
    RemoveKeyword( keywords, "CROTA1" );
@@ -427,7 +466,7 @@ void AstrometricMetadata::UpdateWCSKeywords( FITSKeywordArray& keywords ) const
                << FITSHeaderKeyword( "CD2_2", IsoString().Format( "%.16g", wcs.cd2_2() ), "Scale matrix (2,2)" );
 
       if ( HasSplineWorldTransformation() )
-         keywords << FITSHeaderKeyword( "REFSPLINE", "T", "Spline-based astrometric solution available" );
+         keywords << FITSHeaderKeyword( "REFSPLIN", "T", "Spline-based astrometric solution available" );
 
       // AIPS keywords (CDELT1, CDELT2, CROTA1, CROTA2)
       keywords << FITSHeaderKeyword( "CDELT1", IsoString().Format( "%.16g", wcs.cdelt1() ), "Axis1 scale" )
@@ -435,6 +474,61 @@ void AstrometricMetadata::UpdateWCSKeywords( FITSKeywordArray& keywords ) const
                << FITSHeaderKeyword( "CROTA1", IsoString().Format( "%.16g", wcs.crota1() ), "Axis1 rotation angle (deg)" )
                << FITSHeaderKeyword( "CROTA2", IsoString().Format( "%.16g", wcs.crota2() ), "Axis2 rotation angle (deg)" );
    }
+}
+
+// ----------------------------------------------------------------------------
+
+static void ModifyProperty( PropertyArray& properties, const IsoString& id, const Variant& value )
+{
+   PropertyArray::iterator i = properties.Search( id );
+   if ( i != properties.End() )
+      i->SetValue( value );
+   else
+      properties << Property( id, value );
+}
+
+static void RemoveProperty( PropertyArray& properties, const IsoString& id )
+{
+   properties.Remove( Property( id ) );
+}
+
+void AstrometricMetadata::UpdateProperties( PropertyArray& properties ) const
+{
+   if ( IsValid() )
+   {
+      if ( m_focal.IsDefined() && m_focal() > 0 )
+         ModifyProperty( properties, "Instrument:Telescope:FocalLength", Round( m_focal()/1000, 6 ) );
+
+      if ( m_xpixsz.IsDefined() && m_xpixsz() > 0 )
+      {
+         ModifyProperty( properties, "Instrument:Sensor:XPixelSize", Round( m_xpixsz(), 3 ) );
+         ModifyProperty( properties, "Instrument:Sensor:YPixelSize", Round( m_xpixsz(), 3 ) );
+      }
+
+      DPoint pRD;
+      if ( ImageToCelestial( pRD, DPoint( m_width/2.0, m_height/2.0 ) ) )
+      {
+         ModifyProperty( properties, "Observation:Center:RA", pRD.x );
+         ModifyProperty( properties, "Observation:Center:Dec", pRD.y );
+         ModifyProperty( properties, "Observation:CelestialReferenceSystem", "ICRS" );
+         ModifyProperty( properties, "Observation:Equinox", 2000.0 );
+         // The default reference point is the geometric center of the image.
+         RemoveProperty( properties, "Observation:Center:X" );
+         RemoveProperty( properties, "Observation:Center:Y" );
+      }
+
+      const SplineWorldTransformation* splineTransform = dynamic_cast<const SplineWorldTransformation*>( m_transformWI.Pointer() );
+      if ( splineTransform != nullptr )
+      {
+         ByteArray data;
+         splineTransform->Serialize( data );
+         ModifyProperty( properties, "Transformation_ImageToProjection", data );
+      }
+      else
+         RemoveProperty( properties, "Transformation_ImageToProjection" );
+   }
+   else
+      RemoveProperty( properties, "Transformation_ImageToProjection" );
 }
 
 // ----------------------------------------------------------------------------
@@ -582,4 +676,4 @@ void AstrometricMetadata::UpdateDescription() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AstrometricMetadata.cpp - Released 2018-11-23T16:14:31Z
+// EOF pcl/AstrometricMetadata.cpp - Released 2018-12-12T09:24:30Z

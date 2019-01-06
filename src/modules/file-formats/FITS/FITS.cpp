@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.05.0423
+// Standard FITS File Format Module Version 01.01.05.0427
 // ----------------------------------------------------------------------------
-// FITS.cpp - Released 2018-11-23T16:14:51Z
+// FITS.cpp - Released 2018-12-12T09:25:15Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
@@ -2357,8 +2357,20 @@ void FITSWriter::CreateImage( const ImageInfo& info )
       {
          FITSHeaderKeyword k = *i;
 
-         // Take it as uppercase to simplify subsequent comparisons
-         IsoString kname = k.name.Trimmed().Uppercase();
+         /*
+          * Keyword names have to be limited to 8 characters, although CFITSIO
+          * is supposed to do this automatically. Otherwise we face a horrible
+          * bug in CFITSIO that leads to a segfault (tested with version 3.45).
+          * Example backtrace:
+          *
+          * Received signal 11 (SIGSEGV)
+          * Module: .../bin/./PixInsight() [0x150bcfd]
+          * 30: /lib64/libpthread.so.0(+0xf5d0) [0x7f89c184a5d0]
+          * 29: .../bin/FITS-pxm.so(fftkey+0x50) [0x7f66acaf9c30](+0x50 [0x7f66acaf9c30])
+          * 28: .../bin/FITS-pxm.so(ffmkky+0x378) [0x7f66acafa668](+0x378 [0x7f66acafa668])
+          * 27: .../bin/FITS-pxm.so(ffpkyl+0x58) [0x7f66acbb0a78](+0x58 [0x7f66acbb0a78])
+          */
+         IsoString kname = k.name.Trimmed().Substring( 0, 8 ).Uppercase();
 
          /*
           * Do not duplicate mandatory and PCL FITS keywords, and do not
@@ -2412,7 +2424,7 @@ void FITSWriter::CreateImage( const ImageInfo& info )
                ::fits_read_keyword( fits_handle, kname.c_str(), cvalue, ccomment, &fitsStatus );
             }
             if ( fitsStatus == 0 ) // keyword found, don't include if identical
-               if ( k == FITSHeaderKeyword( k.name.c_str(), cvalue, ccomment ) )
+               if ( k == FITSHeaderKeyword( k.name, cvalue, ccomment ) )
                   continue;
 
             fitsStatus = 0; // don't propagate a false error condition
@@ -2455,20 +2467,20 @@ void FITSWriter::CreateImage( const ImageInfo& info )
                {
                   // Write a "null" keyword without a value field.
                   // This case has to be handled in a special way with CFITSIO.
-                  ::fits_write_key_null( fits_handle, k.name.c_str(), k.comment.c_str(), &fitsStatus );
+                  ::fits_write_key_null( fits_handle, kname.c_str(), k.comment.c_str(), &fitsStatus );
                }
                else if ( k.IsString() )
                {
                   // Write a string keyword.
                   // We identify this by a prepending delimiter.
                   IsoString kvalue( k.StripValueDelimiters() );
-                  ::fits_write_key_str( fits_handle, k.name.c_str(), kvalue.c_str(), k.comment.c_str(), &fitsStatus );
+                  ::fits_write_key_str( fits_handle, kname.c_str(), kvalue.c_str(), k.comment.c_str(), &fitsStatus );
                }
                else if ( k.IsBoolean() )
                {
                   // Write a logical keyword.
                   // Logical keyword values are T and F, no delimiters.
-                  ::fits_write_key_log( fits_handle, k.name.c_str(), k.value[0] == 'T', k.comment.c_str(), &fitsStatus );
+                  ::fits_write_key_log( fits_handle, kname.c_str(), k.value[0] == 'T', k.comment.c_str(), &fitsStatus );
                }
                else
                {
@@ -2477,7 +2489,7 @@ void FITSWriter::CreateImage( const ImageInfo& info )
                   if ( k.value.TryToDouble( kvalue ) )  // valid numeral?
                   {
                      // Write a valid floating-point numeric keyword
-                     ::fits_write_key_dbl( fits_handle, k.name.c_str(), kvalue,
+                     ::fits_write_key_dbl( fits_handle, kname.c_str(), kvalue,
                                            fitsOptions.writeFixedFloatKeywords ? +15 : -15,
                                            k.comment.c_str(),
                                            &fitsStatus );
@@ -2485,7 +2497,7 @@ void FITSWriter::CreateImage( const ImageInfo& info )
                   else
                   {
                      // Assume this keyword is a string.
-                     ::fits_write_key_str( fits_handle, k.name.c_str(), k.value.c_str(), k.comment.c_str(), &fitsStatus );
+                     ::fits_write_key_str( fits_handle, kname.c_str(), k.value.c_str(), k.comment.c_str(), &fitsStatus );
                   }
                }
             }
@@ -2695,4 +2707,4 @@ void FITSWriter::WriteExtensionHDU( const FITSExtensionData& ext )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITS.cpp - Released 2018-11-23T16:14:51Z
+// EOF FITS.cpp - Released 2018-12-12T09:25:15Z

@@ -26,10 +26,10 @@ it under the terms of the one of two licenses as you choose:
 #define SRC_USES_CURVE
 
 /* DHT and AAHD are LGPL licensed, so include them */
-#include "./dht_demosaic.inc"
-#include "./aahd_demosaic.inc"
+#include "./__dht_demosaic.cpp"
+#include "./__aahd_demosaic.cpp"
 #include "internal/var_defines.h"
 
 /* DCB is BSD licensed, so include it */
-#include "./dcb_demosaicing.inc"
+#include "./__dcb_demosaicing.c"
 

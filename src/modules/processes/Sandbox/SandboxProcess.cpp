@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard Sandbox Process Module Version 01.00.02.0276
+// Standard Sandbox Process Module Version 01.00.02.0280
 // ----------------------------------------------------------------------------
-// SandboxProcess.cpp - Released 2018-11-23T18:45:58Z
+// SandboxProcess.cpp - Released 2018-12-12T09:25:25Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Sandbox PixInsight module.
 //
@@ -242,4 +242,4 @@ int SandboxProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SandboxProcess.cpp - Released 2018-11-23T18:45:58Z
+// EOF SandboxProcess.cpp - Released 2018-12-12T09:25:25Z

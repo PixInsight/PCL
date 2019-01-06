@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0937
 // ----------------------------------------------------------------------------
-// Standard RAW File Format Module Version 01.05.00.0411
+// Standard RAW File Format Module Version 01.05.00.0415
 // ----------------------------------------------------------------------------
-// RawModule.cpp - Released 2018-11-23T16:14:51Z
+// RawModule.cpp - Released 2018-12-12T09:25:15Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RAW PixInsight module.
 //
@@ -52,13 +52,13 @@
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     05
-#define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0411
+#define MODULE_VERSION_REVISION  02
+#define MODULE_VERSION_BUILD     0422
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2018
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       23
+#define MODULE_RELEASE_YEAR      2019
+#define MODULE_RELEASE_MONTH     01
+#define MODULE_RELEASE_DAY       04
 
 #include "RawModule.h"
 #include "RawFormat.h"
@@ -115,7 +115,7 @@ String RawModule::Author() const
 
 String RawModule::Copyright() const
 {
-   return "Copyright (c) 2006-2018, Pleiades Astrophoto";
+   return "Copyright (c) 2006-2019, Pleiades Astrophoto";
 }
 
 // ----------------------------------------------------------------------------
@@ -181,4 +181,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF RawModule.cpp - Released 2018-11-23T16:14:51Z
+// EOF RawModule.cpp - Released 2018-12-12T09:25:15Z

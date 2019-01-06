@@ -51,7 +51,6 @@
 // ----------------------------------------------------------------------------
 
 #include "INDIClient.h"
-
 #include <pcl/AutoPointer.h>
 #include <pcl/Console.h>
 #include <pcl/File.h>
@@ -146,7 +145,7 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyItem& newItem, bool a
          console.Flush();
       }
 
-      INDI::BaseDevice* device = nullptr;
+/*      INDI::BaseDevice* device = nullptr;
       {
          IsoString s( newItem.Device );
          device = getDevice( s.c_str() );
@@ -282,9 +281,9 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyItem& newItem, bool a
             size_type requestsDone = 0;
             for ( auto elementValue : newItem.ElementValues )
             {
-               INDIPropertyListItem p;
-               if ( GetPropertyItem( newItem.Device, newItem.Property, elementValue.Element, p, false/*formatted*/ ) )
-                  switch ( p.PropertyState )
+               INDIPropertyListItem p;*/
+               //if ( GetPropertyItem( newItem.Device, newItem.Property, elementValue.Element, p, false/*formatted*/ ) )
+               /*   switch ( p.PropertyState )
                   {
                   case IPS_OK:
                   case IPS_IDLE:
@@ -302,8 +301,9 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyItem& newItem, bool a
             if ( requestsDone == newItem.ElementValues.Length() )
                break;
          }
-
+      */
       return true;
+
    }
    catch ( const String& message )
    {
@@ -337,7 +337,7 @@ void INDIClient::RestartChangeReports()
 
 // ----------------------------------------------------------------------------
 
-void INDIClient::newDevice( INDI::BaseDevice* d )
+/*void INDIClient::newDevice( INDI::BaseDevice* d )
 {
    CHECK_POINTER( d )
 
@@ -476,7 +476,7 @@ void INDIClient::serverDisconnected( int exitCode )
    INDIPropertyListItemArray( y ).Clear();
    m_serverConnectionChanged = true;
 }
-
+*/
 void INDIClient::ApplyToPropertyList( INDI::Property* p, const PropertyListMutator& mutate )
 {
    ExclPropertyList y = PropertyList();

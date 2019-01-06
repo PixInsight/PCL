@@ -106,7 +106,7 @@ public:
 
    void Update()
    {
-      INDI::BaseDevice* device = nullptr;
+      /*INDI::BaseDevice* device = nullptr;
       {
          IsoString s( m_item.DeviceName );
          device = INDIClient::TheClient()->getDevice( s.c_str() );
@@ -119,7 +119,7 @@ public:
          iconResource = ":/icons/error.png";
       SetIcon( DEVICE_COLUMN, ParentTree().ScaledResource( iconResource ) );
 
-      SetText( DEVICE_COLUMN, m_item.DeviceName );
+      SetText( DEVICE_COLUMN, m_item.DeviceName );*/
    }
 
    const INDIDeviceListItem& Item() const
@@ -715,7 +715,7 @@ void INDIDeviceControllerInterface::UpdateNodeActionButtons( TreeBox::Node* node
          if ( deviceNode != nullptr )
          {
             IsoString deviceName( deviceNode->DeviceName().To7BitASCII() );
-            INDI::BaseDevice* device = INDIClient::TheClient()->getDevice( deviceName.c_str() );
+            /*INDI::BaseDevice* device = INDIClient::TheClient()->getDevice( deviceName.c_str() );
             if ( device != nullptr )
             {
                GUI->NodeAction_PushButton.Enable();
@@ -732,7 +732,7 @@ void INDIDeviceControllerInterface::UpdateNodeActionButtons( TreeBox::Node* node
                   GUI->NodeAction_PushButton.SetToolTip( "<p>Connect to '" + deviceNode->DeviceName() + "' device.</p>" );
                }
                return;
-            }
+            }*/
          }
          else
          {
@@ -977,7 +977,7 @@ void INDIDeviceControllerInterface::e_Click( Button& sender, bool checked )
             if ( deviceNode != nullptr )
             {
                IsoString deviceName( deviceNode->DeviceName().To7BitASCII() );
-               INDI::BaseDevice* device = INDIClient::TheClient()->getDevice( deviceName.c_str() );
+               /*INDI::BaseDevice* device = INDIClient::TheClient()->getDevice( deviceName.c_str() );
                if ( device != nullptr )
                {
                   if ( device->isConnected() )
@@ -990,7 +990,7 @@ void INDIDeviceControllerInterface::e_Click( Button& sender, bool checked )
                   MessageBox( "<p>Unable to find INDI device '" + deviceName + "'</p>",
                               WindowTitle(),
                               StdIcon::Error, StdButton::Ok ).Execute();
-               }
+               }*/
             }
             else
             {
@@ -1038,7 +1038,7 @@ void INDIDeviceControllerInterface::e_NodeActivated( TreeBox& sender, TreeBox::N
       if ( deviceNode != nullptr )
       {
          IsoString deviceName( deviceNode->DeviceName().To7BitASCII() );
-         INDI::BaseDevice* device = INDIClient::TheClient()->getDevice( deviceName.c_str() );
+         /*INDI::BaseDevice* device = INDIClient::TheClient()->getDevice( deviceName.c_str() );
          if ( device != nullptr )
             if ( device->isConnected() )
             {
@@ -1055,6 +1055,7 @@ void INDIDeviceControllerInterface::e_NodeActivated( TreeBox& sender, TreeBox::N
             }
             else
                INDIClient::TheClient()->connectDevice( deviceName.c_str() );
+               */
       }
       else
       {

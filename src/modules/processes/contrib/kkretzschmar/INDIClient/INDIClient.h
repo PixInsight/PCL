@@ -53,15 +53,9 @@
 #ifndef __INDIClient_h
 #define __INDIClient_h
 
-#include "IINDIProperty.h"
 #include "INDIParamListTypes.h"
+#include "IINDIProperty.h"
 
-#include "INDI/baseclient.h"
-#include "INDI/basedevice.h"
-#include "INDI/indicom.h"
-#include "INDI/indidevapi.h"
-
-#include "INDI/PCLClientListener.h"
 
 #include <pcl/AutoLock.h>
 
@@ -163,39 +157,42 @@ public:
    }
 };
 
-class INDIClient : public INDI::BaseClient
+class INDIClient
 {
 public:
 
-   INDIClient( const IsoString& hostName = "localhost", uint32 port = 7624 ) :
-      BaseClient( ),
-      m_verbosity( 1 )
-   {
-	   INDI::IClientListener* listener = new INDI::PclClientListener(this);
-	   setListener(listener);
-	   setServer(hostName.c_str(), port);
-   }
+   INDIClient( const IsoString& hostName = "localhost", uint32 port = 7624 ): m_serverHost(hostName), m_serverPort(port) {
+    }
 
    virtual ~INDIClient()
    {
    }
 
+   bool connectServer() {
+      return true;
+   }
+
+   bool disconnectServer() {
+      return true;
+   }
+
    bool IsServerConnected() const
    {
-      // Should be: INDI::BaseClient::serverIsConnected() const
-      return const_cast<INDIClient*>( this )->isConnected();
+      return m_serverIsConnected;
+   }
+
+   void setServer(const char *hostname, unsigned int port) {
+
    }
 
    IsoString HostName() const
    {
-      // Should be: INDI::BaseClient::getHost() const
-      return const_cast<INDIClient*>( this )->getHost();
+      return IsoString("");
    }
 
    uint32 Port() const
    {
-      // Should be: INDI::BaseClient::getPort() const
-      return uint32( const_cast<INDIClient*>( this )->getPort() );
+      return 0;
    }
 
    ExclDeviceList DeviceList()
@@ -366,21 +363,23 @@ public:
 protected:
 
    // Reimplemented from base class
-   void newDevice( INDI::BaseDevice* ) override;
-   void removeDevice( INDI::BaseDevice* ) override;
-   void newProperty( INDI::Property* ) override;
-   void removeProperty( INDI::Property* ) override;
-   void newBLOB( IBLOB* ) override;
-   void newSwitch( ISwitchVectorProperty* ) override;
-   void newNumber( INumberVectorProperty* ) override;
-   void newText( ITextVectorProperty* ) override;
+   /*void newDevice( INDI::BaseDevice* );
+   void removeDevice( INDI::BaseDevice* );
+   void newProperty( INDI::Property* );
+   void removeProperty( INDI::Property* );
+   void newBLOB( IBLOB* );
+   void newSwitch( ISwitchVectorProperty* );
+   void newNumber( INumberVectorProperty* );
+   void newText( ITextVectorProperty* );
    void newLight( ILightVectorProperty* );
-   void newMessage( INDI::BaseDevice*, int messageID ) override;
-   void serverConnected() override;
-   void serverDisconnected( int exit_code ) override;
+   void newMessage( INDI::BaseDevice*, int messageID );
+   void serverConnected();
+   void serverDisconnected( int exit_code );*/
 
 private:
-
+   IsoString                 m_serverHost;
+   uint32_t                  m_serverPort;
+   bool                      m_serverIsConnected;
    INDIDeviceListItemArray   m_deviceList;
    mutable Mutex             m_deviceListMutex;
    INDIPropertyListItemArray m_propertyList;

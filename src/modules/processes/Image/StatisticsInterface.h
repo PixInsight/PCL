@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.03.00.0431
+// Standard Image Process Module Version 01.03.00.0437
 // ----------------------------------------------------------------------------
-// StatisticsInterface.h - Released 2018-12-12T09:25:25Z
+// StatisticsInterface.h - Released 2019-01-21T12:06:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -73,90 +73,90 @@ public:
    StatisticsInterface();
    virtual ~StatisticsInterface();
 
-   virtual IsoString Id() const;
-   virtual MetaProcess* Process() const;
-   virtual const char** IconImageXPM() const;
+   IsoString Id() const override;
+   MetaProcess* Process() const override;
+   const char** IconImageXPM() const override;
 
-   virtual InterfaceFeatures Features() const;
+   InterfaceFeatures Features() const override;
 
-   virtual void TrackViewUpdated( bool active );
+   void TrackViewUpdated( bool active ) override;
 
-   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
+   bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ ) override;
 
-   virtual bool IsInstanceGenerator() const;
-   virtual bool CanImportInstances() const;
+   bool IsInstanceGenerator() const override;
+   bool CanImportInstances() const override;
 
-   virtual bool WantsImageNotifications() const;
-   virtual void ImageUpdated( const View& );
-   virtual void ImageFocused( const View& );
-   virtual void ImageDeleted( const View& );
+   bool WantsImageNotifications() const override;
+   void ImageUpdated( const View& ) override;
+   void ImageFocused( const View& ) override;
+   void ImageDeleted( const View& ) override;
 
-   virtual bool WantsViewPropertyNotifications() const;
-   virtual void ViewPropertyDeleted( const View& v, const IsoString& property );
+   bool WantsViewPropertyNotifications() const override;
+   void ViewPropertyDeleted( const View& v, const IsoString& property ) override;
 
-   virtual void SaveSettings() const;
-   virtual void LoadSettings();
+   void SaveSettings() const override;
+   void LoadSettings() override;
 
 private:
 
-   bool       m_doCount         : 1;
+   bool       m_doCount = true;
    UI64Vector m_count;
 
-   bool       m_doMean          : 1;
+   bool       m_doMean = true;
    DVector    m_mean;
 
-   bool       m_doModulus       : 1;
+   bool       m_doModulus = false;
    DVector    m_modulus;
 
-   bool       m_doNorm          : 1;
+   bool       m_doNorm = false;
    DVector    m_norm;
 
-   bool       m_doSumOfSquares  : 1;
+   bool       m_doSumOfSquares = false;
    DVector    m_sumOfSquares;
 
-   bool       m_doMeanOfSquares : 1;
+   bool       m_doMeanOfSquares = false;
    DVector    m_meanOfSquares;
 
-   bool       m_doMedian        : 1;
+   bool       m_doMedian = true;
    DVector    m_median;
 
-   bool       m_doVariance      : 1;
+   bool       m_doVariance = false;
    DVector    m_variance;
 
-   bool       m_doStdDev        : 1;
+   bool       m_doStdDev = false;
    DVector    m_stdDev;
 
-   bool       m_doAvgDev        : 1;
+   bool       m_doAvgDev = true;
    DVector    m_avgDev;
 
-   bool       m_doMAD           : 1;
+   bool       m_doMAD = true;
    DVector    m_MAD;
 
-   bool       m_doBWMV          : 1;
+   bool       m_doBWMV = false;
    DVector    m_BWMV;
 
-   bool       m_doPBMV          : 1;
+   bool       m_doPBMV = false;
    DVector    m_PBMV;
 
-   bool       m_doSn            : 1;
+   bool       m_doSn = false;
    DVector    m_Sn;
 
-   bool       m_doQn            : 1;
+   bool       m_doQn = false;
    DVector    m_Qn;
 
-   bool       m_doMinimum       : 1;
+   bool       m_doMinimum = true;
    DVector    m_minimum;
 
-   bool       m_doMinimumPos    : 1;
+   bool       m_doMinimumPos = false;
    IMatrix    m_minimumPos;
 
-   bool       m_doMaximum       : 1;
+   bool       m_doMaximum = true;
    DVector    m_maximum;
 
-   bool       m_doMaximumPos    : 1;
+   bool       m_doMaximumPos = false;
    IMatrix    m_maximumPos;
 
-   int        m_rangeBits; // 0=normalized
+   int        m_rangeBits = 0; // 0=normalized
 
    struct GUIData
    {
@@ -206,4 +206,4 @@ PCL_END_LOCAL
 #endif   // __StatisticsInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF StatisticsInterface.h - Released 2018-12-12T09:25:25Z
+// EOF StatisticsInterface.h - Released 2019-01-21T12:06:41Z

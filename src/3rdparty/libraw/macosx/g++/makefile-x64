@@ -1,12 +1,15 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.108
-# Copyright (C) 2009-2018 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.109
+# Copyright (C) 2009-2019 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2018-12-26T18:51:08.172Z
+# Generated on .... 2019-01-21T12:08:21.035Z
 # Project id ...... libraw
 # Project type .... StaticLibrary
 # Platform ........ MacOSX/g++
 # Configuration ... Release/x64
+# --------------------------------------------------------------------
+# Additional preprocessor definitions:
+# LIBRAW_LIBRARY_BUILD
 # --------------------------------------------------------------------
 # Additional include search directories:
 # $(PCLSRCDIR)/3rdparty/libraw
@@ -72,9 +75,9 @@ post-build:
 	cp $(OBJ_DIR)/liblibraw-pxi.a $(PCLLIBDIR64)
 
 ./x64/Release/internal/%.o: ../../internal/%.cpp
-	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.11 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -I"$(PCLSRCDIR)/3rdparty/libraw" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.11 -D_REENTRANT -D__PCL_MACOSX -D"LIBRAW_LIBRARY_BUILD" -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -I"$(PCLSRCDIR)/3rdparty/libraw" -mtune=skylake -msse4.1 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x64/Release/src/%.o: ../../src/%.cpp
-	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.11 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -I"$(PCLSRCDIR)/3rdparty/libraw" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.11 -D_REENTRANT -D__PCL_MACOSX -D"LIBRAW_LIBRARY_BUILD" -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -I"$(PCLSRCDIR)/3rdparty/libraw" -mtune=skylake -msse4.1 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

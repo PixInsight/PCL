@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/Win32Exception.cpp - Released 2018-12-12T09:24:30Z
+// pcl/Win32Exception.cpp - Released 2019-01-21T12:06:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -167,6 +167,23 @@ static void My_se_translator( unsigned int /*code*/, EXCEPTION_POINTERS* pointer
    }
 }
 
+// ----------------------------------------------------------------------------
+
+void Win32Exception::Show() const
+{
+   bool wasConsole = IsConsoleOutputEnabled();
+   bool wasGUI = IsGUIOutputEnabled();
+   EnableConsoleOutput();
+   DisableGUIOutput();
+
+   Exception::Show();
+
+   EnableConsoleOutput( wasConsole );
+   EnableGUIOutput( wasGUI );
+}
+
+// ----------------------------------------------------------------------------
+
 void Win32Exception::Initialize()
 {
    _set_se_translator( My_se_translator );
@@ -188,4 +205,4 @@ String Win32AccessViolationException::Message() const
 #endif   // __PCL_WINDOWS
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Win32Exception.cpp - Released 2018-12-12T09:24:30Z
+// EOF pcl/Win32Exception.cpp - Released 2019-01-21T12:06:21Z

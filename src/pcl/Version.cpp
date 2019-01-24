@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/Version.cpp - Released 2018-12-12T09:24:30Z
+// pcl/Version.cpp - Released 2019-01-21T12:06:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,30 +66,42 @@ int Version::Major()
    return 2;
 }
 
+// ----------------------------------------------------------------------------
+
 int Version::Minor()
 {
    return 1;
 }
+
+// ----------------------------------------------------------------------------
 
 int Version::Release()
 {
    return 11;
 }
 
+// ----------------------------------------------------------------------------
+
 int Version::Build()
 {
-   return 937;
+   return 938;
 }
+
+// ----------------------------------------------------------------------------
 
 int Version::BetaRelease()
 {
    return 0;
 }
 
+// ----------------------------------------------------------------------------
+
 String Version::LanguageCode()
 {
    return "eng";  // ISO 639.2
 }
+
+// ----------------------------------------------------------------------------
 
 String Version::AsString()
 {
@@ -99,6 +111,7 @@ String Version::AsString()
    return v;
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 static int s_major = 0;
@@ -111,6 +124,9 @@ static bool s_le = false;
 static String s_language;
 static String s_codename;
 
+/*
+ * Thread-safe version data initialization.
+ */
 static void Initialize()
 {
    static AtomicInt s_initialized;
@@ -150,11 +166,15 @@ static void Initialize()
    }
 }
 
+// ----------------------------------------------------------------------------
+
 int PixInsightVersion::Major()
 {
    Initialize();
    return s_major;
 }
+
+// ----------------------------------------------------------------------------
 
 int PixInsightVersion::Minor()
 {
@@ -162,11 +182,15 @@ int PixInsightVersion::Minor()
    return s_minor;
 }
 
+// ----------------------------------------------------------------------------
+
 int PixInsightVersion::Release()
 {
    Initialize();
    return s_release;
 }
+
+// ----------------------------------------------------------------------------
 
 int PixInsightVersion::Build()
 {
@@ -174,11 +198,15 @@ int PixInsightVersion::Build()
    return s_build;
 }
 
+// ----------------------------------------------------------------------------
+
 int PixInsightVersion::BetaRelease() // > 0 = Beta, < 0 = RC, 0 = Release
 {
    Initialize();
    return s_beta;
 }
+
+// ----------------------------------------------------------------------------
 
 bool PixInsightVersion::Confidential()
 {
@@ -186,11 +214,15 @@ bool PixInsightVersion::Confidential()
    return s_confidential;
 }
 
+// ----------------------------------------------------------------------------
+
 bool PixInsightVersion::LE()
 {
    Initialize();
    return s_le;
 }
+
+// ----------------------------------------------------------------------------
 
 String PixInsightVersion::LanguageCode()
 {
@@ -198,11 +230,15 @@ String PixInsightVersion::LanguageCode()
    return s_language;  // ISO 639.2
 }
 
+// ----------------------------------------------------------------------------
+
 String PixInsightVersion::Codename()
 {
    Initialize();
    return s_codename;
 }
+
+// ----------------------------------------------------------------------------
 
 String PixInsightVersion::AsString( bool withCodename )
 {
@@ -223,4 +259,4 @@ String PixInsightVersion::AsString( bool withCodename )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Version.cpp - Released 2018-12-12T09:24:30Z
+// EOF pcl/Version.cpp - Released 2019-01-21T12:06:21Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0424
+// Standard IntensityTransformations Process Module Version 01.07.01.0430
 // ----------------------------------------------------------------------------
-// CurveBase.h - Released 2018-12-12T09:25:25Z
+// CurveBase.h - Released 2019-01-21T12:06:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -194,4 +194,4 @@ protected:
 #endif   // __CurveBase_h
 
 // ----------------------------------------------------------------------------
-// EOF CurveBase.h - Released 2018-12-12T09:25:25Z
+// EOF CurveBase.h - Released 2019-01-21T12:06:41Z

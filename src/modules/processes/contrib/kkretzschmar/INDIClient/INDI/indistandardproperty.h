@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.01.00.0232
+// Standard INDIClient Process Module Version 01.01.00.0238
 // ----------------------------------------------------------------------------
-// indistandardproperty.h - Released 2018-12-12T09:25:25Z
+// indistandardproperty.h - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -198,4 +198,4 @@ namespace SP
 } // namespace INDI
 
 // ----------------------------------------------------------------------------
-// EOF indistandardproperty.h - Released 2018-12-12T09:25:25Z
+// EOF indistandardproperty.h - Released 2019-01-21T12:06:42Z

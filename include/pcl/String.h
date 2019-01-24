@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/String.h - Released 2018-12-12T09:24:21Z
+// pcl/String.h - Released 2019-01-21T12:06:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -6602,7 +6602,7 @@ public:
    }
 
    /*!
-    * Returns an UTF-16 string with a representation of a subset of \a n
+    * Returns a UTF-16 string with a representation of a subset of \a n
     * contiguous UTF-8 characters from this %IsoString object, starting at the
     * \a i-th character.
     *
@@ -6611,7 +6611,7 @@ public:
    ustring_base UTF8ToUTF16( size_type i = 0, size_type n = maxPos ) const; // implemented inline after String
 
    /*!
-    * Returns a copy of this <em>multibyte string</em> converted to an UTF-16
+    * Returns a copy of this <em>multibyte string</em> converted to a UTF-16
     * string. This conversion is dependent on the current locale.
     *
     * In the event of conversion error (if there are invalid multibyte
@@ -11014,7 +11014,7 @@ public:
    // -------------------------------------------------------------------------
 
    /*!
-    * Conversion of an UTF-8 substring to an UTF-16 string.
+    * Conversion of a UTF-8 substring to a UTF-16 string.
     *
     * Converts a contiguous sequence of \a n characters starting at the \a i-th
     * position of the specified null-terminated UTF-8 \a string. Returns the
@@ -11025,7 +11025,7 @@ public:
    static String UTF8ToUTF16( const_c_string8 string, size_type i = 0, size_type n = maxPos );
 
    /*!
-    * Conversion of an UTF-16 substring to an UTF-8 string.
+    * Conversion of a UTF-16 substring to a UTF-8 string.
     *
     * Converts a contiguous sequence of \a n characters starting at the \a i-th
     * position of the specified null-terminated UTF-16 \a string. Returns the
@@ -11036,7 +11036,7 @@ public:
    static IsoString UTF16ToUTF8( const_c_string string, size_type i = 0, size_type n = maxPos );
 
    /*!
-    * Conversion of an UTF-16 substring to an UTF-32 string.
+    * Conversion of a UTF-16 substring to a UTF-32 string.
     *
     * Converts a contiguous sequence of \a n characters starting at the \a i-th
     * position of the specified null-terminated UTF-16 \a string. Returns the
@@ -11047,7 +11047,7 @@ public:
    static Array<uint32> UTF16ToUTF32( const_c_string string, size_type i = 0, size_type n = maxPos );
 
    /*!
-    * Conversion of an UTF-32 substring to an UTF-16 string.
+    * Conversion of a UTF-32 substring to a UTF-16 string.
     *
     * Converts a contiguous sequence of \a n characters starting at the \a i-th
     * position of the specified null-terminated UTF-32 \a string. Returns the
@@ -11082,7 +11082,7 @@ public:
    IsoString To7BitASCII() const;
 
    /*!
-    * Returns an 8-bit string with an UTF-8 representation of a subset of \a n
+    * Returns an 8-bit string with a UTF-8 representation of a subset of \a n
     * contiguous UTF-16 characters from this %String object, starting at the
     * \a i-th character.
     *
@@ -11171,7 +11171,7 @@ public:
    }
 
    /*!
-    * Returns a dynamic array of 32-bit integers with an UTF-32 representation
+    * Returns a dynamic array of 32-bit integers with a UTF-32 representation
     * of a subset of \a n contiguous UTF-16 characters from this %String
     * object, starting at the \a i-th character. A null terminating character
     * (uint32( 0 ) specifically) is always appended to the resulting array.
@@ -13682,4 +13682,4 @@ inline std::ostream& operator <<( std::ostream& o, const String& s )
 #endif   // __PCL_String_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.h - Released 2018-12-12T09:24:21Z
+// EOF pcl/String.h - Released 2019-01-21T12:06:07Z

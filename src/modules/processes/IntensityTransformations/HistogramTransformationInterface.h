@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0424
+// Standard IntensityTransformations Process Module Version 01.07.01.0430
 // ----------------------------------------------------------------------------
-// HistogramTransformationInterface.h - Released 2018-12-12T09:25:25Z
+// HistogramTransformationInterface.h - Released 2019-01-21T12:06:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -256,73 +256,99 @@ private:
    typedef Array<Histogram>            histogram_list;
    typedef GenericVector<RGBA>         channel_colors;
 
-   // Histogram data
+   // Histogram data.
    histogram_list m_sourceData;           // source input histograms, 16-bit resolution
    histogram_list m_inputData;            // input histograms, rescaled to the plot resolution
    histogram_list m_outputData;           // output RGBA histograms (R,G,B include the combined RGB/K transformation)
    histogram_list m_outputRGBData;        // intermediate RGB histograms, after individual RGB transformations
 
-   int            m_plotResolution;       // how many discrete histogram levels for drawing
+   // Histogram plot resolution, or the number of discrete histogram levels to
+   // be represented.
+   int            m_plotResolution = 256;
 
-   working_mode   m_mode;
-   working_mode   m_savedMode;            // for temporary keyboard mode switch
-   readout_mode   m_readoutMode;
+   // Working modes.
+   working_mode   m_mode = ReadoutMode;
+   working_mode   m_savedMode = NoMode;   // for temporary keyboard mode switch
+   readout_mode   m_readoutMode = NormalReadout;
 
-   int            m_channel;              // 0=R 1=G 2=B 3=RGB/K 4=Alpha
+   // Current histogram channel.
+   // 0=R 1=G 2=B 3=RGB/K 4=Alpha
+   int            m_channel = 3;
 
-   graph_style    m_graphStyle;
+   // Current graph style.
+   graph_style    m_graphStyle = LineStyle;
 
-   double         m_shadowsAutoClipping;    // fraction of total pixels
-   double         m_highlightsAutoClipping; //
+   // Automatic histogram clippings.
+   // Values in fraction of total pixels.
+   double         m_shadowsAutoClipping = 0.01;
+   double         m_highlightsAutoClipping = 0.01;
 
-   histogram_type m_shadowsCount;         // 0=R 1=G 2=B 3=RGB/K 4=Alpha
-   histogram_type m_highlightsCount;      //
+   // Clipping pixel counts.
+   // 0=R 1=G 2=B 3=RGB/K 4=Alpha
+   histogram_type m_shadowsCount;
+   histogram_type m_highlightsCount;
 
-   bool           m_readoutActive;
-   DVector        m_inputReadouts;        // 0=R 1=G 2=B 3=notUsed 4=Alpha
+   // Image readouts.
+   bool           m_readoutActive = false;
+   DVector        m_inputReadouts;  // 0=R 1=G 2=B 3=notUsed 4=Alpha
    DVector        m_outputReadouts;
 
-   int            m_inputZoomX, m_inputZoomY;
-   int            m_outputZoomX, m_outputZoomY;
+   // Graph amplification factors.
+   int            m_inputZoomX = 1;
+   int            m_inputZoomY = 1;
+   int            m_outputZoomX = 1;
+   int            m_outputZoomY = 1;
 
-   int            m_wheelSteps;           // accumulated 1/8-degree wheel steps
+   // Accumulated 1/8-degree wheel steps.
+   int            m_wheelSteps = 0;
 
-   bool           m_rejectSaturated;      // ignore the first and last histogram counts to compute peaks
-   bool           m_rawRGBInput;          // always show raw RGB input histograms when channel=RGB/K
-   bool           m_lockOutputChannel;    // always show RGB output histograms
-   bool           m_showMTF;              // draw the midtones transfer function curve
-   bool           m_showGrid;             // draw coordinate grids
+   // Histogram representation options.
+   bool           m_rejectSaturated = true;   // ignore the first and last histogram counts to compute peaks
+   bool           m_rawRGBInput = true;       // always show raw RGB input histograms when channel=RGB/K
+   bool           m_lockOutputChannel = true; // always show RGB output histograms
+   bool           m_showMTF = true;           // draw the midtones transfer function curve
+   bool           m_showGrid = true;          // draw coordinate grids
 
-   slider_id      m_sliderBeingDragged;   // moving one of our little triangular things?
-   int            m_panning;              // panning one of our histogram viewports?
-   Point          m_panOrigin;
+   // Interactive states.
+   slider_id      m_sliderBeingDragged = NoSlider; // moving one of our little triangular things?
+   int            m_panning = 0;                   // panning one of our histogram viewports?
+   Point          m_panOrigin = 0;
 
-   cursor_status  m_cursorStatus;
-   Point          m_cursorPos;            // cursor position in viewport crds.
-   DPoint         m_histogramPos;         // cursor position in normalized crds.
+   // Graph cursor.
+   cursor_status  m_cursorStatus = NoCursor;
+   Point          m_cursorPos = -1;    // cursor position in viewport crds.
+   DPoint         m_histogramPos = 0;  // cursor position in normalized crds.
 
-   Bitmap         m_inputBitmap;          // screen bitmap, input histogram viewport
-   bool           m_inputDirty : 1;
+   // Screen bitmap, input histogram viewport.
+   Bitmap         m_inputBitmap;
+   bool           m_inputDirty = true;
 
-   Bitmap         m_outputBitmap;         // screen bitmap, output histogram viewport
-   bool           m_outputDirty : 1;
+   // Screen bitmap, output histogram viewport.
+   Bitmap         m_outputBitmap;
+   bool           m_outputDirty = true;
 
-   Bitmap         m_slidersBitmap;        // screen bitmap, slider area
-   bool           m_slidersDirty : 1;
+   // Screen bitmap, slider area.
+   Bitmap         m_slidersBitmap;
+   bool           m_slidersDirty = true;
 
-   bool           m_outputSectionVisible; // states of extensible interface sections
-   bool           m_rangeSectionVisible;
+   // States of extensible interface sections.
+   bool           m_outputSectionVisible = true;
+   bool           m_rangeSectionVisible = false;
 
-   channel_colors m_channelColors;        // 0=R 1=G 2=B 3=RGB/K 4=Alpha
+   // Graph colors
+   // 0=R 1=G 2=B 3=RGB/K 4=Alpha
+   channel_colors m_channelColors;
    RGBA           m_gridColor0;
    RGBA           m_gridColor1;
    RGBA           m_backgroundColor;
 
-   int            m_minHistogramWidth;    // currently these are just constants, but who knows...
-   int            m_minHistogramHeight;
-   int            m_sliderControlSize;
+   // Minimum graph dimensions.
+   int            m_minHistogramWidth = 400;
+   int            m_minHistogramHeight = 200;
+   int            m_sliderControlSize = 12;
 
-   bool           m_settingUp;  // true during viewport transitional states (e.g. resizing)
+   // Flag true during viewport transitional states (e.g. resizing).
+   bool           m_settingUp = false;
 
    /*
     * Main calculation routines
@@ -464,4 +490,4 @@ PCL_END_LOCAL
 #endif   // __HistogramTransformationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF HistogramTransformationInterface.h - Released 2018-12-12T09:25:25Z
+// EOF HistogramTransformationInterface.h - Released 2019-01-21T12:06:41Z

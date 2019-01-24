@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.108
-# Copyright (C) 2009-2018 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.109
+# Copyright (C) 2009-2019 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2018-12-26T18:51:08.303Z
+# Generated on .... 2019-01-21T12:08:21.158Z
 # Project id ...... libraw
 # Project type .... StaticLibrary
 # Platform ........ Windows/vc15
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Additional preprocessor definitions:
+# LIBRAW_LIBRARY_BUILD
 # _CRT_SECURE_NO_WARNINGS
 # LIBRAW_NODLL
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -20,10 +21,10 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>905e4e22-cf9a-4083-96f9-2a8d7d4cebf8</UniqueIdentifier>
+      <UniqueIdentifier>d8dbe768-8a74-486b-9834-171763a72dc4</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>ba2fdd4e-4349-4f61-b64c-01002cfede17</UniqueIdentifier>
+      <UniqueIdentifier>9a3fed10-ecc5-4e26-bd05-454563105f18</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

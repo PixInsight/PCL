@@ -93,7 +93,7 @@ struct INDIPropertyListItem
    indigo_property_type PropertyType;
    String    PropertyTypeStr;
    String    Element;
-   unsigned  PropertyState;
+   indigo_property_state  PropertyState;
    String    PropertyNumberFormat;
    String    PropertyLabel;
    String    ElementLabel;

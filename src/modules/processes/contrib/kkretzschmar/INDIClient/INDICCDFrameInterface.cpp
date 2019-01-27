@@ -56,10 +56,6 @@
 #include "INDICCDFrameProcess.h"
 #include "INDIDeviceControllerInstance.h"
 
-#include "INDI/basedevice.h"
-#include "INDI/indiapi.h"
-#include "INDI/indibase.h"
-
 #include <pcl/Console.h>
 #include <pcl/Dialog.h>
 #include <pcl/FileDialog.h>

@@ -131,6 +131,8 @@ public:
          return "INDI_LIGHT";
       case INDIGO_TEXT_VECTOR:
          return "INDI_TEXT";
+      case INDIGO_BLOB_VECTOR:
+         return "INDI_BLOB";
       default:
          return "INDI_UNKNOWN";
       }
@@ -254,6 +256,26 @@ public:
 
    virtual std::unique_ptr<indigo_property> clone() const;
 };
+
+// ----------------------------------------------------------------------------
+
+class BlobProperty : public IProperty
+{
+public:
+
+   BlobProperty( indigo_property* property ) : IProperty( property )
+   {
+   }
+
+
+   virtual void*   getBlob( size_type i ) const;
+   virtual size_type  getBlobSize(size_type i) const;
+   virtual String getBlobFormat(size_type i) const;
+   virtual String getUrl(size_type i) const;
+};
+
+// ----------------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------------
 

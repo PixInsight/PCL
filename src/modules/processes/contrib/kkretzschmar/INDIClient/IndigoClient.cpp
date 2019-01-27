@@ -121,6 +121,48 @@ bool IndigoClient::serverIsConnected(std::ostream& errMessage) const {
    return rc == INDIGO_OK;
  }
 
+ bool IndigoClient::sendNewNumberProperty(char* deviceName,  const char* propertyName, size_t numOfItems, const char** items, const double* values) {
+    indigo_property *property = indigo_init_number_property(NULL, deviceName, propertyName, NULL, NULL, static_cast<indigo_property_state>(0), static_cast<indigo_property_perm>(0), numOfItems);
+    for (size_t i = 0; i < numOfItems; i++)
+       indigo_init_number_item(&property->items[i], items[i], NULL, 0, 0, 0, values[i]);
+    indigo_result rc = indigo_change_property(&m_indigoClient, property);
+    if (rc == INDIGO_OK){
+        newNumber(property);
+        free(property);
+        return true;
+    }
+    free(property);
+    return false;
+ }
+
+
+ bool IndigoClient::sendNewSwitchProperty(char* deviceName,  const char* propertyName, size_t numOfItems, const char** items, const bool* values) {
+     indigo_property *property = indigo_init_switch_property(NULL, deviceName, propertyName, NULL, NULL, static_cast<indigo_property_state>(0), static_cast<indigo_property_perm>(0), static_cast<indigo_rule>(0), numOfItems);
+     for (size_t i = 0; i < numOfItems; i++)
+        indigo_init_switch_item(&property->items[i], items[i], NULL, values[i]);
+     indigo_result rc = indigo_change_property(&m_indigoClient, property);
+     if (rc == INDIGO_OK){
+         newSwitch(property);
+         free(property);
+         return true;
+     }
+     free(property);
+     return false;
+  }
+
+ bool IndigoClient::sendNewTextProperty(char* deviceName,  const char* propertyName, size_t numOfItems, const char** items, const char **values) {
+     indigo_property *property = indigo_init_text_property(NULL, deviceName, propertyName, NULL, NULL, static_cast<indigo_property_state>(0), static_cast<indigo_property_perm>(0), numOfItems);
+     for (size_t i = 0; i < numOfItems; i++)
+        indigo_init_text_item(&property->items[i], items[i], NULL, values[i]);
+     indigo_result rc = indigo_change_property(&m_indigoClient, property);
+     if (rc == INDIGO_OK){
+         newSwitch(property);
+         free(property);
+         return true;
+     }
+     free(property);
+     return false;
+  }
 
 indigo_result IndigoClient::clientAttach(indigo_client* client) {
    indigo_enumerate_properties(client, &INDIGO_ALL_PROPERTIES);
@@ -136,9 +178,11 @@ indigo_result IndigoClient::defineProperty(indigo_client *client, indigo_device 
 
    if (property->type == INDIGO_TEXT_VECTOR ) {
       if (!strcmp(property->name,"INFO")){
-         std::string deviceName(property->items[0].text.value);
+         std::string deviceName(property->device);
          indigoClient->newDevice(deviceName);
       }
+   } else if (property->type == INDIGO_BLOB_VECTOR) {
+      indigo_enable_blob(client, property, INDIGO_ENABLE_BLOB_ALSO);
    }
    return INDIGO_OK;
 }
@@ -172,11 +216,25 @@ indigo_result IndigoClient::updateProperty(indigo_client *client, indigo_device 
       indigoClient->newText(property);
    } else if (property->type == INDIGO_LIGHT_VECTOR){
       indigoClient->newLight(property);
-   } else {
+   } else if (property->type == INDIGO_BLOB_VECTOR) {
+      indigoClient->newBlob(property);
+   }
+   else {
       return INDIGO_FAILED;
    }
    return INDIGO_OK;
 }
+
+
+indigo_result IndigoClient::getMessage(indigo_client *client, indigo_device *device, const char *message) {
+   IndigoClient* indigoClient = reinterpret_cast<IndigoClient*>(client->client_context);
+   if (message != nullptr) {
+      indigoClient->newMessage(message);
+      return INDIGO_OK;
+   }
+   return INDIGO_FAILED;
+}
+
 
 indigo_server_entry* IndigoClient::getServerEntry(const char* host, int32_t port) const {
    for (int dc = 0; dc < INDIGO_MAX_SERVERS; dc++) {
@@ -195,4 +253,14 @@ bool IndigoClient::loadDeviceDriver(const std::string& driver) {
    }
    indigo_attach_client(&m_indigoClient);
    return true;
+}
+
+bool IndigoClient::connectDevice(const std::string& deviceName)  {
+   indigo_result rc = indigo_device_connect(&m_indigoClient, const_cast<char*>(deviceName.c_str()));
+   return rc == INDIGO_OK;
+}
+
+bool IndigoClient::disconnectDevice(const std::string& deviceName)  {
+   indigo_result rc = indigo_device_disconnect(&m_indigoClient, const_cast<char*>(deviceName.c_str()));
+   return rc == INDIGO_OK;
 }

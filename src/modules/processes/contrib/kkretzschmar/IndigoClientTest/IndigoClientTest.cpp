@@ -117,6 +117,14 @@ public:
       }
    }
 
+   static std::string getCCDImagerDeviceString() {
+      if (g_testMode == TestMode::server) {
+         return std::string("CCD Imager Simulator @ localhost");
+      } else {
+         return std::string("CCD Imager Simulator");
+      }
+   }
+
 };
 
 TEST(IndigoClientTest, connectServerFailedWrongHost) {
@@ -179,30 +187,27 @@ TEST(IndigoClientTest, receiveAttachedDevices) {
    TestExecution::attachClient(indigoClient.get(), errMsg);
    ASSERT_EQ(6, devices.size());
    {
-      auto iter = devices.find(std::string("CCD Imager Simulator"));
+      auto iter = devices.find(g_testMode == TestMode::server ? std::string("CCD Imager Simulator @ localhost") : std::string("CCD Imager Simulator"));
       ASSERT_TRUE(iter != devices.end());
    }
    {
-      auto iter = devices.find(std::string("CCD Imager Simulator (focuser)"));
-      ASSERT_TRUE(iter != devices.end());
-   }
-   {enum class TestMode {
-         server,
-         local
-      };
-      auto iter = devices.find(std::string("CCD Imager Simulator (wheel)"));
+      auto iter = devices.find(g_testMode == TestMode::server ? std::string("CCD Imager Simulator (focuser) @ localhost") : std::string("CCD Imager Simulator (focuser)"));
       ASSERT_TRUE(iter != devices.end());
    }
    {
-      auto iter = devices.find(std::string("CCD Guider Simulator"));
+      auto iter = devices.find(g_testMode == TestMode::server ? std::string("CCD Imager Simulator (wheel) @ localhost") : std::string("CCD Imager Simulator (wheel)"));
       ASSERT_TRUE(iter != devices.end());
    }
    {
-      auto iter = devices.find(std::string("CCD Guider Simulator (guider)"));
+      auto iter = devices.find(g_testMode == TestMode::server ? std::string("CCD Guider Simulator @ localhost") : std::string("CCD Guider Simulator"));
       ASSERT_TRUE(iter != devices.end());
    }
    {
-      auto iter = devices.find(std::string("DSLR Simulator"));
+      auto iter = devices.find(g_testMode == TestMode::server ? std::string("CCD Guider Simulator (guider) @ localhost") : std::string("CCD Guider Simulator (guider)"));
+      ASSERT_TRUE(iter != devices.end());
+   }
+   {
+      auto iter = devices.find(g_testMode == TestMode::server ? std::string("DSLR Simulator @ localhost") : std::string("DSLR Simulator"));
       ASSERT_TRUE(iter != devices.end());
    }
    TestExecution::detachClient(indigoClient.get());
@@ -221,6 +226,12 @@ TEST(IndigoClientTest, receiveNewProperties) {
       properties.insert(propertiesElementType(key, property));
       pthread_mutex_unlock(&s_mutex);
    };
+   indigoClient.get()->removeProperty = [&properties] (indigo_property* property) {
+      std::string key = std::string("/") + std::string(property->device) + std::string("/") + std::string(property->name);
+      pthread_mutex_lock(&s_mutex);
+      properties.erase(key);
+      pthread_mutex_unlock(&s_mutex);
+   };
    TestExecution::attachClient(indigoClient.get(), errMsg);
    ASSERT_TRUE(properties.size() > 0);
    {
@@ -229,6 +240,17 @@ TEST(IndigoClientTest, receiveNewProperties) {
       ASSERT_EQ(2, iter->second->count);
       ASSERT_EQ(std::string("CONNECTED"), std::string(iter->second->items[0].name));
       ASSERT_FALSE(iter->second->items[0].sw.value);
+   }
+   {
+      // connect to device
+      ASSERT_TRUE(indigoClient.get()->connectDevice(g_testMode == TestMode::server ? "CCD Imager Simulator @ localhost" : "CCD Imager Simulator"));
+      sleep(1);
+      auto iter = properties.find(TestExecution::getConnectionPropertyString());
+      ASSERT_TRUE(iter != properties.end());
+      ASSERT_EQ(2, iter->second->count);
+      ASSERT_EQ(std::string("CONNECTED"), std::string(iter->second->items[0].name));
+      ASSERT_TRUE(iter->second->items[0].sw.value);
+      ASSERT_TRUE(indigoClient.get()->disconnectDevice(g_testMode == TestMode::server ? "CCD Imager Simulator @ localhost" : "CCD Imager Simulator"));
    }
    TestExecution::detachClient(indigoClient.get());
 }

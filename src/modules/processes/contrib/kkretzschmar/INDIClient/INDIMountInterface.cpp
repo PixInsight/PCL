@@ -65,10 +65,6 @@
 #include "INDIMountInterface.h"
 #include "INDIMountProcess.h"
 
-#include "INDI/basedevice.h"
-#include "INDI/indiapi.h"
-#include "INDI/indibase.h"
-
 namespace pcl
 {
 

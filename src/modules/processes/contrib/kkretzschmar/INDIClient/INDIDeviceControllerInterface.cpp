@@ -55,10 +55,6 @@
 #include "INDIDeviceControllerParameters.h"
 #include "INDIDeviceControllerProcess.h"
 
-#include "INDI/basedevice.h"
-#include "INDI/indiapi.h"
-#include "INDI/indibase.h"
-
 #include <pcl/Dialog.h>
 #include <pcl/MessageBox.h>
 #include <pcl/RadioButton.h>
@@ -106,20 +102,16 @@ public:
 
    void Update()
    {
-      /*INDI::BaseDevice* device = nullptr;
-      {
-         IsoString s( m_item.DeviceName );
-         device = INDIClient::TheClient()->getDevice( s.c_str() );
+      const char* iconResource;
+      if (m_item.DeviceName.IsEmpty()) {
+         iconResource = ":/icons/error.png";
+      } else {
+         iconResource =  INDIClient::TheClient()->IsDeviceConnected(IsoString(m_item.DeviceName)) ? ":/bullets/bullet-ball-glass-green.png" : ":/bullets/bullet-ball-glass-grey.png";
       }
 
-      const char* iconResource;
-      if ( device != nullptr )
-         iconResource = device->isConnected() ? ":/bullets/bullet-ball-glass-green.png" : ":/bullets/bullet-ball-glass-grey.png";
-      else
-         iconResource = ":/icons/error.png";
       SetIcon( DEVICE_COLUMN, ParentTree().ScaledResource( iconResource ) );
 
-      SetText( DEVICE_COLUMN, m_item.DeviceName );*/
+      SetText( DEVICE_COLUMN, m_item.DeviceName );
    }
 
    const INDIDeviceListItem& Item() const
@@ -154,17 +146,17 @@ public:
       const char* iconResource;
       switch ( PropertyState() )
       {
-      case IPS_OK:
+      case INDIGO_OK_STATE:
          iconResource = ":/bullets/bullet-ball-glass-green.png";
          break;
-      case IPS_ALERT:
+      case INDIGO_ALERT_STATE:
          iconResource = ":/bullets/bullet-ball-glass-red.png";
          break;
-      case IPS_BUSY:
+      case INDIGO_BUSY_STATE:
          iconResource = ":/bullets/bullet-ball-glass-yellow.png";
          break;
       default: // ?!
-      case IPS_IDLE:
+      case INDIGO_IDLE_STATE:
          iconResource = ":/bullets/bullet-ball-glass-grey.png";
          break;
       }
@@ -715,11 +707,11 @@ void INDIDeviceControllerInterface::UpdateNodeActionButtons( TreeBox::Node* node
          if ( deviceNode != nullptr )
          {
             IsoString deviceName( deviceNode->DeviceName().To7BitASCII() );
-            /*INDI::BaseDevice* device = INDIClient::TheClient()->getDevice( deviceName.c_str() );
-            if ( device != nullptr )
+
+            if ( !deviceName.IsEmpty() )
             {
                GUI->NodeAction_PushButton.Enable();
-               if ( device->isConnected() )
+               if ( INDIClient::TheClient()->IsDeviceConnected(deviceName) )
                {
                   GUI->NodeAction_PushButton.SetText( "Disconnect" );
                   GUI->NodeAction_PushButton.SetIcon( ScaledResource( ":/icons/stop.png" ) );
@@ -732,7 +724,7 @@ void INDIDeviceControllerInterface::UpdateNodeActionButtons( TreeBox::Node* node
                   GUI->NodeAction_PushButton.SetToolTip( "<p>Connect to '" + deviceNode->DeviceName() + "' device.</p>" );
                }
                return;
-            }*/
+            }
          }
          else
          {
@@ -979,20 +971,19 @@ void INDIDeviceControllerInterface::e_Click( Button& sender, bool checked )
             if ( deviceNode != nullptr )
             {
                IsoString deviceName( deviceNode->DeviceName().To7BitASCII() );
-               /*INDI::BaseDevice* device = INDIClient::TheClient()->getDevice( deviceName.c_str() );
-               if ( device != nullptr )
+               if ( !deviceName.IsEmpty() )
                {
-                  if ( device->isConnected() )
-                     INDIClient::TheClient()->disconnectDevice( deviceName.c_str() );
+                  if ( INDIClient::TheClient()->IsDeviceConnected(deviceName) )
+                     INDIClient::TheClient()->disconnectDevice( deviceName );
                   else
-                     INDIClient::TheClient()->connectDevice( deviceName.c_str() );
+                     INDIClient::TheClient()->connectDevice( deviceName );
                }
                else
                {
                   MessageBox( "<p>Unable to find INDI device '" + deviceName + "'</p>",
                               WindowTitle(),
                               StdIcon::Error, StdButton::Ok ).Execute();
-               }*/
+               }
             }
             else
             {
@@ -1040,9 +1031,8 @@ void INDIDeviceControllerInterface::e_NodeActivated( TreeBox& sender, TreeBox::N
       if ( deviceNode != nullptr )
       {
          IsoString deviceName( deviceNode->DeviceName().To7BitASCII() );
-         /*INDI::BaseDevice* device = INDIClient::TheClient()->getDevice( deviceName.c_str() );
-         if ( device != nullptr )
-            if ( device->isConnected() )
+         if ( !deviceName.IsEmpty() )
+            if ( INDIClient::TheClient()->IsDeviceConnected(deviceName) )
             {
                if ( MessageBox( "<p>About to disconnect from INDI device '" + deviceNode->DeviceName() + "'</p>"
                         "<p>Are you sure?</p>",
@@ -1053,11 +1043,11 @@ void INDIDeviceControllerInterface::e_NodeActivated( TreeBox& sender, TreeBox::N
                   return;
                }
 
-               INDIClient::TheClient()->disconnectDevice( deviceName.c_str() );
+               INDIClient::TheClient()->disconnectDevice( deviceName );
             }
             else
-               INDIClient::TheClient()->connectDevice( deviceName.c_str() );
-               */
+               INDIClient::TheClient()->connectDevice( deviceName );
+
       }
       else
       {

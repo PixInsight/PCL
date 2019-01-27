@@ -153,129 +153,108 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyItem& newItem, bool a
          console.Flush();
       }
 
-/*      INDI::BaseDevice* device = nullptr;
-      {
-         IsoString s( newItem.Device );
-         device = getDevice( s.c_str() );
-      }
-      if ( device == nullptr )
+      if ( newItem.Device.IsEmpty())
          throw String( "Device '" + newItem.Device + "' not found." );
+
 
       if ( newItem.PropertyType == "INDI_NUMBER" )
       {
-         INumberVectorProperty* numberVecProp;
-         {
-            IsoString s( newItem.Property );
-            numberVecProp = device->getNumber( s.c_str() );
+         size_t numOfItems = newItem.ElementValues.Length();
+         char** items = reinterpret_cast<char**>(malloc(numOfItems * sizeof(char*)));
+         if (items == nullptr) {
+            throw String( "Internal error: out of memory in " + String( PCL_FUNCTION_NAME ) );
          }
-         if ( numberVecProp == nullptr )
-            throw String( "Could not get number property '" + newItem.Property + "' from server."
-                          "Please check that INDI device '" + newItem.Device + "' is connected." );
-         INumber* np;
-         for ( auto elementValue : newItem.ElementValues )
-         {
-            if ( elementValue.Value.IsEmpty() )
-               throw String( "Internal error: INDIClient: Empty property value in " + String( PCL_FUNCTION_NAME ) );
-
-            {
-               IsoString s( elementValue.Element );
-               np = IUFindNumber( numberVecProp, s.c_str() );
-            }
-            if ( np == nullptr )
-               throw String( "Could not find element '" + String( elementValue.Element ) + "'." );
-            np->value = elementValue.Value.ToDouble();
-
-            if ( verbosity > 1 )
-            {
-               console.WriteLn( "Element  : '" + elementValue.Element + "'" );
-               console.WriteLn( "Value    : '" + elementValue.Value + "'" );
-            }
+         double* values = reinterpret_cast<double*>(malloc(numOfItems * sizeof(double)));
+         if (values == nullptr) {
+            throw String( "Internal error: out of memory in " + String( PCL_FUNCTION_NAME ) );
          }
-         sendNewNumber( numberVecProp );
-         // property state has changed
-         newNumber( numberVecProp );
+
+         {
+            size_t count = 0;
+            for ( auto element : newItem.ElementValues ) {
+               items[count] = reinterpret_cast<char*>(malloc((element.Element.To7BitASCII().Length() + 1) * sizeof(char)));
+               if (items[count] == nullptr) {
+                  throw String( "Internal error: out of memory in " + String( PCL_FUNCTION_NAME ) );
+               }
+               strncpy(items[count], element.Element.To7BitASCII().c_str(), element.Element.To7BitASCII().Length() + 1);
+               values[count] = element.Value.ToDouble();
+               count++;
+            }
+            m_indigoClient.sendNewNumberProperty(const_cast<char*>(newItem.Device.To7BitASCII().c_str()), newItem.Property.To7BitASCII().c_str(), numOfItems, const_cast<const char**>(items), values);
+         }
+
+         for ( size_t count = 0; count < newItem.ElementValues.Length(); count++ ) {
+            free(items[count]);
+         }
+         free(items);
+         free(values);
+      } else if (newItem.PropertyType == "INDI_SWITCH") {
+         size_t numOfItems = newItem.ElementValues.Length();
+         char** items = reinterpret_cast<char**>(malloc(numOfItems * sizeof(char*)));
+         if (items == nullptr) {
+            throw String( "Internal error: out of memory in " + String( PCL_FUNCTION_NAME ) );
+         }
+         bool* values = reinterpret_cast<bool*>(malloc(numOfItems * sizeof(bool)));
+         if (values == nullptr) {
+            throw String( "Internal error: out of memory in " + String( PCL_FUNCTION_NAME ) );
+         }
+
+         {
+            size_t count = 0;
+            for ( auto element : newItem.ElementValues ) {
+               items[count] = reinterpret_cast<char*>(malloc((element.Element.To7BitASCII().Length() + 1) * sizeof(char)));
+               if (items[count] == nullptr) {
+                  throw String( "Internal error: out of memory in " + String( PCL_FUNCTION_NAME ) );
+               }
+               strncpy(items[count], element.Element.To7BitASCII().c_str(), element.Element.To7BitASCII().Length() + 1);
+               values[count] = element.Value == "ON" ? true : false;
+               count++;
+            }
+            m_indigoClient.sendNewSwitchProperty(const_cast<char*>(newItem.Device.To7BitASCII().c_str()), newItem.Property.To7BitASCII().c_str(), numOfItems, const_cast<const char**>(items), values);
+         }
+
+         for ( size_t count = 0; count < newItem.ElementValues.Length(); count++ ) {
+            free(items[count]);
+         }
+         free(items);
+         free(values);
+      } else if (newItem.PropertyType == "INDI_TEXT") {
+         size_t numOfItems = newItem.ElementValues.Length();
+         char** items = reinterpret_cast<char**>(malloc(numOfItems * sizeof(char*)));
+         if (items == nullptr) {
+            throw String( "Internal error: out of memory in " + String( PCL_FUNCTION_NAME ) );
+         }
+         char** values = reinterpret_cast<char**>(malloc(numOfItems * sizeof(char*)));
+         if (values == nullptr) {
+            throw String( "Internal error: out of memory in " + String( PCL_FUNCTION_NAME ) );
+         }
+
+         {
+            size_t count = 0;
+            for ( auto element : newItem.ElementValues ) {
+               items[count] = reinterpret_cast<char*>(malloc((element.Element.To7BitASCII().Length() + 1) * sizeof(char)));
+               if (items[count] == nullptr) {
+                  throw String( "Internal error: out of memory in " + String( PCL_FUNCTION_NAME ) );
+               }
+               strncpy(items[count], element.Element.To7BitASCII().c_str(), element.Element.To7BitASCII().Length() + 1);
+               values[count] = reinterpret_cast<char*>(malloc((element.Value.To7BitASCII().Length() + 1) * sizeof(char)));
+               if (values[count] == nullptr) {
+                  throw String( "Internal error: out of memory in " + String( PCL_FUNCTION_NAME ) );
+               }
+               strncpy(values[count], element.Value.To7BitASCII().c_str(), element.Value.To7BitASCII().Length() + 1);
+               count++;
+            }
+            m_indigoClient.sendNewTextProperty(const_cast<char*>(newItem.Device.To7BitASCII().c_str()), newItem.Property.To7BitASCII().c_str(), numOfItems, const_cast<const char**>(items), const_cast<const char**>(values));
+         }
+
+         for ( size_t count = 0; count < newItem.ElementValues.Length(); count++ ) {
+            free(items[count]);
+            free(values[count]);
+         }
+         free(items);
+         free(values);
       }
-      else if ( newItem.PropertyType == "INDI_TEXT" )
-      {
-         ITextVectorProperty* textVecProp;
-         {
-            IsoString s( newItem.Property );
-            textVecProp = device->getText( s.c_str() );
-         }
-         if ( textVecProp == nullptr )
-            throw String( "Could not get text property '" + newItem.Property + "' from server. "
-                          "Please check that INDI device '" + newItem.Device + "' is connected." );
-         IText* np;
-         for ( auto elementValue : newItem.ElementValues )
-         {
-            if ( elementValue.Value.IsEmpty() )
-               throw String( "Internal error: INDIClient: Empty property value in " + String( PCL_FUNCTION_NAME ) );
 
-            {
-               IsoString s( elementValue.Element );
-               np = IUFindText( textVecProp, s.c_str() );
-            }
-            if ( np == nullptr )
-               throw String( "Could not find element '" + String( elementValue.Element ) + "'." );
-
-            {
-               IsoString s( elementValue.Value.ToUTF8() );
-               IUSaveText( np, s.c_str() );
-            }
-
-            if ( verbosity > 1 )
-            {
-               console.WriteLn( "Element  : '" + elementValue.Element + "'" );
-               console.WriteLn( "Value    : '" + elementValue.Value + "'" );
-            }
-         }
-         sendNewText( textVecProp );
-         // property state has changed
-         newText( textVecProp );
-      }
-      else if ( newItem.PropertyType == "INDI_SWITCH" )
-      {
-         ISwitchVectorProperty* switchVecProp;
-         {
-            IsoString s( newItem.Property );
-            switchVecProp = device->getSwitch( s.c_str() );
-         }
-         if ( switchVecProp == nullptr )
-            throw String( "Could not get switch property '" + newItem.Property + "' from server. "
-                        "Please check that INDI device '" + newItem.Device + "' is connected." );
-         ISwitch* sp;
-         for ( auto elementValue : newItem.ElementValues )
-         {
-            if ( elementValue.Value.IsEmpty() )
-               throw String( "Internal error: INDIClient: Empty property value in " + String( PCL_FUNCTION_NAME ) );
-
-            {
-               IsoString s( elementValue.Element );
-               sp = IUFindSwitch( switchVecProp, s.c_str() );
-            }
-            if ( sp == nullptr )
-               throw String( "Could not find element '" + String( elementValue.Element ) + "'." );
-
-            IUResetSwitch( switchVecProp );
-            if ( elementValue.Value == "ON" )
-               sp->s = ISS_ON;
-            else
-               sp->s = ISS_OFF;
-
-            if ( verbosity > 1 )
-            {
-               console.WriteLn( "Element  : '" + elementValue.Element + "'" );
-               console.WriteLn( "Value    : '" + elementValue.Value + "'" );
-            }
-         }
-         sendNewSwitch( switchVecProp );
-         // property state has changed
-         newSwitch( switchVecProp );
-      }
-      else
-      {
-         throw String( "Property '" + newItem.Property + "' not supported." );
-      }
 
       // In asynchronous calls, wait until the server has processed all of our
       // property update requests.
@@ -289,15 +268,15 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyItem& newItem, bool a
             size_type requestsDone = 0;
             for ( auto elementValue : newItem.ElementValues )
             {
-               INDIPropertyListItem p;*/
-               //if ( GetPropertyItem( newItem.Device, newItem.Property, elementValue.Element, p, false/*formatted*/ ) )
-               /*   switch ( p.PropertyState )
+               INDIPropertyListItem p;
+               if ( GetPropertyItem( newItem.Device, newItem.Property, elementValue.Element, p, false/*formatted*/ ) )
+                 switch ( p.PropertyState )
                   {
-                  case IPS_OK:
-                  case IPS_IDLE:
+                  case INDIGO_OK_STATE:
+                  case INDIGO_IDLE_STATE:
                      ++requestsDone;
                      break;
-                  case IPS_ALERT:
+                  case INDIGO_ALERT_STATE:
                      throw String( "Failure to send '"
                            + newItem.Device + '.' + newItem.Property + '.' + elementValue.Element
                            + "' property newItem. Message from INDI server: " + CurrentServerMessage() );
@@ -309,7 +288,7 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyItem& newItem, bool a
             if ( requestsDone == newItem.ElementValues.Length() )
                break;
          }
-      */
+
       return true;
 
    }
@@ -345,130 +324,124 @@ void INDIClient::RestartChangeReports()
 
 // ----------------------------------------------------------------------------
 
-/*void INDIClient::newDevice( INDI::BaseDevice* d )
-{
-   CHECK_POINTER( d )
 
-   ExclDeviceList x = DeviceList();
-   INDIDeviceListItemArray& devices( x );
+void INDIClient::registerNewDeviceCallback() {
+   m_indigoClient.newDevice = [this] (const std::string& deviceName) {
+      ExclDeviceList x = DeviceList();
+      INDIDeviceListItemArray& devices( x );
 
-   for ( auto device : devices )
-      if ( device.DeviceName == d->getDeviceName() )
-         return;
+      for ( auto device : devices )
+         if ( device.DeviceName == deviceName.c_str() )
+            return;
 
-   INDIDeviceListItem deviceListItem;
-   deviceListItem.DeviceName = d->getDeviceName();
-   deviceListItem.DeviceLabel = d->getDriverName();
-   devices << deviceListItem;
+      INDIDeviceListItem deviceListItem;
+      deviceListItem.DeviceName = deviceName.c_str();
+      deviceListItem.DeviceLabel =  deviceName.c_str();
+      devices << deviceListItem;
 
-   {
+      {
+         volatile AutoLock lock( m_mutex );
+         m_createdDevices << deviceListItem;
+      }
+   };
+}
+
+void INDIClient::registerRemoveDeviceCallback() {
+   m_indigoClient.removeDevice = [this] (const std::string& deviceName) {
+      ExclDeviceList x = DeviceList();
+      INDIDeviceListItemArray& devices( x );
+      INDIDeviceListItemArray newDevices;
+
+      ExclPropertyList y = PropertyList();
+      INDIPropertyListItemArray& properties( y );
+      INDIPropertyListItemArray newProperties;
+
       volatile AutoLock lock( m_mutex );
-      m_createdDevices << deviceListItem;
-   }
+
+      for ( auto device : devices )
+         if ( device.DeviceName == deviceName.c_str() )
+            m_removedDevices << device;
+         else
+            newDevices << device;
+
+      for ( auto property : properties )
+         if ( property.Device == deviceName.c_str() )
+            m_removedProperties << property;
+         else
+            newProperties << property;
+
+      devices = newDevices;
+      properties = newProperties;
+   };
 }
 
-void INDIClient::removeDevice( INDI::BaseDevice* d )
-{
-   CHECK_POINTER( d )
 
-   ExclDeviceList x = DeviceList();
-   INDIDeviceListItemArray& devices( x );
-   INDIDeviceListItemArray newDevices;
-
-   ExclPropertyList y = PropertyList();
-   INDIPropertyListItemArray& properties( y );
-   INDIPropertyListItemArray newProperties;
-
-   volatile AutoLock lock( m_mutex );
-
-   for ( auto device : devices )
-      if ( device.DeviceName == d->getDeviceName() )
-         m_removedDevices << device;
-      else
-         newDevices << device;
-
-   for ( auto property : properties )
-      if ( property.Device == d->getDeviceName() )
-         m_removedProperties << property;
-      else
-         newProperties << property;
-
-   devices = newDevices;
-   properties = newProperties;
+void INDIClient::registerNewPropertyCallback() {
+   m_indigoClient.newProperty = [this] (indigo_property* property) {
+      CHECK_POINTER( property );
+      ApplyToPropertyList( property, PropertyListGenerator() );
+   };
 }
 
-void INDIClient::newProperty( INDI::Property* p )
-{
-   CHECK_POINTER( p )
-   ApplyToPropertyList( p, PropertyListGenerator() );
-   setBLOBMode( B_ALSO, p->getDeviceName() );
+void INDIClient::registerRemovePropertyCallback() {
+   m_indigoClient.removeProperty = [this] (indigo_property* property) {
+      CHECK_POINTER( property );
+      ApplyToPropertyList( property, PropertyListRemover() );
+   };
 }
 
-void INDIClient::removeProperty( INDI::Property* p )
-{
-   CHECK_POINTER( p )
-   ApplyToPropertyList( p, PropertyListRemover() );
+void INDIClient::registerNewSwitchCallback() {
+   m_indigoClient.newSwitch = [this] (indigo_property* property) {
+      CHECK_POINTER( property );
+      ApplyToPropertyList( property, PropertyListUpdater() );
+   };
 }
 
-void INDIClient::newBLOB( IBLOB* b )
-{
-   CHECK_POINTER( b )
-   String dir = PixInsightSettings::GlobalString( "ImageWindow/DownloadsDirectory" );
-   if ( dir.IsEmpty() ) // this cannot happen
-      dir = File::SystemTempDirectory();
-   String filePath = dir + '/' + b->label + b->format;
-   File myfile = File::CreateFileForWriting( filePath );
-   myfile.Write( b->blob, b->size );
-   myfile.Close();
-   m_downloadedImagePath = filePath;
+void INDIClient::registerNewNumberCallback() {
+   m_indigoClient.newNumber = [this] (indigo_property* property) {
+      CHECK_POINTER( property );
+      ApplyToPropertyList( property, PropertyListUpdater() );
+   };
 }
 
-void INDIClient::newSwitch( ISwitchVectorProperty* svp )
-{
-   CHECK_POINTER( svp )
-   INDI::Property p;
-   p.setProperty( svp );
-   p.setType( INDI_SWITCH );
-   ApplyToPropertyList( &p, PropertyListUpdater() );
+void INDIClient::registerNewTextCallback() {
+   m_indigoClient.newText = [this] (indigo_property* property) {
+      CHECK_POINTER( property );
+      ApplyToPropertyList( property, PropertyListUpdater() );
+   };
 }
 
-void INDIClient::newNumber( INumberVectorProperty* nvp )
-{
-   CHECK_POINTER( nvp )
-   INDI::Property p;
-   p.setProperty( nvp );
-   p.setType( INDI_NUMBER );
-   ApplyToPropertyList( &p, PropertyListUpdater() );
+void INDIClient::registerNewLightCallback() {
+   m_indigoClient.newLight = [this] (indigo_property* property) {
+      CHECK_POINTER( property );
+      ApplyToPropertyList( property, PropertyListUpdater() );
+   };
 }
 
-void INDIClient::newText( ITextVectorProperty* tvp )
-{
-   CHECK_POINTER( tvp )
-   INDI::Property p;
-   p.setProperty( tvp );
-   p.setType( INDI_TEXT );
-   ApplyToPropertyList( &p, PropertyListUpdater() );
+void INDIClient::registerNewBlobCallback() {
+   m_indigoClient.newBlob = [this] (indigo_property* property) {
+      CHECK_POINTER( property );
+      AutoPointer<BlobProperty> blobProperty ( dynamic_cast<BlobProperty*>(PropertyFactory::Create( property )) );
+      String dir = PixInsightSettings::GlobalString( "ImageWindow/DownloadsDirectory" );
+      if ( dir.IsEmpty() ) // this cannot happen
+         dir = File::SystemTempDirectory();
+      String filePath = dir + '/' + blobProperty->getElementLabel(0) + blobProperty->getBlobFormat(0);
+      File myfile = File::CreateFileForWriting( filePath );
+      myfile.Write( blobProperty->getBlob(0), blobProperty->getBlobSize(0) );
+      myfile.Close();
+      m_downloadedImagePath = filePath;
+   };
 }
 
-void INDIClient::newLight( ILightVectorProperty* lvp )
-{
-   CHECK_POINTER( lvp )
-   INDI::Property p;
-   p.setProperty( lvp );
-   p.setType( INDI_LIGHT );
-   ApplyToPropertyList( &p, PropertyListUpdater() );
-}
-
-void INDIClient::newMessage( INDI::BaseDevice* d, int messageID )
-{
-   std::string message = d->messageQueue( messageID );
-   if ( !message.empty() )
-   {
+void INDIClient::registerGetMessageCallback() {
+   m_indigoClient.newMessage = [this] (const char* message) {
+      CHECK_POINTER( message );
       volatile AutoLock lock( m_mutex );
-      m_currentServerMessage = message.c_str();
-   }
+      m_currentServerMessage = message;
+
+   };
 }
-*/
+
 void INDIClient::serverConnected()
 {
    volatile AutoLock lock( m_mutex );
@@ -484,6 +457,15 @@ void INDIClient::serverDisconnected( int exitCode )
    INDIPropertyListItemArray( y ).Clear();
    m_serverConnectionChanged = true;
 }
+
+bool INDIClient::IsDeviceConnected(const IsoString& deviceName) const {
+   INDIPropertyListItem propItem;
+   if (GetPropertyItem(deviceName, String("CONNECTION"), String("CONNECTED"), propItem, false)) {
+      return propItem.PropertyValue == String("ON");
+   }
+   return false;
+}
+
 
 void INDIClient::ApplyToPropertyList( indigo_property* p, const PropertyListMutator& mutate )
 {

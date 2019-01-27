@@ -59,6 +59,7 @@
 namespace pcl
 {
 
+
 // ----------------------------------------------------------------------------
 
 
@@ -79,7 +80,7 @@ std::unique_ptr<indigo_property> SwitchProperty::clone() const {
 
 String NumberProperty::getElementValue( size_type i ) const {
     CHECK_INDEX_THROWS( m_property->count );
-    return m_property->items[i].number.value;
+    return IsoString(static_cast<double>(m_property->items[i].number.value));
 }
 String NumberProperty::getElementTarget( size_type i ) const {
     CHECK_INDEX_THROWS( m_property->count );
@@ -155,6 +156,25 @@ std::unique_ptr<indigo_property> LightProperty::clone() const {
 
 // ----------------------------------------------------------------------------
 
+void*   BlobProperty::getBlob( size_type i ) const {
+   CHECK_INDEX_THROWS( m_property->count );
+   return m_property->items[i].blob.value;
+}
+size_type  BlobProperty::getBlobSize(size_type i) const {
+   CHECK_INDEX_THROWS( m_property->count );
+   return m_property->items[i].blob.size;
+}
+String BlobProperty::getBlobFormat(size_type i) const {
+   CHECK_INDEX_THROWS( m_property->count );
+   return m_property->items[i].blob.format;
+}
+String BlobProperty::getUrl(size_type i) const {
+   CHECK_INDEX_THROWS( m_property->count );
+   return m_property->items[i].blob.url;
+}
+
+// ----------------------------------------------------------------------------
+
 String PropertyUtils::FormattedNumber( const String& number, IsoString format )
 {
    if ( number.IsEmpty() )
@@ -224,6 +244,8 @@ IProperty* PropertyFactory::Create( indigo_property* property ) {
       return new SwitchProperty( property );
    case INDIGO_LIGHT_VECTOR:
       return new LightProperty( property );
+   case INDIGO_BLOB_VECTOR:
+      return new BlobProperty( property );
    default:
       return new IProperty( property );
    }

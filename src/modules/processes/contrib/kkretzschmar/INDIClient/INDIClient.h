@@ -164,6 +164,19 @@ class INDIClient
 public:
 
    INDIClient( const IsoString& hostName = "localhost", uint32 port = 7624 ): m_indigoClient("PixInsight", hostName.c_str(), port), m_serverHost(hostName), m_serverPort(port) {
+
+      // register Indigo callbacks
+      registerNewDeviceCallback();
+      registerRemoveDeviceCallback();
+      registerNewPropertyCallback();
+      registerRemovePropertyCallback();
+      registerNewSwitchCallback();
+      registerNewNumberCallback();
+      registerNewTextCallback();
+      registerNewLightCallback();
+      registerNewBlobCallback();
+      registerGetMessageCallback();
+
    }
 
    virtual ~INDIClient()
@@ -174,14 +187,14 @@ public:
       if (!m_indigoClient.connectServer(errorMessage)){
          return false;
       }
-
-
-
-      return m_indigoClient.connectServer(errorMessage);
+      return true;
    }
 
    bool disconnectServer() {
-      return m_indigoClient.disconnectServer();
+      if (IsServerConnected()) {
+         return m_indigoClient.disconnectServer();
+      }
+      return true;
    }
 
    bool IsServerConnected() const
@@ -194,6 +207,18 @@ public:
    {
       return m_indigoClient.serverIsConnected(errorMessage);
    }
+
+   bool connectDevice(const IsoString& deviceName)
+   {
+      return m_indigoClient.connectDevice(std::string(deviceName.c_str()));
+   }
+
+   bool disconnectDevice(const IsoString& deviceName)
+   {
+      return m_indigoClient.disconnectDevice(std::string(deviceName.c_str()));
+   }
+
+   bool IsDeviceConnected(const IsoString& deviceName) const;
 
    void setServer(const char *hostname, unsigned int port) {
 
@@ -375,16 +400,7 @@ public:
    static void DestroyClient();
 
 
-   void newDevice( const IsoString& deviceName );
-   void removeDevice( const IsoString& deviceName );
-   void newProperty( indigo_property* );
-   void removeProperty( indigo_property* );
-   //void newBLOB( IBLOB* );
-   void newSwitch( indigo_property* );
-   void newNumber( indigo_property* );
-   void newText( indigo_property* );
-   void newLight( indigo_property* );
-   //void newMessage( INDI::BaseDevice*, int messageID );
+
 
    void serverConnected();
    void serverDisconnected( int exit_code );
@@ -409,6 +425,18 @@ private:
    INDIPropertyListItemArray m_removedProperties;
    INDIPropertyListItemArray m_updatedProperties;
    mutable Mutex             m_mutex;
+
+
+   void registerNewDeviceCallback();
+   void registerRemoveDeviceCallback();
+   void registerNewPropertyCallback();
+   void registerRemovePropertyCallback();
+   void registerNewSwitchCallback();
+   void registerNewNumberCallback();
+   void registerNewTextCallback();
+   void registerNewLightCallback();
+   void registerNewBlobCallback();
+   void registerGetMessageCallback();
 
    class PropertyListMutator
    {

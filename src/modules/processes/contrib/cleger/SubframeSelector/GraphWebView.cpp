@@ -67,8 +67,8 @@ GraphWebView::GraphWebView( Control& parent ) :
 
    OnEnter( (Control::event_handler)&GraphWebView::__MouseEnter, *this );
    OnLeave( (Control::event_handler)&GraphWebView::__MouseLeave, *this );
-
    OnScriptResultAvailable( (WebView::result_event_handler)&GraphWebView::__JSResult, *this );
+   OnLoadFinished( (WebView::state_event_handler)&GraphWebView::__LoadFinished, *this );
 }
 
 // ----------------------------------------------------------------------------

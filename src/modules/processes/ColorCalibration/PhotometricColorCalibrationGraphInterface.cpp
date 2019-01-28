@@ -332,7 +332,17 @@ void PhotometricColorCalibrationGraphInterface::CleanUp()
 
 void PhotometricColorCalibrationGraphInterface::e_LoadFinished( WebView& sender, bool state )
 {
-   GUI->Graph_WebView.SetZoomFactor( DisplayPixelRatio() );
+   /*
+    * WebView contents are represented in physical pixels by default. The
+    * following call ensures a representation in logical pixels on high-dpi
+    * screens. Under non high-dpi screen resolutions, as well as on desktops
+    * that use logical pixels by default (macOS), this call is a no-op.
+    *
+    * ### N.B. Since version 1.8.6, the core already scales WebView zoom
+    * factors by the ratio between physical and logical pixels automatically,
+    * so 1.0 will be transformed to 1.0*DisplayPixelRatio() internally.
+    */
+   GUI->Graph_WebView.SetZoomFactor( 1.0 );
 }
 
 // ----------------------------------------------------------------------------

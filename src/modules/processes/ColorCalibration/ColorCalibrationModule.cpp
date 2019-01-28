@@ -52,13 +52,13 @@
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     03
-#define MODULE_VERSION_REVISION  03
-#define MODULE_VERSION_BUILD     0336
+#define MODULE_VERSION_REVISION  04
+#define MODULE_VERSION_BUILD     0338
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2019
 #define MODULE_RELEASE_MONTH     1
-#define MODULE_RELEASE_DAY       21
+#define MODULE_RELEASE_DAY       28
 
 #include "ColorCalibrationModule.h"
 #include "BackgroundNeutralizationProcess.h"
@@ -123,7 +123,7 @@ String ColorCalibrationModule::Author() const
 
 String ColorCalibrationModule::Copyright() const
 {
-   return "Copyright (c) 2006-2018, Pleiades Astrophoto";
+   return "Copyright (c) 2006-2019, Pleiades Astrophoto";
 }
 
 // ----------------------------------------------------------------------------

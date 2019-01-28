@@ -120,6 +120,7 @@ private:
    void __MouseLeave( Control& sender );
    void __Timer( Timer& sender );
    void __JSResult( WebView& sender, const Variant& result );
+   void __LoadFinished( WebView& sender, bool state );
 
    Timer  m_eventCheckTimer;
    bool   m_keepChecking = true;

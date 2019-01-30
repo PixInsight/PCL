@@ -122,6 +122,7 @@ private:
    void __JSResult( WebView& sender, const Variant& result );
    void __LoadFinished( WebView& sender, bool state );
 
+   bool   m_loaded = false;
    Timer  m_eventCheckTimer;
    bool   m_keepChecking = true;
    String m_htmlFilePath;

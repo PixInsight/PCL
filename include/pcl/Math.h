@@ -820,7 +820,7 @@ template <typename T, typename C> inline T Poly( T x, C c, int n )
 template <typename T> inline T Poly( T x, std::initializer_list<T> c )
 {
    PCL_PRECONDITION( c.size() > 0 )
-   return Poly( x, c.begin(), c.size()-1 );
+   return Poly( x, c.begin(), int( c.size() )-1 );
 }
 
 // ----------------------------------------------------------------------------

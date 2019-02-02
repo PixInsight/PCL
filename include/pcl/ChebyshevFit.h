@@ -201,7 +201,7 @@ public:
       dx( Abs( x2 - x1 ) ),
       x0( (x1 + x2)/2 ),
       c( ck ),
-      m( ck.Length() )
+      m( int( ck.Length() ) )
    {
       if ( 1 + dx == 1 )
          throw Error( "GenericChebyshevFit: Empty or insignificant function evaluation interval." );

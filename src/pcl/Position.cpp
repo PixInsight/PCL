@@ -429,8 +429,8 @@ Vector Position::CIP_ITRS() const
          if ( int( T.Length() ) < TruncInt( (s_cipITRSEnd - s_cipITRSStart)/365.25 )*8 )
             throw Error( "Insufficient CIP_ITRS data points." );
 
-         s_xp.Initialize( Vector( T.Begin(), T.Length() ), Vector( XP.Begin(), XP.Length() ) );
-         s_yp.Initialize( Vector( T.Begin(), T.Length() ), Vector( YP.Begin(), YP.Length() ) );
+         s_xp.Initialize( Vector( T.Begin(), int( T.Length() ) ), Vector( XP.Begin(), int( XP.Length() ) ) );
+         s_yp.Initialize( Vector( T.Begin(), int( T.Length() ) ), Vector( YP.Begin(), int( YP.Length() ) ) );
          s_cipITRSInitialized.Store( 1 );
       }
    }

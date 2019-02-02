@@ -193,7 +193,7 @@ double TimePoint::DeltaT() const
          if ( (s_deltaTEnd - s_deltaTStart) < 365 )
             throw Error( "The DeltaT data covers an insufficient time span." );
 
-         s_deltaT.Initialize( Vector( T.Begin(), T.Length() ), Vector( D.Begin(), D.Length() ) );
+         s_deltaT.Initialize( Vector( T.Begin(), int( T.Length() ) ), Vector( D.Begin(), int( D.Length() ) ) );
          s_deltaTInitialized.Store( 1 );
       }
    }

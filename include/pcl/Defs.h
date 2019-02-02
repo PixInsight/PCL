@@ -286,6 +286,7 @@
 #    pragma warning( disable: 4996 )   // ...
 #    pragma warning( disable: 4018 )   // '<' : signed/unsigned mismatch
 #    pragma warning( disable: 4049 )   // More than 64k source lines
+#    pragma warning( disable: 4150 )   // Deletion of pointer to incomplete type 'type'; no destructor called
 #    pragma warning( disable: 4244 )   // Conversion from 'type1' to 'type2', possible loss of data
 #    pragma warning( disable: 4345 )   // Behavior change: an object of POD type constructed...
 #    pragma warning( disable: 4355 )   // 'this' : used in base member initializer list

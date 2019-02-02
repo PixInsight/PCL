@@ -193,8 +193,9 @@ void WCSKeywords::Read( const FITSKeywordArray& keywords )
          if ( svalue.TryToDouble( nvalue ) )
             latpole = nvalue;
       }
-      else if ( key.name == "REFSPLINE" )
+      else if ( key.name == "REFSPLIN" || key.name == "REFSPLINE" )
       {
+         // N.B. 9-char keyword name "REFSPLINE" written by old versions, not FITS-compliant.
          refSpline = svalue;
       }
    }

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard RAW File Format Module Version 01.05.00.0411
+// Standard RAW File Format Module Version 01.05.02.0428
 // ----------------------------------------------------------------------------
-// RawPreferencesDialog.cpp - Released 2018-11-23T16:14:51Z
+// RawPreferencesDialog.cpp - Released 2019-01-21T12:06:31Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RAW PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -436,13 +436,11 @@ void RawPreferencesDialog::UpdateControls()
               preferences.outputRawRGB ||
               preferences.outputCFA;
 
-   NoAutoCrop_CheckBox.Enable( raw );
-   NoBlackPointCorrection_CheckBox.Enable( !raw );
-   NoClipHighlights_CheckBox.Enable( !raw );
-   NoiseThreshold_NumericControl.Enable( !raw );
+   NoAutoCrop_CheckBox.Enable( raw && preferences.noWhiteBalance
+                                   && preferences.noBlackPointCorrection
+                                   && preferences.noClipHighlights
+                                   && preferences.noiseThreshold == 0 );
    Interpolation_GroupBox.Enable( !raw );
-   WhiteBalance_GroupBox.Enable( !raw || !preferences.noAutoCrop ); // no-auto-crop implies no-white-balance
-
    UseAutoWhiteBalance_CheckBox.Enable( !preferences.noWhiteBalance );
    UseCameraWhiteBalance_CheckBox.Enable( !preferences.noWhiteBalance );
 }
@@ -454,6 +452,7 @@ void RawPreferencesDialog::NumericControl_ValueUpdated( NumericControl& sender, 
 {
    if ( sender == NoiseThreshold_NumericControl )
       preferences.noiseThreshold = value;
+   UpdateControls();
 }
 
 // ----------------------------------------------------------------------------
@@ -481,6 +480,10 @@ void RawPreferencesDialog::Button_Click( Button& sender, bool checked )
    else if ( sender == NoWhiteBalance_CheckBox )
    {
       preferences.noWhiteBalance = checked;
+      if ( !preferences.noWhiteBalance )
+         if ( !preferences.useCameraWhiteBalance )
+            if ( !preferences.useAutoWhiteBalance )
+               preferences.useCameraWhiteBalance = true;
    }
    else if ( sender == CreateSuperPixels_CheckBox )
    {
@@ -578,6 +581,7 @@ void RawPreferencesDialog::Button_Click( Button& sender, bool checked )
       preferences.noAutoCrop = false;
       preferences.noBlackPointCorrection = true;
       preferences.noClipHighlights = true;
+      preferences.noiseThreshold = 0;
    }
    else if ( sender == PureRGB_PushButton )
    {
@@ -593,10 +597,10 @@ void RawPreferencesDialog::Button_Click( Button& sender, bool checked )
       preferences.noAutoCrop = false;
       preferences.noBlackPointCorrection = false;
       preferences.noClipHighlights = false;
-//       preferences.noiseThreshold = 0; // this is a very specific setting, don't change it
+      preferences.noiseThreshold = 0;
       preferences.dcbIterations = 3;
       preferences.dcbRefinement = false;
-      preferences.fbddNoiseReduction = 2;
+      preferences.fbddNoiseReduction = 0;
    }
    else if ( sender == OK_PushButton )
    {
@@ -635,4 +639,4 @@ void RawPreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RawPreferencesDialog.cpp - Released 2018-11-23T16:14:51Z
+// EOF RawPreferencesDialog.cpp - Released 2019-01-21T12:06:31Z

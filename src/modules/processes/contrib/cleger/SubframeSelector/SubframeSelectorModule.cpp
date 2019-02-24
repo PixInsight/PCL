@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.04.01.0012
+// Standard SubframeSelector Process Module Version 01.04.02.0025
 // ----------------------------------------------------------------------------
-// SubframeSelectorModule.cpp - Released 2018-11-23T18:45:58Z
+// SubframeSelectorModule.cpp - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SubframeSelector PixInsight module.
 //
@@ -51,18 +51,19 @@
 // ----------------------------------------------------------------------------
 
 #include "SubframeSelectorInterface.h"
+#include "SubframeSelectorMeasurementsInterface.h"
 #include "SubframeSelectorModule.h"
 #include "SubframeSelectorProcess.h"
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     04
-#define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0012
+#define MODULE_VERSION_REVISION  04
+#define MODULE_VERSION_BUILD     0029
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2018
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       23
+#define MODULE_RELEASE_YEAR      2019
+#define MODULE_RELEASE_MONTH     1
+#define MODULE_RELEASE_DAY       30
 
 namespace pcl
 {
@@ -116,7 +117,7 @@ String SubframeSelectorModule::Author() const
 
 String SubframeSelectorModule::Copyright() const
 {
-   return "Copyright (c) 2017-2018, Cameron Leger";
+   return "Copyright (c) 2017-2019, Cameron Leger";
 }
 
 // ----------------------------------------------------------------------------
@@ -159,6 +160,8 @@ void SubframeSelectorModule::OnUnload()
 {
    if ( TheSubframeSelectorCache != nullptr )
       TheSubframeSelectorCache->Save();
+   if ( TheSubframeSelectorMeasurementsInterface != nullptr )
+      TheSubframeSelectorMeasurementsInterface->Cleanup();
 }
 
 // ----------------------------------------------------------------------------
@@ -205,4 +208,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF SubframeSelectorModule.cpp - Released 2018-11-23T18:45:58Z
+// EOF SubframeSelectorModule.cpp - Released 2019-01-21T12:06:42Z

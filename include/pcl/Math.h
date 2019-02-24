@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/Math.h - Released 2018-11-23T16:14:19Z
+// pcl/Math.h - Released 2019-01-21T12:06:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -820,7 +820,7 @@ template <typename T, typename C> inline T Poly( T x, C c, int n )
 template <typename T> inline T Poly( T x, std::initializer_list<T> c )
 {
    PCL_PRECONDITION( c.size() > 0 )
-   return Poly( x, c.begin(), c.size()-1 );
+   return Poly( x, c.begin(), int( c.size() )-1 );
 }
 
 // ----------------------------------------------------------------------------
@@ -3678,4 +3678,4 @@ inline uint32 Hash32( const void* data, size_type size, uint32 seed = 0 )
 #endif   // __PCL_Math_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Math.h - Released 2018-11-23T16:14:19Z
+// EOF pcl/Math.h - Released 2019-01-21T12:06:07Z

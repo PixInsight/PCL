@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard TIFF File Format Module Version 01.00.07.0359
+// Standard TIFF File Format Module Version 01.00.07.0369
 // ----------------------------------------------------------------------------
-// TIFFModule.cpp - Released 2018-11-23T16:14:51Z
+// TIFFModule.cpp - Released 2019-01-21T12:06:31Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  07
-#define MODULE_VERSION_BUILD     0359
+#define MODULE_VERSION_BUILD     0369
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2018
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       23
+#define MODULE_RELEASE_YEAR      2019
+#define MODULE_RELEASE_MONTH     1
+#define MODULE_RELEASE_DAY       21
 
 #include "TIFFModule.h"
 #include "TIFFFormat.h"
@@ -149,4 +149,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF TIFFModule.cpp - Released 2018-11-23T16:14:51Z
+// EOF TIFFModule.cpp - Released 2019-01-21T12:06:31Z

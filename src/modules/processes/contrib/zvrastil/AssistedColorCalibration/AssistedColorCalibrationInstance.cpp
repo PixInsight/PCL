@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard AssistedColorCalibration Process Module Version 01.00.00.0230
+// Standard AssistedColorCalibration Process Module Version 01.00.00.0240
 // ----------------------------------------------------------------------------
-// AssistedColorCalibrationInstance.cpp - Released 2018-11-23T18:45:59Z
+// AssistedColorCalibrationInstance.cpp - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard AssistedColorCalibration PixInsight module.
 //
@@ -500,4 +500,4 @@ double AssistedColorCalibrationInstance::GetSaturationBoost() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AssistedColorCalibrationInstance.cpp - Released 2018-11-23T18:45:59Z
+// EOF AssistedColorCalibrationInstance.cpp - Released 2019-01-21T12:06:42Z

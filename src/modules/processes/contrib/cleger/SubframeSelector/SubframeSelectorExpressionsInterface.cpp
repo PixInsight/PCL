@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.04.01.0012
+// Standard SubframeSelector Process Module Version 01.04.02.0025
 // ----------------------------------------------------------------------------
-// SubframeSelectorExpressionsInterface.cpp - Released 2018-11-23T18:45:58Z
+// SubframeSelectorExpressionsInterface.cpp - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SubframeSelector PixInsight module.
 //
@@ -189,21 +189,17 @@ void SubframeSelectorExpressionsInterface::UpdateControls()
 void SubframeSelectorExpressionsInterface::e_TextUpdated( CodeEditor& sender )
 {
    String text = sender.Text();
-   String bmp = ":/browser/disabled.png";
-   if ( MeasureUtils::IsValidExpression( text ) )
-   {
-      bmp = ":/browser/enabled.png";
-   }
-
+   String bmp = ScaledResource( MeasureUtils::IsValidExpression( text ) ?
+                        ":/browser/enabled.png" : ":/browser/disabled.png" );
    if ( sender == GUI->ExpressionParameters_Approval_Editor )
    {
       if ( m_instance.p_approvalExpression != text )
-         GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( ScaledResource( bmp ) ) );
+         GUI->ExpressionParameters_Approval_Status.SetBitmap( Bitmap( bmp ) );
    }
    else if ( sender == GUI->ExpressionParameters_Weighting_Editor )
    {
       if ( m_instance.p_weightingExpression != text )
-         GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( ScaledResource( bmp ) ) );
+         GUI->ExpressionParameters_Weighting_Status.SetBitmap( Bitmap( bmp ) );
    }
 }
 
@@ -228,7 +224,7 @@ void SubframeSelectorExpressionsInterface::e_ButtonClick( Button& sender, bool/*
 {
    if ( sender == GUI->ExpressionParameters_Approval_ToolButton )
    {
-      String text = GUI->ExpressionParameters_Approval_Editor.Text();
+      String text = GUI->ExpressionParameters_Approval_Editor.Text().Trimmed();
       if ( m_instance.p_approvalExpression != text )
       {
          m_instance.p_approvalExpression = text;
@@ -339,4 +335,4 @@ SubframeSelectorExpressionsInterface::GUIData::GUIData( SubframeSelectorExpressi
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SubframeSelectorExpressionsInterface.cpp - Released 2018-11-23T18:45:58Z
+// EOF SubframeSelectorExpressionsInterface.cpp - Released 2019-01-21T12:06:42Z

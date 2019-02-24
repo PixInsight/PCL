@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.04.01.0012
+// Standard SubframeSelector Process Module Version 01.04.02.0025
 // ----------------------------------------------------------------------------
-// SubframeSelectorMeasureData.h - Released 2018-11-23T18:45:58Z
+// SubframeSelectorMeasureData.h - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SubframeSelector PixInsight module.
 //
@@ -473,6 +473,8 @@ struct MeasureUtils
       int pClose = 0;
       int bOpen = 0;
       int bClose = 0;
+      int cOpen = 0;
+      int cClose = 0;
       int a = 0;
       int o = 0;
       for ( char16_type c : expression )
@@ -480,9 +482,9 @@ struct MeasureUtils
          if (    !CharTraits::IsAlpha( c )
               && !CharTraits::IsDigit( c )
               && !CharTraits::IsSpace( c )
-              && c != '(' && c != ')' && c != '&' && c != '|' && c != ' '
-              && c != '*' && c != '+' && c != '-' && c != '/' && c != '.' && c != ','
-              && c != '%' && c != '?' && c != ':' && c != '[' && c != ']'
+              && c != '(' && c != ')' && c != '[' && c != ']' && c != '{' && c != '}'
+              && c != '&' && c != '|' && c != '*' && c != '+' && c != '-' && c != '/'
+              && c != '.' && c != ',' && c != '%' && c != '?' && c != ':' && c != '_'
               && c != '<' && c != '>' && c != '=' && c != '!' && c != ';' )
             return false;
 
@@ -496,13 +498,18 @@ struct MeasureUtils
          if ( c == ']' )
             ++bClose;
 
+         if ( c == '{' )
+            ++cOpen;
+         if ( c == '}' )
+            ++cClose;
+
          if ( c == '&' )
             ++a;
          if ( c == '|' )
             ++o;
       }
 
-      return pOpen == pClose && bOpen == bClose && a % 2 == 0 && o % 2 == 0;
+      return pOpen == pClose && bOpen == bClose && cOpen == cClose && a%2 == 0 && o%2 == 0;
    }
 
    static void MeasureProperties( const Array<MeasureItem>& measures, float subframeScale,
@@ -616,4 +623,4 @@ private:
 #endif   // __SubframeSelectorMeasureData_h
 
 // ----------------------------------------------------------------------------
-// EOF SubframeSelectorMeasureData.h - Released 2018-11-23T18:45:58Z
+// EOF SubframeSelectorMeasureData.h - Released 2019-01-21T12:06:42Z

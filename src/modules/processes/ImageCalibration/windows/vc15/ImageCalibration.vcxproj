@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.107
-# Copyright (C) 2009-2018 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.109
+# Copyright (C) 2009-2019 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2018-11-23T18:57:53.324Z
+# Generated on .... 2019-01-21T12:08:38.275Z
 # Project id ...... ImageCalibration
 # Project type .... Module
 # Platform ........ Windows/vc15
@@ -33,7 +33,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{BBEF486E-CF66-4F3B-B5E5-86682F2906BE}</ProjectGuid>
+    <ProjectGuid>{AA33D19B-53CA-405A-956A-2641FD3A8AE1}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>

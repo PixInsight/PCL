@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.01.00.0228
+// Standard INDIClient Process Module Version 01.01.00.0238
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerInstance.cpp - Released 2018-11-23T18:45:59Z
+// INDIDeviceControllerInstance.cpp - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -60,6 +60,8 @@
 #include <pcl/MetaModule.h>
 #include <pcl/Mutex.h>
 #include <pcl/StdStatus.h>
+
+#include<sstream>
 
 #ifdef __PCL_LINUX
 #include <memory>
@@ -163,11 +165,16 @@ bool INDIDeviceControllerInstance::ExecuteGlobal()
          }
 
          indi->SetVerbosity( p_verbosity );
-
-         if ( !indi->IsServerConnected() )
+         std::ostringstream errMesg;
+         if ( !indi->IsServerConnected(errMesg) )
          {
-            indi->connectServer();
-            if ( !indi->IsServerConnected() )
+            if (!errMesg.str().empty()){
+               throw Error( "INDIDeviceControllerInstance: Connection to INDI server " + p_serverHostName + ", port=" + String( p_serverPort ) + IsoString(" lost. Possible reason: " + IsoString(errMesg.str().c_str())) );
+            }
+
+            indi->connectServer(errMesg);
+            Sleep(100);
+            if ( !indi->IsServerConnected(errMesg) )
                throw Error( "INDIDeviceControllerInstance: Failure to connect to INDI server " + p_serverHostName + ", port=" + String( p_serverPort ) );
 
             if ( p_verbosity > 0 )
@@ -232,7 +239,8 @@ bool INDIDeviceControllerInstance::ExecuteGlobal()
       {
          if ( indi != nullptr )
          {
-            if ( indi->IsServerConnected() )
+            std::ostringstream errMesg;
+            if ( indi->IsServerConnected(errMesg) )
             {
                AcquireINDIClientProperties();
                indi->SetVerbosity( p_verbosity );
@@ -441,8 +449,9 @@ void INDIDeviceControllerInstance::AcquireINDIClientProperties()
    o_devices.Clear();
    o_properties.Clear();
 
-   if ( INDIClient::HasClient() )
-      if ( INDIClient::TheClient()->IsServerConnected() )
+   if ( INDIClient::HasClient() ){
+      std::ostringstream errMesg;
+      if ( INDIClient::TheClient()->IsServerConnected(errMesg) )
       {
          {
             ExclConstDeviceList x = INDIClient::TheClient()->ConstDeviceList();
@@ -453,6 +462,7 @@ void INDIDeviceControllerInstance::AcquireINDIClientProperties()
             o_properties = static_cast<const INDIPropertyListItemArray&>( y );
          }
       }
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -460,4 +470,4 @@ void INDIDeviceControllerInstance::AcquireINDIClientProperties()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerInstance.cpp - Released 2018-11-23T18:45:59Z
+// EOF INDIDeviceControllerInstance.cpp - Released 2019-01-21T12:06:42Z

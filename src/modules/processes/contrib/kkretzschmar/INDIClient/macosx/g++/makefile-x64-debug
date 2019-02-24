@@ -1,0 +1,134 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
+######################################################################
+# Generated on .... 2018-04-03T20:49:43.289Z
+# Project id ...... INDIClient
+# Project type .... Module
+# Platform ........ MacOSX/g++
+# Configuration ... Debug/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/contrib/kkretzschmar/INDIClient/macosx/g++/x64/Debug"
+
+.PHONY: all
+all: $(OBJ_DIR)/INDIClient-pxm.dylib
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../Alignment.cpp \
+../../ApparentPosition.cpp \
+../../IINDIProperty.cpp \
+../../INDICCDFrameInstance.cpp \
+../../INDICCDFrameInterface.cpp \
+../../INDICCDFrameParameters.cpp \
+../../INDICCDFrameProcess.cpp \
+../../INDIClient.cpp \
+../../INDIClientModule.cpp \
+../../INDIDeviceControllerInstance.cpp \
+../../INDIDeviceControllerInterface.cpp \
+../../INDIDeviceControllerParameters.cpp \
+../../INDIDeviceControllerProcess.cpp \
+../../INDIMountInstance.cpp \
+../../INDIMountInterface.cpp \
+../../INDIMountParameters.cpp \
+../../INDIMountProcess.cpp \
+../../INDI/base64.c \
+../../INDI/baseclient.cpp \
+../../INDI/basedevice.cpp \
+../../INDI/indicom.c \
+../../INDI/indiproperty.cpp \
+../../INDI/indistandardproperty.cpp \
+../../INDI/lilxml.c
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Debug/Alignment.o \
+./x64/Debug/ApparentPosition.o \
+./x64/Debug/IINDIProperty.o \
+./x64/Debug/INDICCDFrameInstance.o \
+./x64/Debug/INDICCDFrameInterface.o \
+./x64/Debug/INDICCDFrameParameters.o \
+./x64/Debug/INDICCDFrameProcess.o \
+./x64/Debug/INDIClient.o \
+./x64/Debug/INDIClientModule.o \
+./x64/Debug/INDIDeviceControllerInstance.o \
+./x64/Debug/INDIDeviceControllerInterface.o \
+./x64/Debug/INDIDeviceControllerParameters.o \
+./x64/Debug/INDIDeviceControllerProcess.o \
+./x64/Debug/INDIMountInstance.o \
+./x64/Debug/INDIMountInterface.o \
+./x64/Debug/INDIMountParameters.o \
+./x64/Debug/INDIMountProcess.o \
+./x64/Debug/INDI/base64.o \
+./x64/Debug/INDI/baseclient.o \
+./x64/Debug/INDI/basedevice.o \
+./x64/Debug/INDI/indicom.o \
+./x64/Debug/INDI/indiproperty.o \
+./x64/Debug/INDI/indistandardproperty.o \
+./x64/Debug/INDI/lilxml.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Debug/Alignment.d \
+./x64/Debug/ApparentPosition.d \
+./x64/Debug/IINDIProperty.d \
+./x64/Debug/INDICCDFrameInstance.d \
+./x64/Debug/INDICCDFrameInterface.d \
+./x64/Debug/INDICCDFrameParameters.d \
+./x64/Debug/INDICCDFrameProcess.d \
+./x64/Debug/INDIClient.d \
+./x64/Debug/INDIClientModule.d \
+./x64/Debug/INDIDeviceControllerInstance.d \
+./x64/Debug/INDIDeviceControllerInterface.d \
+./x64/Debug/INDIDeviceControllerParameters.d \
+./x64/Debug/INDIDeviceControllerProcess.d \
+./x64/Debug/INDIMountInstance.d \
+./x64/Debug/INDIMountInterface.d \
+./x64/Debug/INDIMountParameters.d \
+./x64/Debug/INDIMountProcess.d \
+./x64/Debug/INDI/base64.d \
+./x64/Debug/INDI/baseclient.d \
+./x64/Debug/INDI/basedevice.d \
+./x64/Debug/INDI/indicom.d \
+./x64/Debug/INDI/indiproperty.d \
+./x64/Debug/INDI/indistandardproperty.d \
+./x64/Debug/INDI/lilxml.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/INDIClient-pxm.dylib: $(OBJ_FILES)
+	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.10 -stdlib=libc++ -Wl,-dead_strip -dynamiclib -install_name @executable_path/INDIClient-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/INDIClient-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi -llz4-pxi -lzlib-pxi -lRFC6234-pxi -llcms-pxi -lcminpack-pxi
+	$(MAKE) -f ./makefile-x64-debug --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/INDIClient-pxm.dylib
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/INDIClient-pxm.dylib $(PCLBINDIR64)
+
+./x64/Debug/%.o: ../../%.cpp
+	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.10 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -O0 -g -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Debug/INDI/%.o: ../../INDI/%.cpp
+	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.10 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -O0 -g -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Debug/INDI/%.o: ../../INDI/%.c
+	clang -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.10 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -O0 -g -fvisibility=hidden -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

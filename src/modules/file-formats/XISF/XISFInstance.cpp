@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.09.0177
+// Standard XISF File Format Module Version 01.00.09.0187
 // ----------------------------------------------------------------------------
-// XISFInstance.cpp - Released 2018-11-23T16:14:51Z
+// XISFInstance.cpp - Released 2019-01-21T12:06:31Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -1126,4 +1126,4 @@ void XISFInstance::CloseImage()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFInstance.cpp - Released 2018-11-23T16:14:51Z
+// EOF XISFInstance.cpp - Released 2019-01-21T12:06:31Z

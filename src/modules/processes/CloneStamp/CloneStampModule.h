@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard CloneStamp Process Module Version 01.00.02.0351
+// Standard CloneStamp Process Module Version 01.00.02.0361
 // ----------------------------------------------------------------------------
-// CloneStampModule.h - Released 2018-11-23T18:45:58Z
+// CloneStampModule.h - Released 2019-01-21T12:06:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CloneStamp PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -84,4 +84,4 @@ public:
 #endif   // __CloneStampModule_h
 
 // ----------------------------------------------------------------------------
-// EOF CloneStampModule.h - Released 2018-11-23T18:45:58Z
+// EOF CloneStampModule.h - Released 2019-01-21T12:06:41Z

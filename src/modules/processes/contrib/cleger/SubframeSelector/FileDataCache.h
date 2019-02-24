@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.04.01.0012
+// Standard SubframeSelector Process Module Version 01.04.02.0025
 // ----------------------------------------------------------------------------
-// FileDataCache.h - Released 2018-11-23T18:45:58Z
+// FileDataCache.h - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SubframeSelector PixInsight module.
 //
@@ -257,4 +257,4 @@ private:
 #endif   // __FileDataCache_h
 
 // ----------------------------------------------------------------------------
-// EOF FileDataCache.h - Released 2018-11-23T18:45:58Z
+// EOF FileDataCache.h - Released 2019-01-21T12:06:42Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.01.00.0228
+// Standard INDIClient Process Module Version 01.01.00.0238
 // ----------------------------------------------------------------------------
-// Alignment.cpp - Released 2018-11-23T18:45:59Z
+// Alignment.cpp - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -62,6 +62,52 @@
 
 namespace pcl
 {
+
+double GreenwhichMeanSiderialTime() {
+   TimePoint currentTime = TimePoint::Now();
+   int year, month, day, hour, minute;
+   double seconds;
+   currentTime.GetComplexTime(year, month, day, hour, minute, seconds);
+   double hoursSinceMidnight = hour + minute / 60.0 + seconds / 3600.0;
+   // JD0 : julian date of last midnight
+   // JD = JD0 + hoursSinceMidnight / 24.0
+   double JD0 = currentTime.JD() - hoursSinceMidnight / 24.0;
+   double D   = currentTime.JD() -  2451545.0;
+   double D0  = JD0 - 2451545.0;
+   // T: number of centuries since year 2000
+   double T = D / 36525.0;
+   double GMST = 6.697374558 + 0.06570982441908 * D0 + 1.00273790935 * hoursSinceMidnight + 0.000026 * T * T;
+   // reduce to [0h,23h]
+   return std::fmod(GMST, 24.0) ;
+}
+
+double GreenwhichApparentSiderialTime() {
+   double GMST = GreenwhichMeanSiderialTime();
+   TimePoint currentTime = TimePoint::Now();
+   double D   = currentTime.JD() -  2451545.0;
+   // eps: obliquity
+   double eps = 23.4393 - 0.0000004 * D;
+   // L : mean longitude of the sun
+   double L = 280.47 + 0.98565 * D;
+   // omega :logitude of the ascending node of the moon
+   double omega = 125.04 - 0.052954 * D;
+   // delPsi: approx nutation on longitude
+   double delPsi =  -0.000319 * Sin( omega ) - 0.000024 * Sin( 2*L );
+   // eqeq: equation of equinoxes
+   double eqeq = delPsi *  Cos(eps);
+   return GMST + eqeq;
+}
+
+double LocalMeanSiderialTime(double longitude) {
+   double GMST = GreenwhichMeanSiderialTime();
+   return GMST + longitude / 15.0;
+}
+
+double LocalApparentSiderialTime(double longitude) {
+   double GAST = GreenwhichMeanSiderialTime();
+   return GAST + longitude / 15.0;
+}
+
 
 // ----------------------------------------------------------------------------
 
@@ -876,4 +922,4 @@ void GeneralAnalyticalPointingModel::PrintParameters()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF Alignment.cpp - Released 2018-11-23T18:45:59Z
+// EOF Alignment.cpp - Released 2019-01-21T12:06:42Z

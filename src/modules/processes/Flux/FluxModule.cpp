@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard Flux Process Module Version 01.00.01.0200
+// Standard Flux Process Module Version 01.00.01.0210
 // ----------------------------------------------------------------------------
-// FluxModule.cpp - Released 2018-11-23T18:45:58Z
+// FluxModule.cpp - Released 2019-01-21T12:06:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0200
+#define MODULE_VERSION_BUILD     0210
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2018
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       23
+#define MODULE_RELEASE_YEAR      2019
+#define MODULE_RELEASE_MONTH     1
+#define MODULE_RELEASE_DAY       21
 
 #include "FluxModule.h"
 #include "B3EProcess.h"
@@ -157,4 +157,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF FluxModule.cpp - Released 2018-11-23T18:45:58Z
+// EOF FluxModule.cpp - Released 2019-01-21T12:06:41Z

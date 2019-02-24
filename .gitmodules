@@ -1,0 +1,3 @@
+[submodule "src/modules/processes/contrib/kkretzschmar/INDIClient/indigo"]
+	path = src/modules/processes/contrib/kkretzschmar/INDIClient/indigo
+	url = https://github.com/indigo-astronomy/indigo.git

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.01.00.0228
+// Standard INDIClient Process Module Version 01.01.00.0238
 // ----------------------------------------------------------------------------
-// INDIParamListTypes.h - Released 2018-11-23T18:45:59Z
+// INDIParamListTypes.h - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -60,7 +60,7 @@
 #ifndef __INDIParamListTypes_h
 #define __INDIParamListTypes_h
 
-#include "INDI/indibase.h"
+#include "indigo_bus.h"
 
 #include <pcl/Array.h>
 #include <pcl/String.h>
@@ -90,15 +90,16 @@ struct INDIPropertyListItem
 {
    String    Device;
    String    Property;
-   INDI_PROPERTY_TYPE PropertyType;
+   indigo_property_type PropertyType;
    String    PropertyTypeStr;
    String    Element;
-   unsigned  PropertyState;
+   indigo_property_state  PropertyState;
    String    PropertyNumberFormat;
    String    PropertyLabel;
    String    ElementLabel;
    String    PropertyKey;
    String    PropertyValue;
+   String    PropertyTarget;
    String    NewPropertyValue;
 
    bool operator ==( const INDIPropertyListItem& rhs ) const
@@ -203,4 +204,4 @@ typedef Array<INDINewPropertyListItem> INDINewPropertyListItemArray;
 #endif   // __INDIParamListTypes_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIParamListTypes.h - Released 2018-11-23T18:45:59Z
+// EOF INDIParamListTypes.h - Released 2019-01-21T12:06:42Z

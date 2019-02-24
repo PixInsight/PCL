@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.03.00.0427
+// Standard Image Process Module Version 01.03.00.0437
 // ----------------------------------------------------------------------------
-// StatisticsInterface.cpp - Released 2018-11-23T18:45:58Z
+// StatisticsInterface.cpp - Released 2019-01-21T12:06:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -114,6 +114,7 @@ static const char* s_comboBoxRangeItems[] =
 };
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 class StatisticsTextDialog : public Dialog
 {
@@ -131,7 +132,9 @@ private:
    void __Button_Click( Button& sender, bool checked );
 };
 
-StatisticsTextDialog::StatisticsTextDialog( const String& text ) : Dialog()
+// ----------------------------------------------------------------------------
+
+StatisticsTextDialog::StatisticsTextDialog( const String& text )
 {
    StringList lines;
    text.Break( lines, '\n', true/*trim*/ );
@@ -170,12 +173,15 @@ StatisticsTextDialog::StatisticsTextDialog( const String& text ) : Dialog()
    SetWindowTitle( "Statistics - Text View" );
 }
 
+// ----------------------------------------------------------------------------
+
 void StatisticsTextDialog::__Button_Click( Button& sender, bool checked )
 {
    if ( sender == Close_PushButton )
       Ok();
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 class StatisticsOptionsDialog : public Dialog
@@ -224,6 +230,8 @@ private:
    void __Dialog_Execute( Dialog& sender );
    void __Dialog_Return( Dialog& sender, int retVal );
 };
+
+// ----------------------------------------------------------------------------
 
 StatisticsOptionsDialog::StatisticsOptionsDialog()
 {
@@ -387,6 +395,8 @@ StatisticsOptionsDialog::StatisticsOptionsDialog()
    OnReturn( (Dialog::return_event_handler)&StatisticsOptionsDialog::__Dialog_Return, *this );
 }
 
+// ----------------------------------------------------------------------------
+
 void StatisticsOptionsDialog::__Button_Click( Button& sender, bool checked )
 {
    if ( sender == SelectAll_PushButton )
@@ -511,6 +521,8 @@ void StatisticsOptionsDialog::__Button_Click( Button& sender, bool checked )
    Save_PushButton.Enable( m_checkedCount > 0 );
 }
 
+// ----------------------------------------------------------------------------
+
 void StatisticsOptionsDialog::__Dialog_Execute( Dialog& sender )
 {
    m_checkedCount = 0;
@@ -537,6 +549,8 @@ void StatisticsOptionsDialog::__Dialog_Execute( Dialog& sender )
    OK_PushButton.Enable( m_checkedCount > 0 );
    Save_PushButton.Enable( m_checkedCount > 0 );
 }
+
+// ----------------------------------------------------------------------------
 
 void StatisticsOptionsDialog::__Dialog_Return( Dialog& sender, int retVal )
 {
@@ -574,35 +588,18 @@ void StatisticsOptionsDialog::__Dialog_Return( Dialog& sender, int retVal )
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 #define m_currentView   GUI->AllViews_ViewList.CurrentView()
 
 // ----------------------------------------------------------------------------
 
-StatisticsInterface::StatisticsInterface() :
-   m_doCount( true ),
-   m_doMean( true ),
-   m_doModulus( false ),
-   m_doNorm( false ),
-   m_doSumOfSquares( false ),
-   m_doMeanOfSquares( false ),
-   m_doMedian( true ),
-   m_doVariance( false ),
-   m_doStdDev( false ),
-   m_doAvgDev( true ),
-   m_doMAD( true ),
-   m_doBWMV( false ),
-   m_doPBMV( false ),
-   m_doSn( false ),
-   m_doQn( false ),
-   m_doMinimum( true ),
-   m_doMinimumPos( false ),
-   m_doMaximum( true ),
-   m_doMaximumPos( false ),
-   m_rangeBits( 0 )
+StatisticsInterface::StatisticsInterface()
 {
    TheStatisticsInterface = this;
 }
+
+// ----------------------------------------------------------------------------
 
 StatisticsInterface::~StatisticsInterface()
 {
@@ -610,25 +607,35 @@ StatisticsInterface::~StatisticsInterface()
       delete GUI, GUI = nullptr;
 }
 
+// ----------------------------------------------------------------------------
+
 IsoString StatisticsInterface::Id() const
 {
    return "Statistics";
 }
+
+// ----------------------------------------------------------------------------
 
 MetaProcess* StatisticsInterface::Process() const
 {
    return TheStatisticsProcess;
 }
 
+// ----------------------------------------------------------------------------
+
 const char** StatisticsInterface::IconImageXPM() const
 {
    return StatisticsIcon_XPM;
 }
 
+// ----------------------------------------------------------------------------
+
 InterfaceFeatures StatisticsInterface::Features() const
 {
    return InterfaceFeature::TrackViewButton;
 }
+
+// ----------------------------------------------------------------------------
 
 void StatisticsInterface::TrackViewUpdated( bool active )
 {
@@ -642,6 +649,8 @@ void StatisticsInterface::TrackViewUpdated( bool active )
             UpdateControls();
       }
 }
+
+// ----------------------------------------------------------------------------
 
 bool StatisticsInterface::Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
@@ -657,20 +666,28 @@ bool StatisticsInterface::Launch( const MetaProcess&, const ProcessImplementatio
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 bool StatisticsInterface::IsInstanceGenerator() const
 {
    return false;
 }
+
+// ----------------------------------------------------------------------------
 
 bool StatisticsInterface::CanImportInstances() const
 {
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 bool StatisticsInterface::WantsImageNotifications() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void StatisticsInterface::ImageUpdated( const View& view )
 {
@@ -678,6 +695,8 @@ void StatisticsInterface::ImageUpdated( const View& view )
       if ( view == m_currentView )
          UpdateControls();
 }
+
+// ----------------------------------------------------------------------------
 
 void StatisticsInterface::ImageFocused( const View& view )
 {
@@ -689,6 +708,8 @@ void StatisticsInterface::ImageFocused( const View& view )
       }
 }
 
+// ----------------------------------------------------------------------------
+
 void StatisticsInterface::ImageDeleted( const View& view )
 {
    if ( GUI != nullptr )
@@ -696,10 +717,14 @@ void StatisticsInterface::ImageDeleted( const View& view )
          UpdateControls();
 }
 
+// ----------------------------------------------------------------------------
+
 bool StatisticsInterface::WantsViewPropertyNotifications() const
 {
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 void StatisticsInterface::ViewPropertyDeleted( const View& view, const IsoString& property )
 {
@@ -713,6 +738,8 @@ void StatisticsInterface::ViewPropertyDeleted( const View& view, const IsoString
          }
 }
 
+// ----------------------------------------------------------------------------
+
 void StatisticsInterface::SaveSettings() const
 {
    IsoString key = SettingsKey();
@@ -723,6 +750,8 @@ void StatisticsInterface::SaveSettings() const
    Settings::Write( key + "Range", m_rangeBits );
    // NB: The Contents settings key is written by the Statistics Options dialog.
 }
+
+// ----------------------------------------------------------------------------
 
 void StatisticsInterface::LoadSettings()
 {
@@ -854,6 +883,8 @@ bool StatisticsInterface::ViewPropertyRequired( const IsoString& property ) cons
           m_doMaximum       && property == "Maximum"       ||
           m_doMaximumPos    && property == "MaximumPos";
 }
+
+// ----------------------------------------------------------------------------
 
 void StatisticsInterface::CalculateStatistics()
 {
@@ -1178,6 +1209,8 @@ void StatisticsInterface::UpdateControls()
       GUI->Data_TreeBox.AdjustColumnWidthToContents( i );
 }
 
+// ----------------------------------------------------------------------------
+
 String StatisticsInterface::ToText() const
 {
    if ( m_currentView.IsNull() )
@@ -1233,20 +1266,16 @@ void StatisticsInterface::__ViewList_ViewSelected( ViewList& sender, View& view 
    UpdateControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void StatisticsInterface::__Button_Click( Button& sender, bool /*checked*/ )
 {
    if ( sender == GUI->Scientific_CheckBox )
-   {
       UpdateControls();
-   }
    else if ( sender == GUI->Normalized_CheckBox )
-   {
       UpdateControls();
-   }
    else if ( sender == GUI->Unclipped_CheckBox )
-   {
       UpdateControls();
-   }
    else if ( sender == GUI->ToText_ToolButton )
    {
       StatisticsTextDialog d( ToText() );
@@ -1260,6 +1289,8 @@ void StatisticsInterface::__Button_Click( Button& sender, bool /*checked*/ )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void StatisticsInterface::__ComboBox_ItemSelected( ComboBox& sender, int itemIndex )
 {
    if ( sender == GUI->Range_ComboBox )
@@ -1269,11 +1300,15 @@ void StatisticsInterface::__ComboBox_ItemSelected( ComboBox& sender, int itemInd
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void StatisticsInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
 {
    if ( sender == GUI->AllViews_ViewList || sender == GUI->Data_TreeBox.Viewport() )
       wantsView = true;
 }
+
+// ----------------------------------------------------------------------------
 
 void StatisticsInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
 {
@@ -1370,4 +1405,4 @@ StatisticsInterface::GUIData::GUIData( StatisticsInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF StatisticsInterface.cpp - Released 2018-11-23T18:45:58Z
+// EOF StatisticsInterface.cpp - Released 2019-01-21T12:06:41Z

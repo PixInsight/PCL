@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard RestorationFilters Process Module Version 01.00.05.0336
+// Standard RestorationFilters Process Module Version 01.00.05.0346
 // ----------------------------------------------------------------------------
-// RestorationFilterInterface.cpp - Released 2018-11-23T18:45:58Z
+// RestorationFilterInterface.cpp - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RestorationFilters PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -852,4 +852,4 @@ RestorationFilterInterface::GUIData::GUIData( RestorationFilterInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RestorationFilterInterface.cpp - Released 2018-11-23T18:45:58Z
+// EOF RestorationFilterInterface.cpp - Released 2019-01-21T12:06:42Z

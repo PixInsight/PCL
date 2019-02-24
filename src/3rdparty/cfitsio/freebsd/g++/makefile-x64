@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.107
-# Copyright (C) 2009-2018 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.109
+# Copyright (C) 2009-2019 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2018-11-01T11:08:43.273Z
+# Generated on .... 2019-01-21T12:08:18.874Z
 # Project id ...... cfitsio
 # Project type .... StaticLibrary
 # Platform ........ FreeBSD/g++
@@ -282,9 +282,9 @@ post-build:
 	cp $(OBJ_DIR)/libcfitsio-pxi.a $(PCLLIBDIR64)
 
 ./x64/Release/%.o: ../../%.c
-	clang -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -D"f2cFortran" -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -std=c99 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -D"f2cFortran" -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=skylake -msse4.1 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -std=c99 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x64/Release/zlib/%.o: ../../zlib/%.c
-	clang -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -D"f2cFortran" -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -std=c99 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -D"f2cFortran" -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=skylake -msse4.1 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -std=c99 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

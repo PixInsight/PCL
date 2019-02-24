@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.107
-# Copyright (C) 2009-2018 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.109
+# Copyright (C) 2009-2019 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2018-11-01T11:08:45.843Z
+# Generated on .... 2019-01-21T12:08:21.157Z
 # Project id ...... libraw
 # Project type .... StaticLibrary
 # Platform ........ Windows/vc15
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Additional preprocessor definitions:
+# LIBRAW_LIBRARY_BUILD
 # _CRT_SECURE_NO_WARNINGS
 # LIBRAW_NODLL
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -37,7 +38,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{072BDE61-B2AD-4E75-9765-CE848FD9F7C6}</ProjectGuid>
+    <ProjectGuid>{91B92537-7794-4C93-A378-CC460A803C4E}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -107,7 +108,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;$(PCLSRCDIR)\3rdparty\libraw;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_CRT_SECURE_NO_WARNINGS;LIBRAW_NODLL;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;LIBRAW_LIBRARY_BUILD;_CRT_SECURE_NO_WARNINGS;LIBRAW_NODLL;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -133,7 +134,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;$(PCLSRCDIR)\3rdparty\libraw;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_CRT_SECURE_NO_WARNINGS;LIBRAW_NODLL;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;LIBRAW_LIBRARY_BUILD;_CRT_SECURE_NO_WARNINGS;LIBRAW_NODLL;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -158,7 +159,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;$(PCLSRCDIR)\3rdparty\libraw;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_CRT_SECURE_NO_WARNINGS;LIBRAW_NODLL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;LIBRAW_LIBRARY_BUILD;_CRT_SECURE_NO_WARNINGS;LIBRAW_NODLL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -177,7 +178,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;$(PCLSRCDIR)\3rdparty\libraw;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_CRT_SECURE_NO_WARNINGS;LIBRAW_NODLL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;LIBRAW_LIBRARY_BUILD;_CRT_SECURE_NO_WARNINGS;LIBRAW_NODLL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>

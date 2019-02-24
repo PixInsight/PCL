@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/String.h - Released 2018-11-23T16:14:19Z
+// pcl/String.h - Released 2019-01-21T12:06:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -5604,6 +5604,19 @@ public:
    IsoString( const_c_ustring t, size_type i, size_type n );
 
    /*!
+    * Constructs an %IsoString with a copy of the bytes stored in the specified
+    * ByteArray object.
+    *
+    * Source unsigned 8-bit integers will be reinterpreted as signed 8-bit
+    * characters.
+    */
+   explicit
+   IsoString( const ByteArray& B ) :
+      IsoString( const_iterator( B.Begin() ), const_iterator( B.End() ) )
+   {
+   }
+
+   /*!
     * Constructs an %IsoString as a literal representation of a \c bool value.
     */
    explicit
@@ -6589,7 +6602,7 @@ public:
    }
 
    /*!
-    * Returns an UTF-16 string with a representation of a subset of \a n
+    * Returns a UTF-16 string with a representation of a subset of \a n
     * contiguous UTF-8 characters from this %IsoString object, starting at the
     * \a i-th character.
     *
@@ -6598,7 +6611,7 @@ public:
    ustring_base UTF8ToUTF16( size_type i = 0, size_type n = maxPos ) const; // implemented inline after String
 
    /*!
-    * Returns a copy of this <em>multibyte string</em> converted to an UTF-16
+    * Returns a copy of this <em>multibyte string</em> converted to a UTF-16
     * string. This conversion is dependent on the current locale.
     *
     * In the event of conversion error (if there are invalid multibyte
@@ -7445,7 +7458,7 @@ public:
     * \a length in bytes. The hex-encoded string is composed of hexadecimal
     * digits: 0-9 and a-f, and its length is twice that of the input length.
     *
-    * \sa ToHex( const C& ), ToBase64()
+    * \sa ToHex( const C& ), ToBase64(), ToByteArray()
     */
    static IsoString ToHex( const void* data, size_type length );
 
@@ -7475,7 +7488,7 @@ public:
     * a base 64 representation composed of printable characters. See RFC 1421
     * (http://tools.ietf.org/html/rfc1421).
     *
-    * \sa ToBase64( const C& ), ToHex()
+    * \sa ToBase64( const C& ), ToHex(), ToByteArray()
     */
    static IsoString ToBase64( const void* data, size_type length );
 
@@ -7489,12 +7502,24 @@ public:
     * PCL container semantics: the Begin() and Length() standard container
     * functions are required.
     *
-    * \sa ToBase64( const void*, size_type )
+    * \sa ToBase64( const void*, size_type ), ToByteArray()
     */
    template <class C>
    static IsoString ToBase64( const C& c )
    {
       return ToBase64( c.Begin(), c.Length()*sizeof( *c.Begin() ) );
+   }
+
+   /*!
+    * Returns a ByteArray object that stores a copy of this string. In the
+    * returned array, source 8-bit characters have been reinterpreted as
+    * unsigned 8-bit integers.
+    *
+    * \sa ToBase64(), ToHex()
+    */
+   ByteArray ToByteArray() const
+   {
+      return ByteArray( Begin(), End() );
    }
 
    /*!
@@ -10989,7 +11014,7 @@ public:
    // -------------------------------------------------------------------------
 
    /*!
-    * Conversion of an UTF-8 substring to an UTF-16 string.
+    * Conversion of a UTF-8 substring to a UTF-16 string.
     *
     * Converts a contiguous sequence of \a n characters starting at the \a i-th
     * position of the specified null-terminated UTF-8 \a string. Returns the
@@ -11000,7 +11025,7 @@ public:
    static String UTF8ToUTF16( const_c_string8 string, size_type i = 0, size_type n = maxPos );
 
    /*!
-    * Conversion of an UTF-16 substring to an UTF-8 string.
+    * Conversion of a UTF-16 substring to a UTF-8 string.
     *
     * Converts a contiguous sequence of \a n characters starting at the \a i-th
     * position of the specified null-terminated UTF-16 \a string. Returns the
@@ -11011,7 +11036,7 @@ public:
    static IsoString UTF16ToUTF8( const_c_string string, size_type i = 0, size_type n = maxPos );
 
    /*!
-    * Conversion of an UTF-16 substring to an UTF-32 string.
+    * Conversion of a UTF-16 substring to a UTF-32 string.
     *
     * Converts a contiguous sequence of \a n characters starting at the \a i-th
     * position of the specified null-terminated UTF-16 \a string. Returns the
@@ -11022,7 +11047,7 @@ public:
    static Array<uint32> UTF16ToUTF32( const_c_string string, size_type i = 0, size_type n = maxPos );
 
    /*!
-    * Conversion of an UTF-32 substring to an UTF-16 string.
+    * Conversion of a UTF-32 substring to a UTF-16 string.
     *
     * Converts a contiguous sequence of \a n characters starting at the \a i-th
     * position of the specified null-terminated UTF-32 \a string. Returns the
@@ -11057,7 +11082,7 @@ public:
    IsoString To7BitASCII() const;
 
    /*!
-    * Returns an 8-bit string with an UTF-8 representation of a subset of \a n
+    * Returns an 8-bit string with a UTF-8 representation of a subset of \a n
     * contiguous UTF-16 characters from this %String object, starting at the
     * \a i-th character.
     *
@@ -11146,7 +11171,7 @@ public:
    }
 
    /*!
-    * Returns a dynamic array of 32-bit integers with an UTF-32 representation
+    * Returns a dynamic array of 32-bit integers with a UTF-32 representation
     * of a subset of \a n contiguous UTF-16 characters from this %String
     * object, starting at the \a i-th character. A null terminating character
     * (uint32( 0 ) specifically) is always appended to the resulting array.
@@ -13657,4 +13682,4 @@ inline std::ostream& operator <<( std::ostream& o, const String& s )
 #endif   // __PCL_String_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.h - Released 2018-11-23T16:14:19Z
+// EOF pcl/String.h - Released 2019-01-21T12:06:07Z

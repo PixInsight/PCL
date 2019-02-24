@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.07.00.0308
+// Standard Debayer Process Module Version 01.08.00.0327
 // ----------------------------------------------------------------------------
-// DebayerParameters.cpp - Released 2018-11-23T18:45:59Z
+// DebayerParameters.cpp - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,6 +59,7 @@ namespace pcl
 
 DebayerBayerPatternParameter*	    TheDebayerBayerPatternParameter = nullptr;
 DebayerMethodParameter*           TheDebayerMethodParameter = nullptr;
+DebayerFBDDNoiseReduction*        TheDebayerFBDDNoiseReductionParameter = nullptr;
 DebayerEvaluateNoise*             TheDebayerEvaluateNoiseParameter = nullptr;
 DebayerNoiseEvaluationAlgorithm*  TheDebayerNoiseEvaluationAlgorithmParameter = nullptr;
 DebayerShowImages*                TheDebayerShowImagesParameter = nullptr;
@@ -194,6 +195,33 @@ int DebayerMethodParameter::ElementValue( size_type i ) const
 size_type DebayerMethodParameter::DefaultValueIndex() const
 {
    return Default;
+}
+
+// ----------------------------------------------------------------------------
+
+DebayerFBDDNoiseReduction::DebayerFBDDNoiseReduction( MetaProcess* P ) : MetaInt32( P )
+{
+   TheDebayerFBDDNoiseReductionParameter = this;
+}
+
+IsoString DebayerFBDDNoiseReduction::Id() const
+{
+   return "fbddNoiseReduction";
+}
+
+double DebayerFBDDNoiseReduction::DefaultValue() const
+{
+   return 0;
+}
+
+double DebayerFBDDNoiseReduction::MinimumValue() const
+{
+   return 0;
+}
+
+double DebayerFBDDNoiseReduction::MaximumValue() const
+{
+   return 2;
 }
 
 // ----------------------------------------------------------------------------
@@ -347,6 +375,11 @@ DebayerInputHints::DebayerInputHints( MetaProcess* P ) : MetaString( P )
 IsoString DebayerInputHints::Id() const
 {
    return "inputHints";
+}
+
+String DebayerInputHints::DefaultValue() const
+{
+   return "raw cfa";
 }
 
 // ----------------------------------------------------------------------------
@@ -1048,4 +1081,4 @@ bool DebayerOutputFileNoiseAlgorithmB::IsReadOnly() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DebayerParameters.cpp - Released 2018-11-23T18:45:59Z
+// EOF DebayerParameters.cpp - Released 2019-01-21T12:06:42Z

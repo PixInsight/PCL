@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.01.00.0228
+// Standard INDIClient Process Module Version 01.01.00.0238
 // ----------------------------------------------------------------------------
-// Alignment.h - Released 2018-11-23T18:45:59Z
+// Alignment.h - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -65,6 +65,25 @@
 
 namespace pcl
 {
+
+// ----------------------------------------------------------------------------
+
+// Computes the Greenwich mean sidereal time in hours for the current time point
+// with the approximative formula of https://aa.usno.navy.mil/faq/docs/GAST.php
+double GreenwhichMeanSiderialTime();
+
+// Computes the Greenwhich apparent siderial timee in hours for the current time point
+// with the approximative formula of https://aa.usno.navy.mil/faq/docs/GAST.php
+double GreenwhichApparentSiderialTime();
+
+// Computes the local mean siderial time
+// \param: geographic longitude in degrees (>0 east, <0 west)
+double LocalMeanSiderialTime(double longitude);
+
+// Computes the local apparent siderial time
+// \param: geographic longitude in degrees (>0 east, <0 west)
+double LocalApparentSiderialTime(double longitude);
+
 
 // ----------------------------------------------------------------------------
 
@@ -281,4 +300,4 @@ private:
 #endif   // __Alignment_h
 
 // ----------------------------------------------------------------------------
-// EOF Alignment.h - Released 2018-11-23T18:45:59Z
+// EOF Alignment.h - Released 2019-01-21T12:06:42Z

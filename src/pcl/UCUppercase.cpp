@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/UCUppercase.cpp - Released 2018-11-23T16:14:32Z
+// pcl/UCUppercase.cpp - Released 2019-01-21T12:06:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -735,4 +735,4 @@ char16_type PCL_FUNC PCL_ToUppercase( char16_type c )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/UCUppercase.cpp - Released 2018-11-23T16:14:32Z
+// EOF pcl/UCUppercase.cpp - Released 2019-01-21T12:06:21Z

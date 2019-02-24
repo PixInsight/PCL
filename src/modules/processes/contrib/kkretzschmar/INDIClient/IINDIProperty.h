@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.01.00.0228
+// Standard INDIClient Process Module Version 01.01.00.0238
 // ----------------------------------------------------------------------------
-// IINDIProperty.h - Released 2018-11-23T18:45:59Z
+// IINDIProperty.h - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -61,6 +61,7 @@
 #define __IINDIProperty_h
 
 #include "INDI/indiproperty.h"
+#include "indigo/indigo_bus.h"
 
 #include <pcl/String.h>
 
@@ -70,6 +71,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 typedef INDI_PROPERTY_TYPE INDI_TYPE;
+
 
 class IProperty
 {
@@ -360,6 +362,7 @@ public:
 
    static IProperty* Create( INDI::Property* );
    static IProperty* Create( INDI::Property*, INDI_TYPE );
+
 };
 
 // ----------------------------------------------------------------------------
@@ -369,4 +372,4 @@ public:
 #endif   // __IINDIProperty_h
 
 // ----------------------------------------------------------------------------
-// EOF IINDIProperty.h - Released 2018-11-23T18:45:59Z
+// EOF IINDIProperty.h - Released 2019-01-21T12:06:42Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.01.00.0228
+// Standard INDIClient Process Module Version 01.01.00.0238
 // ----------------------------------------------------------------------------
-// INDIClient.h - Released 2018-11-23T18:45:59Z
+// INDIClient.h - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -53,17 +53,13 @@
 #ifndef __INDIClient_h
 #define __INDIClient_h
 
-#include "IINDIProperty.h"
 #include "INDIParamListTypes.h"
-
-#include "INDI/baseclient.h"
-#include "INDI/basedevice.h"
-#include "INDI/indicom.h"
-#include "INDI/indidevapi.h"
-
-#include "INDI/PCLClientListener.h"
+#include "IIndigoProperty.h"
+#include "IndigoClient.h"
 
 #include <pcl/AutoLock.h>
+
+#include<sstream>
 
 namespace pcl
 {
@@ -163,39 +159,79 @@ public:
    }
 };
 
-class INDIClient : public INDI::BaseClient
+class INDIClient
 {
 public:
 
-   INDIClient( const IsoString& hostName = "localhost", uint32 port = 7624 ) :
-      BaseClient( ),
-      m_verbosity( 1 )
-   {
-	   INDI::IClientListener* listener = new INDI::PclClientListener(this);
-	   setListener(listener);
-	   setServer(hostName.c_str(), port);
+   INDIClient( const IsoString& hostName = "localhost", uint32 port = 7624 ): m_indigoClient("PixInsight", hostName.c_str(), port), m_serverHost(hostName), m_serverPort(port) {
+
+      // register Indigo callbacks
+      registerNewDeviceCallback();
+      registerRemoveDeviceCallback();
+      registerNewPropertyCallback();
+      registerRemovePropertyCallback();
+      registerNewSwitchCallback();
+      registerNewNumberCallback();
+      registerNewTextCallback();
+      registerNewLightCallback();
+      registerNewBlobCallback();
+      registerGetMessageCallback();
+
    }
 
    virtual ~INDIClient()
    {
    }
 
+   bool connectServer(std::ostream& errorMessage) {
+      if (!m_indigoClient.connectServer(errorMessage)){
+         return false;
+      }
+      return true;
+   }
+
+   bool disconnectServer() {
+      if (IsServerConnected()) {
+         return m_indigoClient.disconnectServer();
+      }
+      return true;
+   }
+
    bool IsServerConnected() const
    {
-      // Should be: INDI::BaseClient::serverIsConnected() const
-      return const_cast<INDIClient*>( this )->isConnected();
+      std::ostringstream errorMessage;
+      return m_indigoClient.serverIsConnected(errorMessage);
+   }
+
+   bool IsServerConnected(std::ostream& errorMessage) const
+   {
+      return m_indigoClient.serverIsConnected(errorMessage);
+   }
+
+   bool connectDevice(const IsoString& deviceName)
+   {
+      return m_indigoClient.connectDevice(std::string(deviceName.c_str()));
+   }
+
+   bool disconnectDevice(const IsoString& deviceName)
+   {
+      return m_indigoClient.disconnectDevice(std::string(deviceName.c_str()));
+   }
+
+   bool IsDeviceConnected(const IsoString& deviceName) const;
+
+   void setServer(const char *hostname, unsigned int port) {
+
    }
 
    IsoString HostName() const
    {
-      // Should be: INDI::BaseClient::getHost() const
-      return const_cast<INDIClient*>( this )->getHost();
+      return m_serverHost;
    }
 
    uint32 Port() const
    {
-      // Should be: INDI::BaseClient::getPort() const
-      return uint32( const_cast<INDIClient*>( this )->getPort() );
+      return m_serverPort;
    }
 
    ExclDeviceList DeviceList()
@@ -235,6 +271,10 @@ public:
    }
 
    bool GetPropertyItem( const String& device, const String& property, const String& element,
+                         INDIPropertyListItem& result,
+                         bool formatted = true ) const;
+
+   bool GetPropertyTargetItem( const String& device, const String& property, const String& element,
                          INDIPropertyListItem& result,
                          bool formatted = true ) const;
 
@@ -363,24 +403,18 @@ public:
    static INDIClient* NewClient( const IsoString& hostName = "localhost", uint32 port = 7624 );
    static void DestroyClient();
 
-protected:
 
-   // Reimplemented from base class
-   void newDevice( INDI::BaseDevice* ) override;
-   void removeDevice( INDI::BaseDevice* ) override;
-   void newProperty( INDI::Property* ) override;
-   void removeProperty( INDI::Property* ) override;
-   void newBLOB( IBLOB* ) override;
-   void newSwitch( ISwitchVectorProperty* ) override;
-   void newNumber( INumberVectorProperty* ) override;
-   void newText( ITextVectorProperty* ) override;
-   void newLight( ILightVectorProperty* );
-   void newMessage( INDI::BaseDevice*, int messageID ) override;
-   void serverConnected() override;
-   void serverDisconnected( int exit_code ) override;
+
+
+   void serverConnected();
+   void serverDisconnected( int exit_code );
 
 private:
+   IndigoClient              m_indigoClient;
 
+   IsoString                 m_serverHost;
+   uint32_t                  m_serverPort;
+   bool                      m_serverIsConnected;
    INDIDeviceListItemArray   m_deviceList;
    mutable Mutex             m_deviceListMutex;
    INDIPropertyListItemArray m_propertyList;
@@ -395,6 +429,18 @@ private:
    INDIPropertyListItemArray m_removedProperties;
    INDIPropertyListItemArray m_updatedProperties;
    mutable Mutex             m_mutex;
+
+
+   void registerNewDeviceCallback();
+   void registerRemoveDeviceCallback();
+   void registerNewPropertyCallback();
+   void registerRemovePropertyCallback();
+   void registerNewSwitchCallback();
+   void registerNewNumberCallback();
+   void registerNewTextCallback();
+   void registerNewLightCallback();
+   void registerNewBlobCallback();
+   void registerGetMessageCallback();
 
    class PropertyListMutator
    {
@@ -456,7 +502,7 @@ private:
       }
    };
 
-   void ApplyToPropertyList( INDI::Property*, const PropertyListMutator& );
+   void ApplyToPropertyList( indigo_property*, const PropertyListMutator& );
 };
 
 // ----------------------------------------------------------------------------
@@ -466,4 +512,4 @@ private:
 #endif   // __INDIClient_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIClient.h - Released 2018-11-23T18:45:59Z
+// EOF INDIClient.h - Released 2019-01-21T12:06:42Z

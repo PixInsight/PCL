@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.02.0394
+// Standard Geometry Process Module Version 01.02.02.0404
 // ----------------------------------------------------------------------------
-// ChannelMatchProcess.cpp - Released 2018-11-23T18:45:58Z
+// ChannelMatchProcess.cpp - Released 2019-01-21T12:06:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -130,4 +130,4 @@ bool ChannelMatchProcess::NeedsValidation() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ChannelMatchProcess.cpp - Released 2018-11-23T18:45:58Z
+// EOF ChannelMatchProcess.cpp - Released 2019-01-21T12:06:41Z

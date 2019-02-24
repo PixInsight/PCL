@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/File.cpp - Released 2018-11-23T16:14:32Z
+// pcl/File.cpp - Released 2019-01-21T12:06:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -2132,6 +2132,23 @@ String File::SystemCacheDirectory()
 {
 #ifdef __PCL_MACOSX
 
+# ifdef _CS_DARWIN_USER_CACHE_DIR
+
+   size_t size = ::confstr( _CS_DARWIN_USER_CACHE_DIR, nullptr/*buf*/, 0/*len*/ );
+   if ( size > 0 )
+   {
+      IsoString cacheDir;
+      cacheDir.Reserve( size+16 );
+      size = ::confstr( _CS_DARWIN_USER_CACHE_DIR, cacheDir.Begin(), size+16 );
+      if ( size > 0 && size <= cacheDir.Capacity() )
+      {
+         cacheDir.SetLength( size );
+         return TrailingSlashStripped( cacheDir.UTF8ToUTF16() );
+      }
+   }
+
+# endif
+
    String dir = File::FullPath( String::UTF8ToUTF16( ::getenv( "HOME" ) ) );
    if ( !dir.IsEmpty() )
    {
@@ -2500,4 +2517,4 @@ bool File::IsValidHandle( handle h ) const
 }  // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/File.cpp - Released 2018-11-23T16:14:32Z
+// EOF pcl/File.cpp - Released 2019-01-21T12:06:21Z

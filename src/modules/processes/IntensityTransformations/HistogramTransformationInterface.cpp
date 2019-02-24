@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0420
+// Standard IntensityTransformations Process Module Version 01.07.01.0430
 // ----------------------------------------------------------------------------
-// HistogramTransformationInterface.cpp - Released 2018-11-23T18:45:58Z
+// HistogramTransformationInterface.cpp - Released 2019-01-21T12:06:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -114,48 +114,14 @@ static const int s_maxZoom = 999;
 
 HistogramTransformationInterface::HistogramTransformationInterface() :
    m_instance( TheHistogramTransformationProcess ),
-   m_plotResolution( 256 ),
-   m_mode( ReadoutMode ),
-   m_savedMode( NoMode ),
-   m_readoutMode( NormalReadout ),
-   m_channel( 3 ), // 3=RGB/K
-   m_graphStyle( LineStyle ),
-   m_shadowsAutoClipping( 0.01 ),
-   m_highlightsAutoClipping( 0.01 ),
    m_shadowsCount( uint64( 0 ), 5 ),
    m_highlightsCount( uint64( 0 ), 5 ),
-   m_readoutActive( false ),
    m_inputReadouts( 0.0, 5 ),
    m_outputReadouts( 0.0, 5 ),
-   m_inputZoomX( 1 ),
-   m_inputZoomY( 1 ),
-   m_outputZoomX( 1 ),
-   m_outputZoomY( 1 ),
-   m_wheelSteps( 0 ),
-   m_rejectSaturated( true ),
-   m_rawRGBInput( true ),
-   m_lockOutputChannel( true ),
-   m_showMTF( true ),
-   m_showGrid( true ),
-   m_sliderBeingDragged( NoSlider ),
-   m_panning( 0 ),
-   m_panOrigin( 0 ),
-   m_cursorStatus( NoCursor ),
-   m_cursorPos( -1 ),
-   m_histogramPos( 0 ),
    m_inputBitmap( Bitmap::Null() ),
-   m_inputDirty( true ),
    m_outputBitmap( Bitmap::Null() ),
-   m_outputDirty( true ),
    m_slidersBitmap( Bitmap::Null() ),
-   m_slidersDirty( true ),
-   m_outputSectionVisible( true ),
-   m_rangeSectionVisible( false ),
-   m_channelColors( 5 ),
-   m_minHistogramWidth( 400 ),
-   m_minHistogramHeight( 200 ),
-   m_sliderControlSize( 12 ),
-   m_settingUp( false )
+   m_channelColors( 5 )
 {
    TheHistogramTransformationInterface = this;
 
@@ -168,6 +134,8 @@ HistogramTransformationInterface::HistogramTransformationInterface() :
    m_gridColor1       = RGBAColor( 0x37, 0x37, 0x37 );
    m_backgroundColor  = RGBAColor( 0x00, 0x00, 0x00 );
 }
+
+// ----------------------------------------------------------------------------
 
 HistogramTransformationInterface::~HistogramTransformationInterface()
 {
@@ -443,7 +411,7 @@ void HistogramTransformationInterface::ImageFocused( const View& v )
    if ( GUI != nullptr )
       if ( IsTrackViewActive() )
       {
-         GUI->AllViews_ViewList.SelectView( v ); // normally not necessary, but we can invoke this f() directly
+         GUI->AllViews_ViewList.SelectView( v ); // because we can invoke ImageFocused() directly
          if ( !m_currentView.IsNull() && !m_currentView.HasProperty( "Histogram16" ) )
             m_currentView.ComputeProperty( "Histogram16" );
          else
@@ -1431,6 +1399,8 @@ void HistogramTransformationInterface::PlotGrid(
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::PlotHistogram(
    Graphics& g, const Rect& r, const Histogram& H, count_type peak, int width, int height, int hZoom, int vZoom )
 {
@@ -1480,6 +1450,8 @@ void HistogramTransformationInterface::PlotHistogram(
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::PlotScale( Graphics& g, const Rect& r, int width )
 {
    int w = r.Width();
@@ -1499,6 +1471,8 @@ void HistogramTransformationInterface::PlotScale( Graphics& g, const Rect& r, in
    g.FillRect( 0, 0, w, h, LinearGradientBrush( 0, 0, w, 0, stops ) );
 }
 
+// ----------------------------------------------------------------------------
+
 RGBA HistogramTransformationInterface::HandlerColor( double v ) const
 {
    // Ensure visibility of handlers on R, G, B and gray backgrounds.
@@ -1506,6 +1480,8 @@ RGBA HistogramTransformationInterface::HandlerColor( double v ) const
       return 0xFF000000;
    return 0xFFFFFFFF;
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::PlotHandler( Graphics& g, double v, int x0, int width )
 {
@@ -1524,6 +1500,8 @@ void HistogramTransformationInterface::PlotHandler( Graphics& g, double v, int x
    g.DrawLine( x, 0, x, h-h2-1 );
    g.DrawPolyline( notch );
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::PlotMidtonesTransferCurve( Graphics& g, const Rect& r, int width, int height )
 {
@@ -1565,6 +1543,8 @@ void HistogramTransformationInterface::PlotMidtonesTransferCurve( Graphics& g, c
    g.DrawPolyline( points );
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::PlotReadouts( Graphics& g,
                         const Bitmap& bmp, const Rect& r, const DVector& readouts, int width, int height )
 {
@@ -1594,6 +1574,8 @@ void HistogramTransformationInterface::PlotReadouts( Graphics& g,
       }
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::PlotCursor( Graphics& g, const Rect& r )
 {
@@ -1632,6 +1614,8 @@ void HistogramTransformationInterface::PlotCursor( Graphics& g, const Rect& r )
       g.DrawBitmap( x - (csr.Width() >> 1), y - (csr.Height() >> 1), csr );
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::RegenerateInputViewport()
 {
@@ -1680,6 +1664,12 @@ void HistogramTransformationInterface::RegenerateInputViewport()
    {
       ImageVariant image = m_currentView.Image();
 
+      // ### N.B. Detect rare cases where a paint event is sent before we have
+      //        regenerated histogram data; e.g. Paint() before ImageFocused().
+      if ( int( H.Length() ) != image->NumberOfNominalChannels()
+                             + (image->HasAlphaChannels() ? 1 : 0) )
+         return;
+
       Bitmap bmp( w0, h0, BitmapFormat::RGB32 );
       {
          bmp.Fill( 0xFF000000 );
@@ -1727,6 +1717,8 @@ void HistogramTransformationInterface::RegenerateInputViewport()
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::RegenerateOutputViewport()
 {
    Rect r0 = GUI->OutputHistogram_ScrollBox.Viewport().BoundsRect();
@@ -1759,6 +1751,12 @@ void HistogramTransformationInterface::RegenerateOutputViewport()
    if ( !m_outputData.IsEmpty() )
    {
       ImageVariant image = m_currentView.Image();
+
+      // ### N.B. Detect rare cases where a paint event is sent before we have
+      //        regenerated histogram data; e.g. Paint() before ImageFocused().
+      if ( int( m_outputData.Length() ) != image->NumberOfNominalChannels()
+                                        + (image->HasAlphaChannels() ? 1 : 0) )
+         return;
 
       Bitmap bmp( w0, h0, BitmapFormat::RGB32 );
       {
@@ -1807,6 +1805,8 @@ void HistogramTransformationInterface::RegenerateOutputViewport()
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::RegenerateSlidersViewport()
 {
    Rect r0 = GUI->HistogramSliders_Control.BoundsRect();
@@ -1836,6 +1836,8 @@ void HistogramTransformationInterface::__ViewList_ViewSelected( ViewList&, View&
    else
       SynchronizeWithCurrentView();
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__Histogram_Paint( Control& sender, const pcl::Rect& updateRect )
 {
@@ -1913,6 +1915,8 @@ void HistogramTransformationInterface::__Histogram_Paint( Control& sender, const
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__Sliders_Paint( Control& sender, const pcl::Rect& updateRect )
 {
    if ( m_slidersDirty )
@@ -1932,6 +1936,8 @@ void HistogramTransformationInterface::__Sliders_Paint( Control& sender, const p
    PlotHandler( g, c0 + m*(c1 - c0), x0, w );
    PlotHandler( g, c1, x0, w );
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__Histogram_Resize( Control& sender,
                                              int/*newWidth*/, int/*newHeight*/, int/*oldWidth*/, int/*oldHeight*/ )
@@ -1959,6 +1965,8 @@ void HistogramTransformationInterface::__Histogram_Resize( Control& sender,
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__Histogram_ScrollPosUpdated( ScrollBox& sender, int pos )
 {
    if ( sender == GUI->InputHistogram_ScrollBox )
@@ -1966,6 +1974,8 @@ void HistogramTransformationInterface::__Histogram_ScrollPosUpdated( ScrollBox& 
    else if ( sender == GUI->OutputHistogram_ScrollBox )
       UpdateOutputHistogram();
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__Histogram_Enter( Control& sender )
 {
@@ -1976,12 +1986,16 @@ void HistogramTransformationInterface::__Histogram_Enter( Control& sender )
    m_cursorPos = -1;
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__Histogram_Leave( Control& sender )
 {
    m_cursorStatus = NoCursor;
    UpdateHistogramInfo();
    sender.Update();
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__Histogram_MousePress( Control& sender,
                                              const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
@@ -2035,6 +2049,8 @@ void HistogramTransformationInterface::__Histogram_MousePress( Control& sender,
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__Histogram_MouseRelease( Control& sender,
                                              const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
 {
@@ -2046,6 +2062,8 @@ void HistogramTransformationInterface::__Histogram_MouseRelease( Control& sender
 
    m_panning = 0;
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__Histogram_MouseMove( Control& sender,
                                              const pcl::Point& pos, unsigned buttons, unsigned modifiers )
@@ -2107,6 +2125,8 @@ void HistogramTransformationInterface::__Histogram_MouseMove( Control& sender,
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__Histogram_MouseWheel( Control& sender,
                                              const pcl::Point& pos, int delta, unsigned buttons, unsigned modifiers )
 {
@@ -2136,6 +2156,8 @@ void HistogramTransformationInterface::__Histogram_MouseWheel( Control& sender,
    }
 }
 
+// ----------------------------------------------------------------------------
+
 HistogramTransformationInterface::slider_id HistogramTransformationInterface::FindHandler( double v ) const
 {
    double c0 = m_instance.ShadowsClipping( m_channel );
@@ -2161,11 +2183,15 @@ HistogramTransformationInterface::slider_id HistogramTransformationInterface::Fi
    return C1Slider;
 }
 
+// ----------------------------------------------------------------------------
+
 double HistogramTransformationInterface::SliderToHistogram( int x ) const
 {
    return double( x + GUI->InputHistogram_ScrollBox.HorizontalScrollPosition() ) /
                (GUI->HistogramSliders_Control.Width()*m_inputZoomX - 1);
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__Sliders_MousePress( Control& sender,
                                              const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
@@ -2178,12 +2204,16 @@ void HistogramTransformationInterface::__Sliders_MousePress( Control& sender,
    __Sliders_MouseMove( sender, pos, buttons, modifiers );
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__Sliders_MouseRelease(
    Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
 {
    __Sliders_MouseMove( sender, pos, buttons, modifiers );
    m_sliderBeingDragged = NoSlider;
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__Sliders_MouseMove( Control& sender,
                                              const pcl::Point& pos, unsigned buttons, unsigned modifiers )
@@ -2215,6 +2245,8 @@ void HistogramTransformationInterface::__Sliders_MouseMove( Control& sender,
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__HistogramParameter_ValueUpdated( NumericEdit& sender, double value )
 {
    if ( sender == GUI->ShadowsClipping_NumericEdit )
@@ -2229,6 +2261,8 @@ void HistogramTransformationInterface::__HistogramParameter_ValueUpdated( Numeri
       SetHighRange( value );
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__Reset_ButtonClick( Button& sender, bool /*checked*/ )
 {
    if ( sender == GUI->ShadowsClippingReset_ToolButton )
@@ -2242,6 +2276,8 @@ void HistogramTransformationInterface::__Reset_ButtonClick( Button& sender, bool
    else if ( sender == GUI->HighRangeReset_ToolButton )
       SetHighRange( 1 );
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__AutoZero_ButtonClick( Button& sender, bool /*checked*/ )
 {
@@ -2282,6 +2318,8 @@ void HistogramTransformationInterface::__AutoZero_ButtonClick( Button& sender, b
    UpdateClippingCountControls();
    UpdateRealTimePreview();
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__AutoClip_ButtonClick( Button& sender, bool /*checked*/ )
 {
@@ -2327,11 +2365,15 @@ void HistogramTransformationInterface::__AutoClip_ButtonClick( Button& sender, b
    UpdateRealTimePreview();
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__AutoClipSetup_ButtonClick( Button& /*sender*/, bool /*checked*/ )
 {
    HistogramAutoClipSetupDialog dlg;
    dlg.Execute();
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__Mode_ButtonClick( Button& sender, bool /*checked*/ )
 {
@@ -2345,6 +2387,8 @@ void HistogramTransformationInterface::__Mode_ButtonClick( Button& sender, bool 
       SetMode( PanMode );
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__ReadoutMode_ButtonClick( Button& sender, bool /*checked*/ )
 {
    if ( sender == GUI->NormalReadout_ToolButton )
@@ -2356,6 +2400,8 @@ void HistogramTransformationInterface::__ReadoutMode_ButtonClick( Button& sender
    else if ( sender == GUI->WhitePointReadout_ToolButton )
       SetReadoutMode( WhitePointReadout );
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__Channel_ButtonClick( Button& sender, bool /*checked*/ )
 {
@@ -2370,6 +2416,7 @@ void HistogramTransformationInterface::__Channel_ButtonClick( Button& sender, bo
    else if ( sender == GUI->A_ToolButton )
       SetChannel( 4 );
 }
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__Zoom_ButtonClick( Button& sender, bool /*checked*/ )
 {
@@ -2379,6 +2426,8 @@ void HistogramTransformationInterface::__Zoom_ButtonClick( Button& sender, bool 
       SetOutputZoom( 1, 1 );
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__Zoom_ValueUpdated( SpinBox& sender, int value )
 {
@@ -2392,21 +2441,29 @@ void HistogramTransformationInterface::__Zoom_ValueUpdated( SpinBox& sender, int
       SetOutputZoom( m_outputZoomX, value );
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__PlotResolution_ItemSelected( ComboBox& /*sender*/, int itemIndex )
 {
    if ( itemIndex >= 0 )
       SetPlotResolution( s_plotResolutions[itemIndex] );
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__GraphStyle_ItemSelected( ComboBox& /*sender*/, int itemIndex )
 {
    SetGraphStyle( graph_style( itemIndex ) );
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__RejectSaturated_ButtonClick( Button& /*sender*/, bool checked )
 {
    SetRejectSaturated( checked );
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__ShowRawRGB_ButtonClick( Button& /*sender*/, bool checked )
 {
@@ -2415,11 +2472,15 @@ void HistogramTransformationInterface::__ShowRawRGB_ButtonClick( Button& /*sende
       UpdateInputHistogram();
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__LockOutput_ButtonClick( Button& /*sender*/, bool checked )
 {
    m_lockOutputChannel = checked;
    UpdateOutputHistogram();
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__ShowCurve_ButtonClick( Button& /*sender*/, bool checked )
 {
@@ -2427,11 +2488,15 @@ void HistogramTransformationInterface::__ShowCurve_ButtonClick( Button& /*sender
    UpdateInputHistogram();
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__ShowGrid_ButtonClick( Button& /*sender*/, bool checked )
 {
    m_showGrid = checked;
    UpdateHistograms();
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__ToggleExtension_ButtonClick( Button& sender, bool /*checked*/ )
 {
@@ -2440,6 +2505,8 @@ void HistogramTransformationInterface::__ToggleExtension_ButtonClick( Button& se
    else if ( sender == GUI->ShowRangeControls_ToolButton )
       ToggleRangeControls();
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__KeyPress( Control& sender, int key, unsigned modifiers, bool& wantsKey )
 {
@@ -2516,6 +2583,8 @@ void HistogramTransformationInterface::__KeyPress( Control& sender, int key, uns
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__KeyRelease( Control& sender, int key, unsigned modifiers, bool& wantsKey )
 {
    bool spaceBar = (modifiers & KeyModifier::SpaceBar) != 0;
@@ -2579,12 +2648,16 @@ void HistogramTransformationInterface::__KeyRelease( Control& sender, int key, u
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void HistogramTransformationInterface::__ViewDrag( Control& sender,
                                              const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
 {
    if ( sender == GUI->AllViews_ViewList )
       wantsView = true;
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__ViewDrop( Control& sender,
                                              const Point& pos, const View& view, unsigned modifiers )
@@ -2598,6 +2671,8 @@ void HistogramTransformationInterface::__ViewDrop( Control& sender,
       SynchronizeWithCurrentView();
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::__UpdateRealTimePreview_Timer( Timer& sender )
 {
@@ -3107,4 +3182,4 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HistogramTransformationInterface.cpp - Released 2018-11-23T18:45:58Z
+// EOF HistogramTransformationInterface.cpp - Released 2019-01-21T12:06:41Z

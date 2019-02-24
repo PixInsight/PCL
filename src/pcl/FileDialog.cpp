@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/FileDialog.cpp - Released 2018-11-23T16:14:32Z
+// pcl/FileDialog.cpp - Released 2019-01-21T12:06:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,6 +54,11 @@
 
 #include <pcl/api/APIInterface.h>
 #include <pcl/api/APIException.h>
+
+/*
+ * Maximum length of a FileDialog path in characters, as of core version 1.8.6.
+ */
+#define MAX_PATH_LENGTH 16384
 
 namespace pcl
 {
@@ -280,7 +285,7 @@ public:
 
 // ----------------------------------------------------------------------------
 
-OpenFileDialog::OpenFileDialog() : FileDialog()
+OpenFileDialog::OpenFileDialog()
 {
    q = new OpenFileDialogPrivate();
    p->caption = "Open File";
@@ -329,7 +334,7 @@ bool OpenFileDialog::Execute()
    String apiFilters = p->MakeAPIFilters();
 
    String fileName;
-   fileName.Reserve( 8192 );
+   fileName.Reserve( MAX_PATH_LENGTH );
    *fileName.Begin() = CharTraits::Null();
 
    if ( q->multipleSelections )
@@ -392,7 +397,7 @@ public:
 
 // ----------------------------------------------------------------------------
 
-SaveFileDialog::SaveFileDialog() : FileDialog()
+SaveFileDialog::SaveFileDialog()
 {
    q = new SaveFileDialogPrivate();
    p->caption = "Save File As";
@@ -431,7 +436,7 @@ bool SaveFileDialog::Execute()
 {
    String apiFilters = p->MakeAPIFilters();
 
-   q->fileName.Reserve( 8192 );
+   q->fileName.Reserve( MAX_PATH_LENGTH );
    *q->fileName.Begin() = CharTraits::Null();
 
    if ( (*API->Dialog->ExecuteSaveFileDialog)( q->fileName.Begin(),
@@ -469,7 +474,7 @@ public:
 
 // ----------------------------------------------------------------------------
 
-GetDirectoryDialog::GetDirectoryDialog() : FileDialog()
+GetDirectoryDialog::GetDirectoryDialog()
 {
    q = new GetDirectoryDialogPrivate();
    p->caption = "Select Directory";
@@ -485,7 +490,7 @@ GetDirectoryDialog::~GetDirectoryDialog()
 
 bool GetDirectoryDialog::Execute()
 {
-   q->directory.Reserve( 8192 );
+   q->directory.Reserve( MAX_PATH_LENGTH );
    *q->directory.Begin() = CharTraits::Null();
 
    if ( (*API->Dialog->ExecuteGetDirectoryDialog)( q->directory.Begin(),
@@ -510,4 +515,4 @@ String GetDirectoryDialog::Directory() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileDialog.cpp - Released 2018-11-23T16:14:32Z
+// EOF pcl/FileDialog.cpp - Released 2019-01-21T12:06:21Z

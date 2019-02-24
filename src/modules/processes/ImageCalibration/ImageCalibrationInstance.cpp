@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.01.0352
+// Standard ImageCalibration Process Module Version 01.04.01.0362
 // ----------------------------------------------------------------------------
-// ImageCalibrationInstance.cpp - Released 2018-11-23T18:45:58Z
+// ImageCalibrationInstance.cpp - Released 2019-01-21T12:06:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -287,11 +287,15 @@ static void SubtractOverscan( Image& target, const ImageCalibrationInstance::ove
    }
 }
 
+// ----------------------------------------------------------------------------
+
 #define LOOP         while ( t < t1 )
 #define BIAS         *b++
 #define DARK         *d++
 #define SCALED_DARK  k * *d++
 #define FLAT         s/Max( *f++, TINY )
+
+// ----------------------------------------------------------------------------
 
 /*
  * Bias subtraction
@@ -306,6 +310,8 @@ static void SubtractBias( Image& target, const Image& bias )
       LOOP *t++ -= BIAS;
    }
 }
+
+// ----------------------------------------------------------------------------
 
 /*
  * Dark subtraction
@@ -327,6 +333,8 @@ static void SubtractDark( Image& target, const Image& dark, const FVector& dScal
 }
 */
 
+// ----------------------------------------------------------------------------
+
 /*
  * One-channel dark subtraction with scaling
  */
@@ -337,6 +345,8 @@ static void SubtractOneChannelDark( Image& target, int tCh, const Image& dark, i
    const float* d  = dark.PixelData( dCh );
    LOOP *t++ -= SCALED_DARK;
 }
+
+// ----------------------------------------------------------------------------
 
 /*
  * Full calibration routine
@@ -350,9 +360,9 @@ static void Calibrate( Image& target,
    static const float TINY = 1.0e-15F; // to prevent divisions by zero flat pixels
 
    int nt = target.NumberOfChannels();
-   int nb = (bias != 0) ? bias->NumberOfChannels() : 0;
-   int nd = (dark != 0) ? dark->NumberOfChannels() : 0;
-   int nf = (flat != 0) ? flat->NumberOfChannels() : 0;
+   int nb = (bias != nullptr) ? bias->NumberOfChannels() : 0;
+   int nd = (dark != nullptr) ? dark->NumberOfChannels() : 0;
+   int nf = (flat != nullptr) ? flat->NumberOfChannels() : 0;
 
    for ( int c = 0; c < nt; ++c )
    {
@@ -360,26 +370,26 @@ static void Calibrate( Image& target,
 
             float* t  = target.PixelData( c );
             float* t1 = t + target.NumberOfPixels();
-      const float* b  = (bias != 0) ? bias->PixelData( Min( c, nb-1 ) ) : 0;
-      const float* d  = (dark != 0) ? dark->PixelData( Min( c, nd-1 ) ) : 0;
-      const float* f  = (flat != 0) ? flat->PixelData( Min( c, nf-1 ) ) : 0;
-            float  k  = (dark != 0) ? dScale[c] : 0;
-            float  s  = (flat != 0) ? fScale[c] : 0;
+      const float* b  = (bias != nullptr) ? bias->PixelData( Min( c, nb-1 ) ) : nullptr;
+      const float* d  = (dark != nullptr) ? dark->PixelData( Min( c, nd-1 ) ) : nullptr;
+      const float* f  = (flat != nullptr) ? flat->PixelData( Min( c, nf-1 ) ) : nullptr;
+            float  k  = (dark != nullptr) ? dScale[c] : 0;
+            float  s  = (flat != nullptr) ? fScale[c] : 0;
 
-      if ( b != 0 )
+      if ( b != nullptr )
       {
-         if ( d != 0 )
+         if ( d != nullptr )
          {
             if ( k != 1 )
             {
-               if ( f != 0 )
+               if ( f != nullptr )
                   LOOP *t = (*t - BIAS - SCALED_DARK) * FLAT, ++t;
                else
                   LOOP *t++ -= BIAS + SCALED_DARK;
             }
             else
             {
-               if ( f != 0 )
+               if ( f != nullptr )
                   LOOP *t = (*t - BIAS - DARK) * FLAT, ++t;
                else
                   LOOP *t++ -= BIAS + DARK;
@@ -387,7 +397,7 @@ static void Calibrate( Image& target,
          }
          else
          {
-            if ( f != 0 )
+            if ( f != nullptr )
                LOOP *t = (*t - BIAS) * FLAT, ++t;
             else
                LOOP *t++ -= BIAS;
@@ -395,18 +405,18 @@ static void Calibrate( Image& target,
       }
       else
       {
-         if ( d != 0 )
+         if ( d != nullptr )
          {
             if ( k != 1 )
             {
-               if ( f != 0 )
+               if ( f != nullptr )
                   LOOP *t = (*t - SCALED_DARK) * FLAT, ++t;
                else
                   LOOP *t++ -= SCALED_DARK;
             }
             else
             {
-               if ( f != 0 )
+               if ( f != nullptr )
                   LOOP *t = (*t - DARK) * FLAT, ++t;
                else
                   LOOP *t++ -= DARK;
@@ -414,7 +424,7 @@ static void Calibrate( Image& target,
          }
          else
          {
-            if ( f != 0 )
+            if ( f != nullptr )
                LOOP *t++ *= FLAT;
          }
       }
@@ -466,6 +476,8 @@ static double TestDarkOptimization( float k, const Image& target, const Image& d
    W << t;
    return W.NoiseKSigma( 0 ) /*/__5x5B3Spline_kj[0]*/; // we can work with unscaled noise estimates here
 }
+
+// ----------------------------------------------------------------------------
 
 /*
  * Initial bracketing of the dark optimization factor.
@@ -574,6 +586,8 @@ static void BracketDarkOptimization( float& ax, float& bx, float& cx,
       fc = fu;
    }
 }
+
+// ----------------------------------------------------------------------------
 
 /*
  * Optimal dark scaling factor by multiscale noise evaluation and golden
@@ -696,7 +710,6 @@ static float DarkOptimization( const Image& target, const Image& dark, int c, bo
 
    /*
     * Return the dark scaling factor that minimizes noise in the target image.
-    * ### NB: The dark frame optimization factor cannot be negative.
     */
    return Max( .0F, (f1 < f2) ? x1 : x2 );
 }
@@ -737,6 +750,8 @@ static FVector OptimizeDark( const Image& target, const Image& optimizingDark, b
 
    return K;
 }
+
+// ----------------------------------------------------------------------------
 
 /*
  * Estimation of the standard deviation of the noise, assuming a Gaussian
@@ -842,14 +857,14 @@ static void EvaluateNoise( FVector& noiseEstimates, FVector& noiseFractions, Str
 
 static Image* LoadImageFile( FileFormatInstance& file, int index = 0 )
 {
-   // Select the image at index
+   // Select the image at the specified index.
    if ( !file.SelectImage( index ) )
       throw CaughtException();
 
-   // Create a shared image, 32-bit floating point
+   // Create a shared image, 32-bit floating point.
    Image* image = new Image( (void*)0, 0, 0 );
 
-   // Read the image
+   // Read the image.
    if ( !file.ReadImage( *image ) )
       throw CaughtException();
 
@@ -868,7 +883,7 @@ static String UniqueFilePath( const String& filePath )
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
-// Calibration Thread
+// Image Calibration Thread
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
@@ -912,7 +927,7 @@ public:
    {
    }
 
-   virtual void Run()
+   void Run() override
    {
       try
       {
@@ -1086,6 +1101,8 @@ void ImageCalibrationInstance::ValidateImageGeometry( const Image* image, bool u
    }
 }
 
+// ----------------------------------------------------------------------------
+
 /*
  * Routine to group overscan source regions with the same target regions.
  */
@@ -1114,6 +1131,8 @@ ImageCalibrationInstance::BuildOverscanTable() const
 
    return O;
 }
+
+// ----------------------------------------------------------------------------
 
 /*
  * Subtraction of an input pedestal to get zero-based pixel values.
@@ -1153,6 +1172,8 @@ void ImageCalibrationInstance::SubtractPedestal( Image* image, FileFormatInstanc
    }
 }
 
+// ----------------------------------------------------------------------------
+
 /*
  * Read a source calibration frame.
  */
@@ -1167,7 +1188,7 @@ Image* ImageCalibrationInstance::LoadCalibrationFrame( const String& filePath, b
     * Find out an installed file format that can read image files with the
     * specified extension ...
     */
-   FileFormat format( File::ExtractExtension( filePath ), true, false );
+   FileFormat format( File::ExtractExtension( filePath ), true/*read*/, false/*write*/ );
 
    /*
     * ... and create a format instance (usually a disk file) to access this
@@ -1226,6 +1247,8 @@ Image* ImageCalibrationInstance::LoadCalibrationFrame( const String& filePath, b
 
    return image;
 }
+
+// ----------------------------------------------------------------------------
 
 /*
  * Read a target frame file. Returns a list of calibration threads ready to
@@ -1326,6 +1349,8 @@ ImageCalibrationInstance::LoadTargetFrame( const String& filePath, const Calibra
       throw;
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void ImageCalibrationInstance::WriteCalibratedImage( const CalibrationThread* t )
 {
@@ -1614,8 +1639,8 @@ void ImageCalibrationInstance::WriteCalibratedImage( const CalibrationThread* t 
       if ( evaluateNoise )
       {
          /*
-          * ### NB: Remove other existing NOISExxx keywords.
-          *         *Only* our NOISExxx keywords must be present in the header.
+          * ### N.B.: Remove other existing NOISExxx keywords.
+          *           Only our NOISExxx keywords must be present in the header.
           */
          for ( size_type i = 0; i < keywords.Length(); )
             if ( keywords[i].name.StartsWithIC( "NOISE" ) )
@@ -1704,6 +1729,8 @@ void ImageCalibrationInstance::WriteCalibratedImage( const CalibrationThread* t 
    output.Add( o );
 }
 
+// ----------------------------------------------------------------------------
+
 /*
  * Returns true if a CFA pattern is matched on the upper left corner of an
  * image. Each element of z is 1 if the corresponding CFA element is zero.
@@ -1720,6 +1747,8 @@ static bool MatchCFAPattern( const Image& image, const int* z )
       }
    return true;
 }
+
+// ----------------------------------------------------------------------------
 
 /*
  * Returns true if one of the four RGB Bayer patterns is detected in the
@@ -1816,7 +1845,7 @@ bool IsBayerPattern( const Image& image )
                                       1, 1, 1, 1,
                                       1, 0, 1, 0 };
 
-   // ### TODO: Include also CMYG CFA zero matrices
+   // ### TODO: Include also CMYG and X-Trans CFA zero matrices.
 
    if ( image.NumberOfChannels() != 3 )
       return false;
@@ -1855,9 +1884,9 @@ bool ImageCalibrationInstance::ExecuteGlobal()
       AutoPointer<Image> bias, dark, optimizingDark, flat;
 
       /*
-       * Flag true if the master dark frame is mosaiced with a Color Filter Array
-       * (CFA, e.g. a Bayer pattern), either explicitly reported by the file
-       * format (DSLR_RAW), detected heuristically (e.g., a CFA stored as a
+       * Flag true if the master dark frame is mosaiced with a Color Filter
+       * Array (CFA, e.g. a Bayer pattern), either explicitly reported by the
+       * file format (RAW), detected heuristically (e.g., a CFA stored as a
        * proprietary FITS file), or forced with darkCFADetectionMode = ForceCFA.
        */
       bool isDarkCFA = false;
@@ -2175,7 +2204,7 @@ bool ImageCalibrationInstance::ExecuteGlobal()
                /*
                 * Thread watching loop.
                 */
-               thread_list::iterator i = 0;
+               thread_list::iterator i = nullptr;
                size_type unused = 0;
                for ( thread_list::iterator j = runningThreads.Begin(); j != runningThreads.End(); ++j )
                {
@@ -2184,7 +2213,7 @@ bool ImageCalibrationInstance::ExecuteGlobal()
                   if ( console.AbortRequested() )
                      throw ProcessAborted();
 
-                  if ( *j == 0 )
+                  if ( *j == nullptr )
                   {
                      /*
                       * This is a free thread slot. Ignore it if we don't have
@@ -2221,7 +2250,7 @@ bool ImageCalibrationInstance::ExecuteGlobal()
                 * Keep watching while there is no useful free thread slots or a
                 * finished thread.
                 */
-               if ( i == 0 )
+               if ( i == nullptr )
                   if ( unused == runningThreads.Length() )
                      break;
                   else
@@ -2231,7 +2260,7 @@ bool ImageCalibrationInstance::ExecuteGlobal()
                 * At this point we have found either a unused thread slot that
                 * we can reuse, or a thread that has just finished execution.
                 */
-               if ( *i != 0 )
+               if ( *i != nullptr )
                {
                   /*
                    * This is a just-finished thread.
@@ -2358,7 +2387,7 @@ bool ImageCalibrationInstance::ExecuteGlobal()
                 * on the platform via global preferences - hence the second
                 * argument to Thread::Start() below.
                 */
-               if ( *i != 0 )
+               if ( *i != nullptr )
                   (*i)->Start( ThreadPriority::DefaultMax, i - runningThreads.Begin() );
             } // try
             catch ( ProcessAborted& )
@@ -2468,7 +2497,6 @@ bool ImageCalibrationInstance::ExecuteGlobal()
    }
 }
 
-// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void* ImageCalibrationInstance::LockParameter( const MetaParameter* p, size_type tableRow )
@@ -2606,8 +2634,10 @@ void* ImageCalibrationInstance::LockParameter( const MetaParameter* p, size_type
    if ( p == TheICNoiseAlgorithmBParameter )
       return output[tableRow].noiseAlgorithms[2].Begin();
 
-   return 0;
+   return nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 bool ImageCalibrationInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {
@@ -2723,6 +2753,8 @@ bool ImageCalibrationInstance::AllocateParameter( size_type sizeOrLength, const 
    return true;
 }
 
+// ----------------------------------------------------------------------------
+
 size_type ImageCalibrationInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
    if ( p == TheICTargetFramesParameter )
@@ -2769,4 +2801,4 @@ size_type ImageCalibrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationInstance.cpp - Released 2018-11-23T18:45:58Z
+// EOF ImageCalibrationInstance.cpp - Released 2019-01-21T12:06:41Z

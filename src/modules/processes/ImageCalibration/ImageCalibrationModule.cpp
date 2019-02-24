@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.04.01.0352
+// Standard ImageCalibration Process Module Version 01.04.01.0362
 // ----------------------------------------------------------------------------
-// ImageCalibrationModule.cpp - Released 2018-11-23T18:45:58Z
+// ImageCalibrationModule.cpp - Released 2019-01-21T12:06:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     04
 #define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0352
+#define MODULE_VERSION_BUILD     0362
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2018
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       23
+#define MODULE_RELEASE_YEAR      2019
+#define MODULE_RELEASE_MONTH     1
+#define MODULE_RELEASE_DAY       21
 
 #include "DefectMapInterface.h"
 #include "DefectMapProcess.h"
@@ -183,4 +183,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationModule.cpp - Released 2018-11-23T18:45:58Z
+// EOF ImageCalibrationModule.cpp - Released 2019-01-21T12:06:41Z

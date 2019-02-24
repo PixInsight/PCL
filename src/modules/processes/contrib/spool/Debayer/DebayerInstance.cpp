@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.07.00.0308
+// Standard Debayer Process Module Version 01.08.00.0327
 // ----------------------------------------------------------------------------
-// DebayerInstance.cpp - Released 2018-11-23T18:45:59Z
+// DebayerInstance.cpp - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -118,6 +118,7 @@ DebayerInstance::DebayerInstance( const MetaProcess* m ) :
    ProcessImplementation( m ),
    p_bayerPattern( DebayerBayerPatternParameter::Default ),
    p_debayerMethod( DebayerMethodParameter::Default ),
+   p_fbddNoiseReduction( int32( TheDebayerFBDDNoiseReductionParameter->DefaultValue() ) ),
    p_evaluateNoise( TheDebayerEvaluateNoiseParameter->DefaultValue() ),
    p_noiseEvaluationAlgorithm( DebayerNoiseEvaluationAlgorithm::Default ),
    p_showImages( TheDebayerShowImagesParameter->DefaultValue() ),
@@ -133,8 +134,8 @@ DebayerInstance::DebayerInstance( const MetaProcess* m ) :
    p_onError( DebayerOnError::Default ),
    p_useFileThreads( TheDebayerUseFileThreadsParameter->DefaultValue() ),
    p_fileThreadOverload( TheDebayerFileThreadOverloadParameter->DefaultValue() ),
-   p_maxFileReadThreads( TheDebayerMaxFileReadThreadsParameter->DefaultValue() ),
-   p_maxFileWriteThreads( TheDebayerMaxFileWriteThreadsParameter->DefaultValue() ),
+   p_maxFileReadThreads( int32( TheDebayerMaxFileReadThreadsParameter->DefaultValue() ) ),
+   p_maxFileWriteThreads( int32( TheDebayerMaxFileWriteThreadsParameter->DefaultValue() ) ),
 
    o_noiseEstimates( 0.0F, 3 ),
    o_noiseFractions( 0.0F, 3 ),
@@ -159,6 +160,7 @@ void DebayerInstance::Assign( const ProcessImplementation& p )
    {
       p_bayerPattern             = x->p_bayerPattern;
       p_debayerMethod            = x->p_debayerMethod;
+      p_fbddNoiseReduction       = x->p_fbddNoiseReduction;
       p_evaluateNoise            = x->p_evaluateNoise;
       p_noiseEvaluationAlgorithm = x->p_noiseEvaluationAlgorithm;
       p_showImages               = x->p_showImages;
@@ -344,6 +346,64 @@ struct OutputFileData
 };
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+static void BayerPatternToColorIndices( int colors[ 2 ][ 2 ], int bayerPattern )
+{
+   switch ( bayerPattern )
+   {
+   default:
+   case DebayerBayerPatternParameter::RGGB:
+      colors[0][0] = 0;
+      colors[0][1] = 1;
+      colors[1][0] = 1;
+      colors[1][1] = 2;
+      break;
+   case DebayerBayerPatternParameter::BGGR:
+      colors[0][0] = 2;
+      colors[0][1] = 1;
+      colors[1][0] = 1;
+      colors[1][1] = 0;
+      break;
+   case DebayerBayerPatternParameter::GBRG:
+      colors[0][0] = 1;
+      colors[0][1] = 2;
+      colors[1][0] = 0;
+      colors[1][1] = 1;
+      break;
+   case DebayerBayerPatternParameter::GRBG:
+      colors[0][0] = 1;
+      colors[0][1] = 0;
+      colors[1][0] = 2;
+      colors[1][1] = 1;
+      break;
+   case DebayerBayerPatternParameter::GRGB:
+      colors[0][0] = 1;
+      colors[0][1] = 0;
+      colors[1][0] = 1;
+      colors[1][1] = 2;
+      break;
+   case DebayerBayerPatternParameter::GBGR:
+      colors[0][0] = 1;
+      colors[0][1] = 2;
+      colors[1][0] = 1;
+      colors[1][1] = 0;
+      break;
+   case DebayerBayerPatternParameter::RGBG:
+      colors[0][0] = 0;
+      colors[0][1] = 1;
+      colors[1][0] = 2;
+      colors[1][1] = 1;
+      break;
+   case DebayerBayerPatternParameter::BGRG:
+      colors[0][0] = 2;
+      colors[0][1] = 1;
+      colors[1][0] = 0;
+      colors[1][1] = 1;
+      break;
+   }
+}
+
 // ----------------------------------------------------------------------------
 
 class DebayerEngine
@@ -594,64 +654,12 @@ private:
 
          const int src_w = m_source.Width();
          int colors[ 2 ][ 2 ]; // [row][col]
+         BayerPatternToColorIndices( colors, m_bayerPattern );
 
-         switch ( m_bayerPattern )
-         {
-         default:
-         case DebayerBayerPatternParameter::RGGB:
-            colors[0][0] = 0;
-            colors[0][1] = 1;
-            colors[1][0] = 1;
-            colors[1][1] = 2;
-            break;
-         case DebayerBayerPatternParameter::BGGR:
-            colors[0][0] = 2;
-            colors[0][1] = 1;
-            colors[1][0] = 1;
-            colors[1][1] = 0;
-            break;
-         case DebayerBayerPatternParameter::GBRG:
-            colors[0][0] = 1;
-            colors[0][1] = 2;
-            colors[1][0] = 0;
-            colors[1][1] = 1;
-            break;
-         case DebayerBayerPatternParameter::GRBG:
-            colors[0][0] = 1;
-            colors[0][1] = 0;
-            colors[1][0] = 2;
-            colors[1][1] = 1;
-            break;
-         case DebayerBayerPatternParameter::GRGB:
-            colors[0][0] = 1;
-            colors[0][1] = 0;
-            colors[1][0] = 1;
-            colors[1][1] = 2;
-            break;
-         case DebayerBayerPatternParameter::GBGR:
-            colors[0][0] = 1;
-            colors[0][1] = 2;
-            colors[1][0] = 1;
-            colors[1][1] = 0;
-            break;
-         case DebayerBayerPatternParameter::RGBG:
-            colors[0][0] = 0;
-            colors[0][1] = 1;
-            colors[1][0] = 2;
-            colors[1][1] = 1;
-            break;
-         case DebayerBayerPatternParameter::BGRG:
-            colors[0][0] = 2;
-            colors[0][1] = 1;
-            colors[1][0] = 0;
-            colors[1][1] = 1;
-            break;
-         }
-
-         for ( int row = m_start; row < m_end; row++ )
+         for ( int row = m_start; row < m_end; ++row )
          {
             // skip the first and last column
-            for ( int col = 1; col < src_w-1; col++ )
+            for ( int col = 1; col < src_w-1; ++col )
             {
                //color_index = (row % 2) + (col % 2); // modulo division
                int current_color = colors[(row % 2)][(col % 2)];
@@ -730,60 +738,7 @@ private:
 
          const int src_w = m_source.Width();
          int colors[ 2 ][ 2 ]; // [row][col]
-
-         // store channel indices according to selected bayer pattern
-         switch ( m_bayerPattern )
-         {
-         default:
-         case DebayerBayerPatternParameter::RGGB:
-            colors[0][0] = 0;
-            colors[0][1] = 1;
-            colors[1][0] = 1;
-            colors[1][1] = 2;
-            break;
-         case DebayerBayerPatternParameter::BGGR:
-            colors[0][0] = 2;
-            colors[0][1] = 1;
-            colors[1][0] = 1;
-            colors[1][1] = 0;
-            break;
-         case DebayerBayerPatternParameter::GBRG:
-            colors[0][0] = 1;
-            colors[0][1] = 2;
-            colors[1][0] = 0;
-            colors[1][1] = 1;
-            break;
-         case DebayerBayerPatternParameter::GRBG:
-            colors[0][0] = 1;
-            colors[0][1] = 0;
-            colors[1][0] = 2;
-            colors[1][1] = 1;
-            break;
-         case DebayerBayerPatternParameter::GRGB:
-            colors[0][0] = 1;
-            colors[0][1] = 0;
-            colors[1][0] = 1;
-            colors[1][1] = 2;
-            break;
-         case DebayerBayerPatternParameter::GBGR:
-            colors[0][0] = 1;
-            colors[0][1] = 2;
-            colors[1][0] = 1;
-            colors[1][1] = 0;
-            break;
-         case DebayerBayerPatternParameter::RGBG:
-            colors[0][0] = 0;
-            colors[0][1] = 1;
-            colors[1][0] = 2;
-            colors[1][1] = 1;
-            break;
-         case DebayerBayerPatternParameter::BGRG:
-            colors[0][0] = 2;
-            colors[0][1] = 1;
-            colors[1][0] = 0;
-            colors[1][1] = 1;
-            break;
-         }
+         BayerPatternToColorIndices( colors, m_bayerPattern );
 
          // iterate over all rows assigned to this thread
          for ( int row = m_start; row < m_end; row++ )
@@ -1193,6 +1148,494 @@ private:
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
+/*
+ * FBDD - Fake Before Demosaicing Denoising.
+ * By Jacek Gozdz and Luis Sanz Rodríguez.
+ *
+ * *** ### EXPERIMENTAL - DO NOT ENABLE BY DEFAULT ### ***
+ */
+class FBDDEngine
+{
+public:
+
+   FBDDEngine( int bayerPattern, bool full ) :
+      m_full( full )
+   {
+      BayerPatternToColorIndices( m_color, bayerPattern );
+   }
+
+   void Denoise( ImageVariant& image )
+   {
+      if ( image.IsFloatSample() )
+         switch ( image.BitsPerSample() )
+         {
+         case 32: Denoise( static_cast<Image&>( *image ) ); break;
+         case 64: Denoise( static_cast<DImage&>( *image ) ); break;
+         }
+      else
+         switch ( image.BitsPerSample() )
+         {
+         case  8: Denoise( static_cast<UInt8Image&>( *image ) ); break;
+         case 16: Denoise( static_cast<UInt16Image&>( *image ) ); break;
+         case 32: Denoise( static_cast<UInt32Image&>( *image ) ); break;
+         }
+   }
+
+private:
+
+   uint16        (*m_image)[3] = nullptr;
+   int           m_width = 0;
+   int           m_height = 0;
+   bool          m_full = true;
+   int           m_color[ 2 ][ 2 ]; // row, col
+   StatusMonitor m_monitor;
+
+   template <typename T>
+   static T Clip( T x )
+   {
+      return Range( x, T( 0 ), T( 65535 ) );
+   }
+
+   static uint16 Limit( uint16 x, uint16 y, uint16 z )
+   {
+      if ( z < y )
+         Swap( y, z );
+      return Range( x, y, z );
+   }
+
+   int FilterColor( int row, int col ) const
+   {
+      return m_color[row%2][col%2];
+   }
+
+   template <class P>
+   void Denoise( GenericImage<P>& image )
+   {
+      m_width = image.Width();
+      m_height = image.Height();
+
+      int N = m_height + (m_height-10) + 2*(m_height-6) + 2*(m_height-2) + (m_height-12);
+      if ( m_full )
+         N += 2*(m_height-2) + 2*m_height*m_width + 2*(m_height-12);
+      StandardStatus status;
+      m_monitor.SetCallback( &status );
+      m_monitor.Initialize( "FBDD denoising", N );
+
+      Array<uint16> data( size_type( m_width ) * size_type( m_height ) * 3, uint16( 0 ) );
+      m_image = reinterpret_cast<uint16 (*)[3]>( data.Begin() );
+      if ( image.NumberOfNominalChannels() == 1 )
+      {
+         typename GenericImage<P>::const_sample_iterator i( image );
+         uint16 (*p)[3] = m_image;
+         for ( int row = 0; row < m_height; ++row )
+            for ( int col = 0; col < m_width; ++col, ++i, ++p )
+               p[0][FilterColor( row, col )] = UInt16PixelTraits::ToSample( *i );
+      }
+      else
+      {
+         typename GenericImage<P>::const_pixel_iterator i( image );
+         uint16 (*p)[3] = m_image;
+         for ( int row = 0; row < m_height; ++row )
+            for ( int col = 0; col < m_width; ++col, ++i, ++p )
+            {
+               int c = FilterColor( row, col );
+               p[0][c] = UInt16PixelTraits::ToSample( i[c] );
+            }
+      }
+
+      FBDD();
+
+      if ( image.NumberOfNominalChannels() == 1 )
+      {
+         typename GenericImage<P>::sample_iterator i( image );
+         const uint16 (*p)[3] = m_image;
+         for ( int row = 0; row < m_height; ++row )
+            for ( int col = 0; col < m_width; ++col, ++i, ++p )
+               UInt16PixelTraits::FromSample( *i, p[0][FilterColor( row, col )] );
+      }
+      else
+      {
+         typename GenericImage<P>::pixel_iterator i( image );
+         const uint16 (*p)[3] = m_image;
+         for ( int row = 0; row < m_height; ++row )
+            for ( int col = 0; col < m_width; ++col, ++i, ++p )
+            {
+               int c = FilterColor( row, col );
+               UInt16PixelTraits::FromSample( i[c], p[0][c] );
+            }
+      }
+
+      m_monitor.Complete();
+   }
+
+   void InterpolateBorder( int border )
+   {
+      for ( int row = 0; row < m_height; ++row, ++m_monitor )
+         for ( int col = 0; col < m_width; ++col )
+         {
+            if ( col == border && row >= border && row < m_height - border )
+               col = m_width - border;
+            double sum[ 3 ] = { 0 };
+            int count[ 3 ] = { 0 };
+            for ( int y = row - 1; y != row + 2; ++y )
+               for ( int x = col - 1; x != col + 2; ++x )
+                  if ( y >= 0 && x >= 0 && y < m_height && x < m_width )
+                  {
+                     int f = FilterColor( y, x );
+                     sum[f] += m_image[y*m_width + x][f];
+                     ++count[f];
+                  }
+            int f = FilterColor( row, col );
+            for ( int c = 0; c < 3; ++c )
+               if ( c != f )
+                  if ( count[c] > 0 )
+                     m_image[row*m_width + col][c] = RoundInt( sum[c]/count[c] );
+         }
+   }
+
+   void FBDD()
+   {
+      InterpolateBorder( 4 ); // h
+      FBDDGreen();      // h-10
+      DCBColorFull();   // 2*(h-6) + h-12
+      FBDDCorrection(); // 2*(h-2)
+
+      if ( m_full )
+      {
+         Array<double> data( size_type( m_width ) * size_type( m_height ) * 3, 0.0 );
+         double (*image2)[3] = reinterpret_cast<double (*)[3]>( data.Begin() );
+         DCBColor();                // 2*(h-2)
+         RGBToLCH( image2 );        // h*w
+         FBDDCorrection2( image2 ); // h-12
+         FBDDCorrection2( image2 ); // h-12
+         LCHToRGB( image2 );        // h*w
+      }
+   }
+
+   void FBDDGreen()
+   {
+      const int u = m_width;
+      const int v = 2*u;
+      const int w = 3*u;
+      const int x = 4*u;
+      const int y = 5*u;
+
+      for ( int row = 5; row < m_height-5; ++row, ++m_monitor )
+         for ( int col = 5 + (FilterColor( row, 1 ) & 1),
+                   indx = row*m_width + col,
+                   c = FilterColor( row, col ); col < u-5; col += 2, indx += 2 )
+         {
+            double f[ 4 ];
+            f[0] = 1.0/(1 + Abs( int( m_image[indx-u][1] ) - int( m_image[indx-w][1] ) )
+                          + Abs( int( m_image[indx-w][1] ) - int( m_image[indx+y][1] ) ));
+            f[1] = 1.0/(1 + Abs( int( m_image[indx+1][1] ) - int( m_image[indx+3][1] ) )
+                          + Abs( int( m_image[indx+3][1] ) - int( m_image[indx-5][1] ) ));
+            f[2] = 1.0/(1 + Abs( int( m_image[indx-1][1] ) - int( m_image[indx-3][1] ) )
+                          + Abs( int( m_image[indx-3][1] ) - int( m_image[indx+5][1] ) ));
+            f[3] = 1.0/(1 + Abs( int( m_image[indx+u][1] ) - int( m_image[indx+w][1] ) )
+                          + Abs( int( m_image[indx+w][1] ) - int( m_image[indx-y][1] ) ));
+
+            double g[ 4 ];
+            g[0] = Clip( (23.0*m_image[indx-u][1]
+                        + 23.0*m_image[indx-w][1]
+                        +  2.0*m_image[indx-y][1]
+                        +  8.0*(int( m_image[indx-v][c] ) - int( m_image[indx-x][c] ))
+                        + 40.0*(int( m_image[indx][c] ) - int( m_image[indx-v][c] )))/48 );
+            g[1] = Clip( (23.0*m_image[indx+1][1]
+                        + 23.0*m_image[indx+3][1]
+                        +  2.0*m_image[indx+5][1]
+                        +  8.0*(int( m_image[indx+2][c] ) - int( m_image[indx+4][c] ))
+                        + 40.0*(int( m_image[indx][c] ) - int( m_image[indx+2][c] )))/48 );
+            g[2] = Clip( (23.0*m_image[indx-1][1]
+                        + 23.0*m_image[indx-3][1]
+                        +  2.0*m_image[indx-5][1]
+                        +  8.0*(int( m_image[indx-2][c] ) - int( m_image[indx-4][c] ))
+                        + 40.0*(int( m_image[indx][c] ) - int( m_image[indx-2][c] )))/48 );
+            g[3] = Clip( (23.0*m_image[indx+u][1]
+                        + 23.0*m_image[indx+w][1]
+                        +  2.0*m_image[indx+y][1]
+                        +  8.0*(int( m_image[indx+v][c] ) - int( m_image[indx+x][c] ))
+                        + 40.0*(int( m_image[indx][c] ) - int( m_image[indx+v][c] )))/48 );
+
+            m_image[indx][1] = RoundInt( Clip( (f[0]*g[0] + f[1]*g[1] + f[2]*g[2] + f[3]*g[3])/(f[0] + f[1] + f[2] + f[3]) ) );
+
+            uint16 min = Min( m_image[indx+1+u][1],
+                              Min( m_image[indx+1-u][1],
+                                   Min( m_image[indx-1+u][1],
+                                        Min( m_image[indx-1-u][1],
+                                             Min( m_image[indx-1][1],
+                                                  Min( m_image[indx+1][1],
+                                                       Min( m_image[indx-u][1],
+                                                            m_image[indx+u][1] ) ) ) ) ) ) );
+            uint16 max = Max( m_image[indx+1+u][1],
+                              Max( m_image[indx+1-u][1],
+                                   Max( m_image[indx-1+u][1],
+                                        Max( m_image[indx-1-u][1],
+                                             Max( m_image[indx-1][1],
+                                                  Max( m_image[indx+1][1],
+                                                       Max( m_image[indx-u][1],
+                                                            m_image[indx+u][1] ) ) ) ) ) ) );
+
+            m_image[indx][1] = Limit( m_image[indx][1], min, max );
+         }
+   }
+
+   void DCBColorFull()
+   {
+      const int u = m_width;
+      const int w = 3*u;
+
+      Array<double> data( m_width * m_height * 2 );
+      double (*chroma)[ 2 ] = reinterpret_cast<double (*)[2]>( data.Begin() );
+
+      for ( int row = 1; row < m_height-1; row++ )
+         for ( int col = 1 + (FilterColor( row, 1 ) & 1 ),
+                   indx = row*m_width + col,
+                   c = FilterColor( row, col ),
+                   d = c/2; col < u-1; col += 2, indx +=2 )
+            chroma[indx][d] = int( m_image[indx][c] ) - int( m_image[indx][1] );
+
+      for ( int row = 3; row < m_height-3; ++row, ++m_monitor )
+         for ( int col = 3 + (FilterColor( row, 1 ) & 1),
+                   indx = row*m_width + col,
+                   c = 1 - FilterColor( row, col )/2; col < u-3; col += 2, indx += 2 )
+         {
+            double f[ 4 ];
+            f[0] = 1/(1 + Abs( chroma[indx-u-1][c] - chroma[indx+u+1][c] )
+                        + Abs( chroma[indx-u-1][c] - chroma[indx-w-3][c] )
+                        + Abs( chroma[indx+u+1][c] - chroma[indx-w-3][c] ));
+            f[1] = 1/(1 + Abs( chroma[indx-u+1][c] - chroma[indx+u-1][c] )
+                        + Abs( chroma[indx-u+1][c] - chroma[indx-w+3][c] )
+                        + Abs( chroma[indx+u-1][c] - chroma[indx-w+3][c] ));
+            f[2] = 1/(1 + Abs( chroma[indx+u-1][c] - chroma[indx-u+1][c] )
+                        + Abs( chroma[indx+u-1][c] - chroma[indx+w+3][c] )
+                        + Abs( chroma[indx-u+1][c] - chroma[indx+w-3][c] ));
+            f[3] = 1/(1 + Abs( chroma[indx+u+1][c] - chroma[indx-u-1][c] )
+                        + Abs( chroma[indx+u+1][c] - chroma[indx+w-3][c] )
+                        + Abs( chroma[indx-u-1][c] - chroma[indx+w+3][c] ));
+
+            double g[ 4 ];
+            g[0] =  1.325*chroma[indx-u-1][c]
+                  - 0.175*chroma[indx-w-3][c]
+                  - 0.075*chroma[indx-w-1][c]
+                  - 0.075*chroma[indx-u-3][c];
+            g[1] =  1.325*chroma[indx-u+1][c]
+                  - 0.175*chroma[indx-w+3][c]
+                  - 0.075*chroma[indx-w+1][c]
+                  - 0.075*chroma[indx-u+3][c];
+            g[2] =  1.325*chroma[indx+u-1][c]
+                  - 0.175*chroma[indx+w-3][c]
+                  - 0.075*chroma[indx+w-1][c]
+                  - 0.075*chroma[indx+u-3][c];
+            g[3] =  1.325*chroma[indx+u+1][c]
+                  - 0.175*chroma[indx+w+3][c]
+                  - 0.075*chroma[indx+w+1][c]
+                  - 0.075*chroma[indx+u+3][c];
+
+            chroma[indx][c] = (f[0]*g[0] + f[1]*g[1] + f[2]*g[2] + f[3]*g[3])/(f[0] + f[1] + f[2] + f[3]);
+         }
+
+      for ( int row = 3; row < m_height-3; ++row, ++m_monitor )
+         for ( int col = 3 + (FilterColor( row, 2 ) & 1),
+                   indx = row*m_width + col,
+                   c = FilterColor( row, col+1 )/2; col < u-3; col += 2, indx += 2 )
+            for ( int d = 0; d <= 1; c = 1-c, d++ )
+            {
+               double f[ 4 ];
+               f[0] = 1/(1 + Abs( chroma[indx-u][c] - chroma[indx+u][c] )
+                           + Abs( chroma[indx-u][c] - chroma[indx-w][c] )
+                           + Abs( chroma[indx+u][c] - chroma[indx-w][c] ));
+               f[1] = 1/(1 + Abs( chroma[indx+1][c] - chroma[indx-1][c] )
+                           + Abs( chroma[indx+1][c] - chroma[indx+3][c] )
+                           + Abs( chroma[indx-1][c] - chroma[indx+3][c] ));
+               f[2] = 1/(1 + Abs( chroma[indx-1][c] - chroma[indx+1][c] )
+                           + Abs( chroma[indx-1][c] - chroma[indx-3][c] )
+                           + Abs( chroma[indx+1][c] - chroma[indx-3][c] ));
+               f[3] = 1/(1 + Abs( chroma[indx+u][c] - chroma[indx-u][c] )
+                           + Abs( chroma[indx+u][c] - chroma[indx+w][c] )
+                           + Abs( chroma[indx-u][c] - chroma[indx+w][c] ));
+
+               double g[ 4 ];
+               g[0] = 0.875*chroma[indx-u][c] + 0.125*chroma[indx-w][c];
+               g[1] = 0.875*chroma[indx+1][c] + 0.125*chroma[indx+3][c];
+               g[2] = 0.875*chroma[indx-1][c] + 0.125*chroma[indx-3][c];
+               g[3] = 0.875*chroma[indx+u][c] + 0.125*chroma[indx+w][c];
+
+               chroma[indx][c] = (f[0]*g[0] + f[1]*g[1] + f[2]*g[2] + f[3]*g[3])/(f[0] + f[1] + f[2] + f[3]);
+            }
+
+      for ( int row = 6; row < m_height-6; ++row, ++m_monitor )
+         for ( int col = 6, indx = row*m_width + col; col < m_width-6; col++, indx++ )
+         {
+            m_image[indx][0] = RoundInt( Clip( chroma[indx][0] + m_image[indx][1] ) );
+            m_image[indx][2] = RoundInt( Clip( chroma[indx][1] + m_image[indx][1] ) );
+
+            uint16
+            g1 = Min( m_image[indx+1+u][0],
+                      Min( m_image[indx+1-u][0],
+                           Min( m_image[indx-1+u][0],
+                                Min( m_image[indx-1-u][0],
+                                     Min( m_image[indx-1][0],
+                                          Min( m_image[indx+1][0],
+                                               Min( m_image[indx-u][0],
+                                                    m_image[indx+u][0] ) ) ) ) ) ) );
+            uint16
+            g2 = Max( m_image[indx+1+u][0],
+                      Max( m_image[indx+1-u][0],
+                           Max( m_image[indx-1+u][0],
+                                Max( m_image[indx-1-u][0],
+                                     Max( m_image[indx-1][0],
+                                          Max( m_image[indx+1][0],
+                                               Max( m_image[indx-u][0],
+                                                    m_image[indx+u][0] ) ) ) ) ) ) );
+            m_image[indx][0] = Limit( m_image[indx][0], g2, g1 );
+
+            g1 = Min( m_image[indx+1+u][2],
+                      Min( m_image[indx+1-u][2],
+                           Min( m_image[indx-1+u][2],
+                                Min( m_image[indx-1-u][2],
+                                     Min( m_image[indx-1][2],
+                                          Min( m_image[indx+1][2],
+                                               Min( m_image[indx-u][2],
+                                                    m_image[indx+u][2] ) ) ) ) ) ) );
+            g2 = Max( m_image[indx+1+u][2],
+                      Max( m_image[indx+1-u][2],
+                           Max( m_image[indx-1+u][2],
+                                Max( m_image[indx-1-u][2],
+                                     Max( m_image[indx-1][2],
+                                          Max( m_image[indx+1][2],
+                                               Max( m_image[indx-u][2],
+                                                    m_image[indx+u][2] ) ) ) ) ) ) );
+            m_image[indx][2] = Limit( m_image[indx][2], g2, g1 );
+         }
+   }
+
+   void DCBColor()
+   {
+      const int u = m_width;
+
+      for ( int row = 1; row < m_height-1; ++row, ++m_monitor )
+         for ( int col = 1 + (FilterColor( row, 1 ) & 1),
+                   indx = row*m_width + col,
+                   c = 2 - FilterColor( row, col ); col < u-1; col += 2, indx += 2 )
+         {
+            m_image[indx][c] = RoundInt( Clip( (4*int( m_image[indx    ][1] )
+                                                - int( m_image[indx+u+1][1] )
+                                                - int( m_image[indx+u-1][1] )
+                                                - int( m_image[indx-u+1][1] )
+                                                - int( m_image[indx-u-1][1] )
+                                                + int( m_image[indx+u+1][c] )
+                                                + int( m_image[indx+u-1][c] )
+                                                + int( m_image[indx-u+1][c] )
+                                                + int( m_image[indx-u-1][c] ))/4.0 ) );
+         }
+
+      for ( int row = 1; row < m_height-1; ++row, ++m_monitor )
+         for ( int col = 1 + (FilterColor( row, 2 ) & 1),
+                   indx = row*m_width + col,
+                   c = FilterColor( row, col+1 ),
+                   d = 2-c; col < m_width-1; col += 2, indx += 2 )
+         {
+            m_image[indx][c] = RoundInt( Clip( (2*int( m_image[indx  ][1] )
+                                                - int( m_image[indx+1][1] )
+                                                - int( m_image[indx-1][1] )
+                                                + int( m_image[indx+1][c] )
+                                                + int( m_image[indx-1][c] ))/2.0 ) );
+            m_image[indx][d] = RoundInt( Clip( (2*int( m_image[indx  ][1] )
+                                                - int( m_image[indx+u][1] )
+                                                - int( m_image[indx-u][1] )
+                                                + int( m_image[indx+u][d] )
+                                                + int( m_image[indx-u][d] ))/2.0 ) );
+         }
+   }
+
+   void FBDDCorrection()
+   {
+      const int u = m_width;
+      for ( int row = 2; row < m_height-2; ++row, ++m_monitor )
+         for ( int col = 2, indx = row*m_width + col; col < m_width-2; col++, indx++ )
+         {
+            int c = FilterColor( row, col );
+            m_image[indx][c] = Limit( m_image[indx][c],
+                                      Max( m_image[indx-1][c],
+                                           Max( m_image[indx+1][c],
+                                                Max( m_image[indx-u][c],
+                                                     m_image[indx+u][c] ) ) ),
+                                      Min( m_image[indx-1][c],
+                                           Min( m_image[indx+1][c],
+                                                Min( m_image[indx-u][c],
+                                                     m_image[indx+u][c] ) ) ) );
+         }
+   }
+
+   void RGBToLCH( double (*image2)[3] )
+   {
+      for ( int indx = 0; indx < m_height*m_width; ++indx, ++m_monitor )
+      {
+         image2[indx][0] = m_image[indx][0] + m_image[indx][1] + m_image[indx][2];     // L
+         image2[indx][1] = 1.732050808*(m_image[indx][0] - m_image[indx][1]);          // C
+         image2[indx][2] = 2.0*m_image[indx][2] - m_image[indx][0] - m_image[indx][1]; // H
+      }
+   }
+
+   void LCHToRGB( double (*image2)[3] )
+   {
+      for ( int indx = 0; indx < m_height*m_width; ++indx, ++m_monitor )
+      {
+         m_image[indx][0] = RoundInt( Clip( image2[indx][0]/3 - image2[indx][2]/6 + image2[indx][1]/3.464101615 ) );
+         m_image[indx][1] = RoundInt( Clip( image2[indx][0]/3 - image2[indx][2]/6 - image2[indx][1]/3.464101615 ) );
+         m_image[indx][2] = RoundInt( Clip( image2[indx][0]/3 + image2[indx][2]/3 ) );
+      }
+   }
+
+   void FBDDCorrection2( double (*image2)[3] )
+   {
+      const int v = 2*m_width;
+      for ( int row = 6; row < m_height-6; ++row, ++m_monitor )
+      {
+         for ( int col = 6; col < m_width-6; ++col )
+         {
+            int indx = row*m_width + col;
+            if ( image2[indx][1]*image2[indx][2] != 0 )
+            {
+               double Co = (image2[indx+v][1] + image2[indx-v][1] + image2[indx-2][1] + image2[indx+2][1] -
+                              Max( image2[indx-2][1],
+                                   Max( image2[indx+2][1],
+                                        Max( image2[indx-v][1],
+                                             image2[indx+v][1] ) ) ) -
+                              Min( image2[indx-2][1],
+                                   Min( image2[indx+2][1],
+                                        Min( image2[indx-v][1],
+                                             image2[indx+v][1] ) ) ))/2;
+               double Ho = (image2[indx+v][2] + image2[indx-v][2] + image2[indx-2][2] + image2[indx+2][2] -
+                              Max( image2[indx-2][2],
+                                   Max( image2[indx+2][2],
+                                        Max( image2[indx-v][2],
+                                             image2[indx+v][2] ) ) ) -
+                              Min( image2[indx-2][2],
+                                   Min( image2[indx+2][2],
+                                        Min( image2[indx-v][2],
+                                             image2[indx+v][2] ) ) ))/2;
+               double ratio = Sqrt( (Co*Co + Ho*Ho)/(image2[indx][1]*image2[indx][1] + image2[indx][2]*image2[indx][2]) );
+               if ( ratio < 0.85 )
+               {
+                  image2[indx][0] = -(image2[indx][1] + image2[indx][2] - Co - Ho) + image2[indx][0];
+                  image2[indx][1] = Co;
+                  image2[indx][2] = Ho;
+               }
+            }
+         }
+      }
+   }
+};
+
+// ----------------------------------------------------------------------------
+
+/*
+ * X-Trans demosaicing engine.
+ * Based on code from LibRaw version 0.19.0 - Copyright 2008-2018 LibRaw LLC.
+ * Based on code from dcraw.c version 9.28 - Copyright 1997-2018 Dave Coffin.
+ */
 class XTransInterpolationEngine
 {
 public:
@@ -1208,7 +1651,7 @@ public:
       if ( n[0] <  6 || n[0] > 10 ||
            n[1] < 16 || n[1] > 24 ||
            n[2] <  6 || n[2] > 10 ||
-           n[3] > 0 )
+           n[3] >  0 )
          throw Error( "X-Trans interpolation: Invalid X-Trans CFA pattern" );
 
       InitXYZLUT();
@@ -1385,7 +1828,8 @@ private:
    }
 
    /*
-    * Frank Markesteijn's algorithm for Fuji X-Trans sensors
+    * Frank Markesteijn's algorithm for Fuji X-Trans sensors.
+    * Adapted from dcraw.c version 9.28 - Copyright 1997-2018 by Dave Coffin.
     */
    void InterpolateXTrans()
    {
@@ -2215,7 +2659,13 @@ bool DebayerInstance::ExecuteOn( View& view )
       XTransInterpolationEngine( sRGBConversionMatrixFromTarget( view ),
                                  XTransPatternFiltersFromTarget( view ) ).Interpolate( output, source, 2/*passes*/ );
    else
-      DebayerEngine( output, *this, BayerPatternFromTarget( view ) ).Debayer( source );
+   {
+      int bayerPattern = BayerPatternFromTarget( view );
+      // ### WARNING ### Experimental FBDD support - Do not enable by default.
+      if ( p_fbddNoiseReduction > 0 )
+         FBDDEngine( bayerPattern, p_fbddNoiseReduction > 1 ).Denoise( source );
+      DebayerEngine( output, *this, bayerPattern ).Debayer( source );
+   }
 
    outputWindow.MainView().SetProperties( view.GetStorableProperties(), true/*notify*/, ViewPropertyAttribute::Storable );
 
@@ -2741,6 +3191,8 @@ void* DebayerInstance::LockParameter( const MetaParameter* p, size_type tableRow
       return &p_bayerPattern;
    if ( p == TheDebayerMethodParameter )
       return &p_debayerMethod;
+   if ( p == TheDebayerFBDDNoiseReductionParameter )
+      return &p_fbddNoiseReduction;
    if ( p == TheDebayerEvaluateNoiseParameter )
       return &p_evaluateNoise;
    if ( p == TheDebayerNoiseEvaluationAlgorithmParameter )
@@ -2996,4 +3448,4 @@ size_type DebayerInstance::ParameterLength( const MetaParameter* p, size_type ta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DebayerInstance.cpp - Released 2018-11-23T18:45:59Z
+// EOF DebayerInstance.cpp - Released 2019-01-21T12:06:42Z

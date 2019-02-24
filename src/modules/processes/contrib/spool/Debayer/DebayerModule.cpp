@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.07.00.0308
+// Standard Debayer Process Module Version 01.08.00.0327
 // ----------------------------------------------------------------------------
-// DebayerModule.cpp - Released 2018-11-23T18:45:59Z
+// DebayerModule.cpp - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -51,14 +51,14 @@
 // ----------------------------------------------------------------------------
 
 #define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     07
+#define MODULE_VERSION_MINOR     08
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0308
+#define MODULE_VERSION_BUILD     0327
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2018
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       23
+#define MODULE_RELEASE_YEAR      2019
+#define MODULE_RELEASE_MONTH     1
+#define MODULE_RELEASE_DAY       21
 
 #include "DebayerModule.h"
 #include "DebayerProcess.h"
@@ -69,7 +69,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-DebayerModule::DebayerModule() : MetaModule()
+DebayerModule::DebayerModule()
 {
 }
 
@@ -171,4 +171,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF DebayerModule.cpp - Released 2018-11-23T18:45:59Z
+// EOF DebayerModule.cpp - Released 2019-01-21T12:06:42Z

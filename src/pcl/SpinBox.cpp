@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/SpinBox.cpp - Released 2018-11-23T16:14:31Z
+// pcl/SpinBox.cpp - Released 2019-01-21T12:06:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -307,4 +307,4 @@ void SpinBox::OnRangeUpdated( range_event_handler f, Control& receiver )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SpinBox.cpp - Released 2018-11-23T16:14:31Z
+// EOF pcl/SpinBox.cpp - Released 2019-01-21T12:06:21Z

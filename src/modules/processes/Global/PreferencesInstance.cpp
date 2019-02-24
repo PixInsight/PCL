@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0393
+// Standard Global Process Module Version 01.02.08.0405
 // ----------------------------------------------------------------------------
-// PreferencesInstance.cpp - Released 2018-11-23T18:45:58Z
+// PreferencesInstance.cpp - Released 2019-01-21T12:06:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -729,7 +729,7 @@ void PreferencesInstance::LoadDefaultSettings()
    imageWindow.highDPIRenditions                =         METAPARAMETER_INSTANCE_ID( ImageWindow, highDPIRenditions                )->DefaultValue();
    imageWindow.default24BitScreenLUT            =         METAPARAMETER_INSTANCE_ID( ImageWindow, default24BitScreenLUT            )->DefaultValue();
    imageWindow.swapDirectories.Clear();
-   imageWindow.swapDirectories.Add(                File::SystemTempDirectory() );
+   imageWindow.swapDirectories.Add(                File::SystemCacheDirectory() );
    imageWindow.swapCompression                  =         METAPARAMETER_INSTANCE_ID( ImageWindow, swapCompression                  )->DefaultValue();
    imageWindow.downloadsDirectory               =  File::SystemTempDirectory();
    imageWindow.followDownloadLocations          =         METAPARAMETER_INSTANCE_ID( ImageWindow, followDownloadLocations          )->DefaultValue();
@@ -1042,4 +1042,4 @@ String* PreferencesInstance::StringParameterFromMetaParameter( const MetaParamet
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInstance.cpp - Released 2018-11-23T18:45:58Z
+// EOF PreferencesInstance.cpp - Released 2019-01-21T12:06:41Z

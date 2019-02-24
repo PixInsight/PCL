@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/ChebyshevFit.h - Released 2018-11-23T16:14:19Z
+// pcl/ChebyshevFit.h - Released 2019-01-21T12:06:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -201,7 +201,7 @@ public:
       dx( Abs( x2 - x1 ) ),
       x0( (x1 + x2)/2 ),
       c( ck ),
-      m( ck.Length() )
+      m( int( ck.Length() ) )
    {
       if ( 1 + dx == 1 )
          throw Error( "GenericChebyshevFit: Empty or insignificant function evaluation interval." );
@@ -935,4 +935,4 @@ typedef F80ScalarChebyshevFit                         LDScalarChebyshevFit;
 #endif  // __PCL_ChebyshevFit_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ChebyshevFit.h - Released 2018-11-23T16:14:19Z
+// EOF pcl/ChebyshevFit.h - Released 2019-01-21T12:06:07Z

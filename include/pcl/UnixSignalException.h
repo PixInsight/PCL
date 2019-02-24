@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/UnixSignalException.h - Released 2018-11-23T16:14:19Z
+// pcl/UnixSignalException.h - Released 2019-01-21T12:06:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -165,6 +165,18 @@ public:
    }
 
    /*!
+    * Writes a formatted representation of this exception on the platform
+    * console. A plain text version of the same textual representation will
+    * also be written on stdout.
+    *
+    * \note UNIX synchronous interrupts are never reported on interactive
+    * graphical interfaces, such as message boxes, irrespective of global
+    * platform settings or local settings defined through calls to
+    * EnableGUIOutput() and similar functions.
+    */
+   void Show() const override;
+
+   /*!
     * Initializes the UNIX synchronous signal handler. This static member
     * function must be called before the calling process can raise any
     * synchronous signal.
@@ -225,4 +237,4 @@ DECLARE_UNIX_SIGNAL_EXCEPTION( EUnixIBrokenPipeException, SIGPIPE,
 #endif   // __PCL_UnixSignalException_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/UnixSignalException.h - Released 2018-11-23T16:14:19Z
+// EOF pcl/UnixSignalException.h - Released 2019-01-21T12:06:07Z

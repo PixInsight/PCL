@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard RAW File Format Module Version 01.05.00.0411
+// Standard RAW File Format Module Version 01.05.02.0428
 // ----------------------------------------------------------------------------
-// RawFormat.cpp - Released 2018-11-23T16:14:51Z
+// RawFormat.cpp - Released 2019-01-21T12:06:31Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard RAW PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,7 +59,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-RawFormat::RawFormat() : MetaFileFormat()
+RawFormat::RawFormat()
 {
 }
 
@@ -137,7 +137,7 @@ String RawFormat::Implementation() const
    "<html>"
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
-   "<p>This implementation of digital camera raw format decoding uses LibRaw version 0.19.0.</p>"
+   "<p>This implementation of digital camera raw format decoding uses LibRaw version 0.19.2.</p>"
 
    "<p>LibRaw library:<br/>"
    "Copyright (c) 2008-2018 LibRaw LLC (info@libraw.org)<br/>"
@@ -250,8 +250,8 @@ String RawFormat::Implementation() const
 "\nno-wavelet-noise-reduction"
 "\n                        (r )  Do not apply a wavelet-based noise reduction."
 "\n-------------------------------------------------------------------------------"
-"\nfbdd-noise-threshold n  (r )  Apply n FBDD noise reduction iterations, with n"
-"\n                              in the range [0,10]."
+"\nfbdd-noise-threshold n  (r )  Apply FBDD noise reduction with quality n in the"
+"\n                              range [0,2], where 0=disabled, 1=normal, 2=high."
 "\n-------------------------------------------------------------------------------"
 "\nno-fbdd-noise-reduction (r )  Disable the FBDD noise reduction algorithm."
 "\n-------------------------------------------------------------------------------"
@@ -372,4 +372,4 @@ bool RawFormat::EditPreferences() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RawFormat.cpp - Released 2018-11-23T16:14:51Z
+// EOF RawFormat.cpp - Released 2019-01-21T12:06:31Z

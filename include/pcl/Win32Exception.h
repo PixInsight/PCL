@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/Win32Exception.h - Released 2018-11-23T16:14:19Z
+// pcl/Win32Exception.h - Released 2019-01-21T12:06:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -106,17 +106,14 @@ public:
     * \a code and \a data.
     */
    Win32Exception( exception_code code, exception_data_pointer data ) :
-   pcl::Exception(), m_code( code ), m_data( data )
+      m_code( code ), m_data( data )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   Win32Exception( const Win32Exception& x ) :
-   pcl::Exception( x ), m_code( x.m_code ), m_data( x.m_data )
-   {
-   }
+   Win32Exception( const Win32Exception& ) = default;
 
    /*!
     * Returns the memory address associated with this exception.
@@ -162,6 +159,20 @@ public:
    }
 
    /*!
+    * Writes a formatted representation of this exception on the platform
+    * console. A plain text version of the same textual representation will
+    * also be written on stdout; however, if there is no console currently
+    * attached to the process (which is the typical situation for GUI Windows
+    * applications), no console stream output will be generated.
+    *
+    * \note Asynchronous exceptions are never reported on interactive graphical
+    * interfaces, such as message boxes, irrespective of global platform
+    * settings or local settings defined through calls to EnableGUIOutput() and
+    * similar functions.
+    */
+   void Show() const override;
+
+   /*!
     * Initializes the structured exception handler. This static member function
     * must be called before the calling process can raise any system exception.
     *
@@ -182,8 +193,8 @@ class PCL_CLASS Win32AccessViolationException : public Win32Exception
 {
 public:
 
-   Win32AccessViolationException( exception_code _c, exception_data_pointer _d ) :
-      Win32Exception( _c, _d )
+   Win32AccessViolationException( exception_code code, exception_data_pointer data ) :
+      Win32Exception( code, data )
    {
    }
 
@@ -198,8 +209,8 @@ public:
    class PCL_CLASS className : public pcl::Win32Exception                     \
    {                                                                          \
    public:                                                                    \
-      className( exception_code _c, exception_data_pointer _d ) :             \
-         pcl::Win32Exception( _c, _d )                                        \
+      className( exception_code code, exception_data_pointer data ) :         \
+         pcl::Win32Exception( code, data )                                    \
       {                                                                       \
       }                                                                       \
       className( const className& ) = default;                                \
@@ -279,4 +290,4 @@ DECLARE_WIN32_EXCEPTION( EWin32StackOverflow,
 #endif   // __PCL_Win32Exception_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Win32Exception.h - Released 2018-11-23T16:14:19Z
+// EOF pcl/Win32Exception.h - Released 2019-01-21T12:06:07Z

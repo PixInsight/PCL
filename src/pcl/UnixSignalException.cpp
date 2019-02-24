@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/UnixSignalException.cpp - Released 2018-11-23T16:14:31Z
+// pcl/UnixSignalException.cpp - Released 2019-01-21T12:06:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,18 +59,7 @@
 #include <execinfo.h>
 #include <stdio.h>
 
-#define STACK_DEPTH 60
-
-#define STACK_TRACE_TITLE     \
-   "\n\n" + IsoString( PixInsightVersion::AsString() ) + " - Critical Signal Backtrace\n"
-
-#define STACK_TRACE_HEADER    \
-   "Signal : %d\n"            \
-   "Module : %s\n"            \
-   "========================================================================================================================\n"
-
-#define STACK_TRACE_BOTTOM    \
-   "========================================================================================================================\n"
+#define STACK_DEPTH 256
 
 namespace pcl
 {
@@ -112,8 +101,30 @@ static IsoString GetDemangledFunctionName( const char* symbol, IsoString& addrSt
    return (status == 0) ? IsoString( demangledFuncname ) : symbolStr;
 }
 
-static void CriticalSignalHandler( int sig_num )
+// ----------------------------------------------------------------------------
+
+static void CriticalSignalHandler( int signalNumber )
 {
+   static const char* signalNames[] =
+   {
+      "",
+      "SIGHUP",  //  1
+      "SIGINT",  //  2
+      "SIGQUIT", //  3
+      "SIGILL",  //  4
+      "SIGTRAP", //  5
+      "SIGABRT", //  6
+      "SIGBUS",  //  7
+      "SIGFPE",  //  8
+      "SIGKILL", //  9
+      "SIGUSR1", // 10
+      "SIGSEGV", // 11
+      "SIGUSR2", // 12
+      "SIGPIPE", // 13
+      "SIGALRM", // 14
+      "SIGTERM"  // 15
+   };
+
    sigset_t x;
    sigemptyset( &x );
    sigaddset( &x, SIGSEGV );
@@ -121,25 +132,29 @@ static void CriticalSignalHandler( int sig_num )
    sigaddset( &x, SIGFPE );
    sigaddset( &x, SIGILL );
    sigaddset( &x, SIGPIPE );
-   //sigprocmask( SIG_UNBLOCK, &x, NULL );
-   pthread_sigmask( SIG_UNBLOCK, &x, NULL );
+   //sigprocmask( SIG_UNBLOCK, &x, nullptr );
+   pthread_sigmask( SIG_UNBLOCK, &x, nullptr );
 
    void* addrList[ STACK_DEPTH ];
    size_t addrLen = backtrace( addrList, sizeof( addrList )/sizeof( void* ) );
    char** symbolList = backtrace_symbols( addrList, addrLen );
    IsoString details;
-   if ( symbolList != NULL )
-   {
-      if ( symbolList[0] != NULL )
+   if ( symbolList != nullptr )
+      if ( symbolList[0] != nullptr )
       {
-         details = STACK_TRACE_TITLE + IsoString().Format( STACK_TRACE_HEADER, sig_num, symbolList[0] );
+         details = IsoString( PixInsightVersion::AsString() ) + " - Critical Signal Backtrace\n";
+         details.AppendFormat( "Received signal %d (%s)\n"
+                               "Module: %s\n",
+                               signalNumber,
+                               (signalNumber > 0 && signalNumber < 16) ? signalNames[signalNumber] : "?",
+                               symbolList[0] );
+         details << IsoString( '=', 80 ) << '\n';
          for ( size_t i = 1; i < addrLen; ++i )
-         {
-            if ( symbolList[i] != NULL )
+            if ( symbolList[i] != nullptr )
             {
                IsoString addrOffsetStr;
                IsoString demangledFuncname = GetDemangledFunctionName( symbolList[i], addrOffsetStr );
-               details.AppendFormat( "%d: ", addrLen-i );
+               details.AppendFormat( "%3u: ", addrLen-i );
                details += demangledFuncname;
                if ( !addrOffsetStr.IsEmpty() )
                {
@@ -149,17 +164,25 @@ static void CriticalSignalHandler( int sig_num )
                }
                details += '\n';
             }
-         }
-         details += STACK_TRACE_BOTTOM;
+         details << IsoString( '=', 80 ) << '\n';
 
-         fprintf( stderr, "%s", details.c_str() );
+         fprintf( stderr, "\n\n%s", details.c_str() );
+
+         /*
+          * The symbol list array is allocated by backtrace_symbols using
+          * malloc() and should be released by the caller using free(). There
+          * is no need to free the individual strings in the array.
+          *
+          * See references:
+          *    https://linux.die.net/man/3/backtrace_symbols
+          *    https://developer.apple.com/library/archive/documentation/
+          *                System/Conceptual/ManPages_iPhoneOS/man3/
+          *                backtrace_symbols.3.html
+          */
+         free( symbolList );
       }
 
-      // symbolList must be freed
-      free( symbolList );
-   }
-
-   switch ( sig_num )
+   switch ( signalNumber )
    {
    case SIGSEGV:
       throw EUnixSegmentationViolation( details );
@@ -172,9 +195,26 @@ static void CriticalSignalHandler( int sig_num )
    case SIGPIPE:
       throw EUnixIBrokenPipeException( details );
    default:
-      throw UnixSignalException( sig_num, details );
+      throw UnixSignalException( signalNumber, details );
    }
 }
+
+// ----------------------------------------------------------------------------
+
+void UnixSignalException::Show() const
+{
+   bool wasConsole = IsConsoleOutputEnabled();
+   bool wasGUI = IsGUIOutputEnabled();
+   EnableConsoleOutput();
+   DisableGUIOutput();
+
+   Exception::Show();
+
+   EnableConsoleOutput( wasConsole );
+   EnableGUIOutput( wasGUI );
+}
+
+// ----------------------------------------------------------------------------
 
 void UnixSignalException::Initialize()
 {
@@ -182,11 +222,11 @@ void UnixSignalException::Initialize()
    criticalAction.sa_flags = 0;
    criticalAction.sa_handler = CriticalSignalHandler;
    sigemptyset( &criticalAction.sa_mask );
-   sigaction( SIGSEGV, &criticalAction, 0 );
-   sigaction( SIGBUS, &criticalAction, 0 );
-   sigaction( SIGFPE, &criticalAction, 0 );
-   sigaction( SIGILL, &criticalAction, 0 );
-   sigaction( SIGPIPE, &criticalAction, 0 );
+   sigaction( SIGSEGV, &criticalAction, nullptr );
+   sigaction( SIGBUS, &criticalAction, nullptr );
+   sigaction( SIGFPE, &criticalAction, nullptr );
+   sigaction( SIGILL, &criticalAction, nullptr );
+   sigaction( SIGPIPE, &criticalAction, nullptr );
 }
 
 // ----------------------------------------------------------------------------
@@ -196,4 +236,4 @@ void UnixSignalException::Initialize()
 #endif   // __PCL_LINUX || __PCL_FREEBSD || __PCL_MACOSX
 
 // ----------------------------------------------------------------------------
-// EOF pcl/UnixSignalException.cpp - Released 2018-11-23T16:14:31Z
+// EOF pcl/UnixSignalException.cpp - Released 2019-01-21T12:06:21Z

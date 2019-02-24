@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard Fourier Process Module Version 01.00.04.0256
+// Standard Fourier Process Module Version 01.00.04.0266
 // ----------------------------------------------------------------------------
-// InverseFourierTransformInstance.h - Released 2018-11-23T18:45:58Z
+// InverseFourierTransformInstance.h - Released 2019-01-21T12:06:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Fourier PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -95,4 +95,4 @@ private:
 #endif   // __InverseFourierTransformInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF InverseFourierTransformInstance.h - Released 2018-11-23T18:45:58Z
+// EOF InverseFourierTransformInstance.h - Released 2019-01-21T12:06:41Z

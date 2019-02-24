@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.04.01.0012
+// Standard SubframeSelector Process Module Version 01.04.02.0025
 // ----------------------------------------------------------------------------
-// SubframeSelectorMeasurementsInterface.cpp - Released 2018-11-23T18:45:58Z
+// SubframeSelectorMeasurementsInterface.cpp - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SubframeSelector PixInsight module.
 //
@@ -145,6 +145,17 @@ bool SubframeSelectorMeasurementsInterface::Launch( const MetaProcess&,
 
    dynamic = false;
    return true;
+}
+
+// ----------------------------------------------------------------------------
+
+void SubframeSelectorMeasurementsInterface::Cleanup()
+{
+   if ( GUI != nullptr )
+   {
+      GUI->MeasurementGraph_Graph.Cleanup();
+      GUI->MeasurementDistribution_Graph.Cleanup();
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -918,4 +929,4 @@ SubframeSelectorMeasurementsInterface::GUIData::GUIData( SubframeSelectorMeasure
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SubframeSelectorMeasurementsInterface.cpp - Released 2018-11-23T18:45:58Z
+// EOF SubframeSelectorMeasurementsInterface.cpp - Released 2019-01-21T12:06:42Z

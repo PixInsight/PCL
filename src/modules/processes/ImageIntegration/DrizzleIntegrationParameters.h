@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.16.01.0462
+// Standard ImageIntegration Process Module Version 01.16.01.0472
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationParameters.h - Released 2018-11-23T18:45:58Z
+// DrizzleIntegrationParameters.h - Released 2019-01-21T12:06:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -935,4 +935,4 @@ PCL_END_LOCAL
 #endif   // __DrizzleIntegrationParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationParameters.h - Released 2018-11-23T18:45:58Z
+// EOF DrizzleIntegrationParameters.h - Released 2019-01-21T12:06:41Z

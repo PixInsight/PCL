@@ -7,10 +7,10 @@
 // ----------------------------------------------------------------------------
 // This file is part of PixInsight X11 UNIX/Linux Installer
 // ----------------------------------------------------------------------------
-// 2018/11/23 16:11:53 UTC
+// 2019/01/18 18:11:21 UTC
 // installer.cpp
 // ----------------------------------------------------------------------------
-// Copyright (c) 2013-2018 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2019 Pleiades Astrophoto S.L.
 // ----------------------------------------------------------------------------
 
 #if !defined( __PCL_FREEBSD ) && !defined( __PCL_LINUX )
@@ -52,10 +52,11 @@ using namespace pcl;
  *
  * The relevant parts of this program are based on the following documents:
  *
- * http://standards.freedesktop.org/desktop-entry-spec/latest/
- * http://standards.freedesktop.org/icon-theme-spec/latest/
- * http://standards.freedesktop.org/icon-theme-spec/latest/ar01s07.html
- * https://developer.gnome.org/integration-guide/stable/index.html.en
+ * https://specifications.freedesktop.org/desktop-entry-spec/latest/
+ * https://specifications.freedesktop.org/menu-spec/latest/
+ * https://specifications.freedesktop.org/icon-theme-spec/latest/
+ * https://specifications.freedesktop.org/icon-theme-spec/latest/ar01s07.html
+ * https://developer.gnome.org/integration-guide/stable/icons.html.en
  */
 class PixInsightX11Installer
 {
@@ -90,13 +91,13 @@ private:
 
    /*
     * Desktop entry file:
-    * http://standards.freedesktop.org/desktop-entry-spec/latest/
+    * https://specifications.freedesktop.org/desktop-entry-spec/latest/
     */
    String m_desktopEntryFile;
 
    /*
     * Shared MIME info XML file:
-    * http://standards.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html
+    * https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html
     */
    String m_mimeDescriptionFile;
 
@@ -104,6 +105,15 @@ private:
     * Application icons:
     * https://developer.gnome.org/integration-guide/stable/icons.html.en
     */
+   String m_icon16x16Dir;
+   String m_icon24x24Dir;
+   String m_icon32x32Dir;
+   String m_icon48x48Dir;
+   String m_icon64x64Dir;
+   String m_icon128x128Dir;
+   String m_icon256x256Dir;
+   String m_icon512x512Dir;
+   String m_iconScalableDir;
    String m_icon16x16File;
    String m_icon24x24File;
    String m_icon32x32File;
@@ -111,9 +121,20 @@ private:
    String m_icon64x64File;
    String m_icon128x128File;
    String m_icon256x256File;
+   String m_icon512x512File;
+   String m_iconScalableFile;
+   String m_bundleIcon16x16File;
+   String m_bundleIcon24x24File;
+   String m_bundleIcon32x32File;
+   String m_bundleIcon48x48File;
+   String m_bundleIcon64x64File;
+   String m_bundleIcon128x128File;
+   String m_bundleIcon256x256File;
+   String m_bundleIcon512x512File;
+   String m_bundleIconScalableFile;
 
    /*
-    * Source application icons. They should be on the rsc/icons folder of all
+    * Source application icons. They must be on the rsc/icons folder of all
     * installation packages.
     */
    String m_sourceIcon16x16File;
@@ -123,6 +144,17 @@ private:
    String m_sourceIcon64x64File;
    String m_sourceIcon128x128File;
    String m_sourceIcon256x256File;
+   String m_sourceIcon512x512File;
+   String m_sourceIconScalableFile;
+   String m_sourceBundleIcon16x16File;
+   String m_sourceBundleIcon24x24File;
+   String m_sourceBundleIcon32x32File;
+   String m_sourceBundleIcon48x48File;
+   String m_sourceBundleIcon64x64File;
+   String m_sourceBundleIcon128x128File;
+   String m_sourceBundleIcon256x256File;
+   String m_sourceBundleIcon512x512File;
+   String m_sourceBundleIconScalableFile;
 
    /*
     * Installer task
@@ -229,11 +261,6 @@ private:
    static bool       IsPixInsightInstallation( const String& dirPath );
 
    /*
-    * Helper routine to remove leading and trailing quotes from a string.
-    */
-   static String     Unquoted( const String& );
-
-   /*
     * Asks "Are you sure [yes|no]?" and returns true iff the user says "yes".
     */
    static bool       AskForConfirmation();
@@ -253,7 +280,7 @@ PixInsightX11Installer::PixInsightX11Installer( int argc, const char** argv )
 
    // Assume that we get a path to the executable file (possibly a relative
    // path) in argv[0]. This is standard in all known unices.
-   m_executablePath = Unquoted( String::UTF8ToUTF16( argv[0] ) ).Trimmed();
+   m_executablePath = String::UTF8ToUTF16( argv[0] ).Unquoted().Trimmed();
 
    // Base directory where we are running.
    m_baseDir = File::FullPath( File::ExtractDirectory( m_executablePath ) );
@@ -373,23 +400,56 @@ PixInsightX11Installer::PixInsightX11Installer( int argc, const char** argv )
    // MIME type description file
    m_mimeDescriptionFile = m_installMIMEDir + "/packages/PixInsight.xml";
 
+   // Application icon directories
+   m_icon16x16Dir    = m_installIconsDir + "/16x16/apps";
+   m_icon24x24Dir    = m_installIconsDir + "/24x24/apps";
+   m_icon32x32Dir    = m_installIconsDir + "/32x32/apps";
+   m_icon48x48Dir    = m_installIconsDir + "/48x48/apps";
+   m_icon64x64Dir    = m_installIconsDir + "/64x64/apps";
+   m_icon128x128Dir  = m_installIconsDir + "/128x128/apps";
+   m_icon256x256Dir  = m_installIconsDir + "/256x256/apps";
+   m_icon512x512Dir  = m_installIconsDir + "/512x512/apps";
+   m_iconScalableDir = m_installIconsDir + "/scalable/apps";
+
    // Application icon files
-   m_icon16x16File    = m_installIconsDir + "/16x16/apps/PixInsight.png";
-   m_icon24x24File    = m_installIconsDir + "/24x24/apps/PixInsight.png";
-   m_icon32x32File    = m_installIconsDir + "/32x32/apps/PixInsight.png";
-   m_icon48x48File    = m_installIconsDir + "/48x48/apps/PixInsight.png";
-   m_icon64x64File    = m_installIconsDir + "/64x64/apps/PixInsight.png";
-   m_icon128x128File  = m_installIconsDir + "/128x128/apps/PixInsight.png";
-   m_icon256x256File  = m_installIconsDir + "/256x256/apps/PixInsight.png";
+   m_icon16x16File          = m_icon16x16Dir    + "/PixInsight.png";
+   m_icon24x24File          = m_icon24x24Dir    + "/PixInsight.png";
+   m_icon32x32File          = m_icon32x32Dir    + "/PixInsight.png";
+   m_icon48x48File          = m_icon48x48Dir    + "/PixInsight.png";
+   m_icon64x64File          = m_icon64x64Dir    + "/PixInsight.png";
+   m_icon128x128File        = m_icon128x128Dir  + "/PixInsight.png";
+   m_icon256x256File        = m_icon256x256Dir  + "/PixInsight.png";
+   m_icon512x512File        = m_icon512x512Dir  + "/PixInsight.png";
+   m_iconScalableFile       = m_iconScalableDir + "/PixInsight.svg";
+   m_bundleIcon16x16File    = m_icon16x16Dir    + "/PixInsightBundle.png";
+   m_bundleIcon24x24File    = m_icon24x24Dir    + "/PixInsightBundle.png";
+   m_bundleIcon32x32File    = m_icon32x32Dir    + "/PixInsightBundle.png";
+   m_bundleIcon48x48File    = m_icon48x48Dir    + "/PixInsightBundle.png";
+   m_bundleIcon64x64File    = m_icon64x64Dir    + "/PixInsightBundle.png";
+   m_bundleIcon128x128File  = m_icon128x128Dir  + "/PixInsightBundle.png";
+   m_bundleIcon256x256File  = m_icon256x256Dir  + "/PixInsightBundle.png";
+   m_bundleIcon512x512File  = m_icon512x512Dir  + "/PixInsightBundle.png";
+   m_bundleIconScalableFile = m_iconScalableDir + "/PixInsightBundle.svg";
 
    // Source icon files
-   m_sourceIcon16x16File   = m_sourceDir + "/rsc/icons/pixinsight-icon.16.png";
-   m_sourceIcon24x24File   = m_sourceDir + "/rsc/icons/pixinsight-icon.24.png";
-   m_sourceIcon32x32File   = m_sourceDir + "/rsc/icons/pixinsight-icon.32.png";
-   m_sourceIcon48x48File   = m_sourceDir + "/rsc/icons/pixinsight-icon.48.png";
-   m_sourceIcon64x64File   = m_sourceDir + "/rsc/icons/pixinsight-icon.64.png";
-   m_sourceIcon128x128File = m_sourceDir + "/rsc/icons/pixinsight-icon.128.png";
-   m_sourceIcon256x256File = m_sourceDir + "/rsc/icons/pixinsight-icon.256.png";
+   m_sourceIcon16x16File          = m_sourceDir + "/rsc/icons/pixinsight-icon.16.png";
+   m_sourceIcon24x24File          = m_sourceDir + "/rsc/icons/pixinsight-icon.24.png";
+   m_sourceIcon32x32File          = m_sourceDir + "/rsc/icons/pixinsight-icon.32.png";
+   m_sourceIcon48x48File          = m_sourceDir + "/rsc/icons/pixinsight-icon.48.png";
+   m_sourceIcon64x64File          = m_sourceDir + "/rsc/icons/pixinsight-icon.64.png";
+   m_sourceIcon128x128File        = m_sourceDir + "/rsc/icons/pixinsight-icon.128.png";
+   m_sourceIcon256x256File        = m_sourceDir + "/rsc/icons/pixinsight-icon.256.png";
+   m_sourceIcon512x512File        = m_sourceDir + "/rsc/icons/pixinsight-icon.512.png";
+   m_sourceIconScalableFile       = m_sourceDir + "/rsc/icons/pixinsight-icon.svg";
+   m_sourceBundleIcon16x16File    = m_sourceDir + "/rsc/icons/pixinsight-bundle-icon.16.png";
+   m_sourceBundleIcon24x24File    = m_sourceDir + "/rsc/icons/pixinsight-bundle-icon.24.png";
+   m_sourceBundleIcon32x32File    = m_sourceDir + "/rsc/icons/pixinsight-bundle-icon.32.png";
+   m_sourceBundleIcon48x48File    = m_sourceDir + "/rsc/icons/pixinsight-bundle-icon.48.png";
+   m_sourceBundleIcon64x64File    = m_sourceDir + "/rsc/icons/pixinsight-bundle-icon.64.png";
+   m_sourceBundleIcon128x128File  = m_sourceDir + "/rsc/icons/pixinsight-bundle-icon.128.png";
+   m_sourceBundleIcon256x256File  = m_sourceDir + "/rsc/icons/pixinsight-bundle-icon.256.png";
+   m_sourceBundleIcon512x512File  = m_sourceDir + "/rsc/icons/pixinsight-bundle-icon.512.png";
+   m_sourceBundleIconScalableFile = m_sourceDir + "/rsc/icons/pixinsight-bundle-icon.svg";
 }
 
 // ----------------------------------------------------------------------------
@@ -429,13 +489,24 @@ bool PixInsightX11Installer::DoInstall()
    if ( !File::DirectoryExists( m_installIconsDir ) )
       throw Error( "The application icons installation directory does not exist: " + m_installIconsDir );
 
-   if ( !File::Exists( m_sourceIcon16x16File ) ||
-        !File::Exists( m_sourceIcon24x24File ) ||
-        !File::Exists( m_sourceIcon32x32File ) ||
-        !File::Exists( m_sourceIcon48x48File ) ||
-        !File::Exists( m_sourceIcon64x64File ) ||
-        !File::Exists( m_sourceIcon128x128File ) ||
-        !File::Exists( m_sourceIcon256x256File ) )
+   if ( !File::Exists( m_sourceIcon16x16File          ) ||
+        !File::Exists( m_sourceIcon24x24File          ) ||
+        !File::Exists( m_sourceIcon32x32File          ) ||
+        !File::Exists( m_sourceIcon48x48File          ) ||
+        !File::Exists( m_sourceIcon64x64File          ) ||
+        !File::Exists( m_sourceIcon128x128File        ) ||
+        !File::Exists( m_sourceIcon256x256File        ) ||
+        !File::Exists( m_sourceIcon512x512File        ) ||
+        !File::Exists( m_sourceIconScalableFile       ) ||
+        !File::Exists( m_sourceBundleIcon16x16File    ) ||
+        !File::Exists( m_sourceBundleIcon24x24File    ) ||
+        !File::Exists( m_sourceBundleIcon32x32File    ) ||
+        !File::Exists( m_sourceBundleIcon48x48File    ) ||
+        !File::Exists( m_sourceBundleIcon64x64File    ) ||
+        !File::Exists( m_sourceBundleIcon128x128File  ) ||
+        !File::Exists( m_sourceBundleIcon256x256File  ) ||
+        !File::Exists( m_sourceBundleIcon512x512File  ) ||
+        !File::Exists( m_sourceBundleIconScalableFile ) )
    {
       throw Error( "One or more application icons are missing in the source installation directory. "
                    "Unpack a valid installation archive and try again." );
@@ -470,8 +541,7 @@ bool PixInsightX11Installer::DoInstall()
    // launcher script at <m_installDir>/bin/PixInsight.sh.
    if ( m_createBinLauncher )
    {
-      File f;
-      f.CreateForWriting( m_binLauncherFile );
+      File f = File::CreateFileForWriting( m_binLauncherFile );
 #ifdef __PCL_FREEBSD
       f.OutTextLn( "#!/usr/local/bin/bash" );
 #else
@@ -499,10 +569,10 @@ bool PixInsightX11Installer::DoInstall()
    }
 
    // Write the desktop entry file:
-   // http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html
+   // https://specifications.freedesktop.org/desktop-entry-spec/latest/
+   // https://specifications.freedesktop.org/menu-spec/latest/
    {
-      File f;
-      f.CreateForWriting( m_desktopEntryFile );
+      File f = File::CreateFileForWriting( m_desktopEntryFile );
       f.OutTextLn( "[Desktop Entry]" );
       f.OutTextLn( "Encoding=UTF-8" );
       f.OutTextLn( "Name=PixInsight" );
@@ -512,9 +582,9 @@ bool PixInsightX11Installer::DoInstall()
       f.OutTextLn( "Terminal=false" );
       f.OutTextLn( "MultipleArgs=true" );
       f.OutTextLn( "Type=Application" );
-      f.OutTextLn( "Icon=" + m_installDir.ToUTF8() + "/bin/pixinsight-icon.256.png" );
+      f.OutTextLn( "Icon=PixInsight" );
       f.OutTextLn( "X-KDE-StartupNotify=false" );
-      f.OutTextLn( "Categories=Application;Graphics;ImageProcessing;RasterGraphics;Photography;Astronomy;" );
+      f.OutTextLn( "Categories=ImageProcessing;Astronomy;RasterGraphics;Development;Science;Photography;Graphics" );
       f.OutTextLn( "MimeType=application/x-xosm;"
                             "application/x-xpsm;application/x-psm;"
                             "image/bmp;application/bmp;"
@@ -525,6 +595,7 @@ bool PixInsightX11Installer::DoInstall()
                             "image/png;application/png;application/x-png;"
                             "image/tiff;application/tiff;image/tif;application/tif;"
                             "image/svg+xml;"
+                            "image/webp;"
                             "image/x-tga;"
                             "image/x-adobe-dng;"
                             "image/x-canon-cr2;"
@@ -539,59 +610,95 @@ bool PixInsightX11Installer::DoInstall()
                             "image/x-sigma-x3f;"
                             "image/x-sony-arw;image/x-sony-sr2;image/x-sony-srf;"
                             "image/x-xisf;"
+                            "inode/vnd.pixinsight.project;"
                             "text/x-pidoc;" );
       f.Close();
    }
 
    // Copy application icons
-   if ( File::DirectoryExists( m_installIconsDir + "/16x16/apps" ) )
-      CopyFile( m_installIconsDir + "/16x16/apps/PixInsight.png", m_sourceIcon16x16File );
-   if ( File::DirectoryExists( m_installIconsDir + "/24x24/apps" ) )
-      CopyFile( m_installIconsDir + "/24x24/apps/PixInsight.png", m_sourceIcon24x24File );
-   if ( File::DirectoryExists( m_installIconsDir + "/32x32/apps" ) )
-      CopyFile( m_installIconsDir + "/32x32/apps/PixInsight.png", m_sourceIcon32x32File );
-   if ( File::DirectoryExists( m_installIconsDir + "/48x48/apps" ) )
-      CopyFile( m_installIconsDir + "/48x48/apps/PixInsight.png", m_sourceIcon48x48File );
-   if ( File::DirectoryExists( m_installIconsDir + "/64x64/apps" ) )
-      CopyFile( m_installIconsDir + "/64x64/apps/PixInsight.png", m_sourceIcon64x64File );
-   if ( File::DirectoryExists( m_installIconsDir + "/128x128/apps" ) )
-      CopyFile( m_installIconsDir + "/128x128/apps/PixInsight.png", m_sourceIcon128x128File );
-   if ( File::DirectoryExists( m_installIconsDir + "/256x256/apps" ) )
-      CopyFile( m_installIconsDir + "/256x256/apps/PixInsight.png", m_sourceIcon256x256File );
+   if ( File::DirectoryExists( m_icon16x16Dir ) )
+   {
+      CopyFile( m_icon16x16File, m_sourceIcon16x16File );
+      CopyFile( m_bundleIcon16x16File, m_sourceBundleIcon16x16File );
+   }
+   if ( File::DirectoryExists( m_icon24x24Dir ) )
+   {
+      CopyFile( m_icon24x24File, m_sourceIcon24x24File );
+      CopyFile( m_bundleIcon24x24File, m_sourceBundleIcon24x24File );
+   }
+   if ( File::DirectoryExists( m_icon32x32Dir ) )
+   {
+      CopyFile( m_icon32x32File, m_sourceIcon32x32File );
+      CopyFile( m_bundleIcon32x32File, m_sourceBundleIcon32x32File );
+   }
+   if ( File::DirectoryExists( m_icon48x48Dir ) )
+   {
+      CopyFile( m_icon48x48File, m_sourceIcon48x48File );
+      CopyFile( m_bundleIcon48x48File, m_sourceBundleIcon48x48File );
+   }
+   if ( File::DirectoryExists( m_icon64x64Dir ) )
+   {
+      CopyFile( m_icon64x64File, m_sourceIcon64x64File );
+      CopyFile( m_bundleIcon64x64File, m_sourceBundleIcon64x64File );
+   }
+   if ( File::DirectoryExists( m_icon128x128Dir ) )
+   {
+      CopyFile( m_icon128x128File, m_sourceIcon128x128File );
+      CopyFile( m_bundleIcon128x128File, m_sourceBundleIcon128x128File );
+   }
+   if ( File::DirectoryExists( m_icon256x256Dir ) )
+   {
+      CopyFile( m_icon256x256File, m_sourceIcon256x256File );
+      CopyFile( m_bundleIcon256x256File, m_sourceBundleIcon256x256File );
+   }
+   if ( File::DirectoryExists( m_icon512x512Dir ) )
+   {
+      CopyFile( m_icon512x512File, m_sourceIcon512x512File );
+      CopyFile( m_bundleIcon512x512File, m_sourceBundleIcon512x512File );
+   }
+   if ( File::DirectoryExists( m_iconScalableDir ) )
+   {
+      CopyFile( m_iconScalableFile, m_sourceIconScalableFile );
+      CopyFile( m_bundleIconScalableFile, m_sourceBundleIconScalableFile );
+   }
 
    // Write the shared MIME info XML file:
    // http://standards.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html
    {
-      IsoString m_icon48x48File8 = m_icon48x48File.ToUTF8();
-      File f;
-      f.CreateForWriting( m_mimeDescriptionFile );
+      File f = File::CreateFileForWriting( m_mimeDescriptionFile );
       f.OutTextLn( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" );
       f.OutTextLn( "<mime-info xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">" );
+      f.OutTextLn( "   <mime-type type=\"inode/vnd.pixinsight.project\">" );
+      f.OutTextLn( "      <sub-class-of type=\"inode/directory\"/>" );
+      f.OutTextLn( "      <icon name=\"PixInsightBundle\"/>" );
+      f.OutTextLn( "      <comment>PixInsight project bundle</comment>" );
+      f.OutTextLn( "      <glob pattern=\"*.pxiproject\"/>" );
+      f.OutTextLn( "   </mime-type>" );
       f.OutTextLn( "   <mime-type type=\"application/x-xosm\">" );
       f.OutTextLn( "      <sub-class-of type=\"application/xml\"/>" );
-      f.OutTextLn( "      <icon name=\"" + m_icon48x48File8 + "\"/>" );
+      f.OutTextLn( "      <icon name=\"PixInsight\"/>" );
       f.OutTextLn( "      <comment>PixInsight project file</comment>" );
       f.OutTextLn( "      <glob pattern=\"*.xosm\"/>" );
       f.OutTextLn( "   </mime-type>" );
       f.OutTextLn( "   <mime-type type=\"application/x-xpsm\">" );
       f.OutTextLn( "      <sub-class-of type=\"application/xml\"/>" );
-      f.OutTextLn( "      <icon name=\"" + m_icon48x48File8 + "\"/>" );
+      f.OutTextLn( "      <icon name=\"PixInsight\"/>" );
       f.OutTextLn( "      <comment>PixInsight process icon file</comment>" );
       f.OutTextLn( "      <glob pattern=\"*.xpsm\"/>" );
       f.OutTextLn( "   </mime-type>" );
       f.OutTextLn( "   <mime-type type=\"application/x-psm\">" );
-      f.OutTextLn( "      <icon name=\"" + m_icon48x48File8 + "\"/>" );
+      f.OutTextLn( "      <icon name=\"PixInsight\"/>" );
       f.OutTextLn( "      <comment>PixInsight process icon file</comment>" );
       f.OutTextLn( "      <glob pattern=\"*.psm\"/>" );
       f.OutTextLn( "   </mime-type>" );
       f.OutTextLn( "   <mime-type type=\"image/x-xisf\">" );
-      f.OutTextLn( "      <icon name=\"" + m_icon48x48File8 + "\"/>" );
-      f.OutTextLn( "      <comment>Extensible image serialization format file</comment>" );
+      f.OutTextLn( "      <icon name=\"PixInsight\"/>" );
+      f.OutTextLn( "      <comment>Extensible Image Serialization Format</comment>" );
       f.OutTextLn( "      <glob pattern=\"*.xisf\"/>" );
       f.OutTextLn( "   </mime-type>" );
       f.OutTextLn( "   <mime-type type=\"text/x-pidoc\">" );
       f.OutTextLn( "      <sub-class-of type=\"text/plain\"/>" );
-      f.OutTextLn( "      <icon name=\"" + m_icon48x48File8 + "\"/>" );
+      f.OutTextLn( "      <icon name=\"PixInsight\"/>" );
       f.OutTextLn( "      <comment>PixInsight documentation source file</comment>" );
       f.OutTextLn( "      <glob pattern=\"*.pidoc\"/>" );
       f.OutTextLn( "   </mime-type>" );
@@ -659,13 +766,9 @@ bool PixInsightX11Installer::DoUninstall()
    std::cout << "\nPlease wait while PixInsight is being uninstalled...\n" << std::flush;
 
    RemoveDirectory( m_installDir );
-
    RemoveFileIfExists( m_binLauncherFile );
-
    RemoveFileIfExists( m_desktopEntryFile );
-
    RemoveFileIfExists( m_mimeDescriptionFile );
-
    RemoveFileIfExists( m_icon16x16File );
    RemoveFileIfExists( m_icon24x24File );
    RemoveFileIfExists( m_icon32x32File );
@@ -673,6 +776,17 @@ bool PixInsightX11Installer::DoUninstall()
    RemoveFileIfExists( m_icon64x64File );
    RemoveFileIfExists( m_icon128x128File );
    RemoveFileIfExists( m_icon256x256File );
+   RemoveFileIfExists( m_icon512x512File );
+   RemoveFileIfExists( m_iconScalableFile );
+   RemoveFileIfExists( m_bundleIcon16x16File );
+   RemoveFileIfExists( m_bundleIcon24x24File );
+   RemoveFileIfExists( m_bundleIcon32x32File );
+   RemoveFileIfExists( m_bundleIcon48x48File );
+   RemoveFileIfExists( m_bundleIcon64x64File );
+   RemoveFileIfExists( m_bundleIcon128x128File );
+   RemoveFileIfExists( m_bundleIcon256x256File );
+   RemoveFileIfExists( m_bundleIcon512x512File );
+   RemoveFileIfExists( m_bundleIconScalableFile );
 
    std::cout << "\n* PixInsight has been successfully uninstalled.\n\n";
    return true;
@@ -684,46 +798,65 @@ bool PixInsightX11Installer::DoShowHelp()
 {
    ShowLogo();
 
+   bool haveUsrShare = File::DirectoryExists( "/usr/share" );
+//             1         2         3         4         5         6         7
+//    1234567890123456789012345678901234567890123456789012345678901234567890
    std::cout <<
+   "\nInstalls or uninstalls PixInsight on X11 UNIX and Linux platforms,"
+   "\naccording to freedesktop.org standards and common practices on current"
+   "\nKDE and GNOME desktops."
+   "\n"
    "\nUsage: installer [<arguments>]"
    "\n"
    "\nSupported arguments (default values in parentheses):"
    "\n"
-   "\n--source-dir=<dir> | -s=<dir>"
+   "\n-s=<dir> | --source-dir=<dir>"
    "\n"
    "\n      Specifies the source installation files directory."
    "\n      (./PixInsight)"
    "\n"
-   "\n--install-dir=<dir> | -i=<dir>"
+   "\n-i=<dir> | --install-dir=<dir>"
    "\n"
-   "\n      Specifies the target installation directory."
+   "\n      Specifies the target installation directory. For basic security"
+   "\n      reasons, this should always be a protected system directory with"
+   "\n      exclusive root write permission."
    "\n      (/opt/PixInsight)"
    "\n"
    "\n--install-desktop-dir=<dir>"
    "\n"
-   "\n      Specifies the desktop entries installation directory."
-   "\n      (/usr/share/applications/ or /usr/local/share/applications)"
-   "\n"
+   "\n      Specifies the system directory where application desktop entry"
+   "\n      files will be generated."
+<< (haveUsrShare ?
+   "\n      (/usr/share/applications/)" :
+   "\n      (/usr/local/share/applications)")
+<< "\n"
    "\n--install-mime-dir=<dir>"
    "\n"
-   "\n      Specifies the MIME database installation directory."
-   "\n      (/usr/share/mime/ or /usr/local/share/mime)"
-   "\n"
+   "\n      Specifies the system directory where a MIME database file will"
+   "\n      be installed."
+<< (haveUsrShare ?
+   "\n      (/usr/share/mime/)" :
+   "\n      (/usr/local/share/mime)")
+<< "\n"
    "\n--install-icons-dir=<dir>"
    "\n"
-   "\n      Specifies the icons installation directory."
-   "\n      (/usr/share/icons/hicolor/ or /usr/local/share/icons/hicolor)"
-   "\n"
+   "\n      Specifies the system directory where application and file type"
+   "\n      icon files will be installed."
+<< (haveUsrShare ?
+   "\n      (/usr/share/icons/hicolor/)" :
+   "\n      (/usr/local/share/icons/hicolor)")
+<< "\n"
    "\n--bin-launcher[+|-]"
    "\n"
-   "\n      Create a PixInsight launcher shell script on the /bin directory."
+   "\n      Create a PixInsight launcher shell script on the /bin directory,"
+   "\n      so you can say PixInsight from anywhere."
    "\n      (enabled)"
    "\n"
    "\n--no-bin-launcher"
    "\n"
    "\n      Do not create a launcher shell script. Same as --bin-launcher-"
    "\n"
-   "\n--remove[+|-] | -r[+|-]"
+   "\n-r[+|-] | --remove[+|-]"
    "\n"
    "\n      If a previous PixInsight installation exists, remove it before"
    "\n      carrying out a new one."
@@ -731,11 +864,11 @@ bool PixInsightX11Installer::DoShowHelp()
    "\n"
    "\n--no-remove"
    "\n"
-   "\n      Do not remove a previous installation. Same as --remove-"
+   "\n      Do not remove a previous installation. Same as -r- or --remove-"
    "\n"
-   "\n--uninstall | -u"
+   "\n-u | --uninstall"
    "\n"
-   "\n      Uninstalls an existing PixInsight installation."
+   "\n      Uninstalls PixInsight, if a previous installation exists."
    "\n"
    "\n--version"
    "\n"
@@ -745,6 +878,13 @@ bool PixInsightX11Installer::DoShowHelp()
    "\n--help"
    "\n"
    "\n      Shows this help text and exits."
+   "\n"
+   "\nReferences"
+   "\n"
+   "\nhttps://specifications.freedesktop.org/desktop-entry-spec/latest/"
+   "\nhttps://specifications.freedesktop.org/menu-spec/latest/"
+   "\nhttps://specifications.freedesktop.org/icon-theme-spec/latest/"
+   "\nhttps://developer.gnome.org/integration-guide/stable/icons.html.en"
    "\n\n";
 
    return true;
@@ -761,14 +901,19 @@ String PixInsightX11Installer::VersionString()
 }
 
 // ----------------------------------------------------------------------------
-
 void PixInsightX11Installer::ShowLogo()
 {
    std::cout <<
-   "\n-------------------------------------------------------------------------------"
+   "\n_____________       ________            _____        ______ _____"
+   "\n___  __ \\__(_)___  _____  _/_______________(_)______ ___  /___  /_"
+   "\n__  /_/ /_  /__  |/_/__  /__  __ \\_  ___/_  /__  __ `/_  __ \\  __/"
+   "\n_  ____/_  / __>  < __/ / _  / / /(__  )_  / _  /_/ /_  / / / /_"
+   "\n/_/     /_/  /_/|_| /___/ /_/ /_//____/ /_/  _\\__, / /_/ /_/\\__/"
+   "\n                                             /____/"
+   "\n----------------------------------------------------------------------"
    "\nPixInsight X11 UNIX/Linux installer version " << VersionString() <<
    "\nCopyright (C) 2003-" PI_VERSION_YEAR " Pleiades Astrophoto. All Rights Reserved"
-   "\n-------------------------------------------------------------------------------"
+   "\n----------------------------------------------------------------------"
    "\n";
 }
 
@@ -993,33 +1138,13 @@ bool PixInsightX11Installer::IsPixInsightInstallation( const String& dirPath )
 
 // ----------------------------------------------------------------------------
 
-String PixInsightX11Installer::Unquoted( const String& s )
-{
-   String r = s;
-   if ( s.StartsWith( '\"' ) )
-      if ( s.EndsWith( '\"' ) )
-      {
-         r.DeleteRight( r.UpperBound() );
-         r.DeleteLeft( 1 );
-      }
-   if ( s.StartsWith( '\'' ) )
-      if ( s.EndsWith( '\'' ) )
-      {
-         r.DeleteRight( r.UpperBound() );
-         r.DeleteLeft( 1 );
-      }
-   return r;
-}
-
-// ----------------------------------------------------------------------------
-
 bool PixInsightX11Installer::AskForConfirmation()
 {
    std::cout << "\n==> Are you sure [yes|no] ? " << std::flush;
    IsoString answer( ' ', 8 );
    std::cin.getline( answer.Begin(), 8 );
    answer.ResizeToNullTerminated();
-   if ( answer.Trimmed().Lowercase() == "yes" )
+   if ( answer.Trimmed().CaseFolded() == "yes" )
       return true;
    std::cout << "\n** Canceled\n\n";
    return false;
@@ -1080,5 +1205,5 @@ int main( int argc, const char** argv )
 }
 
 // ----------------------------------------------------------------------------
-// 2018/11/23 16:11:53 UTC
+// 2019/01/18 18:11:21 UTC
 // installer.cpp

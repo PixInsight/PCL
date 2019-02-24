@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/GlobalSettings.h - Released 2018-11-23T16:14:19Z
+// pcl/GlobalSettings.h - Released 2019-01-21T12:06:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -112,7 +112,7 @@ namespace GlobalVariableType
  * pcl::GlobalVariableType namespace for more details.
  *
  * Below is a complete list of all global settings available in current
- * versions of the PixInsight platform (updated as of core version 1.8.5.1219).
+ * versions of the PixInsight platform (updated as of core version 1.8.6.1455).
  *
  * <h3>PixInsight Public Global Variables</h3>
  *
@@ -140,6 +140,7 @@ namespace GlobalVariableType
  * <tr><td>ImageWindow/FollowDownloadLocations</td><td></td></tr>
  * <tr><td>ImageWindow/HighDPIRenditions</td><td></td></tr>
  * <tr><td>ImageWindow/LoadAstrometricSolutions</td><td></td></tr>
+ * <tr><td>ImageWindow/MeasureScreenRenderingPerformance</td><td></td></tr>
  * <tr><td>ImageWindow/NativeFileDialogs</td><td></td></tr>
  * <tr><td>ImageWindow/ProjectVerifyIncrementalChecksums</td><td></td></tr>
  * <tr><td>ImageWindow/RememberFileOpenType</td><td></td></tr>
@@ -505,4 +506,4 @@ public:
 #endif   // __PCL_GlobalSettings_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/GlobalSettings.h - Released 2018-11-23T16:14:19Z
+// EOF pcl/GlobalSettings.h - Released 2019-01-21T12:06:07Z

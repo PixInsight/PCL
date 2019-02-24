@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.04.01.0012
+// Standard SubframeSelector Process Module Version 01.04.02.0025
 // ----------------------------------------------------------------------------
-// GraphWebView.cpp - Released 2018-11-23T18:45:58Z
+// GraphWebView.cpp - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SubframeSelector PixInsight module.
 //
@@ -61,40 +61,49 @@ namespace pcl
 GraphWebView::GraphWebView( Control& parent ) :
    WebView( parent )
 {
-   eventCheckTimer.SetInterval( 0.1 );
-   eventCheckTimer.SetPeriodic();
-
-   eventCheckTimer.OnTimer( (Timer::timer_event_handler)&GraphWebView::__Timer, *this );
+   m_eventCheckTimer.SetInterval( 0.1 );
+   m_eventCheckTimer.SetPeriodic();
+   m_eventCheckTimer.OnTimer( (Timer::timer_event_handler)&GraphWebView::__Timer, *this );
 
    OnEnter( (Control::event_handler)&GraphWebView::__MouseEnter, *this );
    OnLeave( (Control::event_handler)&GraphWebView::__MouseLeave, *this );
-
    OnScriptResultAvailable( (WebView::result_event_handler)&GraphWebView::__JSResult, *this );
+   OnLoadFinished( (WebView::state_event_handler)&GraphWebView::__LoadFinished, *this );
 }
 
 // ----------------------------------------------------------------------------
 
 void GraphWebView::__MouseEnter( Control& sender )
 {
-   keepChecking = true;
-   if ( !eventCheckTimer.IsRunning() && !eventHandlers.IsNull() &&
-        (eventHandlers->onApprove != nullptr || eventHandlers->onUnlock != nullptr) )
-      eventCheckTimer.Start();
+   m_keepChecking = true;
+   if ( !m_eventCheckTimer.IsRunning() )
+      if ( !m_eventHandlers.IsNull() )
+         if ( m_eventHandlers->onApprove != nullptr || m_eventHandlers->onUnlock != nullptr )
+            m_eventCheckTimer.Start();
 }
 
 // ----------------------------------------------------------------------------
 
 void GraphWebView::__MouseLeave( Control& sender )
 {
-   keepChecking = false;
+   m_keepChecking = false;
 }
 
 // ----------------------------------------------------------------------------
 
 void GraphWebView::__Timer( Timer& sender )
 {
-   EvaluateScript( "getApprovalIndex()", "JavaScript" );
-   EvaluateScript( "getLockIndex()", "JavaScript" );
+   /*
+    * N.B. Do not evaluate scripts until the page has been completely and
+    * successfully loaded. Otherwise the integrated web browser component
+    * (Chromium) crashes and *all* WebView controls cease to work.
+    * ### TODO: Find a way to restart WebViews after a crash.
+    */
+   if ( m_loaded )
+   {
+      EvaluateScript( "getApprovalIndex()" );
+      EvaluateScript( "getLockIndex()" );
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -115,40 +124,66 @@ void GraphWebView::__JSResult( WebView& sender, const Variant& result )
    int index = resultText.ToInt();
    if ( index <= 0 )
    {
-      if ( !keepChecking && eventCheckTimer.IsRunning() )
-         eventCheckTimer.Stop();
+      if ( !m_keepChecking )
+         m_eventCheckTimer.Stop();
    }
    else
    {
-      if ( approve && !eventHandlers.IsNull() && eventHandlers->onApprove != nullptr )
-         (eventHandlers->onApproveReceiver->*eventHandlers->onApprove)( *this, index );
-      if ( unlock && !eventHandlers.IsNull() && eventHandlers->onUnlock != nullptr )
-         (eventHandlers->onUnlockReceiver->*eventHandlers->onUnlock)( *this, index );
+      if ( !m_eventHandlers.IsNull() )
+      {
+         if ( approve )
+            if ( m_eventHandlers->onApprove != nullptr )
+               (m_eventHandlers->onApproveReceiver->*m_eventHandlers->onApprove)( *this, index );
+         if ( unlock )
+            if ( m_eventHandlers->onUnlock != nullptr )
+               (m_eventHandlers->onUnlockReceiver->*m_eventHandlers->onUnlock)( *this, index );
+      }
    }
+}
+
+// ----------------------------------------------------------------------------
+
+void GraphWebView::__LoadFinished( WebView& sender, bool loadedOk )
+{
+   /*
+    * WebView contents are represented in physical pixels by default. The
+    * following call ensures a representation in logical pixels on high-dpi
+    * screens. Under non high-dpi screen resolutions, as well as on desktops
+    * that use logical pixels by default (macOS), this call is a no-op.
+    *
+    * ### N.B. Since version 1.8.6, the core already scales WebView zoom
+    * factors by the ratio between physical and logical pixels automatically,
+    * so 1.0 will be transformed to 1.0*DisplayPixelRatio() internally.
+    */
+   m_loaded = loadedOk;
+   if ( m_loaded )
+      sender.SetZoomFactor( 1.0 );
 }
 
 // ----------------------------------------------------------------------------
 
 void GraphWebView::OnApprove( approve_event_handler handler, Control& receiver )
 {
-   if ( eventHandlers.IsNull() )
-      eventHandlers = new EventHandlers;
-   eventHandlers->onApprove = handler;
-   eventHandlers->onApproveReceiver = &receiver;
+   if ( m_eventHandlers.IsNull() )
+      m_eventHandlers = new EventHandlers;
+   m_eventHandlers->onApprove = handler;
+   m_eventHandlers->onApproveReceiver = &receiver;
 }
 
 void GraphWebView::OnUnlock( unlock_event_handler handler, Control& receiver )
 {
-   if ( eventHandlers.IsNull() )
-      eventHandlers = new EventHandlers;
-   eventHandlers->onUnlock = handler;
-   eventHandlers->onUnlockReceiver = &receiver;
+   if ( m_eventHandlers.IsNull() )
+      m_eventHandlers = new EventHandlers;
+   m_eventHandlers->onUnlock = handler;
+   m_eventHandlers->onUnlockReceiver = &receiver;
 }
 
 // ----------------------------------------------------------------------------
 
 void GraphWebView::SetDataset( const String& dataname, const DataPointVector* dataset )
 {
+   m_loaded = false;
+
    int length = int( dataset->Length() );
 
    // Sort the dataset by X values to ensure a proper line
@@ -614,7 +649,22 @@ void GraphWebView::SetDataset( const String& dataname, const DataPointVector* da
 </script>
    )DELIM" + Footer();
 
-   SetHTML( html.ToUTF8() );
+   /*
+    * N.B. On Windows with relative frequency, and rarely on Linux and macOS,
+    * setting contents directly by calling SetHTML() fails, causing the graphs
+    * to be empty and leading to an 'invalid script execution' error after this
+    * function. This is probably a bug in QTWebEngine, which we have seen in
+    * other places with several Qt versions. As happens with most Qt bugs, we
+    * cannot rely on the hope of someone fixing this problem within a
+    * manageable amount of time (years, maybe), so here is a workaround: save
+    * the document to a local file and force loading it. This works reliably on
+    * all platforms, fortunately.
+    */
+   // SetHTML( html.ToUTF8() );
+   Cleanup();
+   m_htmlFilePath = File::UniqueFileName( File::SystemTempDirectory(), 12, "SFS_graphs_", ".html" );
+   File::WriteTextFile( m_htmlFilePath, html.ToUTF8() );
+   LoadContent( File::FileURI( m_htmlFilePath ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -623,8 +673,7 @@ String GraphWebView::Header() const
 {
    String coreSrcDir = PixInsightSettings::GlobalString( "Application/SrcDirectory" );
 
-   return R"DELIM(
-<!DOCTYPE html>
+   return R"DELIM(<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -633,25 +682,28 @@ String GraphWebView::Header() const
 <link rel="stylesheet" href=")DELIM" + File::FileURI( coreSrcDir + "/scripts/Dygraph/dygraph-doc.css" ) + R"DELIM("/>
 <link rel="stylesheet" href=")DELIM" + File::FileURI( coreSrcDir + "/scripts/Dygraph/dygraph.css" ) + R"DELIM("/>
 <style>
-   /* No white background, makes it appear more like a normal control */
+   /*
+    * White background, which is the best option for exported PDF documents.
+    * N.B. Transparent backgrounds ignored since core 1.8.6 (Qt >= 5.12.0).
+    */
    html, body {
-      background-color: rgba(0,0,0,0);
+      background-color: white;
       overflow: hidden;
    }
 
    /* Fit the graph within the confines of the view */
    #graph {
       position: fixed;
-      top: 0px;
+      top: 1vh;
       left: -15px;
-      height: 100vh;
+      height: 98vh;
       width: 67vw;
    }
    #histograph {
       position: fixed;
-      top: 0px;
+      top: 1vh;
       right: -15px;
-      height: 100vh;
+      height: 98vh;
       width: 37vw;
    }
 
@@ -715,7 +767,26 @@ String GraphWebView::Footer() const
 
 // ----------------------------------------------------------------------------
 
+void GraphWebView::Cleanup()
+{
+   if ( !m_htmlFilePath.IsEmpty() )
+   {
+      try
+      {
+         if ( File::Exists( m_htmlFilePath ) )
+            File::Remove( m_htmlFilePath );
+      }
+      catch ( ... )
+      {
+         // Do not propagate filesystem exceptions from here.
+      }
+      m_htmlFilePath.Clear();
+   }
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF GraphWebView.cpp - Released 2018-11-23T18:45:58Z
+// EOF GraphWebView.cpp - Released 2019-01-21T12:06:42Z

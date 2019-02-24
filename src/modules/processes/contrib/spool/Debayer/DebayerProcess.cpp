@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.07.00.0308
+// Standard Debayer Process Module Version 01.08.00.0327
 // ----------------------------------------------------------------------------
-// DebayerProcess.cpp - Released 2018-11-23T18:45:59Z
+// DebayerProcess.cpp - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -73,13 +73,14 @@ DebayerProcess* TheDebayerProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
-DebayerProcess::DebayerProcess() : MetaProcess()
+DebayerProcess::DebayerProcess()
 {
    TheDebayerProcess = this;
 
    // Instantiate process parameters
    new DebayerBayerPatternParameter( this );
    new DebayerMethodParameter( this );
+   new DebayerFBDDNoiseReduction( this );
    new DebayerEvaluateNoise( this );
    new DebayerNoiseEvaluationAlgorithm( this );
    new DebayerShowImages( this );
@@ -284,4 +285,4 @@ int DebayerProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DebayerProcess.cpp - Released 2018-11-23T18:45:59Z
+// EOF DebayerProcess.cpp - Released 2019-01-21T12:06:42Z

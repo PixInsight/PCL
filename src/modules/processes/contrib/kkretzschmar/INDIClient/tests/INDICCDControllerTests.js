@@ -1,7 +1,7 @@
 // ----------------------------------------------------------------------------
 // PixInsight JavaScript Runtime API - PJSR Version 1.0
 // ----------------------------------------------------------------------------
-// INDICCDControllerTests.js - Released 2018-11-23T18:45:59Z
+// INDICCDControllerTests.js - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 //
 //
@@ -50,7 +50,7 @@
 #include "Asserts.jsh"
 #include "INDI-helper.jsh"
 
-#define CCD_DEVICE_NAME "CCD Simulator"
+#define CCD_DEVICE_NAME "CCD Imager Simulator @ localhost"
 
 function INDICCDControllerTests( parent )
 {
@@ -72,19 +72,19 @@ function INDICCDControllerTests( parent )
          let fitskeys = window.keywords;
          assertTrue( fitskeys.length > 0, "No FITS keywords" );
          // check expected CCD device
-         expectEquals( "'CCD Simulator'", fitskeys[indexOfFITSKeyword( fitskeys, "INSTRUME" )].value );
+         expectEquals( "'CCD Imager Simulator'", fitskeys[indexOfFITSKeyword( fitskeys, "INSTRUME" )].value );
          // check image sizes
          let imgHeight = window.mainView.image.height;
          let imgWidth = window.mainView.image.width;
          expectEquals( imgWidth.toString(), fitskeys[indexOfFITSKeyword( fitskeys, "NAXIS1" )].value );
          expectEquals( imgHeight.toString(), fitskeys[indexOfFITSKeyword( fitskeys, "NAXIS2" )].value );
          // check EXPTIME
-         expectEquals( ccdController.exposureTime.toString() + ".", fitskeys[indexOfFITSKeyword( fitskeys, "EXPTIME" )].value );
+         expectEquals( ccdController.exposureTime.toString() + ".00", fitskeys[indexOfFITSKeyword( fitskeys, "EXPTIME" )].value );
          // check XBINNING and YBINNING
          expectEquals( ccdController.binningX.toString(), fitskeys[indexOfFITSKeyword( fitskeys, "XBINNING" )].value );
          expectEquals( ccdController.binningY.toString(), fitskeys[indexOfFITSKeyword( fitskeys, "YBINNING" )].value );
          // check frame type
-         expectEquals( "'Light'", fitskeys[indexOfFITSKeyword( fitskeys, "FRAME" )].value.replace( / /g, '' ) );
+         expectEquals( "'Light'", fitskeys[indexOfFITSKeyword( fitskeys, "IMAGETYP" )].value.replace( / /g, '' ) );
          // close image
          window.close();
       }
@@ -106,7 +106,7 @@ function INDICCDControllerTests( parent )
          let fitskeys = window.keywords;
          assertTrue( fitskeys.length > 0, "No FITS keywords" );
           // check EXPTIME
-         expectEquals( ccdController.exposureTime.toString() + ".", fitskeys[indexOfFITSKeyword( fitskeys, "EXPTIME" )].value );
+         expectEquals( ccdController.exposureTime.toString() + ".00", fitskeys[indexOfFITSKeyword( fitskeys, "EXPTIME" )].value );
          // close image
          window.close();
       }
@@ -152,7 +152,7 @@ function INDICCDControllerTests( parent )
          let fitskeys = window.keywords;
          assertTrue( fitskeys.length > 0, "No FITS keywords" );
          // check frame type
-         expectEquals( "'Bias'", fitskeys[indexOfFITSKeyword( fitskeys, "FRAME" )].value.replace( / /g, '' ) );
+         expectEquals( "'Bias'", fitskeys[indexOfFITSKeyword( fitskeys, "IMAGETYP" )].value.replace( / /g, '' ) );
          // close image
          window.close();
       }
@@ -175,7 +175,7 @@ function INDICCDControllerTests( parent )
          assertTrue( fitskeys.length > 0, "No FITS keywords" );
          ccdController.exposureTime = 1;
          // check frame type
-         expectEquals( "'Dark'", fitskeys[indexOfFITSKeyword( fitskeys, "FRAME" )].value.replace( / /g, '' ) );
+         expectEquals( "'Dark'", fitskeys[indexOfFITSKeyword( fitskeys, "IMAGETYP" )].value.replace( / /g, '' ) );
          // close image
          window.close();
       }
@@ -197,7 +197,7 @@ function INDICCDControllerTests( parent )
          let fitskeys = window.keywords;
          assertTrue( fitskeys.length > 0, "No FITS keywords" );
          // check frame type
-         expectEquals( "'FlatField'", fitskeys[indexOfFITSKeyword( fitskeys, "FRAME" )].value.replace( / /g, '' ) );
+         expectEquals( "'Flat'", fitskeys[indexOfFITSKeyword( fitskeys, "IMAGETYP" )].value.replace( / /g, '' ) );
          // close image
          window.close();
       }
@@ -223,7 +223,7 @@ function INDICCDControllerTests( parent )
       {
          let ccdController = new INDICCDFrame;
          ccdController.deviceName = CCD_DEVICE_NAME;
-         ccdController.serverUploadDirectory = Settings.readGlobal( "ImageWindow/DownloadsDirectory", DataType_UCString );
+         ccdController.serverUploadDirectory = Settings.readGlobal( "ImageWindow/DownloadsDirectory", DataType_UCString ) + '/';
          ccdController.uploadMode = 1; // UploadMode_Server
          // execute in the global context
          assertTrue( ccdController.executeGlobal() );
@@ -242,7 +242,7 @@ function INDICCDControllerTests( parent )
       {
          let ccdController = new INDICCDFrame;
          ccdController.deviceName = CCD_DEVICE_NAME;
-         ccdController.serverUploadDirectory = Settings.readGlobal( "ImageWindow/DownloadsDirectory", DataType_UCString );
+         ccdController.serverUploadDirectory = Settings.readGlobal( "ImageWindow/DownloadsDirectory", DataType_UCString ) + '/';
          ccdController.uploadMode = 2; // UploadMode_ServerAndClient
          // execute in the global context
          assertTrue( ccdController.executeGlobal() );
@@ -266,7 +266,7 @@ function INDICCDControllerTests( parent )
       {
          let ccdController = new INDICCDFrame;
          ccdController.deviceName = CCD_DEVICE_NAME;
-         ccdController.serverUploadDirectory = Settings.readGlobal( "ImageWindow/DownloadsDirectory", DataType_UCString );
+         ccdController.serverUploadDirectory = Settings.readGlobal( "ImageWindow/DownloadsDirectory", DataType_UCString ) + '/';
          ccdController.uploadMode = 1; // UploadMode_Server
          ccdController.frameType = 1; // FrameType_Bias
          ccdController.exposureTime = 2;
@@ -293,4 +293,4 @@ function INDICCDControllerTests( parent )
 INDICCDControllerTests.prototype = new Test;
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDControllerTests.js - Released 2018-11-23T18:45:59Z
+// EOF INDICCDControllerTests.js - Released 2019-01-21T12:06:42Z

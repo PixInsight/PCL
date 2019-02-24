@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.107
-# Copyright (C) 2009-2018 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.109
+# Copyright (C) 2009-2019 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2018-11-23T18:58:01.514Z
+# Generated on .... 2019-01-21T12:08:45.257Z
 # Project id ...... CometAlignment
 # Project type .... Module
 # Platform ........ FreeBSD/g++
@@ -57,7 +57,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/CometAlignment-pxm.so: $(OBJ_FILES)
-	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/CometAlignment-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi -llz4-pxi -lzlib-pxi -lRFC6234-pxi -llcms-pxi -lcminpack-pxi
+	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -rdynamic -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/CometAlignment-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi -llz4-pxi -lzlib-pxi -lRFC6234-pxi -llcms-pxi -lcminpack-pxi
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
@@ -69,6 +69,6 @@ post-build:
 	cp $(OBJ_DIR)/CometAlignment-pxm.so $(PCLBINDIR64)
 
 ./x64/Release/%.o: ../../%.cpp
-	clang++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=skylake -msse4.1 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

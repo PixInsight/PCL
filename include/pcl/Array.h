@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/Array.h - Released 2018-11-23T16:14:19Z
+// pcl/Array.h - Released 2019-01-21T12:06:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -1345,6 +1345,23 @@ public:
    }
 
    /*!
+    * Securely fills this array and all instances sharing its data with the
+    * specified value \a v.
+    *
+    * The normal data sharing mechanism is ignored on purpose by this member
+    * function, so if there are other objects sharing the same array data, all
+    * of them will be affected unconditionally.
+    *
+    * This function is useful to ensure that sensitive data, such as user
+    * passwords and user names, are destroyed without the risk of surviving
+    * duplicates as a result of implicit data sharing.
+    */
+   void SecureFill( const T& v )
+   {
+      pcl::Fill( m_data->begin, m_data->end, v );
+   }
+
+   /*!
     * Calls f( T& x ) for every object x contained by this array, successively
     * from the first contained object to the last one.
     */
@@ -2134,4 +2151,4 @@ Array<T,A>& operator <<( Array<T,A>&& x1, const Array<T,A>& x2 )
 #endif  // __PCL_Array_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Array.h - Released 2018-11-23T16:14:19Z
+// EOF pcl/Array.h - Released 2019-01-21T12:06:07Z

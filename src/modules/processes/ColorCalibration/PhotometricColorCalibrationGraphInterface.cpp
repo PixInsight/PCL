@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0927
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.03.03.0326
+// Standard ColorCalibration Process Module Version 01.03.03.0336
 // ----------------------------------------------------------------------------
-// PhotometricColorCalibrationGraphInterface.cpp - Released 2018-11-23T18:45:58Z
+// PhotometricColorCalibrationGraphInterface.cpp - Released 2019-01-21T12:06:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -332,7 +332,17 @@ void PhotometricColorCalibrationGraphInterface::CleanUp()
 
 void PhotometricColorCalibrationGraphInterface::e_LoadFinished( WebView& sender, bool state )
 {
-   GUI->Graph_WebView.SetZoomFactor( DisplayPixelRatio() );
+   /*
+    * WebView contents are represented in physical pixels by default. The
+    * following call ensures a representation in logical pixels on high-dpi
+    * screens. Under non high-dpi screen resolutions, as well as on desktops
+    * that use logical pixels by default (macOS), this call is a no-op.
+    *
+    * ### N.B. Since version 1.8.6, the core already scales WebView zoom
+    * factors by the ratio between physical and logical pixels automatically,
+    * so 1.0 will be transformed to 1.0*DisplayPixelRatio() internally.
+    */
+   GUI->Graph_WebView.SetZoomFactor( 1.0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -354,4 +364,4 @@ PhotometricColorCalibrationGraphInterface::GUIData::GUIData( PhotometricColorCal
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PhotometricColorCalibrationGraphInterface.cpp - Released 2018-11-23T18:45:58Z
+// EOF PhotometricColorCalibrationGraphInterface.cpp - Released 2019-01-21T12:06:41Z

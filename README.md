@@ -42,7 +42,7 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
 **[PCL]/src/3rdparty**
 
 <dl><dd>
-   Some third-party libraries, mainly file format support libraries, used by the PixInsight modules included in this distribution. The CFITSIO and JasPer libraries include custom modifications, which are conveniently identified in the source code (search for the 'CUSTOM CODE' string).
+   Some third-party libraries, mainly file format support libraries, used by the PixInsight modules included in this distribution. The CFITSIO, LibRAW and JasPer libraries may include custom modifications, which are conveniently identified in the source code (search for the 'CUSTOM CODE' string).
 </dd></dl>
 
 **[PCL]/src/modules/file-formats**
@@ -72,7 +72,7 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
 **[PCL]/src/modules/processes/[module_name]/linux/g++**
 
 <dl><dd>
-   Makefiles for Linux with GCC >= 4.8.0 (4.8.5 or higher recommended)
+   Makefiles for Linux with GCC >= 4.8.5 (GCC 7 or higher recommended)
 </dd></dl>
 
 **[PCL]/src/modules/file-formats/[module_name]/macosx/g++**<br/>
@@ -117,7 +117,7 @@ On Windows, we provide project files for the Microsoft Visual Studio integrated 
 
 In order to use the PCL build system to compile and link PCL-based code, a number of environment variables must be defined on all platforms.
 
-With the following environment variables correctly defined, you can generate makefiles and project files for your modules on all platforms automatically with the Makefile Generator script, which we have included as a standard tool on all PixInsight Core distributions.
+With the following environment variables correctly defined, you can generate makefiles and project files for your modules on all platforms automatically with the Makefile Generator script, which we have included as a standard tool on all PixInsight core distributions.
 
 **PCLDIR**
 
@@ -178,22 +178,22 @@ With the following environment variables correctly defined, you can generate mak
 **PCLLIBDIR**
 
 <dl><dd>
-   PCL library files directory. This variable should be equal to PCLLIBDIR64.
+   PCL library files directory. This variable should normally be equal to PCLLIBDIR64.
 </dd></dl>
 
 **PCLINCDIR**
 
 <dl><dd>
-   PCL include files directory. Should be equal to $PCLDIR/include.
+   PCL include files directory. Should normally be equal to $PCLDIR/include.
 </dd></dl>
 
 **PCLSRCDIR**
 
 <dl><dd>
-   PCL source files directory. Should be equal to $PCLDIR/src.
+   PCL source files directory. Should normally be equal to $PCLDIR/src.
 </dd></dl>
 
 
 
 ******
-###### Copyright (C) 2003-2018 Pleiades Astrophoto
+###### Copyright (C) 2003-2019 Pleiades Astrophoto

@@ -1,0 +1,134 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.109
+# Copyright (C) 2009-2019 Pleiades Astrophoto
+######################################################################
+# Generated on .... 2019-01-21T12:08:44.642Z
+# Project id ...... INDIClient
+# Project type .... Module
+# Platform ........ Linux/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/contrib/kkretzschmar/INDIClient/linux/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/INDIClient-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../Alignment.cpp \
+../../IINDIProperty.cpp \
+../../INDI/base64.c \
+../../INDI/baseclient.cpp \
+../../INDI/basedevice.cpp \
+../../INDI/indicom.c \
+../../INDI/indiproperty.cpp \
+../../INDI/indistandardproperty.cpp \
+../../INDI/lilxml.c \
+../../INDICCDFrameInstance.cpp \
+../../INDICCDFrameInterface.cpp \
+../../INDICCDFrameParameters.cpp \
+../../INDICCDFrameProcess.cpp \
+../../INDIClient.cpp \
+../../INDIClientModule.cpp \
+../../INDIDeviceControllerInstance.cpp \
+../../INDIDeviceControllerInterface.cpp \
+../../INDIDeviceControllerParameters.cpp \
+../../INDIDeviceControllerProcess.cpp \
+../../INDIMountInstance.cpp \
+../../INDIMountInterface.cpp \
+../../INDIMountParameters.cpp \
+../../INDIMountProcess.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/Alignment.o \
+./x64/Release/IINDIProperty.o \
+./x64/Release/INDI/base64.o \
+./x64/Release/INDI/baseclient.o \
+./x64/Release/INDI/basedevice.o \
+./x64/Release/INDI/indicom.o \
+./x64/Release/INDI/indiproperty.o \
+./x64/Release/INDI/indistandardproperty.o \
+./x64/Release/INDI/lilxml.o \
+./x64/Release/INDICCDFrameInstance.o \
+./x64/Release/INDICCDFrameInterface.o \
+./x64/Release/INDICCDFrameParameters.o \
+./x64/Release/INDICCDFrameProcess.o \
+./x64/Release/INDIClient.o \
+./x64/Release/INDIClientModule.o \
+./x64/Release/INDIDeviceControllerInstance.o \
+./x64/Release/INDIDeviceControllerInterface.o \
+./x64/Release/INDIDeviceControllerParameters.o \
+./x64/Release/INDIDeviceControllerProcess.o \
+./x64/Release/INDIMountInstance.o \
+./x64/Release/INDIMountInterface.o \
+./x64/Release/INDIMountParameters.o \
+./x64/Release/INDIMountProcess.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/Alignment.d \
+./x64/Release/IINDIProperty.d \
+./x64/Release/INDI/base64.d \
+./x64/Release/INDI/baseclient.d \
+./x64/Release/INDI/basedevice.d \
+./x64/Release/INDI/indicom.d \
+./x64/Release/INDI/indiproperty.d \
+./x64/Release/INDI/indistandardproperty.d \
+./x64/Release/INDI/lilxml.d \
+./x64/Release/INDICCDFrameInstance.d \
+./x64/Release/INDICCDFrameInterface.d \
+./x64/Release/INDICCDFrameParameters.d \
+./x64/Release/INDICCDFrameProcess.d \
+./x64/Release/INDIClient.d \
+./x64/Release/INDIClientModule.d \
+./x64/Release/INDIDeviceControllerInstance.d \
+./x64/Release/INDIDeviceControllerInterface.d \
+./x64/Release/INDIDeviceControllerParameters.d \
+./x64/Release/INDIDeviceControllerProcess.d \
+./x64/Release/INDIMountInstance.d \
+./x64/Release/INDIMountInterface.d \
+./x64/Release/INDIMountParameters.d \
+./x64/Release/INDIMountProcess.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/INDIClient-pxm.so: $(OBJ_FILES)
+	g++ -m64 -fPIC -pthread -Wl,-fuse-ld=gold -Wl,--enable-new-dtags -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -rdynamic -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/INDIClient-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi -llz4-pxi -lzlib-pxi -lRFC6234-pxi -llcms-pxi -lcminpack-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/INDIClient-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/INDIClient-pxm.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=skylake -mfpmath=sse -msse4.1 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Release/INDI/%.o: ../../INDI/%.cpp
+	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=skylake -mfpmath=sse -msse4.1 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Release/%.o: ../../%.cpp
+	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=skylake -mfpmath=sse -msse4.1 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Release/INDI/%.o: ../../INDI/%.c
+	gcc -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=skylake -mfpmath=sse -msse4.1 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fnon-call-exceptions -std=c99 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/TimePoint.cpp - Released 2018-12-12T09:24:30Z
+// pcl/TimePoint.cpp - Released 2019-01-21T12:06:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -193,7 +193,7 @@ double TimePoint::DeltaT() const
          if ( (s_deltaTEnd - s_deltaTStart) < 365 )
             throw Error( "The DeltaT data covers an insufficient time span." );
 
-         s_deltaT.Initialize( Vector( T.Begin(), T.Length() ), Vector( D.Begin(), D.Length() ) );
+         s_deltaT.Initialize( Vector( T.Begin(), int( T.Length() ) ), Vector( D.Begin(), int( D.Length() ) ) );
          s_deltaTInitialized.Store( 1 );
       }
    }
@@ -494,4 +494,4 @@ String TimePoint::ToString( const String& format ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/TimePoint.cpp - Released 2018-12-12T09:24:30Z
+// EOF pcl/TimePoint.cpp - Released 2019-01-21T12:06:21Z

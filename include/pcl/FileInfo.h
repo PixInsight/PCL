@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/FileInfo.h - Released 2018-12-12T09:24:21Z
+// pcl/FileInfo.h - Released 2019-01-21T12:06:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -137,10 +137,10 @@ public:
     *
     * Examples:
     *
-    * In '/foo.tar.gz' the directory is '/'.
-    * In '/foo/bar.tar.gz' the directory is '/foo'.
-    * In 'foo/bar.tar.gz' the directory is 'foo'.
-    * In 'C:/Foo/Bar.txt' the directory is '/Foo'.
+    * \li In '/foo.tar.gz' the directory is '/'.
+    * \li In '/foo/bar.tar.gz' the directory is '/foo'.
+    * \li In 'foo/bar.tar.gz' the directory is 'foo'.
+    * \li In 'C:/Foo/Bar.txt' the directory is '/Foo'.
     */
    String Directory() const
    {
@@ -155,8 +155,8 @@ public:
     *
     * Examples:
     *
-    * In '/foo/bar.tar.gz' the name is 'bar'.
-    * In 'C:/Foo/Bar.txt' the name is 'Bar'.
+    * \li In '/foo/bar.tar.gz' the name is 'bar'.
+    * \li In 'C:/Foo/Bar.txt' the name is 'Bar'.
     */
    String Name() const
    {
@@ -171,8 +171,8 @@ public:
     *
     * Examples:
     *
-    * In '/foo/bar.tar.gz' the extension is '.gz'.
-    * In 'C:/Foo/Bar.txt' the extension is '.txt'.
+    * \li In '/foo/bar.tar.gz' the extension is '.gz'.
+    * \li In 'C:/Foo/Bar.txt' the extension is '.txt'.
     */
    String Extension() const
    {
@@ -439,4 +439,4 @@ private:
 #endif  // __PCL_FileInfo_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileInfo.h - Released 2018-12-12T09:24:21Z
+// EOF pcl/FileInfo.h - Released 2019-01-21T12:06:07Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/ReferenceCounter.h - Released 2018-12-12T09:24:21Z
+// pcl/ReferenceCounter.h - Released 2019-01-21T12:06:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -229,4 +229,4 @@ private:
 #endif  // __PCL_ReferenceCounter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ReferenceCounter.h - Released 2018-12-12T09:24:21Z
+// EOF pcl/ReferenceCounter.h - Released 2019-01-21T12:06:07Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0424
+// Standard IntensityTransformations Process Module Version 01.07.01.0430
 // ----------------------------------------------------------------------------
-// ScreenTransferFunctionInterface.cpp - Released 2018-12-12T09:25:25Z
+// ScreenTransferFunctionInterface.cpp - Released 2019-01-21T12:06:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -79,7 +79,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ScreenTransferFunctionInterface* TheScreenTransferFunctionInterface = 0;
+ScreenTransferFunctionInterface* TheScreenTransferFunctionInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -118,7 +118,10 @@ private:
    void __Button_Click( Button& sender, bool checked );
 };
 
-STFParametersDialog::STFParametersDialog( const ScreenTransferFunctionInstance& i ) : Dialog(), m_instance( i )
+// ----------------------------------------------------------------------------
+
+STFParametersDialog::STFParametersDialog( const ScreenTransferFunctionInstance& instance ) :
+   m_instance( instance )
 {
    static const char* chLabel[ 4 ] = { "R/K:", "G:", "B:", "L:" };
 
@@ -202,6 +205,8 @@ STFParametersDialog::STFParametersDialog( const ScreenTransferFunctionInstance& 
    UpdateControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void STFParametersDialog::UpdateControls()
 {
    for ( int c = 0; c < 4; ++c )
@@ -211,6 +216,8 @@ void STFParametersDialog::UpdateControls()
       C1_NumericEdit[c].SetValue( m_instance[c].c1 );
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void STFParametersDialog::__EditValueUpdated( NumericEdit& sender, double value )
 {
@@ -241,6 +248,8 @@ void STFParametersDialog::__EditValueUpdated( NumericEdit& sender, double value 
          break;
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void STFParametersDialog::__Button_Click( Button& sender, bool checked )
 {
@@ -298,9 +307,9 @@ private:
    void __Button_Click( Button& sender, bool checked );
 };
 
+// ----------------------------------------------------------------------------
+
 STFAutoStretchDialog::STFAutoStretchDialog() :
-   Dialog(),
-   view(),
    shadowsClipping( DEFAULT_AUTOSTRETCH_SCLIP ),
    targetBackground( DEFAULT_AUTOSTRETCH_TBGND ),
    boostClippingFactor( DEFAULT_AUTOSTRETCH_BOOST_SCLIP ),
@@ -427,6 +436,8 @@ STFAutoStretchDialog::STFAutoStretchDialog() :
    UpdateControls();
 }
 
+// ----------------------------------------------------------------------------
+
 #define KEY_STF   TheScreenTransferFunctionInterface->SettingsKey()
 
 void STFAutoStretchDialog::LoadSettings()
@@ -438,6 +449,8 @@ void STFAutoStretchDialog::LoadSettings()
    Settings::Read( key + "BoostBackgroundFactor", boostBackgroundFactor );
 }
 
+// ----------------------------------------------------------------------------
+
 void STFAutoStretchDialog::SaveSettings() const
 {
    IsoString key = KEY_STF + "AutoStretch/";
@@ -446,6 +459,8 @@ void STFAutoStretchDialog::SaveSettings() const
    Settings::Write( key + "BoostClippingFactor", boostClippingFactor );
    Settings::Write( key + "BoostBackgroundFactor", boostBackgroundFactor );
 }
+
+// ----------------------------------------------------------------------------
 
 void STFAutoStretchDialog::UpdateControls()
 {
@@ -466,6 +481,8 @@ void STFAutoStretchDialog::UpdateControls()
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void STFAutoStretchDialog::__Execute( Dialog& )
 {
    view = ImageWindow::ActiveWindow().CurrentView();
@@ -477,11 +494,15 @@ void STFAutoStretchDialog::__Execute( Dialog& )
    UpdateControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void STFAutoStretchDialog::__ViewSelected( ViewList& sender, View& v )
 {
    view = v;
    UpdateControls();
 }
+
+// ----------------------------------------------------------------------------
 
 void STFAutoStretchDialog::__EditValueUpdated( NumericEdit& sender, double value )
 {
@@ -494,6 +515,8 @@ void STFAutoStretchDialog::__EditValueUpdated( NumericEdit& sender, double value
    else if ( sender == BoostBackgroundFactor_NumericControl )
       boostBackgroundFactor = value;
 }
+
+// ----------------------------------------------------------------------------
 
 void STFAutoStretchDialog::__Button_Click( Button& sender, bool checked )
 {
@@ -1045,6 +1068,8 @@ void ScreenTransferFunctionInterface::LinkRGBChannels( bool linked )
       GUI->LinkRGB_ToolButton.SetChecked( m_rgbLinked );
 }
 
+// ----------------------------------------------------------------------------
+
 void ScreenTransferFunctionInterface::ComputeAutoStretch( View& view, bool boost )
 {
    if ( view.IsNull() )
@@ -1053,7 +1078,6 @@ void ScreenTransferFunctionInterface::ComputeAutoStretch( View& view, bool boost
    /*
     * Get statistics from reserved view properties.
     */
-
    DVector mad = view.ComputeOrFetchProperty( "MAD" ).ToDVector() * 1.4826;
    DVector median = view.ComputeOrFetchProperty( "Median" ).ToDVector();
 
@@ -1179,6 +1203,8 @@ void ScreenTransferFunctionInterface::ApplyTo( View& view ) const
    PCL_REENTRANCY_GUARDED_END
 }
 
+// ----------------------------------------------------------------------------
+
 void ScreenTransferFunctionInterface::ApplyToCurrentView() const
 {
    PCL_CLASS_REENTRANCY_GUARDED_BEGIN // prevent reentrant ImageSTFUpdated() and UpdateReadout() events
@@ -1258,6 +1284,8 @@ void ScreenTransferFunctionInterface::__SliderValueUpdated( STFSliders& sender,
          ApplyToCurrentView();
 }
 
+// ----------------------------------------------------------------------------
+
 void ScreenTransferFunctionInterface::__SliderRangeUpdated( STFSliders& sender,
                            int c, double v0, double v1, unsigned modifiers )
 {
@@ -1265,6 +1293,8 @@ void ScreenTransferFunctionInterface::__SliderRangeUpdated( STFSliders& sender,
       for ( int i = 0; i < 3; ++i )
          GUI->Sliders_Control[i].SetVisibleRange( v0, v1 );
 }
+
+// ----------------------------------------------------------------------------
 
 void ScreenTransferFunctionInterface::__STFAutoStretch_MouseRelease(
                            Control& sender, const pcl::Point& /*pos*/, int button,
@@ -1312,6 +1342,8 @@ void ScreenTransferFunctionInterface::__STFAutoStretch_MouseRelease(
       ApplyToCurrentView();
 }
 
+// ----------------------------------------------------------------------------
+
 void ScreenTransferFunctionInterface::__ModeButtonClick( Button& sender, bool checked )
 {
    if ( sender == GUI->LinkRGB_ToolButton )
@@ -1340,6 +1372,8 @@ void ScreenTransferFunctionInterface::__ModeButtonClick( Button& sender, bool ch
       SetWorkingMode( PanMode );
 }
 
+// ----------------------------------------------------------------------------
+
 void ScreenTransferFunctionInterface::__ResetButtonClick( Button& sender, bool /*checked*/ )
 {
    int c;
@@ -1357,6 +1391,8 @@ void ScreenTransferFunctionInterface::__ResetButtonClick( Button& sender, bool /
    if ( IsTrackViewActive() )
       ApplyToCurrentView();
 }
+
+// ----------------------------------------------------------------------------
 
 void ScreenTransferFunctionInterface::__ReadoutButtonClick( Button& sender, bool checked )
 {
@@ -1382,24 +1418,30 @@ void ScreenTransferFunctionInterface::__ReadoutButtonClick( Button& sender, bool
       }
 }
 
+// ----------------------------------------------------------------------------
+
 void ScreenTransferFunctionInterface::__STFEnabledButtonClick( Button& /*sender*/, bool /*checked*/ )
 {
    if ( IsTrackViewActive() )
    {
-      View v = ImageWindow::ActiveWindow().CurrentView();
-      if ( !v.IsNull() )
+      View view = ImageWindow::ActiveWindow().CurrentView();
+      if ( !view.IsNull() )
       {
-         v.EnableScreenTransferFunctions( !v.AreScreenTransferFunctionsEnabled() );
-         UpdateSTFEnabledButton( v );
+         view.EnableScreenTransferFunctions( !view.AreScreenTransferFunctionsEnabled() );
+         UpdateSTFEnabledButton( view );
       }
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void ScreenTransferFunctionInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
 {
    if ( dynamic_cast<STFSliders*>( &sender ) != nullptr )
       wantsView = true;
 }
+
+// ----------------------------------------------------------------------------
 
 void ScreenTransferFunctionInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
 {
@@ -1415,6 +1457,7 @@ void ScreenTransferFunctionInterface::__ViewDrop( Control& sender, const Point& 
    }
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 ScreenTransferFunctionInterface::GUIData::GUIData( ScreenTransferFunctionInterface& w )
@@ -1584,4 +1627,4 @@ ScreenTransferFunctionInterface::GUIData::GUIData( ScreenTransferFunctionInterfa
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ScreenTransferFunctionInterface.cpp - Released 2018-12-12T09:25:25Z
+// EOF ScreenTransferFunctionInterface.cpp - Released 2019-01-21T12:06:41Z

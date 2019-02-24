@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard SubframeSelector Process Module Version 01.04.01.0016
+// Standard SubframeSelector Process Module Version 01.04.02.0025
 // ----------------------------------------------------------------------------
-// GraphWebView.cpp - Released 2018-12-12T09:25:25Z
+// GraphWebView.cpp - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard SubframeSelector PixInsight module.
 //
@@ -67,8 +67,8 @@ GraphWebView::GraphWebView( Control& parent ) :
 
    OnEnter( (Control::event_handler)&GraphWebView::__MouseEnter, *this );
    OnLeave( (Control::event_handler)&GraphWebView::__MouseLeave, *this );
-
    OnScriptResultAvailable( (WebView::result_event_handler)&GraphWebView::__JSResult, *this );
+   OnLoadFinished( (WebView::state_event_handler)&GraphWebView::__LoadFinished, *this );
 }
 
 // ----------------------------------------------------------------------------
@@ -93,8 +93,17 @@ void GraphWebView::__MouseLeave( Control& sender )
 
 void GraphWebView::__Timer( Timer& sender )
 {
-   EvaluateScript( "getApprovalIndex()", "JavaScript" );
-   EvaluateScript( "getLockIndex()", "JavaScript" );
+   /*
+    * N.B. Do not evaluate scripts until the page has been completely and
+    * successfully loaded. Otherwise the integrated web browser component
+    * (Chromium) crashes and *all* WebView controls cease to work.
+    * ### TODO: Find a way to restart WebViews after a crash.
+    */
+   if ( m_loaded )
+   {
+      EvaluateScript( "getApprovalIndex()" );
+      EvaluateScript( "getLockIndex()" );
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -134,6 +143,25 @@ void GraphWebView::__JSResult( WebView& sender, const Variant& result )
 
 // ----------------------------------------------------------------------------
 
+void GraphWebView::__LoadFinished( WebView& sender, bool loadedOk )
+{
+   /*
+    * WebView contents are represented in physical pixels by default. The
+    * following call ensures a representation in logical pixels on high-dpi
+    * screens. Under non high-dpi screen resolutions, as well as on desktops
+    * that use logical pixels by default (macOS), this call is a no-op.
+    *
+    * ### N.B. Since version 1.8.6, the core already scales WebView zoom
+    * factors by the ratio between physical and logical pixels automatically,
+    * so 1.0 will be transformed to 1.0*DisplayPixelRatio() internally.
+    */
+   m_loaded = loadedOk;
+   if ( m_loaded )
+      sender.SetZoomFactor( 1.0 );
+}
+
+// ----------------------------------------------------------------------------
+
 void GraphWebView::OnApprove( approve_event_handler handler, Control& receiver )
 {
    if ( m_eventHandlers.IsNull() )
@@ -154,6 +182,8 @@ void GraphWebView::OnUnlock( unlock_event_handler handler, Control& receiver )
 
 void GraphWebView::SetDataset( const String& dataname, const DataPointVector* dataset )
 {
+   m_loaded = false;
+
    int length = int( dataset->Length() );
 
    // Sort the dataset by X values to ensure a proper line
@@ -643,8 +673,7 @@ String GraphWebView::Header() const
 {
    String coreSrcDir = PixInsightSettings::GlobalString( "Application/SrcDirectory" );
 
-   return R"DELIM(
-<!DOCTYPE html>
+   return R"DELIM(<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -653,25 +682,28 @@ String GraphWebView::Header() const
 <link rel="stylesheet" href=")DELIM" + File::FileURI( coreSrcDir + "/scripts/Dygraph/dygraph-doc.css" ) + R"DELIM("/>
 <link rel="stylesheet" href=")DELIM" + File::FileURI( coreSrcDir + "/scripts/Dygraph/dygraph.css" ) + R"DELIM("/>
 <style>
-   /* No white background, makes it appear more like a normal control */
+   /*
+    * White background, which is the best option for exported PDF documents.
+    * N.B. Transparent backgrounds ignored since core 1.8.6 (Qt >= 5.12.0).
+    */
    html, body {
-      background-color: rgba(0,0,0,0);
+      background-color: white;
       overflow: hidden;
    }
 
    /* Fit the graph within the confines of the view */
    #graph {
       position: fixed;
-      top: 0px;
+      top: 1vh;
       left: -15px;
-      height: 100vh;
+      height: 98vh;
       width: 67vw;
    }
    #histograph {
       position: fixed;
-      top: 0px;
+      top: 1vh;
       right: -15px;
-      height: 100vh;
+      height: 98vh;
       width: 37vw;
    }
 
@@ -746,6 +778,7 @@ void GraphWebView::Cleanup()
       }
       catch ( ... )
       {
+         // Do not propagate filesystem exceptions from here.
       }
       m_htmlFilePath.Clear();
    }
@@ -756,4 +789,4 @@ void GraphWebView::Cleanup()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF GraphWebView.cpp - Released 2018-12-12T09:25:25Z
+// EOF GraphWebView.cpp - Released 2019-01-21T12:06:42Z

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard CosmeticCorrection Process Module Version 01.02.05.0220
+// Standard CosmeticCorrection Process Module Version 01.02.05.0226
 // ----------------------------------------------------------------------------
-// CosmeticCorrectionInterface.cpp - Released 2018-12-12T09:25:25Z
+// CosmeticCorrectionInterface.cpp - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
@@ -2671,4 +2671,4 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CosmeticCorrectionInterface.cpp - Released 2018-12-12T09:25:25Z
+// EOF CosmeticCorrectionInterface.cpp - Released 2019-01-21T12:06:42Z

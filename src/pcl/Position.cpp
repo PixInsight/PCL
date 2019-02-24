@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/Position.cpp - Released 2018-12-12T09:24:30Z
+// pcl/Position.cpp - Released 2019-01-21T12:06:21Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -429,8 +429,8 @@ Vector Position::CIP_ITRS() const
          if ( int( T.Length() ) < TruncInt( (s_cipITRSEnd - s_cipITRSStart)/365.25 )*8 )
             throw Error( "Insufficient CIP_ITRS data points." );
 
-         s_xp.Initialize( Vector( T.Begin(), T.Length() ), Vector( XP.Begin(), XP.Length() ) );
-         s_yp.Initialize( Vector( T.Begin(), T.Length() ), Vector( YP.Begin(), YP.Length() ) );
+         s_xp.Initialize( Vector( T.Begin(), int( T.Length() ) ), Vector( XP.Begin(), int( XP.Length() ) ) );
+         s_yp.Initialize( Vector( T.Begin(), int( T.Length() ) ), Vector( YP.Begin(), int( YP.Length() ) ) );
          s_cipITRSInitialized.Store( 1 );
       }
    }
@@ -1193,4 +1193,4 @@ Optional<double> Position::ApparentVisualMagnitude( EphemerisFile::Handle& H )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Position.cpp - Released 2018-12-12T09:24:30Z
+// EOF pcl/Position.cpp - Released 2019-01-21T12:06:21Z

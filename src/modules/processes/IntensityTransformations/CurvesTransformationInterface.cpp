@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0424
+// Standard IntensityTransformations Process Module Version 01.07.01.0430
 // ----------------------------------------------------------------------------
-// CurvesTransformationInterface.cpp - Released 2018-12-12T09:25:25Z
+// CurvesTransformationInterface.cpp - Released 2019-01-21T12:06:41Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -90,20 +90,15 @@ static const int s_maxZoom = 99;
 // ----------------------------------------------------------------------------
 
 CurvesTransformationInterface::CurvesTransformationInterface() :
-   ProcessInterface(),
    m_instance( TheCurvesTransformationProcess ),
-   m_realTimeThread( 0 ),
-   GUI( 0 ),
    m_mode( EditMode ),
    m_savedMode( NoMode ),
    m_channel( CurveIndex::RGBK ),
    m_currentPoint( 0, CurveIndex::NumberOfCurves ),
-   m_histograms(),
    m_histogramView( View::Null() ),
    m_histogramColor( false ),
    m_readoutActive( false ),
    m_readouts( 0.0, 4 ),
-   m_readoutRGBWS(),
    m_zoomX( 1 ),
    m_zoomY( 1 ),
    m_wheelSteps( 0 ),
@@ -117,7 +112,6 @@ CurvesTransformationInterface::CurvesTransformationInterface() :
    m_curvePos( 0 ),
    m_viewportBitmap( Bitmap::Null() ),
    m_viewportDirty( true ),
-   m_storedCurve(),
    m_channelColor( CurveIndex::NumberOfCurves ),
    m_settingUp( false )
 {
@@ -139,10 +133,12 @@ CurvesTransformationInterface::CurvesTransformationInterface() :
    m_backgroundColor                = RGBAColor( 0x00, 0x00, 0x00 );
 }
 
+// ----------------------------------------------------------------------------
+
 CurvesTransformationInterface::~CurvesTransformationInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -184,7 +180,7 @@ void CurvesTransformationInterface::ApplyInstance() const
 
 void CurvesTransformationInterface::RealTimePreviewUpdated( bool active )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( active )
          RealTimePreview::SetOwner( *this ); // implicitly updates the r-t preview
       else
@@ -195,7 +191,7 @@ void CurvesTransformationInterface::RealTimePreviewUpdated( bool active )
 
 void CurvesTransformationInterface::TrackViewUpdated( bool active )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( active )
       {
          ImageWindow w = ImageWindow::ActiveWindow();
@@ -226,7 +222,7 @@ void CurvesTransformationInterface::ResetInstance()
 
 bool CurvesTransformationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "CurvesTransformation" );
@@ -288,7 +284,7 @@ bool CurvesTransformationInterface::RequiresRealTimePreviewUpdate( const UInt16I
 // ----------------------------------------------------------------------------
 
 CurvesTransformationInterface::RealTimeThread::RealTimeThread() :
-Thread(), m_instance( TheCurvesTransformationProcess )
+   m_instance( TheCurvesTransformationProcess )
 {
 }
 
@@ -324,7 +320,7 @@ bool CurvesTransformationInterface::GenerateRealTimePreview( UInt16Image& image,
             m_realTimeThread->Wait();
 
             delete m_realTimeThread;
-            m_realTimeThread = 0;
+            m_realTimeThread = nullptr;
             return false;
          }
       }
@@ -334,7 +330,7 @@ bool CurvesTransformationInterface::GenerateRealTimePreview( UInt16Image& image,
          image.Assign( m_realTimeThread->m_image );
 
          delete m_realTimeThread;
-         m_realTimeThread = 0;
+         m_realTimeThread = nullptr;
          return true;
       }
    }
@@ -351,7 +347,7 @@ bool CurvesTransformationInterface::WantsImageNotifications() const
 
 void CurvesTransformationInterface::ImageUpdated( const View& view )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( IsTrackViewActive() )
          if ( view == m_histogramView )
          {
@@ -367,7 +363,7 @@ void CurvesTransformationInterface::ImageUpdated( const View& view )
 
 void CurvesTransformationInterface::ImageFocused( const View& view )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( IsTrackViewActive() )
       {
          m_histogramView = view;
@@ -387,7 +383,7 @@ void CurvesTransformationInterface::ImageFocused( const View& view )
 
 void CurvesTransformationInterface::ImageDeleted( const View& view )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( view == m_histogramView )
       {
          m_histograms.Clear();
@@ -408,8 +404,9 @@ bool CurvesTransformationInterface::WantsReadoutNotifications() const
 
 void CurvesTransformationInterface::BeginReadout( const View& v )
 {
-   if ( GUI != 0 && IsVisible() )
-      m_readoutActive = true;
+   if ( GUI != nullptr )
+      if ( IsVisible() )
+         m_readoutActive = true;
 }
 
 // ----------------------------------------------------------------------------
@@ -479,6 +476,8 @@ size_type CurvesTransformationInterface::FindPoint( int c, double x, double y, i
    return ~size_type( 0 );
 }
 
+// ----------------------------------------------------------------------------
+
 size_type CurvesTransformationInterface::CreatePoint( int c, double x, double y, int tolerancePx )
 {
    double delta = double( tolerancePx )/(GUI->Curve_ScrollBox.Viewport().Width()*m_zoomX - 1);
@@ -521,6 +520,8 @@ size_type CurvesTransformationInterface::CreatePoint( int c, double x, double y,
    return i;
 }
 
+// ----------------------------------------------------------------------------
+
 bool CurvesTransformationInterface::DragPoint( int c, size_type i, double x, double y )
 {
    bool ok = false;
@@ -539,6 +540,8 @@ bool CurvesTransformationInterface::DragPoint( int c, size_type i, double x, dou
 
    return ok;
 }
+
+// ----------------------------------------------------------------------------
 
 size_type CurvesTransformationInterface::RemovePoint( int c, double x, double y, int tolerancePx )
 {
@@ -594,6 +597,8 @@ void CurvesTransformationInterface::SetChannel( int c )
    UpdateCurve();
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::SetZoom( int hz, int vz, const Point* p )
 {
    m_settingUp = true;
@@ -617,7 +622,7 @@ void CurvesTransformationInterface::SetZoom( int hz, int vz, const Point* p )
       int m = contentsWidth - visibleWidth;
       GUI->Curve_ScrollBox.SetHorizontalScrollRange( 0, m );
 
-      if ( p != 0 )
+      if ( p != nullptr )
          GUI->Curve_ScrollBox.SetHorizontalScrollPosition(
                   Range( p->x*m_zoomX - (visibleWidth >> 1), 0, m ) );
    }
@@ -631,7 +636,7 @@ void CurvesTransformationInterface::SetZoom( int hz, int vz, const Point* p )
       int m = contentsHeight - visibleHeight;
       GUI->Curve_ScrollBox.SetVerticalScrollRange( 0, m );
 
-      if ( p != 0 )
+      if ( p != nullptr )
          GUI->Curve_ScrollBox.SetVerticalScrollPosition(
                   Range( p->y*m_zoomY - (visibleHeight >> 1), 0, m ) );
    }
@@ -646,6 +651,8 @@ void CurvesTransformationInterface::SetZoom( int hz, int vz, const Point* p )
    m_settingUp = false;
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::SetMode( working_mode m )
 {
    m_mode = m;
@@ -657,6 +664,8 @@ void CurvesTransformationInterface::SetMode( working_mode m )
    UpdateCurveInfo();
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::SetInterpolation( int type )
 {
    m_instance[m_channel].SetType( type );
@@ -665,6 +674,8 @@ void CurvesTransformationInterface::SetInterpolation( int type )
    UpdateCurve();
    UpdateRealTimePreview();
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::SelectPoint( size_type p, bool pan )
 {
@@ -696,6 +707,8 @@ void CurvesTransformationInterface::UpdateControls()
    UpdateCurveControls();
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::UpdateModeControls()
 {
    GUI->EditPointMode_ToolButton.SetChecked( m_mode == EditMode );
@@ -706,16 +719,22 @@ void CurvesTransformationInterface::UpdateModeControls()
    GUI->PanMode_ToolButton.SetChecked( m_mode == PanMode );
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::UpdateZoomControls()
 {
    GUI->Zoom_SpinBox.SetValue( m_zoomX );
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::UpdateGraphicsControls()
 {
    GUI->ShowAll_ToolButton.SetChecked( m_showAllCurves );
    GUI->ShowGrid_ToolButton.SetChecked( m_showGrid );
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::UpdateChannelControls()
 {
@@ -732,12 +751,16 @@ void CurvesTransformationInterface::UpdateChannelControls()
    GUI->S_ToolButton.SetChecked( m_channel == CurveIndex::S );
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::UpdateInterpolationControls()
 {
    GUI->AkimaSubsplines_ToolButton.SetChecked( m_instance[m_channel].Type() == CurveType::AkimaSubsplines );
    GUI->CubicSpline_ToolButton.SetChecked( m_instance[m_channel].Type() == CurveType::CubicSpline );
    GUI->Linear_ToolButton.SetChecked( m_instance[m_channel].Type() == CurveType::Linear );
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::UpdateCurveControls()
 {
@@ -761,6 +784,8 @@ void CurvesTransformationInterface::UpdateCurveControls()
    GUI->RestoreCurve_ToolButton.Enable( !m_storedCurve.IsIdentity() );
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::UpdateCurve()
 {
    UpdateCurveInfo();
@@ -768,6 +793,8 @@ void CurvesTransformationInterface::UpdateCurve()
    m_viewportDirty = true;
    GUI->Curve_ScrollBox.Viewport().Update();
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::UpdateCurveInfo()
 {
@@ -777,23 +804,23 @@ void CurvesTransformationInterface::UpdateCurveInfo()
       return;
    }
 
-   String s;
-
+   String text;
    switch ( m_mode )
    {
    default:
-   case EditMode:    s = (m_dragging ? " Editing Point" : " Add/Edit Point"); break;
-   case SelectMode:  s = " Select Point"; break;
-   case DeleteMode:  s = " Delete Point"; break;
-   case ZoomInMode:  s = " Zoom In"; break;
-   case ZoomOutMode: s = " Zoom Out"; break;
-   case PanMode:     s = " Pan"; break;
+   case EditMode:    text = (m_dragging ? " Editing Point" : " Add/Edit Point"); break;
+   case SelectMode:  text = " Select Point"; break;
+   case DeleteMode:  text = " Delete Point"; break;
+   case ZoomInMode:  text = " Zoom In"; break;
+   case ZoomOutMode: text = " Zoom Out"; break;
+   case PanMode:     text = " Pan"; break;
    }
+   text.AppendFormat( " | x = %.5f | y = %.5f", m_curvePos.x, m_curvePos.y );
 
-   s.AppendFormat( " | x = %.5f | y = %.5f", m_curvePos.x, m_curvePos.y );
-
-   GUI->Info_Label.SetText( s );
+   GUI->Info_Label.SetText( text );
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::UpdateHistograms()
 {
@@ -804,11 +831,13 @@ void CurvesTransformationInterface::UpdateHistograms()
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::UpdateRealTimePreview()
 {
    if ( IsRealTimePreviewActive() )
    {
-      if ( m_realTimeThread != 0 )
+      if ( m_realTimeThread != nullptr )
          m_realTimeThread->Abort();
       GUI->UpdateRealTimePreview_Timer.Start();
    }
@@ -857,37 +886,41 @@ void CurvesTransformationInterface::RegenerateViewport()
                if ( m_channel == CurveIndex::RGBK )
                {
                   size_type n = m_histogramColor ? 3 : 1;
-                  count_type peak = 0;
-                  if ( rejectSaturated )
-                     for ( size_type i = 0; i < n; ++i )
-                        peak = Max( peak, m_histograms[i].PeakCount( 1, m_histograms[i].Resolution()-2 ) );
-                  if ( !rejectSaturated || peak == 0 )
-                     for ( size_type i = 0; i < n; ++i )
-                        peak = Max( peak, m_histograms[i].PeakCount() );
-
-                  g.SetOpacity( 0.5 );
-                  for ( size_type i = 0; i < n; ++i )
+                  if ( m_histograms.Length() >= n )
                   {
-                     g.SetPen( m_channelColor[(n > 1) ? i : CurveIndex::RGBK], DisplayPixelRatio() );
-                     TheHistogramTransformationInterface->PlotHistogram( g, r, m_histograms[i], peak, w, h, m_zoomX, m_zoomY );
+                     count_type peak = 0;
+                     if ( rejectSaturated )
+                        for ( size_type i = 0; i < n; ++i )
+                           peak = Max( peak, m_histograms[i].PeakCount( 1, m_histograms[i].Resolution()-2 ) );
+                     if ( !rejectSaturated || peak == 0 )
+                        for ( size_type i = 0; i < n; ++i )
+                           peak = Max( peak, m_histograms[i].PeakCount() );
+
+                     g.SetOpacity( 0.5 );
+                     for ( size_type i = 0; i < n; ++i )
+                     {
+                        g.SetPen( m_channelColor[(n > 1) ? i : CurveIndex::RGBK], DisplayPixelRatio() );
+                        TheHistogramTransformationInterface->PlotHistogram( g, r, m_histograms[i], peak, w, h, m_zoomX, m_zoomY );
+                     }
+                     g.SetOpacity( 1.0 );
                   }
-                  g.SetOpacity( 1.0 );
                }
                else if ( m_channel < CurveIndex::RGBK )
                {
                   if ( m_histogramColor )
-                  {
-                     count_type peak = 0;
-                     if ( rejectSaturated )
-                        peak = m_histograms[m_channel].PeakCount( 1, m_histograms[m_channel].Resolution()-2 );
-                     if ( !rejectSaturated || peak == 0 )
-                        peak = m_histograms[m_channel].PeakCount();
+                     if ( m_histograms.Length() >= size_type( m_channel ) )
+                     {
+                        count_type peak = 0;
+                        if ( rejectSaturated )
+                           peak = m_histograms[m_channel].PeakCount( 1, m_histograms[m_channel].Resolution()-2 );
+                        if ( !rejectSaturated || peak == 0 )
+                           peak = m_histograms[m_channel].PeakCount();
 
-                     g.SetPen( m_channelColor[m_channel], DisplayPixelRatio() );
-                     g.SetOpacity( 0.5 );
-                     TheHistogramTransformationInterface->PlotHistogram( g, r, m_histograms[m_channel], peak, w, h, m_zoomX, m_zoomY );
-                     g.SetOpacity( 1.0 );
-                  }
+                        g.SetPen( m_channelColor[m_channel], DisplayPixelRatio() );
+                        g.SetOpacity( 0.5 );
+                        TheHistogramTransformationInterface->PlotHistogram( g, r, m_histograms[m_channel], peak, w, h, m_zoomX, m_zoomY );
+                        g.SetOpacity( 1.0 );
+                     }
                }
                else if ( m_channel == CurveIndex::A )
                {
@@ -959,6 +992,8 @@ void CurvesTransformationInterface::PlotGrid( Graphics& g, const Rect& r, int wi
    }
 }
 
+// ----------------------------------------------------------------------------
+
 RGBA CurvesTransformationInterface::ScaleColor( float f ) const
 {
    RGBColorSystem::sample r, g, b;
@@ -1020,6 +1055,8 @@ RGBA CurvesTransformationInterface::ScaleColor( float f ) const
    return RGBAColor( float( r ), float( g ), float( b ) );
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::PlotScale( Graphics& g, const Rect& r, int width, int height )
 {
    int ui8 = LogicalPixelsToPhysical( 8 );
@@ -1060,6 +1097,8 @@ void CurvesTransformationInterface::PlotScale( Graphics& g, const Rect& r, int w
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::PlotCurve( Graphics& g, const Rect& r, int c, int width, int height, int hZoom, int vZoom )
 {
    const Curve& curve = m_instance[c];
@@ -1092,6 +1131,8 @@ void CurvesTransformationInterface::PlotCurve( Graphics& g, const Rect& r, int c
       }
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::PlotReadouts( Graphics& g, const Bitmap& bmp, const Rect& r, int width, int height )
 {
@@ -1152,6 +1193,8 @@ void CurvesTransformationInterface::PlotReadouts( Graphics& g, const Bitmap& bmp
       }
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::PlotCursor( Graphics& g, const Rect& r )
 {
@@ -1247,6 +1290,8 @@ void CurvesTransformationInterface::__Curve_Paint( Control& sender, const pcl::R
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::__Curve_Resize( Control& sender,
    int /*newWidth*/, int /*newHeight*/, int /*oldWidth*/, int /*oldHeight*/ )
 {
@@ -1260,11 +1305,15 @@ void CurvesTransformationInterface::__Curve_Resize( Control& sender,
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::__Curve_ScrollPosUpdated( ScrollBox& sender, int pos )
 {
    if ( sender == GUI->Curve_ScrollBox )
       UpdateCurve();
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::__Curve_Enter( Control& sender )
 {
@@ -1272,6 +1321,8 @@ void CurvesTransformationInterface::__Curve_Enter( Control& sender )
       m_cursorVisible = true;
    m_cursorPos = -1;
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::__Curve_Leave( Control& sender )
 {
@@ -1370,6 +1421,8 @@ void CurvesTransformationInterface::__Curve_MousePress(
    UpdateCurveInfo();
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::__Curve_MouseRelease(
    Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
 {
@@ -1384,8 +1437,10 @@ void CurvesTransformationInterface::__Curve_MouseRelease(
    UpdateCurveInfo();
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::__Curve_MouseMove(
-   Control& sender, const pcl::Point& pos, unsigned buttons, unsigned modifiers )
+         Control& sender, const pcl::Point& pos, unsigned buttons, unsigned modifiers )
 {
    if ( m_cursorVisible )
    {
@@ -1443,8 +1498,10 @@ void CurvesTransformationInterface::__Curve_MouseMove(
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::__Curve_MouseWheel(
-   Control& sender, const pcl::Point& pos, int delta, unsigned buttons, unsigned modifiers )
+         Control& sender, const pcl::Point& pos, int delta, unsigned buttons, unsigned modifiers )
 {
    if ( sender == GUI->Curve_ScrollBox.Viewport() )
    {
@@ -1460,6 +1517,8 @@ void CurvesTransformationInterface::__Curve_MouseWheel(
       }
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::__Curve_KeyPress( Control& sender, int key, unsigned modifiers, bool& wantsKey )
 {
@@ -1535,6 +1594,8 @@ void CurvesTransformationInterface::__Curve_KeyPress( Control& sender, int key, 
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::__CurveParameter_ValueUpdated( NumericEdit& sender, double value )
 {
    if ( sender == GUI->Input_NumericEdit )
@@ -1571,6 +1632,8 @@ void CurvesTransformationInterface::__CurveParameter_ValueUpdated( NumericEdit& 
    UpdateRealTimePreview();
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::__Mode_ButtonClick( Button& sender, bool /*checked*/ )
 {
    if ( sender == GUI->EditPointMode_ToolButton )
@@ -1586,6 +1649,8 @@ void CurvesTransformationInterface::__Mode_ButtonClick( Button& sender, bool /*c
    else if ( sender == GUI->PanMode_ToolButton )
       SetMode( PanMode );
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::__Channel_ButtonClick( Button& sender, bool /*checked*/ )
 {
@@ -1613,11 +1678,15 @@ void CurvesTransformationInterface::__Channel_ButtonClick( Button& sender, bool 
       SetChannel( CurveIndex::S );
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::__Zoom_ButtonClick( Button& sender, bool /*checked*/ )
 {
    if ( sender == GUI->Zoom11_ToolButton )
       SetZoom( 1, 1 );
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::__Zoom_ValueUpdated( SpinBox& sender, int value )
 {
@@ -1625,17 +1694,23 @@ void CurvesTransformationInterface::__Zoom_ValueUpdated( SpinBox& sender, int va
       SetZoom( value, value );
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::__ShowAll_ButtonClick( Button& /*sender*/, bool checked )
 {
    m_showAllCurves = checked;
    UpdateCurve();
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::__ShowGrid_ButtonClick( Button& /*sender*/, bool checked )
 {
    m_showGrid = checked;
    UpdateCurve();
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::__PointNavigation_ButtonClick( Button& sender, bool /*checked*/ )
 {
@@ -1661,6 +1736,8 @@ void CurvesTransformationInterface::__PointNavigation_ButtonClick( Button& sende
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::__Interpolation_ButtonClick( Button& sender, bool checked )
 {
    if ( sender == GUI->AkimaSubsplines_ToolButton )
@@ -1671,11 +1748,15 @@ void CurvesTransformationInterface::__Interpolation_ButtonClick( Button& sender,
       SetInterpolation( CurveType::Linear );
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::__StoreCurve_ButtonClick( Button& /*sender*/, bool /*checked*/ )
 {
    m_storedCurve = m_instance[m_channel];
    UpdateCurveControls();
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::__RestoreCurve_ButtonClick( Button& /*sender*/, bool /*checked*/ )
 {
@@ -1687,6 +1768,8 @@ void CurvesTransformationInterface::__RestoreCurve_ButtonClick( Button& /*sender
    UpdateRealTimePreview();
 }
 
+// ----------------------------------------------------------------------------
+
 void CurvesTransformationInterface::__ReverseCurve_ButtonClick( Button& /*sender*/, bool /*checked*/ )
 {
    m_instance[m_channel].Reverse();
@@ -1695,6 +1778,8 @@ void CurvesTransformationInterface::__ReverseCurve_ButtonClick( Button& /*sender
    UpdateCurve();
    UpdateRealTimePreview();
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::__ResetCurve_ButtonClick( Button& /*sender*/, bool /*checked*/ )
 {
@@ -1706,6 +1791,8 @@ void CurvesTransformationInterface::__ResetCurve_ButtonClick( Button& /*sender*/
    UpdateCurve();
    UpdateRealTimePreview();
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::__KeyPress( Control& sender, int key, unsigned modifiers, bool& wantsKey )
 {
@@ -1820,6 +1907,8 @@ void CurvesTransformationInterface::__KeyPress( Control& sender, int key, unsign
       break;
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void CurvesTransformationInterface::__KeyRelease( Control& sender, int key, unsigned modifiers, bool& wantsKey )
 {
@@ -2291,4 +2380,4 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CurvesTransformationInterface.cpp - Released 2018-12-12T09:25:25Z
+// EOF CurvesTransformationInterface.cpp - Released 2019-01-21T12:06:41Z

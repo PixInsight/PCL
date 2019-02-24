@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// pcl/Defs.h - Released 2018-12-12T09:24:21Z
+// pcl/Defs.h - Released 2019-01-21T12:06:07Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -286,6 +286,7 @@
 #    pragma warning( disable: 4996 )   // ...
 #    pragma warning( disable: 4018 )   // '<' : signed/unsigned mismatch
 #    pragma warning( disable: 4049 )   // More than 64k source lines
+#    pragma warning( disable: 4150 )   // Deletion of pointer to incomplete type 'type'; no destructor called
 #    pragma warning( disable: 4244 )   // Conversion from 'type1' to 'type2', possible loss of data
 #    pragma warning( disable: 4345 )   // Behavior change: an object of POD type constructed...
 #    pragma warning( disable: 4355 )   // 'this' : used in base member initializer list
@@ -1128,4 +1129,4 @@ typedef int64                 fsize_type;
 #endif   // __PCL_Defs_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Defs.h - Released 2018-12-12T09:24:21Z
+// EOF pcl/Defs.h - Released 2019-01-21T12:06:07Z

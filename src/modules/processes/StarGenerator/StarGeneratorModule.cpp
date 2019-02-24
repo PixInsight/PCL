@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0937
+// /_/     \____//_____/   PCL 02.01.11.0938
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0316
+// Standard StarGenerator Process Module Version 01.01.00.0322
 // ----------------------------------------------------------------------------
-// StarGeneratorModule.cpp - Released 2018-12-12T09:25:25Z
+// StarGeneratorModule.cpp - Released 2019-01-21T12:06:42Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
-// Copyright (c) 2003-2018 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2019 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     01
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0316
+#define MODULE_VERSION_BUILD     0322
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2018
-#define MODULE_RELEASE_MONTH     12
-#define MODULE_RELEASE_DAY       12
+#define MODULE_RELEASE_YEAR      2019
+#define MODULE_RELEASE_MONTH     1
+#define MODULE_RELEASE_DAY       21
 
 #include "StarGeneratorModule.h"
 #include "StarGeneratorProcess.h"
@@ -171,4 +171,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF StarGeneratorModule.cpp - Released 2018-12-12T09:25:25Z
+// EOF StarGeneratorModule.cpp - Released 2019-01-21T12:06:42Z

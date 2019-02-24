@@ -382,8 +382,8 @@ bool INDIMountInstance::ExecuteOn( View& view )
 
    GetCurrentCoordinates();
 
-   double deltaRA = observationCenterRA - imageCenterRA;
-   double deltaDec = observationCenterDec - imageCenterDec;
+   double deltaRA = o_currentRA - imageCenterRA;
+   double deltaDec = o_currentDec - imageCenterDec;
 
    if ( o_currentLST >= 0 ) // ### N.B.: o_currentLST < 0 if LST property could not be retrieved
    {
@@ -540,7 +540,7 @@ bool INDIMountInstance::ValidateDevice( bool throwErrors ) const
    for ( auto device : devices )
       if ( device.DeviceName == p_deviceName )
       {
-         if ( !indi->HasPropertyItem( device.DeviceName, "EQUATORIAL_EOD_COORD", "RA" ) ) // is this a mount device?
+         if ( !indi->HasPropertyItem( device.DeviceName, MOUNT_EQUATORIAL_COORDINATES_PROPERTY_NAME, MOUNT_EQUATORIAL_COORDINATES_RA_ITEM_NAME ) ) // is this a mount device?
          {
             if ( throwErrors )
                throw Error( '\'' + p_deviceName + "' does not seem to be a valid INDI Mount device" );
@@ -557,7 +557,7 @@ bool INDIMountInstance::ValidateDevice( bool throwErrors ) const
 void INDIMountInstance::SendDeviceProperties( bool async ) const
 {
    INDIClient* indi = INDIClient::TheClientOrDie();
-   indi->MaybeSendNewPropertyItem( p_deviceName, "TELESCOPE_SLEW_RATE", "INDI_SWITCH", MountSlewRatePropertyString( p_slewRate ), "ON", async );
+   indi->MaybeSendNewPropertyItem( p_deviceName, MOUNT_SLEW_RATE_PROPERTY_NAME, "INDI_SWITCH", MountSlewRatePropertyString( p_slewRate ), "ON", async );
 }
 
 String INDIMountInstance::MountSlewRatePropertyString( int slewRateIdx )
@@ -565,13 +565,13 @@ String INDIMountInstance::MountSlewRatePropertyString( int slewRateIdx )
    switch ( slewRateIdx )
    {
    case IMCSlewRate::Guide:
-      return "SLEW_GUIDE";
+      return MOUNT_SLEW_RATE_GUIDE_ITEM_NAME;
    case IMCSlewRate::Centering:
-      return "SLEW_CENTERING";
+      return MOUNT_SLEW_RATE_CENTERING_ITEM_NAME;
    case IMCSlewRate::Find:
-      return "SLEW_FIND";
+      return MOUNT_SLEW_RATE_FIND_ITEM_NAME;
    case IMCSlewRate::Max:
-      return "SLEW_MAX";
+      return MOUNT_SLEW_RATE_MAX_ITEM_NAME;
    default:
       throw Error( "Internal error: INDIMountInstance: Invalid slew rate." );
    }
@@ -586,14 +586,14 @@ void INDIMountInstance::GetCurrentCoordinates()
    INDIClient* indi = INDIClient::TheClientOrDie();
 
    INDIPropertyListItem itemH, itemD;
-   if ( !indi->GetPropertyItem( p_deviceName, "EQUATORIAL_EOD_COORD", "RA", itemH, false/*formatted*/ ) ||
-        !indi->GetPropertyItem( p_deviceName, "EQUATORIAL_EOD_COORD", "DEC", itemD, false/*formatted*/ ) )
+   if ( !indi->GetPropertyItem( p_deviceName, MOUNT_EQUATORIAL_COORDINATES_PROPERTY_NAME, MOUNT_EQUATORIAL_COORDINATES_RA_ITEM_NAME, itemH, false/*formatted*/ ) ||
+        !indi->GetPropertyItem( p_deviceName, MOUNT_EQUATORIAL_COORDINATES_PROPERTY_NAME, MOUNT_EQUATORIAL_COORDINATES_DEC_ITEM_NAME, itemD, false/*formatted*/ ) )
       throw Error( "Cannot get current mount coordinates" );
 
    o_currentRA = itemH.PropertyValue.ToDouble();
    o_currentDec = itemD.PropertyValue.ToDouble();
 
-   if ( indi->GetPropertyItem( p_deviceName, "TIME_LST", "LST", itemH, false/*formatted*/ ) )
+   if ( indi->GetPropertyItem( p_deviceName, MOUNT_LST_TIME_PROPERTY_NAME, MOUNT_LST_TIME_ITEM_NAME, itemH, false/*formatted*/ ) )
       o_currentLST = itemH.PropertyValue.ToDouble();
 }
 
@@ -621,9 +621,9 @@ void INDIMountInstance::GetPierSide() {
    INDIClient* indi = INDIClient::TheClientOrDie();
 
    INDIPropertyListItem item;
-   static const char* indiPierSides[] = { "PIER_WEST", "PIER_EAST" };
+   static const char* indiPierSides[] = { MOUNT_SIDE_OF_PIER_WEST_ITEM_NAME, MOUNT_SIDE_OF_PIER_EAST_ITEM_NAME };
    for ( size_type i = 0; i < ItemsInArray( indiPierSides ); ++i )
-      if ( indi->GetPropertyItem( p_deviceName, "TELESCOPE_PIER_SIDE", indiPierSides[i], item ) )
+      if ( indi->GetPropertyItem( p_deviceName, MOUNT_SIDE_OF_PIER_PROPERTY_NAME, indiPierSides[i], item ) )
          if ( item.PropertyValue == "ON" )
          {
             p_pierSide = i;
@@ -713,7 +713,7 @@ void AbstractINDIMountExecution::Perform()
       switch ( m_instance.p_command )
       {
       case IMCCommand::Unpark:
-         indi->MaybeSendNewPropertyItem( m_instance.p_deviceName, "TELESCOPE_PARK", "INDI_SWITCH", "UNPARK", "ON", false/*async*/ );
+         indi->MaybeSendNewPropertyItem( m_instance.p_deviceName, MOUNT_PARK_PROPERTY_NAME, "INDI_SWITCH", MOUNT_PARK_UNPARKED_ITEM_NAME, "ON", false/*async*/ );
          break;
 
       case IMCCommand::GoTo:
@@ -759,15 +759,16 @@ void AbstractINDIMountExecution::Perform()
             }
 
             StartMountEvent( targetRA, m_instance.o_currentRA, targetDec, m_instance.o_currentDec, m_instance.p_command );
-            indi->SendNewPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "INDI_NUMBER",  // send (RA,DEC) coordinates in bulk request
-                                       "RA", targetRA,
-                                       "DEC", targetDec, true/*async*/ );
+            indi->SendNewPropertyItem( m_instance.p_deviceName, MOUNT_EQUATORIAL_COORDINATES_PROPERTY_NAME, "INDI_NUMBER",  // send (RA,DEC) coordinates in bulk request
+                                       MOUNT_EQUATORIAL_COORDINATES_RA_ITEM_NAME, targetRA,
+                                       MOUNT_EQUATORIAL_COORDINATES_DEC_ITEM_NAME, targetDec, true/*async*/ );
+            //Sleep(500);
             for ( ElapsedTime T; ; )
             {
                INDIPropertyListItem RA_item;
                INDIPropertyListItem Dec_item;
-               if (    indi->GetPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "RA", RA_item, false/*formatted*/ )
-                  && indi->GetPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "DEC", Dec_item, false/*formatted*/ ) )
+               if (    indi->GetPropertyItem( m_instance.p_deviceName, MOUNT_EQUATORIAL_COORDINATES_PROPERTY_NAME, MOUNT_EQUATORIAL_COORDINATES_RA_ITEM_NAME, RA_item, false/*formatted*/ )
+                  && indi->GetPropertyItem( m_instance.p_deviceName, MOUNT_EQUATORIAL_COORDINATES_PROPERTY_NAME, MOUNT_EQUATORIAL_COORDINATES_DEC_ITEM_NAME, Dec_item, false/*formatted*/ ) )
                   if ( RA_item.PropertyState == INDIGO_BUSY_STATE || Dec_item.PropertyState == INDIGO_BUSY_STATE )
                   {
                      if ( T() > 0.1 )
@@ -793,14 +794,16 @@ void AbstractINDIMountExecution::Perform()
 
       case IMCCommand::Park:
          StartMountEvent( m_instance.p_targetRA, m_instance.o_currentRA, m_instance.p_targetDec, m_instance.o_currentDec, m_instance.p_command );
-         indi->MaybeSendNewPropertyItem( m_instance.p_deviceName, "TELESCOPE_PARK_POSITION", "INDI_NUMBER",
-                                         "PARK_RA", m_instance.p_targetRA,
-                                         "PARK_DEC", m_instance.p_targetDec, true/*async*/ );
-         indi->SendNewPropertyItem( m_instance.p_deviceName, "TELESCOPE_PARK", "INDI_SWITCH", "PARK", "ON", true/*async*/ );
+         indi->MaybeSendNewPropertyItem( m_instance.p_deviceName, MOUNT_PARK_POSITION_PROPERTY_NAME, "INDI_NUMBER",
+                                         MOUNT_PARK_POSITION_HA_ITEM_NAME, m_instance.o_currentLST - m_instance.p_targetRA,
+                                         MOUNT_PARK_POSITION_DEC_ITEM_NAME, m_instance.p_targetDec, true/*async*/ );
+         //Sleep(500);
+         indi->SendNewPropertyItem( m_instance.p_deviceName, MOUNT_PARK_PROPERTY_NAME, "INDI_SWITCH", MOUNT_PARK_PARKED_ITEM_NAME, "ON", true/*async*/ );
+         //Sleep(500);
          for ( ElapsedTime T; ; )
          {
             INDIPropertyListItem item;
-            if ( indi->GetPropertyItem( m_instance.p_deviceName, "TELESCOPE_PARK", "PARK", item, false/*formatted*/ ) )
+            if ( indi->GetPropertyItem( m_instance.p_deviceName, MOUNT_PARK_PROPERTY_NAME, MOUNT_PARK_PARKED_ITEM_NAME, item, false/*formatted*/ ) )
                if ( item.PropertyState == INDIGO_BUSY_STATE )
                {
                   if ( T() > 0.1 )
@@ -824,25 +827,26 @@ void AbstractINDIMountExecution::Perform()
 
       case IMCCommand::ParkDefault:
          {
-            double parkRA = 0, parkDec = 0;
+            double parkHA = 0, parkDec = 0;
             INDIPropertyListItem item;
-            if ( indi->GetPropertyItem( m_instance.p_deviceName, "TELESCOPE_PARK_POSITION", "PARK_RA", item, false/*formatted*/ ) )
-               parkRA = item.PropertyValue.ToDouble();
-            if ( indi->GetPropertyItem( m_instance.p_deviceName, "TELESCOPE_PARK_POSITION", "PARK_DEC", item, false/*formatted*/ ) )
+            if ( indi->GetPropertyItem( m_instance.p_deviceName, MOUNT_PARK_POSITION_PROPERTY_NAME, MOUNT_PARK_POSITION_HA_ITEM_NAME, item, false/*formatted*/ ) )
+               parkHA = item.PropertyValue.ToDouble();
+            if ( indi->GetPropertyItem( m_instance.p_deviceName, MOUNT_PARK_POSITION_PROPERTY_NAME, MOUNT_PARK_POSITION_DEC_ITEM_NAME, item, false/*formatted*/ ) )
                parkDec = item.PropertyValue.ToDouble();
 
-            StartMountEvent( parkRA, m_instance.o_currentRA, parkDec, m_instance.o_currentDec, m_instance.p_command );
-            indi->SendNewPropertyItem( m_instance.p_deviceName, "TELESCOPE_PARK", "INDI_SWITCH", "PARK", "ON", true/*async*/ );
+            StartMountEvent( m_instance.o_currentLST - parkHA, m_instance.o_currentRA, parkDec, m_instance.o_currentDec, m_instance.p_command );
+            indi->SendNewPropertyItem( m_instance.p_deviceName, MOUNT_PARK_PROPERTY_NAME, "INDI_SWITCH", MOUNT_PARK_PARKED_ITEM_NAME, "ON", true/*async*/ );
+            //Sleep(500);
             for ( ElapsedTime T; ; )
             {
-               if ( indi->GetPropertyItem( m_instance.p_deviceName, "TELESCOPE_PARK", "PARK", item, false/*formatted*/ ) )
+               if ( indi->GetPropertyItem( m_instance.p_deviceName, MOUNT_PARK_PROPERTY_NAME, MOUNT_PARK_PARKED_ITEM_NAME, item, false/*formatted*/ ) )
                   if ( item.PropertyState == INDIGO_BUSY_STATE )
                   {
                      if ( T() > 0.1 )
                      {
                         T.Reset();
                         m_instance.GetCurrentCoordinates();
-                        MountEvent( parkRA, m_instance.o_currentRA, parkDec, m_instance.o_currentDec );
+                        MountEvent( m_instance.o_currentLST - parkHA, m_instance.o_currentRA, parkDec, m_instance.o_currentDec );
                      }
                      else
                         WaitEvent();
@@ -913,11 +917,11 @@ void AbstractINDIMountExecution::Perform()
             switch (m_instance.p_alignmentMethod){
             case IMCAlignmentMethod::ServerModel:
             {
-            	indi->SendNewPropertyItem( m_instance.p_deviceName, "ON_COORD_SET", "INDI_SWITCH", "SYNC", "ON", false/*async*/ );
-            	indi->SendNewPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "INDI_NUMBER",
-            			                  "RA", targetRA,
-						                  "DEC", targetDec, false/*async*/ );
-            	indi->SendNewPropertyItem( m_instance.p_deviceName, "ON_COORD_SET", "INDI_SWITCH", "TRACK", "ON", false/*async*/ );
+               indi->SendNewPropertyItem( m_instance.p_deviceName, MOUNT_ON_COORDINATES_SET_PROPERTY_NAME, "INDI_SWITCH", MOUNT_ON_COORDINATES_SET_SYNC_ITEM_NAME, "ON", false/*async*/ );
+               indi->SendNewPropertyItem( m_instance.p_deviceName, MOUNT_EQUATORIAL_COORDINATES_PROPERTY_NAME, "INDI_NUMBER",
+                                       MOUNT_EQUATORIAL_COORDINATES_RA_ITEM_NAME, targetRA,
+                                    MOUNT_EQUATORIAL_COORDINATES_DEC_ITEM_NAME, targetDec, false/*async*/ );
+               indi->SendNewPropertyItem( m_instance.p_deviceName, MOUNT_ON_COORDINATES_SET_PROPERTY_NAME, "INDI_SWITCH", MOUNT_ON_COORDINATES_SET_TRACK_ITEM_NAME, "ON", false/*async*/ );
 
             	// TODO: get sync point coordinates from server and set parameter
             }
@@ -956,7 +960,7 @@ void AbstractINDIMountExecution::Perform()
       case IMCCommand::MoveNorthStart:
       case IMCCommand::MoveNorthStop:
          StartMountEvent( m_instance.p_targetRA, m_instance.o_currentRA, m_instance.p_targetDec, m_instance.o_currentDec, m_instance.p_command );
-         indi->SendNewPropertyItem( m_instance.p_deviceName, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_NORTH",
+         indi->SendNewPropertyItem( m_instance.p_deviceName, MOUNT_MOTION_DEC_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_NORTH_ITEM_NAME,
                                     (m_instance.p_command == IMCCommand::MoveNorthStart) ? "ON" : "OFF", true/*async*/ );
          m_instance.GetCurrentCoordinates();
          EndMountEvent();
@@ -965,7 +969,7 @@ void AbstractINDIMountExecution::Perform()
       case IMCCommand::MoveSouthStart:
       case IMCCommand::MoveSouthStop:
          StartMountEvent( m_instance.p_targetRA, m_instance.o_currentRA, m_instance.p_targetDec, m_instance.o_currentDec, m_instance.p_command );
-         indi->SendNewPropertyItem( m_instance.p_deviceName, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_SOUTH",
+         indi->SendNewPropertyItem( m_instance.p_deviceName, MOUNT_MOTION_DEC_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_SOUTH_ITEM_NAME,
                                     (m_instance.p_command == IMCCommand::MoveSouthStart) ? "ON" : "OFF", true /*async*/ );
          m_instance.GetCurrentCoordinates();
          EndMountEvent();
@@ -974,7 +978,7 @@ void AbstractINDIMountExecution::Perform()
       case IMCCommand::MoveWestStart:
       case IMCCommand::MoveWestStop:
          StartMountEvent( m_instance.p_targetRA, m_instance.o_currentRA, m_instance.p_targetDec, m_instance.o_currentDec, m_instance.p_command );
-         indi->SendNewPropertyItem( m_instance.p_deviceName, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_WEST",
+         indi->SendNewPropertyItem( m_instance.p_deviceName, MOUNT_MOTION_RA_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_WEST_ITEM_NAME,
                                     (m_instance.p_command == IMCCommand::MoveWestStart) ? "ON" : "OFF", true/*async*/ );
          m_instance.GetCurrentCoordinates();
          EndMountEvent();
@@ -983,7 +987,7 @@ void AbstractINDIMountExecution::Perform()
       case IMCCommand::MoveEastStart:
       case IMCCommand::MoveEastStop:
          StartMountEvent( m_instance.p_targetRA, m_instance.o_currentRA, m_instance.p_targetDec, m_instance.o_currentDec, m_instance.p_command );
-         indi->SendNewPropertyItem( m_instance.p_deviceName, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_EAST",
+         indi->SendNewPropertyItem( m_instance.p_deviceName, MOUNT_MOTION_RA_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_EAST_ITEM_NAME,
                                     (m_instance.p_command == IMCCommand::MoveEastStart) ? "ON" : "OFF", true/*async*/ );
          m_instance.GetCurrentCoordinates();
          EndMountEvent();
@@ -1021,7 +1025,7 @@ void AbstractINDIMountExecution::Perform()
       catch ( ProcessAborted& )
       {
          m_aborted = true;
-         indi->MaybeSendNewPropertyItem( m_instance.p_deviceName, "TELESCOPE_ABORT_MOTION", "INDI_SWITCH", "ABORT", "ON", true/*async*/ );
+         indi->MaybeSendNewPropertyItem( m_instance.p_deviceName, MOUNT_ABORT_MOTION_PROPERTY_NAME, "INDI_SWITCH", MOUNT_ABORT_MOTION_ITEM_NAME, "ON", true/*async*/ );
          AbortEvent();
          throw;
       }

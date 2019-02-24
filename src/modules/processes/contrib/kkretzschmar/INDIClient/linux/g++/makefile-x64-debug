@@ -1,18 +1,27 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.107
-# Copyright (C) 2009-2018 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.108
+# Copyright (C) 2009-2019 Pleiades Astrophoto
 ######################################################################
-# Generated on .... 2018-12-08T13:51:17.645Z
-# Project id ...... PixInsightINDIclient
-# Project type .... StaticLibrary
+# Generated on .... 2019-01-07T18:48:53.982Z
+# Project id ...... NDIClient
+# Project type .... Module
 # Platform ........ Linux/g++
 # Configuration ... Debug/x64
+# --------------------------------------------------------------------
+# Additional include search directories:
+# /home/klaus/data/Cpp/indigo/indigo_libs
+# --------------------------------------------------------------------
+# Additional library search directories:
+# /home/klaus/data/Cpp/indigo/build/lib/x64
+# --------------------------------------------------------------------
+# Additional libraries:
+# /home/klaus/data/Cpp/indigo/build/lib/libindigo.a
 ######################################################################
 
 OBJ_DIR="$(PCLSRCDIR)/modules/processes/contrib/kkretzschmar/INDIClient/linux/g++/x64/Debug"
 
 .PHONY: all
-all: $(OBJ_DIR)/libPixInsightINDIclient-pxi.a
+all: $(OBJ_DIR)/NDIClient-pxm.so $(OBJ_DIR)/libPixInsightINDIclient-pxi.a
 
 #
 # Source files
@@ -21,13 +30,6 @@ all: $(OBJ_DIR)/libPixInsightINDIclient-pxi.a
 SRC_FILES= \
 ../../Alignment.cpp \
 ../../IIndigoProperty.cpp \
-../../INDI/base64.c \
-../../INDI/baseclient.cpp \
-../../INDI/basedevice.cpp \
-../../INDI/indicom.c \
-../../INDI/indiproperty.cpp \
-../../INDI/indistandardproperty.cpp \
-../../INDI/lilxml.c \
 ../../INDICCDFrameInstance.cpp \
 ../../INDICCDFrameInterface.cpp \
 ../../INDICCDFrameParameters.cpp \
@@ -42,7 +44,7 @@ SRC_FILES= \
 ../../INDIMountInterface.cpp \
 ../../INDIMountParameters.cpp \
 ../../INDIMountProcess.cpp \
-../../IndigoClient.cpp \
+../../IndigoClient.cpp
 
 #
 # Object files
@@ -51,13 +53,6 @@ SRC_FILES= \
 OBJ_FILES= \
 ./x64/Debug/Alignment.o \
 ./x64/Debug/IIndigoProperty.o \
-./x64/Debug/INDI/base64.o \
-./x64/Debug/INDI/baseclient.o \
-./x64/Debug/INDI/basedevice.o \
-./x64/Debug/INDI/indicom.o \
-./x64/Debug/INDI/indiproperty.o \
-./x64/Debug/INDI/indistandardproperty.o \
-./x64/Debug/INDI/lilxml.o \
 ./x64/Debug/INDICCDFrameInstance.o \
 ./x64/Debug/INDICCDFrameInterface.o \
 ./x64/Debug/INDICCDFrameParameters.o \
@@ -72,7 +67,7 @@ OBJ_FILES= \
 ./x64/Debug/INDIMountInterface.o \
 ./x64/Debug/INDIMountParameters.o \
 ./x64/Debug/INDIMountProcess.o \
-./x64/Debug/IndigoClient.o \
+./x64/Debug/IndigoClient.o
 
 #
 # Dependency files
@@ -81,13 +76,6 @@ OBJ_FILES= \
 DEP_FILES= \
 ./x64/Debug/Alignment.d \
 ./x64/Debug/IIndigoProperty.d \
-./x64/Debug/INDI/base64.d \
-./x64/Debug/INDI/baseclient.d \
-./x64/Debug/INDI/basedevice.d \
-./x64/Debug/INDI/indicom.d \
-./x64/Debug/INDI/indiproperty.d \
-./x64/Debug/INDI/indistandardproperty.d \
-./x64/Debug/INDI/lilxml.d \
 ./x64/Debug/INDICCDFrameInstance.d \
 ./x64/Debug/INDICCDFrameInterface.d \
 ./x64/Debug/INDICCDFrameParameters.d \
@@ -102,7 +90,7 @@ DEP_FILES= \
 ./x64/Debug/INDIMountInterface.d \
 ./x64/Debug/INDIMountParameters.d \
 ./x64/Debug/INDIMountProcess.d \
-./x64/Debug/IndigoClient.d \
+./x64/Debug/IndigoClient.d
 
 #
 # Rules
@@ -111,27 +99,26 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/libPixInsightINDIclient-pxi.a: $(OBJ_FILES)
-	ar r $(OBJ_DIR)/libPixInsightINDIclient-pxi.a $(OBJ_FILES)
+	ar r $(OBJ_DIR)/libPixInsightINDIclient-pxi.a $(OBJ_FILES) 
+	cp $(OBJ_DIR)/libPixInsightINDIclient-pxi.a $(PCLBINDIR64)
+
+$(OBJ_DIR)/NDIClient-pxm.so: $(OBJ_FILES)
+	g++ -m64 -fPIC -pthread -Wl,-fuse-ld=gold -Wl,--enable-new-dtags    -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -L"/home/klaus/data/Cpp/indigo/build/lib/x64" -o $(OBJ_DIR)/NDIClient-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi -llz4-pxi -lzlib-pxi -lRFC6234-pxi -llcms-pxi -lcminpack-pxi -l/home/klaus/data/Cpp/indigo/build/lib/libindigo.a
 	$(MAKE) -f ./makefile-x64-debug --no-print-directory post-build
 
 .PHONY: clean
 clean:
-	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/libPixInsightINDIclient-pxi.a
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/NDIClient-pxm.so
 
 .PHONY: post-build
 post-build:
-	cp $(OBJ_DIR)/libPixInsightINDIclient-pxi.a $(PCLLIBDIR64)
+	cp $(OBJ_DIR)/NDIClient-pxm.so $(PCLBINDIR64)
+
+
 
 ./x64/Debug/%.o: ../../%.cpp
-	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -I/home/klaus/data/Cpp/indigo/indigo_libs -O0 -g -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -DINDIGO_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -I"/home/klaus/data/Cpp/indigo/indigo_libs" -O0 -g -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
-./x64/Debug/INDI/%.o: ../../INDI/%.cpp
-	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -I/home/klaus/data/Cpp/indigo/indigo_libs -O0 -g -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
-	@echo ' '
-./x64/Debug/%.o: ../../%.cpp
-	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -I/home/klaus/data/Cpp/indigo/indigo_libs -O0 -g -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
-	@echo ' '
-./x64/Debug/INDI/%.o: ../../INDI/%.c
-	gcc -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -I/home/klaus/data/Cpp/indigo/indigo_libs -O0 -g -fnon-call-exceptions -std=c99 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
-	@echo ' '
+
+
 

@@ -315,10 +315,15 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
                                       m_parent.GeographicHeight() );
                   TimePoint t = TimePoint::Now();
                   pcl::Position P( t, "UTC" );
-                  P.SetObserver( O );
-                  P.Apparent( S ).ToSpherical2Pi( m_alpha, m_delta );
-                  m_alpha = Deg( m_alpha )/15;
-                  m_delta = Deg( m_delta );
+                  if (m_parent.ShouldComputeTopocentricApparentCoordinates()) {
+                     P.SetObserver( O );
+                     P.Apparent( S ).ToSpherical2Pi( m_alpha, m_delta );
+                     m_alpha = Deg( m_alpha )/15;
+                     m_delta = Deg( m_delta );
+                  } else {
+                     m_alpha = ra();
+                     m_delta = dec();
+                  }
 
                   String info = String()
                           << "<end><cbr><br><b>Object            :</b> "
@@ -348,14 +353,15 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
                      info <<           "<br><b>Visual Magnitude  :</b> "
                           << String().Format( "%.4g", vmag() );
 
-                  info    << "<br>" << t.ToString( "%Y-%M-%D %h:%m:%s2" ) << " UTC"
-                          <<       "<br><br><b>*** Topocentric Apparent Coordinates ***</b>"
-                          <<           "<br><b>Right Ascension   :</b> "
-                          << String::ToSexagesimal( m_alpha, RAConversionOptions( 3/*precision*/, 3/*width*/ ) )
-                          <<           "<br><b>Declination       :</b> "
-                          << String::ToSexagesimal( m_delta, DecConversionOptions( 2/*precision*/, 3/*width*/ ) )
-                          << "<br>";
-
+                  if (m_parent.ShouldComputeTopocentricApparentCoordinates()) {
+                     info    << "<br>" << t.ToString( "%Y-%M-%D %h:%m:%s2" ) << " UTC"
+                             <<       "<br><br><b>*** Topocentric Apparent Coordinates ***</b>"
+                             <<           "<br><b>Right Ascension   :</b> "
+                             << String::ToSexagesimal( m_alpha, RAConversionOptions( 3/*precision*/, 3/*width*/ ) )
+                             <<           "<br><b>Declination       :</b> "
+                             << String::ToSexagesimal( m_delta, DecConversionOptions( 2/*precision*/, 3/*width*/ ) )
+                             << "<br>";
+                  }
                   SearchInfo_TextBox.Insert( info );
                   m_valid = true;
                   Get_Button.Enable();
@@ -1098,14 +1104,14 @@ void MountConfigDialog::SendUpdatedProperties()
    double lat = SexagesimalToDecimal( LatitudeIsSouth_CheckBox.IsChecked() ? -1 : +1,
          Latitude_H_SpinBox.Value(), Latitude_M_SpinBox.Value(), Latitude_S_NumericEdit.Value() );
 
-   INDIClient::TheClient()->SendNewPropertyItem( m_device, "GEOGRAPHIC_COORD", "INDI_NUMBER", "LAT", lat );
+   INDIClient::TheClient()->SendNewPropertyItem( m_device, GEOGRAPHIC_COORDINATES_PROPERTY_NAME, "INDI_NUMBER", GEOGRAPHIC_COORDINATES_LATITUDE_ITEM_NAME, lat );
 
    double longitude = SexagesimalToDecimal( LongitudeIsWest_CheckBox.IsChecked() ? -1 : +1,
          Longitude_H_SpinBox.Value(), Longitude_M_SpinBox.Value(), Longitude_S_NumericEdit.Value() );
 
-   INDIClient::TheClient()->SendNewPropertyItem( m_device, "GEOGRAPHIC_COORD", "INDI_NUMBER", "LONG", longitude );
+   INDIClient::TheClient()->SendNewPropertyItem( m_device, GEOGRAPHIC_COORDINATES_PROPERTY_NAME, "INDI_NUMBER", GEOGRAPHIC_COORDINATES_LONGITUDE_ITEM_NAME, longitude );
 
-   INDIClient::TheClient()->SendNewPropertyItem( m_device, "GEOGRAPHIC_COORD", "INDI_NUMBER", "ELEV", Height_NumericEdit.Value() );
+   INDIClient::TheClient()->SendNewPropertyItem( m_device, GEOGRAPHIC_COORDINATES_PROPERTY_NAME, "INDI_NUMBER", GEOGRAPHIC_COORDINATES_ELEVATION_ITEM_NAME, Height_NumericEdit.Value() );
 
    // sending telescope info in bulk request
    INDINewPropertyItem newPropertyItem( m_device, "TELESCOPE_INFO", "INDI_NUMBER" );
@@ -1857,7 +1863,7 @@ void INDIMountInterface::e_Timer( Timer& sender )
             GUI->MountDevice_Combo.AddItem( String() );
 
             for ( auto device : devices )
-               if ( indi->HasPropertyItem( device.DeviceName, "EQUATORIAL_EOD_COORD", "RA" ) ) // is this a mount device?
+               if ( indi->HasPropertyItem( device.DeviceName, MOUNT_EQUATORIAL_COORDINATES_PROPERTY_NAME, MOUNT_EQUATORIAL_COORDINATES_RA_ITEM_NAME ) ) // is this a mount device?
                   GUI->MountDevice_Combo.AddItem( device.DeviceName );
 
             GUI->MountDevice_Combo.SetItemText( 0,
@@ -1886,18 +1892,12 @@ __device_found:
       INDIClient* indi = INDIClient::TheClient();
       INDIPropertyListItem mountProp;
 
-      double time_lst = 0; // needed for pier side fallback
-      if ( indi->GetPropertyItem( m_device, "TIME_LST", "LST", mountProp, false/*formatted*/ ) )
-      {
-         GUI->LST_Value_Label.SetText( String::ToSexagesimal( mountProp.PropertyValue.ToDouble(),
+      double time_lst = LocalApparentSiderialTime(GeographicLongitude()); // needed for pier side fallback
+         GUI->LST_Value_Label.SetText( String::ToSexagesimal( time_lst,
                                  SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 3/*width*/ ) ) );
-         time_lst = mountProp.PropertyValue.ToDouble();
-      }
-      else
-         GUI->LST_Value_Label.Clear();
 
       double coord_ra = 0;// needed for pier side fallback
-      if ( indi->GetPropertyItem( m_device, "EQUATORIAL_EOD_COORD", "RA", mountProp, false/*formatted*/ ) )
+      if ( indi->GetPropertyItem( m_device, MOUNT_EQUATORIAL_COORDINATES_PROPERTY_NAME, MOUNT_EQUATORIAL_COORDINATES_RA_ITEM_NAME, mountProp, false/*formatted*/ ) )
       {
          GUI->RA_Value_Label.SetText( String::ToSexagesimal( mountProp.PropertyValue.ToDouble(),
                   SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 3/*width*/, ' '/*separator*/ ) ) );
@@ -1906,15 +1906,15 @@ __device_found:
       else
          GUI->RA_Value_Label.Clear();
 
-      if ( indi->GetPropertyItem( m_device, "EQUATORIAL_EOD_COORD", "DEC", mountProp, false/*formatted*/ ) )
+      if ( indi->GetPropertyItem( m_device, MOUNT_EQUATORIAL_COORDINATES_PROPERTY_NAME, MOUNT_EQUATORIAL_COORDINATES_DEC_ITEM_NAME, mountProp, false/*formatted*/ ) )
          GUI->Dec_Value_Label.SetText( String::ToSexagesimal( mountProp.PropertyValue.ToDouble(),
                   SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 3/*width*/, ' '/*separator*/ ) ) );
       else
          GUI->Dec_Value_Label.Clear();
 
-      static const char* indiPierSides[] = { "PIER_WEST", "PIER_EAST" };
+      static const char* indiPierSides[] = { MOUNT_SIDE_OF_PIER_WEST_ITEM_NAME, MOUNT_SIDE_OF_PIER_EAST_ITEM_NAME };
       for ( size_type i = 0; i < ItemsInArray( indiPierSides ); ++i )
-         if ( indi->GetPropertyItem( m_device, "TELESCOPE_PIER_SIDE", indiPierSides[i], mountProp ) )
+         if ( indi->GetPropertyItem( m_device, MOUNT_SIDE_OF_PIER_PROPERTY_NAME, indiPierSides[i], mountProp ) )
             if ( mountProp.PropertyValue == "ON" )
             {
                m_pierSide = i;
@@ -1929,22 +1929,22 @@ __device_found:
             }
 
 
-      if ( indi->GetPropertyItem( m_device, "HORIZONTAL_COORD", "ALT", mountProp, false/*formatted*/ ) )
+      if ( indi->GetPropertyItem( m_device, MOUNT_HORIZONTAL_COORDINATES_PROPERTY_NAME, MOUNT_HORIZONTAL_COORDINATES_ALT_ITEM_NAME, mountProp, false/*formatted*/ ) )
          GUI->ALT_Value_Label.SetText( String::ToSexagesimal( mountProp.PropertyValue.ToDouble(),
                                  SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 3/*width*/ ) ) );
       else
          GUI->ALT_Value_Label.Clear();
 
-      if ( indi->GetPropertyItem( m_device, "HORIZONTAL_COORD", "AZ", mountProp, false/*formatted*/ ) )
+      if ( indi->GetPropertyItem( m_device, MOUNT_HORIZONTAL_COORDINATES_PROPERTY_NAME, MOUNT_HORIZONTAL_COORDINATES_AZ_ITEM_NAME, mountProp, false/*formatted*/ ) )
          GUI->AZ_Value_Label.SetText( String::ToSexagesimal( mountProp.PropertyValue.ToDouble(),
                                  SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 3/*width*/ ) ) );
       else
          GUI->AZ_Value_Label.Clear();
 
       bool foundSlewRate = false;
-      static const char* indiSlewRates[] = { "SLEW_GUIDE", "SLEW_CENTERING", "SLEW_FIND", "SLEW_MAX" };
+      static const char* indiSlewRates[] = { MOUNT_SLEW_RATE_GUIDE_ITEM_NAME, MOUNT_SLEW_RATE_CENTERING_ITEM_NAME, MOUNT_SLEW_RATE_FIND_ITEM_NAME, MOUNT_SLEW_RATE_MAX_ITEM_NAME };
       for ( size_type i = 0; i < ItemsInArray( indiSlewRates ); ++i )
-         if ( indi->GetPropertyItem( m_device, "TELESCOPE_SLEW_RATE", indiSlewRates[i], mountProp ) )
+         if ( indi->GetPropertyItem( m_device, MOUNT_SLEW_RATE_PROPERTY_NAME, indiSlewRates[i], mountProp ) )
             if ( mountProp.PropertyValue == "ON" )
             {
                foundSlewRate = true;
@@ -1954,17 +1954,17 @@ __device_found:
       GUI->SlewSpeed_Label.Enable( foundSlewRate );
       GUI->SlewSpeed_ComboBox.Enable( foundSlewRate );
 
-      if ( indi->GetPropertyItem( m_device, "GEOGRAPHIC_COORD", "LAT", mountProp, false/*formatted*/ ) )
+      if ( indi->GetPropertyItem( m_device, GEOGRAPHIC_COORDINATES_PROPERTY_NAME, GEOGRAPHIC_COORDINATES_LATITUDE_ITEM_NAME, mountProp, false/*formatted*/ ) )
          m_geoLatitude = mountProp.PropertyValue.ToDouble();
       else
          m_geoLatitude = 0;
 
-      if ( indi->GetPropertyItem( m_device, "GEOGRAPHIC_COORD", "LONG", mountProp, false/*formatted*/ ) )
+      if ( indi->GetPropertyItem( m_device, GEOGRAPHIC_COORDINATES_PROPERTY_NAME, GEOGRAPHIC_COORDINATES_LONGITUDE_ITEM_NAME, mountProp, false/*formatted*/ ) )
          m_geoLongitude = mountProp.PropertyValue.ToDouble();
       else
          m_geoLongitude = 0;
 
-      if ( indi->GetPropertyItem( m_device, "GEOGRAPHIC_COORD", "ELEV", mountProp, false/*formatted*/ ) )
+      if ( indi->GetPropertyItem( m_device, GEOGRAPHIC_COORDINATES_PROPERTY_NAME, GEOGRAPHIC_COORDINATES_ELEVATION_ITEM_NAME, mountProp, false/*formatted*/ ) )
          m_geoHeight = mountProp.PropertyValue.ToDouble();
       else
          m_geoHeight = 0;
@@ -2210,7 +2210,7 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
    }
    else if ( sender == GUI->SlewStop_Button )
    {
-      INDIClient::TheClient()->MaybeSendNewPropertyItem( m_device, "TELESCOPE_ABORT_MOTION", "INDI_SWITCH", "ABORT", "ON", true/*async*/ );
+      INDIClient::TheClient()->MaybeSendNewPropertyItem( m_device, MOUNT_ABORT_MOTION_PROPERTY_NAME, "INDI_SWITCH", MOUNT_ABORT_MOTION_ITEM_NAME, "ON", true/*async*/ );
    }
    else if ( sender == GUI->AlignmentFile_ToolButton)
    {
@@ -2283,39 +2283,39 @@ void INDIMountInterface::e_Press( Button& sender )
 
    if ( sender == GUI->SlewTopLeft_Button )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_NORTH", "ON", true/*async*/ );
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_WEST", "ON", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_DEC_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_NORTH_ITEM_NAME, "ON", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_RA_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_WEST_ITEM_NAME, "ON", true/*async*/ );
    }
    else if ( sender == GUI->SlewTop_Button )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_NORTH", "ON", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_DEC_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_NORTH_ITEM_NAME, "ON", true/*async*/ );
    }
    if ( sender == GUI->SlewTopRight_Button )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_NORTH", "ON", true/*async*/ );
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_EAST", "ON", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_DEC_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_NORTH_ITEM_NAME, "ON", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_RA_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_EAST_ITEM_NAME, "ON", true/*async*/ );
    }
    else if ( sender == GUI->SlewLeft_Button )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_WEST", "ON", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_RA_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_WEST_ITEM_NAME, "ON", true/*async*/ );
    }
    else if ( sender == GUI->SlewRight_Button )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_EAST", "ON", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_RA_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_EAST_ITEM_NAME, "ON", true/*async*/ );
    }
    else if ( sender == GUI->SlewBottomLeft_Button )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_SOUTH", "ON", true/*async*/ );
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_WEST", "ON", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_DEC_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_SOUTH_ITEM_NAME, "ON", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_RA_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_WEST_ITEM_NAME, "ON", true/*async*/ );
    }
    else if ( sender == GUI->SlewBottom_Button )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_SOUTH", "ON", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_DEC_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_SOUTH_ITEM_NAME, "ON", true/*async*/ );
    }
    else if ( sender == GUI->SlewBottomRight_Button )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_SOUTH", "ON", true/*async*/ );
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_EAST", "ON", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_DEC_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_SOUTH_ITEM_NAME, "ON", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_RA_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_EAST_ITEM_NAME, "ON", true/*async*/ );
    }
 }
 
@@ -2328,39 +2328,39 @@ void INDIMountInterface::e_Release( Button& sender )
 
    if ( sender == GUI->SlewTopLeft_Button )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_NORTH", "OFF", true/*async*/ );
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_WEST", "OFF", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_DEC_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_NORTH_ITEM_NAME, "OFF", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", MOUNT_MOTION_WEST_ITEM_NAME, "OFF", true/*async*/ );
    }
    else if ( sender == GUI->SlewTop_Button )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_NORTH", "OFF", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_DEC_PROPERTY_NAME, "INDI_SWITCH", "MOTION_NORTH", "OFF", true/*async*/ );
    }
    if ( sender == GUI->SlewTopRight_Button )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_NORTH", "OFF", true/*async*/ );
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_EAST", "OFF", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_DEC_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_NORTH_ITEM_NAME, "OFF", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_RA_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_EAST_ITEM_NAME, "OFF", true/*async*/ );
    }
    else if ( sender == GUI->SlewLeft_Button )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_WEST", "OFF", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_RA_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_WEST_ITEM_NAME, "OFF", true/*async*/ );
    }
    else if ( sender == GUI->SlewRight_Button )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_EAST", "OFF", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_RA_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_EAST_ITEM_NAME, "OFF", true/*async*/ );
    }
    else if ( sender == GUI->SlewBottomLeft_Button )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_SOUTH", "OFF", true/*async*/ );
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_WEST", "OFF", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_DEC_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_SOUTH_ITEM_NAME, "OFF", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_RA_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_WEST_ITEM_NAME, "OFF", true/*async*/ );
    }
    else if ( sender == GUI->SlewBottom_Button )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_SOUTH", "OFF", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_DEC_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_SOUTH_ITEM_NAME, "OFF", true/*async*/ );
    }
    else if ( sender == GUI->SlewBottomRight_Button )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_SOUTH", "OFF", true/*async*/ );
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_EAST", "OFF", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_DEC_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_SOUTH_ITEM_NAME, "OFF", true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, MOUNT_MOTION_RA_PROPERTY_NAME, "INDI_SWITCH", MOUNT_MOTION_EAST_ITEM_NAME, "OFF", true/*async*/ );
    }
 }
 
@@ -2382,7 +2382,7 @@ void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
          INDIPropertyListItem item;
 
          // load configuration on server
-         INDIClient::TheClient()->SendNewPropertyItem( m_device, "CONFIG_PROCESS", "INDI_SWITCH", "CONFIG_LOAD", "ON");
+         INDIClient::TheClient()->SendNewPropertyItem( m_device, CONFIG_PROPERTY_NAME, "INDI_SWITCH", CONFIG_LOAD_ITEM_NAME, "ON");
 
          if ( INDIClient::TheClient()->GetPropertyItem( m_device, "TARGET_EOD_COORD", "RA", item, false/*formatted*/ ) )
          {
@@ -2409,7 +2409,7 @@ void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
    }
    else if ( sender == GUI->SlewSpeed_ComboBox )
    {
-      INDIClient::TheClient()->MaybeSendNewPropertyItem( m_device, "TELESCOPE_SLEW_RATE", "INDI_SWITCH",
+      INDIClient::TheClient()->MaybeSendNewPropertyItem( m_device, MOUNT_SLEW_RATE_PROPERTY_NAME, "INDI_SWITCH",
                      INDIMountInstance::MountSlewRatePropertyString( itemIndex ), "ON", true/*async*/ );
    }
 }

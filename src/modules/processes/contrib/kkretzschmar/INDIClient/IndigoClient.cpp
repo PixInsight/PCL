@@ -10,7 +10,7 @@
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2018 Klaus Kretzschmar
+// Copyright (c) 2014-2019 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,8 +54,8 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "indigo/indigo_json.h"
-#include "indigo/indigo_driver_json.h"
+#include "indigo_json.h"
+#include "indigo_driver_json.h"
 
 IndigoClient::IndigoClient(const char* clientName) {
    strncpy(m_indigoClient.name, clientName, strlen(clientName));
@@ -127,6 +127,7 @@ bool IndigoClient::serverIsConnected(std::ostream& errMessage) const {
        indigo_init_number_item(&property->items[i], items[i], NULL, 0, 0, 0, values[i]);
     indigo_result rc = indigo_change_property(&m_indigoClient, property);
     if (rc == INDIGO_OK){
+        property->state = INDIGO_BUSY_STATE;
         newNumber(property);
         free(property);
         return true;
@@ -142,6 +143,7 @@ bool IndigoClient::serverIsConnected(std::ostream& errMessage) const {
         indigo_init_switch_item(&property->items[i], items[i], NULL, values[i]);
      indigo_result rc = indigo_change_property(&m_indigoClient, property);
      if (rc == INDIGO_OK){
+         property->state = INDIGO_BUSY_STATE;
          newSwitch(property);
          free(property);
          return true;
@@ -156,7 +158,8 @@ bool IndigoClient::serverIsConnected(std::ostream& errMessage) const {
         indigo_init_text_item(&property->items[i], items[i], NULL, values[i]);
      indigo_result rc = indigo_change_property(&m_indigoClient, property);
      if (rc == INDIGO_OK){
-         newSwitch(property);
+         property->state = INDIGO_BUSY_STATE;
+         newText(property);
          free(property);
          return true;
      }

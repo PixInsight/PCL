@@ -173,7 +173,7 @@ bool INDIDeviceControllerInstance::ExecuteGlobal()
             }
 
             indi->connectServer(errMesg);
-
+            Sleep(100);
             if ( !indi->IsServerConnected(errMesg) )
                throw Error( "INDIDeviceControllerInstance: Failure to connect to INDI server " + p_serverHostName + ", port=" + String( p_serverPort ) );
 

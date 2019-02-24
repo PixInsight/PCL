@@ -68,6 +68,25 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+// Computes the Greenwich mean sidereal time in hours for the current time point
+// with the approximative formula of https://aa.usno.navy.mil/faq/docs/GAST.php
+double GreenwhichMeanSiderialTime();
+
+// Computes the Greenwhich apparent siderial timee in hours for the current time point
+// with the approximative formula of https://aa.usno.navy.mil/faq/docs/GAST.php
+double GreenwhichApparentSiderialTime();
+
+// Computes the local mean siderial time
+// \param: geographic longitude in degrees (>0 east, <0 west)
+double LocalMeanSiderialTime(double longitude);
+
+// Computes the local apparent siderial time
+// \param: geographic longitude in degrees (>0 east, <0 west)
+double LocalApparentSiderialTime(double longitude);
+
+
+// ----------------------------------------------------------------------------
+
 class PCL_CLASS XMLDocument;
 class PCL_CLASS XMLElement;
 

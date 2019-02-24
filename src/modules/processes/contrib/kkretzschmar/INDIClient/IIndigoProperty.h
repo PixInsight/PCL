@@ -57,7 +57,7 @@
 
 #include<memory>
 
-#include "indigo/indigo_bus.h"
+#include "indigo_bus.h"
 
 #include <pcl/Exception.h>
 #include <pcl/String.h>
@@ -161,6 +161,11 @@ public:
    }
 
    virtual String getElementValue( size_type i ) const
+   {
+      return "unsupported value";
+   }
+
+   virtual String getElementTarget( size_type i ) const
    {
       return "unsupported value";
    }

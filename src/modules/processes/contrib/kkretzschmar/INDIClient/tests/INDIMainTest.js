@@ -102,7 +102,7 @@ function INDICCDTestSuite()
       msleep( 500 );
 
       // Connect to CCD device
-      let propertyKey = "/" + CCD_DEVICE_NAME + "/CONNECTION/CONNECT";
+      let propertyKey = "/" + CCD_DEVICE_NAME + "/CONNECTION/CONNECTED";
       this.deviceController.newProperties = [[propertyKey, "INDI_SWITCH", "ON"]];
       this.deviceController.serverCommand = "SET";
       this.executeController();
@@ -181,7 +181,7 @@ function INDIMountTestSuite()
       msleep( 500 );
 
       // Connect to Mount device
-      let propertyKey = "/" + MOUNT_DEVICE_NAME + "/CONNECTION/CONNECT";
+      let propertyKey = "/" + MOUNT_DEVICE_NAME + "/CONNECTION/CONNECTED";
       this.deviceController.newProperties = [[propertyKey, "INDI_SWITCH", "ON"]];
       this.deviceController.serverCommand = "SET";
       this.executeController();
@@ -208,7 +208,7 @@ function INDIMountTestSuite()
 // run CCD tests
 INDICCDTestSuite.prototype = new Test;
 
-//(new INDICCDTestSuite).run();
+(new INDICCDTestSuite).run();
 
 // run Mount tests
 INDIMountTestSuite.prototype = new Test;

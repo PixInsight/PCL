@@ -10,7 +10,7 @@
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2018 Klaus Kretzschmar
+// Copyright (c) 2014-2019 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,7 +58,8 @@
 #include<functional>
 #include<iostream>
 
-#include "indigo/indigo_client.h"
+#include "indigo_client.h"
+#include "indigo_names.h"
 
 class IndigoClient
 {
@@ -68,7 +69,7 @@ class IndigoClient
    typedef indigo_result (*updatePropertyCallBack_t)(indigo_client *client, indigo_device *device, indigo_property *property, const char *message);
    typedef indigo_result (*getMessageCallback_t)(indigo_client *client, indigo_device *device, const char *message);
    struct indigo_client m_indigoClient = {
-      "PixInsight", false, nullptr, INDIGO_OK, INDIGO_VERSION_CURRENT, nullptr,
+      "PixInsight", false, nullptr, INDIGO_OK, INDIGO_VERSION_LEGACY, nullptr,
       reinterpret_cast<clientAttachCallBack_t>(&IndigoClient::clientAttach),
       reinterpret_cast<definePropertyCallBack_t>(&IndigoClient::defineProperty),
       reinterpret_cast<updatePropertyCallBack_t>(&IndigoClient::updateProperty),

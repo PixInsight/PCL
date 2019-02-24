@@ -415,6 +415,10 @@ public:
 
    int AlignmentMethod() const;
 
+   bool ShouldComputeTopocentricApparentCoordinates() {
+      return !GUI->MountComputeApparentPosition_CheckBox.IsChecked();
+   }
+
 private:
 
    String                              m_device;

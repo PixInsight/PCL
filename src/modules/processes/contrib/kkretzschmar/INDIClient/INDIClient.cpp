@@ -107,11 +107,40 @@ bool INDIClient::GetPropertyItem( const String& device, const String& property, 
          result.Device = device;
          result.Property = property;
          result.Element = element;
-         if ( formatted && item.PropertyTypeStr == "INDI_NUMBER" )
+         if ( formatted && item.PropertyType == INDIGO_NUMBER_VECTOR )
             result.PropertyValue = PropertyUtils::FormattedNumber( item.PropertyValue, IsoString( item.PropertyNumberFormat ) );
          else
             result.PropertyValue = item.PropertyValue;
          if ( result.PropertyValue.IsEmpty() ) // invalid property value?
+            return false;
+         result.PropertyState = item.PropertyState;
+         return true;
+      }
+
+   return false;
+}
+
+bool INDIClient::GetPropertyTargetItem( const String& device, const String& property, const String& element,
+                                        INDIPropertyListItem& result, bool formatted ) const
+{
+   ExclConstPropertyList y = PropertyList();
+   const INDIPropertyListItemArray& properties( y );
+
+   for ( auto item : properties )
+      if ( item.Device == device && item.Property == property && item.Element == element )
+      {
+         result.Device = device;
+         result.Property = property;
+         result.Element = element;
+         if ( formatted && item.PropertyType == INDIGO_NUMBER_VECTOR ) {
+            result.PropertyTarget = PropertyUtils::FormattedNumber( item.PropertyTarget, IsoString( item.PropertyNumberFormat ) );
+            result.PropertyValue = PropertyUtils::FormattedNumber( item.PropertyValue, IsoString( item.PropertyNumberFormat ) );
+         }
+         else {
+            result.PropertyValue = item.PropertyValue;
+            result.PropertyTarget = item.PropertyTarget;
+         }
+         if ( result.PropertyValue.IsEmpty() || result.PropertyTarget.IsEmpty() ) // invalid property value?
             return false;
          result.PropertyState = item.PropertyState;
          return true;
@@ -256,11 +285,10 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyItem& newItem, bool a
       }
 
 
-      // In asynchronous calls, wait until the server has processed all of our
+      // In synchronous calls, wait until the server has processed all of our
       // property update requests.
-      if ( !async )
-         for ( ;; )
-         {
+      if ( !async ) {
+         for ( ;; ) {
             Module->ProcessEvents();
             if ( console.AbortRequested() )
                throw ProcessAborted();
@@ -288,6 +316,7 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyItem& newItem, bool a
             if ( requestsDone == newItem.ElementValues.Length() )
                break;
          }
+      }
 
       return true;
 
@@ -489,12 +518,14 @@ void INDIClient::ApplyToPropertyList( indigo_property* p, const PropertyListMuta
                        + '/' + item.Property
                        + '/' + item.Element;
       item.PropertyValue = ip->getElementValue( i );
+      item.PropertyTarget = ip->getElementTarget( i );
       item.PropertyNumberFormat = ip->getNumberFormat( i );
       item.ElementLabel = ip->getElementLabel( i );
 
       mutate( this, properties, item );
    }
 }
+
 
 // ----------------------------------------------------------------------------
 

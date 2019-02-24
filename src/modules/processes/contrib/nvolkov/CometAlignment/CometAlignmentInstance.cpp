@@ -794,7 +794,7 @@ private:
 		int n1 = input.NumberOfChannels();
 
 		GenericImage<P> output;
-		output.AllocateData(wi, hi, n1, input.ColorSpace());
+		output.AllocateData(wi, hi, n1, input.ColorSpace()).Black();
 
 		IndirectArray<PixelInterpolation::Interpolator<P> > interpolators( n1 );
 		for ( int c = 0; c < n1; ++c )

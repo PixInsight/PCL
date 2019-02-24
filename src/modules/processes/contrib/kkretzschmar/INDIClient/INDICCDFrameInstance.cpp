@@ -199,7 +199,7 @@ bool INDICCDFrameInstance::ValidateDevice( bool throwErrors ) const
    for ( auto device : devices )
       if ( device.DeviceName == p_deviceName )
       {
-         if ( !indi->HasPropertyItem( device.DeviceName, "CCD_FRAME", "WIDTH" ) ) // is this a camera device?
+         if ( !indi->HasPropertyItem( device.DeviceName, CCD_FRAME_PROPERTY_NAME, CCD_FRAME_WIDTH_ITEM_NAME ) ) // is this a camera device?
          {
             if ( throwErrors )
                throw Error( '\'' + p_deviceName + "' does not seem to be a valid INDI CCD device" );
@@ -297,7 +297,7 @@ String INDICCDFrameInstance::TelescopeDeviceName( bool throwErrors ) const
       for ( auto device : devices )
          if ( device.DeviceName == deviceName )
          {
-            if ( !indi->HasPropertyItem( deviceName, "EQUATORIAL_EOD_COORD", "RA" ) ) // is this a mount device?
+            if ( !indi->HasPropertyItem( deviceName, MOUNT_EQUATORIAL_COORDINATES_PROPERTY_NAME, MOUNT_EQUATORIAL_COORDINATES_RA_ITEM_NAME ) ) // is this a mount device?
             {
                if ( throwErrors )
                   throw Error( "The required device '" + deviceName + "' does not seem to be a valid INDI mount device" );
@@ -318,18 +318,15 @@ void INDICCDFrameInstance::SendDeviceProperties( bool async ) const
 {
    INDIClient* indi = INDIClient::TheClientOrDie();
 
-   indi->MaybeSendNewPropertyItem( p_deviceName, "UPLOAD_MODE", "INDI_SWITCH", UploadModePropertyString( p_uploadMode ), "ON", async );
+   indi->MaybeSendNewPropertyItem( p_deviceName, CCD_UPLOAD_MODE_PROPERTY_NAME, "INDI_SWITCH", UploadModePropertyString( p_uploadMode ), "ON", async );
 
    if ( !p_serverUploadDirectory.IsEmpty() )
-      indi->MaybeSendNewPropertyItem( p_deviceName, "UPLOAD_SETTINGS", "INDI_TEXT", "UPLOAD_DIR", p_serverUploadDirectory, async );
+      indi->MaybeSendNewPropertyItem( p_deviceName, CCD_LOCAL_MODE_PROPERTY_NAME, "INDI_TEXT", CCD_LOCAL_MODE_DIR_ITEM_NAME, p_serverUploadDirectory, async );
 
-   indi->MaybeSendNewPropertyItem( p_deviceName, "CCD_FRAME_TYPE", "INDI_SWITCH", CCDFrameTypePropertyString( p_frameType ), "ON", async );
+   indi->MaybeSendNewPropertyItem( p_deviceName, CCD_FRAME_TYPE_PROPERTY_NAME, "INDI_SWITCH", CCDFrameTypePropertyString( p_frameType ), "ON", async );
 
-   if ( p_binningX > 0 )
-      indi->MaybeSendNewPropertyItem( p_deviceName, "CCD_BINNING", "INDI_NUMBER", "HOR_BIN", p_binningX, async );
-
-   if ( p_binningY > 0 )
-      indi->MaybeSendNewPropertyItem( p_deviceName, "CCD_BINNING", "INDI_NUMBER", "VER_BIN", p_binningY, async );
+   if ( p_binningX > 0 && p_binningY > 0)
+      indi->MaybeSendNewPropertyItem( p_deviceName, CCD_BIN_PROPERTY_NAME, "INDI_NUMBER", CCD_BIN_HORIZONTAL_ITEM_NAME, p_binningX, CCD_BIN_VERTICAL_ITEM_NAME, p_binningY,async );
 
    if ( p_filterSlot > 0 )
       indi->MaybeSendNewPropertyItem( p_extFilterWheelDeviceName != TheICFExternalFilterWheelDeviceNameParameter->DefaultValue()  ? p_extFilterWheelDeviceName : p_deviceName, "FILTER_SLOT", "INDI_NUMBER", "FILTER_SLOT_VALUE", p_filterSlot, async );
@@ -360,12 +357,12 @@ String INDICCDFrameInstance::FileNameFromTemplate( const String& fileNameTemplat
                fileName << String().Format( "%.3lf", p_exposureTime );
                break;
             case 'F':
-               if ( indi->GetPropertyItem( p_deviceName, "FILTER_SLOT", "FILTER_SLOT_VALUE", item ) )
-                  if ( indi->GetPropertyItem( p_deviceName, "FILTER_NAME", "FILTER_SLOT_NAME_" + item.PropertyValue, item ) )
+               if ( indi->GetPropertyItem( p_deviceName, WHEEL_SLOT_PROPERTY_NAME, WHEEL_SLOT_ITEM_NAME, item ) )
+                  if ( indi->GetPropertyItem( p_deviceName, WHEEL_SLOT_NAME_PROPERTY_NAME, "SLOT_NAME_" + item.PropertyValue, item ) )
                      fileName << item.PropertyValue;
                break;
             case 'T':
-               if ( indi->GetPropertyItem( p_deviceName, "CCD_TEMPERATURE", "CCD_TEMPERATURE_VALUE", item ) )
+               if ( indi->GetPropertyItem( p_deviceName, CCD_TEMPERATURE_PROPERTY_NAME, CCD_TEMPERATURE_ITEM_NAME, item ) )
                   fileName << String().Format( "%+.2lf", item.PropertyValue.ToDouble() );
                break;
             case 't':
@@ -771,11 +768,11 @@ String INDICCDFrameInstance::UploadModePropertyString( int uploadModeIdx )
    switch ( uploadModeIdx )
    {
    case ICFUploadMode::UploadClient:
-      return "UPLOAD_CLIENT";
+      return CCD_UPLOAD_MODE_CLIENT_ITEM_NAME;
    case ICFUploadMode::UploadServer:
-      return "UPLOAD_LOCAL";
+      return CCD_UPLOAD_MODE_LOCAL_ITEM_NAME;
    case ICFUploadMode::UploadServerAndClient:
-      return "UPLOAD_BOTH";
+      return CCD_UPLOAD_MODE_BOTH_ITEM_NAME;
    default:
       throw Error( "Internal error: INDICCDFrameInstance: Invalid upload mode." );
    }
@@ -788,13 +785,13 @@ String INDICCDFrameInstance::CCDFrameTypePropertyString( int frameTypeIdx )
    switch ( frameTypeIdx )
    {
    case ICFFrameType::LightFrame:
-      return "FRAME_LIGHT";
+      return CCD_FRAME_TYPE_LIGHT_ITEM_NAME;
    case ICFFrameType::BiasFrame:
-      return "FRAME_BIAS";
+      return CCD_FRAME_TYPE_BIAS_ITEM_NAME;
    case ICFFrameType::DarkFrame:
-      return "FRAME_DARK";
+      return CCD_FRAME_TYPE_DARK_ITEM_NAME;
    case ICFFrameType::FlatFrame:
-      return "FRAME_FLAT";
+      return CCD_FRAME_TYPE_FLAT_ITEM_NAME;
    default:
       throw Error( "Internal error: INDICCDFrameInstance: Invalid frame type." );
    }
@@ -1050,7 +1047,7 @@ void AbstractINDICCDFrameExecution::Perform()
       INDIPropertyListItem item;
       bool serverSendsImage = true; // be compatible with legacy drivers not implementing UPLOAD_MODE
       bool serverKeepsImage = false;
-      if ( indi->GetPropertyItem( m_instance.p_deviceName, "UPLOAD_MODE", "UPLOAD_LOCAL", item ) )
+      if ( indi->GetPropertyItem( m_instance.p_deviceName, CCD_UPLOAD_MODE_PROPERTY_NAME, CCD_UPLOAD_MODE_LOCAL_ITEM_NAME, item ) )
          if ( item.PropertyValue == "ON" )
          {
             serverSendsImage = false;
@@ -1058,7 +1055,7 @@ void AbstractINDICCDFrameExecution::Perform()
          }
          else
          {
-            if ( indi->GetPropertyItem( m_instance.p_deviceName, "UPLOAD_MODE", "UPLOAD_BOTH", item ) )
+            if ( indi->GetPropertyItem( m_instance.p_deviceName, CCD_UPLOAD_MODE_PROPERTY_NAME, CCD_UPLOAD_MODE_BOTH_ITEM_NAME, item ) )
                if ( item.PropertyValue == "ON" )
                   serverKeepsImage = true;
          }
@@ -1090,10 +1087,10 @@ void AbstractINDICCDFrameExecution::Perform()
          {
             String serverFileName = m_instance.ServerFileName();
             m_instance.o_serverFrames << serverFileName;
-            indi->SendNewPropertyItem( m_instance.p_deviceName, "UPLOAD_SETTINGS", "INDI_TEXT", "UPLOAD_PREFIX", serverFileName, false/*async*/ );
+            indi->SendNewPropertyItem( m_instance.p_deviceName, CCD_LOCAL_MODE_PROPERTY_NAME, "INDI_TEXT", CCD_LOCAL_MODE_PREFIX_ITEM_NAME, serverFileName, false/*async*/ );
          }
 
-         if ( !indi->SendNewPropertyItem( m_instance.p_deviceName, "CCD_EXPOSURE", "INDI_NUMBER", "CCD_EXPOSURE_VALUE", m_instance.p_exposureTime, true/*async*/ ) )
+         if ( !indi->SendNewPropertyItem( m_instance.p_deviceName, CCD_EXPOSURE_PROPERTY_NAME, "INDI_NUMBER", CCD_EXPOSURE_ITEM_NAME, m_instance.p_exposureTime, true/*async*/ ) )
          {
             ExposureErrorEvent( "Failure to send new property values to INDI server" );
             ++m_errorCount;
@@ -1105,18 +1102,22 @@ void AbstractINDICCDFrameExecution::Perform()
          {
             // Get telescope apparent epoch-of-date coordinates.
             INDIPropertyListItem itemRA, itemDec;
-            if ( !indi->GetPropertyItem( telescopeName, "TARGET_EOD_COORD", "RA", itemRA, false/*formatted*/ ) ||
-                 !indi->GetPropertyItem( telescopeName, "TARGET_EOD_COORD", "DEC", itemDec, false/*formatted*/ ) )
+            if ( !indi->GetPropertyItem( telescopeName, MOUNT_EQUATORIAL_COORDINATES_PROPERTY_NAME, MOUNT_EQUATORIAL_COORDINATES_RA_ITEM_NAME, itemRA, false/*formatted*/ ) ||
+                 !indi->GetPropertyItem( telescopeName, MOUNT_EQUATORIAL_COORDINATES_PROPERTY_NAME, MOUNT_EQUATORIAL_COORDINATES_DEC_ITEM_NAME, itemDec, false/*formatted*/ ) )
                throw Error( "Cannot get current mount coordinates for device '" + telescopeName + "'" );
-            telescopeRA = Rad( itemRA.PropertyValue.ToDouble()*15 );
-            telescopeDec = Rad( itemDec.PropertyValue.ToDouble() );
+            double ra = 0;
+            double dec = 0;
+            itemRA.PropertyTarget.TryToDouble(ra);
+            itemDec.PropertyTarget.TryToDouble(dec);
+            telescopeRA = Rad( ra *15 );
+            telescopeDec = Rad( dec );
           }
 
          ElapsedTime T;
 
          for ( bool inExposure = false; ; )
-            if ( indi->GetPropertyItem( m_instance.p_deviceName, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", item, false/*formatted*/ ) )
-               if ( item.PropertyState == IPS_BUSY )
+            if ( indi->GetPropertyItem( m_instance.p_deviceName, CCD_EXPOSURE_PROPERTY_NAME, CCD_EXPOSURE_ITEM_NAME, item, false/*formatted*/ ) ) {
+               if ( item.PropertyState == INDIGO_BUSY_STATE )
                {
                   if ( inExposure )
                   {
@@ -1145,6 +1146,9 @@ void AbstractINDICCDFrameExecution::Perform()
                   if ( T() > 1 )
                      WaitingForServerEvent();
                }
+            } else {
+               throw Error( "CCD_EXPOSURE.EXPOSURE property not found." );
+            }
 
          if ( serverSendsImage )
          {
@@ -1328,19 +1332,19 @@ void AbstractINDICCDFrameExecution::Perform()
                      // If not already available, try to get the local
                      // geographic longitude of observatory.
                      if (!data.geographicLongitude.IsDefined())
-                        if ( indi->GetPropertyItem( telescopeName, "GEOGRAPHIC_COORD", "LONG", item, false/*formatted*/ ))
+                        if ( indi->GetPropertyItem( telescopeName, GEOGRAPHIC_COORDINATES_PROPERTY_NAME, GEOGRAPHIC_COORDINATES_LONGITUDE_ITEM_NAME, item, false/*formatted*/ ))
                            data.geographicLongitude = item.PropertyValue.ToDouble();
 
                      // If not already available, try to get the local
                      // geographic latitude of observatory.
                      if (!data.geographicLatitude.IsDefined())
-                        if ( indi->GetPropertyItem( telescopeName, "GEOGRAPHIC_COORD", "LAT", item, false/*formatted*/ ))
+                        if ( indi->GetPropertyItem( telescopeName, GEOGRAPHIC_COORDINATES_PROPERTY_NAME, GEOGRAPHIC_COORDINATES_LATITUDE_ITEM_NAME, item, false/*formatted*/ ))
                            data.geographicLatitude = item.PropertyValue.ToDouble();
 
                      // If not already available, try to get the local
                      // geographic height of observatory.
                      if (!data.geographicHeight.IsDefined())
-                        if ( indi->GetPropertyItem( telescopeName, "GEOGRAPHIC_COORD", "ELEV", item, false/*formatted*/ ))
+                        if ( indi->GetPropertyItem( telescopeName, GEOGRAPHIC_COORDINATES_PROPERTY_NAME, GEOGRAPHIC_COORDINATES_ELEVATION_ITEM_NAME, item, false/*formatted*/ ))
                            data.geographicHeight = item.PropertyValue.ToDouble();
 
                      properties << ImagePropertiesFromImageMetadata( data );
@@ -1575,7 +1579,7 @@ void AbstractINDICCDFrameExecution::Perform()
       catch ( ProcessAborted& )
       {
          m_aborted = true;
-         indi->MaybeSendNewPropertyItem( m_instance.p_deviceName, "CCD_ABORT_EXPOSURE", "INDI_SWITCH", "ABORT", "ON", true/*async*/ );
+         indi->MaybeSendNewPropertyItem( m_instance.p_deviceName, CCD_ABORT_EXPOSURE_PROPERTY_NAME, "INDI_SWITCH", CCD_ABORT_EXPOSURE_ITEM_NAME, "ON", true/*async*/ );
          AbortEvent();
          throw;
       }

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.11.0938
+// /_/     \____//_____/   PCL 02.01.11.0927
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.01.00.0238
+// Standard INDIClient Process Module Version 01.01.00.0228
 // ----------------------------------------------------------------------------
-// IINDIProperty.h - Released 2019-01-21T12:06:42Z
+// IINDIProperty.h - Released 2018-11-23T18:45:59Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -50,34 +50,34 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-/*
- * IINDIProperty.h
- *
- *  Created on: May 29, 2014
- *      Author: klaus
- */
 
-#ifndef __IINDIProperty_h
-#define __IINDIProperty_h
 
-#include "INDI/indiproperty.h"
-#include "indigo/indigo_bus.h"
+#ifndef __IndigoProperty_h
+#define __IIndigoProperty_h
 
+#include<memory>
+
+#include "indigo_bus.h"
+
+#include <pcl/Exception.h>
 #include <pcl/String.h>
+
+#define CHECK_INDEX_THROWS( x )  \
+   if ( int( i ) >= x )          \
+      throw Error( "*** Error: " + String( PCL_FUNCTION_NAME ) + ": Invalid element index '" + String( i ) + "'" );
+
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-typedef INDI_PROPERTY_TYPE INDI_TYPE;
-
 
 class IProperty
 {
 public:
 
-   IProperty( INDI::Property* property ) : m_property( property )
+   IProperty( indigo_property* property ) : m_property( property )
    {
    }
 
@@ -85,74 +85,87 @@ public:
    {
    }
 
-   virtual INDI::Property* getProperty()
+   bool isHidden() const {
+      return m_property->hidden;
+   }
+
+   virtual indigo_property* getProperty()
    {
       return m_property;
    }
 
-   virtual const INDI::Property* getProperty() const
+   virtual const indigo_property* getProperty() const
    {
       return m_property;
    }
 
    virtual String getDeviceName() const
    {
-      return String( m_property->getDeviceName() );
+      return String( m_property->device );
    }
 
    virtual String getName() const
    {
-      return String( m_property->getName() );
+      return String( m_property->name );
    }
 
    virtual String getLabel() const
    {
-      return String( m_property->getLabel() );
+      return String( m_property->label );
    }
 
-   virtual INDI_TYPE getType() const
+   virtual indigo_property_type getType() const
    {
-      return m_property->getType();
+      return m_property->type;
    }
 
    virtual String getTypeStr() const
    {
-      switch( m_property->getType() )
+      switch( m_property->type )
       {
-      case INDI_SWITCH:
+      case INDIGO_SWITCH_VECTOR:
          return "INDI_SWITCH";
-      case INDI_NUMBER:
+      case INDIGO_NUMBER_VECTOR:
          return "INDI_NUMBER";
-      case INDI_LIGHT:
+      case INDIGO_LIGHT_VECTOR:
          return "INDI_LIGHT";
-      case INDI_TEXT:
+      case INDIGO_TEXT_VECTOR:
          return "INDI_TEXT";
+      case INDIGO_BLOB_VECTOR:
+         return "INDI_BLOB";
       default:
          return "INDI_UNKNOWN";
       }
    }
 
-   virtual IPState getState() const
+   virtual indigo_property_state getState() const
    {
-      return m_property->getState();
+      return m_property->state;
    }
 
    virtual size_type getNumOfElements() const
    {
-      return 0;
+      return m_property->count;
    }
 
    virtual String getElementName( size_type i ) const
    {
-      return "unsupported element";
+      CHECK_INDEX_THROWS( m_property->count );
+      return m_property->items[i].name;
    }
 
    virtual String getElementLabel( size_type i ) const
    {
-      return "unsupported element";
+      CHECK_INDEX_THROWS( m_property->count );
+      return m_property->items[i].label;
    }
 
    virtual String getElementValue( size_type i ) const
+   {
+      return "unsupported value";
+   }
+
+   virtual String getElementTarget( size_type i ) const
    {
       return "unsupported value";
    }
@@ -162,21 +175,23 @@ public:
       return String();
    }
 
-   virtual void addElement( IsoString elementName, IsoString value )
-   {
-   }
-
    virtual void setDeviceName( IsoString device )
    {
+      strcpy( m_property->device, device.c_str() );
    }
 
    virtual void setName( IsoString name )
    {
+      strcpy( m_property->name, name.c_str() );
+   }
+
+   virtual std::unique_ptr<indigo_property> clone() const  {
+      return nullptr;
    }
 
 protected:
 
-   INDI::Property* m_property;
+   indigo_property* m_property;
 };
 
 // ----------------------------------------------------------------------------
@@ -185,31 +200,20 @@ class NumberProperty : public IProperty
 {
 public:
 
-   NumberProperty( INDI::Property* property ) : IProperty( property )
+   NumberProperty( indigo_property* property ) : IProperty( property )
    {
    }
 
-   virtual size_type getNumOfElements() const
-   {
-      return m_property->getNumber()->nnp;
-   }
 
-   virtual String getElementName( size_type i ) const;
-   virtual String getElementLabel( size_type i ) const;
    virtual String getElementValue( size_type i ) const;
+   virtual String getElementTarget( size_type i ) const;
+   virtual String getElementMinValue( size_type i ) const;
+   virtual String getElementMaxValue( size_type i ) const;
+   virtual String getElementValueStep( size_type i ) const;
    virtual String getNumberFormat( size_type i ) const;
 
-   virtual void addElement( IsoString elementName, IsoString value );
+   virtual std::unique_ptr<indigo_property> clone() const;
 
-   virtual void setDeviceName( IsoString device )
-   {
-      strcpy( m_property->getNumber()->device, device.c_str() );
-   }
-
-   virtual void setName( IsoString name )
-   {
-      strcpy( m_property->getNumber()->name, name.c_str() );
-   }
 };
 
 // ----------------------------------------------------------------------------
@@ -218,30 +222,13 @@ class TextProperty : public IProperty
 {
 public:
 
-   TextProperty( INDI::Property* property ) : IProperty( property )
+   TextProperty( indigo_property* property ) : IProperty( property )
    {
    }
 
-   virtual size_type getNumOfElements() const
-   {
-      return m_property->getText()->ntp;
-   }
-
-   virtual String getElementName( size_type i ) const;
-   virtual String getElementLabel( size_type i ) const;
    virtual String getElementValue( size_type i ) const;
 
-   virtual void addElement( IsoString elementName, IsoString value );
-
-   virtual void setDeviceName( IsoString device )
-   {
-      strcpy( m_property->getText()->device, device.c_str() );
-   }
-
-   virtual void setName( IsoString name )
-   {
-      strcpy( m_property->getText()->name, name.c_str() );
-   }
+   virtual std::unique_ptr<indigo_property> clone() const;
 };
 
 // ----------------------------------------------------------------------------
@@ -250,30 +237,14 @@ class SwitchProperty : public IProperty
 {
 public:
 
-   SwitchProperty( INDI::Property* property ) : IProperty( property )
+   SwitchProperty( indigo_property* property ) : IProperty( property )
    {
    }
 
-   virtual size_type getNumOfElements() const
-   {
-      return m_property->getSwitch()->nsp;
-   }
 
-   virtual String getElementName( size_type i ) const;
-   virtual String getElementLabel( size_type i ) const;
    virtual String getElementValue( size_type i ) const;
 
-   virtual void addElement( IsoString elementName, IsoString value );
-
-   virtual void setDeviceName( IsoString device )
-   {
-      strcpy( m_property->getSwitch()->device, device.c_str() );
-   }
-
-   virtual void setName( IsoString name )
-   {
-      strcpy( m_property->getSwitch()->name, name.c_str() );
-   }
+   virtual std::unique_ptr<indigo_property> clone() const;
 };
 
 // ----------------------------------------------------------------------------
@@ -282,31 +253,34 @@ class LightProperty : public IProperty
 {
 public:
 
-   LightProperty( INDI::Property* property ) : IProperty( property )
+   LightProperty( indigo_property* property ) : IProperty( property )
    {
    }
 
-   virtual size_type getNumOfElements() const
-   {
-      return m_property->getLight()->nlp;
-   }
-
-   virtual String getElementName( size_type i ) const;
-   virtual String getElementLabel( size_type i ) const;
    virtual String getElementValue( size_type i ) const;
 
-   virtual void addElement( IsoString elementName, IsoString value );
-
-   virtual void setDeviceName( IsoString device )
-   {
-      strcpy( m_property->getLight()->device, device.c_str() );
-   }
-
-   virtual void setName( IsoString name )
-   {
-      strcpy( m_property->getLight()->name, name.c_str() );
-   }
+   virtual std::unique_ptr<indigo_property> clone() const;
 };
+
+// ----------------------------------------------------------------------------
+
+class BlobProperty : public IProperty
+{
+public:
+
+   BlobProperty( indigo_property* property ) : IProperty( property )
+   {
+   }
+
+
+   virtual void*   getBlob( size_type i ) const;
+   virtual size_type  getBlobSize(size_type i) const;
+   virtual String getBlobFormat(size_type i) const;
+   virtual String getUrl(size_type i) const;
+};
+
+// ----------------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------------
 
@@ -360,16 +334,15 @@ class PropertyFactory
 {
 public:
 
-   static IProperty* Create( INDI::Property* );
-   static IProperty* Create( INDI::Property*, INDI_TYPE );
-
+   static IProperty* Create( indigo_property* );
+   //static IProperty* Create( const char* device, const char* name, const char* value);
 };
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __IINDIProperty_h
+#endif   // __IIndigoProperty_h
 
 // ----------------------------------------------------------------------------
-// EOF IINDIProperty.h - Released 2019-01-21T12:06:42Z
+// EOF IIndigoProperty.h - Released 2018-11-23T18:45:59Z

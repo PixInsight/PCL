@@ -60,7 +60,7 @@
 #ifndef __INDIParamListTypes_h
 #define __INDIParamListTypes_h
 
-#include "INDI/indibase.h"
+#include "indigo_bus.h"
 
 #include <pcl/Array.h>
 #include <pcl/String.h>
@@ -90,15 +90,16 @@ struct INDIPropertyListItem
 {
    String    Device;
    String    Property;
-   INDI_PROPERTY_TYPE PropertyType;
+   indigo_property_type PropertyType;
    String    PropertyTypeStr;
    String    Element;
-   unsigned  PropertyState;
+   indigo_property_state  PropertyState;
    String    PropertyNumberFormat;
    String    PropertyLabel;
    String    ElementLabel;
    String    PropertyKey;
    String    PropertyValue;
+   String    PropertyTarget;
    String    NewPropertyValue;
 
    bool operator ==( const INDIPropertyListItem& rhs ) const

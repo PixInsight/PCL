@@ -56,10 +56,6 @@
 #include "INDICCDFrameProcess.h"
 #include "INDIDeviceControllerInstance.h"
 
-#include "INDI/basedevice.h"
-#include "INDI/indiapi.h"
-#include "INDI/indibase.h"
-
 #include <pcl/Console.h>
 #include <pcl/Dialog.h>
 #include <pcl/FileDialog.h>
@@ -464,7 +460,7 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    CCDBinX_Combo.AddItem( "8" );
    CCDBinX_Combo.SetFixedWidth( editWidth1 );
    CCDBinX_Combo.SetToolTip( ccdBinXToolTipText );
-   CCDBinX_Combo.OnItemSelected( (ComboBox::item_event_handler)&INDICCDFrameInterface::e_ItemSelected, w );
+   //CCDBinX_Combo.OnItemSelected( (ComboBox::item_event_handler)&INDICCDFrameInterface::e_ItemSelected, w );
    CCDBinX_Combo.Disable();
 
    CCDBinX_HSizer.SetSpacing( 4 );
@@ -1056,7 +1052,7 @@ void INDICCDFrameInterface::e_Timer( Timer& sender )
             for ( auto device : devices )
             {
                INDIPropertyListItem item;
-               if ( indi->HasPropertyItem( device.DeviceName, "CCD_FRAME", "WIDTH" ) ) // is this a camera device?
+               if ( indi->HasPropertyItem( device.DeviceName, CCD_FRAME_PROPERTY_NAME, CCD_FRAME_WIDTH_ITEM_NAME ) ) // is this a camera device?
                   GUI->CCDDevice_Combo.AddItem( device.DeviceName );
             }
 
@@ -1086,7 +1082,7 @@ __device_found:
       INDIClient* indi = INDIClient::TheClient();
       INDIPropertyListItem item;
 
-      if ( indi->GetPropertyItem( m_device, "CCD_TEMPERATURE", "CCD_TEMPERATURE_VALUE", item ) )
+      if ( indi->GetPropertyItem( m_device, CCD_TEMPERATURE_PROPERTY_NAME, CCD_TEMPERATURE_ITEM_NAME, item ) )
       {
          GUI->CCDTargetTemp_NumericEdit.Enable();
          GUI->CCDTargetTemp_NumericEdit.label.Enable();
@@ -1100,7 +1096,7 @@ __device_found:
          GUI->CCDTargetTemp_ToolButton.Disable();
       }
 
-      if ( indi->GetPropertyItem( m_device, "CCD_BINNING", "HOR_BIN", item ) )
+      if ( indi->GetPropertyItem( m_device, CCD_BIN_PROPERTY_NAME, CCD_BIN_HORIZONTAL_ITEM_NAME, item ) )
       {
          GUI->CCDBinX_Combo.Enable();
          GUI->CCDBinX_Label.Enable();
@@ -1112,7 +1108,7 @@ __device_found:
          GUI->CCDBinX_Label.Disable();
       }
 
-      if ( indi->GetPropertyItem( m_device, "CCD_BINNING", "VER_BIN", item ) )
+      if ( indi->GetPropertyItem( m_device, CCD_BIN_PROPERTY_NAME, CCD_BIN_VERTICAL_ITEM_NAME, item ) )
       {
          GUI->CCDBinY_Combo.Enable();
          GUI->CCDBinY_Label.Enable();
@@ -1125,13 +1121,13 @@ __device_found:
       }
 
       String externalFilterWheelDeviceName = GUI->ExternalFilterDevice_Combo.ItemText(GUI->ExternalFilterDevice_Combo.CurrentItem());
-      if ( indi->GetPropertyItem(  externalFilterWheelDeviceName != String("<No filter wheel>") ? externalFilterWheelDeviceName : m_device, "FILTER_SLOT", "FILTER_SLOT_VALUE", item ) )
+      if ( indi->GetPropertyItem(  externalFilterWheelDeviceName != String("<No filter wheel>") ? externalFilterWheelDeviceName : m_device, WHEEL_SLOT_PROPERTY_NAME, WHEEL_SLOT_ITEM_NAME, item ) )
       {
          int currentFilterIndex = item.PropertyValue.ToInt() - 1;
          GUI->CCDFilter_Combo.Clear();
          for ( int i = 1; i <= 256; ++i )
          {
-            if ( !indi->GetPropertyItem(  externalFilterWheelDeviceName != String("<No filter wheel>") ? externalFilterWheelDeviceName : m_device, "FILTER_NAME", "FILTER_SLOT_NAME_" + String( i ), item ) )
+            if ( !indi->GetPropertyItem(  externalFilterWheelDeviceName != String("<No filter wheel>") ? externalFilterWheelDeviceName : m_device, WHEEL_SLOT_NAME_PROPERTY_NAME, "SLOT_NAME_" + String( i ), item ) )
                break;
             GUI->CCDFilter_Combo.AddItem( item.PropertyValue );
          }
@@ -1149,11 +1145,11 @@ __device_found:
       }
 
       int uploadModeIndex = -1;
-      if ( indi->GetPropertyItem( m_device, "UPLOAD_MODE", "UPLOAD_CLIENT", item ) )
+      if ( indi->GetPropertyItem( m_device, CCD_UPLOAD_MODE_PROPERTY_NAME, CCD_UPLOAD_MODE_CLIENT_ITEM_NAME, item ) )
       {
          if ( item.PropertyValue == "OFF" )
          {
-            if ( indi->GetPropertyItem( m_device, "UPLOAD_MODE", "UPLOAD_LOCAL", item ) )
+            if ( indi->GetPropertyItem( m_device, CCD_UPLOAD_MODE_PROPERTY_NAME, CCD_UPLOAD_MODE_LOCAL_ITEM_NAME, item ) )
                if ( item.PropertyValue == "OFF" )
                   uploadModeIndex = ICFUploadMode::UploadServerAndClient;
                else
@@ -1227,9 +1223,9 @@ __device_found:
       }
 
       {
-         static const char* indiFrameTypes[] = { "FRAME_LIGHT", "FRAME_BIAS", "FRAME_DARK", "FRAME_FLAT" };
+         static const char* indiFrameTypes[] = { CCD_FRAME_TYPE_LIGHT_ITEM_NAME, CCD_FRAME_TYPE_BIAS_ITEM_NAME, CCD_FRAME_TYPE_DARK_ITEM_NAME, CCD_FRAME_TYPE_FLAT_ITEM_NAME };
          for ( size_type i = 0; i < ItemsInArray( indiFrameTypes ); ++i )
-            if ( indi->GetPropertyItem( m_device, "CCD_FRAME_TYPE", indiFrameTypes[i], item ) )
+            if ( indi->GetPropertyItem( m_device, CCD_FRAME_TYPE_PROPERTY_NAME, indiFrameTypes[i], item ) )
                if ( item.PropertyValue == "ON" )
                {
                   GUI->CCDFrameType_Label.Enable();
@@ -1248,7 +1244,7 @@ __device_found:
          }
       }
 
-      if ( indi->GetPropertyItem( m_device, "UPLOAD_SETTINGS", "UPLOAD_DIR", item ) )
+      if ( indi->GetPropertyItem( m_device, CCD_LOCAL_MODE_PROPERTY_NAME, CCD_LOCAL_MODE_DIR_ITEM_NAME, item ) )
          GUI->ServerUploadDir_Edit.SetText( item.PropertyValue );
 
       {
@@ -1287,46 +1283,48 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
       if ( !m_device.IsEmpty() )
       {
          INDIPropertyListItem item;
-         if ( indi->GetPropertyItem( m_device, "COOLER_CONNECTION", "CONNECT_COOLER", item ) )
+         if ( indi->GetPropertyItem( m_device, CCD_COOLER_PROPERTY_NAME, CCD_COOLER_ON_ITEM_NAME, item ) )
             if ( item.PropertyValue == "OFF" )
-               indi->SendNewPropertyItem( m_device, "COOLER_CONNECTION", "INDI_SWITCH", "CONNECT_COOLER", "ON", true/*async*/ );
+               indi->SendNewPropertyItem( m_device, CCD_COOLER_PROPERTY_NAME, "INDI_SWITCH", CCD_COOLER_ON_ITEM_NAME, "ON", true/*async*/ );
 
          // load configuration on server
-         indi->SendNewPropertyItem( m_device, "CONFIG_PROCESS", "INDI_SWITCH", "CONFIG_LOAD", "ON");
+         indi->SendNewPropertyItem( m_device, CONFIG_PROPERTY_NAME, "INDI_SWITCH", CONFIG_LOAD_ITEM_NAME, "ON");
 
       }
    }
    else if ( sender == GUI->CCDBinX_Combo )
    {
-      indi->MaybeSendNewPropertyItem( m_device, "CCD_BINNING", "INDI_NUMBER",
-                                    "HOR_BIN", GUI->CCDBinX_Combo.ItemText( itemIndex ).Trimmed(), true/*async*/ );
+      indi->MaybeSendNewPropertyItem( m_device, CCD_BIN_PROPERTY_NAME, "INDI_NUMBER",
+                                    CCD_BIN_HORIZONTAL_ITEM_NAME, GUI->CCDBinX_Combo.ItemText( itemIndex ).Trimmed(), true/*async*/ );
    }
    else if ( sender == GUI->CCDBinY_Combo )
    {
-      indi->MaybeSendNewPropertyItem( m_device, "CCD_BINNING", "INDI_NUMBER",
-                                    "VER_BIN", GUI->CCDBinY_Combo.ItemText( itemIndex ).Trimmed(), true/*async*/ );
+      indi->MaybeSendNewPropertyItem( m_device, CCD_BIN_PROPERTY_NAME, "INDI_NUMBER",
+                                      CCD_BIN_HORIZONTAL_ITEM_NAME, GUI->CCDBinX_Combo.ItemText( itemIndex ).Trimmed(),
+                                      CCD_BIN_VERTICAL_ITEM_NAME, GUI->CCDBinY_Combo.ItemText( itemIndex ).Trimmed(),
+                                      true/*async*/ );
    }
    else if ( sender == GUI->CCDFilter_Combo )
    {
    String externalFilterWheelDeviceName = GUI->ExternalFilterDevice_Combo.ItemText(GUI->ExternalFilterDevice_Combo.CurrentItem());
-      indi->MaybeSendNewPropertyItem( externalFilterWheelDeviceName != String("<No filter wheel>") ? externalFilterWheelDeviceName : m_device, "FILTER_SLOT", "INDI_NUMBER",
-                                    "FILTER_SLOT_VALUE", itemIndex+1, true/*async*/ );
+      indi->MaybeSendNewPropertyItem( externalFilterWheelDeviceName != String("<No filter wheel>") ? externalFilterWheelDeviceName : m_device, WHEEL_SLOT_PROPERTY_NAME, "INDI_NUMBER",
+                                    WHEEL_SLOT_ITEM_NAME, itemIndex+1, true/*async*/ );
    }
    else if ( sender == GUI->UploadMode_Combo )
    {
-      indi->MaybeSendNewPropertyItem( m_device, "UPLOAD_MODE", "INDI_SWITCH",
+      indi->MaybeSendNewPropertyItem( m_device, CCD_UPLOAD_MODE_PROPERTY_NAME, "INDI_SWITCH",
                                     INDICCDFrameInstance::UploadModePropertyString( itemIndex ), "ON", true/*async*/ );
    }
    else if ( sender == GUI->CCDFrameType_Combo )
    {
-      indi->MaybeSendNewPropertyItem( m_device, "CCD_FRAME_TYPE", "INDI_SWITCH",
+      indi->MaybeSendNewPropertyItem( m_device, CCD_FRAME_TYPE_PROPERTY_NAME, "INDI_SWITCH",
                                     INDICCDFrameInstance::CCDFrameTypePropertyString( itemIndex ), "ON", true/*async*/ );
    }
    else if ( sender == GUI->ExternalFilterDevice_Combo )
    {
       String externalFilterWheelDeviceName = sender.ItemText( itemIndex ).Trimmed();
       // load configuration on server
-      indi->SendNewPropertyItem( externalFilterWheelDeviceName, "CONFIG_PROCESS", "INDI_SWITCH", "CONFIG_LOAD", "ON", true/*async*/  );
+      indi->SendNewPropertyItem( externalFilterWheelDeviceName, CONFIG_PROPERTY_NAME, "INDI_SWITCH", CONFIG_LOAD_ITEM_NAME, "ON", true/*async*/  );
    }
 }
 
@@ -1518,14 +1516,14 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
 
    if ( sender == GUI->CCDTargetTemp_ToolButton )
    {
-      INDIClient::TheClient()->SendNewPropertyItem( m_device, "CCD_TEMPERATURE", "INDI_NUMBER",
-                                                   "CCD_TEMPERATURE_VALUE", GUI->CCDTargetTemp_NumericEdit.Value(), true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, CCD_TEMPERATURE_PROPERTY_NAME, "INDI_NUMBER",
+                                                   CCD_TEMPERATURE_ITEM_NAME, GUI->CCDTargetTemp_NumericEdit.Value(), true/*async*/ );
    }
    else if ( sender == GUI->ServerUploadDir_ToolButton )
    {
       SimpleGetStringDialog dialog( "Server upload directory:", GUI->ServerUploadDir_Edit.Text() );
       if ( dialog.Execute() )
-         INDIClient::TheClient()->SendNewPropertyItem( m_device, "UPLOAD_SETTINGS", "INDI_TEXT", "UPLOAD_DIR", dialog.Text(), true/*async*/ );
+         INDIClient::TheClient()->SendNewPropertyItem( m_device, CCD_LOCAL_MODE_PROPERTY_NAME, "INDI_TEXT", CCD_LOCAL_MODE_DIR_ITEM_NAME, dialog.Text(), true/*async*/ );
    }
    else if ( sender == GUI->ClientDownloadDir_ToolButton )
    {

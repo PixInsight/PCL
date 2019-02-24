@@ -362,7 +362,6 @@ IProperty* PropertyFactory::Create( INDI::Property* property, INDI_TYPE type )
    }
 }
 
-// ----------------------------------------------------------------------------
 
 } // pcl
 
